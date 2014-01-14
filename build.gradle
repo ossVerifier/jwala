@@ -1,0 +1,66 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+buildscript {
+    repositories {
+        maven {
+            url "http://usmlvv1nrg645/artifactory/ext-release-local";
+        }
+    }
+
+    dependencies {
+        classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.2.1')
+    }
+}
+
+apply plugin: 'artifactory'
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+    apply plugin: 'pmd'
+
+    jacoco {
+        toolVersion = "0.6.3.201306030806"
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled false
+            csv.enabled false
+            html.destination "${buildDir}/jacocoHtml"
+        }
+    }
+
+    repositories {
+        maven {
+            url "http://usmlvv1nrg645/artifactory/ext-release-local"
+        }
+    }
+
+    dependencies {
+        compile group: 'org.apache.log4j', name: 'log4j', version: '1.2.15'
+        testCompile 'org.junit:junit:4.11'
+        pmd group: 'pmd', name: 'pmd', version: '4.3'
+        pmd group: 'jaxen', name: 'jaxen', version: '1.1.1'
+        pmd group: 'asm-all', name: 'asm-all', version: '3.2'
+    }
+
+    pmdMain {
+        reports {
+            xml.enabled true
+            html.enabled false
+        }
+    }
+
+    pmdTest {
+        reports {
+            xml.enabled true
+            html.enabled false
+        }
+    }
+
+    sourceCompatibility = 1.6
+    group = 'com.siemens.cto'
+    version = '1.0.0'
+}
