@@ -18,6 +18,7 @@
 
     request.setAttribute("title", Version.getTitle());
     request.setAttribute("version", Version.getVersion());
+    request.setAttribute("buildTime", Version.getBuildTime());
 %>
 
 <BODY>
@@ -31,5 +32,6 @@
     <br>
     <br>Application Title: ${title}
     <br>Application Version: ${version}
+    <br>Application Build Time: ${buildTime}
 </BODY>
 </HTML>
