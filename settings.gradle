@@ -1,1 +1,1 @@
-include "aem-common", "aem-webapp"
+include "aem-common", "aem-services", "aem-webapp"

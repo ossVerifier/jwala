@@ -2,6 +2,7 @@ apply plugin: 'war'
 
 dependencies {
     compile project(':aem-common')
+    compile project(':aem-services')
 }
 
 war {
