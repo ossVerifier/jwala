@@ -1,11 +1,3 @@
-/*
- * Copyright(c) 2013 Siemens Medical Solutions Health
- * Services Corporation.  All rights reserved.  This software is
- * confidential, proprietary to Siemens, is protected by
- * copyright laws in the U.S. and abroad, and is licensed for use
- * by customers only in strict accordance with the license
- * agreement governing its use.
- */
 package com.siemens.cto.aem.web.configuration.web;
 
 import junit.framework.TestCase;
