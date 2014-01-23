@@ -35,31 +35,23 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
     @Bean
     public ViewResolver viewResolver() {
-
         final InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-
         resolver.setViewClass(JstlView.class);
         resolver.setPrefix("/WEB-INF/views/");
         resolver.setSuffix(".jsp");
-
         return resolver;
     }
 
     @Bean
     public MessageSource messageSource() {
-
         final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-
         messageSource.setBasenames("/messages/aem/ApacheEnterpriseManager");
-
         return messageSource;
     }
 
     @Bean
     LocaleResolver localeResolver() {
-
         final AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
-
         return resolver;
     }
 }

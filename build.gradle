@@ -3,17 +3,9 @@ subprojects {
     apply plugin: 'jacoco'
     apply plugin: 'pmd'
 
-    jacoco {
-        toolVersion = "0.6.3.201306030806"
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.enabled false
-            csv.enabled false
-            html.destination "${buildDir}/jacocoHtml"
-        }
-    }
+    sourceCompatibility = 1.7
+    group = 'com.siemens.cto'
+    version = '1.0.0'
 
     repositories {
         maven {
@@ -27,25 +19,47 @@ subprojects {
     dependencies {
         compile group: 'org.apache.log4j', name: 'log4j', version: '1.2.15'
         testCompile 'org.junit:junit:4.11'
+
         pmd group: 'pmd', name: 'pmd', version: '4.3'
+    }
+
+    jar {
+        manifest {
+            attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version + (null ==System.getProperty('BUILD_NUMBER') ? "" : "." + System.getProperty('BUILD_NUMBER')) + (null == System.getProperty('ACCUREV_TRANSACTION') ? "" : "." + System.getProperty('ACCUREV_TRANSACTION')),
+                'Built-By': System.getProperty('user.name'),
+                'Built-JDK': System.getProperty('java.version'),
+                'Built-Host': InetAddress.getLocalHost(),
+                'Build-Time-ISO-8601': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            )
+        }
     }
 
     pmdMain {
         reports {
-            xml.enabled true
-            html.enabled false
+            xml.enabled = true
+            html.enabled = false
         }
     }
 
     pmdTest {
         reports {
-            xml.enabled true
-            html.enabled false
+            xml.enabled = true
+            html.enabled = false
         }
     }
 
-    sourceCompatibility = 1.7
-    group = 'com.siemens.cto'
-    version = '1.0.0'
+    jacoco {
+        toolVersion = "0.6.3.201306030806"
+    }
 
+    jacocoTestReport {
+        reports {
+            xml.enabled = false
+            csv.enabled = false
+            html.enabled = true
+            html.destination "${buildDir}/jacocoHtml"
+        }
+    }
 }
