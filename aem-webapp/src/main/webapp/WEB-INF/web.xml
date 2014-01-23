@@ -37,7 +37,7 @@
              and fully-qualified @Configuration classes -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>com.siemens.cto.aem.web.configuration.web.ApacheEnterprizeManagerWebConfig</param-value>
+            <param-value>com.siemens.cto.aem.web.configuration.web.ApacheEnterpriseManagerWebConfig</param-value>
         </init-param>
     </servlet>
 
