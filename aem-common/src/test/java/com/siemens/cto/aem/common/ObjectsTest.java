@@ -47,12 +47,12 @@ public class ObjectsTest extends TestCase {
     }
 
     public void testIsEmptyNullList() {
-        final List l = null;
+        final List<Integer> l = null;
         assertTrue(Objects.isEmpty(l));
     }
 
     public void testIsEmptyEmptyList() {
-        final List l = new ArrayList();
+        final List<Integer> l = new ArrayList<Integer>();
         assertTrue(Objects.isEmpty(l));
     }
 
@@ -87,17 +87,17 @@ public class ObjectsTest extends TestCase {
     }
 
     public void testNotEmptyNullCollection() {
-        final List l = null;
+        final List<Integer> l = null;
         assertFalse(Objects.notEmpty(l));
     }
 
     public void testNotEmptyCollection() {
-        final List l = new ArrayList();
+        final List<Integer> l = new ArrayList<Integer>();
         assertFalse(Objects.notEmpty(l));
     }
 
     public void testNotCollection() {
-        final List l = new ArrayList();
+        final List<Integer> l = new ArrayList<Integer>();
         l.add(1);
         assertTrue(Objects.notEmpty(l));
     }
