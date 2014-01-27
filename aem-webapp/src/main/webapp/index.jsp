@@ -22,7 +22,7 @@
 %>
 
 <BODY>
-    Apache Enterprise Manager Updated from GIT.
+    Apache Enterprise Manager.
     <br>
     <br>Host Name: ${serverName}
     <br>Port Number: ${localPortNumber}
