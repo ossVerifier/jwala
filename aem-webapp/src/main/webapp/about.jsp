@@ -8,6 +8,6 @@
 <BODY>
     About Apache Enterprise Manager
     <br>
-    Some copyright notices here MICAHTEST
+    Some copyright notices go here.
 </BODY>
 </HTML>
