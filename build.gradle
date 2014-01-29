@@ -1,15 +1,22 @@
+ext {
+    versions = [ junit : "4.+",
+                 pmd : "4.3",
+                 spring : "3.2.6.RELEASE",
+                 jackson : "1.4.2",]
+}
+
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'jacoco'
-    apply plugin: 'pmd'
+    apply plugin: "java"
+    apply plugin: "jacoco"
+    apply plugin: "pmd"
 
     sourceCompatibility = 1.7
-    group = 'com.siemens.cto'
-    version = '1.0.0'
+    group = "com.siemens.cto"
+    version = "1.0.0"
 
     repositories {
         maven {
-            url 'http://usmlvv1srn464/artifactory/repo/'
+            url "http://usmlvv1srn464/artifactory/repo/"
         }
         maven {
             url "http://usmlvv1nrg645/artifactory/ext-release-local"
@@ -17,21 +24,20 @@ subprojects {
     }
 
     dependencies {
-        compile group: 'org.apache.log4j', name: 'log4j', version: '1.2.15'
-        testCompile 'org.junit:junit:4.11'
+        testCompile "junit:junit:4.11"
 
-        pmd group: 'pmd', name: 'pmd', version: '4.3'
+        pmd group: "pmd", name: "pmd", version: "$versions.pmd"
     }
 
     jar {
         manifest {
             attributes(
-                'Implementation-Title': project.name,
-                'Implementation-Version': project.version + (null ==System.getProperty('BUILD_NUMBER') ? "" : "." + System.getProperty('BUILD_NUMBER')) + (null == System.getProperty('ACCUREV_TRANSACTION') ? "" : "." + System.getProperty('ACCUREV_TRANSACTION')),
-                'Built-By': System.getProperty('user.name'),
-                'Built-JDK': System.getProperty('java.version'),
-                'Built-Host': InetAddress.getLocalHost(),
-                'Build-Time-ISO-8601': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.version + (null ==System.getProperty("BUILD_NUMBER") ? "" : "." + System.getProperty("BUILD_NUMBER")) + (null == System.getProperty("ACCUREV_TRANSACTION") ? "" : "." + System.getProperty("ACCUREV_TRANSACTION")),
+                "Built-By": System.getProperty("user.name"),
+                "Built-JDK": System.getProperty("java.version"),
+                "Built-Host": InetAddress.getLocalHost(),
+                "Build-Time-ISO-8601": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
             )
         }
     }
