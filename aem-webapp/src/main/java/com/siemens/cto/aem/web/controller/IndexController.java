@@ -15,4 +15,15 @@ public class IndexController {
     public String index() {
         return "aem/index";
     }
+
+    @RequestMapping(value = "/react")
+    public String reactIndex() {
+        return "aem/index-react";
+    }
+
+    @RequestMapping(value = "/angular")
+    public String angularIndex() {
+        return "aem/index-angular";
+    }
+
 }
