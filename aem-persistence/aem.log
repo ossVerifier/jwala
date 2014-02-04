@@ -1,0 +1,16 @@
+
+
+1. Write unit tests for entities.
+
+2. Runtime enhancement of JPA entity classes, I think there is a way to specify which classes so that JPA does not have to look everywhere.
+    I added this parameter to the java 7 JRE, we will have to do the same for the unit tests: 
+        -javaagent:D:\view_store\tco\apache-openjpa-2.2.2\openjpa-2.2.2.jar
+
+3. Add a persistence provider for unit tests.
+4. The persistence provider will be h2.
+5. Add a transaction manager for unit tests.
+
+6. We are using the spring framework, I think we should consider using org.springframework.orm.jpa.
+
+All our entities will be Audited, I am thinking of moving all the auditing methods to AbstractEntity, if JPA does not have a problem to generate the database schema.
+

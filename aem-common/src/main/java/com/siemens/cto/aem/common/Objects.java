@@ -1,12 +1,10 @@
 package com.siemens.cto.aem.common;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA. User: z002xuvs Date: 11/8/13 Time: 7:25 PM To change this template use File | Settings |
- * File Templates.
- */
 public class Objects {
 
     public static String surround(final Object o) {
@@ -41,8 +39,11 @@ public class Objects {
         if (isEmpty(c)) {
             return 0;
         }
-
         return c.size();
+    }
+
+    public static String formatDate(final Date date) {
+        return new SimpleDateFormat("MM/dd/yy HH:mm:ss a").format(date);
     }
 
     private Objects() throws InstantiationException {

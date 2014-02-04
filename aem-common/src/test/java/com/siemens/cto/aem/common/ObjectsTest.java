@@ -6,9 +6,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-/**
- * Created with IntelliJ IDEA. User: z002xuvs Date: 11/21/12 Time: 10:54 PM
- */
 public class ObjectsTest extends TestCase {
 
     public void testIsEmptyNullArray() {
