@@ -7,12 +7,12 @@
         <th>Total Heap</th>
     </thead>
     <tbody>
-        <tr ng-repeat="info in jvmInfos">
-            <td>{{info.name}}</td>
-            <td>{{info.host}}</td>
-            <td>{{info.httpPort}}</td>
-            <td>{{info.availableHeap}}</td>
-            <td>{{info.totalHeap}}</td>
+        <tr ng-repeat="item in jvmData">
+            <td>{{item.name}}</td>
+            <td>{{item.host}}</td>
+            <td>{{item.httpPort}}</td>
+            <td>{{item.availableHeap}}</td>
+            <td>{{item.totalHeap}}</td>
         </tr>
     </tbody>
 </table>

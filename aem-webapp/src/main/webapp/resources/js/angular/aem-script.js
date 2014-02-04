@@ -15,7 +15,7 @@ angular.module('aemScript', [])
     return {
         restrict: 'E',
         scope: {
-            jvmInfos: '=info'
+            jvmData: '=data'
         },
         templateUrl: 'public-resources/template/jvm-tbl.html',
     };
