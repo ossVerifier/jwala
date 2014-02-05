@@ -24,7 +24,7 @@ angular.module('aemScript', [])
         scope: {
             jvmHeaders: '=headers',
             jvmFields: '=fields',
-            jvmData: '=data'
+            jvmItems: '=items'
         },
         templateUrl: 'public-resources/template/jvm-tbl.html',
     };

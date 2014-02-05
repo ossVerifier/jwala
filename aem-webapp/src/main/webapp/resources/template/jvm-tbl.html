@@ -3,7 +3,7 @@
         <th/>
         <th ng-repeat="header in jvmHeaders">{{header}}</th>
     </thead>
-    <tbody ng-repeat="item in jvmData" ng-init="open = false">
+    <tbody ng-repeat="item in jvmItems" ng-init="open = false">
         <tr>
             <td>
                 <input type="button" value="+" ng-click="open = true" ng-show="open == false">
