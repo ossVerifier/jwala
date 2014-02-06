@@ -2,7 +2,6 @@ package com.siemens.cto.aem.persistence.dao;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -10,129 +9,125 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
 
 public abstract class AbstractDaoJpa<T extends AbstractEntity<?>> implements Dao<T> {
 
-    @PersistenceContext(unitName = "persistence-unit")
-    protected EntityManager em;
+    @PersistenceContext(unitName = "aem-unit")
+    EntityManager entityManager;
 
-    private Class<?> entityClass;
+    private final Class<?> entityClass = getEntityClass();
+    private final String simpleName = entityClass.getSimpleName();
 
-    public AbstractDaoJpa() {
-    }
-
-    @SuppressWarnings("unchecked")
-    protected synchronized Class<?> getEntityClass() {
-        // return Assignment.class
-        if (entityClass == null) {
-            final Type type = getClass().getGenericSuperclass();
-            loop: while (true) {
-                if (type instanceof ParameterizedType) {
-                    final Type[] arguments = ((ParameterizedType) type).getActualTypeArguments();
-                    for (final Type argument : arguments) {
-                        if (argument instanceof Class) {
-                            entityClass = (Class<?>) argument;
-                            break loop;
-                        }
-                    }
+    private Class<?> getEntityClass() {
+        Class<?> result = null;
+        final Class<? extends AbstractDaoJpa> theClass = getClass();
+        final Type type = theClass.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            final Type[] arguments = ((ParameterizedType) type).getActualTypeArguments();
+            for (final Type argument : arguments) {
+                if (argument instanceof Class) {
+                    result = (Class<?>) argument;
                 }
             }
         }
-        return entityClass;
+        return result;
+    }
+
+    public AbstractDaoJpa() {
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<T> findAll() {
-        return em.createQuery("SELECT e FROM " + getEntityClass().getSimpleName() + " e").getResultList();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public T findById(final Object id) {
-        return (T) em.find(getEntityClass(), id);
-    }
-
-    @Override
-    public void remove(final T entity) {
-        em.remove(entity);
-        em.flush();
-    }
-
-    @Override
-    public void flush() {
-        em.flush();
-    }
-
-    @Override
-    public void add(final T t) {
-        try {
-            em.persist(t);
-            em.flush();
-        } catch (final Exception e) {
-            throw new ApplicationException(e);
-        }
-    }
-
-    @Override
-    public T update(final T entity) {
-        em.merge(entity);
-        em.flush();
-        return entity;
-    }
-
-    @Override
-    @SuppressWarnings("PMD.EmptyCatchBlock")
-    public T findObject(final String queryString, final Object... values) {
-        final Query queryObject = em.createQuery(queryString);
-        if (values != null) {
-            for (int i = 0; i < values.length; i++) {
-                queryObject.setParameter(i + 1, values[i]);
-            }
-        }
-
-        try {
-            return (T) queryObject.getSingleResult();
-        } catch (final NoResultException e) {
-            // intentionally swallowed
-        }
-        return null;
+        return entityManager.createQuery("SELECT e FROM " + simpleName + " e").getResultList();
     }
 
     @Override
     @SuppressWarnings("PMD.EmptyCatchBlock")
     public List<T> findObjects(final String queryString, final Object... values) {
-        final Query queryObject = em.createQuery(queryString);
+        List<T> result = null;
+        final Query queryObject = entityManager.createQuery(queryString);
         if (values != null) {
             for (int i = 0; i < values.length; i++) {
                 queryObject.setParameter(i + 1, values[i]);
             }
         }
-        try {
-            return queryObject.getResultList();
-        } catch (final NoResultException e) {
-            // intentionally swallowed
-        }
-        return null;
-    }
+        result = queryObject.getResultList();
 
-    @Override
-    public void removeAllEntities(final Collection<T> entities) {
-        for (final T t : entities) {
-            em.remove(t);
-        }
+        return result;
     }
 
     @Override
     public int count(final String queryString, final Object... values) {
-        final Query queryObject = em.createQuery(queryString);
+        final Query queryObject = entityManager.createQuery(queryString);
         if (values != null) {
             for (int i = 0; i < values.length; i++) {
                 queryObject.setParameter(i + 1, values[i]);
             }
         }
         return ((Long) queryObject.getSingleResult()).intValue();
+    }
+
+    @Override
+    public void removeAllEntities(final List<T> entities) {
+        for (final T t : entities) {
+            entityManager.remove(t);
+        }
+        entityManager.flush();
+    }
+
+    @Override
+    public void flush() {
+        entityManager.flush();
+    }
+
+    @Override
+    public void add(final T t) {
+        entityManager.persist(t);
+        entityManager.flush();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public T findById(final Object id) {
+        return (T) entityManager.find(entityClass, id);
+    }
+
+    @Override
+    public T findByName(final String name) {
+        return findObject("SELECT e FROM " + simpleName + " e where e.name = ?1", name);
+    }
+
+    @Override
+    @SuppressWarnings("PMD.EmptyCatchBlock")
+    public T findObject(final String queryString, final Object... values) {
+        final Query queryObject = entityManager.createQuery(queryString);
+        if (values != null) {
+            for (int i = 0; i < values.length; i++) {
+                queryObject.setParameter(i + 1, values[i]);
+            }
+        }
+
+        T singleResult = null;
+        try {
+            singleResult = (T) queryObject.getSingleResult();
+        } catch (final NoResultException e) {
+            // intentionally swallowed
+        }
+        return singleResult;
+    }
+
+    @Override
+    public T update(final T entity) {
+        entityManager.merge(entity);
+        entityManager.flush();
+        return entity;
+    }
+
+    @Override
+    public void remove(final T entity) {
+        entityManager.remove(entity);
+        entityManager.flush();
     }
 }

@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
@@ -14,6 +13,8 @@ public interface Dao<T extends AbstractEntity<?>> {
 
     List<T> findAll();
 
+    T findByName(final String name);
+
     void add(final T t);
 
     T update(final T entity);
@@ -22,7 +23,7 @@ public interface Dao<T extends AbstractEntity<?>> {
 
     void flush();
 
-    void removeAllEntities(Collection<T> entities);
+    void removeAllEntities(List<T> entities);
 
     int count(final String queryString, final Object... values);
 }

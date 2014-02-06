@@ -5,9 +5,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "aem_group")
+@Table(name = "aem_group", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Group extends AbstractEntity<Group> {
 
     private static final long serialVersionUID = -2125399708516728584L;
@@ -15,16 +16,6 @@ public class Group extends AbstractEntity<Group> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
-
-    public String name;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
 
     public Long getId() {
         return id;

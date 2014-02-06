@@ -33,6 +33,9 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     @Column(name = "updateBy")
     public String updateBy;
 
+    @Column(nullable = false, unique = true)
+    public String name;
+
     @PrePersist
     public void atCreation() {
         final Calendar cal = Calendar.getInstance();
@@ -57,17 +60,17 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     @Override
     public String toString() {
         final StringBuilder builder =
-                new StringBuilder(getClass().getName().substring(getClass().getName().lastIndexOf(".") + 1,
-                        getClass().getName().length()) + '[');
+                new StringBuilder(getClass().getName().substring(getClass().getName().lastIndexOf(".") + 1, getClass().getName().length()) + '[');
 
         final Field[] fields = getClass().getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            final Field f = fields[i];
+
+        boolean needComma = false;
+        for (final Field f : fields) {
             final String name = f.getName();
             if (name != null && (name.startsWith("pc") || name.startsWith("class$") || name.equals("serialVersionUID"))) {
                 continue;
             }
-            if (i > 0) {
+            if (needComma) {
                 builder.append(", ");
             }
             f.setAccessible(true);
@@ -79,6 +82,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
                 } else {
                     builder.append(f.get(this));
                 }
+                needComma = true;
             } catch (final IllegalAccessException e) {
                 // do nothing
             }
@@ -126,5 +130,13 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     @Override
     public void setUpdateBy(final String updateBy) {
         this.updateBy = updateBy;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
     }
 }

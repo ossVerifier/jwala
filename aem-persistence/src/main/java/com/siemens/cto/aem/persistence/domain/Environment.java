@@ -30,7 +30,6 @@ public class Environment extends AbstractEntity<Environment> {
     @Column(name = "groupId")
     public AbstractEntity<Group> group;
 
-    public String name;
     public String hhrr;
     public String version;
     public String env;
@@ -53,14 +52,6 @@ public class Environment extends AbstractEntity<Environment> {
 
     public void setServers(final List<Server> servers) {
         this.servers = servers;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
     }
 
     public String getHhrr() {

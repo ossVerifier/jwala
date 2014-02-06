@@ -7,10 +7,11 @@
 
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-    <persistence-unit name="persistence-unit" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="aem-unit" transaction-type="RESOURCE_LOCAL">
         <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
-        <!-- jta-data-source>jdbc/AemXaDs</jta-data-source-->
-        <!--non-jta-data-source>jdbc/AemDs</non-jta-data-source-->
+        <jta-data-source>jdbc/AemXaDs</jta-data-source>
+        <non-jta-data-source>jdbc/AemDs</non-jta-data-source>
+
         <class>com.siemens.cto.aem.persistence.domain.AbstractEntity</class>
         <class>com.siemens.cto.aem.persistence.domain.Group</class>
         <!-- class>com.siemens.cto.aem.persistence.domain.Jvm</class -->
