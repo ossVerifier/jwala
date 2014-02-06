@@ -4,7 +4,7 @@ import javax.persistence.EntityManager;
 
 import com.siemens.cto.aem.persistence.domain.Group;
 
-public class GroupDaoJpa extends AbstractDaoJpa<Group> implements GroupDao {
+public class GroupDaoJpa extends AbstractDaoJpa<Group> {
 
     public GroupDaoJpa() {
     }

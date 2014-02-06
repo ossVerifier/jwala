@@ -7,9 +7,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "jvm")
+@Table(name = "aem_jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Jvm extends AbstractEntity<Jvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
@@ -24,14 +25,6 @@ public class Jvm extends AbstractEntity<Jvm> {
     @JoinColumn(name = "jvmGroupId")
     public Group group;
 
-    public AbstractEntity<Group> getGroup() {
-        return group;
-    }
-
-    public void setGroup(final Group group) {
-        this.group = group;
-    }
-
     public Long getId() {
         return id;
     }
@@ -39,27 +32,4 @@ public class Jvm extends AbstractEntity<Jvm> {
     public void setId(final Long id) {
         this.id = id;
     }
-
-    public String getJvmName() {
-        return jvmName;
-    }
-
-    public void setJvmName(final String jvmName) {
-        this.jvmName = jvmName;
-    }
-
-    /**
-     * Overriding this to avoid dirtying up the log file with all states
-     */
-    @Override
-    public String toString() {
-        final StringBuilder toString = new StringBuilder();
-        toString.append("Jvm{");
-        toString.append("id=").append(id);
-        toString.append(", jvmName='").append(jvmName).append('\'');
-        toString.append(", groupId=").append(group.getId());
-        toString.append('}');
-        return toString.toString();
-    }
-
 }

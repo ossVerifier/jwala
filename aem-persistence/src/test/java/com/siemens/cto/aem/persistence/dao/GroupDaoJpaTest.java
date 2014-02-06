@@ -19,8 +19,8 @@ public class GroupDaoJpaTest extends TestCase {
     private final EntityManager em = Utilities.getEntityManager();
     private EntityTransaction transaction = em.getTransaction();
 
-    private static final String QUERY_COUNT = "SELECT COUNT(g.id) FROM " + Group.class.getName() + " g";
-    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(g.id) FROM " + Group.class.getName() + " g where g.name = ?1";
+    private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity";
+    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity where entity.name = ?1";
 
     private static final String QUERY_OBJECTS = "SELECT g FROM " + Group.class.getName() + " g ";
     private static final String QUERY_OBJECTS_BY_ID = "SELECT g FROM " + Group.class.getName() + " g where g.id > ?1";

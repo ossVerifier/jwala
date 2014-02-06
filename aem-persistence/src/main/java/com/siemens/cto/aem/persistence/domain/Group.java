@@ -15,7 +15,7 @@ public class Group extends AbstractEntity<Group> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
     public Long getId() {
         return id;
