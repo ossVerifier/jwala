@@ -7,9 +7,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Controller
 public class JvmInfoController {
+
+    private static final long getRandomInt(int start, int end, Random random){
+        int range = end - start + 1;
+        int randomNo =  ((int) (range * random.nextDouble())) + start;
+        return randomNo;
+    }
 
     /**
      * Generate dummy {@link com.siemens.cto.aem.web.model.JvmInfo} data.
@@ -18,6 +25,8 @@ public class JvmInfoController {
     private final List<JvmInfo> getDummyJvmInfoList() {
 
         final List<JvmInfo> jvmInfoList = new ArrayList<JvmInfo>();
+        final int start = 1;
+        final int end = 1000;
 
         JvmInfo.Builder jvmInfoBuilder = new JvmInfo.Builder();
 
@@ -26,8 +35,8 @@ public class JvmInfoController {
                 setHttpPort("8080").
                 setAvailableHeap("1.2 gb").
                 setTotalHeap("3 gb").
-                setHttpSessionCount("5").
-                setHttpRequestCount("2").
+                setHttpSessionCount(String.valueOf(getRandomInt(start, end, new Random()))).
+                setHttpRequestCount(String.valueOf(getRandomInt(start, end, new Random()))).
                 setGroup("Group 1");
 
         jvmInfoList.add(jvmInfoBuilder.build());
@@ -37,8 +46,8 @@ public class JvmInfoController {
                 setHttpPort("8080").
                 setAvailableHeap("2 gb").
                 setTotalHeap("3 gb").
-                setHttpSessionCount("2").
-                setHttpRequestCount("10").
+                setHttpSessionCount(String.valueOf(getRandomInt(start, end, new Random()))).
+                setHttpRequestCount(String.valueOf(getRandomInt(start, end, new Random()))).
                 setGroup("Group 2");
 
         jvmInfoList.add(jvmInfoBuilder.build());
@@ -48,8 +57,8 @@ public class JvmInfoController {
                 setHttpPort("8080").
                 setAvailableHeap("1.6 gb").
                 setTotalHeap("2 gb").
-                setHttpSessionCount("4").
-                setHttpRequestCount("6").
+                setHttpSessionCount(String.valueOf(getRandomInt(start, end, new Random()))).
+                setHttpRequestCount(String.valueOf(getRandomInt(start, end, new Random()))).
                 setGroup("Group 3");
 
         jvmInfoList.add(jvmInfoBuilder.build());
