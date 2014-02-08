@@ -1,4 +1,4 @@
-angular.module('aemScript', ['ngResource'])
+angular.module('aemScript', ['ngResource', 'aemLogin'])
 
 .directive('aemMaintabs', [function(){
     return {
