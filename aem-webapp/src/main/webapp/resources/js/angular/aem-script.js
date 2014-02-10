@@ -21,7 +21,7 @@ angular.module('aemScript', ['ngResource', 'aemLogin'])
 
         // Invoking a $resource object method immediately returns an empty reference
         // therefore a callback function is required to manipulate the data
-        // reeturned by the query.
+        // returned by the query.
         var data = dataService.query(function(){
                         var i = 0;
 
