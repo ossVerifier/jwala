@@ -1,5 +1,13 @@
 dependencies {
     compile project(":aem-common")
 
-    compile group: "org.apache.geronimo.specs", name: "geronimo-jpa_2.0_spec", version: "$project.versions.jpa"
+    compile("org.apache.openjpa:openjpa:$versions.jpa"){
+        exclude group: "junit"
+    }
+
+    testCompile group: "com.h2database", name: "h2", version: "$versions.h2"
 }
+
+test{
+     jvmArgs "-javaagent:D:/view_store/tco/apache-openjpa-2.2.2/openjpa-2.2.2.jar"
+} 

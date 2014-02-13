@@ -11,8 +11,9 @@ dependencies {
     compile group: "org.codehaus.jackson", name: "jackson-mapper-asl", version: "$project.versions.jackson"
 
     compile project(":aem-common")
+    compile project(":aem-persistence")
     compile project(":aem-services")
-}
+ }
 
 war{
     manifest {
