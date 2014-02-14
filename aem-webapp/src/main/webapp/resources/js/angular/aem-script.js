@@ -60,6 +60,6 @@ angular.module('aemScript', ['ngResource', 'aemLogin'])
             jvmFields: '=fields',
             jvmItems: '=items'
         },
-        templateUrl: 'public-resources/template/jvm-tbl.html',
+        templateUrl: 'public-resources/template/jvm-tbl.html'
     };
 }]);
