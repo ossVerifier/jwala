@@ -13,6 +13,8 @@ dependencies {
     compile project(":aem-common")
     compile project(":aem-persistence")
     compile project(":aem-services")
+    compile project(":aem-webservices")
+
  }
 
 war{
