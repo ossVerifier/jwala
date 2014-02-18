@@ -7,9 +7,14 @@
                             http://cxf.apache.org/jaxrs
                             http://cxf.apache.org/schemas/jaxrs.xsd">
 
+
+    <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
     <bean id="jvmInfoService" class="com.siemens.cto.aem.ws.rest.JvmInfoServiceImpl"/>
 
     <jaxrs:server address="/rest">
+        <jaxrs:providers>
+            <ref bean="jsonProvider"/>
+        </jaxrs:providers>
         <jaxrs:serviceBeans>
             <ref bean="jvmInfoService" />
         </jaxrs:serviceBeans>
