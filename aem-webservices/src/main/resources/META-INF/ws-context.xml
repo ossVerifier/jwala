@@ -7,7 +7,7 @@
                             http://cxf.apache.org/jaxrs
                             http://cxf.apache.org/schemas/jaxrs.xsd">
 
-    <bean id="jvmInfoService" class="com.siemens.cto.aem.ws.rest.JvmInfoService"/>
+    <bean id="jvmInfoService" class="com.siemens.cto.aem.ws.rest.JvmInfoServiceImpl"/>
 
     <jaxrs:server address="/rest">
         <jaxrs:serviceBeans>
