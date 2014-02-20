@@ -7,17 +7,17 @@ import java.io.Serializable;
 @XmlRootElement
 public class JvmInfo implements Serializable {
 
-    private int jvmId;
+    private Long id;
     private String name;
     private String host;
 
     @XmlElement
-    public int getJvmId() {
-        return jvmId;
+    public Long getId() {
+        return id;
     }
 
-    public void setJvmId(int jvmId) {
-        this.jvmId = jvmId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @XmlElement
