@@ -11,7 +11,15 @@
         be specified for component-scanning -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>com.siemens.cto.aem.web.configuration.application.ApacheEnterpriseManagerWebAppConfig, com.siemens.cto.aem.ws.config.RestConfig</param-value>
+        <param-value>
+            com.siemens.cto.aem.web.configuration.application.ApacheEnterpriseManagerWebAppConfig,
+            com.siemens.cto.aem.service.configuration.application.PropertiesConfig,
+            com.siemens.cto.aem.service.configuration.application.DaoConfig,
+            com.siemens.cto.aem.service.configuration.application.PersistenceJPAConfig,
+            com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfig,
+            com.siemens.cto.aem.ws.config.ServiceConfig,
+            com.siemens.cto.aem.ws.config.RestConfig
+        </param-value>
     </context-param>
 
     <!-- Bootstrap the root application context as usual using ContextLoaderListener -->
