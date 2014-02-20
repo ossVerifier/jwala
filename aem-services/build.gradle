@@ -1,4 +1,15 @@
 dependencies {
+    compile project(":aem-persistence")
+
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+
+    testCompile group: "com.h2database", name: "h2", version: "$versions.h2"
 }
+
+test {
+    // TODO: Replace with a more robust way of doing OpenJPA entity enhancing
+    jvmArgs "-javaagent:D:/view_store/tco/apache-openjpa-2.2.2/openjpa-2.2.2.jar"
+}
+
