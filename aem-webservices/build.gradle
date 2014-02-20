@@ -1,7 +1,6 @@
 dependencies {
     compile project(":aem-services")
 
-    testCompile group: "junit", name: "junit", version: "$project.versions.junit"
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "$project.versions.cxf"
     compile group: "org.apache.cxf", name: "cxf-rt-transports-http", version: "$project.versions.cxf"
