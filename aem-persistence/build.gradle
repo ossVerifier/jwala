@@ -1,3 +1,7 @@
+configurations {
+    javaAgentOpenJpa
+}
+
 dependencies {
     compile project(":aem-common")
 
@@ -5,9 +9,14 @@ dependencies {
         exclude group: "junit"
     }
 
-    testCompile group: "com.h2database", name: "h2", version: "$versions.h2"
+    compile group: "com.h2database", name: "h2", version: "$versions.h2"
+
+    javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
+        exclude group: "junit"
+    }
 }
 
-test{
-     jvmArgs "-javaagent:D:/view_store/tco/apache-openjpa-2.2.2/openjpa-2.2.2.jar"
-} 
+test {
+    // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
+    jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
+}
