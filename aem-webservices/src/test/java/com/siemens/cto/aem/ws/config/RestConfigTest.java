@@ -1,12 +1,19 @@
 package com.siemens.cto.aem.ws.config;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.runners.MockitoJUnitRunner;
+import static org.junit.Assert.assertNotNull;
 
-public class RestConfigTest extends TestCase {
+@RunWith(MockitoJUnitRunner.class)
+public class RestConfigTest {
 
-    public void testConstructor() {
-        final RestConfigTest restConfig = new RestConfigTest();
+    @InjectMocks
+    private RestConfig restConfig;
 
+    @Test
+    public void testRestConfig() {
         assertNotNull(restConfig);
     }
 

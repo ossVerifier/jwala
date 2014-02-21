@@ -19,10 +19,6 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
     public JvmInfoRestServiceImpl() {}
 
-    public JvmInfoRestServiceImpl(JvmInfoService jvmInfoService) {
-        this.jvmInfoService = jvmInfoService;
-    }
-
     @Override
     public Response getJvmInfoById(@QueryParam("id") Long id) {
         final JvmInfoVo jvmInfoVo = toJvmInfoVo(jvmInfoService.getJvmInfoById(id));
@@ -71,6 +67,7 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
         final JvmInfoVo jvmInfoVo = new JvmInfoVo();
         jvmInfoVo.setId(jvm.getId());
         jvmInfoVo.setName(jvm.getName());
+        jvmInfoVo.setHost(""); // TODO: Update DAO to get host name
         return jvmInfoVo;
     }
 

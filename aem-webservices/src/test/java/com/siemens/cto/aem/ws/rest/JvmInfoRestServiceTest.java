@@ -4,53 +4,65 @@ import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.ws.rest.vo.JvmInfoVo;
 import com.siemens.cto.aem.ws.rest.vo.JvmInfoVoListWrapper;
-import junit.framework.TestCase;
-
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class JvmInfoRestServiceTest extends TestCase {
+@RunWith(MockitoJUnitRunner.class)
+    public class JvmInfoRestServiceTest {
 
+    @Mock
     private JvmInfoService jvmInfoService;
+
+    @Mock
     private Jvm jvm;
-    private JvmInfoRestService jvmInfoRestService;
 
-    @Override
-    protected void setUp() throws Exception {
-        jvmInfoService = mock(JvmInfoService.class);
-        jvm = mock(Jvm.class);
-        jvmInfoRestService = new JvmInfoRestServiceImpl(jvmInfoService);
-    }
+    @InjectMocks
+    private JvmInfoRestService jvmInfoRestService = new JvmInfoRestServiceImpl();
 
+    @Test
     public void testGetJvmInfoById() {
-        when(jvm.getName()).thenReturn("Test");
-        when(jvmInfoService.getJvmInfoById(anyLong())).thenReturn(jvm);
+        when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenReturn(jvm);
+        when(jvm.getId()).thenReturn(1l);
+        when(jvm.getName()).thenReturn("the-jvm-name");
         final JvmInfoVo jvmInfoVo = (JvmInfoVo) jvmInfoRestService.getJvmInfoById(new Long(1)).getEntity();
-        assertEquals("Test", jvmInfoVo.getName());
+        assertEquals(new Long(1), jvmInfoVo.getId());
+        assertEquals("the-jvm-name", jvmInfoVo.getName());
+        assertEquals("", jvmInfoVo.getHost());
     }
 
+    @Test
     public void testGetAllJvmInfo() {
-        when(jvm.getName()).thenReturn("Test");
+        when(jvm.getName()).thenReturn("the-jvm-name");
         final List<Jvm> jvmList = new ArrayList<Jvm>();
         jvmList.add(jvm);
         when(jvmInfoService.getAllJvmInfo()).thenReturn(jvmList);
         JvmInfoVoListWrapper jvmInfoVoListWrapper =
                 (JvmInfoVoListWrapper) jvmInfoRestService.getAllJvmInfo().getEntity();
-        assertEquals("Test", jvmInfoVoListWrapper.getJvmInfoList().get(0).getName());
+        assertEquals("the-jvm-name", jvmInfoVoListWrapper.getJvmInfoList().get(0).getName());
+        assertEquals("", jvmInfoVoListWrapper.getJvmInfoList().get(0).getHost());
     }
 
+    @Test
     public void testAddJvmInfo() {
         jvmInfoRestService.addJvmInfo("the-jvm-name", "the-host-name");
         verify(jvmInfoService, atLeastOnce()).addJvmInfo("the-jvm-name", "the-host-name");
     }
 
+    @Test
     public void testUpdateJvmInfo() {
         jvmInfoRestService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
         verify(jvmInfoService, atLeastOnce()).updateJvmInfo(1l, "the-jvm-name", "the-host-name");
     }
 
+    @Test
     public void testDeleteJvm() {
         jvmInfoRestService.deleteJvm(1l);
         verify(jvmInfoService, atLeastOnce()).deleteJvm(1l);
