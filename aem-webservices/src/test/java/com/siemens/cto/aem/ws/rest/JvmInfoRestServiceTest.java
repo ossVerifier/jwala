@@ -53,19 +53,19 @@ import static org.mockito.Mockito.*;
     @Test
     public void testAddJvmInfo() {
         jvmInfoRestService.addJvmInfo("the-jvm-name", "the-host-name");
-        verify(jvmInfoService, atLeastOnce()).addJvmInfo("the-jvm-name", "the-host-name");
+        verify(jvmInfoService, times(1)).addJvmInfo("the-jvm-name", "the-host-name");
     }
 
     @Test
     public void testUpdateJvmInfo() {
         jvmInfoRestService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
-        verify(jvmInfoService, atLeastOnce()).updateJvmInfo(1l, "the-jvm-name", "the-host-name");
+        verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvm-name", "the-host-name");
     }
 
     @Test
     public void testDeleteJvm() {
         jvmInfoRestService.deleteJvm(1l);
-        verify(jvmInfoService, atLeastOnce()).deleteJvm(1l);
+        verify(jvmInfoService, times(1)).deleteJvm(1l);
     }
 
 }
