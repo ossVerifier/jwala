@@ -12,6 +12,8 @@ dependencies {
     javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
         exclude group: "junit"
     }
+
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 }
 
 test {
