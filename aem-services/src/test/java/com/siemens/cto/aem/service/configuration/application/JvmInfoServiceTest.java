@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.configuration.application;
 
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.service.JvmInfoServiceImpl;
 import org.junit.Before;
@@ -16,11 +17,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by z003bpej on 2/21/14.
@@ -41,14 +39,16 @@ public class JvmInfoServiceTest {
     public void setUp() {
         when(jvm.getId()).thenReturn(new Long(1));
         when(jvm.getName()).thenReturn("the-jvm-name");
+        when(jvm.getHostName()).thenReturn("the-jvm-hostname");
     }
 
     @Test
     public void testGetJvmInfoById() {
         when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
-        final Jvm jvm = jvmInfoService.getJvmInfoById(new Long(1));
-        assertEquals(new Long(1), jvm.getId());
-        assertEquals("the-jvm-name", jvm.getName());
+        final JvmInfo jvmInfo = jvmInfoService.getJvmInfoById(new Long(1));
+        assertEquals(new Long(1), jvmInfo.getId());
+        assertEquals("the-jvm-name", jvmInfo.getName());
+        assertEquals("the-jvm-hostname", jvmInfo.getHost());
     }
 
     @Test
@@ -56,10 +56,11 @@ public class JvmInfoServiceTest {
         final List<Jvm> jvmList = new ArrayList<Jvm>();
         jvmList.add(jvm);
         when(jvmDaoJpa.findAll()).thenReturn(jvmList);
-        final List<Jvm> resultJvmList = jvmInfoService.getAllJvmInfo();
-        assertEquals(1, resultJvmList.size());
-        assertEquals(new Long(1), resultJvmList.get(0).getId());
-        assertEquals("the-jvm-name", resultJvmList.get(0).getName());
+        final List<JvmInfo> jvmInfoList = jvmInfoService.getAllJvmInfo();
+        assertEquals(1, jvmInfoList.size());
+        assertEquals(new Long(1), jvmInfoList.get(0).getId());
+        assertEquals("the-jvm-name", jvmInfoList.get(0).getName());
+        assertEquals("the-jvm-hostname", jvmInfoList.get(0).getHost());
     }
 
     @Test
@@ -70,6 +71,7 @@ public class JvmInfoServiceTest {
 
     @Test
     public void testUpdateJvmInfo() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
         verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
     }
