@@ -23,8 +23,9 @@ public interface JvmInfoRestService {
     @PUT
     @Path("/jvm")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response updateJvmInfo(@FormParam("jvmId") Long jvmId, @FormParam("jvmName") String jvmName,
-                                  @FormParam("hostName") String hostName);
+    Response updateJvmInfo(@FormParam("jvmId") Long jvmId,
+                           @FormParam("jvmName") String jvmName,
+                           @FormParam("hostName") String hostName);
 
     @DELETE
     @Path("/jvm/{id}")
