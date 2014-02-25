@@ -8,27 +8,26 @@ import javax.ws.rs.core.Response;
 public interface JvmInfoRestService {
 
     @GET
-    @Path("/jvm/{id}")
+    @Path("/jvms/{id}")
     Response getJvmInfoById(@PathParam("id") Long id);
 
     @GET
-    @Path("/jvm/all")
+    @Path("/jvms")
     Response getAllJvmInfo();
 
     @POST
-    @Path("/jvm")
+    @Path("/jvms")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response addJvmInfo(@FormParam("jvmName") String jvmName, @FormParam("hostName") String hostName);
 
     @PUT
-    @Path("/jvm")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response updateJvmInfo(@FormParam("jvmId") Long jvmId,
-                           @FormParam("jvmName") String jvmName,
-                           @FormParam("hostName") String hostName);
+    @Path("/jvms/{id}/{jvmName}/{hostName}")
+    Response updateJvmInfo(@PathParam("id") Long id,
+                           @PathParam("jvmName") String jvmName,
+                           @PathParam("hostName") String hostName);
 
     @DELETE
-    @Path("/jvm/{id}")
+    @Path("/jvms/{id}")
     Response deleteJvm(@PathParam("id") Long id);
 
 }

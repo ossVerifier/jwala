@@ -60,10 +60,10 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
     }
 
     @Override
-    public Response updateJvmInfo(Long jvmId,
+    public Response updateJvmInfo(Long id,
                                   String jvmName,
                                   String hostName) {
-        jvmInfoService.updateJvmInfo(jvmId, jvmName, hostName);
+        jvmInfoService.updateJvmInfo(id, jvmName, hostName);
         return Response.status(Response.Status.OK)
                 .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
                                                 ApplicationResponseStatus.SUCCESS.name(),
