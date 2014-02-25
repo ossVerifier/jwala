@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "aem_jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Jvm extends AbstractEntity<Jvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;

@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "aem_group", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+@Table(name = "grp", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 public class Group extends AbstractEntity<Group> {
 
     private static final long serialVersionUID = -2125399708516728584L;
