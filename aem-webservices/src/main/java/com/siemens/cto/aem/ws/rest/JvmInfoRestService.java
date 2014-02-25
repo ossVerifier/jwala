@@ -20,7 +20,7 @@ public interface JvmInfoRestService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response addJvmInfo(@FormParam("jvmName") String jvmName, @FormParam("hostName") String hostName);
 
-    @POST
+    @PUT
     @Path("/jvm")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response updateJvmInfo(@FormParam("jvmId") Long jvmId, @FormParam("jvmName") String jvmName,
