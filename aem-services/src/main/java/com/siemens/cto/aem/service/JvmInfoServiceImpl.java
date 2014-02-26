@@ -3,7 +3,6 @@ package com.siemens.cto.aem.service;
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -11,8 +10,11 @@ import java.util.List;
 
 public class JvmInfoServiceImpl implements JvmInfoService {
 
-    @Autowired
-    private JvmDaoJpa jvmDao;
+    private final JvmDaoJpa jvmDao;
+
+    public JvmInfoServiceImpl(JvmDaoJpa jvmDao) {
+        this.jvmDao = jvmDao;
+    }
 
     @Override
     public JvmInfo getJvmInfoById(Long id) {
