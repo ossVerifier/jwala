@@ -2,6 +2,7 @@ package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
+import com.siemens.cto.aem.service.RecordNotFoundException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,14 +27,14 @@ public class JvmInfoRestServiceTest {
 
     private JvmInfo jvmInfo;
 
-    @InjectMocks
-    private JvmInfoRestService jvmInfoRestService = new JvmInfoRestServiceImpl();
+    private JvmInfoRestService jvmInfoRestService;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Before
     public void setUp() {
         jvmInfo = new JvmInfo(1l, "the-jvmInfo-name", "the-jvmfino-hostname");
+        jvmInfoRestService = new JvmInfoRestServiceImpl(jvmInfoService);
     }
 
     @Test
@@ -50,6 +51,21 @@ public class JvmInfoRestServiceTest {
         assertTrue(jsonStr.contains("\"id\":1"));
         assertTrue(jsonStr.contains("\"name\":\"the-jvmInfo-name\""));
         assertTrue(jsonStr.contains("\"host\":\"the-jvmfino-hostname\""));
+    }
+
+    @Test
+    public void testGetJvmInfoByIdWithException() throws IOException {
+        when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenThrow(RecordNotFoundException.class);
+
+        ApplicationResponse applicationResponse =
+                (ApplicationResponse) jvmInfoRestService.getJvmInfoById(new Long(1)).getEntity();
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, applicationResponse);
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"1\""));
     }
 
     @Test
