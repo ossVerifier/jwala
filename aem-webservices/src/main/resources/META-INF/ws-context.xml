@@ -18,7 +18,7 @@
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
-    <jaxrs:server address="/rest">
+    <jaxrs:server address="/">
         <jaxrs:providers>
             <ref bean="jsonProvider"/>
         </jaxrs:providers>
