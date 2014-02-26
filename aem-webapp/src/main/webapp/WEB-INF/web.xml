@@ -13,12 +13,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             com.siemens.cto.aem.web.configuration.application.ApacheEnterpriseManagerWebAppConfig,
-            com.siemens.cto.aem.service.configuration.application.PropertiesConfig,
-            com.siemens.cto.aem.service.configuration.application.DaoConfig,
-            com.siemens.cto.aem.service.configuration.application.PersistenceJPAConfig,
-            com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfig,
-            com.siemens.cto.aem.ws.config.ServiceConfig,
-            com.siemens.cto.aem.ws.config.RestConfig
+            com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfig
         </param-value>
     </context-param>
 
@@ -49,4 +44,5 @@
         <servlet-name>dispatcher</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+
 </web-app>
