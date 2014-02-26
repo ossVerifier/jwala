@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:jaxrs="http://cxf.apache.org/jaxrs"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                            http://www.springframework.org/schema/beans/spring-beans.xsd
-                            http://cxf.apache.org/jaxrs
-                            http://cxf.apache.org/schemas/jaxrs.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+                           http://cxf.apache.org/jaxrs
+                           http://cxf.apache.org/schemas/jaxrs.xsd">
 
+    <import resource="classpath*:META-INF/cxf/cxf.xml"/>
+    <import resource="classpath*:META-INF/service-context.xml"/>
+
+    <bean id="jvmInfoRestService" class="com.siemens.cto.aem.ws.rest.JvmInfoRestServiceImpl">
+        <constructor-arg>
+            <ref bean="jvmInfoService"/>
+        </constructor-arg>
+    </bean>
 
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
-    <bean id="jvmInfoRestService" class="com.siemens.cto.aem.ws.rest.JvmInfoRestServiceImpl"/>
 
     <jaxrs:server address="/rest">
         <jaxrs:providers>

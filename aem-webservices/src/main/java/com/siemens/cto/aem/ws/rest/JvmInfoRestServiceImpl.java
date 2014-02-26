@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest;
+    package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
@@ -10,8 +10,11 @@ import java.util.List;
 
 public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
-    @Autowired
-    private JvmInfoService jvmInfoService;
+    private final JvmInfoService jvmInfoService;
+
+    public JvmInfoRestServiceImpl(JvmInfoService jvmInfoService) {
+        this.jvmInfoService = jvmInfoService;
+    }
 
     @Override
     public Response getJvmInfoById(Long id) {
