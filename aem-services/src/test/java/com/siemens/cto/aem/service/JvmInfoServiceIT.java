@@ -1,12 +1,8 @@
 package com.siemens.cto.aem.service;
 
-import com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfig;
-import com.siemens.cto.aem.service.configuration.application.DaoConfig;
-import com.siemens.cto.aem.service.configuration.application.IntegrationTestPropertiesConfig;
-import com.siemens.cto.aem.service.configuration.application.PersistenceJPAConfig;
 import junit.framework.TestCase;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.List;
 
@@ -18,13 +14,9 @@ public class JvmInfoServiceIT extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        context = new AnnotationConfigApplicationContext(IntegrationTestPropertiesConfig.class,
-                                                         PersistenceJPAConfig.class,
-                                                         DaoConfig.class,
-                                                         ApacheEnterpriseManagerServiceAppConfig.class);
+        context = new ClassPathXmlApplicationContext("META-INF/service-context.xml");
         jvmInfoService = (JvmInfoService) context.getBean("jvmInfoService");
-
-    }
+  }
 
     /**
      * This test performs a "crude" CRUD integration test - get it ? :)
