@@ -10,7 +10,7 @@ public interface JvmInfoService {
 
     void addJvmInfo(String jvmName, String hostName);
 
-    void updateJvmInfo(Long jvmId, String jvmName, String hostName);
+    void updateJvmInfo(Long id, String jvmName, String hostName);
 
     void deleteJvm(Long id);
 
