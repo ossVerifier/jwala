@@ -1,10 +1,9 @@
-    package com.siemens.cto.aem.ws.rest;
+package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.service.RecordNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
                     new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_FOUND.getCode(),
                                             e.getMessage(),
                                             null);
-            return Response.status(Response.Status.OK).entity(applicationResponse).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(applicationResponse).build();
         }
     }
 
@@ -55,11 +54,21 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
     @Override
     public Response addJvmInfo(String jvmName,
                                String hostName) {
-        jvmInfoService.addJvmInfo(jvmName, hostName);
-        return Response.status(Response.Status.OK).
-                entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                               ApplicationResponseStatus.SUCCESS.name(),
-                                               null)).build();
+
+        try {
+            jvmInfoService.addJvmInfo(jvmName, hostName);
+        } catch (RecordNotAddedException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
+                            entity(new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_ADDED.getCode(),
+                                    e.getMessage(),
+                                    null)).build();
+        }
+
+        return Response.status(Response.Status.CREATED).
+                        entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
+                                ApplicationResponseStatus.SUCCESS.name(),
+                                null)).build();
+
     }
 
     @Override
@@ -67,7 +76,7 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
                                   String jvmName,
                                   String hostName) {
         jvmInfoService.updateJvmInfo(id, jvmName, hostName);
-        return Response.status(Response.Status.OK)
+        return Response.status(Response.Status.NO_CONTENT)
                 .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
                                                 ApplicationResponseStatus.SUCCESS.name(),
                                                 null)).build();

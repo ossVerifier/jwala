@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest;
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.service.RecordNotFoundException;
+import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -92,6 +95,24 @@ public class JvmInfoRestServiceTest {
     public void testAddJvmInfo() {
         jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
         verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
+    }
+
+    @Test
+    public void testFailureToAddJvmInfo() throws IOException {
+        doThrow(RecordNotAddedException.class)
+                .when(jvmInfoService)
+                .addJvmInfo(anyString(), anyString());
+
+        Response response =
+                jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+        verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, response.getEntity());
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"2\""));
     }
 
     @Test
