@@ -2,12 +2,14 @@ package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.persistence.EntityExistsException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +63,13 @@ public class JvmInfoServiceTest {
 
     @Test
     public void testAddJvmInfo() {
+        jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name");
+        verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
+    }
+
+    @Test(expected = RecordNotAddedException.class)
+    public void testFailureToAddJvmInfo() {
+        doThrow(EntityExistsException.class).when(jvmDaoJpa).add(any(Jvm.class));
         jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name");
         verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
     }
