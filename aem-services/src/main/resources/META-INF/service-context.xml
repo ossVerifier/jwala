@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <import resource="classpath:META-INF/transaction-context.xml"/>
+
+    <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"></bean>
+    <bean id="jvmInfoService" class="com.siemens.cto.aem.service.JvmInfoServiceImpl">
+        <constructor-arg>
+            <ref bean="jvmDao"/>
+        </constructor-arg>
+    </bean>
+
+</beans>
