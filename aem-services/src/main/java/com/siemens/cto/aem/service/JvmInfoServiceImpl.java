@@ -3,8 +3,9 @@ package com.siemens.cto.aem.service;
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
 import org.springframework.transaction.annotation.Transactional;
-
+import javax.persistence.EntityExistsException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,11 @@ public class JvmInfoServiceImpl implements JvmInfoService {
         final User user = new User("testUser", "");
         user.addToThread();
 
-        jvmDao.add(jvm);
+        try {
+            jvmDao.add(jvm);
+        } catch (EntityExistsException e) {
+            throw new RecordNotAddedException(jvm.getClass(), jvm.getName(), e);
+        }
     }
 
     @Override
