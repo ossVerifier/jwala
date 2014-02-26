@@ -29,8 +29,7 @@ public class JvmInfoServiceTest {
     @Mock
     private JvmDaoJpa jvmDaoJpa;
 
-    @InjectMocks
-    private JvmInfoService jvmInfoService = new JvmInfoServiceImpl();
+    private JvmInfoService jvmInfoService;
 
     @Mock
     private Jvm jvm;
@@ -40,6 +39,7 @@ public class JvmInfoServiceTest {
         when(jvm.getId()).thenReturn(new Long(1));
         when(jvm.getName()).thenReturn("the-jvm-name");
         when(jvm.getHostName()).thenReturn("the-jvm-hostname");
+        jvmInfoService = new JvmInfoServiceImpl(jvmDaoJpa);
     }
 
     @Test
