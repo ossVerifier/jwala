@@ -85,7 +85,16 @@ public class JvmInfoServiceImpl implements JvmInfoService {
     @Override
     @Transactional
     public void deleteJvm(Long id) {
-        jvmDao.remove(jvmDao.findById(id));
+        final Jvm jvm = jvmDao.findById(id);
+        if (jvm != null) {
+            try {
+                jvmDao.remove(jvm);
+            } catch (Exception e) {
+                throw new RecordNotDeletedException(Jvm.class, id, e);
+            }
+        } else {
+            throw new RecordNotFoundException(Jvm.class, id);
+        }
     }
 
 }

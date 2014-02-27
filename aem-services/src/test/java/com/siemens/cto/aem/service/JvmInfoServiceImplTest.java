@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,8 +101,22 @@ public class JvmInfoServiceImplTest {
 
     @Test
     public void testDeleteJvm() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
         jvmInfoService.deleteJvm(1l);
         verify(jvmDaoJpa, times(1)).remove(any(Jvm.class));
+    }
+
+    @Test(expected = RecordNotFoundException.class)
+    public void testDeleteJvmThatDoesNotExist() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(null);
+        jvmInfoService.deleteJvm(1l);
+    }
+
+    @Test(expected = RecordNotDeletedException.class)
+    public void testFailureToDeleteJvm() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
+        doThrow(RecordNotDeletedException.class).when(jvmDaoJpa).remove(jvm);
+        jvmInfoService.deleteJvm(1l);
     }
 
 }
