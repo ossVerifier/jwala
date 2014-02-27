@@ -6,10 +6,8 @@ import com.siemens.cto.aem.service.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
-
-import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.RECORD_NOT_DELETED;
-import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.RECORD_NOT_FOUND;
 import static com.siemens.cto.aem.ws.rest.ApplicationResponseFactory.*;
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -28,18 +26,14 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
             ApplicationResponseContentBuilder<JvmInfo> appContentBuilder =
                     new ApplicationResponseContentBuilder<JvmInfo>(jvmInfo);
-            final ApplicationResponse applicationResponse =
-                    new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                            ApplicationResponseStatus.SUCCESS.name(),
-                                            appContentBuilder.build());
 
-            return Response.status(Response.Status.OK).entity(applicationResponse).build();
+            return Response.status(Response.Status.OK)
+                           .entity(createApplicationResponse(appContentBuilder.build()))
+                           .build();
         } catch (RecordNotFoundException e) {
-            final ApplicationResponse applicationResponse =
-                    new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_FOUND.getCode(),
-                                            e.getMessage(),
-                                            null);
-            return Response.status(Response.Status.NOT_FOUND).entity(applicationResponse).build();
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity(createApplicationResponse(RECORD_NOT_FOUND, e))
+                           .build();
         }
     }
 
@@ -49,52 +43,42 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
         ApplicationResponseContentBuilder<List<JvmInfo>> appContentBuilder =
                 new ApplicationResponseContentBuilder<List<JvmInfo>>(jvmList);
-        final ApplicationResponse applicationResponse =
-                new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                    ApplicationResponseStatus.SUCCESS.name(),
-                    appContentBuilder.build());
 
-        return Response.status(Response.Status.OK).entity(applicationResponse).build();
+        return Response.status(Response.Status.OK)
+                       .entity(createApplicationResponse(appContentBuilder.build()))
+                       .build();
     }
 
     @Override
     public Response addJvmInfo(String jvmName,
                                String hostName) {
-
         try {
             jvmInfoService.addJvmInfo(jvmName, hostName);
         } catch (RecordNotAddedException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
-                            entity(new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_ADDED.getCode(),
-                                    e.getMessage(),
-                                    null)).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity(createApplicationResponse(RECORD_NOT_ADDED, e))
+                           .build();
         }
 
-        return Response.status(Response.Status.CREATED).
-                        entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                ApplicationResponseStatus.SUCCESS.name(),
-                                null)).build();
-
+        return Response.status(Response.Status.CREATED)
+                       .entity(createApplicationResponse(null))
+                       .build();
     }
 
     @Override
     public Response updateJvmInfo(Long id,
                                   String jvmName,
                                   String hostName) {
-
         try {
             jvmInfoService.updateJvmInfo(id, jvmName, hostName);
             return Response.status(Response.Status.OK)
-                            .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                    ApplicationResponseStatus.SUCCESS.name(),
-                                    null)).build();
+                            .entity(createApplicationResponse(null))
+                            .build();
         } catch (RecordNotUpdatedException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_UPDATED.getCode(),
-                                    e.getMessage(),
-                                    null)).build();
+                            .entity(createApplicationResponse(RECORD_NOT_UPDATED, e))
+                            .build();
         }
-
     }
 
     @Override
@@ -103,13 +87,16 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
             jvmInfoService.deleteJvm(id);
 
             return Response.status(Response.Status.OK)
-                           .entity(createApplicationResponse(null)).build();
+                           .entity(createApplicationResponse(null))
+                           .build();
         } catch (RecordNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity(createApplicationResponse(RECORD_NOT_FOUND, e)).build();
+                           .entity(createApplicationResponse(RECORD_NOT_FOUND, e))
+                           .build();
         } catch (RecordNotDeletedException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                           .entity(createApplicationResponse(RECORD_NOT_DELETED, e)).build();
+                           .entity(createApplicationResponse(RECORD_NOT_DELETED, e))
+                           .build();
         }
     }
 
