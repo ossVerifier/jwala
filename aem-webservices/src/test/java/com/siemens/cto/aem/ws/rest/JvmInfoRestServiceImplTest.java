@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -45,8 +46,11 @@ public class JvmInfoRestServiceImplTest {
     public void testGetJvmInfoById() throws IOException {
         when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenReturn(jvmInfo);
 
-        ApplicationResponse applicationResponse =
-                (ApplicationResponse) jvmInfoRestService.getJvmInfoById(new Long(1)).getEntity();
+        final Response response = jvmInfoRestService.getJvmInfoById(new Long(1));
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse =
+                (ApplicationResponse) response.getEntity();
 
         Writer writer = new StringWriter();
         mapper.writeValue(writer, applicationResponse);
@@ -61,8 +65,11 @@ public class JvmInfoRestServiceImplTest {
     public void testGetJvmInfoByIdWithException() throws IOException {
         when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenThrow(RecordNotFoundException.class);
 
-        ApplicationResponse applicationResponse =
-                (ApplicationResponse) jvmInfoRestService.getJvmInfoById(new Long(1)).getEntity();
+        final Response response = jvmInfoRestService.getJvmInfoById(new Long(1));
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse =
+                (ApplicationResponse) response.getEntity();
 
         Writer writer = new StringWriter();
         mapper.writeValue(writer, applicationResponse);
@@ -78,8 +85,11 @@ public class JvmInfoRestServiceImplTest {
         jvmInfoList.add(jvmInfo);
         when(jvmInfoService.getAllJvmInfo()).thenReturn(jvmInfoList);
 
-        ApplicationResponse applicationResponse =
-                (ApplicationResponse) jvmInfoRestService.getAllJvmInfo().getEntity();
+        final Response response = jvmInfoRestService.getAllJvmInfo();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse =
+                (ApplicationResponse) response.getEntity();
 
         Writer writer = new StringWriter();
         mapper.writeValue(writer, applicationResponse);
@@ -94,7 +104,8 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testAddJvmInfo() {
-        jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+        final Response response  = jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
     }
 
@@ -104,8 +115,9 @@ public class JvmInfoRestServiceImplTest {
                 .when(jvmInfoService)
                 .addJvmInfo(anyString(), anyString());
 
-        Response response =
+        final Response response =
                 jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
 
         Writer writer = new StringWriter();
@@ -118,7 +130,8 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testUpdateJvmInfo() {
-        jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+        final Response response  = jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
     }
 
@@ -128,8 +141,9 @@ public class JvmInfoRestServiceImplTest {
                 .when(jvmInfoService)
                 .updateJvmInfo(anyLong(), anyString(), anyString());
 
-        Response response =
+        final Response response =
                 jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
 
         Writer writer = new StringWriter();
@@ -146,8 +160,9 @@ public class JvmInfoRestServiceImplTest {
                 .when(jvmInfoService)
                 .updateJvmInfo(anyLong(), anyString(), anyString());
 
-        Response response =
+        final Response response =
                 jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
 
         Writer writer = new StringWriter();
@@ -160,7 +175,8 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testDeleteJvm() {
-        jvmInfoRestService.deleteJvm(1l);
+        final Response response = jvmInfoRestService.deleteJvm(1l);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).deleteJvm(1l);
     }
 
@@ -168,7 +184,8 @@ public class JvmInfoRestServiceImplTest {
     public void testDeleteJvmThatDoesNotExist() throws IOException {
         doThrow(RecordNotFoundException.class).when(jvmInfoService).deleteJvm(eq(1l));
 
-        Response response = jvmInfoRestService.deleteJvm(1l);
+        final Response response = jvmInfoRestService.deleteJvm(1l);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).deleteJvm(1l);
 
         Writer writer = new StringWriter();
@@ -183,7 +200,8 @@ public class JvmInfoRestServiceImplTest {
     public void testFailureToDeleteJvm() throws IOException {
         doThrow(RecordNotDeletedException.class).when(jvmInfoService).deleteJvm(eq(1l));
 
-        Response response = jvmInfoRestService.deleteJvm(1l);
+        final Response response = jvmInfoRestService.deleteJvm(1l);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).deleteJvm(1l);
 
         Writer writer = new StringWriter();
