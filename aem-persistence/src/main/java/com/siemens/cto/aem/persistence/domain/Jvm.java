@@ -45,4 +45,8 @@ public class Jvm extends AbstractEntity<Jvm> {
         return group;
     }
 
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
 }
