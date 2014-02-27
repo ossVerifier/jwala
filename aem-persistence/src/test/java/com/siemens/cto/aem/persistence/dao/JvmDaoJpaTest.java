@@ -1,23 +1,19 @@
 package com.siemens.cto.aem.persistence.dao;
 
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceException;
-
-import junit.framework.TestCase;
-
 import com.siemens.cto.aem.common.User;
-import com.siemens.cto.aem.persistence.Utilities;
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
 import com.siemens.cto.aem.persistence.domain.Jvm;
+import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import javax.persistence.*;
+import java.util.List;
 
 public class JvmDaoJpaTest extends TestCase {
 
-    private final EntityManager em = Utilities.getEntityManager();
-    private EntityTransaction transaction = em.getTransaction();
+    private final EntityManager em;
+    private EntityTransaction transaction;
 
     private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Jvm.class.getName() + " entity";
     private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Jvm.class.getName() + " entity where entity.name = ?1";
@@ -29,8 +25,16 @@ public class JvmDaoJpaTest extends TestCase {
     private static final String TEST_JVM_TWO = "testJvmTwo";
     private static final String TEST_JVM_THREE = "testJvmThree";
 
-    static final JvmDaoJpa containerDao = new JvmDaoJpa();
-    private final JvmDaoJpa dao = new JvmDaoJpa(em);
+    private final JvmDaoJpa dao;
+
+    private final ApplicationContext context;
+
+    public JvmDaoJpaTest() {
+        context = new ClassPathXmlApplicationContext("META-INF/persistence-context.xml");
+        EntityManagerFactory emf = (EntityManagerFactory) context.getBean("entityManagerFactory");
+        this.em = emf.createEntityManager();
+        dao = new JvmDaoJpa(em);
+    }
 
     private void cleanup() {
         transaction = em.getTransaction();

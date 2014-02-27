@@ -14,6 +14,9 @@ dependencies {
     javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
         exclude group: "junit"
     }
+
+    testCompile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
+    testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
 }
 
 test {

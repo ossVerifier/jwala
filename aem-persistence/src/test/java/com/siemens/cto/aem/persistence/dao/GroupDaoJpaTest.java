@@ -1,23 +1,19 @@
 package com.siemens.cto.aem.persistence.dao;
 
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceException;
-
-import junit.framework.TestCase;
-
 import com.siemens.cto.aem.common.User;
-import com.siemens.cto.aem.persistence.Utilities;
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
 import com.siemens.cto.aem.persistence.domain.Group;
+import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import javax.persistence.*;
+import java.util.List;
 
 public class GroupDaoJpaTest extends TestCase {
 
-    private final EntityManager em = Utilities.getEntityManager();
-    private EntityTransaction transaction = em.getTransaction();
+    private final EntityManager em;
+    private EntityTransaction transaction;
 
     private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity";
     private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity where entity.name = ?1";
@@ -29,8 +25,16 @@ public class GroupDaoJpaTest extends TestCase {
     private static final String TEST_GROUP_TWO = "testGroupTwo";
     private static final String TEST_GROUP_THREE = "testGroupThree";
 
-    static final GroupDaoJpa containerDao = new GroupDaoJpa();
-    private final GroupDaoJpa dao = new GroupDaoJpa(em);
+    private final GroupDaoJpa dao;
+
+    private final ApplicationContext context;
+
+    public GroupDaoJpaTest() {
+        context = new ClassPathXmlApplicationContext("META-INF/persistence-context.xml");
+        EntityManagerFactory emf = (EntityManagerFactory) context.getBean("entityManagerFactory");
+        this.em = emf.createEntityManager();
+        dao = new GroupDaoJpa(em);
+    }
 
     private void cleanup() {
         transaction = em.getTransaction();
