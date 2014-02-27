@@ -1,12 +1,15 @@
 package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.common.User;
+import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
+import com.siemens.cto.aem.persistence.domain.Group;
 import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
+import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +19,11 @@ import java.util.List;
 
 public class JvmInfoServiceImpl implements JvmInfoService {
 
+    private final GroupDaoJpa groupDao;
     private final JvmDaoJpa jvmDao;
 
-    public JvmInfoServiceImpl(JvmDaoJpa jvmDao) {
+    public JvmInfoServiceImpl(GroupDaoJpa groupDao, JvmDaoJpa jvmDao) {
+        this.groupDao = groupDao;
         this.jvmDao = jvmDao;
     }
 
@@ -26,7 +31,10 @@ public class JvmInfoServiceImpl implements JvmInfoService {
     public JvmInfo getJvmInfoById(Long id) {
         final Jvm jvm = jvmDao.findById(id);
         if (jvm != null) {
-            return new JvmInfo(jvm.getId(), jvm.getName(), jvm.getHostName());
+            return new JvmInfo(jvm.getId(),
+                               jvm.getName(),
+                               jvm.getHostName(),
+                               new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName()));
         } else {
             throw new RecordNotFoundException(Jvm.class, id);
         }
@@ -39,15 +47,15 @@ public class JvmInfoServiceImpl implements JvmInfoService {
         for (Jvm jvm : jvmList) {
             jvmInfoList.add(new JvmInfo(jvm.getId(),
                                 jvm.getName(),
-                                jvm.getHostName()));
-
+                                jvm.getHostName(),
+                                new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName())));
         }
         return jvmInfoList;
     }
 
     @Override
     @Transactional
-    public void addJvmInfo(String jvmName, String hostName) {
+    public void addJvmInfo(String jvmName, String hostName, GroupInfo groupInfo) {
         final Jvm jvm = new Jvm();
         jvm.setName(jvmName);
         jvm.setHostName(hostName);
@@ -58,7 +66,18 @@ public class JvmInfoServiceImpl implements JvmInfoService {
         user.addToThread();
 
         try {
+
+            Group group = groupDao.findByName(groupInfo.getName());
+            if (group == null) {
+                group = new Group();
+                group.setName(groupInfo.getName());
+                groupDao.add(group);
+                group = groupDao.findByName(groupInfo.getName());
+            }
+
+            jvm.setGroup(group);
             jvmDao.add(jvm);
+
         } catch (EntityExistsException e) {
             throw new RecordNotAddedException(jvm.getClass(), jvm.getName(), e);
         }

@@ -6,8 +6,13 @@
 
     <import resource="classpath:META-INF/transaction-context.xml"/>
 
-    <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"></bean>
+    <bean id="groupDao" class="com.siemens.cto.aem.persistence.dao.GroupDaoJpa"/>
+
+    <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"/>
     <bean id="jvmInfoService" class="com.siemens.cto.aem.service.JvmInfoServiceImpl">
+        <constructor-arg>
+            <ref bean="groupDao"/>
+        </constructor-arg>
         <constructor-arg>
             <ref bean="jvmDao"/>
         </constructor-arg>

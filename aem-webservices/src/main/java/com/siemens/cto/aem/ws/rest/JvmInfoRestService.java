@@ -18,7 +18,9 @@ public interface JvmInfoRestService {
     @POST
     @Path("/jvms")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response addJvmInfo(@FormParam("jvmName") String jvmName, @FormParam("hostName") String hostName);
+    Response addJvmInfo(@FormParam("jvmName") String jvmName,
+                        @FormParam("hostName") String hostName,
+                        @FormParam("groupName") String groupName);
 
     @PUT
     @Path("/jvms/{id}/{jvmName}/{hostName}")

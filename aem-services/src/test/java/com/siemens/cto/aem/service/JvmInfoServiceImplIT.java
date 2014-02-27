@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service;
 
+import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import junit.framework.TestCase;
 import org.springframework.context.ApplicationContext;
@@ -27,7 +28,7 @@ public class JvmInfoServiceImplIT extends TestCase {
      * TODO Module/pre-test init that makes sure that the database is clean.
      */
     public void testJvmCrud() {
-        jvmInfoService.addJvmInfo("Test", "");
+        jvmInfoService.addJvmInfo("Test", "", new GroupInfo("Test Group"));
         List<JvmInfo> jvmInfoList = jvmInfoService.getAllJvmInfo();
         assertTrue(jvmInfoList.size() > 0);
         assertFalse(jvmInfoList.get(0).getName().equalsIgnoreCase(JVM_01));
@@ -36,6 +37,7 @@ public class JvmInfoServiceImplIT extends TestCase {
         assertTrue(jvmInfo.getName().equalsIgnoreCase(JVM_01));
         jvmInfoService.deleteJvm(jvmInfo.getId());
         assertEquals(0, jvmInfoService.getAllJvmInfo().size());
+        // TODO: Delete group!
     }
 
 }

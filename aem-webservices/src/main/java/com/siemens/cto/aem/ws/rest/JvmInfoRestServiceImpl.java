@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest;
 
+import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
@@ -51,9 +52,10 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
     @Override
     public Response addJvmInfo(String jvmName,
-                               String hostName) {
+                               String hostName,
+                               String groupName) {
         try {
-            jvmInfoService.addJvmInfo(jvmName, hostName);
+            jvmInfoService.addJvmInfo(jvmName, hostName, new GroupInfo(groupName));
         } catch (RecordNotAddedException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                            .entity(createApplicationResponse(RECORD_NOT_ADDED, e))

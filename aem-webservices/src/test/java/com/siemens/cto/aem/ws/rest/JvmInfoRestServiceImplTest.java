@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest;
 
+import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
@@ -36,9 +37,11 @@ public class JvmInfoRestServiceImplTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private final GroupInfo groupInfo = new GroupInfo(1l, "Group 1");
+
     @Before
     public void setUp() {
-        jvmInfo = new JvmInfo(1l, "the-jvmInfo-name", "the-jvmfino-hostname");
+        jvmInfo = new JvmInfo(1l, "the-jvmInfo-name", "the-jvmfino-hostname", groupInfo);
         jvmInfoRestService = new JvmInfoRestServiceImpl(jvmInfoService);
     }
 
@@ -104,21 +107,21 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testAddJvmInfo() {
-        final Response response  = jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+        final Response response  = jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name", "the-group-name");
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
+        verify(jvmInfoService, times(1)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
     }
 
     @Test
     public void testFailureToAddJvmInfo() throws IOException {
         doThrow(RecordNotAddedException.class)
                 .when(jvmInfoService)
-                .addJvmInfo(anyString(), anyString());
+                .addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
 
         final Response response =
-                jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name");
+                jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name", "the-group-name");
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-        verify(jvmInfoService, times(1)).addJvmInfo("the-jvmInfo-name", "the-host-name");
+        verify(jvmInfoService, times(1)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
 
         Writer writer = new StringWriter();
         mapper.writeValue(writer, response.getEntity());

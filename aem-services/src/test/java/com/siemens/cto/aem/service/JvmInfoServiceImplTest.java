@@ -1,11 +1,14 @@
 package com.siemens.cto.aem.service;
 
+import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
+import com.siemens.cto.aem.persistence.domain.Group;
 import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
+import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +31,9 @@ import static org.mockito.Mockito.*;
 public class JvmInfoServiceImplTest {
 
     @Mock
+    private GroupDaoJpa groupDaoJpa;
+
+    @Mock
     private JvmDaoJpa jvmDaoJpa;
 
     private JvmInfoService jvmInfoService;
@@ -40,7 +46,9 @@ public class JvmInfoServiceImplTest {
         when(jvm.getId()).thenReturn(new Long(1));
         when(jvm.getName()).thenReturn("the-jvm-name");
         when(jvm.getHostName()).thenReturn("the-jvm-hostname");
-        jvmInfoService = new JvmInfoServiceImpl(jvmDaoJpa);
+        when(jvm.getGroup()).thenReturn(new Group());
+
+        jvmInfoService = new JvmInfoServiceImpl(groupDaoJpa, jvmDaoJpa);
     }
 
     @Test
@@ -66,14 +74,14 @@ public class JvmInfoServiceImplTest {
 
     @Test
     public void testAddJvmInfo() {
-        jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name");
+        jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name", new GroupInfo("the-test-group"));
         verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
     }
 
     @Test(expected = RecordNotAddedException.class)
     public void testFailureToAddJvmInfo() {
         doThrow(EntityExistsException.class).when(jvmDaoJpa).add(any(Jvm.class));
-        jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name");
+        jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name", new GroupInfo("the-test-group"));
         verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
     }
 
