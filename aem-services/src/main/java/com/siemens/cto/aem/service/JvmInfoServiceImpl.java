@@ -64,10 +64,9 @@ public class JvmInfoServiceImpl implements JvmInfoService {
 
     @Override
     @Transactional
-    public void updateJvmInfo(Long jvmId, String jvmName, String hostName) {
-        try {
-            final Jvm jvm = jvmDao.findById(jvmId);
-
+    public void updateJvmInfo(Long id, String jvmName, String hostName) {
+        final Jvm jvm = jvmDao.findById(id);
+        if (jvm != null) {
             jvm.setName(jvmName);
             jvm.setHostName(hostName);
 
@@ -75,10 +74,13 @@ public class JvmInfoServiceImpl implements JvmInfoService {
             // TODO: Discuss with the team what module should handle this.
             final User user = new User("testUser", "");
             user.addToThread();
-
-            jvmDao.update(jvm);
-        } catch (Exception e) {
-            throw new RecordNotUpdatedException(Jvm.class, jvmName, e);
+            try {
+                jvmDao.update(jvm);
+            } catch (Exception e) {
+                throw new RecordNotUpdatedException(Jvm.class, jvmName, e);
+            }
+        } else {
+            throw new RecordNotFoundException(Jvm.class, id);
         }
     }
 

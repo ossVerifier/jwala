@@ -82,11 +82,19 @@ public class JvmInfoServiceImplTest {
         verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
     }
 
-    @Test(expected = RecordNotUpdatedException.class)
-    public void testFailureToUpdateJvmInfoSinceEntityDoesNotExist() {
-        doThrow(Exception.class).when(jvmDaoJpa).findById(eq(new Long(1)));
+    @Test(expected = RecordNotFoundException.class)
+    public void testUpdateJvmInfoThatDoesNotExist() {
+        doThrow(Exception.class).when(jvmDaoJpa).findById(null);
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
         verify(jvmDaoJpa, times(0)).update(any(Jvm.class));
+    }
+
+    @Test(expected = RecordNotUpdatedException.class)
+    public void testFailureToUpdateJvmInfo() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
+        doThrow(Exception.class).when(jvmDaoJpa).update(jvm);
+        jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
+        verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
     }
 
     @Test(expected = RecordNotUpdatedException.class)
