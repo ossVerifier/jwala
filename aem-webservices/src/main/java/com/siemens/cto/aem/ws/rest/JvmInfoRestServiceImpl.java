@@ -2,8 +2,10 @@ package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
-import com.siemens.cto.aem.service.RecordNotFoundException;
-import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotFoundException;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
+
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -75,11 +77,21 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
     public Response updateJvmInfo(Long id,
                                   String jvmName,
                                   String hostName) {
-        jvmInfoService.updateJvmInfo(id, jvmName, hostName);
-        return Response.status(Response.Status.NO_CONTENT)
-                .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                                ApplicationResponseStatus.SUCCESS.name(),
-                                                null)).build();
+
+        try {
+            jvmInfoService.updateJvmInfo(id, jvmName, hostName);
+            return Response.status(Response.Status.OK)
+                            .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
+                                    ApplicationResponseStatus.SUCCESS.name(),
+                                    null)).build();
+        } catch (RecordNotUpdatedException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                            .entity(new ApplicationResponse(ApplicationResponseStatus.RECORD_NOT_UPDATED.getCode(),
+                                    e.getMessage(),
+                                    null)).build();
+        }
+
+
     }
 
     @Override
