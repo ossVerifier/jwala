@@ -4,7 +4,9 @@ import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.persistence.EntityExistsException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,17 +64,21 @@ public class JvmInfoServiceImpl implements JvmInfoService {
     @Override
     @Transactional
     public void updateJvmInfo(Long jvmId, String jvmName, String hostName) {
-        final Jvm jvm = jvmDao.findById(jvmId);
+        try {
+            final Jvm jvm = jvmDao.findById(jvmId);
 
-        jvm.setName(jvmName);
-        jvm.setHostName(hostName);
+            jvm.setName(jvmName);
+            jvm.setHostName(hostName);
 
-        // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
-        // TODO: Discuss with the team what module should handle this.
-        final User user = new User("testUser", "");
-        user.addToThread();
+            // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
+            // TODO: Discuss with the team what module should handle this.
+            final User user = new User("testUser", "");
+            user.addToThread();
 
-        jvmDao.update(jvm);
+            jvmDao.update(jvm);
+        } catch (Exception e) {
+            throw new RecordNotUpdatedException(Jvm.class, jvmName, e);
+        }
     }
 
     @Override

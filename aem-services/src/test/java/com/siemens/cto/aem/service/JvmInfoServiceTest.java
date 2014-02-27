@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.persistence.EntityExistsException;
+import javax.persistence.PersistenceException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,6 +79,21 @@ public class JvmInfoServiceTest {
     @Test
     public void testUpdateJvmInfo() {
         when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
+        jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
+        verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
+    }
+
+    @Test(expected = RecordNotUpdatedException.class)
+    public void testFailureToUpdateJvmInfoSinceEntityDoesNotExist() {
+        doThrow(Exception.class).when(jvmDaoJpa).findById(eq(new Long(1)));
+        jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
+        verify(jvmDaoJpa, times(0)).update(any(Jvm.class));
+    }
+
+    @Test(expected = RecordNotUpdatedException.class)
+    public void testFailureToUpdateJvmInfoDueToMergingError() {
+        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
+        doThrow(PersistenceException.class).when(jvmDaoJpa).update(any(Jvm.class));
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
         verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
     }
