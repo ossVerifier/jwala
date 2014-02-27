@@ -2,10 +2,14 @@ package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
+import com.siemens.cto.aem.service.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.RECORD_NOT_DELETED;
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.RECORD_NOT_FOUND;
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseFactory.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -91,16 +95,22 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
                                     null)).build();
         }
 
-
     }
 
     @Override
     public Response deleteJvm(Long id) {
-        jvmInfoService.deleteJvm(id);
-        return Response.status(Response.Status.OK)
-                .entity(new ApplicationResponse(ApplicationResponseStatus.SUCCESS.getCode(),
-                                                ApplicationResponseStatus.SUCCESS.name(),
-                                                null)).build();
+        try {
+            jvmInfoService.deleteJvm(id);
+
+            return Response.status(Response.Status.OK)
+                           .entity(createApplicationResponse(null)).build();
+        } catch (RecordNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity(createApplicationResponse(RECORD_NOT_FOUND, e)).build();
+        } catch (RecordNotDeletedException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                           .entity(createApplicationResponse(RECORD_NOT_DELETED, e)).build();
+        }
     }
 
 }

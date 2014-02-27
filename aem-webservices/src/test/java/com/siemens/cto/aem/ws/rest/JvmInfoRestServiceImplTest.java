@@ -2,8 +2,9 @@ package com.siemens.cto.aem.ws.rest;
 
 import com.siemens.cto.aem.service.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
-import com.siemens.cto.aem.service.exception.RecordNotFoundException;
+import com.siemens.cto.aem.service.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -142,6 +144,36 @@ public class JvmInfoRestServiceImplTest {
     public void testDeleteJvm() {
         jvmInfoRestService.deleteJvm(1l);
         verify(jvmInfoService, times(1)).deleteJvm(1l);
+    }
+
+    @Test
+    public void testDeleteJvmThatDoesNotExist() throws IOException {
+        doThrow(RecordNotFoundException.class).when(jvmInfoService).deleteJvm(eq(1l));
+
+        Response response = jvmInfoRestService.deleteJvm(1l);
+        verify(jvmInfoService, times(1)).deleteJvm(1l);
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, response.getEntity());
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"1\""));
+    }
+
+    @Test
+    public void testFailureToDeleteJvm() throws IOException {
+        doThrow(RecordNotDeletedException.class).when(jvmInfoService).deleteJvm(eq(1l));
+
+        Response response = jvmInfoRestService.deleteJvm(1l);
+        verify(jvmInfoService, times(1)).deleteJvm(1l);
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, response.getEntity());
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"4\""));
     }
 
 }
