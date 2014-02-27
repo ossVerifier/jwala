@@ -123,6 +123,24 @@ public class JvmInfoRestServiceImplTest {
     }
 
     @Test
+    public void testUpdateJvmInfoThatDoesNotExist() throws IOException {
+        doThrow(RecordNotFoundException.class)
+                .when(jvmInfoService)
+                .updateJvmInfo(anyLong(), anyString(), anyString());
+
+        Response response =
+                jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+        verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, response.getEntity());
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"1\""));
+    }
+
+    @Test
     public void testFailureToUpdateJvmInfo() throws IOException {
         doThrow(RecordNotUpdatedException.class)
                 .when(jvmInfoService)
