@@ -17,13 +17,13 @@ public class Jvm extends AbstractEntity<Jvm> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
-    public String hostName;
+    private String hostName;
 
     @ManyToOne
     @JoinColumn(name = "jvmGroupId")
-    public Group group;
+    private Group group;
 
     public Long getId() {
         return id;
@@ -39,6 +39,10 @@ public class Jvm extends AbstractEntity<Jvm> {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
+    }
+
+    public Group getGroup() {
+        return group;
     }
 
 }
