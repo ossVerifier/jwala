@@ -3,8 +3,9 @@ package com.siemens.cto.aem.service;
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
-import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityExistsException;

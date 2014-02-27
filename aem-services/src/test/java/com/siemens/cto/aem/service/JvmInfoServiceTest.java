@@ -2,7 +2,7 @@ package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Jvm;
-import com.siemens.cto.aem.service.configuration.application.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.junit.Before;
 import org.junit.Test;
