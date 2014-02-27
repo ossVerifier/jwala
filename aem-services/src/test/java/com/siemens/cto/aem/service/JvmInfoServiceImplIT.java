@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service;
 
+import com.siemens.cto.aem.service.model.JvmInfo;
 import junit.framework.TestCase;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

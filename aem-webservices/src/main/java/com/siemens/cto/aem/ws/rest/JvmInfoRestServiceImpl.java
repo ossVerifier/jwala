@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest;
 
-import com.siemens.cto.aem.service.JvmInfo;
+import com.siemens.cto.aem.service.model.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
-import com.siemens.cto.aem.service.RecordNotDeletedException;
+import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;

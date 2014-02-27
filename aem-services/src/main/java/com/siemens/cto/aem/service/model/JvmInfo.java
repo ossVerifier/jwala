@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service;
+package com.siemens.cto.aem.service.model;
 
 public class JvmInfo {
 

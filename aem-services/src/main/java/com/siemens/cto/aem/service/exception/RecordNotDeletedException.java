@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service;
+package com.siemens.cto.aem.service.exception;
 
 /**
  * Created by Z003BPEJ on 2/27/14.

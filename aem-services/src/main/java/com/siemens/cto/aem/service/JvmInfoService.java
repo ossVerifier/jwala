@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service;
 
+import com.siemens.cto.aem.service.model.JvmInfo;
+
 import java.util.List;
 
 public interface JvmInfoService {
