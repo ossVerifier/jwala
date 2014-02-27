@@ -23,7 +23,7 @@ public class JvmInfoServiceImpl implements JvmInfoService {
         if (jvm != null) {
             return new JvmInfo(jvm.getId(), jvm.getName(), jvm.getHostName());
         } else {
-            throw new RecordNotFoundException(id, Jvm.class.getSimpleName());
+            throw new RecordNotFoundException(Jvm.class, id);
         }
     }
 

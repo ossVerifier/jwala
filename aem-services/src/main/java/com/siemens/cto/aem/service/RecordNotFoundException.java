@@ -5,8 +5,8 @@ package com.siemens.cto.aem.service;
  */
 public class RecordNotFoundException extends RuntimeException {
 
-    public RecordNotFoundException(long id, String entity) {
-        super(entity + " with id = " + id + " was not found!");
+    public RecordNotFoundException(Class theClass, Long id) {
+        super(theClass.getSimpleName() + " with id = " + id + " was not found!");
     }
 
 }
