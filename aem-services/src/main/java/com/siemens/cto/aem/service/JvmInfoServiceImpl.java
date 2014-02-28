@@ -95,11 +95,37 @@ public class JvmInfoServiceImpl implements JvmInfoService {
             // TODO: Discuss with the team what module should handle this.
             final User user = new User("testUser", "");
             user.addToThread();
-            try {
-                jvmDao.update(jvm);
-            } catch (Exception e) {
-                throw new RecordNotUpdatedException(Jvm.class, jvmName, e);
+
+         } else {
+            throw new RecordNotFoundException(Jvm.class, id);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateJvmInfo(Long id, String jvmName, String hostName, String groupName) {
+        final Jvm jvm = jvmDao.findById(id);
+        if (jvm != null) {
+            jvm.setName(jvmName);
+            jvm.setHostName(hostName);
+
+            // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
+            // TODO: Discuss with the team what module should handle this.
+            final User user = new User("testUser", "");
+            user.addToThread();
+
+            if (!jvm.getGroup().getName().equalsIgnoreCase(groupName)) {
+
+                Group group = groupDao.findByName(groupName);
+                if (group == null) {
+                    group = new Group();
+                    group.setName(groupName);
+                    groupDao.add(group);
+                    group = groupDao.findByName(groupName);
+                }
+                jvm.setGroup(group);
             }
+
         } else {
             throw new RecordNotFoundException(Jvm.class, id);
         }
@@ -111,8 +137,14 @@ public class JvmInfoServiceImpl implements JvmInfoService {
         final Jvm jvm = jvmDao.findById(id);
         if (jvm != null) {
             try {
+                // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
+                // TODO: Discuss with the team what module should handle this.
+                final User user = new User("testUser", "");
+                user.addToThread();
+
                 jvmDao.remove(jvm);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RecordNotDeletedException(Jvm.class, id, e);
             }
         } else {

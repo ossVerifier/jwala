@@ -15,6 +15,8 @@ public interface JvmInfoService {
 
     void updateJvmInfo(Long id, String jvmName, String hostName);
 
+    void updateJvmInfo(Long id, String jvmName, String hostName, String groupName);
+
     void deleteJvm(Long id);
 
 }
