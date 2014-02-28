@@ -6,7 +6,7 @@ package com.siemens.cto.aem.service.exception;
 public class RecordNotUpdatedException extends RuntimeException {
 
     public RecordNotUpdatedException(Class aClass, String name, Throwable cause) {
-        super("Failed to add " + aClass.getSimpleName() + " " + name + "!", cause);
+        super("Failed to update " + aClass.getSimpleName() + " " + name + "!", cause);
     }
 
 }
