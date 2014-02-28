@@ -11,6 +11,7 @@ import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -78,6 +79,13 @@ public class JvmInfoServiceImplTest {
         verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
     }
 
+    @Test
+    @Ignore
+    public void testAddJvmInfoWithGroup() {
+        // TODO: Implement the test
+        throw new UnsupportedOperationException();
+    }
+
     @Test(expected = RecordNotAddedException.class)
     public void testFailureToAddJvmInfo() {
         doThrow(EntityExistsException.class).when(jvmDaoJpa).add(any(Jvm.class));
@@ -89,7 +97,15 @@ public class JvmInfoServiceImplTest {
     public void testUpdateJvmInfo() {
         when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
-        verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
+        verify(jvm, times(1)).setName(anyString());
+        verify(jvm, times(1)).setHostName(anyString());
+    }
+
+    @Test
+    @Ignore
+    public void testUpdateJvmInfoAndGroupName() {
+        // TODO: Implement the test
+        throw new UnsupportedOperationException();
     }
 
     @Test(expected = RecordNotFoundException.class)
@@ -97,22 +113,6 @@ public class JvmInfoServiceImplTest {
         doThrow(Exception.class).when(jvmDaoJpa).findById(null);
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
         verify(jvmDaoJpa, times(0)).update(any(Jvm.class));
-    }
-
-    @Test(expected = RecordNotUpdatedException.class)
-    public void testFailureToUpdateJvmInfo() {
-        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
-        doThrow(Exception.class).when(jvmDaoJpa).update(jvm);
-        jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
-        verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
-    }
-
-    @Test(expected = RecordNotUpdatedException.class)
-    public void testFailureToUpdateJvmInfoDueToMergingError() {
-        when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
-        doThrow(PersistenceException.class).when(jvmDaoJpa).update(any(Jvm.class));
-        jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
-        verify(jvmDaoJpa, times(1)).update(any(Jvm.class));
     }
 
     @Test
