@@ -1,5 +1,8 @@
 package com.siemens.cto.aem.ws.rest;
 
+import java.util.List;
+
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.INVALID_POST_DATA;
 import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.SUCCESS;
 
 /**
@@ -12,9 +15,9 @@ public class ApplicationResponseFactory {
     }
 
     /**
-     * Build a "successful" {@link com.siemens.cto.aem.ws.rest.ApplicationResponse}
-     * @param content {@link com.siemens.cto.aem.ws.rest.ApplicationResponseContent}
-     * @return {@link com.siemens.cto.aem.ws.rest.ApplicationResponse}
+     * Build a "SUCCESSFUL" {@Link ApplicationResponse}
+     * @param content {@Link ApplicationResponseContent}
+     * @return {@Link ApplicationResponse}
      */
     public static final ApplicationResponse createApplicationResponse(ApplicationResponseContent content) {
         final ApplicationResponse applicationResponse =
@@ -23,14 +26,26 @@ public class ApplicationResponseFactory {
     }
 
     /**
-     * Build an {@link com.siemens.cto.aem.ws.rest.ApplicationResponse} with exception
+     * Build an {@Link ApplicationResponse} with exception
      * @param sts
      * @param e
-     * @return {@link com.siemens.cto.aem.ws.rest.ApplicationResponse}
+     * @return {@Link ApplicationResponse}
      */
     public static final ApplicationResponse createApplicationResponse(ApplicationResponseStatus sts, Exception e) {
         final String msg = e.getMessage();
         final ApplicationResponse applicationResponse = new ApplicationResponse(sts.getCode(), msg, null);
+        return applicationResponse;
+    }
+
+    /**
+     * Build a "INVALID POST DATA" {@link com.siemens.cto.aem.ws.rest.ApplicationResponse}
+     * @param invalidPostDataList
+     * @return {@Link ApplicationResponse}
+     */
+    public static final ApplicationResponse createInvalidPostDataApplicationResponse(List<String> invalidPostDataList) {
+        final ApplicationResponse applicationResponse =
+                new ApplicationResponse(INVALID_POST_DATA.getCode(), "Invalid parameters: " +
+                        invalidPostDataList.toString(), null);
         return applicationResponse;
     }
 
