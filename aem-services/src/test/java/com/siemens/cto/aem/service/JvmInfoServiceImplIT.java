@@ -35,6 +35,7 @@ public class JvmInfoServiceImplIT extends TestCase {
         jvmInfoService.updateJvmInfo(jvmInfoList.get(0).getId(), JVM_01, "");
         JvmInfo jvmInfo = jvmInfoService.getJvmInfoById(jvmInfoList.get(0).getId());
         assertTrue(jvmInfo.getName().equalsIgnoreCase(JVM_01));
+        assertEquals("Test Group", jvmInfoService.getAllJvmInfo().get(0).getGroupInfo().getName());
         jvmInfoService.deleteJvm(jvmInfo.getId());
         assertEquals(0, jvmInfoService.getAllJvmInfo().size());
         // TODO: Delete group!
