@@ -1,19 +1,39 @@
 package com.siemens.cto.aem.persistence.dao;
 
-import com.siemens.cto.aem.common.User;
-import com.siemens.cto.aem.persistence.domain.AbstractEntity;
-import com.siemens.cto.aem.persistence.domain.Group;
-import junit.framework.TestCase;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import javax.persistence.*;
 import java.util.List;
 
-public class GroupDaoJpaTest extends TestCase {
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 
-    private final EntityManager em;
-    private EntityTransaction transaction;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.siemens.cto.aem.common.User;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.domain.AbstractEntity;
+import com.siemens.cto.aem.persistence.domain.Group;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class,
+                      classes = {TestJpaConfiguration.class})
+@Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
+@Ignore
+public class GroupDaoJpaTest {
 
     private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity";
     private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity where entity.name = ?1";
@@ -25,93 +45,69 @@ public class GroupDaoJpaTest extends TestCase {
     private static final String TEST_GROUP_TWO = "testGroupTwo";
     private static final String TEST_GROUP_THREE = "testGroupThree";
 
-    private final GroupDaoJpa dao;
+    @PersistenceContext(unitName = "aem-unit")
+    private EntityManager em;
 
-    private final ApplicationContext context;
+    private GroupDaoJpa dao;
 
-    public GroupDaoJpaTest() {
-        context = new ClassPathXmlApplicationContext("META-INF/persistence-context.xml");
-        EntityManagerFactory emf = (EntityManagerFactory) context.getBean("entityManagerFactory");
-        this.em = emf.createEntityManager();
-        dao = new GroupDaoJpa(em);
-    }
-
-    private void cleanup() {
-        transaction = em.getTransaction();
-        final List<Group> groups = dao.findAll();
-        transaction.begin();
-        dao.removeAllEntities(groups);
-        transaction.commit();
-    }
-
-    @Override
-    protected void setUp() {
-        cleanup();
+    @Before
+    public void setUp() {
         final User user = new User("testUser", "password");
         user.addToThread();
-        transaction = em.getTransaction();
-    }
-
-    @Override
-    protected void tearDown() {
-        cleanup();
+        dao = new GroupDaoJpa(em);
     }
 
     private Group add(final String name) {
         final Group group = new Group();
         group.setName(name);
-        transaction.begin();
         dao.add(group);
-        transaction.commit();
         final Group retrieved = dao.findByName(name);
         assertEquals(name, retrieved.getName());
         return retrieved;
     }
 
+    @Test
     public void testAdd() {
         add(TEST_GROUP_ONE);
     }
 
+
+    @Test
     public void testAddNullName() {
         final Group group = new Group();
-        transaction.begin();
         try {
             dao.add(group);
             fail("Should not be possible to add a group with no name");
         } catch (final Exception e) {
             final Throwable cause = e.getCause();
             assertTrue("Incorrect cause exception type: " + cause.getClass(), cause instanceof PersistenceException);
-        } finally {
-            transaction.rollback();
         }
     }
 
+    @Test
     public void testAddDuplicateName() {
         testAdd();
         final Group group = new Group();
         group.setName(TEST_GROUP_ONE);
-        transaction.begin();
         try {
             dao.add(group);
             fail("Should not be possible to add a group with a name that already exists: " + TEST_GROUP_ONE);
         } catch (final Exception e) {
             assertTrue("Incorrect cause exception type", e instanceof EntityExistsException);
-        } finally {
-            transaction.rollback();
         }
     }
 
+    @Test
     public void testRemove() {
         Group group = add(TEST_GROUP_ONE);
 
-        transaction.begin();
         dao.remove(group);
-        transaction.commit();
 
         group = dao.findByName(TEST_GROUP_TWO);
         assertNull("Should not find group " + TEST_GROUP_TWO, group);
     }
 
+    @Test
     public void testFindAll() {
         add(TEST_GROUP_ONE);
         List<Group> groups = dao.findAll();
@@ -122,12 +118,14 @@ public class GroupDaoJpaTest extends TestCase {
         assertEquals("size should be TWo", 2, groups.size());
     }
 
+    @Test
     public void testFindByName() {
         add(TEST_GROUP_TWO);
         final AbstractEntity<Group> group = dao.findByName(TEST_GROUP_TWO);
         assertEquals(TEST_GROUP_TWO, group.getName());
     }
 
+    @Test
     public void testFindById() {
         add(TEST_GROUP_TWO);
         Group group = dao.findByName(TEST_GROUP_TWO);
@@ -136,6 +134,7 @@ public class GroupDaoJpaTest extends TestCase {
         assertEquals(TEST_GROUP_TWO, group.getName());
     }
 
+    @Test
     public void testCount() {
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
@@ -145,6 +144,7 @@ public class GroupDaoJpaTest extends TestCase {
         assertEquals("Invalid count", 1, count);
     }
 
+    @Test
     public void testFindObjects() {
         List<Group> groups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         assertEquals("List of objects should be empty, it is: " + groups, 0, groups.size());
@@ -156,25 +156,23 @@ public class GroupDaoJpaTest extends TestCase {
         assertEquals("Invalid size", 2, groups.size());
     }
 
+    @Test
     public void testFlush() {
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
-        transaction.begin();
         dao.flush();
-        transaction.commit();
         List<Group> groups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         assertEquals("Invalid size", 2, groups.size());
         groups = dao.findObjects(QUERY_OBJECTS_BY_ID, new Object[] {new Long(0)});
         assertEquals("Invalid size", 2, groups.size());
     }
 
+    @Test
     public void testUpdate() {
         add(TEST_GROUP_ONE);
         Group group = add(TEST_GROUP_TWO);
         group.setName(TEST_GROUP_THREE);
-        transaction.begin();
         final Group updated = dao.update(group);
-        transaction.commit();
         assertEquals("Incorrect name", TEST_GROUP_THREE, updated.getName());
 
         group = dao.findByName(TEST_GROUP_THREE);
@@ -182,19 +180,16 @@ public class GroupDaoJpaTest extends TestCase {
         assertEquals("Incorrect name", TEST_GROUP_THREE, group.getName());
     }
 
+    @Test
     public void testUpdateGroupExists() {
         add(TEST_GROUP_ONE);
         final Group group = add(TEST_GROUP_TWO);
         group.setName(TEST_GROUP_ONE);
         try {
-            transaction.begin();
             dao.update(group);
-            transaction.commit();
             fail("Update should have failed because " + TEST_GROUP_ONE + " is supposed to exist");
         } catch (final Exception e) {
             assertTrue("Incorrect cause exception type", e instanceof EntityExistsException);
-        } finally {
-            transaction.rollback();
         }
     }
 }
