@@ -9,6 +9,7 @@ import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -113,6 +114,13 @@ public class JvmInfoRestServiceImplTest {
     }
 
     @Test
+    @Ignore
+    public void testAddJvmInfoWithGroup() {
+        // TODO: Implement the test
+        throw new UnsupportedOperationException();
+    }
+
+    @Test
     public void testFailureToAddJvmInfo() throws IOException {
         doThrow(RecordNotAddedException.class)
                 .when(jvmInfoService)
@@ -132,10 +140,33 @@ public class JvmInfoRestServiceImplTest {
     }
 
     @Test
+    public void testFailureToAddJvmInfoWithMissingParams() throws IOException {
+        final Response response =
+                jvmInfoRestService.addJvmInfo("", "the-host-name", "");
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        verify(jvmInfoService, times(0)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
+
+        Writer writer = new StringWriter();
+        mapper.writeValue(writer, response.getEntity());
+
+        final String jsonStr = writer.toString();
+
+        assertTrue(jsonStr.contains("\"msgCode\":\"5\""));
+        assertTrue(jsonStr.contains("\"message\":\"Invalid parameters: [JVM Name, Group Name]\""));
+    }
+
+    @Test
     public void testUpdateJvmInfo() {
         final Response response  = jvmInfoRestService.updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).updateJvmInfo(1l, "the-jvmInfo-name", "the-host-name");
+    }
+
+    @Test
+    @Ignore
+    public void testUpdateJvmInfoWithGroup() {
+        // TODO: Implement the test
+        throw new UnsupportedOperationException();
     }
 
     @Test

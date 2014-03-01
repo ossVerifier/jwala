@@ -28,6 +28,13 @@ public interface JvmInfoRestService {
                            @PathParam("jvmName") String jvmName,
                            @PathParam("hostName") String hostName);
 
+    @PUT
+    @Path("/jvms/{id}/{jvmName}/{hostName}/{groupName}")
+    Response updateJvmInfo(@PathParam("id") Long id,
+                           @PathParam("jvmName") String jvmName,
+                           @PathParam("hostName") String hostName,
+                           @PathParam("groupName") String groupName);
+
     @DELETE
     @Path("/jvms/{id}")
     Response deleteJvm(@PathParam("id") Long id);

@@ -1,16 +1,21 @@
 package com.siemens.cto.aem.ws.rest;
 
-import com.siemens.cto.aem.service.model.GroupInfo;
-import com.siemens.cto.aem.service.model.JvmInfo;
 import com.siemens.cto.aem.service.JvmInfoService;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
-import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
-import static com.siemens.cto.aem.ws.rest.ApplicationResponseFactory.*;
-import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.*;
+import com.siemens.cto.aem.service.model.GroupInfo;
+import com.siemens.cto.aem.service.model.JvmInfo;
+import org.apache.commons.lang.StringUtils;
+
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseFactory.createApplicationResponse;
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseFactory.createInvalidPostDataApplicationResponse;
+import static com.siemens.cto.aem.ws.rest.ApplicationResponseStatus.*;
 
 public class JvmInfoRestServiceImpl implements JvmInfoRestService {
 
@@ -55,16 +60,35 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
                                String hostName,
                                String groupName) {
         try {
+            List<String> invalidParameterList = new ArrayList<String>();
+            if (StringUtils.isEmpty(jvmName)) {
+                invalidParameterList.add("JVM Name");
+            }
+
+            if (StringUtils.isEmpty(hostName)) {
+                invalidParameterList.add("Host Name");
+            }
+
+            if (StringUtils.isEmpty(groupName)) {
+                invalidParameterList.add("Group Name");
+            }
+
+            if (invalidParameterList.size() > 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(createInvalidPostDataApplicationResponse(invalidParameterList))
+                        .build();
+            }
+
             jvmInfoService.addJvmInfo(jvmName, hostName, new GroupInfo(groupName));
+            return Response.status(Response.Status.CREATED)
+                    .entity(createApplicationResponse(null))
+                    .build();
+
         } catch (RecordNotAddedException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                            .entity(createApplicationResponse(RECORD_NOT_ADDED, e))
                            .build();
         }
-
-        return Response.status(Response.Status.CREATED)
-                       .entity(createApplicationResponse(null))
-                       .build();
     }
 
     @Override
@@ -84,6 +108,27 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                             .entity(createApplicationResponse(RECORD_NOT_UPDATED, e))
                             .build();
+        }
+    }
+
+    @Override
+    public Response updateJvmInfo(Long id,
+                                  String jvmName,
+                                  String hostName,
+                                  String groupName) {
+        try {
+            jvmInfoService.updateJvmInfo(id, jvmName, hostName, groupName);
+            return Response.status(Response.Status.OK)
+                    .entity(createApplicationResponse(null))
+                    .build();
+        } catch (RecordNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(createApplicationResponse(RECORD_NOT_FOUND, e))
+                    .build();
+        } catch (RecordNotUpdatedException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(createApplicationResponse(RECORD_NOT_UPDATED, e))
+                    .build();
         }
     }
 
