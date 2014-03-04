@@ -4,6 +4,7 @@ configurations {
 
 dependencies {
     compile project(":aem-common")
+    compile project(":aem-domain")
 
     compile("org.apache.openjpa:openjpa:$versions.jpa"){
         exclude group: "junit"
@@ -17,6 +18,7 @@ dependencies {
 
     testCompile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+    testCompile group: 'org.springframework', name: 'spring-test', version: "$project.versions.spring"
 }
 
 test {

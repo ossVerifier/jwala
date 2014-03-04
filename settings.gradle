@@ -1,1 +1,1 @@
-include "aem-common", "aem-persistence", "aem-services", "aem-webapp", "aem-webservices"
+include "aem-common", "aem-persistence", "aem-services", "aem-webapp", "aem-webservices", "aem-domain"
