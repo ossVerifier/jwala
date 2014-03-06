@@ -1,0 +1,10 @@
+<div id="addJvmBtn"/>
+<script type="text/javascript">
+    React.renderComponent(ModalButton({label:"Add JVM",
+                                       modalDialog:ModalFormDialog({theme:"default",
+                                                                    title:"Add JVM",
+                                                                    action:"v1.0/jvms",
+                                                                    template: "public-resources/templates/jvm-add-edit.html"}
+                                                                  )}),
+                                       document.getElementById("addJvmBtn"));
+</script>

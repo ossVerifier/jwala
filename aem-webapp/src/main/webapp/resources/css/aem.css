@@ -1,6 +1,5 @@
-.greeting {
-    color: black;
-    font-size: 12px;
-    text-align: center;
-    display: block;
+html *
+{
+   font-family:Siemens Sans;
+   font-size:12
 }
