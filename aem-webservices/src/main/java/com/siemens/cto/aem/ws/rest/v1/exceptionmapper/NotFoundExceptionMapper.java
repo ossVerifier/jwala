@@ -4,7 +4,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.ws.rest.v1.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 
 public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
 

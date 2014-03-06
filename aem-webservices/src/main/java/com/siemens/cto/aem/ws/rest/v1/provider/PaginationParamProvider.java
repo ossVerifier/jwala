@@ -50,4 +50,12 @@ public class PaginationParamProvider {
                                          "Couldn't parse (" + anInteger + ") : " + nfe.getMessage());
         }
     }
+
+    @Override
+    public String toString() {
+        return "PaginationParamProvider{" +
+               "offset='" + offset + '\'' +
+               ", limit='" + limit + '\'' +
+               '}';
+    }
 }

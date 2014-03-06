@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest.v1;
+package com.siemens.cto.aem.ws.rest.v1.response;
 
 import javax.ws.rs.core.Response;
 
@@ -10,6 +10,10 @@ public class ResponseBuilder {
 
     public static Response ok(final Object someContent) {
         return new ResponseBuilder().applicationResponseContent(someContent).build();
+    }
+
+    public static Response created(final Object someContent) {
+        return new ResponseBuilder().status(Response.Status.CREATED).applicationResponseContent(someContent).build();
     }
 
     public static Response notOk(final Response.Status aStatus,
@@ -33,7 +37,6 @@ public class ResponseBuilder {
         return applicationResponse(new ApplicationResponse(Success.SUCCESS,
                                                            someContent));
     }
-
 
     public ResponseBuilder applicationResponse(final ApplicationResponse anApplicationResponse) {
         applicationResponse = anApplicationResponse;
