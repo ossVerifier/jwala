@@ -1,20 +1,24 @@
-package com.siemens.cto.aem.persistence.dao.group;
+package com.siemens.cto.aem.persistence.dao.group.impl;
 
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroup;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 
 public class SpringJdbcGroupDao implements GroupDao {
 
@@ -33,7 +37,7 @@ public class SpringJdbcGroupDao implements GroupDao {
 
         final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getName())
                                                                     .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getCreationEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getCreationEvent().getUser().getUserName());
+                                                                    .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getCreationEvent().getUser().getUserId());
 
         final KeyHolder insertedKey = new GeneratedKeyHolder();
 
@@ -58,7 +62,7 @@ public class SpringJdbcGroupDao implements GroupDao {
 
         final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToUpdate.getName())
                                                                     .addValue(QueryKey.UPDATED_DATE.getKey(), aGroupToUpdate.getUpdateEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getUpdateEvent().getUser().getUserName())
+                                                                    .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getUpdateEvent().getUser().getUserId())
                                                                     .addValue(QueryKey.ID.getKey(), aGroupToUpdate.getId().getId());
 
         final int updateCount = template.update(update,
@@ -72,17 +76,22 @@ public class SpringJdbcGroupDao implements GroupDao {
     }
 
     @Override
-    public Group getGroup(final Identifier<Group> aGroupId) {
+    public Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException {
 
-        final String select = "SELECT ID, NAME FROM GRP WHERE ID = " + QueryKey.ID.getQueryKey();
+        try {
+            final String select = "SELECT ID, NAME FROM GRP WHERE ID = " + QueryKey.ID.getQueryKey();
 
-        final SqlParameterSource input = new MapSqlParameterSource(QueryKey.ID.getKey(), aGroupId.getId());
+            final SqlParameterSource input = new MapSqlParameterSource(QueryKey.ID.getKey(), aGroupId.getId());
 
-        final Group group = template.queryForObject(select,
-                                                    input,
-                                                    new GroupRowMapper());
+            final Group group = template.queryForObject(select,
+                                                        input,
+                                                        new GroupRowMapper());
 
-        return group;
+            return group;
+        } catch (final EmptyResultDataAccessException erdae) {
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                        "Group not found: " + aGroupId);
+        }
     }
 
     @Override

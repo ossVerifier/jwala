@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group;
+package com.siemens.cto.aem.persistence.dao.group.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -31,6 +31,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

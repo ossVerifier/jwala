@@ -16,14 +16,22 @@
         </constructor-arg>
     </bean>
 
+    <bean id="groupServiceRest" class="com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl">
+        <constructor-arg ref="groupService"/>
+    </bean>
+
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
+
+    <bean id="notFoundExceptionMapper" class="com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper"/>
 
     <jaxrs:server address="/">
         <jaxrs:providers>
             <ref bean="jsonProvider"/>
+            <ref bean="notFoundExceptionMapper"/>
         </jaxrs:providers>
         <jaxrs:serviceBeans>
-            <ref bean="jvmInfoRestService" />
+            <ref bean="jvmInfoRestService"/>
+            <ref bean="groupServiceRest"/>
         </jaxrs:serviceBeans>
     </jaxrs:server>
 

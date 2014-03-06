@@ -8,6 +8,10 @@ public class Identifier<T> implements Serializable {
 
     private final Long id;
 
+    public Identifier(final String id) {
+        this(Long.valueOf(id));
+    }
+
     public Identifier(final Long id) {
         this.id = id;
     }
@@ -37,5 +41,12 @@ public class Identifier<T> implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Identifier{" +
+               "id=" + id +
+               '}';
     }
 }

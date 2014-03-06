@@ -7,7 +7,7 @@ public class ApplicationResponseContentBuilder<T> {
 
     private final T content;
 
-    public ApplicationResponseContentBuilder(T content) {
+    public ApplicationResponseContentBuilder(final T content) {
         this.content = content;
     }
 

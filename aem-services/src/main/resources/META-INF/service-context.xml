@@ -18,4 +18,12 @@
         </constructor-arg>
     </bean>
 
+    <bean id="groupService" class="com.siemens.cto.aem.service.group.GroupServiceImpl">
+        <constructor-arg>
+            <bean id="groupServiceDao" class="com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDao">
+                <constructor-arg ref="dataSource"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
 </beans>

@@ -6,14 +6,14 @@ public class AuditUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final String userName;
+    private final String userId;
 
-    public AuditUser(final String theUserName) {
-        this.userName = theUserName;
+    public AuditUser(final String theUserId) {
+        this.userId = theUserId;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserId() {
+        return userId;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class AuditUser implements Serializable {
 
         final AuditUser auditUser = (AuditUser) o;
 
-        if (userName != null ? !userName.equals(auditUser.userName) : auditUser.userName != null) {
+        if (userId != null ? !userId.equals(auditUser.userId) : auditUser.userId != null) {
             return false;
         }
 
@@ -36,6 +36,6 @@ public class AuditUser implements Serializable {
 
     @Override
     public int hashCode() {
-        return userName != null ? userName.hashCode() : 0;
+        return userId != null ? userId.hashCode() : 0;
     }
 }
