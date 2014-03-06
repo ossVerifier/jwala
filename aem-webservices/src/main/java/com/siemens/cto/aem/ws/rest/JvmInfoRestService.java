@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.ws.rest;
 
+import com.siemens.cto.aem.ws.rest.parameter.JvmInfoBean;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,10 +19,8 @@ public interface JvmInfoRestService {
 
     @POST
     @Path("/jvms")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response addJvmInfo(@FormParam("jvmName") String jvmName,
-                        @FormParam("hostName") String hostName,
-                        @FormParam("groupName") String groupName);
+    @Consumes(MediaType.APPLICATION_JSON)
+    Response addJvmInfo(JvmInfoBean jvmInfoBean);
 
     @PUT
     @Path("/jvms/{id}/{jvmName}/{hostName}")

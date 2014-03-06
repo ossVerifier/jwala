@@ -7,6 +7,7 @@ import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
+import com.siemens.cto.aem.ws.rest.parameter.JvmInfoBean;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ws.rs.core.Response;
@@ -56,20 +57,18 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
     }
 
     @Override
-    public Response addJvmInfo(String jvmName,
-                               String hostName,
-                               String groupName) {
+    public Response addJvmInfo(JvmInfoBean jvmInfoBean) {
         try {
             List<String> invalidParameterList = new ArrayList<String>();
-            if (StringUtils.isEmpty(jvmName)) {
+            if (StringUtils.isEmpty(jvmInfoBean.getJvmName())) {
                 invalidParameterList.add("JVM Name");
             }
 
-            if (StringUtils.isEmpty(hostName)) {
+            if (StringUtils.isEmpty(jvmInfoBean.getHostName())) {
                 invalidParameterList.add("Host Name");
             }
 
-            if (StringUtils.isEmpty(groupName)) {
+            if (StringUtils.isEmpty(jvmInfoBean.getGroupName())) {
                 invalidParameterList.add("Group Name");
             }
 
@@ -79,7 +78,10 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
                         .build();
             }
 
-            jvmInfoService.addJvmInfo(jvmName, hostName, new GroupInfo(groupName));
+            jvmInfoService.addJvmInfo(jvmInfoBean.getJvmName(),
+                                      jvmInfoBean.getHostName(),
+                                      new GroupInfo(jvmInfoBean.getGroupName()));
+
             return Response.status(Response.Status.CREATED)
                     .entity(createApplicationResponse(null))
                     .build();

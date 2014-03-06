@@ -7,6 +7,7 @@ import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
+import com.siemens.cto.aem.ws.rest.parameter.JvmInfoBean;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -40,10 +41,17 @@ public class JvmInfoRestServiceImplTest {
 
     private final GroupInfo groupInfo = new GroupInfo(1l, "Group 1");
 
+    private JvmInfoBean jvmInfoBean;
+
     @Before
     public void setUp() {
         jvmInfo = new JvmInfo(1l, "the-jvmInfo-name", "the-jvmfino-hostname", groupInfo);
         jvmInfoRestService = new JvmInfoRestServiceImpl(jvmInfoService);
+
+        jvmInfoBean = new JvmInfoBean();
+        jvmInfoBean.setJvmName("the-jvmInfo-name");
+        jvmInfoBean.setHostName("the-host-name");
+        jvmInfoBean.setGroupName("the-group-name");
     }
 
     @Test
@@ -108,7 +116,7 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testAddJvmInfo() {
-        final Response response  = jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name", "the-group-name");
+        final Response response  = jvmInfoRestService.addJvmInfo(jvmInfoBean);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
     }
@@ -127,7 +135,7 @@ public class JvmInfoRestServiceImplTest {
                 .addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
 
         final Response response =
-                jvmInfoRestService.addJvmInfo("the-jvmInfo-name", "the-host-name", "the-group-name");
+                jvmInfoRestService.addJvmInfo(jvmInfoBean);
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(1)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
 
@@ -141,8 +149,10 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testFailureToAddJvmInfoWithMissingParams() throws IOException {
+        jvmInfoBean.setJvmName("");
+        jvmInfoBean.setGroupName("");
         final Response response =
-                jvmInfoRestService.addJvmInfo("", "the-host-name", "");
+                jvmInfoRestService.addJvmInfo(jvmInfoBean);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         verify(jvmInfoService, times(0)).addJvmInfo(anyString(), anyString(), any(GroupInfo.class));
 
