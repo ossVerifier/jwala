@@ -1,5 +1,8 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import java.util.Properties;
+
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.h2.Driver;
@@ -9,7 +12,9 @@ import org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -26,20 +31,37 @@ public class TestJpaConfiguration {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean getEntityManagerFactory() {
+    public JpaVendorAdapter getJpaVendorAdapter() {
+        return new OpenJpaVendorAdapter();
+    }
+
+    @Bean(name = "openJpaProperties")
+    public Properties getJpaProperties() {
+        final Properties properties = new Properties();
+        properties.setProperty("org.apache.openjpa.jdbc.sql.DBDictionary", "org.apache.openjpa.jdbc.sql.H2Dictionary");
+        return properties;
+    }
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean() {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 
-        factory.setPersistenceXmlLocation("classpath:META-INF/test-aem-persistence.xml");
-        factory.setPersistenceUnitName("aem-unit");
+        factory.setJpaVendorAdapter(getJpaVendorAdapter());
+        factory.setPersistenceXmlLocation("classpath:META-INF/aem-persistence.xml");
         factory.setDataSource(getDataSource());
-//        factory.setLoadTimeWeaver(getLoadTimeWeaver());
+        factory.setJpaProperties(getJpaProperties());
 
         return factory;
     }
 
+    @Bean
+    public EntityManagerFactory getEntityManagerFactory() {
+        return getEntityManagerFactoryBean().getObject();
+    }
+
     @Bean(name = "transactionManager")
     public PlatformTransactionManager getTransactionManager() {
-        final PlatformTransactionManager manager = new JpaTransactionManager(getEntityManagerFactory().getObject());
+        final PlatformTransactionManager manager = new JpaTransactionManager(getEntityManagerFactory());
         return manager;
     }
 

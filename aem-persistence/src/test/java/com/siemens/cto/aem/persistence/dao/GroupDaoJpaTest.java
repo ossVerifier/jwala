@@ -8,7 +8,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,7 +31,6 @@ import static org.junit.Assert.fail;
                       classes = {TestJpaConfiguration.class})
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
-@Ignore
 public class GroupDaoJpaTest {
 
     private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity";
