@@ -19,11 +19,11 @@
         <properties>
             <property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />
             <property name="openjpa.jdbc.SynchronizeMappings" value="false" />
-            <property name="openjpa.Log" value="DefaultLevel=WARN, Tool=INFO" />
+            <!--<property name="openjpa.Log" value="DefaultLevel=WARN, Tool=INFO" />-->
             <property name="openjpa.RuntimeUnenhancedClasses" value="supported"/>
             <!-- Use this to view SQL prepared statements -->
             <!--<property name="openjpa.Log" value="File=c:/temp/aem.db.trace.log, DefaultLevel=WARN, Tool=INFO, SQL=TRACE, RUNTIME=TRACE"/> -->
-            <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />
+            <!--<property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />-->
         </properties>
     </persistence-unit>
 </persistence>
