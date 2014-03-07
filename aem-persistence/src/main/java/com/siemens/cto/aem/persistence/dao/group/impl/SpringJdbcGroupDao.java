@@ -13,9 +13,9 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.CreateGroup;
+import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.UpdateGroup;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
@@ -29,15 +29,15 @@ public class SpringJdbcGroupDao implements GroupDao {
     }
 
     @Override
-    public Group createGroup(final CreateGroup aGroupToCreate) {
+    public Group createGroup(final CreateGroupEvent aGroupToCreate) {
 
         final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
                                                                                        QueryKey.CREATED_DATE.getQueryKeyPlus() +
                                                                                        QueryKey.CREATED_BY.getQueryKey() + ")";
 
-        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getName())
-                                                                    .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getCreationEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getCreationEvent().getUser().getUserId());
+        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCreateGroupCommand().getGroupName())
+                                                                    .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getAuditEvent().getDateTime().getDate())
+                                                                    .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getAuditEvent().getUser().getUserId());
 
         final KeyHolder insertedKey = new GeneratedKeyHolder();
 
@@ -53,23 +53,23 @@ public class SpringJdbcGroupDao implements GroupDao {
     }
 
     @Override
-    public Group updateGroup(final UpdateGroup aGroupToUpdate) {
+    public Group updateGroup(final UpdateGroupEvent aGroupToUpdate) {
 
         final String update = "UPDATE GRP SET NAME = " + QueryKey.NAME.getQueryKeyPlus() +
                                              "LASTUPDATEDATE = " + QueryKey.UPDATED_DATE.getQueryKeyPlus() +
                                              "UPDATEBY = " + QueryKey.UPDATED_BY.getQueryKey() + " " +
-                              "WHERE ID = " + QueryKey.ID.getKey();
+                              "WHERE ID = " + QueryKey.ID.getQueryKey();
 
-        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToUpdate.getName())
-                                                                    .addValue(QueryKey.UPDATED_DATE.getKey(), aGroupToUpdate.getUpdateEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getUpdateEvent().getUser().getUserId())
-                                                                    .addValue(QueryKey.ID.getKey(), aGroupToUpdate.getId().getId());
+        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToUpdate.getUpdateGroupCommand().getNewName())
+                                                                    .addValue(QueryKey.UPDATED_DATE.getKey(), aGroupToUpdate.getAuditEvent().getDateTime().getDate())
+                                                                    .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getAuditEvent().getUser().getUserId())
+                                                                    .addValue(QueryKey.ID.getKey(), aGroupToUpdate.getUpdateGroupCommand().getId().getId());
 
         final int updateCount = template.update(update,
                                                 input);
 
         if (updateCount == 1) {
-            return getGroup(aGroupToUpdate.getId());
+            return getGroup(aGroupToUpdate.getUpdateGroupCommand().getId());
         } else {
             throw new RuntimeException("Update failed for GroupUpdate " + aGroupToUpdate);
         }

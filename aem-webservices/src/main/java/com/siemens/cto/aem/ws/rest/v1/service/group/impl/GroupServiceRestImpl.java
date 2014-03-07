@@ -5,6 +5,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -37,11 +38,25 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupService.getGroup(aGroupId));
     }
 
-//    @Override
+    @Override
     public Response createGroup(final String aNewGroupName) {
         logger.debug("Create Group requested: {}", aNewGroupName);
         //TODO We must put the user originating the request in here from however we get it
-        return ResponseBuilder.created(groupService.createGroup(aNewGroupName,
+        return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
                                                                 new User("hardCodedUser")));
+    }
+
+    @Override
+    public Response updateGroup(final JsonUpdateGroup anUpdatedGroup) {
+        logger.debug("Update Group requested: {}", anUpdatedGroup);
+        //TODO We must put the user originating the request in here from however we get it
+        return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
+                                                           new User("hardCodedUser")));
+    }
+
+    @Override
+    public Response removeGroup(final Identifier<Group> aGroupId) {
+        logger.debug("Delete Group requested: {}", aGroupId);
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

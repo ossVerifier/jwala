@@ -10,8 +10,11 @@ import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.audit.AuditUser;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.CreateGroup;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -26,15 +29,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public Group createGroup(final String aNewGroupName,
+    public Group createGroup(final CreateGroupCommand aCreateGroupCommand,
                              final User aCreatingUser) {
 
-        if (isValidGroupName(aNewGroupName)) {
-            return groupDao.createGroup(createCreateGroup(aNewGroupName,
-                                                          aCreatingUser));
+        if (isValidGroupName(aCreateGroupCommand.getGroupName())) {
+            return groupDao.createGroup(createCreateGroupEvent(aCreateGroupCommand,
+                                                               aCreatingUser));
         } else {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name is invalid: " + aNewGroupName);
+                                          "Group Name is invalid: " + aCreateGroupCommand.getGroupName());
         }
     }
 
@@ -61,6 +64,18 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public Group updateGroup(final UpdateGroupCommand anUpdateGroupCommand,
+                             final User anUpdatingUser) {
+        if (isValidGroupName(anUpdateGroupCommand.getNewName())) {
+            return groupDao.updateGroup(createUpdateGroup(anUpdateGroupCommand,
+                                                          anUpdatingUser));
+        } else {
+            throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
+                                          "New Group Name is invalid: " + anUpdateGroupCommand.getNewName());
+        }
+    }
+
+    @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
         groupDao.removeGroup(aGroupId);
     }
@@ -69,10 +84,20 @@ public class GroupServiceImpl implements GroupService {
         return StringUtils.hasText(aGroupName);
     }
 
-    protected CreateGroup createCreateGroup(final String aNewGroupName,
-                                            final User aCreatingUser) {
-        return new CreateGroup(aNewGroupName,
-                               new AuditEvent(new AuditUser(aCreatingUser.getId()),
-                                              new AuditDateTime(new Date(System.currentTimeMillis()))));
+    protected CreateGroupEvent createCreateGroupEvent(final CreateGroupCommand aCreateGroupCommand,
+                                                      final User aCreatingUser) {
+        return new CreateGroupEvent(aCreateGroupCommand,
+                                    createAuditEventNow(aCreatingUser));
+    }
+
+    protected UpdateGroupEvent createUpdateGroup(final UpdateGroupCommand anUpdateGroupCommand,
+                                                 final User anUpdatingUser) {
+        return new UpdateGroupEvent(anUpdateGroupCommand,
+                                    createAuditEventNow(anUpdatingUser));
+    }
+
+    protected AuditEvent createAuditEventNow(final User aUser) {
+        return new AuditEvent(new AuditUser(aUser),
+                              new AuditDateTime(new Date(System.currentTimeMillis())));
     }
 }

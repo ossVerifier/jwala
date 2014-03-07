@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import org.h2.Driver;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,17 +19,21 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.configuration.ConfigurationProfile;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.audit.AuditUser;
-import com.siemens.cto.aem.domain.model.group.CreateGroup;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.UpdateGroup;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDao;
@@ -42,8 +47,9 @@ import static org.junit.Assert.assertTrue;
                                  SpringJdbcGroupDaoTest.IntegrationConfiguration.class,
                                  SpringJdbcGroupDaoTest.LocalDevConfiguration.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
-public class SpringJdbcGroupDaoTest extends AbstractTransactionalJUnit4SpringContextTests {
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+public class SpringJdbcGroupDaoTest  {
 
     @Configuration
     static class CommonConfiguration {
@@ -99,13 +105,13 @@ public class SpringJdbcGroupDaoTest extends AbstractTransactionalJUnit4SpringCon
     @Test
     public void testCreateGroup() throws Exception {
 
-        final CreateGroup createGroup = new CreateGroup("newGroupName",
-                                                        new AuditEvent(new AuditUser("auditUserTest"),
-                                                                       new AuditDateTime(new Date())));
+        final CreateGroupEvent createGroupEvent = new CreateGroupEvent(new CreateGroupCommand("newGroupName"),
+                                                                       new AuditEvent(new AuditUser("auditUserTest"),
+                                                                                      new AuditDateTime(new Date())));
 
-        final Group actualGroup = dao.createGroup(createGroup);
+        final Group actualGroup = dao.createGroup(createGroupEvent);
 
-        assertEquals(createGroup.getName(),
+        assertEquals(createGroupEvent.getCreateGroupCommand().getGroupName(),
                      actualGroup.getName());
         assertNotNull(actualGroup.getId());
     }
@@ -113,16 +119,16 @@ public class SpringJdbcGroupDaoTest extends AbstractTransactionalJUnit4SpringCon
     @Test
     public void testUpdateGroup() throws Exception {
 
-        final UpdateGroup updateGroup = new UpdateGroup(new Identifier<Group>(338L),
-                                                        "My New Name",
-                                                        new AuditEvent(new AuditUser("auditUpdateUserTest"),
-                                                                       new AuditDateTime(new Date())));
+        final UpdateGroupEvent updateGroupEvent = new UpdateGroupEvent(new UpdateGroupCommand(new Identifier<Group>(338L),
+                                                                                              "My New Name"),
+                                                                       new AuditEvent(new AuditUser("auditUpdateUserTest"),
+                                                                                      new AuditDateTime(new Date())));
 
-        final Group actualGroup = dao.updateGroup(updateGroup);
+        final Group actualGroup = dao.updateGroup(updateGroupEvent);
 
-        assertEquals(updateGroup.getName(),
+        assertEquals(updateGroupEvent.getUpdateGroupCommand().getNewName(),
                      actualGroup.getName());
-        assertEquals(updateGroup.getId(),
+        assertEquals(updateGroupEvent.getUpdateGroupCommand().getId(),
                      actualGroup.getId());
     }
 
