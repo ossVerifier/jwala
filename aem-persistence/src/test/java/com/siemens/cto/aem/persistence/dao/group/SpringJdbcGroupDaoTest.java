@@ -13,12 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -97,22 +95,51 @@ public class SpringJdbcGroupDaoTest  {
     private DataSource dataSource;
 
     private SpringJdbcGroupDao dao;
+    private Group preCreatedGroup;
 
     @Before
     public void setUp() throws Exception {
         dao = new SpringJdbcGroupDao(dataSource);
+
+
+        preCreatedGroup = dao.createGroup(createCreateGroupEvent("Pre-Created Group Name",
+                                                                 "Pre-Created User Id"));
+    }
+
+    protected CreateGroupEvent createCreateGroupEvent(final String aGroupName,
+                                                      final String aUserId) {
+
+        final CreateGroupEvent createGroup = new CreateGroupEvent(new CreateGroupCommand(aGroupName),
+                                                                  createAuditEvent(aUserId));
+
+        return createGroup;
+    }
+
+    protected UpdateGroupEvent createUpdateGroupEvent(final Identifier<Group> aGroupId,
+                                                      final String aNewGroupName,
+                                                      final String aUserId) {
+
+        final UpdateGroupEvent updateGroup = new UpdateGroupEvent(new UpdateGroupCommand(aGroupId,
+                                                                                         aNewGroupName),
+                                                                  createAuditEvent(aUserId));
+
+        return updateGroup;
+    }
+
+    protected AuditEvent createAuditEvent(final String aUserId) {
+        return new AuditEvent(new AuditUser(aUserId),
+                              new AuditDateTime(new Date(System.currentTimeMillis())));
     }
 
     @Test
     public void testCreateGroup() throws Exception {
 
-        final CreateGroupEvent createGroupEvent = new CreateGroupEvent(new CreateGroupCommand("newGroupName"),
-                                                                       new AuditEvent(new AuditUser("auditUserTest"),
-                                                                                      new AuditDateTime(new Date())));
+        final CreateGroupEvent createGroup = createCreateGroupEvent("newGroupName",
+                                                                    "auditUserTest");
 
-        final Group actualGroup = dao.createGroup(createGroupEvent);
+        final Group actualGroup = dao.createGroup(createGroup);
 
-        assertEquals(createGroupEvent.getCreateGroupCommand().getGroupName(),
+        assertEquals(createGroup.getCreateGroupCommand().getGroupName(),
                      actualGroup.getName());
         assertNotNull(actualGroup.getId());
     }
@@ -120,27 +147,26 @@ public class SpringJdbcGroupDaoTest  {
     @Test
     public void testUpdateGroup() throws Exception {
 
-        final UpdateGroupEvent updateGroupEvent = new UpdateGroupEvent(new UpdateGroupCommand(new Identifier<Group>(338L),
-                                                                                              "My New Name"),
-                                                                       new AuditEvent(new AuditUser("auditUpdateUserTest"),
-                                                                                      new AuditDateTime(new Date())));
+        final UpdateGroupEvent updateGroup = createUpdateGroupEvent(preCreatedGroup.getId(),
+                                                                    "My New Name",
+                                                                    "auditUpdateUserTest");
 
-        final Group actualGroup = dao.updateGroup(updateGroupEvent);
+        final Group actualGroup = dao.updateGroup(updateGroup);
 
-        assertEquals(updateGroupEvent.getUpdateGroupCommand().getNewName(),
+        assertEquals(updateGroup.getUpdateGroupCommand().getNewName(),
                      actualGroup.getName());
-        assertEquals(updateGroupEvent.getUpdateGroupCommand().getId(),
+        assertEquals(updateGroup.getUpdateGroupCommand().getId(),
                      actualGroup.getId());
     }
 
     @Test
     public void testGetGroup() {
 
-        final Identifier<Group> expectedGroupIdentifier = new Identifier<>(338L);
+        final Identifier<Group> expectedGroupIdentifier = preCreatedGroup.getId();
 
         final Group group = dao.getGroup(expectedGroupIdentifier);
 
-        assertEquals("Test Group",
+        assertEquals(preCreatedGroup.getName(),
                      group.getName());
         assertEquals(expectedGroupIdentifier,
                      group.getId());
@@ -150,6 +176,12 @@ public class SpringJdbcGroupDaoTest  {
     public void testGetGroups() throws Exception {
 
         final PaginationParameter pagination = new PaginationParameter(0, 2);
+
+        for (int i=0; i<= pagination.getLimit(); i++) {
+            dao.createGroup(createCreateGroupEvent("Auto-constructed Group " + (i + 1),
+                                                   "Auto-constructed User " + (i + 1)));
+        }
+
         final List<Group> actualGroups = dao.getGroups(pagination);
 
         assertEquals(pagination.getLimit().intValue(),
@@ -159,7 +191,7 @@ public class SpringJdbcGroupDaoTest  {
     @Test
     public void testFindGroups() throws Exception {
 
-        final String expectedContains = "Test";
+        final String expectedContains = preCreatedGroup.getName().substring(3, 5);
 
         final List<Group> actualGroups = dao.findGroups(expectedContains,
                                                         new PaginationParameter());
@@ -172,7 +204,7 @@ public class SpringJdbcGroupDaoTest  {
     @Test(expected = NotFoundException.class)
     public void testRemoveGroup() throws Exception {
 
-        final Identifier<Group> groupId = new Identifier<>(338L);
+        final Identifier<Group> groupId = preCreatedGroup.getId();
 
         dao.removeGroup(groupId);
         dao.getGroup(groupId);
