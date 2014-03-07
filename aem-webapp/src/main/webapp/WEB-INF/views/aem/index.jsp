@@ -3,7 +3,7 @@
 <head>
 <title>Apache Enterprise Manager</title>
 <link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/modal-form-dialog.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/modal-form-dialog.css">
 <script src="public-resources/js/react/es5-shim-2.3.0.min.js"></script>
 <script src="public-resources/js/react/es5-sham.min.js"></script>
 <script src="public-resources/js/react/react-0.8.0.min.js"></script>

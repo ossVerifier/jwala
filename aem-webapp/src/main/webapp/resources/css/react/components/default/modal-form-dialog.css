@@ -1,0 +1,30 @@
+div.default {
+    background:white;
+    border-style:solid;
+    border-width:2px;
+    border-color:D3D3D3;
+    width:auto;
+    height:auto;
+    position:absolute
+}
+
+div.default-content {
+    margin 5,5,5,5
+}
+
+div.default-header {
+    border-style:solid;
+    border-width:2px;
+    border-color:white;
+    background:00858a; /* Siemen's official color. Other official color 81B0B5 */
+    width:auto;
+    height:auto;
+    color:white;
+    font-family:Siemens Sans;
+    font-size:14;
+    padding-left:3px
+}
+
+div.default-hidden {
+    display:none
+}
