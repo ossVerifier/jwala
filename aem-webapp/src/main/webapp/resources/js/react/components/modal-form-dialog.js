@@ -24,6 +24,7 @@
 
 var ModalFormDialog = React.createClass({
     getInitialState: function() {
+        THEME_PREFIX = "modalFormDialog";
         modalForm = React.DOM.form({action:this.props.action});
         return {
           show: false
@@ -50,9 +51,9 @@ var ModalFormDialog = React.createClass({
 
         var btnDivStyle = {textAlign:"right", margin:"2,2,2,2"};
 
-        return React.DOM.div({className:this.props.theme, style:rootDivStyle},
-               React.DOM.div({className:this.props.theme + "-header"}, this.props.title),
-               React.DOM.div({className:this.props.theme + "-content"}, modalForm),
+        return React.DOM.div({className:THEME_PREFIX + "-" + this.props.theme, style:rootDivStyle},
+               React.DOM.div({className:THEME_PREFIX + "-" + this.props.theme + "-header"}, this.props.title),
+               React.DOM.div({className:THEME_PREFIX + "-" + this.props.theme + "-content"}, modalForm),
                React.DOM.div({style:btnDivStyle},
                     React.DOM.input({type:"button", value:"Ok", onClick:this.okClick}),
                     React.DOM.input({type:"button", value:"Cancel", onClick:this.cancelClick})
@@ -61,12 +62,6 @@ var ModalFormDialog = React.createClass({
     },
     componentDidMount: function() {
         $(modalForm.getDOMNode()).load(this.props.template);
-
-        $(this.getDOMNode()).css("position","absolute");
-        $(this.getDOMNode()).css("top", "50%");
-        $(this.getDOMNode()).css("left", "50%");
-        $(this.getDOMNode()).css("margin-top", "-" + $(this.getDOMNode()).height() + "px");
-        $(this.getDOMNode()).css("margin-left", "-" + $(this.getDOMNode()).width() + "px");
     },
     okClick: function() {
         var theModalFormDialog = this;
