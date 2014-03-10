@@ -12,9 +12,16 @@
     var jvmConfigArea = Area({theme:"default",
                               template: "public-resources/templates/jvm-config-area.html"});
 
-    var items = [{title:"Groups", content:""},
+    var items = [{title:"JVM", content:jvmConfigArea},
                  {title:"Web Servers", content:""},
-                 {title: "Configure", content:jvmConfigArea}];
+                 {title: "Web Apps", content:""},
+                 {title: "Resources", content:""},
+                 {title: "Group", content:""},
+                 {title: "Role Mapping", content:""}];
+
+    items = [{title:"Groups", content:""},
+             {title:"Web Servers", content:""},
+             {title: "Configure", content:Tabs({theme:"default", items:items})}];
 
     React.renderComponent(Tabs({theme:"default", items:items}), document.getElementById("tabsDiv"));
 </script>
