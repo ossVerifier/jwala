@@ -5,7 +5,10 @@ div.modalFormDialog-default {
     border-color:D3D3D3;
     width:auto;
     height:auto;
-    position:absolute
+    position:absolute;
+    top: 35%;
+    left: 35%;
+    z-index: 1000;
 }
 
 div.modalFormDialog-default-content {
