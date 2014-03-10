@@ -6,7 +6,8 @@ public enum AemFaultType implements MessageResponseStatus {
 
     GROUP_NOT_FOUND("AEM1", "GroupNotFound"),
     INVALID_GROUP_NAME("AEM2", "InvalidGroupName"),
-    INVALID_IDENTIFIER("AEM3", "InvalidIdentifier");
+    INVALID_IDENTIFIER("AEM3", "InvalidIdentifier"),
+    DUPLICATE_GROUP_NAME("AEM4", "DuplicateGroupName");
 
     private final String faultCode;
     private final String faultMessage;

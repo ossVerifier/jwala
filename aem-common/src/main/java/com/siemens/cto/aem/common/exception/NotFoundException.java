@@ -7,4 +7,12 @@ public class NotFoundException extends FaultCodeException {
         super(theMessageResponseStatus,
               theMessage);
     }
+
+    public NotFoundException(final MessageResponseStatus theMessageResponseStatus,
+                             final String theMessage,
+                             final Throwable theCause) {
+        super(theMessageResponseStatus,
+              theMessage,
+              theCause);
+    }
 }

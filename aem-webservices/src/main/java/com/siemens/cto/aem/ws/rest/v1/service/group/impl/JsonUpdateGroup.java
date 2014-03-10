@@ -54,7 +54,8 @@ public class JsonUpdateGroup {
                                           name);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          nfe.getMessage());
+                                          nfe.getMessage(),
+                                          nfe);
         }
     }
 

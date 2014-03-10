@@ -7,4 +7,12 @@ public class BadRequestException extends FaultCodeException {
         super(theMessageResponseStatus,
               theMessage);
     }
+
+    public BadRequestException(final MessageResponseStatus theMessageResponseStatus,
+                               final String theMessage,
+                               final Throwable theCause) {
+        super(theMessageResponseStatus,
+              theMessage,
+              theCause);
+    }
 }

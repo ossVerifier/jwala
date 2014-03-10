@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -11,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
@@ -31,24 +33,30 @@ public class SpringJdbcGroupDao implements GroupDao {
     @Override
     public Group createGroup(final CreateGroupEvent aGroupToCreate) {
 
-        final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
-                                                                                       QueryKey.CREATED_DATE.getQueryKeyPlus() +
-                                                                                       QueryKey.CREATED_BY.getQueryKey() + ")";
+        try {
+            final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
+                                                                                           QueryKey.CREATED_DATE.getQueryKeyPlus() +
+                                                                                           QueryKey.CREATED_BY.getQueryKey() + ")";
 
-        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCreateGroupCommand().getGroupName())
-                                                                    .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getAuditEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getAuditEvent().getUser().getUserId());
+            final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCreateGroupCommand().getGroupName())
+                                                                        .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getAuditEvent().getDateTime().getDate())
+                                                                        .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getAuditEvent().getUser().getUserId());
 
-        final KeyHolder insertedKey = new GeneratedKeyHolder();
+            final KeyHolder insertedKey = new GeneratedKeyHolder();
 
-        final int insertCount = template.update(insert,
-                                                input,
-                                                insertedKey);
+            final int insertCount = template.update(insert,
+                                                    input,
+                                                    insertedKey);
 
-        if (insertCount == 1) {
-            return getGroup(new Identifier<Group>(insertedKey.getKey().longValue()));
-        } else {
-            throw new RuntimeException("Insert failed for GroupCreation " + aGroupToCreate);
+            if (insertCount == 1) {
+                return getGroup(new Identifier<Group>(insertedKey.getKey().longValue()));
+            } else {
+                throw new RuntimeException("Insert failed for GroupCreation " + aGroupToCreate);
+            }
+        } catch (DuplicateKeyException dke) {
+            throw new BadRequestException(AemFaultType.DUPLICATE_GROUP_NAME,
+                                          "Group Name already exists: " + aGroupToCreate.getCreateGroupCommand().getGroupName(),
+                                          dke);
         }
     }
 
@@ -71,7 +79,8 @@ public class SpringJdbcGroupDao implements GroupDao {
         if (updateCount == 1) {
             return getGroup(aGroupToUpdate.getUpdateGroupCommand().getId());
         } else {
-            throw new RuntimeException("Update failed for GroupUpdate " + aGroupToUpdate);
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                        "Update failed for GroupUpdate " + aGroupToUpdate.getUpdateGroupCommand().getId());
         }
     }
 
@@ -90,7 +99,8 @@ public class SpringJdbcGroupDao implements GroupDao {
             return group;
         } catch (final EmptyResultDataAccessException erdae) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Group not found: " + aGroupId);
+                                        "Group not found: " + aGroupId,
+                                        erdae);
         }
     }
 
@@ -142,6 +152,9 @@ public class SpringJdbcGroupDao implements GroupDao {
 
         if (deleteCount > 1) {
             throw new RuntimeException("Unknown problem when deleting Group " + aGroupId);
+        } else if (deleteCount == 0) {
+            throw new BadRequestException(AemFaultType.GROUP_NOT_FOUND,
+                                          "Group not found: " + aGroupId.getId());
         }
     }
 
