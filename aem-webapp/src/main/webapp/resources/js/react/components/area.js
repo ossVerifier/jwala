@@ -1,5 +1,5 @@
 /**
- * Main Area component.
+ * Area component.
  *
  * A page is suppose to be divided into areas e.g. header, main body, footer, ads etc...
  * The area component was designed with the intention of holding other components
@@ -15,9 +15,9 @@
  * by Z003BPEJ
  */
 
-var MainArea = React.createClass({
+var Area = React.createClass({
     render: function() {
-        return React.DOM.div({className:this.props.theme}); // the main viewing area
+        return React.DOM.div({className:"area-" + this.props.theme});
     },
     componentDidMount: function() {
         $(this.getDOMNode()).load(this.props.template);
