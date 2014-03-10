@@ -1,0 +1,16 @@
+.jvm-config-area {
+    width: 100%;
+    margin-left: 5px;
+    margin-top: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px
+}
+
+.jvm-config-area table {
+    width: 100%
+}
+
+.jvm-config-area table td {
+    vertical-align: bottom
+}
+

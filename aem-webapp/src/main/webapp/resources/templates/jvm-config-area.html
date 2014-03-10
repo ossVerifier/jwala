@@ -1,0 +1,28 @@
+<div class="jvm-config-area">
+    <table>
+        <tr>
+            <td>Search<br/><input/></td>
+            <td style="width:1px"><div id="addJvmBtn"></div></td>
+            <td style="width:1px"><div id="delJvmBtn"></div></td>
+        </tr>
+        <tr>
+            <td colspan="3"><div id="jvmDataGrid"></div></td>
+        </tr>
+    </table>
+</div>
+
+<script type="text/javascript">
+    var jvmAddModalDialog = ModalFormDialog({theme:"default",
+                                             title:"Add JVM",
+                                             action:"v1.0/jvms",
+                                             template: "public-resources/templates/jvm-add-edit.html"});
+
+    React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog}),
+        document.getElementById("addJvmBtn"));
+
+    React.renderComponent(ModalButton({label:"Delete"}),
+        document.getElementById("delJvmBtn"));
+
+    React.renderComponent(DataGrid({theme:"default", header:["JVM Name", "JVM ID", "Host Name", "Group Name"]}),
+        document.getElementById("jvmDataGrid"));
+</script>
