@@ -1,10 +1,20 @@
-<div id="addJvmBtn"/>
+<table>
+    <tr>
+        <td><img src="public-resources/img/toc-banner-960px.jpg"/><br><br></td>
+    </tr>
+    <tr>
+        <td><div id="tabsDiv"></div></td>
+    </tr>
+</table>
+
+
 <script type="text/javascript">
-    React.renderComponent(ModalButton({label:"Add JVM",
-                                       modalDialog:ModalFormDialog({theme:"default",
-                                                                    title:"Add JVM",
-                                                                    action:"v1.0/jvms",
-                                                                    template: "public-resources/templates/jvm-add-edit.html"}
-                                                                  )}),
-                                       document.getElementById("addJvmBtn"));
+    var jvmConfigArea = Area({theme:"default",
+                              template: "public-resources/templates/jvm-config-area.html"});
+
+    var items = [{title:"Groups", content:""},
+                 {title:"Web Servers", content:""},
+                 {title: "Configure", content:jvmConfigArea}];
+
+    React.renderComponent(Tabs({theme:"default", items:items}), document.getElementById("tabsDiv"));
 </script>
