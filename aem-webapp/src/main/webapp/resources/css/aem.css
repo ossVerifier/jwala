@@ -3,3 +3,7 @@ html *
    font-family:Siemens Sans;
    font-size:12
 }
+
+body {
+    text-align: center;
+}

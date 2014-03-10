@@ -1,0 +1,6 @@
+div.area-default {
+    width: 960px; /* Standard web page size for 2014 (940 ~ 960+ px) */
+    height: 100%;
+    text-align: left;
+    margin: 0 auto;
+}
