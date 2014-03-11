@@ -23,11 +23,13 @@
     <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/>
 
     <bean id="notFoundExceptionMapper" class="com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper"/>
+    <bean id="badRequestExceptionMapper" class="com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper"/>
 
     <jaxrs:server address="/">
         <jaxrs:providers>
             <ref bean="jsonProvider"/>
             <ref bean="notFoundExceptionMapper"/>
+            <ref bean="badRequestExceptionMapper"/>
         </jaxrs:providers>
         <jaxrs:serviceBeans>
             <ref bean="jvmInfoRestService"/>

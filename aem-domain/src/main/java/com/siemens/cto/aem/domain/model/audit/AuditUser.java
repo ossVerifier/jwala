@@ -2,11 +2,17 @@ package com.siemens.cto.aem.domain.model.audit;
 
 import java.io.Serializable;
 
+import com.siemens.cto.aem.domain.model.temporary.User;
+
 public class AuditUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private final String userId;
+
+    public AuditUser(final User theUser) {
+        userId = theUser.getId();
+    }
 
     public AuditUser(final String theUserId) {
         this.userId = theUserId;

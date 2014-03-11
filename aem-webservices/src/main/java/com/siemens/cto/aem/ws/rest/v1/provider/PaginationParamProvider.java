@@ -33,7 +33,8 @@ public class PaginationParamProvider {
             }
         } catch (final IllegalArgumentException iae) {
             throw new FaultCodeException(RestFaultType.INVALID_PAGINATION_PARAMETER,
-                                         "Invalid pagination arguments (offset=" + offset + ", limit=" + limit + "): " + iae.getMessage());
+                                         "Invalid pagination arguments (offset=" + offset + ", limit=" + limit + "): " + iae.getMessage(),
+                                         iae);
         }
     }
 
@@ -47,7 +48,8 @@ public class PaginationParamProvider {
             return converted;
         } catch (final NumberFormatException nfe) {
             throw new FaultCodeException(RestFaultType.INVALID_PAGINATION_PARAMETER,
-                                         "Couldn't parse (" + anInteger + ") : " + nfe.getMessage());
+                                         "Couldn't parse (" + anInteger + ") : " + nfe.getMessage(),
+                                         nfe);
         }
     }
 

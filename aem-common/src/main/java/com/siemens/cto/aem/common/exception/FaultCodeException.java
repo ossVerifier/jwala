@@ -7,7 +7,15 @@ public class FaultCodeException extends RuntimeException {
     public FaultCodeException(final MessageResponseStatus theMessageResponseStatus,
                               final String theMessage) {
         super(theMessage);
-        this.messageResponseStatus = theMessageResponseStatus;
+        messageResponseStatus = theMessageResponseStatus;
+    }
+
+    public FaultCodeException(final MessageResponseStatus theMessageResponseStatus,
+                              final String theMessage,
+                              final Throwable theCause) {
+        super(theMessage,
+              theCause);
+        messageResponseStatus = theMessageResponseStatus;
     }
 
     public MessageResponseStatus getMessageResponseStatus() {

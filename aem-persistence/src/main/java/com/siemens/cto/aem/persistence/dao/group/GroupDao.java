@@ -3,17 +3,17 @@ package com.siemens.cto.aem.persistence.dao.group;
 import java.util.List;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.group.CreateGroup;
+import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.UpdateGroup;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 
 public interface GroupDao {
 
-    Group createGroup(final CreateGroup aGroupToCreate);
+    Group createGroup(final CreateGroupEvent aGroupToCreate);
 
-    Group updateGroup(final UpdateGroup aGroupToUpdate);
+    Group updateGroup(final UpdateGroupEvent aGroupToUpdate);
 
     Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
