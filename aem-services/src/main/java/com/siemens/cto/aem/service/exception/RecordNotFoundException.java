@@ -9,4 +9,8 @@ public class RecordNotFoundException extends RuntimeException {
         super(theClass.getSimpleName() + " with id = " + id + " was not found!");
     }
 
+    public RecordNotFoundException(Class theClass, String name) {
+        super(theClass.getSimpleName() + " with name = " + name + " was not found!");
+    }
+
 }

@@ -39,4 +39,8 @@ public interface JvmInfoRestService {
     @Path("/jvms/{id}")
     Response deleteJvm(@PathParam("id") Long id);
 
+    @GET
+    @Path("/jvm")
+    Response getJvmInfoByName(@QueryParam("name") String name);
+
 }

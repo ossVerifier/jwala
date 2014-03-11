@@ -5,10 +5,9 @@ import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Group;
 import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
-import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
-import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,6 +148,19 @@ public class JvmInfoServiceImpl implements JvmInfoService {
             }
         } else {
             throw new RecordNotFoundException(Jvm.class, id);
+        }
+    }
+
+    @Override
+    public JvmInfo getJvmInfoByName(String name) {
+        final Jvm jvm = jvmDao.findByName(name);
+        if (jvm != null) {
+            return new JvmInfo(jvm.getId(),
+                    jvm.getName(),
+                    jvm.getHostName(),
+                    new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName()));
+        } else {
+            throw new RecordNotFoundException(Jvm.class, name);
         }
     }
 

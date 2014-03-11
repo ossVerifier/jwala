@@ -19,4 +19,5 @@ public interface JvmInfoService {
 
     void deleteJvm(Long id);
 
+    JvmInfo getJvmInfoByName(String name);
 }

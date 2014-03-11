@@ -153,4 +153,22 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
         }
     }
 
+    @Override
+    public Response getJvmInfoByName(String name) {
+        try {
+            final JvmInfo jvmInfo = jvmInfoService.getJvmInfoByName(name);
+
+            ApplicationResponseContentBuilder<JvmInfo> appContentBuilder =
+                    new ApplicationResponseContentBuilder<JvmInfo>(jvmInfo);
+
+            return Response.status(Response.Status.OK)
+                    .entity(createApplicationResponse(appContentBuilder.build()))
+                    .build();
+        } catch (RecordNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(createApplicationResponse(RECORD_NOT_FOUND, e))
+                    .build();
+        }
+    }
+
 }
