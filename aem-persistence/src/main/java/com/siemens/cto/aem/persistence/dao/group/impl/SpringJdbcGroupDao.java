@@ -153,6 +153,7 @@ public class SpringJdbcGroupDao implements GroupDao {
         if (deleteCount > 1) {
             throw new RuntimeException("Unknown problem when deleting Group " + aGroupId);
         } else if (deleteCount == 0) {
+            //TODO Decide whether deleting something that doesn't exist should result in a failure or not
             throw new BadRequestException(AemFaultType.GROUP_NOT_FOUND,
                                           "Group not found: " + aGroupId.getId());
         }

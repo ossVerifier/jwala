@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.configuration.ConfigurationProfile;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.audit.AuditUser;
@@ -168,7 +169,7 @@ public class SpringJdbcGroupDaoTest  {
         }
     }
 
-    @Test(expected = DataAccessException.class)
+    @Test(expected = NotFoundException.class)
     public void testRemoveGroup() throws Exception {
 
         final Identifier<Group> groupId = new Identifier<>(338L);
