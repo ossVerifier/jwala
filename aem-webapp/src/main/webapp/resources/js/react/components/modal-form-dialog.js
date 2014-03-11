@@ -65,6 +65,7 @@ var ModalFormDialog = React.createClass({
     },
     okClick: function() {
         var theModalFormDialog = this;
+        var dataGrid = this.props.dataGrid;
 
         // The submit callback
         $(modalForm.getDOMNode()).one("submit", function(e) {
@@ -78,6 +79,7 @@ var ModalFormDialog = React.createClass({
                 dataType: "json",
                 success:function(data, textStatus, jqXHR) {
                     theModalFormDialog.hide();
+                    dataGrid.refresh();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     // TODO: Display error message in another modal dialog.
