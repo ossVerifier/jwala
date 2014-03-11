@@ -1,7 +1,7 @@
 <div class="jvm-config-area">
     <table>
         <tr>
-            <td>Search<br/><input/></td>
+            <td></td>
             <td style="width:1px"><div id="addJvmBtn"></div></td>
             <td style="width:1px"><div id="delJvmBtn"></div></td>
         </tr>
@@ -11,18 +11,72 @@
     </table>
 </div>
 
+<div id="jvmEditDialog"/>
+
 <script type="text/javascript">
+    var setData = function(name) {
+        $("#jvmName").val(name);
+    }
+
+    var jvmDataGrid = DataGrid({theme:"default",
+                                header:["JVM Name", "JVM ID", "Host Name", "Group Name"],
+                                url:"v1.0/jvms/",
+                                editDialog:ModalFormDialogJqueryUi({template:"editTemplate",
+                                title:"Edit JVM",
+                                callback:setData})});
+
+    React.renderComponent(jvmDataGrid,
+        document.getElementById("jvmDataGrid"));
+
     var jvmAddModalDialog = ModalFormDialog({theme:"default",
                                              title:"Add JVM",
                                              action:"v1.0/jvms",
-                                             template: "public-resources/templates/jvm-add-edit.html"});
+                                             template: "public-resources/templates/jvm-add-edit.html",
+                                             dataGrid:jvmDataGrid});
 
     React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog}),
         document.getElementById("addJvmBtn"));
 
-    React.renderComponent(ModalButton({label:"Delete"}),
-        document.getElementById("delJvmBtn"));
+    React.renderComponent(DeleteItemWidget({dataGrid:jvmDataGrid, url:"v1.0/jvms/"}),
+                          document.getElementById("delJvmBtn"));
 
-    React.renderComponent(DataGrid({theme:"default", header:["JVM Name", "JVM ID", "Host Name", "Group Name"]}),
-        document.getElementById("jvmDataGrid"));
+
+
 </script>
+
+<div id="editTemplate" style="display:none">
+    <div>
+        <form id="jvmEditForm" action="v1.0/jvms">
+            <input id="jvmId" name="id" type="hidden" />
+            <table>
+                <tr>
+                    <td>Name</td>
+                </tr>
+                <tr>
+                    <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100"></td>
+                </tr>
+                <tr>
+                    <td>Host</td>
+                </tr>
+                <tr>
+                    <td><input id="hostNameId" name="hostName" type="text" maxlength="50"/></td>
+                </tr>
+                <tr>
+                    <td>
+                        Group
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <select id="groupNameId" name="groupName">
+                            <option value="Group 1">Group 1</option>
+                            <option value="Group 2">Group 2</option>
+                            <option value="Group 3">Group 3</option>
+                            <option value="Group 4">Group 4</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
