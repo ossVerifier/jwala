@@ -6,10 +6,13 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -45,6 +48,9 @@ public class GroupDaoJpaTest {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager em;
+
+    @Autowired
+    private DataSource dataSource;
 
     private GroupDaoJpa dao;
 
@@ -108,12 +114,15 @@ public class GroupDaoJpaTest {
     @Test
     public void testFindAll() {
         add(TEST_GROUP_ONE);
-        List<Group> groups = dao.findAll();
-        assertEquals("size should be ONE", 1, groups.size());
+
+        final List<Group> actualGroups = dao.findAll();
+        final int actualGroupSize = actualGroups.size();
+        assertTrue("size should be at least ONE", actualGroupSize > 0);
 
         add(TEST_GROUP_TWO);
-        groups = dao.findAll();
-        assertEquals("size should be TWo", 2, groups.size());
+        final int expectedGroupSize = actualGroupSize + 1;
+        final List<Group> actualGroupsPlusOne = dao.findAll();
+        assertEquals("size should be one greater", expectedGroupSize, actualGroupsPlusOne.size());
     }
 
     @Test
@@ -134,35 +143,46 @@ public class GroupDaoJpaTest {
 
     @Test
     public void testCount() {
+
+        final int initialTotalCount = dao.count(QUERY_COUNT, (Object[]) null);
+        final int initialByNameCount = dao.count(QUERY_COUNT_BY_NAME, TEST_GROUP_ONE);
+
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
-        int count = dao.count(QUERY_COUNT, (Object[]) null);
-        assertEquals("Invalid count", 2, count);
-        count = dao.count(QUERY_COUNT_BY_NAME, new Object[] {TEST_GROUP_ONE});
-        assertEquals("Invalid count", 1, count);
+
+        final int actualTotalCount = dao.count(QUERY_COUNT, (Object[]) null);
+        final int actualByNameCount = dao.count(QUERY_COUNT_BY_NAME, TEST_GROUP_ONE);
+        assertEquals("Invalid count", initialTotalCount + 2, actualTotalCount);
+        assertEquals("Invalid count by name", initialByNameCount + 1, actualByNameCount);
     }
 
     @Test
     public void testFindObjects() {
-        List<Group> groups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
-        assertEquals("List of objects should be empty, it is: " + groups, 0, groups.size());
+
+        final int numberOfExistingGroups = dao.findObjects(QUERY_OBJECTS, (Object[]) null).size();
+
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
-        groups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
-        assertEquals("Invalid size", 2, groups.size());
-        groups = dao.findObjects(QUERY_OBJECTS_BY_ID, new Object[] {new Long(0)});
-        assertEquals("Invalid size", 2, groups.size());
+
+        final List<Group> allActualGroups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
+        final int expectedNumberOfExistingGroups = numberOfExistingGroups + 2;
+        assertEquals("Invalid size", expectedNumberOfExistingGroups, allActualGroups.size());
+
+        final List<Group> allActualGroupsById = dao.findObjects(QUERY_OBJECTS_BY_ID, 0L);
+        assertEquals("Invalid size", expectedNumberOfExistingGroups, allActualGroupsById.size());
     }
 
     @Test
     public void testFlush() {
+        final int initialCount = dao.findObjects(QUERY_OBJECTS, (Object[]) null).size();
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
         dao.flush();
-        List<Group> groups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
-        assertEquals("Invalid size", 2, groups.size());
-        groups = dao.findObjects(QUERY_OBJECTS_BY_ID, new Object[] {new Long(0)});
-        assertEquals("Invalid size", 2, groups.size());
+        final int expectedCount = initialCount + 2;
+
+        final JdbcTemplate template = new JdbcTemplate(dataSource);
+        final int actualCount = template.queryForObject("SELECT COUNT(*) FROM GRP", Integer.class);
+        assertEquals("Count mismatch between EntityManager and Database", expectedCount, actualCount);
     }
 
     @Test
