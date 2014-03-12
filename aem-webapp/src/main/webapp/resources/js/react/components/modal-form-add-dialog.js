@@ -27,8 +27,10 @@ var ModalFormAddDialog = React.createClass({
             width: "auto",
             buttons: {
                 "Ok": function () {
-                    modalDialog.addItem(callback);
-                    $(this).dialog("destroy");
+                    var thisDialog = this;
+                    modalDialog.addItem(callback, function() {
+                        $(thisDialog).dialog("destroy");
+                    });
                 },
                     "Cancel": function () {
                     $(this).dialog("destroy");
@@ -39,27 +41,36 @@ var ModalFormAddDialog = React.createClass({
             }
         });
     },
-    addItem: function(callback) {
+    addItem: function(callback, callerCallback) {
         var formId = "#" + this.props.formId;
-        $(formId).one("submit", function(e) {
-            var postData = serializedFormToJsonNoId($(formId).serializeArray());
-            var formURL = $(this).attr("action");
-            $.ajax({url : formURL,
-                    type: "POST",
-                    data: postData,
-                    contentType: "application/json",
-                    dataType: "json",
-                    success:function(data, textStatus, jqXHR) {
-                        callback();
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        // TODO: Display error message in another modal dialog.
-                        alert(textStatus);
-                    }
-            });
-            e.preventDefault(); // stop the default action
+
+        $(formId).validate({
+            ignore: ":hidden",
+            submitHandler: function (form) {
+
+                var postData = serializedFormToJsonNoId($(formId).serializeArray());
+                var formURL = $(form).attr("action");
+                $.ajax({url : formURL,
+                        type: "POST",
+                        data: postData,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success:function(data, textStatus, jqXHR) {
+                            callback();
+                            callerCallback();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            // TODO: Display error message in another modal dialog.
+                            alert(textStatus);
+                        }
+                });
+                return false;  //e.preventDefault(); // stop the default action
+            }
+
         });
         $(formId).submit();
+
+
     },
 
 });

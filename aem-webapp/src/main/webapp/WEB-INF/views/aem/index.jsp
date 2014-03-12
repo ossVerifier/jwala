@@ -15,6 +15,7 @@
 <script src="public-resources/js/react/react-0.8.0.min.js"></script>
 <script src="public-resources/js/react/jquery-1.10.0.min.js"></script>
 <script src="public-resources/js/react/jquery-ui-1.10.4.custom.min.js"></script>
+<script src="public-resources/js/jquery.validate.min.js"></script>
 <script src="public-resources/js/json2.min.js"></script>
 <script src="public-resources/js/react/components/area.js"></script>
 <script src="public-resources/js/react/components/tabs.js"></script>
