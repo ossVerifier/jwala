@@ -28,9 +28,9 @@ var ModalFormAddDialog = React.createClass({
             buttons: {
                 "Ok": function () {
                     var thisDialog = this;
-                    modalDialog.addItem(callback, function() {
+                    modalDialog.addItem([callback, function() {
                         $(thisDialog).dialog("destroy");
-                    });
+                    }]);
                 },
                     "Cancel": function () {
                     $(this).dialog("destroy");
@@ -41,7 +41,7 @@ var ModalFormAddDialog = React.createClass({
             }
         });
     },
-    addItem: function(callback, callerCallback) {
+    addItem: function(callbacks) {
         var formId = "#" + this.props.formId;
 
         $(formId).validate({
@@ -56,8 +56,9 @@ var ModalFormAddDialog = React.createClass({
                         contentType: "application/json",
                         dataType: "json",
                         success:function(data, textStatus, jqXHR) {
-                            callback();
-                            callerCallback();
+                            for (var i = 0; i < callbacks.length; i++) {
+                                callbacks[i]();
+                            }
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                             // TODO: Display error message in another modal dialog.
