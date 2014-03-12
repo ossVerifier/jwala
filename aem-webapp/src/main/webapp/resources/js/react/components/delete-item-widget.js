@@ -31,15 +31,15 @@ var DialogConfirm = React.createClass({
     },
     show: function(id) {
         var dialogConfirm = this;
-        $(this.getDOMNode()).html("Are you sure you want to delete the selected item ?");
+        $(this.getDOMNode()).html("<h3>Are you sure you want to delete the selected item ?<h3>");
 
         // Define the Dialog and its properties.
         $(this.getDOMNode()).dialog({
             resizable: false,
             modal: true,
             title: "Confirmation Dialog Box",
-            height: 250,
-            width: 400,
+            height: "auto",
+            width: "auto",
             buttons: {
                 "Yes": function () {
                     dialogConfirm.destroy(this);
