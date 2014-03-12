@@ -5,12 +5,12 @@ var DataGrid = React.createClass({
     refresh: function() {
         $.ajax({
             url: this.props.url,
-            dataType: 'json',
+            dataType: "json",
             success: function(data) {
                 this.setState({data: data});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error(this.props.url, status, err.toString());
+
             }.bind(this)
         });
     },
@@ -28,7 +28,10 @@ var DataGrid = React.createClass({
 
         var rows = new Array();
         for (var i = 0; i < jsonData.length ; i++) {
-           rows[i] = Row({data:jsonData[i], editDialog:this.props.editDialog, thisGrid:this});
+           rows[i] = Row({data:jsonData[i],
+                          editDialog:this.props.editDialog,
+                          thisGrid:this,
+                          jsonFormDataTransformerCallback:this.props.jsonFormDataTransformerCallback});
         }
 
         // The table has to be in a DIV so that css will work if this component is placed in
@@ -43,13 +46,9 @@ var DataGrid = React.createClass({
         $("input:checkbox").each(function(i, obj) {
             if ($(this).is(":checked")) {
                 dialogConfirm.show($(this).attr("value"));
-
-                $("#jvmName").val("test");
-            }
+           }
         });
-
     }
-
 });
 
 var Header = React.createClass({
@@ -77,17 +76,23 @@ var Row = React.createClass({
         var id;
         var editDialog = this.props.editDialog;
         var thisGrid = this.props.thisGrid;
+        var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
         $.each(jsonData, function(i, val) {
-            if (i === "id") {
-                id = val;
+
+            // TODO: If needed create a filter callback for custom data filtering
+            if (i !== "id") {
+                // Custom code ?
+                if (idx == 0) {
+                    cols[idx++] = Column({value:val,
+                                          type:"link",
+                                          editDialog:editDialog,
+                                          thisGrid:thisGrid,
+                                          jsonFormDataTransformerCallback:jsonFormDataTransformerCallback});
+                } else {
+                    cols[idx++] = Column({value:val});
+                }
             }
 
-            // Custom code...
-            if (idx == 0) {
-                cols[idx++] = Column({value:val, type:"link", editDialog:editDialog, thisGrid:thisGrid});
-            } else {
-                cols[idx++] = Column({value:val});
-            }
         });
 
         return React.DOM.tr(null, Column({value:Checkbox({value:id})}), cols)
@@ -102,7 +107,9 @@ var Column = React.createClass({
             return React.DOM.td(null, this.props.value);
         } else if (this.props.type === "link") {
             return React.DOM.td(null, Link({value:this.props.value,
-                                            editDialog:this.props.editDialog, thisGrid:this.props.thisGrid}));
+                                            editDialog:this.props.editDialog,
+                                            thisGrid:this.props.thisGrid,
+                                            jsonFormDataTransformerCallback:this.props.jsonFormDataTransformerCallback}));
         }
     }
 
@@ -116,31 +123,15 @@ var Link = React.createClass({
     linkClick: function() {
         var editDialog = this.props.editDialog;
         var thisGrid = this.props.thisGrid;
+        var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
         $.getJSON("v1.0/jvm?name=" + this.props.value,
             function(data) {
 
-                var filteredJson = {};
-
-                var nameMap = {};
-                nameMap["id"] = "jvmId";
-                nameMap["name"] = "jvmNameId";
-                nameMap["host"] = "hostNameId";
-
-                // Custom code...
-                // TODO: Callback json decorator/parser
-
-                $.each(data.applicationResponseContent.content, function(i, obj) {
-                    if (nameMap[i] !== undefined) {
-                          filteredJson[nameMap[i]] = obj;
-                    }
-                });
-                console.log(JSON.stringify(filteredJson));
-                editDialog.show(filteredJson, function(){
+                editDialog.show(jsonFormDataTransformerCallback(data), function(){
                     thisGrid.refresh();
                 });
 
          });
-
     }
 });
 
