@@ -14,27 +14,40 @@
 <div id="jvmEditDialog"/>
 
 <script type="text/javascript">
-    var setData = function(name) {
-        $("#jvmName").val(name);
+
+    /**
+     * Callback to handle JVM form specific data transformation
+     */
+    var jvmJsonFormDataTransformerCallback = function(data) {
+        var formJson = {};
+
+        var nameMap = {};
+        nameMap["id"] = "jvmId";
+        nameMap["name"] = "jvmNameId";
+        nameMap["host"] = "hostNameId";
+
+        $.each(data.applicationResponseContent.content, function(i, obj) {
+            if (nameMap[i] !== undefined) {
+                  formJson[nameMap[i]] = obj;
+            }
+        });
+        return formJson;
     }
 
     var jvmDataGrid = DataGrid({theme:"default",
-                                header:["JVM Name", "JVM ID", "Host Name", "Group Name"],
+                                header:["JVM Name", "Host Name", "Group Name"],
                                 url:"v1.0/jvms/",
-                                editDialog:ModalFormDialogJqueryUi({template:"editTemplate",
-                                title:"Edit JVM",
-                                callback:setData})});
+                                editDialog:ModalFormEditDialog({formId:"jvmAddEditForm",
+                                title:"Edit JVM"}),
+                                jsonFormDataTransformerCallback:jvmJsonFormDataTransformerCallback});
 
     React.renderComponent(jvmDataGrid,
         document.getElementById("jvmDataGrid"));
 
-    var jvmAddModalDialog = ModalFormDialog({theme:"default",
-                                             title:"Add JVM",
-                                             action:"v1.0/jvms",
-                                             template: "public-resources/templates/jvm-add-edit.html",
-                                             dataGrid:jvmDataGrid});
+    var jvmAddModalDialog = ModalFormAddDialog({formId:"jvmAddEditForm",
+                                                title:"Add JVM"});
 
-    React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog}),
+    React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog, view:jvmDataGrid}),
         document.getElementById("addJvmBtn"));
 
     React.renderComponent(DeleteItemWidget({dataGrid:jvmDataGrid, url:"v1.0/jvms/"}),
@@ -44,39 +57,38 @@
 
 </script>
 
-<div id="editTemplate" style="display:none">
-    <div>
-        <form id="jvmEditForm" action="v1.0/jvms">
-            <input id="jvmId" name="id" type="hidden" />
-            <table>
-                <tr>
-                    <td>Name</td>
-                </tr>
-                <tr>
-                    <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100"></td>
-                </tr>
-                <tr>
-                    <td>Host</td>
-                </tr>
-                <tr>
-                    <td><input id="hostNameId" name="hostName" type="text" maxlength="50"/></td>
-                </tr>
-                <tr>
-                    <td>
-                        Group
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <select id="groupNameId" name="groupName">
-                            <option value="Group 1">Group 1</option>
-                            <option value="Group 2">Group 2</option>
-                            <option value="Group 3">Group 3</option>
-                            <option value="Group 4">Group 4</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-        </form>
-    </div>
+<div style="display:none">
+    <form id="jvmAddEditForm" action="v1.0/jvms">
+        <input id="jvmId" name="id" type="hidden" />
+        <table>
+            <tr>
+                <td>Name</td>
+            </tr>
+            <tr>
+                <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100"></td>
+            </tr>
+            <tr>
+                <td>Host</td>
+            </tr>
+            <tr>
+                <td><input id="hostNameId" name="hostName" type="text" maxlength="50"/></td>
+            </tr>
+            <tr>
+                <td>
+                    Group
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select id="groupNameId" name="groupName">
+                        <option value="Group 1">Group 1</option>
+                        <option value="Group 2">Group 2</option>
+                        <option value="Group 3">Group 3</option>
+                        <option value="Group 4">Group 4</option>
+                        <option value="Group 4">Group 5</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
 </div>

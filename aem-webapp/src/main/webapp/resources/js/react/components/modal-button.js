@@ -5,6 +5,9 @@ var ModalButton = React.createClass({
                              React.DOM.input({type:"button", onClick:this.handleClick, value:this.props.label}));
     },
     handleClick: function() {
-        this.props.modalDialog.show();
+        var view = this.props.view;
+        this.props.modalDialog.show(function(){
+            view.refresh();
+        });
     }
 });
