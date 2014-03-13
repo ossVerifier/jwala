@@ -121,7 +121,7 @@ var Column = React.createClass({
 var Link = React.createClass({
     render: function() {
         var linkStyle = {"text-decoration":"underline", "background":"none", "color":"blue"};
-        return React.DOM.a({href:"#", style:linkStyle, onClick:this.linkClick}, this.props.value);
+        return React.DOM.a({href:"javascript:", style:linkStyle, onClick:this.linkClick}, this.props.value);
     },
     linkClick: function() {
         var editDialog = this.props.editDialog;
