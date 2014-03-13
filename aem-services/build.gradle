@@ -7,13 +7,19 @@ dependencies {
 
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
-    compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+//    compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
 
     javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
         exclude group: "junit"
     }
 
+    testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+    testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"
+
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
+    testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
 }
 
 test {

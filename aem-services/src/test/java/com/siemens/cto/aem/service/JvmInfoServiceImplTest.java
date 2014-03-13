@@ -1,5 +1,17 @@
 package com.siemens.cto.aem.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityExistsException;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
 import com.siemens.cto.aem.persistence.domain.Group;
@@ -7,23 +19,17 @@ import com.siemens.cto.aem.persistence.domain.Jvm;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
-import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
 import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import javax.persistence.EntityExistsException;
-import javax.persistence.PersistenceException;
-import java.util.ArrayList;
-import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by z003bpej on 2/21/14.
@@ -44,7 +50,7 @@ public class JvmInfoServiceImplTest {
 
     @Before
     public void setUp() {
-        when(jvm.getId()).thenReturn(new Long(1));
+        when(jvm.getId()).thenReturn(1L);
         when(jvm.getName()).thenReturn("the-jvm-name");
         when(jvm.getHostName()).thenReturn("the-jvm-hostname");
         when(jvm.getGroup()).thenReturn(new Group());
@@ -55,7 +61,7 @@ public class JvmInfoServiceImplTest {
     @Test
     public void testGetJvmInfoById() {
         when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
-        final JvmInfo jvmInfo = jvmInfoService.getJvmInfoById(new Long(1));
+        final JvmInfo jvmInfo = jvmInfoService.getJvmInfoById(1L);
         assertEquals(new Long(1), jvmInfo.getId());
         assertEquals("the-jvm-name", jvmInfo.getName());
         assertEquals("the-jvm-hostname", jvmInfo.getHost());

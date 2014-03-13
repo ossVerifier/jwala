@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.User;
@@ -32,6 +33,7 @@ import static org.junit.Assert.fail;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
                       classes = {TestJpaConfiguration.class})
+@EnableTransactionManagement
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
 public class GroupDaoJpaTest {

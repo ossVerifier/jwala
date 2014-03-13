@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.configuration;
+package com.siemens.cto.aem.service.configuration;
 
 import java.util.Properties;
 
@@ -14,8 +14,10 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
+@EnableTransactionManagement
 public class TestJpaConfiguration {
 
     @Bean
