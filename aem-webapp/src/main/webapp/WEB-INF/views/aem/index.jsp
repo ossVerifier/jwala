@@ -8,7 +8,6 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/jvm-config-area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/data-grid.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/modal-form-dialog.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
 <script src="public-resources/js/react/es5-shim-2.3.0.min.js"></script>
 <script src="public-resources/js/react/es5-sham.min.js"></script>
