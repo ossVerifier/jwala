@@ -11,10 +11,10 @@ var ModalFormEditDialog = React.createClass({
     getInitialState: function() {
     },
     render: function() {
-        return React.DOM.div({style:{"display":"none"}})
+        return React.DOM.div({id:"tempId" ,style:{"display":"none"}})
     },
     show: function(data, callback) {
-        var modalDialog = this;
+        var thisComponent = this;
         var title = this.props.title;
 
         $(this.getDOMNode()).append($("#" + this.props.formId));
@@ -27,11 +27,13 @@ var ModalFormEditDialog = React.createClass({
             width: "auto",
             buttons: {
                 "Ok": function () {
-                    modalDialog.updateItem(callback);
-                    modalDialog.destroy(this, data);
+                    var thisDialog = this;
+                    thisComponent.updateItem([callback, function(){
+                        thisComponent.destroy(thisDialog, data);
+                    }]);
                 },
                     "Cancel": function () {
-                    modalDialog.destroy(this, data);
+                    thisComponent.destroy(this, data);
                 }
             },
             create: function() {
@@ -42,7 +44,7 @@ var ModalFormEditDialog = React.createClass({
 
             },
             close: function() {
-                modalDialog.destroy(this, data);
+                thisComponent.destroy(this, data);
             }
         });
     },
@@ -51,10 +53,9 @@ var ModalFormEditDialog = React.createClass({
         $.each(data, function(i, obj) {
             $("#" + i).val("");
         });
-
         $(theDialog).dialog("destroy");
     },
-    updateItem: function(callback) {
+    updateItem: function(callbacks) {
         var formId = "#" + this.props.formId;
         var serializedArr = $(formId).serializeArray();
         var urlData = "";
@@ -64,24 +65,30 @@ var ModalFormEditDialog = React.createClass({
 
         $(formId).one("submit", function(e) {
             var postData = serializedFormToJson($(this).serializeArray());
-            var formURL = $(this).attr("action");
+            var formURL = $(formId).attr("action");
                 $.ajax({
                 url : formURL + urlData,
                 type: "PUT",
                 data: postData,
                 success:function(data, textStatus, jqXHR) {
-                    callback();
+                    for (var i = 0; i < callbacks.length; i++) {
+                        callbacks[i]();
+                    }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     // TODO: Display error message in another modal dialog.
                     alert(textStatus);
                 }
             });
-            e.preventDefault(); // stop the default action
+            e.preventDefault();
         });
-        $(formId).submit();
-    },
 
+        this.props.validator.cancelSubmit = true;
+        this.props.validator.form();
+        if (this.props.validator.numberOfInvalids() === 0) {
+            $(formId).submit();
+        }
+    }
 });
 
 /**

@@ -9,15 +9,17 @@
  */
 var ModalFormAddDialog = React.createClass({
     getInitialState: function() {
+        validator = null;
     },
     render: function() {
         return React.DOM.div({style:{"display":"none"}})
     },
     show: function(callback) {
-        var modalDialog = this;
+        var thisComponent = this;
         var title = this.props.title;
+        var formId = "#" + this.props.formId;
 
-        $(this.getDOMNode()).append($("#" + this.props.formId));
+        $(this.getDOMNode()).append($(formId));
 
         $(this.getDOMNode()).dialog({
             resizable: false,
@@ -28,52 +30,53 @@ var ModalFormAddDialog = React.createClass({
             buttons: {
                 "Ok": function () {
                     var thisDialog = this;
-                    modalDialog.addItem([callback, function() {
-                        $(thisDialog).dialog("destroy");
+                    thisComponent.addItem([callback, function() {
+                        thisComponent.destroy(thisDialog);
                     }]);
                 },
                     "Cancel": function () {
-                    $(this).dialog("destroy");
+                    thisComponent.destroy(this);
                 }
             },
             close: function() {
-                $(this).dialog("destroy");
+                thisComponent.destroy(this);
             }
         });
     },
     addItem: function(callbacks) {
         var formId = "#" + this.props.formId;
 
-        $(formId).validate({
-            ignore: ":hidden",
-            submitHandler: function (form) {
-
-                var postData = serializedFormToJsonNoId($(formId).serializeArray());
-                var formURL = $(form).attr("action");
-                $.ajax({url : formURL,
-                        type: "POST",
-                        data: postData,
-                        contentType: "application/json",
-                        dataType: "json",
-                        success:function(data, textStatus, jqXHR) {
-                            for (var i = 0; i < callbacks.length; i++) {
-                                callbacks[i]();
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            // TODO: Display error message in another modal dialog.
-                            alert(textStatus);
+        $(formId).one("submit", function(e) {
+            var postData = serializedFormToJsonNoId($(formId).serializeArray());
+            var formURL = $(formId).attr("action");
+            $.ajax({url : formURL,
+                    type: "POST",
+                    data: postData,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success:function(data, textStatus, jqXHR) {
+                        for (var i = 0; i < callbacks.length; i++) {
+                            callbacks[i]();
                         }
-                });
-                return false;  //e.preventDefault(); // stop the default action
-            }
-
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        // TODO: Display error message in another modal dialog.
+                        alert(textStatus);
+                    }
+            });
+            e.preventDefault(); // stop the default action
         });
-        $(formId).submit();
 
-
+        this.props.validator.cancelSubmit = true;
+        this.props.validator.form();
+        if (this.props.validator.numberOfInvalids() === 0) {
+            $(formId).submit();
+        }
     },
-
+    destroy: function(theDialog) {
+        this.props.validator.resetForm();
+        $(theDialog).dialog("destroy");
+    }
 });
 
 /**
