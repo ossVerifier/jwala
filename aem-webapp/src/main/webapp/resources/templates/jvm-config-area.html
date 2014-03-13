@@ -8,37 +8,6 @@
         <tr>
             <td colspan="3"><div id="jvmDataGrid"></div></td>
         </tr>
-        <!-- The following are for groups and should be moved 
-        Otherwise it will not show up if there are lots of JVMs! -->
-        <tr><td><br /></td></tr>
-        <tr><td><br /></td></tr>
-        <tr><td><br /></td></tr>
-        <tr><td><br /></td></tr>
-        <tr>
-            <td></td>
-            <td style="width:1px"><div id="addGroupBtn"></div></td>
-            <td style="width:1px"><div id="delGroupBtn"></div></td>
-        </tr>
-        <tr>
-         <td colspan="3">
-          <table id="groupDataTable">
-            <thead>
-              <tr>
-                <th>[-/+]</th>
-                <th>Group Name</th>
-                <th>[-/+]</th>
-                <th>JVM</th>
-                <th>Web App</th>
-                <th>Blank</th>
-                <th>Edit</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-            </tbody>
-          </table>  
-         </td>
-        </tr>
     </table>
 </div>
 
@@ -70,8 +39,12 @@ $(document).ready(function() {
         return formJson;
     }
 
-    var jvmDataGrid = DataGrid({theme:"default",
+    var jvmDataGrid = TocDataTable({theme:"default",
                                 header:["JVM Name", "Host Name", "Group Name"],
+                                headerExt:[
+                                  {sTitle:"JVM Name", mData:"name", tocType:"link"}, 
+                                  {sTitle:"Host Name", mData:"host"}, 
+                                  {sTitle:"Group Name", mData:"groupInfo.name"}],
                                 url:"v1.0/jvms/",
                                 editDialog:ModalFormEditDialog({formId:"jvmAddEditForm",
                                                                 title:"Edit JVM",
@@ -94,49 +67,6 @@ $(document).ready(function() {
 });
 
 </script>
-
-<script type="text/javascript">
-
-
-    /**
-     * Callback to handle JVM form specific data transformation
-     */
-    var groupJsonFormDataTransformerCallback = function(data) {
-        var formJson = {};
-
-        var nameMap = {};
-        nameMap["id"] = "groupId";
-        nameMap["name"] = "groupNameId";
-        nameMap["host"] = "hostNameId";
-
-        $.each(data.applicationResponseContent.content, function(i, obj) {
-            if (nameMap[i] !== undefined) {
-                  formJson[nameMap[i]] = obj;
-            }
-        });
-        return formJson;
-    }
-
-    var groupDataGrid = DataGrid({theme:"default",
-                                header:["Group Name", "Host Name", "Group Name"],
-                                url:"v1.0/v1/groups/",
-                                editDialog:ModalFormEditDialog({formId:"groupAddEditForm",
-                                title:"Edit Group"}),
-                                jsonFormDataTransformerCallback:groupJsonFormDataTransformerCallback});
-
-    var table = $('#groupDataTable').DataTable();
-
-    var groupAddModalDialog = ModalFormAddDialog({formId:"groupAddEditForm",
-                                                title:"Add Group"});
-
-    React.renderComponent(ModalButton({label:"Add", modalDialog:groupAddModalDialog, view:groupDataGrid}),
-        document.getElementById("addGroupBtn"));
-
-    React.renderComponent(DeleteItemWidget({dataGrid:groupDataGrid, url:"v1.0/v1/groups/"}),
-                          document.getElementById("delGroupBtn"));
-
-</script>
-
 <div style="display:none">
     <form id="jvmAddEditForm" action="v1.0/jvms">
         <input id="jvmId" name="id" type="hidden" />
@@ -168,27 +98,6 @@ $(document).ready(function() {
                         <option value="Group 4">Group 5</option>
                     </select>
                 </td>
-            </tr>
-        </table>
-    </form>
-</div>
-
-
-<div style="display:none">
-    <form id="groupAddEditForm" action="v1.0/groups">
-        <input id="groupId" name="id" type="hidden" />
-        <table>
-            <tr>
-                <td>Name</td>
-            </tr>
-            <tr>
-                <td><input id="groupNameId" name="groupName" type="text" maxlength="100"></td>
-            </tr>
-            <tr>
-                <td>Host</td>
-            </tr>
-            <tr>
-                <td><input id="hostNameId" name="hostName" type="text" maxlength="50"/></td>
             </tr>
         </table>
     </form>

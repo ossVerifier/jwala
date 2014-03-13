@@ -24,6 +24,7 @@
 <script src="public-resources/js/react/components/modal-form-edit-dialog.js"></script>
 <script src="public-resources/js/react/components/modal-button.js"></script>
 <script src="public-resources/js/react/components/data-grid.js"></script>
+<script src="public-resources/js/react/components/datatable.js"></script>
 <script src="public-resources/js/react/components/delete-item-widget.js"></script>
 <script src="public-resources/js/jquery.dataTables.js"></script>
 </head>
