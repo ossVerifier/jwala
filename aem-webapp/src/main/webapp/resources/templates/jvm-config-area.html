@@ -46,6 +46,11 @@
 
 <script type="text/javascript">
 
+$(document).ready(function() {
+    validator = $("#jvmAddEditForm").validate({
+        ignore: ":hidden"
+    });
+
     /**
      * Callback to handle JVM form specific data transformation
      */
@@ -69,14 +74,16 @@
                                 header:["JVM Name", "Host Name", "Group Name"],
                                 url:"v1.0/jvms/",
                                 editDialog:ModalFormEditDialog({formId:"jvmAddEditForm",
-                                title:"Edit JVM"}),
+                                                                title:"Edit JVM",
+                                                                validator:validator}),
                                 jsonFormDataTransformerCallback:jvmJsonFormDataTransformerCallback});
 
     React.renderComponent(jvmDataGrid,
         document.getElementById("jvmDataGrid"));
 
     var jvmAddModalDialog = ModalFormAddDialog({formId:"jvmAddEditForm",
-                                                title:"Add JVM"});
+                                                title:"Add JVM",
+                                                validator:validator});
 
     React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog, view:jvmDataGrid}),
         document.getElementById("addJvmBtn"));
@@ -84,7 +91,7 @@
     React.renderComponent(DeleteItemWidget({dataGrid:jvmDataGrid, url:"v1.0/jvms/"}),
                           document.getElementById("delJvmBtn"));
 
-
+});
 
 </script>
 
@@ -138,13 +145,13 @@
                 <td>Name</td>
             </tr>
             <tr>
-                <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100"></td>
+                <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100" required></td>
             </tr>
             <tr>
                 <td>Host</td>
             </tr>
             <tr>
-                <td><input id="hostNameId" name="hostName" type="text" maxlength="50"/></td>
+                <td><input id="hostNameId" name="hostName" type="text" maxlength="50" required/></td>
             </tr>
             <tr>
                 <td>

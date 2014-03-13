@@ -78,6 +78,9 @@ var Row = React.createClass({
         var thisGrid = this.props.thisGrid;
         var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
         $.each(jsonData, function(i, val) {
+            if (i === "id") {
+                id = val;
+            }
 
             // TODO: If needed create a filter callback for custom data filtering
             if (i !== "id") {
