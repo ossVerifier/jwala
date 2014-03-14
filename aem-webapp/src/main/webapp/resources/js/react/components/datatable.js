@@ -36,8 +36,12 @@ var TocDataTable = React.createClass({
           aoColumnDefs[itemIndex] = {
             "sTitle": item.sTitle,
             "mData": item.mData,
-            "aTargets": [ itemIndex ] };
+            "aTargets": [ itemIndex ]};
             
+          if(item.bVisible !== undefined) {
+            aoColumnDefs[itemIndex].bVisible = item.bVisible;
+          }
+          
           if(item.tocType == 'link') { 
             aoColumnDefs[itemIndex].mRender = function ( data, type, full ) {
               if(self.isMounted()) {
@@ -59,6 +63,7 @@ var TocDataTable = React.createClass({
             "aoColumnDefs": aoColumnDefs,
             "bJQueryUI": true
             });
+ 
     },
     render: function() {
 
@@ -83,6 +88,16 @@ var TocDataTable = React.createClass({
           this.dataTable.fnClearTable(jsonData);
           this.dataTable.fnAddData(jsonData);
           this.dataTable.fnDraw();
+          var dataTable = this.getDOMNode();
+                      
+          $(dataTable).find('tbody tr').click( function( e ) {
+          if ( $(this).hasClass('row_selected') ) {
+              $(this).removeClass('row_selected');
+          }
+          else {
+              $(dataTable).find('tbody tr').removeClass('row_selected');
+              $(this).addClass('row_selected');
+          }});          
         }
         return div;        
     },

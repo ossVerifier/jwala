@@ -1,3 +1,7 @@
+/** Custom TOC */
+
+.row_selected > td { border-bottom: 1px solid black; }
+
 /*
  * jQuery UI specific styling
  */
