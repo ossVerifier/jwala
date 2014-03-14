@@ -61,7 +61,13 @@ var ModalFormAddDialog = React.createClass({
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
                         // TODO: Display error message in another modal dialog.
-                        alert(textStatus);
+                        var msg = jqXHR.responseText;
+                        var msgStr = "";
+                        if (msg !== undefined) {
+                            var jsonObj = JSON.parse(jqXHR.responseText);
+                            msgStr = jsonObj.message;
+                        }
+                        $.errorAlert(errorThrown + ": " + msgStr, "Error");
                     }
             });
             e.preventDefault(); // stop the default action
