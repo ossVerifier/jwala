@@ -14,3 +14,7 @@
     vertical-align: bottom
 }
 
+.jvm-config-area .tool {
+  margin-top: 0.5em;
+  float: right;
+}

@@ -71,10 +71,10 @@ var TocDataTable = React.createClass({
 
         // The table has to be in a DIV so that css will work if this component is placed in
         // another table.
-        var table = React.DOM.table({className:"dataGrid-" + this.props.theme});
+        var table = React.DOM.table({className:"tocDataTable-" + this.props.theme});
         this.reactTable = table;
         
-        var div = React.DOM.div({className:"dataGrid-" + this.props.theme},
+        var div = React.DOM.div({className:"tocDataTable-" + this.props.theme},
                              this.props.editDialog,
                              table
                              );

@@ -8,9 +8,9 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/data-grid.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/toc-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery.dataTables.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/toc-datatable.css">
 <script src="public-resources/js/react/es5-shim-2.3.0.min.js"></script>
 <script src="public-resources/js/react/es5-sham.min.js"></script>
 <script src="public-resources/js/react/react-0.8.0.min.js"></script>
