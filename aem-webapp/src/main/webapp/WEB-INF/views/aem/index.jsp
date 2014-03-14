@@ -5,7 +5,7 @@
 <title>Apache Enterprise Manager</title>
 <link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/area.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/jvm-config-area.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/data-grid.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
@@ -26,6 +26,7 @@
 <script src="public-resources/js/react/components/data-grid.js"></script>
 <script src="public-resources/js/react/components/delete-item-widget.js"></script>
 <script src="public-resources/js/jquery.dataTables.js"></script>
+<script src="public-resources/js/error-alert.js"></script>
 </head>
 <body>
 
