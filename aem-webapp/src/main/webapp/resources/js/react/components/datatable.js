@@ -102,17 +102,6 @@ var TocDataTable = React.createClass({
           this.dataTable.fnAddData(jsonData);
           this.dataTable.fnDraw();
           var dataTable = this.getDOMNode();
-
-//          $(dataTable).find("tbody tr").click( function( e ) {
-//              console.log("Clicked!");
-//              if ( $(this).hasClass("row_selected") ) {
-//                  $(this).removeClass("row_selected");
-//              } else {
-//                  $(dataTable).find("tbody tr").removeClass("row_selected");
-//                  $(this).addClass("row_selected");
-//              }
-//          });
-
         }
         return div;        
     }
