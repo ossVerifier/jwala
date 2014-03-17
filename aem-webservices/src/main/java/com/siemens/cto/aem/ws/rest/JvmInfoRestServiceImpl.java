@@ -127,7 +127,7 @@ public class JvmInfoRestServiceImpl implements JvmInfoRestService {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(createApplicationResponse(RECORD_NOT_FOUND, e))
                     .build();
-        } catch (RecordNotUpdatedException e) {
+        } catch (RuntimeException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(createApplicationResponse(RECORD_NOT_UPDATED, e))
                     .build();
