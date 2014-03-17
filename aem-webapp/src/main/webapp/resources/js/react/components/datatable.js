@@ -21,8 +21,8 @@ var TocDataTable = React.createClass({
         var self = this;
         
         // build column definitions based on props
-        var aoColumnDefs  = new Array();
-        var aaSorting     = new Array();
+        var aoColumnDefs  = [];
+        var aaSorting     = [];
         $(this.props.header).each(function(itemIndex, itemName, itemArray) {
           aoColumnDefs[itemIndex] = {
             "sTitle": itemName,
@@ -53,7 +53,8 @@ var TocDataTable = React.createClass({
                        }), function(html) { capHtml = html; } );
                 return capHtml;
               } else { return ""; }
-            }};
+            };
+          }
           aaSorting[itemIndex] = [itemIndex, 'asc'];
         });
         
@@ -113,9 +114,9 @@ var TocDataTable = React.createClass({
 var Link = React.createClass({
     render: function() {
         var linkStyle = {"text-decoration":"underline", "background":"none", "color":"blue"};
-        return React.DOM.a({href:"javascript:", style:linkStyle, onClick:this.linkClick}, this.props.value);
+        return React.DOM.a({href:"", style:linkStyle, onClick:this.linkClick}, this.props.value);
     },
-    linkClick: function() {
+    linkClick: function(e) {
         var editDialog = this.props.editDialog;
         var thisGrid = this.props.thisGrid;
         var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
@@ -127,12 +128,16 @@ var Link = React.createClass({
                 });
 
          });
+        // next 3 lines stop the browser navigating
+        e.preventDefault();
+        e.stopPropagation();
+        return false; 
     }
 });
 
 var Checkbox = React.createClass({
     render: function() {
-        return React.DOM.input({type:"checkbox", value:this.props.value, onClick:this.checkboxClicked})
+        return React.DOM.input({type:"checkbox", value:this.props.value, onClick:this.checkboxClicked});
     },
     /**
      * Allow only one item to be checked.
