@@ -69,7 +69,10 @@ table.display thead th div.DataTables_sort_wrapper span {
 	right: 0;
 }
 
-
+span.DataTables_sort_icon {
+    float: right !important;
+    display: inline !important;
+}
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

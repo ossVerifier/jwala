@@ -45,7 +45,61 @@ ol.tabs-default li.current a {
     border: #C0C0C0 solid 1px;
     background: #E5E5E5;
  	width: 100%;
-	height: 600px;
+	height: 530px;
+	clear: left;
+	position: relative;
+}
+
+/** Sub 2nd level tab style **/
+
+ol.tabs-default-level-1 {
+    height: 2em;
+    list-style: none;
+    margin: 2;
+    padding: 0;
+}
+
+ol.tabs-default-level-1 li {
+    background-image: url(../../../../img/react/components/gray-tabs.png);
+    float: left;
+    padding-left: 10px;
+}
+
+ol.tabs-default-level-1 a {
+
+    background-image: url(../../../../img/react/components/gray-tabs.png);
+    background-position: right top;
+
+    color: C0C0C0;
+    float: left;
+    line-height: 200%;
+    padding-right: 10px;
+    text-decoration: none;
+    /* font-family: arial; */
+    font-size: 13px;
+}
+
+ol.tabs-default-level-1 li.current {
+    background-position: 0 -40px;
+}
+
+ol.tabs-default-level-1 li.current a {
+    line-height: 200%;
+    background-position: 100% -40px;
+    color: black;
+    font-weight: bold;
+}
+
+.tabs-default-level-1-panel {
+	display: none;
+    margin-top: 1em;
+}
+
+.tabs-default-level-1-panel-selected {
+    border: #C0C0C0 solid 1px;
+    background: #E5E5E5;
+ 	width: 100%;
+	height: 500px;
 	clear: left;
 	position: relative;
 }

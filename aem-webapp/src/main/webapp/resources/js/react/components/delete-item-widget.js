@@ -3,6 +3,7 @@
  */
 var DeleteItemWidget = React.createClass({
     getInitialState: function() {
+        dataTable = $(this.props.dataGrid.getDOMNode()).find("table").dataTable();
         dialogConfirm = DialogConfirm({dataGrid:this.props.dataGrid, url:this.props.url});
     },
     render: function() {
@@ -11,12 +12,10 @@ var DeleteItemWidget = React.createClass({
                             React.DOM.input({value:"Delete", type:"button", onClick:this.onDeleteClick}));
     },
     onDeleteClick: function() {
-        var obj = $(this.props.dataGrid.getDOMNode()).find("table").dataTable();
-        var cell = obj.find('tbody tr.row_selected')[0];
-
+        var cell = dataTable.find("tbody tr.row_selected")[0];
         if (cell !== undefined) {
-            var i = obj.fnGetPosition(cell);
-            var idx = obj.fnGetData(i);
+            var i = dataTable.fnGetPosition(cell);
+            var idx = dataTable.fnGetData(i);
             dialogConfirm.show(idx.id);
         }
     }
