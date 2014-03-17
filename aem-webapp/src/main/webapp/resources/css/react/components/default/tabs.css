@@ -37,7 +37,9 @@ ol.tabs-default li.current a {
 }
 
 .tabs-default-panel {
-	display: none;
+	visibility: hidden; /* Do not use "display: none" since it has an issue with JQuery data table size
+    	                   when page is refreshed and the current tab is not the tab of the said
+    	                   data table */
     margin-top: 1em;
 }
 
