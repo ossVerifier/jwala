@@ -1,6 +1,9 @@
 /** Custom TOC */
 
-.row_selected > td { border-bottom: 1px solid black; }
+tr.row_selected > td {
+    background:#FFFF66 !important;
+    font-weight:bold
+}
 
 /*
  * jQuery UI specific styling

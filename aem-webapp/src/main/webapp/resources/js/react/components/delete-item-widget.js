@@ -1,7 +1,5 @@
 /**
  * Widget that draws a "Delete" button and displays a confirmation dialog box.
- *
- *
  */
 var DeleteItemWidget = React.createClass({
     getInitialState: function() {
@@ -13,15 +11,14 @@ var DeleteItemWidget = React.createClass({
                             React.DOM.input({value:"Delete", type:"button", onClick:this.onDeleteClick}));
     },
     onDeleteClick: function() {
-        /**
-         * When the data grid is replaced by jquery data table
-         * the code below will have to be updated.
-         */
-        $("input:checkbox").each(function(i, obj) {
-            if ($(this).is(":checked")) {
-                dialogConfirm.show($(this).attr("value"));
-            }
-        });
+        var obj = $(this.props.dataGrid.getDOMNode()).find("table").dataTable();
+        var cell = obj.find('tbody tr.row_selected')[0];
+
+        if (cell !== undefined) {
+            var i = obj.fnGetPosition(cell);
+            var idx = obj.fnGetData(i);
+            dialogConfirm.show(idx.id);
+        }
     }
 });
 

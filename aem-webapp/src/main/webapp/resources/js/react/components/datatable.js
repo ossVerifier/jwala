@@ -91,28 +91,22 @@ var TocDataTable = React.createClass({
           this.dataTable.fnDraw();
           var dataTable = this.getDOMNode();
                       
-          $(dataTable).find('tbody tr').click( function( e ) {
-          if ( $(this).hasClass('row_selected') ) {
-              $(this).removeClass('row_selected');
-          }
-          else {
-              $(dataTable).find('tbody tr').removeClass('row_selected');
-              $(this).addClass('row_selected');
-          }});          
+          $(dataTable).find("tbody tr").click( function( e ) {
+          if ( $(this).hasClass("row_selected") ) {
+              $(this).removeClass("row_selected");
+          } else {
+              $(dataTable).find("tbody tr").removeClass("row_selected");
+              $(this).addClass("row_selected");
+          }});
+
         }
         return div;        
-    },
-    deleteClick: function() { // TODO - use dataTable API to identify selected row
-        $("input:checkbox").each(function(i, obj) {
-            if ($(this).is(":checked")) {
-                dialogConfirm.show($(this).attr("value"));
-           }
-        });
     }
 });
 
 var Link = React.createClass({
     render: function() {
+        // TODO: Remove inline style
         var linkStyle = {"text-decoration":"underline", "background":"none", "color":"blue"};
         return React.DOM.a({href:"", style:linkStyle, onClick:this.linkClick}, this.props.value);
     },
@@ -134,21 +128,3 @@ var Link = React.createClass({
         return false; 
     }
 });
-
-var Checkbox = React.createClass({
-    render: function() {
-        return React.DOM.input({type:"checkbox", value:this.props.value, onClick:this.checkboxClicked});
-    },
-    /**
-     * Allow only one item to be checked.
-     */
-    checkboxClicked: function() {
-        var id = this.props.value;
-        $("input:checkbox").each(function(i, obj) {
-            if ($(this).attr("value") != id) {
-                $(this).prop("checked", false);
-            }
-        });
-    }
-});
-
