@@ -102,7 +102,6 @@ var TocDataTable = React.createClass({
           this.dataTable.fnClearTable(jsonData);
           this.dataTable.fnAddData(jsonData);
           this.dataTable.fnDraw();
-          var dataTable = this.getDOMNode();
         }
         return div;        
     }
