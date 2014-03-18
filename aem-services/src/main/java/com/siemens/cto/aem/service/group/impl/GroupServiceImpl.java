@@ -1,31 +1,32 @@
-package com.siemens.cto.aem.service.group;
+package com.siemens.cto.aem.service.group.impl;
 
-import java.sql.Date;
 import java.util.List;
 
 import org.springframework.util.StringUtils;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.audit.AuditUser;
+import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.jvm.JvmService;
 
 public class GroupServiceImpl implements GroupService {
 
     private final GroupDao groupDao;
+    private final JvmService jvmService;
 
-    public GroupServiceImpl(final GroupDao theGroupDao) {
+    public GroupServiceImpl(final GroupDao theGroupDao,
+                            final JvmService theJvmService) {
         groupDao = theGroupDao;
+        jvmService = theJvmService;
     }
 
     @Override
@@ -77,6 +78,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
+        jvmService.removeJvmsBelongingTo(aGroupId);
         groupDao.removeGroup(aGroupId);
     }
 
@@ -84,20 +86,15 @@ public class GroupServiceImpl implements GroupService {
         return StringUtils.hasText(aGroupName);
     }
 
-    protected CreateGroupEvent createCreateGroupEvent(final CreateGroupCommand aCreateGroupCommand,
-                                                      final User aCreatingUser) {
-        return new CreateGroupEvent(aCreateGroupCommand,
-                                    createAuditEventNow(aCreatingUser));
+    protected Event<CreateGroupCommand> createCreateGroupEvent(final CreateGroupCommand aCreateGroupCommand,
+                                                               final User aCreatingUser) {
+        return new Event<>(aCreateGroupCommand,
+                           AuditEvent.now(aCreatingUser));
     }
 
-    protected UpdateGroupEvent createUpdateGroup(final UpdateGroupCommand anUpdateGroupCommand,
-                                                 final User anUpdatingUser) {
-        return new UpdateGroupEvent(anUpdateGroupCommand,
-                                    createAuditEventNow(anUpdatingUser));
-    }
-
-    protected AuditEvent createAuditEventNow(final User aUser) {
-        return new AuditEvent(new AuditUser(aUser),
-                              new AuditDateTime(new Date(System.currentTimeMillis())));
+    protected Event<UpdateGroupCommand> createUpdateGroup(final UpdateGroupCommand anUpdateGroupCommand,
+                                                          final User anUpdatingUser) {
+        return new Event<>(anUpdateGroupCommand,
+                           AuditEvent.now(anUpdatingUser));
     }
 }

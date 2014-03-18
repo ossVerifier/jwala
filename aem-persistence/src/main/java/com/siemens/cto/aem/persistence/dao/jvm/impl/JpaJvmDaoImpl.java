@@ -1,0 +1,216 @@
+package com.siemens.cto.aem.persistence.dao.jvm.impl;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.persistence.dao.jvm.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
+import com.siemens.cto.aem.persistence.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.domain.JpaJvm;
+
+public class JpaJvmDaoImpl implements JvmDao {
+
+    @PersistenceContext(unitName = "aem-unit")
+    private EntityManager entityManager;
+
+    public JpaJvmDaoImpl() {
+    }
+
+    @Override
+    public Jvm createJvm(final Event<CreateJvmCommand> aJvmToCreate) {
+
+        try {
+            final JpaJvm jpaJvm = new JpaJvm();
+            final AuditEvent auditEvent = aJvmToCreate.getAuditEvent();
+            final Calendar updateTime = auditEvent.getDateTime().getCalendar();
+            final String userId = auditEvent.getUser().getUserId();
+            final CreateJvmCommand command = aJvmToCreate.getCommand();
+            final JpaGroup group = getGroup(command.getGroup());
+
+            jpaJvm.setName(command.getJvmName());
+            jpaJvm.setHostName(command.getHostName());
+            jpaJvm.setGroup(group);
+            jpaJvm.setCreateBy(userId);
+            jpaJvm.setCreateDate(updateTime);
+            jpaJvm.setUpdateBy(userId);
+            jpaJvm.setLastUpdateDate(updateTime);
+
+            entityManager.persist(jpaJvm);
+
+            return jvmFrom(jpaJvm);
+        } catch (final EntityExistsException eee) {
+            throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
+                                          "JVM with name already exists: " + aJvmToCreate.getCommand().getJvmName());
+        }
+    }
+
+    @Override
+    public Jvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate) {
+
+        try {
+            final UpdateJvmCommand command = aJvmToUpdate.getCommand();
+            final Identifier<Jvm> jvmId = command.getId();
+            final JpaJvm jvm = getJpaJvm(jvmId);
+
+            final JpaGroup group = getGroup(command.getNewGroupId());
+
+            jvm.setName(command.getNewJvmName());
+            jvm.setHostName(command.getNewHostName());
+            jvm.setGroup(group);
+
+            entityManager.flush();
+
+            return getJvm(jvmId);
+        } catch (final EntityExistsException eee) {
+            throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
+                                          "JVM with name already exists: " + aJvmToUpdate.getCommand().getNewJvmName());
+        }
+    }
+
+    @Override
+    public Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException {
+
+        final JpaJvm jpaJvm = getJpaJvm(aJvmId);
+
+        return jvmFrom(jpaJvm);
+    }
+
+    @Override
+    public List<Jvm> getJvms(final PaginationParameter somePagination) {
+
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
+
+        query.setFirstResult(somePagination.getOffset());
+        query.setMaxResults(somePagination.getLimit());
+
+        return jvmsFrom(query.getResultList());
+    }
+
+    @Override
+    public List<Jvm> findJvms(final String aName,
+                              final PaginationParameter somePagination) {
+
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
+
+        query.setParameter("jvmName", "%" + aName + "%");
+        query.setFirstResult(somePagination.getOffset());
+        query.setMaxResults(somePagination.getLimit());
+
+        return jvmsFrom(query.getResultList());
+    }
+
+    @Override
+    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup,
+                                         final PaginationParameter somePagination) {
+
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.group.id = :groupId ORDER BY j.name");
+
+        query.setParameter("groupId", aGroup.getId());
+        query.setFirstResult(somePagination.getOffset());
+        query.setMaxResults(somePagination.getLimit());
+
+        return jvmsFrom(query.getResultList());
+    }
+
+    @Override
+    public void removeJvm(final Identifier<Jvm> aJvmId) {
+
+        final JpaJvm jvm = getJpaJvm(aJvmId);
+
+        entityManager.remove(jvm);
+    }
+
+//    @Override
+//    /**
+//     * This implementation requires the EntityManager to be synchronized with the underlying database changes made by
+//     * the bulk operation, because the EntityManager is not aware that any of its managed entities have been deleted by
+//     * this bulk operation.
+//     */
+//    public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
+//
+//        final Query query = entityManager.createQuery("DELETE FROM JpaJvm j WHERE j.group.id = :groupId");
+//
+//        query.setParameter("groupId", aGroupId.getId());
+//
+//        final int numberDeleted = query.executeUpdate();
+//
+//        logger.debug("Jvms belonging to Group {} deleted: {}",
+//                     aGroupId,
+//                     numberDeleted);
+//    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
+
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.group.id = :groupId");
+        query.setParameter("groupId", aGroupId.getId());
+
+        final List<JpaJvm> jvms = query.getResultList();
+        for (final JpaJvm jvm : jvms) {
+            entityManager.remove(jvm);
+        }
+    }
+
+    protected JpaGroup getGroup(final Identifier<Group> aGroupId) {
+
+        final JpaGroup group = entityManager.find(JpaGroup.class,
+                                                  aGroupId.getId());
+
+        if (group == null) {
+            throw new BadRequestException(AemFaultType.GROUP_NOT_FOUND,
+                                          "Group not found: " + aGroupId);
+        }
+
+        return group;
+    }
+
+
+    protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
+
+        final JpaJvmBuilder builder = new JpaJvmBuilder(aJpaJvm);
+
+        return builder.build();
+    }
+
+    protected JpaJvm getJpaJvm(final Identifier<Jvm> aJvmId) throws NotFoundException {
+
+        final JpaJvm jvm = entityManager.find(JpaJvm.class,
+                                              aJvmId.getId());
+
+        if (jvm == null) {
+            throw new NotFoundException(AemFaultType.JVM_NOT_FOUND,
+                                        "Jvm not found: " + aJvmId);
+        }
+
+        return jvm;
+    }
+
+    protected List<Jvm> jvmsFrom(final List<JpaJvm> someJpaJvms) {
+
+        final List<Jvm> jvms = new ArrayList<>();
+
+        for (final JpaJvm jvm : someJpaJvms) {
+            jvms.add(jvmFrom(jvm));
+        }
+
+        return jvms;
+    }
+}

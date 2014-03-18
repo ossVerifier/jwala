@@ -1,20 +1,23 @@
 package com.siemens.cto.aem.service;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.persistence.EntityExistsException;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
-import com.siemens.cto.aem.persistence.domain.Group;
-import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.persistence.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.domain.JpaJvm;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
 import com.siemens.cto.aem.service.model.GroupInfo;
 import com.siemens.cto.aem.service.model.JvmInfo;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityExistsException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JvmInfoServiceImpl implements JvmInfoService {
 
@@ -28,26 +31,26 @@ public class JvmInfoServiceImpl implements JvmInfoService {
 
     @Override
     public JvmInfo getJvmInfoById(Long id) {
-        final Jvm jvm = jvmDao.findById(id);
+        final JpaJvm jvm = jvmDao.findById(id);
         if (jvm != null) {
             return new JvmInfo(jvm.getId(),
                                jvm.getName(),
                                jvm.getHostName(),
                                new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName()));
         } else {
-            throw new RecordNotFoundException(Jvm.class, id);
+            throw new RecordNotFoundException(JpaJvm.class, id);
         }
     }
 
     @Override
     public List<JvmInfo> getAllJvmInfo() {
         final List<JvmInfo> jvmInfoList = new ArrayList<JvmInfo>();
-        final List<Jvm> jvmList = jvmDao.findAll();
-        for (Jvm jvm : jvmList) {
+        final List<JpaJvm> jvmList = jvmDao.findAll();
+        for (JpaJvm jvm : jvmList) {
             jvmInfoList.add(new JvmInfo(jvm.getId(),
-                                jvm.getName(),
-                                jvm.getHostName(),
-                                new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName())));
+                                        jvm.getName(),
+                                        jvm.getHostName(),
+                                        new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName())));
         }
         return jvmInfoList;
     }
@@ -55,20 +58,28 @@ public class JvmInfoServiceImpl implements JvmInfoService {
     @Override
     @Transactional
     public void addJvmInfo(String jvmName, String hostName, GroupInfo groupInfo) {
-        final Jvm jvm = new Jvm();
-        jvm.setName(jvmName);
-        jvm.setHostName(hostName);
 
-        // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
+        // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity (no longer, but still necessary in this method until it's more explicitly part of the service interface)
         // TODO: Discuss with the team what module should handle this.
         final User user = new User("testUser", "");
         user.addToThread();
 
+        final JpaJvm jvm = new JpaJvm();
+        final String userName = User.getUser().getUserName();
+        final Calendar createDate = Calendar.getInstance();
+
+        jvm.setName(jvmName);
+        jvm.setHostName(hostName);
+        jvm.setCreateBy(userName);
+        jvm.setCreateDate(createDate);
+        jvm.setUpdateBy(userName);
+        jvm.setLastUpdateDate(createDate);
+
         try {
 
-            Group group = groupDao.findByName(groupInfo.getName());
+            JpaGroup group = groupDao.findByName(groupInfo.getName());
             if (group == null) {
-                group = new Group();
+                group = new JpaGroup();
                 group.setName(groupInfo.getName());
                 groupDao.add(group);
                 group = groupDao.findByName(groupInfo.getName());
@@ -85,39 +96,43 @@ public class JvmInfoServiceImpl implements JvmInfoService {
     @Override
     @Transactional
     public void updateJvmInfo(Long id, String jvmName, String hostName) {
-        final Jvm jvm = jvmDao.findById(id);
+        // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity (no longer, but still necessary in this method until it's more explicitly part of the service interface)
+        // TODO: Discuss with the team what module should handle this.
+        final User user = new User("testUser", "");
+        user.addToThread();
+
+        final JpaJvm jvm = jvmDao.findById(id);
         if (jvm != null) {
             jvm.setName(jvmName);
             jvm.setHostName(hostName);
-
-            // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
-            // TODO: Discuss with the team what module should handle this.
-            final User user = new User("testUser", "");
-            user.addToThread();
+            jvm.setLastUpdateDate(Calendar.getInstance());
+            jvm.setUpdateBy(user.getUserName());
 
          } else {
-            throw new RecordNotFoundException(Jvm.class, id);
+            throw new RecordNotFoundException(JpaJvm.class, id);
         }
     }
 
     @Override
     @Transactional
     public void updateJvmInfo(Long id, String jvmName, String hostName, String groupName) {
-        final Jvm jvm = jvmDao.findById(id);
+        // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity (no longer, but still necessary in this method until it's more explicitly part of the service interface)
+        // TODO: Discuss with the team what module should handle this.
+        final User user = new User("testUser", "");
+        user.addToThread();
+
+        final JpaJvm jvm = jvmDao.findById(id);
         if (jvm != null) {
             jvm.setName(jvmName);
             jvm.setHostName(hostName);
-
-            // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
-            // TODO: Discuss with the team what module should handle this.
-            final User user = new User("testUser", "");
-            user.addToThread();
+            jvm.setLastUpdateDate(Calendar.getInstance());
+            jvm.setUpdateBy(user.getUserName());
 
             if (!jvm.getGroup().getName().equalsIgnoreCase(groupName)) {
 
-                Group group = groupDao.findByName(groupName);
+                JpaGroup group = groupDao.findByName(groupName);
                 if (group == null) {
-                    group = new Group();
+                    group = new JpaGroup();
                     group.setName(groupName);
                     groupDao.add(group);
                     group = groupDao.findByName(groupName);
@@ -126,14 +141,14 @@ public class JvmInfoServiceImpl implements JvmInfoService {
             }
 
         } else {
-            throw new RecordNotFoundException(Jvm.class, id);
+            throw new RecordNotFoundException(JpaJvm.class, id);
         }
     }
 
     @Override
     @Transactional
     public void deleteJvm(Long id) {
-        final Jvm jvm = jvmDao.findById(id);
+        final JpaJvm jvm = jvmDao.findById(id);
         if (jvm != null) {
             try {
                 // Required by com.siemens.cto.aem.persistence.domain.AbstractEntity
@@ -144,23 +159,23 @@ public class JvmInfoServiceImpl implements JvmInfoService {
                 jvmDao.remove(jvm);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RecordNotDeletedException(Jvm.class, id, e);
+                throw new RecordNotDeletedException(JpaJvm.class, id, e);
             }
         } else {
-            throw new RecordNotFoundException(Jvm.class, id);
+            throw new RecordNotFoundException(JpaJvm.class, id);
         }
     }
 
     @Override
     public JvmInfo getJvmInfoByName(String name) {
-        final Jvm jvm = jvmDao.findByName(name);
+        final JpaJvm jvm = jvmDao.findByName(name);
         if (jvm != null) {
             return new JvmInfo(jvm.getId(),
                     jvm.getName(),
                     jvm.getHostName(),
                     new GroupInfo(jvm.getGroup().getId(), jvm.getGroup().getName()));
         } else {
-            throw new RecordNotFoundException(Jvm.class, name);
+            throw new RecordNotFoundException(JpaJvm.class, name);
         }
     }
 

@@ -2,7 +2,14 @@ package com.siemens.cto.aem.domain.model.audit;
 
 import java.io.Serializable;
 
+import com.siemens.cto.aem.domain.model.temporary.User;
+
 public class AuditEvent implements Serializable {
+
+    public static AuditEvent now(final User aUser) {
+        return new AuditEvent(new AuditUser(aUser),
+                              AuditDateTime.now());
+    }
 
     private static final long serialVersionUID = 1L;
 

@@ -6,13 +6,10 @@ import java.util.Calendar;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.siemens.cto.aem.common.Objects;
-import com.siemens.cto.aem.common.User;
 
 @MappedSuperclass
 public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Serializable, Audited {
@@ -35,26 +32,6 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
 
     @Column(nullable = false, unique = true)
     public String name;
-
-    @PrePersist
-    public void atCreation() {
-        final Calendar cal = Calendar.getInstance();
-        this.setCreateDate(cal);
-        this.setLastUpdateDate(cal);
-
-        this.setCreateBy(getSessionUser());
-        this.setUpdateBy(getSessionUser());
-    }
-
-    @PreUpdate
-    public void atUpdate() {
-        this.setLastUpdateDate(Calendar.getInstance());
-        this.setUpdateBy(getSessionUser());
-    }
-
-    private static String getSessionUser() {
-        return User.getUser().getUserName();
-    }
 
     @SuppressWarnings("PMD.EmptyCatchBlock")
     @Override

@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
-import com.siemens.cto.aem.persistence.domain.Group;
+import com.siemens.cto.aem.persistence.domain.JpaGroup;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,13 +36,13 @@ import static org.junit.Assert.fail;
 @EnableTransactionManagement
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
-public class GroupDaoJpaTest {
+public class GroupDaoJpaIntegrationTest {
 
-    private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity";
-    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Group.class.getName() + " entity where entity.name = ?1";
+    private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + JpaGroup.class.getName() + " entity";
+    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + JpaGroup.class.getName() + " entity where entity.name = ?1";
 
-    private static final String QUERY_OBJECTS = "SELECT g FROM " + Group.class.getName() + " g ";
-    private static final String QUERY_OBJECTS_BY_ID = "SELECT g FROM " + Group.class.getName() + " g where g.id > ?1";
+    private static final String QUERY_OBJECTS = "SELECT g FROM " + JpaGroup.class.getName() + " g ";
+    private static final String QUERY_OBJECTS_BY_ID = "SELECT g FROM " + JpaGroup.class.getName() + " g where g.id > ?1";
 
     private static final String TEST_GROUP_ONE = "testGroupOne";
     private static final String TEST_GROUP_TWO = "testGroupTwo";
@@ -63,11 +63,11 @@ public class GroupDaoJpaTest {
         dao = new GroupDaoJpa(em);
     }
 
-    private Group add(final String name) {
-        final Group group = new Group();
+    private JpaGroup add(final String name) {
+        final JpaGroup group = new JpaGroup();
         group.setName(name);
         dao.add(group);
-        final Group retrieved = dao.findByName(name);
+        final JpaGroup retrieved = dao.findByName(name);
         assertEquals(name, retrieved.getName());
         return retrieved;
     }
@@ -80,7 +80,7 @@ public class GroupDaoJpaTest {
 
     @Test
     public void testAddNullName() {
-        final Group group = new Group();
+        final JpaGroup group = new JpaGroup();
         try {
             dao.add(group);
             fail("Should not be possible to add a group with no name");
@@ -93,7 +93,7 @@ public class GroupDaoJpaTest {
     @Test
     public void testAddDuplicateName() {
         testAdd();
-        final Group group = new Group();
+        final JpaGroup group = new JpaGroup();
         group.setName(TEST_GROUP_ONE);
         try {
             dao.add(group);
@@ -105,7 +105,7 @@ public class GroupDaoJpaTest {
 
     @Test
     public void testRemove() {
-        Group group = add(TEST_GROUP_ONE);
+        JpaGroup group = add(TEST_GROUP_ONE);
 
         dao.remove(group);
 
@@ -117,27 +117,27 @@ public class GroupDaoJpaTest {
     public void testFindAll() {
         add(TEST_GROUP_ONE);
 
-        final List<Group> actualGroups = dao.findAll();
+        final List<JpaGroup> actualGroups = dao.findAll();
         final int actualGroupSize = actualGroups.size();
         assertTrue("size should be at least ONE", actualGroupSize > 0);
 
         add(TEST_GROUP_TWO);
         final int expectedGroupSize = actualGroupSize + 1;
-        final List<Group> actualGroupsPlusOne = dao.findAll();
+        final List<JpaGroup> actualGroupsPlusOne = dao.findAll();
         assertEquals("size should be one greater", expectedGroupSize, actualGroupsPlusOne.size());
     }
 
     @Test
     public void testFindByName() {
         add(TEST_GROUP_TWO);
-        final AbstractEntity<Group> group = dao.findByName(TEST_GROUP_TWO);
+        final AbstractEntity<JpaGroup> group = dao.findByName(TEST_GROUP_TWO);
         assertEquals(TEST_GROUP_TWO, group.getName());
     }
 
     @Test
     public void testFindById() {
         add(TEST_GROUP_TWO);
-        Group group = dao.findByName(TEST_GROUP_TWO);
+        JpaGroup group = dao.findByName(TEST_GROUP_TWO);
         final Long groupId = group.getId();
         group = dao.findById(groupId);
         assertEquals(TEST_GROUP_TWO, group.getName());
@@ -166,11 +166,11 @@ public class GroupDaoJpaTest {
         add(TEST_GROUP_ONE);
         add(TEST_GROUP_TWO);
 
-        final List<Group> allActualGroups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
+        final List<JpaGroup> allActualGroups = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         final int expectedNumberOfExistingGroups = numberOfExistingGroups + 2;
         assertEquals("Invalid size", expectedNumberOfExistingGroups, allActualGroups.size());
 
-        final List<Group> allActualGroupsById = dao.findObjects(QUERY_OBJECTS_BY_ID, 0L);
+        final List<JpaGroup> allActualGroupsById = dao.findObjects(QUERY_OBJECTS_BY_ID, 0L);
         assertEquals("Invalid size", expectedNumberOfExistingGroups, allActualGroupsById.size());
     }
 
@@ -190,9 +190,9 @@ public class GroupDaoJpaTest {
     @Test
     public void testUpdate() {
         add(TEST_GROUP_ONE);
-        Group group = add(TEST_GROUP_TWO);
+        JpaGroup group = add(TEST_GROUP_TWO);
         group.setName(TEST_GROUP_THREE);
-        final Group updated = dao.update(group);
+        final JpaGroup updated = dao.update(group);
         assertEquals("Incorrect name", TEST_GROUP_THREE, updated.getName());
 
         group = dao.findByName(TEST_GROUP_THREE);
@@ -203,7 +203,7 @@ public class GroupDaoJpaTest {
     @Test
     public void testUpdateGroupExists() {
         add(TEST_GROUP_ONE);
-        final Group group = add(TEST_GROUP_TWO);
+        final JpaGroup group = add(TEST_GROUP_TWO);
         group.setName(TEST_GROUP_ONE);
         try {
             dao.update(group);

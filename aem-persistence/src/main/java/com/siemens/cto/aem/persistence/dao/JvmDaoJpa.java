@@ -2,9 +2,9 @@ package com.siemens.cto.aem.persistence.dao;
 
 import javax.persistence.EntityManager;
 
-import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.persistence.domain.JpaJvm;
 
-public class JvmDaoJpa extends AbstractDaoJpa<Jvm> {
+public class JvmDaoJpa extends AbstractDaoJpa<JpaJvm> {
     public JvmDaoJpa() {
     }
 

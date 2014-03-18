@@ -2,9 +2,9 @@ package com.siemens.cto.aem.persistence.dao;
 
 import javax.persistence.EntityManager;
 
-import com.siemens.cto.aem.persistence.domain.Group;
+import com.siemens.cto.aem.persistence.domain.JpaGroup;
 
-public class GroupDaoJpa extends AbstractDaoJpa<Group> {
+public class GroupDaoJpa extends AbstractDaoJpa<JpaGroup> {
 
     public GroupDaoJpa() {
     }

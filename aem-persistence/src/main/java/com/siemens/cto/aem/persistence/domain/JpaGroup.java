@@ -9,7 +9,7 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "grp", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
-public class Group extends AbstractEntity<Group> {
+public class JpaGroup extends AbstractEntity<JpaGroup> {
 
     private static final long serialVersionUID = -2125399708516728584L;
 

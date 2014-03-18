@@ -14,31 +14,36 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.CreateGroupEvent;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupEvent;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 
-public class SpringJdbcGroupDao implements GroupDao {
+public class SpringJdbcGroupDaoImpl implements GroupDao {
 
     private final NamedParameterJdbcTemplate template;
 
-    public SpringJdbcGroupDao(final DataSource theDataSource) {
-        template = new NamedParameterJdbcTemplate(theDataSource);
+    public SpringJdbcGroupDaoImpl(final DataSource theDataSource) {
+        this(new NamedParameterJdbcTemplate(theDataSource));
+    }
+
+    public SpringJdbcGroupDaoImpl(final NamedParameterJdbcTemplate theTemplate) {
+        template = theTemplate;
     }
 
     @Override
-    public Group createGroup(final CreateGroupEvent aGroupToCreate) {
+    public Group createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
 
         try {
             final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
                                                                                            QueryKey.CREATED_DATE.getQueryKeyPlus() +
                                                                                            QueryKey.CREATED_BY.getQueryKey() + ")";
 
-            final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCreateGroupCommand().getGroupName())
+            final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCommand().getGroupName())
                                                                         .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getAuditEvent().getDateTime().getDate())
                                                                         .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getAuditEvent().getUser().getUserId());
 
@@ -48,39 +53,49 @@ public class SpringJdbcGroupDao implements GroupDao {
                                                     input,
                                                     insertedKey);
 
-            if (insertCount == 1) {
-                return getGroup(new Identifier<Group>(insertedKey.getKey().longValue()));
-            } else {
+            if (insertCount != 1) {
                 throw new RuntimeException("Insert failed for GroupCreation " + aGroupToCreate);
             }
-        } catch (DuplicateKeyException dke) {
+
+            return getGroup(new Identifier<Group>(insertedKey.getKey().longValue()));
+
+        } catch (final DuplicateKeyException dke) {
             throw new BadRequestException(AemFaultType.DUPLICATE_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getCreateGroupCommand().getGroupName(),
+                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName(),
                                           dke);
         }
     }
 
     @Override
-    public Group updateGroup(final UpdateGroupEvent aGroupToUpdate) {
+    public Group updateGroup(final Event<UpdateGroupCommand> aGroupToUpdate) {
 
-        final String update = "UPDATE GRP SET NAME = " + QueryKey.NAME.getQueryKeyPlus() +
-                                             "LASTUPDATEDATE = " + QueryKey.UPDATED_DATE.getQueryKeyPlus() +
-                                             "UPDATEBY = " + QueryKey.UPDATED_BY.getQueryKey() + " " +
-                              "WHERE ID = " + QueryKey.ID.getQueryKey();
+        try {
+            final String update = "UPDATE GRP SET NAME = " + QueryKey.NAME.getQueryKeyPlus() +
+                                                 "LASTUPDATEDATE = " + QueryKey.UPDATED_DATE.getQueryKeyPlus() +
+                                                 "UPDATEBY = " + QueryKey.UPDATED_BY.getQueryKey() + " " +
+                                  "WHERE ID = " + QueryKey.ID.getQueryKey();
 
-        final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToUpdate.getUpdateGroupCommand().getNewName())
-                                                                    .addValue(QueryKey.UPDATED_DATE.getKey(), aGroupToUpdate.getAuditEvent().getDateTime().getDate())
-                                                                    .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getAuditEvent().getUser().getUserId())
-                                                                    .addValue(QueryKey.ID.getKey(), aGroupToUpdate.getUpdateGroupCommand().getId().getId());
+            final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToUpdate.getCommand().getNewName())
+                                                                        .addValue(QueryKey.UPDATED_DATE.getKey(), aGroupToUpdate.getAuditEvent().getDateTime().getDate())
+                                                                        .addValue(QueryKey.UPDATED_BY.getKey(), aGroupToUpdate.getAuditEvent().getUser().getUserId())
+                                                                        .addValue(QueryKey.ID.getKey(), aGroupToUpdate.getCommand().getId().getId());
 
-        final int updateCount = template.update(update,
-                                                input);
+            final int updateCount = template.update(update,
+                                                    input);
 
-        if (updateCount == 1) {
-            return getGroup(aGroupToUpdate.getUpdateGroupCommand().getId());
-        } else {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Update failed for GroupUpdate " + aGroupToUpdate.getUpdateGroupCommand().getId());
+            if (updateCount == 0) {
+                throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                            "Update failed for GroupUpdate " + aGroupToUpdate.getCommand().getId());
+            } else if (updateCount > 1) {
+                throw new RuntimeException("Unknown problem when updating Group " + aGroupToUpdate.getCommand().getId());
+            }
+
+            return getGroup(aGroupToUpdate.getCommand().getId());
+
+        } catch (final DuplicateKeyException dke) {
+            throw new BadRequestException(AemFaultType.DUPLICATE_GROUP_NAME,
+                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName(),
+                                          dke);
         }
     }
 
@@ -154,8 +169,8 @@ public class SpringJdbcGroupDao implements GroupDao {
             throw new RuntimeException("Unknown problem when deleting Group " + aGroupId);
         } else if (deleteCount == 0) {
             //TODO Decide whether deleting something that doesn't exist should result in a failure or not
-            throw new BadRequestException(AemFaultType.GROUP_NOT_FOUND,
-                                          "Group not found: " + aGroupId.getId());
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                        "Group not found: " + aGroupId.getId());
         }
     }
 

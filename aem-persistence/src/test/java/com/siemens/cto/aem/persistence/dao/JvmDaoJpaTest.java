@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.User;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.domain.AbstractEntity;
-import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.persistence.domain.JpaJvm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -32,11 +32,11 @@ import static org.junit.Assert.fail;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class JvmDaoJpaTest {
 
-    private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + Jvm.class.getName() + " entity";
-    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + Jvm.class.getName() + " entity where entity.name = ?1";
+    private static final String QUERY_COUNT = "SELECT COUNT(entity.id) FROM " + JpaJvm.class.getName() + " entity";
+    private static final String QUERY_COUNT_BY_NAME = "SELECT COUNT(entity.id) FROM " + JpaJvm.class.getName() + " entity where entity.name = ?1";
 
-    private static final String QUERY_OBJECTS = "SELECT g FROM " + Jvm.class.getName() + " g ";
-    private static final String QUERY_OBJECTS_BY_ID = "SELECT g FROM " + Jvm.class.getName() + " g where g.id > ?1";
+    private static final String QUERY_OBJECTS = "SELECT g FROM " + JpaJvm.class.getName() + " g ";
+    private static final String QUERY_OBJECTS_BY_ID = "SELECT g FROM " + JpaJvm.class.getName() + " g where g.id > ?1";
 
     private static final String TEST_JVM_ONE = "testJvmOne";
     private static final String TEST_JVM_TWO = "testJvmTwo";
@@ -54,11 +54,11 @@ public class JvmDaoJpaTest {
         dao = new JvmDaoJpa(em);
     }
 
-    private Jvm add(final String name) {
-        final Jvm jvm = new Jvm();
+    private JpaJvm add(final String name) {
+        final JpaJvm jvm = new JpaJvm();
         jvm.setName(name);
         dao.add(jvm);
-        final Jvm retrieved = dao.findByName(name);
+        final JpaJvm retrieved = dao.findByName(name);
         assertEquals(name,
                      retrieved.getName());
         return retrieved;
@@ -71,7 +71,7 @@ public class JvmDaoJpaTest {
 
     @Test(expected = PersistenceException.class)
     public void testAddNullName() {
-        final Jvm jvm = new Jvm();
+        final JpaJvm jvm = new JpaJvm();
         dao.add(jvm);
         fail("Should not be possible to add a jvm with no name");
     }
@@ -79,7 +79,7 @@ public class JvmDaoJpaTest {
     @Test(expected = EntityExistsException.class)
     public void testAddDuplicateName() {
         testAdd();
-        final Jvm jvm = new Jvm();
+        final JpaJvm jvm = new JpaJvm();
         jvm.setName(TEST_JVM_ONE);
         dao.add(jvm);
         fail("Should not be possible to add a jvm with a name that already exists: " + TEST_JVM_ONE);
@@ -87,7 +87,7 @@ public class JvmDaoJpaTest {
 
     @Test
     public void testRemove() {
-        Jvm jvm = add(TEST_JVM_ONE);
+        JpaJvm jvm = add(TEST_JVM_ONE);
 
         dao.remove(jvm);
 
@@ -98,7 +98,7 @@ public class JvmDaoJpaTest {
     @Test
     public void testFindAll() {
         add(TEST_JVM_ONE);
-        List<Jvm> jvms = dao.findAll();
+        List<JpaJvm> jvms = dao.findAll();
         assertEquals("size should be ONE", 1, jvms.size());
 
         add(TEST_JVM_TWO);
@@ -109,14 +109,14 @@ public class JvmDaoJpaTest {
     @Test
     public void testFindByName() {
         add(TEST_JVM_TWO);
-        final AbstractEntity<Jvm> jvm = dao.findByName(TEST_JVM_TWO);
+        final AbstractEntity<JpaJvm> jvm = dao.findByName(TEST_JVM_TWO);
         assertEquals(TEST_JVM_TWO, jvm.getName());
     }
 
     @Test
     public void testFindById() {
         add(TEST_JVM_TWO);
-        Jvm jvm = dao.findByName(TEST_JVM_TWO);
+        JpaJvm jvm = dao.findByName(TEST_JVM_TWO);
         final Long jvmId = jvm.getId();
         jvm = dao.findById(jvmId);
         assertEquals(TEST_JVM_TWO, jvm.getName());
@@ -128,19 +128,19 @@ public class JvmDaoJpaTest {
         add(TEST_JVM_TWO);
         int count = dao.count(QUERY_COUNT, (Object[]) null);
         assertEquals("Invalid count", 2, count);
-        count = dao.count(QUERY_COUNT_BY_NAME, new Object[] {TEST_JVM_ONE});
+        count = dao.count(QUERY_COUNT_BY_NAME, TEST_JVM_ONE);
         assertEquals("Invalid count", 1, count);
     }
 
     @Test
     public void testFindObjects() {
-        List<Jvm> jvms = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
+        List<JpaJvm> jvms = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         assertEquals("List of objects should be empty, it is: " + jvms, 0, jvms.size());
         add(TEST_JVM_ONE);
         add(TEST_JVM_TWO);
         jvms = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         assertEquals("Invalid size", 2, jvms.size());
-        jvms = dao.findObjects(QUERY_OBJECTS_BY_ID, new Object[] {new Long(0)});
+        jvms = dao.findObjects(QUERY_OBJECTS_BY_ID, 0L);
         assertEquals("Invalid size", 2, jvms.size());
     }
 
@@ -149,18 +149,18 @@ public class JvmDaoJpaTest {
         add(TEST_JVM_ONE);
         add(TEST_JVM_TWO);
         dao.flush();
-        List<Jvm> jvms = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
+        List<JpaJvm> jvms = dao.findObjects(QUERY_OBJECTS, (Object[]) null);
         assertEquals("Invalid size", 2, jvms.size());
-        jvms = dao.findObjects(QUERY_OBJECTS_BY_ID, new Object[] {new Long(0)});
+        jvms = dao.findObjects(QUERY_OBJECTS_BY_ID, 0L);
         assertEquals("Invalid size", 2, jvms.size());
     }
 
     @Test
     public void testUpdate() {
         add(TEST_JVM_ONE);
-        Jvm jvm = add(TEST_JVM_TWO);
+        JpaJvm jvm = add(TEST_JVM_TWO);
         jvm.setName(TEST_JVM_THREE);
-        final Jvm updated = dao.update(jvm);
+        final JpaJvm updated = dao.update(jvm);
         assertEquals("Incorrect name", TEST_JVM_THREE, updated.getName());
 
         jvm = dao.findByName(TEST_JVM_THREE);
@@ -170,7 +170,7 @@ public class JvmDaoJpaTest {
     @Test(expected = EntityExistsException.class)
     public void testUpdateJvmExists() {
         add(TEST_JVM_ONE);
-        final Jvm jvm = add(TEST_JVM_TWO);
+        final JpaJvm jvm = add(TEST_JVM_TWO);
         jvm.setName(TEST_JVM_ONE);
         dao.update(jvm);
         fail("Update should have failed because " + TEST_JVM_ONE + " is supposed to exist");

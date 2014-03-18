@@ -14,8 +14,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.persistence.dao.GroupDaoJpa;
 import com.siemens.cto.aem.persistence.dao.JvmDaoJpa;
-import com.siemens.cto.aem.persistence.domain.Group;
-import com.siemens.cto.aem.persistence.domain.Jvm;
+import com.siemens.cto.aem.persistence.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.domain.JpaJvm;
 import com.siemens.cto.aem.service.exception.RecordNotAddedException;
 import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
 import com.siemens.cto.aem.service.exception.RecordNotFoundException;
@@ -46,14 +46,14 @@ public class JvmInfoServiceImplTest {
     private JvmInfoService jvmInfoService;
 
     @Mock
-    private Jvm jvm;
+    private JpaJvm jvm;
 
     @Before
     public void setUp() {
         when(jvm.getId()).thenReturn(1L);
         when(jvm.getName()).thenReturn("the-jvm-name");
         when(jvm.getHostName()).thenReturn("the-jvm-hostname");
-        when(jvm.getGroup()).thenReturn(new Group());
+        when(jvm.getGroup()).thenReturn(new JpaGroup());
 
         jvmInfoService = new JvmInfoServiceImpl(groupDaoJpa, jvmDaoJpa);
     }
@@ -69,7 +69,7 @@ public class JvmInfoServiceImplTest {
 
     @Test
     public void testGetAllJvmInfo() {
-        final List<Jvm> jvmList = new ArrayList<Jvm>();
+        final List<JpaJvm> jvmList = new ArrayList<JpaJvm>();
         jvmList.add(jvm);
         when(jvmDaoJpa.findAll()).thenReturn(jvmList);
         final List<JvmInfo> jvmInfoList = jvmInfoService.getAllJvmInfo();
@@ -82,7 +82,7 @@ public class JvmInfoServiceImplTest {
     @Test
     public void testAddJvmInfo() {
         jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name", new GroupInfo("the-test-group"));
-        verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
+        verify(jvmDaoJpa, times(1)).add(any(JpaJvm.class));
     }
 
     @Test
@@ -94,9 +94,9 @@ public class JvmInfoServiceImplTest {
 
     @Test(expected = RecordNotAddedException.class)
     public void testFailureToAddJvmInfo() {
-        doThrow(EntityExistsException.class).when(jvmDaoJpa).add(any(Jvm.class));
+        doThrow(EntityExistsException.class).when(jvmDaoJpa).add(any(JpaJvm.class));
         jvmInfoService.addJvmInfo("the-jvm-name", "the-host-name", new GroupInfo("the-test-group"));
-        verify(jvmDaoJpa, times(1)).add(any(Jvm.class));
+        verify(jvmDaoJpa, times(1)).add(any(JpaJvm.class));
     }
 
     @Test
@@ -118,14 +118,14 @@ public class JvmInfoServiceImplTest {
     public void testUpdateJvmInfoThatDoesNotExist() {
         doThrow(Exception.class).when(jvmDaoJpa).findById(null);
         jvmInfoService.updateJvmInfo(1l, "the-jvm-name", "the-host-name");
-        verify(jvmDaoJpa, times(0)).update(any(Jvm.class));
+        verify(jvmDaoJpa, times(0)).update(any(JpaJvm.class));
     }
 
     @Test
     public void testDeleteJvm() {
         when(jvmDaoJpa.findById(eq(new Long(1)))).thenReturn(jvm);
         jvmInfoService.deleteJvm(1l);
-        verify(jvmDaoJpa, times(1)).remove(any(Jvm.class));
+        verify(jvmDaoJpa, times(1)).remove(any(JpaJvm.class));
     }
 
     @Test(expected = RecordNotFoundException.class)

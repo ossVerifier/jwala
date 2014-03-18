@@ -37,6 +37,7 @@ subprojects {
         compile group: 'org.slf4j', name: 'slf4j-simple', version: "$versions.slf4j"
 
         testCompile "junit:junit:4.11"
+        testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
 
         pmd group: "pmd", name: "pmd", version: "$versions.pmd"
     }

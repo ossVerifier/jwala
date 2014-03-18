@@ -1,9 +1,14 @@
 package com.siemens.cto.aem.domain.model.audit;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 
 public class AuditDateTime implements Serializable {
+
+    public static AuditDateTime now() {
+        return new AuditDateTime(new Date());
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -15,6 +20,12 @@ public class AuditDateTime implements Serializable {
 
     public Date getDate() {
         return date;
+    }
+
+    public Calendar getCalendar() {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
     }
 
     @Override

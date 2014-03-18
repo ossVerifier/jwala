@@ -23,7 +23,7 @@ public class TestJpaConfiguration {
     @Bean
     public DataSource getDataSource() {
         return new SimpleDriverDataSource(new Driver(),
-                                          "jdbc:h2:tcp://localhost/~/test",
+                                          "jdbc:h2:~/test",
                                           "sa",
                                           "");
     }

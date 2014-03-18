@@ -11,8 +11,8 @@
         <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
 
         <class>com.siemens.cto.aem.persistence.domain.AbstractEntity</class>
-        <class>com.siemens.cto.aem.persistence.domain.Group</class>
-        <class>com.siemens.cto.aem.persistence.domain.Jvm</class>
+        <class>com.siemens.cto.aem.persistence.domain.JpaGroup</class>
+        <class>com.siemens.cto.aem.persistence.domain.JpaJvm</class>
         <!-- class>com.siemens.cto.aem.persistence.domain.Environment</class> <class>com.siemens.cto.aem.persistence.domain.Event</class> <class>com.siemens.cto.aem.persistence.domain.Server</class>
             <class>com.siemens.cto.aem.persistence.domain.ServerExecuteState</class -->
         <exclude-unlisted-classes>true</exclude-unlisted-classes>

@@ -10,8 +10,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
-public class Jvm extends AbstractEntity<Jvm> {
+@Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
 
@@ -23,7 +23,7 @@ public class Jvm extends AbstractEntity<Jvm> {
 
     @ManyToOne
     @JoinColumn(name = "jvmGroupId")
-    private Group group;
+    private JpaGroup group;
 
     public Long getId() {
         return id;
@@ -41,11 +41,11 @@ public class Jvm extends AbstractEntity<Jvm> {
         this.hostName = hostName;
     }
 
-    public Group getGroup() {
+    public JpaGroup getGroup() {
         return group;
     }
 
-    public void setGroup(Group group) {
+    public void setGroup(JpaGroup group) {
         this.group = group;
     }
 
