@@ -51,6 +51,7 @@ var ModalFormAddDialog = React.createClass({
             var formURL = $(formId).attr("action");
             $.ajax({url : formURL,
                     type: "POST",
+                    cache: false,
                     data: postData,
                     contentType: "application/json",
                     dataType: "json",

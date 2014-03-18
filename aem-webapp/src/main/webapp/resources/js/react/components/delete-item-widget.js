@@ -53,6 +53,7 @@ var DialogConfirm = React.createClass({
         $.ajax({
             type: "DELETE",
             dataType: "json",
+            cache: false,
             url: url + id,
             success: function(data, textStatus, jqXHR){
                 dataGrid.refresh();

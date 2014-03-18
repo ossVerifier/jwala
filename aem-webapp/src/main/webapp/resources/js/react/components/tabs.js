@@ -61,6 +61,11 @@ var Tabs = React.createClass({displayName:"Tabs",
 			if(!this.hashRegex.test(currentHash)) {
 				return 0;
 			}
+			/* 1+depth*2 is a calculation that looks at the nesting level of the tabs
+			   and converts it to an group index for the regular expression
+			   allowing us to extract the window location hash component corresponding
+			   to this particular tab component.
+			*/
     	var localHash = this.hashRegex.exec(currentHash)[1+depth*2];
     	var localIndex = 0;
     	this.props.items.every(function(itemName, itemIndex, harray) {

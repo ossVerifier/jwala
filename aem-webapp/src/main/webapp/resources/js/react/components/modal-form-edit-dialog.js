@@ -69,6 +69,7 @@ var ModalFormEditDialog = React.createClass({
                 $.ajax({
                 url : formURL + urlData,
                 type: "PUT",
+                cache: false,
                 data: postData,
                 success:function(data, textStatus, jqXHR) {
                     for (var i = 0; i < callbacks.length; i++) {

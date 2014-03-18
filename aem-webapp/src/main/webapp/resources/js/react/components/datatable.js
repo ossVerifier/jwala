@@ -1,11 +1,12 @@
 var TocDataTable = React.createClass({
     getInitialState: function() {
-        return {data: []};
+        return {data: {applicationResponseContent:{content:[]}}};
     },
     refresh: function() {
         $.ajax({
             url: this.props.url,
             dataType: "json",
+            cache: false,
             success: function(data) {
                 this.setState({data: data});
             }.bind(this),
@@ -23,13 +24,6 @@ var TocDataTable = React.createClass({
         // build column definitions based on props
         var aoColumnDefs  = [];
         var aaSorting     = [];
-        $(this.props.header).each(function(itemIndex, itemName, itemArray) {
-          aoColumnDefs[itemIndex] = {
-            "sTitle": itemName,
-            "aTargets": [ itemIndex ] };
-          aaSorting[itemIndex] = [itemIndex, 'asc'];
-        });
-        
         var props = this.props;
         
         $(this.props.headerExt).each(function(itemIndex, item, itemArray) {
@@ -80,18 +74,9 @@ var TocDataTable = React.createClass({
 
     },
     render: function() {
-
-       var jsonData;
-       if (this.state.data.applicationResponseContent !== undefined) {
-            jsonData = this.state.data.applicationResponseContent.content;
-       } else {
-            jsonData = this.state.data;
-       }
-
-        // The table has to be in a DIV so that css will work if this component is placed in
-        // another table.
+      
+        // Table must be in a DIV so that css will work with a table as container
         var table = React.DOM.table({className:"tocDataTable-" + this.props.theme});
-        this.reactTable = table;
         
         var div = React.DOM.div({className:"tocDataTable-" + this.props.theme},
                              this.props.editDialog,
@@ -99,8 +84,8 @@ var TocDataTable = React.createClass({
                              );
                              
         if(this.dataTable !== undefined) {
-          this.dataTable.fnClearTable(jsonData);
-          this.dataTable.fnAddData(jsonData);
+          this.dataTable.fnClearTable(this.state.data.applicationResponseContent.content);
+          this.dataTable.fnAddData(this.state.data.applicationResponseContent.content);
           this.dataTable.fnDraw();
         }
         return div;        
