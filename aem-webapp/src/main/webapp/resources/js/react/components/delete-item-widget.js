@@ -5,6 +5,7 @@ var DeleteItemWidget = React.createClass({
     getInitialState: function() {
         dataTable = $(this.props.dataGrid.getDOMNode()).find("table").dataTable();
         dialogConfirm = DialogConfirm({dataGrid:this.props.dataGrid, url:this.props.url});
+        submissionInProgress = false;
     },
     render: function() {
         return React.DOM.div(null,
@@ -50,18 +51,23 @@ var DialogConfirm = React.createClass({
     deleteItem: function(id) {
         var dataGrid = this.props.dataGrid;
         var url = this.props.url;
-        $.ajax({
-            type: "DELETE",
-            dataType: "json",
-            cache: false,
-            url: url + id,
-            success: function(data, textStatus, jqXHR){
-                dataGrid.refresh();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert("Error deleting selected item! Cause: " + textStatus);
-            },
-        });
+        if (submissionInProgress === false) {
+            submissionInProgress = true;
+            $.ajax({
+                type: "DELETE",
+                dataType: "json",
+                cache: false,
+                url: url + id,
+                success: function(data, textStatus, jqXHR){
+                    submissionInProgress = false;
+                    dataGrid.refresh();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    submissionInProgress = false;
+                    alert("Error deleting selected item! Cause: " + textStatus);
+                },
+            });
+        }
     },
     destroy: function(obj) {
         $(obj).html("");

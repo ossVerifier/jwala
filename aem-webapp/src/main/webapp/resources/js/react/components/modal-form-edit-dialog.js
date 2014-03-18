@@ -9,6 +9,7 @@
  */
 var ModalFormEditDialog = React.createClass({
     getInitialState: function() {
+        submissionInProgress = false;
     },
     render: function() {
         return React.DOM.div({id:"tempId" ,style:{"display":"none"}})
@@ -64,28 +65,34 @@ var ModalFormEditDialog = React.createClass({
         });
 
         $(formId).one("submit", function(e) {
-            var postData = serializedFormToJson($(this).serializeArray());
-            var formURL = $(formId).attr("action");
-                $.ajax({
-                url : formURL + urlData,
-                type: "PUT",
-                cache: false,
-                data: postData,
-                success:function(data, textStatus, jqXHR) {
-                    for (var i = 0; i < callbacks.length; i++) {
-                        callbacks[i]();
+            if (submissionInProgress === false) {
+                submissionInProgress = true;
+                var postData = serializedFormToJson($(this).serializeArray());
+                var formURL = $(formId).attr("action");
+                    $.ajax({
+                    url : formURL + urlData,
+                    type: "PUT",
+                    cache: false,
+                    data: postData,
+                    success:function(data, textStatus, jqXHR) {
+                        submissionInProgress = false;
+                        for (var i = 0; i < callbacks.length; i++) {
+                            callbacks[i]();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        submissionInProgress = false;
+                        var msg = jqXHR.responseText;
+                        var msgStr = "";
+                        if (msg !== undefined) {
+                            var jsonObj = JSON.parse(jqXHR.responseText);
+                            msgStr = jsonObj.message;
+                        }
+                        $.errorAlert(errorThrown + ": " + msgStr, "Error");
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    var msg = jqXHR.responseText;
-                    var msgStr = "";
-                    if (msg !== undefined) {
-                        var jsonObj = JSON.parse(jqXHR.responseText);
-                        msgStr = jsonObj.message;
-                    }
-                    $.errorAlert(errorThrown + ": " + msgStr, "Error");
-                }
-            });
+                });
+            }
+
             e.preventDefault();
         });
 
