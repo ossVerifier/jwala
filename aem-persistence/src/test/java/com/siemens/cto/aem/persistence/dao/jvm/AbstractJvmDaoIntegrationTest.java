@@ -78,6 +78,16 @@ public abstract class AbstractJvmDaoIntegrationTest {
     }
 
     @Test(expected = NotFoundException.class)
+    public void testCreateJvmWithNonExistentGroup() {
+
+        final Event<CreateJvmCommand> commandEvent = createCreateJvmCommand(new Identifier<Group>(-123456L),
+                                                                            "New Jvm Name",
+                                                                            "New Host Name",
+                                                                            userName);
+        jvmDao.createJvm(commandEvent);
+    }
+
+    @Test(expected = NotFoundException.class)
     public void testRemoveJvm() {
 
         jvmDao.removeJvm(preCreatedJvm.getId());

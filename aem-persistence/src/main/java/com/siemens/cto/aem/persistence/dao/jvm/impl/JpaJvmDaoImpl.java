@@ -175,8 +175,8 @@ public class JpaJvmDaoImpl implements JvmDao {
                                                   aGroupId.getId());
 
         if (group == null) {
-            throw new BadRequestException(AemFaultType.GROUP_NOT_FOUND,
-                                          "Group not found: " + aGroupId);
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                        "Group not found: " + aGroupId);
         }
 
         return group;
