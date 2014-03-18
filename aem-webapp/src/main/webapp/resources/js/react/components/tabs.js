@@ -1,21 +1,21 @@
 var Tabs = React.createClass({displayName:"Tabs",
     getInitialState: function() {
-        themeName = "tabs-" + this.props.theme;
         this.hashRegex = /#\/([^/]*)\/(([^/]*)\/)?(([^/]*)\/)?/; // zero-three levels deep, prefix with / suffixes with /, indexes 1 3 5, null zero match
 
         var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/);
         var items = this.props.items;
         return {
             tabs: items,
-            active: activeTabIndex
+            active: activeTabIndex,
+            themeName: "tabs-" + this.props.theme
         };
     },
     render: function() {
         return React.DOM.div(null,
-                    React.DOM.ol({className:themeName},
+                    React.DOM.ol({className:this.state.themeName},
                         TabsSwitcher({items:this.state.tabs, active:this.state.active,
                                        onTabClick:this.handleTabClick}),
-                        TabsContent({theme:themeName, items:this.state.tabs, active:this.state.active})
+                        TabsContent({theme:this.state.themeName, items:this.state.tabs, active:this.state.active})
                     )
                );
     },
@@ -30,7 +30,7 @@ var Tabs = React.createClass({displayName:"Tabs",
         }
         return true;
     },
-		/* Merge into the hash in the URL by mapping this tab into existing fragments */
+	/* Merge into the hash in the URL by mapping this tab into existing fragments */
     mergeIndexIntoHash: function(index, currentHash, depth) {
     	var matches = this.hashRegex.exec(currentHash);
     	var newList = "#/";
