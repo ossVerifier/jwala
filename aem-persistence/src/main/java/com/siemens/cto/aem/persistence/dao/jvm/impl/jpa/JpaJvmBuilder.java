@@ -1,9 +1,9 @@
-package com.siemens.cto.aem.persistence.dao.jvm;
+package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmBuilder;
-import com.siemens.cto.aem.persistence.dao.group.JpaGroupBuilder;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.domain.JpaJvm;
 
 public class JpaJvmBuilder {

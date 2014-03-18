@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.jvm;
+package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
@@ -13,8 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.jvm.impl.JpaJvmDaoImpl;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.jvm.AbstractJvmDaoIntegrationTest;
+import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
                       classes = {JpaJvmDaoIntegrationTest.CommonConfiguration.class,

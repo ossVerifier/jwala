@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group.impl;
+package com.siemens.cto.aem.persistence.dao.group.impl.springjdbc;
 
 import java.util.List;
 

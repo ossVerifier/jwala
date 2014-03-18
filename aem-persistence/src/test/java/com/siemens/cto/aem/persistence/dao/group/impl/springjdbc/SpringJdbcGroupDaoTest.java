@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group;
+package com.siemens.cto.aem.persistence.dao.group.impl.springjdbc;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

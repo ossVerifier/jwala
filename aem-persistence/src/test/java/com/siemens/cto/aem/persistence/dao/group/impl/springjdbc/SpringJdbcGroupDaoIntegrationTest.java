@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group;
+package com.siemens.cto.aem.persistence.dao.group.impl.springjdbc;
 
 import javax.sql.DataSource;
 
@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.configuration.ConfigurationProfile;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.group.AbstractGroupDaoIntegrationTest;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
                       classes = {SpringJdbcGroupDaoIntegrationTest.CommonConfiguration.class,

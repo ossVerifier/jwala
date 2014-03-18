@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.jvm.impl;
+package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,7 +20,6 @@ import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.persistence.dao.jvm.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.domain.JpaJvm;

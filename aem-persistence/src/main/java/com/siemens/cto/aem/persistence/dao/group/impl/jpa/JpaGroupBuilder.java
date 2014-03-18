@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group;
+package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;

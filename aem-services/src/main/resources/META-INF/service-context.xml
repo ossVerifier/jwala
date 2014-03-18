@@ -20,7 +20,7 @@
 
     <bean id="groupService" class="com.siemens.cto.aem.service.group.impl.GroupServiceImpl">
         <constructor-arg>
-            <bean id="groupServiceDao" class="com.siemens.cto.aem.persistence.dao.group.impl.SpringJdbcGroupDaoImpl">
+            <bean id="groupServiceDao" class="com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl">
                 <constructor-arg ref="dataSource"/>
             </bean>
         </constructor-arg>
@@ -31,7 +31,7 @@
 
     <bean id="jvmService" class="com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl">
         <constructor-arg>
-            <bean id="jvmServiceDao" class="com.siemens.cto.aem.persistence.dao.jvm.impl.JpaJvmDaoImpl"/>
+            <bean id="jvmServiceDao" class="com.siemens.cto.aem.persistence.dao.jvm.impl.jpa.JpaJvmDaoImpl"/>
         </constructor-arg>
     </bean>
 </beans>

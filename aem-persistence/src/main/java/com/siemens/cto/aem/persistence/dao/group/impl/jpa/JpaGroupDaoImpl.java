@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group.impl;
+package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,7 +24,6 @@ import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.domain.JpaGroup;
 
 public class JpaGroupDaoImpl implements GroupDao {
