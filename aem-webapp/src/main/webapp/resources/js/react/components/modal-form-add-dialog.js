@@ -10,6 +10,7 @@
 var ModalFormAddDialog = React.createClass({
     getInitialState: function() {
         validator = null;
+        submissionInProgress = false;
     },
     render: function() {
         return React.DOM.div({style:{"display":"none"}})
@@ -47,28 +48,34 @@ var ModalFormAddDialog = React.createClass({
         var formId = "#" + this.props.formId;
 
         $(formId).one("submit", function(e) {
-            var postData = serializedFormToJsonNoId($(formId).serializeArray());
-            var formURL = $(formId).attr("action");
-            $.ajax({url : formURL,
-                    type: "POST",
-                    data: postData,
-                    contentType: "application/json",
-                    dataType: "json",
-                    success:function(data, textStatus, jqXHR) {
-                        for (var i = 0; i < callbacks.length; i++) {
-                            callbacks[i]();
+
+            if (submissionInProgress === false) {
+                submissionInProgress = true;
+                var postData = serializedFormToJsonNoId($(formId).serializeArray());
+                var formURL = $(formId).attr("action");
+                $.ajax({url : formURL,
+                        type: "POST",
+                        data: postData,
+                        contentType: "application/json",
+                        dataType: "json",
+                        success:function(data, textStatus, jqXHR) {
+                            submissionInProgress = false;
+                            for (var i = 0; i < callbacks.length; i++) {
+                                callbacks[i]();
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            submissionInProgress = false;
+                            var msg = jqXHR.responseText;
+                            var msgStr = "";
+                            if (msg !== undefined) {
+                                var jsonObj = JSON.parse(jqXHR.responseText);
+                                msgStr = jsonObj.message;
+                            }
+                            $.errorAlert(errorThrown + ": " + msgStr, "Error");
                         }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        var msg = jqXHR.responseText;
-                        var msgStr = "";
-                        if (msg !== undefined) {
-                            var jsonObj = JSON.parse(jqXHR.responseText);
-                            msgStr = jsonObj.message;
-                        }
-                        $.errorAlert(errorThrown + ": " + msgStr, "Error");
-                    }
-            });
+                });
+            }
             e.preventDefault(); // stop the default action
         });
 
