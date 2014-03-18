@@ -64,7 +64,7 @@ var DialogConfirm = React.createClass({
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     submissionInProgress = false;
-                    alert("Error deleting selected item! Cause: " + textStatus);
+                    $.errorAlert("Error deleting selected item! The item may not be in the database anymore.");
                 },
             });
         }
