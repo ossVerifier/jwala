@@ -65,7 +65,6 @@ var ModalFormEditDialog = React.createClass({
         });
 
         $(formId).one("submit", function(e) {
-
             if (submissionInProgress === false) {
                 submissionInProgress = true;
                 var postData = serializedFormToJson($(this).serializeArray());
@@ -73,6 +72,7 @@ var ModalFormEditDialog = React.createClass({
                     $.ajax({
                     url : formURL + urlData,
                     type: "PUT",
+                    cache: false,
                     data: postData,
                     success:function(data, textStatus, jqXHR) {
                         submissionInProgress = false;

@@ -51,12 +51,12 @@ var DialogConfirm = React.createClass({
     deleteItem: function(id) {
         var dataGrid = this.props.dataGrid;
         var url = this.props.url;
-
         if (submissionInProgress === false) {
             submissionInProgress = true;
             $.ajax({
                 type: "DELETE",
                 dataType: "json",
+                cache: false,
                 url: url + id,
                 success: function(data, textStatus, jqXHR){
                     submissionInProgress = false;

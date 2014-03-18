@@ -48,7 +48,6 @@ var ModalFormAddDialog = React.createClass({
         var formId = "#" + this.props.formId;
 
         $(formId).one("submit", function(e) {
-
             if (submissionInProgress === false) {
                 submissionInProgress = true;
                 var postData = serializedFormToJsonNoId($(formId).serializeArray());

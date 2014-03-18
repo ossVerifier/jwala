@@ -1,15 +1,4 @@
-<div class="jvm-config-area">
-<!--    <table>
-        <tr>
-            <td></td>
-            <td style="width:1px"><div id="addJvmBtn"></div></td>
-            <td style="width:1px"><div id="delJvmBtn"></div></td>
-        </tr>
-        <tr>
-            <td colspan="3"><div id="jvmDataGrid"></div></td>
-        </tr>
-    </table>
--->    
+<div class="jvm-config-area"> 
     <span class="tool" id="addJvmBtn"></span>
     <span class="tool" id="delJvmBtn"></span>
     <br />
@@ -45,7 +34,6 @@ $(document).ready(function() {
     }
 
     var jvmDataGrid = TocDataTable({theme:"default",
-                                header:["jvmId", "JVM Name", "Host Name", "Group Name"],
                                 headerExt:[
                                   {sTitle:"jvmId", mData:"id", bVisible:false}, 
                                   {sTitle:"JVM Name", mData:"name", tocType:"link"}, 
