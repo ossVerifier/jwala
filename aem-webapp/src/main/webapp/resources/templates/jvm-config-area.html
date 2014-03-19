@@ -24,11 +24,18 @@ $(document).ready(function() {
         nameMap["id"] = "jvmId";
         nameMap["name"] = "jvmNameId";
         nameMap["host"] = "hostNameId";
+        nameMap["groupInfo"] = "groupNameId";
 
         $.each(data.applicationResponseContent.content, function(i, obj) {
+
             if (nameMap[i] !== undefined) {
-                  formJson[nameMap[i]] = obj;
+                if (i !== "groupInfo") {
+                    formJson[nameMap[i]] = obj;
+                } else {
+                    formJson[nameMap[i]] = obj.name;
+                }
             }
+
         });
         return formJson;
     }
