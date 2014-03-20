@@ -11,13 +11,24 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/components/default/toc-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery.dataTables.css">
-<script src="public-resources/js/react/es5-shim-2.3.0.min.js"></script>
-<script src="public-resources/js/react/es5-sham.min.js"></script>
+
+<!-- JQuery, React, ES5, JSON2 -->
+<script src="public-resources/js/es5-shim/es5-shim-2.3.0.min.js"></script>
+<script src="public-resources/js/es5-shim/es5-sham.min.js"></script>
 <script src="public-resources/js/react/react-0.8.0.min.js"></script>
-<script src="public-resources/js/react/jquery-1.10.0.min.js"></script>
-<script src="public-resources/js/react/jquery-ui-1.10.4.custom.min.js"></script>
-<script src="public-resources/js/jquery.validate.min.js"></script>
+<script src="public-resources/js/jquery/jquery-1.10.0.min.js"></script>
+<script src="public-resources/js/jquery/jquery-ui-1.10.4.custom.min.js"></script>
+<script src="public-resources/js/jquery/jquery.validate.min.js"></script>
+<script src="public-resources/js/jquery/jquery.dataTables.js"></script>
 <script src="public-resources/js/json2.min.js"></script>
+
+<!--  Services -->
+<script src="public-resources/js/bluebird/bluebird-1.0.4.js"></script>
+<script src="public-resources/js/toc/v1/services/groupService.js"></script>
+<script src="public-resources/js/toc/v1/services/jvmService.js"></script>
+<script src="public-resources/js/toc/v1/services/serviceFactory.js"></script>
+
+<!-- React UI -->
 <script src="public-resources/js/react/components/area.js"></script>
 <script src="public-resources/js/react/components/tabs.js"></script>
 <script src="public-resources/js/react/components/modal-form-add-dialog.js"></script>
@@ -26,7 +37,6 @@
 <script src="public-resources/js/react/components/data-grid.js"></script>
 <script src="public-resources/js/react/components/datatable.js"></script>
 <script src="public-resources/js/react/components/delete-item-widget.js"></script>
-<script src="public-resources/js/jquery.dataTables.js"></script>
 <script src="public-resources/js/error-alert.js"></script>
 </head>
 <body>
