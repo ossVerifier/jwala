@@ -81,4 +81,9 @@ subprojects {
             html.destination "${buildDir}/jacocoHtml"
         }
     }
+
+    test {
+        systemProperties['run.test.types'] = 'integration'
+        systemProperties['spring.profiles.active'] = 'integration'
+    }
 }
