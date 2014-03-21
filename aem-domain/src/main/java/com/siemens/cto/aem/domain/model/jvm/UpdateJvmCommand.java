@@ -9,6 +9,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.rule.GroupIdRule;
 import com.siemens.cto.aem.domain.model.jvm.rule.HostNameRule;
+import com.siemens.cto.aem.domain.model.jvm.rule.JvmIdRule;
 import com.siemens.cto.aem.domain.model.jvm.rule.JvmNameRule;
 
 public class UpdateJvmCommand implements Serializable, Command {
@@ -50,7 +51,8 @@ public class UpdateJvmCommand implements Serializable, Command {
     public void validateCommand() throws BadRequestException {
         new MultipleRuleCommand(new JvmNameRule(newJvmName),
                                 new HostNameRule(newHostName),
-                                new GroupIdRule(newGroupId)).validateCommand();
+                                new GroupIdRule(newGroupId),
+                                new JvmIdRule(id)).validateCommand();
     }
 
     @Override

@@ -46,22 +46,6 @@ public class CreateJvmCommand implements Serializable, Command {
                                 new GroupIdRule(group)).validateCommand();
     }
 
-    public boolean isValid() {
-        return isValidJvmName() && isValidHostName() && isValidGroup();
-    }
-
-    public boolean isValidJvmName() {
-        return containsText(jvmName);
-    }
-
-    public boolean isValidHostName() {
-        return containsText(hostName);
-    }
-
-    public boolean isValidGroup() {
-        return group != null;
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

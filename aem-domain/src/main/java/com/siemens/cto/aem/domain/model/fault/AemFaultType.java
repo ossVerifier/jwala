@@ -11,7 +11,8 @@ public enum AemFaultType implements MessageResponseStatus {
     INVALID_JVM_NAME("AEM5", "InvalidJvmName"),
     INVALID_HOST_NAME("AEM6", "InvalidHostName"),
     GROUP_NOT_SPECIFIED("AEM7", "GroupNotSpecified"),
-    JVM_NOT_FOUND("AEM8", "JvmNotFound");
+    JVM_NOT_FOUND("AEM8", "JvmNotFound"),
+    JVM_NOT_SPECIFIED("AEM9", "JvmNotSpecified");
 
     private final String faultCode;
     private final String faultMessage;
