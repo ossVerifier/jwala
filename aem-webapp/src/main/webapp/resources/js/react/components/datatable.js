@@ -1,6 +1,6 @@
 var TocDataTable = React.createClass({
     getInitialState: function() {
-        return {data: {applicationResponseContent:{content:[]}}};
+        return {data: {applicationResponseContent:[]}};
     },
     refresh: function() {
         $.ajax({
@@ -84,8 +84,8 @@ var TocDataTable = React.createClass({
                              );
                              
         if(this.dataTable !== undefined) {
-          this.dataTable.fnClearTable(this.state.data.applicationResponseContent.content);
-          this.dataTable.fnAddData(this.state.data.applicationResponseContent.content);
+          this.dataTable.fnClearTable(this.state.data.applicationResponseContent);
+          this.dataTable.fnAddData(this.state.data.applicationResponseContent);
           this.dataTable.fnDraw();
         }
         return div;        

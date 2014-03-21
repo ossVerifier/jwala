@@ -24,9 +24,10 @@
 
 <!--  Services -->
 <script src="public-resources/js/bluebird/bluebird-1.0.4.js"></script>
-<script src="public-resources/js/toc/v1/services/groupService.js"></script>
-<script src="public-resources/js/toc/v1/services/jvmService.js"></script>
-<script src="public-resources/js/toc/v1/services/serviceFactory.js"></script>
+<script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
+<script src="public-resources/js/toc/v1/service/groupService.js"></script>
+<script src="public-resources/js/toc/v1/service/jvmService.js"></script>
+<script src="public-resources/js/toc/v1/service/serviceFactory.js"></script>
 
 <!-- React UI -->
 <script src="public-resources/js/react/components/area.js"></script>
