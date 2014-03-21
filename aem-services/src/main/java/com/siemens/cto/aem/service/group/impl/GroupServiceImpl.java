@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.group.impl;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -30,6 +31,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public Group createGroup(final CreateGroupCommand aCreateGroupCommand,
                              final User aCreatingUser) {
 
@@ -43,16 +45,19 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Group getGroup(final Identifier<Group> aGroupId) {
         return groupDao.getGroup(aGroupId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Group> getGroups(final PaginationParameter aPaginationParam) {
         return groupDao.getGroups(aPaginationParam);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Group> findGroups(final String aGroupNameFragment,
                                   final PaginationParameter aPaginationParam) {
         if (isValidGroupName(aGroupNameFragment)) {
@@ -65,6 +70,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public Group updateGroup(final UpdateGroupCommand anUpdateGroupCommand,
                              final User anUpdatingUser) {
         if (isValidGroupName(anUpdateGroupCommand.getNewName())) {
@@ -77,6 +83,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void removeGroup(final Identifier<Group> aGroupId) {
         jvmService.removeJvmsBelongingTo(aGroupId);
         groupDao.removeGroup(aGroupId);

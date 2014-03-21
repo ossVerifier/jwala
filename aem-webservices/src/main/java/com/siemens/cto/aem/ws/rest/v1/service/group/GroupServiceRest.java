@@ -14,10 +14,11 @@ import javax.ws.rs.core.Response;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 
-@Path("/v1/groups")
+@Path("/groups")
 @Produces(MediaType.APPLICATION_JSON)
 public interface GroupServiceRest {
 
@@ -39,4 +40,9 @@ public interface GroupServiceRest {
     @DELETE
     @Path("/{groupId}")
     Response removeGroup(@PathParam("groupId") final Identifier<Group> aGroupId);
+
+    @DELETE
+    @Path("/{groupId}/jvms/{jvmId}")
+    Response removeJvmFromGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
+                                @PathParam("jvmId") final Identifier<Jvm> aJvmId);
 }

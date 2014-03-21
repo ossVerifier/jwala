@@ -52,6 +52,7 @@ public class JpaJvmDaoImpl implements JvmDao {
             jpaJvm.setLastUpdateDate(updateTime);
 
             entityManager.persist(jpaJvm);
+            entityManager.flush();
 
             return jvmFrom(jpaJvm);
         } catch (final EntityExistsException eee) {

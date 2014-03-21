@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.ws.rest;
 
-import com.siemens.cto.aem.service.model.GroupInfo;
-import com.siemens.cto.aem.service.model.JvmInfo;
-import com.siemens.cto.aem.service.JvmInfoService;
-import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
-import com.siemens.cto.aem.service.exception.RecordNotAddedException;
-import com.siemens.cto.aem.service.exception.RecordNotFoundException;
-import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
-import com.siemens.cto.aem.ws.rest.parameter.JvmInfoBean;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.core.Response;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,16 +16,26 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
+import com.siemens.cto.aem.service.JvmInfoService;
+import com.siemens.cto.aem.service.exception.RecordNotAddedException;
+import com.siemens.cto.aem.service.exception.RecordNotDeletedException;
+import com.siemens.cto.aem.service.exception.RecordNotFoundException;
+import com.siemens.cto.aem.service.exception.RecordNotUpdatedException;
+import com.siemens.cto.aem.service.model.GroupInfo;
+import com.siemens.cto.aem.service.model.JvmInfo;
+import com.siemens.cto.aem.ws.rest.parameter.JvmInfoBean;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JvmInfoRestServiceImplTest {
@@ -58,7 +68,7 @@ public class JvmInfoRestServiceImplTest {
     public void testGetJvmInfoById() throws IOException {
         when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenReturn(jvmInfo);
 
-        final Response response = jvmInfoRestService.getJvmInfoById(new Long(1));
+        final Response response = jvmInfoRestService.getJvmInfoById(1L);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse =
@@ -75,9 +85,9 @@ public class JvmInfoRestServiceImplTest {
 
     @Test
     public void testGetJvmInfoByIdWithException() throws IOException {
-        when(jvmInfoService.getJvmInfoById(eq(new Long(1)))).thenThrow(RecordNotFoundException.class);
+        when(jvmInfoService.getJvmInfoById(eq(1L))).thenThrow(RecordNotFoundException.class);
 
-        final Response response = jvmInfoRestService.getJvmInfoById(new Long(1));
+        final Response response = jvmInfoRestService.getJvmInfoById(1L);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse =
@@ -108,7 +118,7 @@ public class JvmInfoRestServiceImplTest {
 
         final String jsonStr = writer.toString();
 
-        assertTrue(jsonStr.contains("\"content\":[")); // assert that content is an array
+        assertTrue(jsonStr.contains("\"applicationResponseContent\":[")); // assert that content is an array
         assertTrue(jsonStr.contains("\"id\":1"));
         assertTrue(jsonStr.contains("\"name\":\"the-jvmInfo-name\""));
         assertTrue(jsonStr.contains("\"host\":\"the-jvmfino-hostname\""));

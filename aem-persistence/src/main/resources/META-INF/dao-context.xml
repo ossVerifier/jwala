@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="groupDao" class="com.siemens.cto.aem.persistence.dao.GroupDaoJpa"/>
+
+    <bean id="alternateGroupDao" class="com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean id="alternateJvmDao" class="com.siemens.cto.aem.persistence.dao.jvm.impl.jpa.JpaJvmDaoImpl"/>
+
+    <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"/>
+
+</beans>

@@ -5,10 +5,17 @@ import java.io.Serializable;
 //TODO Use common class from Health Check once a common repo is available
 public class PaginationParameter implements Serializable {
 
+    public static PaginationParameter all() {
+        return new PaginationParameter(BEGINNING,
+                                       NO_LIMIT);
+    }
+
     private static final long serialVersionUID = 1L;
 
     private static final int DEFAULT_BEGINNING_OFFSET = 0;
     private static final int DEFAULT_NUMBER_TO_RETRIEVE = 10;
+    private static final int BEGINNING = 0;
+    private static final int NO_LIMIT = 0;
 
     private final Integer offset;
     private final Integer limit;
@@ -84,8 +91,8 @@ public class PaginationParameter implements Serializable {
     }
 
     protected final void validateLimit(final Integer aLimit) {
-        if ((aLimit == null) || (aLimit <= 0)) {
-            throw new IllegalArgumentException("Limit must be a positive Integer, was: " + aLimit);
+        if ((aLimit == null) || (aLimit < 0)) {
+            throw new IllegalArgumentException("Limit must be a non-negative Integer, was: " + aLimit);
         }
     }
 }

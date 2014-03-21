@@ -5,10 +5,10 @@
                            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
     <import resource="classpath:META-INF/transaction-context.xml"/>
+    <import resource="classpath*:META-INF/persistence-context.xml"/>
+    <import resource="classpath*:META-INF/dao-context.xml"/>
+    <import resource="classpath*:META-INF/datasource-context.xml"/>
 
-    <bean id="groupDao" class="com.siemens.cto.aem.persistence.dao.GroupDaoJpa"/>
-
-    <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"/>
     <bean id="jvmInfoService" class="com.siemens.cto.aem.service.JvmInfoServiceImpl">
         <constructor-arg>
             <ref bean="groupDao"/>
@@ -20,9 +20,7 @@
 
     <bean id="groupService" class="com.siemens.cto.aem.service.group.impl.GroupServiceImpl">
         <constructor-arg>
-            <bean id="groupServiceDao" class="com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl">
-                <constructor-arg ref="dataSource"/>
-            </bean>
+            <ref bean="alternateGroupDao"/>
         </constructor-arg>
         <constructor-arg>
             <ref bean="jvmService"/>
@@ -31,7 +29,7 @@
 
     <bean id="jvmService" class="com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl">
         <constructor-arg>
-            <bean id="jvmServiceDao" class="com.siemens.cto.aem.persistence.dao.jvm.impl.jpa.JpaJvmDaoImpl"/>
+            <ref bean="alternateJvmDao"/>
         </constructor-arg>
     </bean>
 </beans>

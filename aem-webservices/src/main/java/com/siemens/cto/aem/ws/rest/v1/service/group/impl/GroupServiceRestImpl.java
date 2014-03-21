@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -43,7 +44,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         logger.debug("Create Group requested: {}", aNewGroupName);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
-                                                                new User("hardCodedUser")));
+                                                                User.getHardCodedUser()));
     }
 
     @Override
@@ -51,12 +52,19 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         logger.debug("Update Group requested: {}", anUpdatedGroup);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
-                                                           new User("hardCodedUser")));
+                                                           User.getHardCodedUser()));
     }
 
     @Override
     public Response removeGroup(final Identifier<Group> aGroupId) {
         logger.debug("Delete Group requested: {}", aGroupId);
+        groupService.removeGroup(aGroupId);
+        return ResponseBuilder.ok();
+    }
+
+    @Override
+    public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
+                                       final Identifier<Jvm> aJvmId) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

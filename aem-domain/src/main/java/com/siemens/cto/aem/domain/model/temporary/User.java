@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 public class User implements Serializable {
 
+    @Deprecated
+    public static User getHardCodedUser() {
+        return new User("hardCodedUser");
+    }
+
     private static final long serialVersionUID = 1L;
 
     private final String id;

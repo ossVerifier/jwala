@@ -10,10 +10,8 @@
     <import resource="classpath*:META-INF/cxf/cxf.xml"/>
     <import resource="classpath*:META-INF/service-context.xml"/>
 
-    <bean id="jvmInfoRestService" class="com.siemens.cto.aem.ws.rest.JvmInfoRestServiceImpl">
-        <constructor-arg>
-            <ref bean="jvmInfoService"/>
-        </constructor-arg>
+    <bean id="jvmServiceRest" class="com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl">
+        <constructor-arg ref="jvmService"/>
     </bean>
 
     <bean id="groupServiceRest" class="com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl">
@@ -32,7 +30,7 @@
             <ref bean="badRequestExceptionMapper"/>
         </jaxrs:providers>
         <jaxrs:serviceBeans>
-            <ref bean="jvmInfoRestService"/>
+            <ref bean="jvmServiceRest"/>
             <ref bean="groupServiceRest"/>
         </jaxrs:serviceBeans>
     </jaxrs:server>

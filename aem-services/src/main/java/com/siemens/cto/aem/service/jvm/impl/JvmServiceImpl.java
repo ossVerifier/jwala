@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service.jvm.impl;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -23,6 +25,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public Jvm createJvm(final CreateJvmCommand aCreateJvmCommand,
                          final User aCreatingUser) {
 
@@ -35,18 +38,21 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Jvm getJvm(final Identifier<Jvm> aJvmId) {
 
         return dao.getJvm(aJvmId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Jvm> getJvms(final PaginationParameter aPaginationParam) {
 
         return dao.getJvms(aPaginationParam);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Jvm> findJvms(final String aJvmNameFragment,
                               final PaginationParameter aPaginationParam) {
 
@@ -55,6 +61,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Jvm> findJvms(final Identifier<Group> aJvmId,
                               final PaginationParameter aPaginationParam) {
 
@@ -64,6 +71,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public Jvm updateJvm(final UpdateJvmCommand anUpdateJvmCommand,
                          final User anUpdatingUser) {
 
@@ -76,12 +84,14 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public void removeJvm(final Identifier<Jvm> aJvmId) {
 
         dao.removeJvm(aJvmId);
     }
 
     @Override
+    @Transactional
     public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
         dao.removeJvmsBelongingTo(aGroupId);
     }

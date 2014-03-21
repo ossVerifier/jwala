@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest;
+package com.siemens.cto.aem.ws.rest.v1.response;
 
 import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 
@@ -18,8 +18,7 @@ public class ApplicationResponse {
 
     @Deprecated
     public ApplicationResponse(final String msgCode,
-                               final String message,
-                               final ApplicationResponseContent applicationResponseContent) {
+                               final String message) {
         this(new MessageResponseStatus() {
                 @Override
                 public String getMessageCode() {
@@ -31,7 +30,7 @@ public class ApplicationResponse {
                     return message;
                 }
             },
-             applicationResponseContent);
+             null);
     }
 
     public String getMsgCode() {

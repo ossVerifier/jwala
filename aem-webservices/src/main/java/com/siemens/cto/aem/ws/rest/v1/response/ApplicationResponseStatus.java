@@ -1,8 +1,9 @@
-package com.siemens.cto.aem.ws.rest;
+package com.siemens.cto.aem.ws.rest.v1.response;
 
 /**
  * Created by Z003BPEJ on 2/24/14.
  */
+@Deprecated
 public enum ApplicationResponseStatus {
 
     SUCCESS, RECORD_NOT_FOUND, RECORD_NOT_ADDED, RECORD_NOT_UPDATED, RECORD_NOT_DELETED, INVALID_POST_DATA;

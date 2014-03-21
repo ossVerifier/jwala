@@ -14,13 +14,18 @@ public class PaginationParamProvider {
     @QueryParam("limit")
     private String limit;
 
+    @QueryParam("all")
+    private String retrieveAll;
+
     public PaginationParamProvider() {
     }
 
     public PaginationParamProvider(final String anOffset,
-                                   final String aLimit) {
+                                   final String aLimit,
+                                   final String shouldRetrieveAll) {
         offset = anOffset;
         limit = aLimit;
+        retrieveAll = shouldRetrieveAll;
     }
 
     public PaginationParameter getPaginationParameter() throws FaultCodeException {
@@ -28,6 +33,8 @@ public class PaginationParamProvider {
             if (areParametersPresent()) {
                 return new PaginationParameter(convert(offset),
                                                convert(limit));
+            } else if (isRetrieveAllParameterPresent()) {
+                return PaginationParameter.all();
             } else {
                 return new PaginationParameter();
             }
@@ -40,6 +47,10 @@ public class PaginationParamProvider {
 
     protected boolean areParametersPresent() {
         return (offset != null) && (limit != null);
+    }
+
+    protected boolean isRetrieveAllParameterPresent() {
+        return (retrieveAll != null);
     }
 
     protected Integer convert(final String anInteger) throws FaultCodeException {
