@@ -13,6 +13,7 @@
         <class>com.siemens.cto.aem.persistence.domain.AbstractEntity</class>
         <class>com.siemens.cto.aem.persistence.domain.JpaGroup</class>
         <class>com.siemens.cto.aem.persistence.domain.JpaJvm</class>
+        <class>com.siemens.cto.aem.persistence.domain.JpaWebServer</class>
         <!-- class>com.siemens.cto.aem.persistence.domain.Environment</class> <class>com.siemens.cto.aem.persistence.domain.Event</class> <class>com.siemens.cto.aem.persistence.domain.Server</class>
             <class>com.siemens.cto.aem.persistence.domain.ServerExecuteState</class -->
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
@@ -23,7 +24,7 @@
             <property name="openjpa.RuntimeUnenhancedClasses" value="supported"/>
             <!-- Use this to view SQL prepared statements -->
             <!--<property name="openjpa.Log" value="File=c:/temp/aem.db.trace.log, DefaultLevel=WARN, Tool=INFO, SQL=TRACE, RUNTIME=TRACE"/> -->
-            <!--<property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />-->
+            <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />
         </properties>
     </persistence-unit>
 </persistence>

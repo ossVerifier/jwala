@@ -5,7 +5,9 @@ package com.siemens.cto.aem.service.exception;
  */
 public class RecordNotDeletedException extends RuntimeException {
 
-    public RecordNotDeletedException(Class aClass, Long id, Exception e) {
+	private static final long serialVersionUID = 1L;
+
+    public RecordNotDeletedException(Class<?> aClass, Long id, Exception e) {
         super("Failed to delete " + aClass.getSimpleName() + " " + id + "!", e);
     }
 
