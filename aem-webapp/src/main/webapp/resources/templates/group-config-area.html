@@ -26,7 +26,7 @@
             </thead>
             <tbody>
             </tbody>
-          </table>  
+          </table>
          </td>
         </tr>
     </table>
@@ -78,6 +78,9 @@ $(document).ready(function() {
 
     // React.renderComponent(DeleteItemWidget({dataGrid:groupDataGrid, url:"v1.0/groups/"}),
     //                      document.getElementById("delGroupBtn"));
+
+    React.renderComponent(GenericButton({label:"The Generic Button", callback:groupAddModalDialog.show}),
+        document.getElementById("addGroupBtn"));
 
 });
 

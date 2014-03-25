@@ -17,9 +17,18 @@
 
 var Area = React.createClass({
     render: function() {
-        return React.DOM.div({className:"area-" + this.props.theme});
+        var theTheme = "area-" + this.props.theme;
+        if (this.props.child !== undefined) {
+            return React.DOM.div({className:theTheme}, this.props.child);
+        } else {
+            // This is going to be deprecated once JVM config has been refactored
+            return React.DOM.div({className:theTheme});
+        }
     },
     componentDidMount: function() {
-        $(this.getDOMNode()).load(this.props.template);
+        if (this.props.template !== undefined) {
+            // This is going to be deprecated once JVM config has been refactored
+            $(this.getDOMNode()).load(this.props.template);
+        }
     }
 });

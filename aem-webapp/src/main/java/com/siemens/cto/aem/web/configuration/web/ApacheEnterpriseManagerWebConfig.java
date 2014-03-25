@@ -31,6 +31,7 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addResourceHandlers(final ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/public-resources/**").addResourceLocations("/resources/");
+        registry.addResourceHandler("/gen-public-resources/**").addResourceLocations("/gen/resources/");
     }
 
     @Bean

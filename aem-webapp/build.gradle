@@ -15,7 +15,43 @@ dependencies {
     compile project(":aem-services")
     compile project(":aem-webservices")
 
- }
+}
+
+task generateMyResources {
+    doLast {
+        def generated = new File(generatedResources, "myGeneratedResource.properties")
+        generated.text = "message=Stay happy!"
+    }
+}
+
+def reactJsPath = "/react/js"
+def reactCompiledOutputPath = buildDir.absolutePath + reactJsPath
+def reactBuildPath = buildDir.toPath().fileName.toString() + reactJsPath
+def reactCachePath = buildDir.toPath().fileName.toString() + "/react"
+
+// we need to specify "resources/js/react"
+// since jsx does not recreate dir structures
+def reactCompiledOutputWarPath = "/gen/resources/js/react"
+def reactSrcPath = "src/main/webapp/resources/js/react"
+
+task compileJsx(type:Exec) {
+    build.mustRunAfter clean
+    workingDir "."
+
+    // jsx tool hangs (and does not say a word why)
+    // if the complete directory name was passed to it
+    commandLine "cmd",
+                "/c",
+                "jsx" +
+                " ./" + reactSrcPath +
+                " ./" + reactBuildPath +
+                " --cache-dir ./" + reactCachePath
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
 
 war{
     manifest {
@@ -27,5 +63,12 @@ war{
             "Built-Host": InetAddress.getLocalHost(),
             "Build-Time-ISO-8601": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         )
+    }
+
+    dependsOn(compileJsx)
+
+    webInf {
+         from reactCompiledOutputPath
+         into reactCompiledOutputWarPath
     }
 }
