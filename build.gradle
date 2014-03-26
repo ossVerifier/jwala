@@ -21,7 +21,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     sourceCompatibility = 1.7
-    group = "com.siemens.cto"
+    group = "com.siemens.cto.aem"
     version = "1.0-SNAPSHOT"
 
     publishing {
