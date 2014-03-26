@@ -9,3 +9,11 @@ dependencies {
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
     compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

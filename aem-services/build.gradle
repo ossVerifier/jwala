@@ -27,3 +27,10 @@ test {
     jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

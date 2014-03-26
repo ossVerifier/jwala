@@ -32,3 +32,11 @@ test {
     // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
     jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}

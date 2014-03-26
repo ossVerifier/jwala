@@ -73,3 +73,11 @@ war{
          into reactCompiledOutputWarPath
     }
 }
+
+publishing {
+    publications {
+        mavenWeb(MavenPublication) {
+            from components.web
+        }
+    }
+}

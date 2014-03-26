@@ -18,10 +18,23 @@ subprojects {
     apply plugin: "java"
     apply plugin: "jacoco"
     apply plugin: "pmd"
+    apply plugin: 'maven-publish'
 
     sourceCompatibility = 1.7
     group = "com.siemens.cto"
-    version = "1.0.0"
+    version = "1.0-SNAPSHOT"
+
+    publishing {
+        repositories {
+            maven {
+                url "http://usmlvv1srn464/artifactory/libs-snapshot-local"
+                credentials {
+                    username 'deployer'
+                    password 'deployerpassword'
+                }
+            }
+        }
+    }
 
     repositories {
         maven {
