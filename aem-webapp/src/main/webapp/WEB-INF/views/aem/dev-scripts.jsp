@@ -18,14 +18,16 @@
 <script src="public-resources/js/toc/v1/service/serviceFactory.js"></script>
 
 <!-- React UI -->
-<script src="public-resources/js/react/generic-components/area.js"></script>
-<script src="public-resources/js/react/generic-components/tabs.js"></script>
-<script src="public-resources/js/react/generic-components/modal-form-add-dialog.js"></script>
-<script src="public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
-<script src="public-resources/js/react/modal-button.js"></script>
-<script src="public-resources/js/react/generic-components/data-grid.js"></script>
-<script src="public-resources/js/react/generic-components/datatable.js"></script>
-<script src="public-resources/js/react/delete-item-widget.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/area.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-add-dialog.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
+<script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/data-grid.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/datatable.js"></script>
+<script type="text/jsx" src="public-resources/js/react/delete-item-widget.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
+<script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
+
+<!-- Non React Components -->
 <script src="public-resources/js/error-alert.js"></script>
-<script src="public-resources/js/react/generic-components/generic-button.js"></script>
-<script src="gen-public-resources/js/react/group-config.js"></script>
