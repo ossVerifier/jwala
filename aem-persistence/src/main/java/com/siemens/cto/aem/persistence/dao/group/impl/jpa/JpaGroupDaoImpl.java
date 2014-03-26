@@ -48,6 +48,7 @@ public class JpaGroupDaoImpl implements GroupDao {
             jpaGroup.setLastUpdateDate(updateDate);
 
             entityManager.persist(jpaGroup);
+            entityManager.flush();
 
             return groupFrom(jpaGroup);
         } catch (final EntityExistsException eee) {

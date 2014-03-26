@@ -13,4 +13,6 @@
 
     <bean id="jvmDao" class="com.siemens.cto.aem.persistence.dao.JvmDaoJpa"/>
 
+    <bean id="webServerDao" class="com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl"/>
+
 </beans>

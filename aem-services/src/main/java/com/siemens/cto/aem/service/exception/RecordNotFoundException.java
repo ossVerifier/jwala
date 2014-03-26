@@ -5,11 +5,13 @@ package com.siemens.cto.aem.service.exception;
  */
 public class RecordNotFoundException extends RuntimeException {
 
-    public RecordNotFoundException(Class theClass, Long id) {
+	private static final long serialVersionUID = 1L;
+
+    public RecordNotFoundException(Class<?> theClass, Long id) {
         super(theClass.getSimpleName() + " with id = " + id + " was not found!");
     }
 
-    public RecordNotFoundException(Class theClass, String name) {
+    public RecordNotFoundException(Class<?> theClass, String name) {
         super(theClass.getSimpleName() + " with name = " + name + " was not found!");
     }
 
