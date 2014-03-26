@@ -1,10 +1,11 @@
 package com.siemens.cto.aem.web.configuration.application;
 
-import com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfigReference;
+
 @Configuration
-@Import(ApacheEnterpriseManagerServiceAppConfig.class)
+@Import(ApacheEnterpriseManagerServiceAppConfigReference.class)
 public class ApacheEnterpriseManagerWebAppConfig {
 }

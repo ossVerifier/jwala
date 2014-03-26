@@ -16,7 +16,7 @@
         </property>
         <property name="jpaProperties">
             <props>
-                <prop key="org.apache.openjpa.jdbc.sql.DBDictionary">
+                <prop key="openjpa.jdbc.DBDictionary">
                     org.apache.openjpa.jdbc.sql.H2Dictionary
                 </prop>
             </props>
