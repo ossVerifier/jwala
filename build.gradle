@@ -9,7 +9,8 @@ ext {
                  cxf: "3.0.0-milestone1",
                  javax_ws_rs_api: "2.0",
                  mockito: "1.9.5",
-                 slf4j : '1.7.5'
+                 slf4j : '1.7.5',
+                 javax_servlet_api: '3.0'
                 ]
 }
 

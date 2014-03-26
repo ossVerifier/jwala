@@ -1,10 +1,16 @@
 package com.siemens.cto.aem.web.controller;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class IndexController {
+
+    private final static String DEV_MODE_COOKIE_NAME = "devMode";
 
     @RequestMapping(value = "/about")
     public String about() {
@@ -19,6 +25,41 @@ public class IndexController {
     @RequestMapping(value = "/sandbox")
     public String sandbox() {
         return "aem/sandbox";
+    }
+
+    @RequestMapping(value = "/scripts")
+    public String scripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
+                          @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {
+
+        /**
+         * If model contains devMode this means that this was called
+         * after devMode was set and cookie is not yet added
+         * therefore we disregard the cookie and check the model
+         * instead
+         */
+        if (!StringUtils.isEmpty(modelDevMode)) {
+            devMode = Boolean.valueOf(modelDevMode);
+        }
+
+        if (devMode) {
+            return "aem/dev-scripts";
+        }
+        return "aem/prod-scripts";
+    }
+
+    @RequestMapping(value = "/devMode", method = RequestMethod.GET)
+    public ModelAndView devMode(@RequestParam("val") String val, HttpServletResponse response) {
+        Boolean devMode = Boolean.valueOf(val);
+        response.addCookie(new Cookie(DEV_MODE_COOKIE_NAME, devMode.toString()));
+
+        ModelAndView mv = new ModelAndView("aem/index");
+
+        /**
+         * We need to add cookie value to a model since the cookie won't be set
+         * until the view is constructed
+         */
+        mv.addObject(DEV_MODE_COOKIE_NAME, devMode);
+        return mv;
     }
 
 }
