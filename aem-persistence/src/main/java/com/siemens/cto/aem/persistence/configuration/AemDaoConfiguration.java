@@ -7,9 +7,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.group.impl.springjdbc.SpringJdbcGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.dao.jvm.impl.jpa.JpaJvmDaoImpl;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
 
 @Configuration
 public class AemDaoConfiguration {
@@ -19,11 +22,16 @@ public class AemDaoConfiguration {
 
     @Bean
     public GroupDao getGroupDao() {
-        return new SpringJdbcGroupDaoImpl(dataSourceConfiguration.getAemDataSource());
+        return new JpaGroupDaoImpl();
     }
 
     @Bean
     public JvmDao getJvmDao() {
         return new JpaJvmDaoImpl();
+    }
+
+    @Bean
+    public WebServerDao getWebServerDao() {
+        return new JpaWebServerDaoImpl();
     }
 }
