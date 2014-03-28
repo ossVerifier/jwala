@@ -1,3 +1,5 @@
+apply plugin: "sonar-runner"
+
 ext {
     versions = [
                  junit : "4.+",
@@ -13,6 +15,17 @@ ext {
                  javax_servlet_api: '3.0'
                 ]
 }
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.host.url", "http://usmlvv1cto923:9000"
+        property "sonar.jdbc.url", "jdbc:mysql://usmlvv1cto923/sonar"
+        property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
+        property "sonar.jdbc.username", "sonar"
+        property "sonar.jdbc.password", "sonar"
+    }
+}
+
 
 subprojects {
     apply plugin: "java"
