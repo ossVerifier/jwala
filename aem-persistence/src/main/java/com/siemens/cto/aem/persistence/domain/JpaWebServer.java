@@ -4,6 +4,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -22,6 +24,10 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     private String name;
     
     private Integer port;
+    
+    @ManyToOne
+    @JoinColumn(name = "jvmGroupId")
+    private JpaGroup group;
     
 	public Long getId() {
 		return id;
@@ -43,5 +49,11 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 	}
 	public void setPort(Integer port) {
 		this.port = port;
+	}
+	public JpaGroup getGroup() {
+		return group;
+	}
+	public void setGroup(JpaGroup group) {
+		this.group = group;
 	}    
 }

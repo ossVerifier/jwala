@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.persistence.dao.group;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.junit.Before;
@@ -9,19 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 @Transactional
 public abstract class AbstractGroupDaoIntegrationTest {
@@ -37,14 +34,14 @@ public abstract class AbstractGroupDaoIntegrationTest {
 
         userName = "Test User Name";
 
-        preCreatedGroup = groupDao.createGroup(createCreateGroupEvent("Pre-Created Group Name",
+        preCreatedGroup = groupDao.createGroup(GroupEventsTestHelper.createCreateGroupEvent("Pre-Created Group Name",
                                                                       userName));
     }
 
     @Test
     public void testCreateGroup() {
 
-        final Event<CreateGroupCommand> createGroup = createCreateGroupEvent("newGroupName",
+        final Event<CreateGroupCommand> createGroup = GroupEventsTestHelper.createCreateGroupEvent("newGroupName",
                                                                              userName);
 
         final Group actualGroup = groupDao.createGroup(createGroup);
@@ -57,7 +54,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testCreateDuplicateGroup() {
 
-        final Event<CreateGroupCommand> createGroup = createCreateGroupEvent(preCreatedGroup.getName(),
+        final Event<CreateGroupCommand> createGroup = GroupEventsTestHelper.createCreateGroupEvent(preCreatedGroup.getName(),
                                                                              userName);
 
         groupDao.createGroup(createGroup);
@@ -66,7 +63,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test
     public void testUpdateGroup() {
 
-        final Event<UpdateGroupCommand> updateGroup = createUpdateGroupEvent(preCreatedGroup.getId(),
+        final Event<UpdateGroupCommand> updateGroup = GroupEventsTestHelper.createUpdateGroupEvent(preCreatedGroup.getId(),
                                                                              "My New Name",
                                                                              userName);
 
@@ -83,7 +80,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
 
         final Identifier<Group> nonExistentGroupId = new Identifier<>(-123456L);
 
-        groupDao.updateGroup(createUpdateGroupEvent(nonExistentGroupId,
+        groupDao.updateGroup(GroupEventsTestHelper.createUpdateGroupEvent(nonExistentGroupId,
                                                     "Unused",
                                                     userName));
     }
@@ -91,10 +88,10 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateGroup() {
 
-        final Group newGroup = groupDao.createGroup(createCreateGroupEvent("Group Name to turn into a duplicate",
+        final Group newGroup = groupDao.createGroup(GroupEventsTestHelper.createCreateGroupEvent("Group Name to turn into a duplicate",
                                                                            userName));
 
-        groupDao.updateGroup(createUpdateGroupEvent(newGroup.getId(),
+        groupDao.updateGroup(GroupEventsTestHelper.createUpdateGroupEvent(newGroup.getId(),
                                                     preCreatedGroup.getName(),
                                                     userName));
     }
@@ -124,7 +121,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
         final PaginationParameter pagination = new PaginationParameter(0, 2);
 
         for (int i=0; i<= pagination.getLimit(); i++) {
-            groupDao.createGroup(createCreateGroupEvent("Auto-constructed Group " + (i + 1),
+            groupDao.createGroup(GroupEventsTestHelper.createCreateGroupEvent("Auto-constructed Group " + (i + 1),
                                                         "Auto-constructed User " + (i + 1)));
         }
 
@@ -170,30 +167,5 @@ public abstract class AbstractGroupDaoIntegrationTest {
 
         groupDao.removeGroup(nonExistentGroupId);
     }
-
-    protected Event<CreateGroupCommand> createCreateGroupEvent(final String aGroupName,
-                                                               final String aUserId) {
-
-        final Event createGroup = new Event<>(new CreateGroupCommand(aGroupName),
-                                              createAuditEvent(aUserId));
-
-        return createGroup;
-    }
-
-    protected Event<UpdateGroupCommand> createUpdateGroupEvent(final Identifier<Group> aGroupId,
-                                                               final String aNewGroupName,
-                                                               final String aUserId) {
-
-        final Event updateGroup = new Event<>(new UpdateGroupCommand(aGroupId,
-                                                                     aNewGroupName),
-                                              createAuditEvent(aUserId));
-
-        return updateGroup;
-    }
-
-    protected AuditEvent createAuditEvent(final String aUserId) {
-        return AuditEvent.now(new User(aUserId));
-    }
-
 
 }
