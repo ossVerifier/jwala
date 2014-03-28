@@ -4,6 +4,6 @@ var ServiceFactory = {
 		return new /* com.siemens. */jvmService();
 	},
 	getGroupService : function() {
-		return new /* com.siemens. */groupService();
+		return /* com.siemens. */groupService;
 	}
 };

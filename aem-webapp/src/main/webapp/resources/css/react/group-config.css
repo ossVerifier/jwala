@@ -1,0 +1,12 @@
+table.group-config {
+    width: 100%;
+    border: 1px solid black
+}
+
+table.group-config tr td {
+    border: 1px solid black
+}
+
+table.group-config td {
+    text-align: right
+}

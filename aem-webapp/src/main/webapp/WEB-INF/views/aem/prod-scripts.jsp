@@ -19,7 +19,7 @@
 <!-- React UI -->
 <script src="gen-public-resources/js/react/generic-components/area.js"></script>
 <script src="gen-public-resources/js/react/generic-components/tabs.js"></script>
-<script src="gen-public-resources/js/react/generic-components/modal-form-add-dialog.js"></script>
+<script src="gen-public-resources/js/react/generic-components/modal-form-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-grid.js"></script>
@@ -27,6 +27,7 @@
 <script src="gen-public-resources/js/react/delete-item-widget.js"></script>
 <script src="gen-public-resources/js/react/generic-components/generic-button.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
+<script src="gen-public-resources/js/react/main-area.js"></script>
 
 <!-- Non React Components -->
 <script src="public-resources/js/error-alert.js"></script>

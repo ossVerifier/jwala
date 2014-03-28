@@ -1,0 +1,59 @@
+/** @jsx React.DOM */
+var ModalFormDialog = React.createClass({
+    render: function() {
+        if (this.props.show === true) {
+            return <div>{this.props.form}</div>
+        }
+        return <div/>
+    },
+    componentDidUpdate: function () {
+        if (this.props.show === true) {
+            this.show();
+        }
+    },
+    show: function(callback) {
+        var thisComponent = this;
+        var title = this.props.title;
+
+        $(this.getDOMNode()).dialog({
+            resizable: false,
+            modal: true,
+            title: title,
+            height: "auto",
+            width: "auto",
+            buttons: {
+                "Ok": function () {
+                    thisComponent.addItem(function(){
+                        thisComponent.destroy();
+                    });
+                },
+                "Cancel": function () {
+                    thisComponent.destroy();
+                }
+            },
+            close: function() {
+                thisComponent.destroy();
+            }
+        });
+    },
+    addItem: function(onSuccessCallback) {
+        var thisComponent = this;
+        this.props.form.submit(
+            function() {
+                // You need to destroy this component in a callback
+                // to prevent has no method isMounted error if
+                // the component is destroyed here
+                onSuccessCallback();
+            },
+            function(errMsg) {
+                $.errorAlert(errMsg, "Error");
+            }
+        );
+    },
+    destroy: function() {
+        if (this.props.destroyCallback !== undefined) {
+            this.props.destroyCallback();
+        }
+        $(this.getDOMNode()).dialog("destroy");
+    }
+});

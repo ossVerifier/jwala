@@ -1,13 +1,18 @@
 var /* statusService */groupService = {
 
-	getCurrentStatus : function() {
-		return serviceFoundation.get('services/rest/v1/statuses/current',
-				'json');
+	insertNewGroup: function(name) {
+	    return serviceFoundation.post("v1.0/groups", "json", name);
 	},
-	getStatusMessages : function() {
-		return serviceFoundation.get('services/rest/v1/db/status', 'json');
+	updateGroup: function(group) {
+        return serviceFoundation.put("v1.0/groups/",
+                                     "json",
+                                     serviceFoundation.serializedFormToJsonNoId(group));
+    },
+	deleteGroup: function(id) {
+	    return serviceFoundation.del("v1.0/groups/" + id, "json");
 	},
-	insertNewStatusMessage : function(message, shouldFail) {
-		return serviceFoundation.post('services/rest/v1/db/status?fail=' + shouldFail, 'json', message);
+	getGroup: function(id) {
+	    return serviceFoundation.get("v1.0/groups/" + id);
 	}
+
 };
