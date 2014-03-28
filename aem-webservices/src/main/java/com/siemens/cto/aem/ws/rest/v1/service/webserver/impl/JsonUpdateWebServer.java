@@ -88,13 +88,14 @@ public class JsonUpdateWebServer {
 				JsonProcessingException {
 
 			final ObjectCodec obj = jp.getCodec();
-			final JsonNode node = obj.readTree(jp);
+			final JsonNode node = obj.readTree(jp).get(0);
 
-			return new JsonUpdateWebServer(node.get("webserverId")
-					.getValueAsText(), node.get("groupId").getValueAsText(),
-					node.get("webserverName").getTextValue(), node.get(
-							"hostName").getTextValue(), node.get("portNumber")
-							.getIntValue());
+			return new JsonUpdateWebServer(
+					node.get("webserverId").getValueAsText(), 
+					node.get("groupId").getValueAsText(),
+					node.get("webserverName").getTextValue(), 
+					node.get("hostName").getTextValue(), 
+					node.get("portNumber").getIntValue());
 		}
 	}
 
@@ -103,6 +104,6 @@ public class JsonUpdateWebServer {
 	}
 
 	public void setPortNumber(Integer portNumber) {
-		this.portNumber = portNumber;
-	}
+        this.portNumber = portNumber;
+    }
 }

@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.service.model;
 
+/**
+ * Serializes as: {id:##, name:'', h:'', port:##, groupInfo: { id:##, name:''} } 
+ *
+ */
 public class WebServerInfo {
 
     private final Long id;

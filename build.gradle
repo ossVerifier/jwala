@@ -12,6 +12,7 @@ ext {
                  javax_ws_rs_api: "2.0",
                  mockito: "1.9.5",
                  slf4j : '1.7.5',
+                 slf4j_log4j12 : '1.7.5',
                  javax_servlet_api: '3.0'
                 ]
 }
@@ -63,7 +64,7 @@ subprojects {
     dependencies {
 
         compile group: 'org.slf4j', name: 'slf4j-api', version: "$versions.slf4j"
-        compile group: 'org.slf4j', name: 'slf4j-simple', version: "$versions.slf4j"
+        compile group: 'org.slf4j', name: 'slf4j-log4j12', version: "$versions.slf4j_log4j12"
 
         testCompile "junit:junit:4.11"
         testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"

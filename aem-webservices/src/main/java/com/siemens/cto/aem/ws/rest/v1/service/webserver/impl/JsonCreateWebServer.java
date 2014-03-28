@@ -85,7 +85,7 @@ public class JsonCreateWebServer {
                                            final DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
             final ObjectCodec obj = jp.getCodec();
-            final JsonNode node = obj.readTree(jp);
+            final JsonNode node = obj.readTree(jp).get(0);
 
             return new JsonCreateWebServer(node.get("groupId").getValueAsText(),
                                      node.get("webserverName").getTextValue(),
