@@ -23,6 +23,7 @@ sonarRunner {
         property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
         property 'sonar.jdbc.username', 'sonar'
         property 'sonar.jdbc.password', 'sonar'
+        properties ["sonar.projectKey"] = 'cto.tco.toc'
         properties ["sonar.projectName"] = 'tomcat operations center'
         properties ["sonar.projectVersion"] = '1.0.0'
     }
