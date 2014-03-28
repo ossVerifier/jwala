@@ -18,14 +18,15 @@ ext {
 
 sonarRunner {
     sonarProperties {
-        property "sonar.host.url", "http://usmlvv1cto923:9000"
-        property "sonar.jdbc.url", "jdbc:mysql://usmlvv1cto923/sonar"
-        property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
-        property "sonar.jdbc.username", "sonar"
-        property "sonar.jdbc.password", "sonar"
+        property 'sonar.host.url', 'http://usmlvv1cto923:9000'
+        property 'sonar.jdbc.url', 'jdbc:mysql://usmlvv1cto923/sonar'
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.jdbc.username', 'sonar'
+        property 'sonar.jdbc.password', 'sonar'
+        properties ["sonar.projectName"] = 'tomcat operations center'
+        properties ["sonar.projectVersion"] = '1.0.0'
     }
 }
-
 
 subprojects {
     apply plugin: "java"
