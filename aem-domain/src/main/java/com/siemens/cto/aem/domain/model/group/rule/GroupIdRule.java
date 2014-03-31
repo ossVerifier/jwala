@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.domain.model.jvm.rule;
+package com.siemens.cto.aem.domain.model.group.rule;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;

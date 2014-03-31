@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.webserver.AbstractWebServerDaoIntegrationTest;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 
@@ -32,5 +34,10 @@ public class JpaWebServerDaoIntegrationTest extends
 		public WebServerDao getWebServerDao() {
 			return new JpaWebServerDaoImpl();
 		}
-	}
+
+		@Bean
+		public GroupDao getGroupDao() {
+			return new JpaGroupDaoImpl();
+		}
+}
 }

@@ -1,7 +1,11 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
+import static com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper.createCreateGroupEvent;
+import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createCreateWebServerEvent;
+import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createUpdateWebServerEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -13,14 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 
 @Transactional
 public abstract class AbstractWebServerDaoIntegrationTest {
@@ -28,26 +34,39 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	@Autowired
 	private WebServerDao webServerDao;
 
+	@Autowired
+	private GroupDao groupDao;
+
 	private WebServer preCreatedWebServer;
+	private Group preCreatedGroup;
+
 	private String userName;
 	private static final String TEST_WS_NAME = "Tomcat Operations Center TEST";
 	private static final Integer TEST_WS_PORT = Integer.valueOf(8080);
 	private static final String TEST_WS_HOST = "localhost";
+	private static final String TEST_WS_GROUP_NAME = "test group";
 	private static final String TEST_USER_NAME = "Auto-constructed User ";
 	private static final String UNCHECKED_WS_NAME = "noname";
 	private static final Integer UNCHECKED_WS_PORT = Integer.valueOf(1023);
 	private static final String UNCHECKED_WS_HOST = "nohost";
 	private static final Long NONEXISTANT_WS_ID = Long.valueOf(-123456L);
+	private static final Long NONEXISTANT_GROUP_ID = Long.valueOf(-123456L);
+	private static final Identifier<Group> NONEXISTANT_GROUP = new Identifier<>(
+			NONEXISTANT_GROUP_ID);
 	private static final String UNIQUE_NEW_WS_NAME = "Web Server Name to turn into a duplicate";
+	private static final String SECOND_WS_GROUP_NAME = "test group 2";
+	private static final String SECOND_TEST_WS_NAME = "TOC Test 2";
 
 	@Before
 	public void setUp() throws Exception {
 
-		userName = "Test User Name";
+		preCreatedGroup = groupDao.createGroup(createCreateGroupEvent(
+				TEST_WS_GROUP_NAME, TEST_USER_NAME));
 
 		preCreatedWebServer = webServerDao
-				.createWebServer(createCreateWebServerEvent(TEST_WS_NAME,
-						TEST_WS_HOST, TEST_WS_PORT, userName));
+				.createWebServer(createCreateWebServerEvent(
+						preCreatedGroup.getId(), TEST_WS_NAME, TEST_WS_HOST,
+						TEST_WS_PORT, userName));
 	}
 
 	@Test
@@ -60,7 +79,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	public void testCreateDuplicateWebServer() {
 
 		final Event<CreateWebServerCommand> createWebServer = createCreateWebServerEvent(
-				TEST_WS_NAME, UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, userName);
+				preCreatedGroup.getId(), TEST_WS_NAME, UNCHECKED_WS_HOST,
+				UNCHECKED_WS_PORT, userName);
 
 		webServerDao.createWebServer(createWebServer);
 	}
@@ -69,8 +89,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	public void testUpdateWebServer() {
 
 		final Event<UpdateWebServerCommand> updateWebServer = createUpdateWebServerEvent(
-				preCreatedWebServer.getId(), "My New Name", "My New Host",
-				Integer.valueOf(1), userName);
+				preCreatedWebServer.getId(), preCreatedGroup.getId(),
+				"My New Name", "My New Host", Integer.valueOf(1), userName);
 
 		final WebServer actualWebServer = webServerDao
 				.updateWebServer(updateWebServer);
@@ -93,20 +113,23 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				NONEXISTANT_WS_ID);
 
 		webServerDao.updateWebServer(createUpdateWebServerEvent(
-				nonExistentWebServerId, UNCHECKED_WS_NAME, UNCHECKED_WS_HOST,
-				UNCHECKED_WS_PORT, userName));
+				nonExistentWebServerId, preCreatedGroup.getId(),
+				UNCHECKED_WS_NAME, UNCHECKED_WS_HOST, UNCHECKED_WS_PORT,
+				userName));
 	}
 
 	@Test(expected = BadRequestException.class)
 	public void testUpdateDuplicateWebServer() {
 
 		final WebServer newWebServer = webServerDao
-				.createWebServer(createCreateWebServerEvent(UNIQUE_NEW_WS_NAME,
+				.createWebServer(createCreateWebServerEvent(
+						preCreatedGroup.getId(), UNIQUE_NEW_WS_NAME,
 						UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, userName));
 
 		webServerDao.updateWebServer(createUpdateWebServerEvent(
-				newWebServer.getId(), preCreatedWebServer.getName(),
-				UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, userName));
+				newWebServer.getId(), preCreatedGroup.getId(),
+				preCreatedWebServer.getName(), UNCHECKED_WS_HOST,
+				UNCHECKED_WS_PORT, userName));
 	}
 
 	@Test
@@ -118,10 +141,14 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		final WebServer webServer = webServerDao
 				.getWebServer(expectedWebServerIdentifier);
 
+		assertEquals(preCreatedGroup, webServer.getGroup());
 		assertEquals(preCreatedWebServer.getName(), webServer.getName());
 		assertEquals(preCreatedWebServer.getHost(), webServer.getHost());
 		assertEquals(preCreatedWebServer.getPort(), webServer.getPort());
 		assertEquals(expectedWebServerIdentifier, webServer.getId());
+		assertEquals(preCreatedWebServer, webServer);
+		assertEquals(preCreatedWebServer.hashCode(), webServer.hashCode());
+		assertEquals(preCreatedWebServer.toString(), webServer.toString());		
 	}
 
 	@Test(expected = NotFoundException.class)
@@ -137,8 +164,9 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
 		for (int i = 0; i <= pagination.getLimit(); i++) {
 			webServerDao.createWebServer(createCreateWebServerEvent(
-					TEST_WS_NAME + (i + 1), UNCHECKED_WS_HOST,
-					UNCHECKED_WS_PORT, TEST_USER_NAME + (i + 1)));
+					preCreatedGroup.getId(), TEST_WS_NAME + (i + 1),
+					UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, TEST_USER_NAME
+							+ (i + 1)));
 		}
 
 		final List<WebServer> actualWebServers = webServerDao
@@ -185,33 +213,111 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		webServerDao.removeWebServer(nonExistentWebServerId);
 	}
 
-	protected Event<CreateWebServerCommand> createCreateWebServerEvent(
-			final String aNewWebServerName, final String aNewWebServerHost,
-			final Integer aNewWebServerPort, final String aUserId) {
+	@Test(expected = NotFoundException.class)
+	public void testWebServerWithNotFoundGroup() {
+		WebServer webServer = webServerDao
+				.createWebServer(createCreateWebServerEvent(NONEXISTANT_GROUP,
+						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT,
+						TEST_USER_NAME));
 
-		final Event<CreateWebServerCommand> createWebServer = new Event<>(
-				new CreateWebServerCommand(aNewWebServerName,
-						aNewWebServerHost, aNewWebServerPort),
-				createAuditEvent(aUserId));
-
-		return createWebServer;
+		assertNotNull(webServer.getId());
+		assertNotNull(webServer.getId().getId());
 	}
 
-	protected Event<UpdateWebServerCommand> createUpdateWebServerEvent(
-			final Identifier<WebServer> id, final String aNewWebServerName,
-			final String aNewWebServerHost, final Integer aNewWebServerPort,
-			final String aUserId) {
+	@Test
+	public void testWebServerWithNullGroup() {
+		WebServer webServer = webServerDao
+				.createWebServer(createCreateWebServerEvent(null, SECOND_TEST_WS_NAME,
+						TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
 
-		final Event<UpdateWebServerCommand> updateWebServer = new Event<>(
-				new UpdateWebServerCommand(id, aNewWebServerName,
-						aNewWebServerHost, aNewWebServerPort),
-				createAuditEvent(aUserId));
-
-		return updateWebServer;
+		assertNotNull(webServer.getId());
+		assertNotNull(webServer.getId().getId());
 	}
 
-	protected AuditEvent createAuditEvent(final String aUserId) {
-		return AuditEvent.now(new User(aUserId));
+	@Test
+	public void testUpdateWebServerGroup() {
+		Group newGroup = groupDao.createGroup(createCreateGroupEvent(
+				SECOND_WS_GROUP_NAME, TEST_USER_NAME));
+
+		WebServer webServer = webServerDao
+				.updateWebServer(createUpdateWebServerEvent(
+						preCreatedWebServer.getId(), newGroup.getId(),
+						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT,
+						TEST_USER_NAME));
+
+		assertEquals(newGroup.getId(), webServer.getGroup().getId());
+		assertEquals(newGroup.getName(), webServer.getGroup().getName());
 	}
 
+	class GeneralizedDao {
+		<R> R update(Event<?> updateCommand) {
+			return this.<R> updateInternal(updateCommand.getCommand(),
+					updateCommand);
+		}
+
+		@SuppressWarnings("unchecked")
+		private <R> R updateInternal(Object updateCommand,
+				@SuppressWarnings("rawtypes") Event eventObj) {
+			if (updateCommand instanceof UpdateGroupCommand) {
+				return (R) groupDao.updateGroup(eventObj);
+			} else if (updateCommand instanceof UpdateWebServerCommand) {
+				return (R) webServerDao.updateWebServer(eventObj);
+			}
+			return null;
+		}
+
+		<R> R create(Event<?> createCommand) {
+			return this.<R> createInternal(createCommand.getCommand(),
+					createCommand);
+		}
+
+		@SuppressWarnings({ "unchecked" })
+		private <R> R createInternal(Object createCommand,
+				@SuppressWarnings("rawtypes") Event eventObj) {
+			if (createCommand instanceof CreateGroupCommand) {
+				return (R) groupDao.createGroup(eventObj);
+			} else if (createCommand instanceof CreateWebServerCommand) {
+				return (R) webServerDao.createWebServer(eventObj);
+			}
+			return null;
+		}
+	}
+
+	@Test
+	public void testGeneralDao() {
+		GeneralizedDao generalizedDao = new GeneralizedDao();
+		Group newGroup = generalizedDao.create(createCreateGroupEvent(
+				SECOND_WS_GROUP_NAME, TEST_USER_NAME));
+
+		WebServer webServer = generalizedDao.update(createUpdateWebServerEvent(
+				preCreatedWebServer.getId(), newGroup.getId(), TEST_WS_NAME,
+				TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
+
+		assertEquals(newGroup.getId(), webServer.getGroup().getId());
+		assertEquals(newGroup.getName(), webServer.getGroup().getName());
+	}
+	
+	@Test
+	public void testCommands() {
+		Event<CreateWebServerCommand> cwsc = createCreateWebServerEvent(preCreatedGroup.getId(), 
+				TEST_WS_NAME, 
+				TEST_WS_HOST,
+				TEST_WS_PORT,
+				TEST_USER_NAME);
+
+		Event<UpdateWebServerCommand> uwsc = createUpdateWebServerEvent(preCreatedWebServer.getId(), 
+				preCreatedGroup.getId(), 
+				TEST_WS_NAME, 
+				TEST_WS_HOST,
+				TEST_WS_PORT,
+				TEST_USER_NAME);
+
+		assertTrue(cwsc.toString().startsWith("Event{command=CreateWebServerCommand {newGroup=Identifier{id="));
+		assertTrue(uwsc.toString().startsWith("Event{command=UpdateWebServerCommand {id=Identifier{id="));
+		assertTrue(cwsc.toString().contains("}, newHost=localhost, newName=Tomcat Operations Center TEST, newPort=8080}, auditEvent=AuditEvent {"));
+		assertTrue(uwsc.toString().contains("}, newHost=localhost, newName=Tomcat Operations Center TEST, newPort=8080}, auditEvent=AuditEvent {"));
+		assertNotSame(cwsc.hashCode(), 0);
+		assertNotSame(uwsc.hashCode(), 0);
+						
+	}
 }

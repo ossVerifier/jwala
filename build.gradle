@@ -1,3 +1,5 @@
+apply plugin: "sonar-runner"
+
 ext {
     versions = [
                  junit : "4.+",
@@ -10,8 +12,22 @@ ext {
                  javax_ws_rs_api: "2.0",
                  mockito: "1.9.5",
                  slf4j : '1.7.5',
+                 slf4j_log4j12 : '1.7.5',
                  javax_servlet_api: '3.0'
                 ]
+}
+
+sonarRunner {
+    sonarProperties {
+        property 'sonar.host.url', 'http://usmlvv1cto923:9000'
+        property 'sonar.jdbc.url', 'jdbc:mysql://usmlvv1cto923/sonar'
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.jdbc.username', 'sonar'
+        property 'sonar.jdbc.password', 'sonar'
+        properties ["sonar.projectKey"] = 'cto.tco.toc'
+        properties ["sonar.projectName"] = 'tomcat operations center'
+        properties ["sonar.projectVersion"] = '1.0.0'
+    }
 }
 
 subprojects {
@@ -48,7 +64,7 @@ subprojects {
     dependencies {
 
         compile group: 'org.slf4j', name: 'slf4j-api', version: "$versions.slf4j"
-        compile group: 'org.slf4j', name: 'slf4j-simple', version: "$versions.slf4j"
+        compile group: 'org.slf4j', name: 'slf4j-log4j12', version: "$versions.slf4j_log4j12"
 
         testCompile "junit:junit:4.11"
         testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"

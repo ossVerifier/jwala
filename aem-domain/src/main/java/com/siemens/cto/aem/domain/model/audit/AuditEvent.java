@@ -57,4 +57,9 @@ public class AuditEvent implements Serializable {
         result = 31 * result + (dateTime != null ? dateTime.hashCode() : 0);
         return result;
     }
+
+	@Override
+	public String toString() {
+		return "AuditEvent {user=" + user + "}";
+	}
 }

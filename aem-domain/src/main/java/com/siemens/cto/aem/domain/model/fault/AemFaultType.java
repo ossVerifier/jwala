@@ -15,8 +15,9 @@ public enum AemFaultType implements MessageResponseStatus {
 	JVM_NOT_SPECIFIED("AEM9", "JvmNotSpecified"), 
 	WEBSERVER_NOT_FOUND("AEM10","WebServerNotFound"), 
 	INVALID_WEBSERVER_NAME("AEM11","InvalidWebServerName"), 
-	INVALID_WEBSERVER_HOST("AEM12", "InvalidWebServerHostName"), // Q: Dup?
-	INVALID_WEBSERVER_PORT("AEM13", "InvalidWebServerPortNUmber"), // Q: Too verbose?
+	INVALID_WEBSERVER_HOST("AEM12", "InvalidWebServerHostName"),
+	INVALID_WEBSERVER_PORT("AEM13", "InvalidWebServerPortNUmber"), 
+	WEBSERVER_NOT_SPECIFIED("AEM14", "WebServerNotSpecified")
 	;
 
 	private final String faultCode;

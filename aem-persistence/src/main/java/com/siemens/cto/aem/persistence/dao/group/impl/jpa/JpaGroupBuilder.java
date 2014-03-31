@@ -21,6 +21,9 @@ public class JpaGroupBuilder {
     }
 
     public Group build() {
+    	if(group == null) { 
+    		return null;
+    	}
         return new Group(new Identifier<Group>(group.getId()),
                          group.getName());
     }

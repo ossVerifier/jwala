@@ -6,11 +6,11 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.rule.GroupIdRule;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.rule.GroupIdRule;
-import com.siemens.cto.aem.domain.model.jvm.rule.HostNameRule;
 import com.siemens.cto.aem.domain.model.jvm.rule.JvmIdRule;
 import com.siemens.cto.aem.domain.model.jvm.rule.JvmNameRule;
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 
 public class UpdateJvmCommand implements Serializable, Command {
 

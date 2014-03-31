@@ -44,4 +44,9 @@ public class AuditUser implements Serializable {
     public int hashCode() {
         return userId != null ? userId.hashCode() : 0;
     }
+
+	@Override
+	public String toString() {
+		return "AuditUser {userId=" + userId + "}";
+	}
 }
