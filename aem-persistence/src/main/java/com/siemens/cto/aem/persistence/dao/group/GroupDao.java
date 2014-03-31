@@ -25,4 +25,6 @@ public interface GroupDao {
 
     void removeGroup(final Identifier<Group> aGroupId);
 
+    Group getGroup(final String aGroupName) throws NotFoundException;
+
 }

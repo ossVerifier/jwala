@@ -174,6 +174,25 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
         }
     }
 
+    @Override
+    public Group getGroup(String aGroupName) throws NotFoundException {
+        try {
+            final String select = "SELECT ID, NAME FROM GRP WHERE NAME = " + QueryKey.NAME.getQueryKey();
+
+            final SqlParameterSource input = new MapSqlParameterSource(QueryKey.NAME.getKey(), aGroupName);
+
+            final Group group = template.queryForObject(select,
+                    input,
+                    new GroupRowMapper());
+
+            return group;
+        } catch (final EmptyResultDataAccessException erdae) {
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                    "Group not found: " + aGroupName,
+                    erdae);
+        }
+    }
+
     private enum QueryKey {
         CREATED_DATE("CREATED_DATE"),
         CREATED_BY("CREATED_BY"),
