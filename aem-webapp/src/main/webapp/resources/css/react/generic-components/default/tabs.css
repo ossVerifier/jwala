@@ -4,13 +4,13 @@ ol.tabs-default {
     padding: 0;
 }
 
-ol.tabs-default li {
+ol.tabs-default > div > li {
     background-image: url(../../../../img/react/components/gray-tabs.png);
     float: left;
     padding-left: 10px;
 }
 
-ol.tabs-default a {
+ol.tabs-default > div > li > a {
 
     background-image: url(../../../../img/react/components/gray-tabs.png);
     background-position: right top;
@@ -24,11 +24,11 @@ ol.tabs-default a {
     font-size: 13px;
 }
 
-ol.tabs-default li.current {
+ol.tabs-default > div > li.current {
     background-position: 0 -40px;
 }
 
-ol.tabs-default li.current a {
+ol.tabs-default > div > li.current > a {
     line-height: 200%;
     background-position: 100% -40px;
     color: black;
@@ -59,13 +59,13 @@ ol.tabs-default-level-1 {
     padding: 0;
 }
 
-ol.tabs-default-level-1 li {
+ol.tabs-default-level-1 > div > li {
     background-image: url(../../../../img/react/components/gray-tabs.png);
     float: left;
     padding-left: 10px;
 }
 
-ol.tabs-default-level-1 a {
+ol.tabs-default-level-1 > div > li > a {
 
     background-image: url(../../../../img/react/components/gray-tabs.png);
     background-position: right top;
@@ -79,11 +79,11 @@ ol.tabs-default-level-1 a {
     font-size: 13px;
 }
 
-ol.tabs-default-level-1 li.current {
+ol.tabs-default-level-1 > div > li.current {
     background-position: 0 -40px;
 }
 
-ol.tabs-default-level-1 li.current a {
+ol.tabs-default-level-1 > div > li.current > a {
     line-height: 200%;
     background-position: 100% -40px;
     color: black;
