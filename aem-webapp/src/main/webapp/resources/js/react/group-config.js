@@ -6,7 +6,7 @@ var GroupConfig = React.createClass({
             showModalFormAddDialog: false,
             showDeleteConfirmDialog: false,
             showModalFormEditDialog: false,
-            groupData: {},
+            groupFormData: {},
             groupTableData: [{"name":"","id":{"id":0}}]
         }
     },
@@ -40,7 +40,7 @@ var GroupConfig = React.createClass({
                    <ModalFormDialog title="Edit Group"
                                     show={this.state.showModalFormEditDialog}
                                     form={<GroupConfigForm service={this.props.service}
-                                                           data={this.state.groupData}/>}
+                                                           data={this.state.groupFormData}/>}
                                     successCallback={this.addEditSuccessCallback}
                                     destroyCallback={this.closeModalFormEditDialog}/>
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
@@ -56,7 +56,7 @@ var GroupConfig = React.createClass({
                 },
                 function(response) {
                     if (response.status !== 200) {
-                        alert(JSON.stringify(response));
+                        $.errorAlert(JSON.stringify(response), "Error");
                     }
                     self.retrieveData();
                 }
@@ -71,7 +71,7 @@ var GroupConfig = React.createClass({
                 self.setState({groupTableData:response.applicationResponseContent});
             },
             function(response) {
-                alert(JSON.stringify(response));
+                $.errorAlert(JSON.stringify(response), "Error");
             }
 
         );
@@ -94,11 +94,11 @@ var GroupConfig = React.createClass({
         var thisComponent = this;
         this.props.service.getGroupByName(name).then(
             function(response){
-                thisComponent.setState({groupData: response.applicationResponseContent,
+                thisComponent.setState({groupFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
             },
             function(response) {
-                alert(JSON.stringify(response));
+                $.errorAlert(JSON.stringify(response), "Error");
             }
         );
     },
