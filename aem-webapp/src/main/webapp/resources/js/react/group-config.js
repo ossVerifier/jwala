@@ -115,14 +115,12 @@ var GroupConfig = React.createClass({
 
 var GroupConfigForm = React.createClass({
     getInitialState: function() {
-
         var groupId = "";
         var groupName = "";
         if (this.props.data !== undefined) {
             groupId = this.props.data.id.id;
             groupName = this.props.data.name;
         }
-
         return {
             validator: null,
             groupId: groupId,
@@ -190,7 +188,6 @@ var GroupConfigForm = React.createClass({
 });
 
 var GroupDataTable = React.createClass({
-
     render: function() {
         var headerExt = [{sTitle:"Group ID", mData:"id.id", bVisible:false},
                          {sTitle:"Group Name", mData:"name", tocType:"link"}];
@@ -200,5 +197,4 @@ var GroupDataTable = React.createClass({
                               selectItemCallback={this.props.selectItemCallback}
                               editCallback={this.props.editCallback}/>
     }
-
 });
