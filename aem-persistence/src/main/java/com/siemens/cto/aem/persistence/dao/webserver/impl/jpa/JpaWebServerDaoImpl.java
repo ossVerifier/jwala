@@ -135,13 +135,13 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     protected List<WebServer> webServersFrom(final List<JpaWebServer> someJpaWebServers) {
 
-        final List<WebServer> WebServers = new ArrayList<>();
+        final List<WebServer> webservers = new ArrayList<>();
 
         for (final JpaWebServer jpaWebServer : someJpaWebServers) {
-            WebServers.add(webServerFrom(jpaWebServer));
+            webservers.add(webServerFrom(jpaWebServer));
         }
 
-        return WebServers;
+        return webservers;
     }
 
     protected JpaWebServer getJpaWebServer(final Identifier<WebServer> aWebServer) {

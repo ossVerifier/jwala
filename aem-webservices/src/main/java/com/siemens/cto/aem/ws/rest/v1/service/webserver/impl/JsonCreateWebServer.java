@@ -30,11 +30,11 @@ public class JsonCreateWebServer {
     public JsonCreateWebServer(final String aGroupId,
                          final String aWebServerName,
                          final String aHostName,
-                         final Integer aPortNumber) {
+                         final String aPortNumber) {
         groupId = aGroupId;
         webserverName = aWebServerName;
         hostName = aHostName;
-        portNumber = aPortNumber;
+        portNumber = Integer.parseInt(aPortNumber);
     }
 
     public String getGroupId() {
@@ -90,7 +90,7 @@ public class JsonCreateWebServer {
             return new JsonCreateWebServer(node.get("groupId").getValueAsText(),
                                      node.get("webserverName").getTextValue(),
                                      node.get("hostName").getTextValue(),
-                                     node.get("portNumber").getIntValue()
+                                     node.get("portNumber").getValueAsText()
                                      );
         }
     }

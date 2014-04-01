@@ -31,11 +31,11 @@ public class JsonUpdateWebServer {
 
 	public JsonUpdateWebServer(final String aWebServerId,
 			final String aGroupId, final String aWebServerName,
-			final String aHostName, final Integer aPortNumber) {
+			final String aHostName, final String aPortNumber) {
 		groupId = aGroupId;
 		webserverName = aWebServerName;
 		hostName = aHostName;
-		portNumber = aPortNumber;
+		portNumber = Integer.parseInt(aPortNumber);
 		webServerId = aWebServerId;
 	}
 
@@ -95,7 +95,7 @@ public class JsonUpdateWebServer {
 					node.get("groupId").getValueAsText(),
 					node.get("webserverName").getTextValue(), 
 					node.get("hostName").getTextValue(), 
-					node.get("portNumber").getIntValue());
+					node.get("portNumber").getValueAsText());
 		}
 	}
 
