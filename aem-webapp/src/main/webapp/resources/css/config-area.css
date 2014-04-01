@@ -1,15 +1,3 @@
-.config-area {
-    width: 100%;
-    margin-left: 5px;
-    margin-top: 5px;
-    margin-right: 5px;
-    margin-bottom: 5px
-}
-
-.config-area > table {
-    width: 100%
-}
-
-.config-area > table > td {
-    vertical-align: bottom
+.config-area > div > span {
+    float: right
 }
