@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/aem" docBase="../../../aem-webapp/build/libs/aem-webapp-1.0-SNAPSHOT.war" >
+    <Resource name="jdbc/toc-xa"
+              auth="Container"
+              type="com.atomikos.jdbc.AtomikosDataSourceBean"
+              factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
+              uniqueResourceName="AtomikosJndiXaDataSource"
+              xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
+              xaProperties.user="sa"
+              xaProperties.password=""
+              xaProperties.URL="jdbc:h2:tcp://localhost/~/aem"/>
+              
+</Context>

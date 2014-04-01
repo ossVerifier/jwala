@@ -5,3 +5,6 @@ classes
 .settings
 .classpath
 .project
+/aem-build/jacoco.exec
+/aem-build/toc-tomcat/logs
+/aem-build/work

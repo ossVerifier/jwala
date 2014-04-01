@@ -1,0 +1,143 @@
+apply plugin: "java"
+apply plugin: "jacoco"
+apply plugin: "jetty"
+apply plugin: "eclipse"
+
+ext {
+  localVersions = [
+    rhino : "1.7R4"
+  ]
+}
+
+dependencies {
+
+    compile project(":aem-webapp")
+    testCompile group: 'org.mozilla', name: 'rhino', version: "$project.localVersions.rhino"
+
+    // runtime dependency on h2 so jetty can load it into jndi
+    runtime "com.h2database:h2:$project.versions.h2"
+    runtime "commons-dbcp:commons-dbcp:$project.localVersions.dbcp"
+
+}
+
+/*
+jettyRunWar {
+  // not supported, inject into war instead: jettyEnvXml = file('src/test/resources/jetty-env.xml')
+  webApp = project(":aem-webapp").war.archivePath
+  contextPath = "aem"
+  stopPort = 58080
+  stopKey = "KILLJETTY"
+}*/
+
+def catalina_base = file("../aem-build/toc-tomcat").absolutePath
+def catalina_home = file(System.env.CATALINA_HOME).absolutePath
+def java_home = file(System.env.JAVA_HOME).absolutePath
+
+def tomcat = ''+
+'start "Tomcat" "'+java_home+'\\bin\\java.exe"'+
+' "-javaagent:lib\\jacocoagent.jar=destfile=../jacoco.exec,append=true,in'+
+'cludes=com.siemens.*" -Dnop -Djava.util.logging.manager=org.apache.juli.ClassLoa'+
+'derLogManager   -Djava.endorsed.dirs="'+catalina_home+'\\endorsed" -classpath "'+catalina_home+'\\'+
+'bin\\bootstrap.jar;'+catalina_home+'\\bin\\tomcat-juli.jar" -Dcatalina.base='+
+'"'+catalina_base+'" -Dcatalina.home="'+catalina_home+'" -D'+
+'java.io.tmpdir="'+catalina_base+'\\temp" org.apache.cata'+
+'lina.startup.Bootstrap'
+
+task tomcatRunWar(type:Exec) {
+    workingDir catalina_base
+
+    environment.CATALINA_BASE = catalina_base
+    environment.CATALINA_HOME = catalina_home
+
+    commandLine "cmd", "/c", tomcat, 'start'
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
+
+task tomcatStop(type:Exec) {
+    workingDir catalina_base
+
+    environment.CATALINA_BASE = catalina_base
+    environment.CATALINA_HOME = catalina_home
+
+    
+    commandLine "cmd", "/c", tomcat, 'stop'
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
+
+jettyRun { 
+  jettyEnvXml = file('src/test/resources/jetty-env.xml')
+  webAppSourceDirectory = project(":aem-webapp").jettyRun.webAppSourceDirectory
+  contextPath = "aem"
+  stopPort = 58080
+  stopKey = "KILLJETTY"
+}
+
+jettyStop { 
+  stopPort = 58080
+  stopKey = "KILLJETTY"
+}
+
+task startUpJettyHere << { 
+//  jettyRunWar.daemon=true;
+//  jettyRunWar.execute();
+  jettyRun.daemon=true;
+  jettyRun.execute();
+}
+
+task startupJetty << {
+    project(":aem-webapp").jettyRun.daemon=true;
+    project(":aem-webapp").jettyRun.execute();
+}
+
+
+
+task applicationCodeCoverageReport(type:JacocoReport){
+    executionData file('../aem-build/jacoco.exec')
+    sourceSets project(":aem-persistence").sourceSets.main
+}
+
+
+task shutDownJetty(dependsOn: test) << {
+	project(":aem-webapp").jettyStop.execute()
+}
+
+task shutDownJettyHere() << {
+	jettyStop.execute()
+}
+
+test {
+//  dependsOn 'startUpJettyHere'
+// finalizedBy 'shutDownJettyHere'
+  dependsOn 'tomcatRunWar'
+  finalizedBy 'tomcatStop'
+}
+
+//http://issues.gradle.org/browse/GRADLE-2263
+import org.gradle.api.plugins.jetty.internal.Monitor
+[jettyRun, jettyRunWar]*.doLast {
+  /**
+   * THIS IS A WORKAROUND! THE CURRENT VERSION OF THIS TASK DOESN'T START A WATCHER IN DAEMON MODE
+   *
+   * If starting the monitor fails, it may be because the jetty task was updated to fix this issue
+   * When that happens, we shouldn't need the custom task any more
+   *
+   * Copied From: AbstractJettyRunTask
+   */
+   if (getStopPort() != null && getStopPort() > 0 && getStopKey() != null) {
+      Monitor monitor = new Monitor(getStopPort(), getStopKey(), server.getProxiedObject());
+      monitor.start();
+   }
+}
+
+/* Cannot use this, Jetty is in gradle process :( 
+jacoco {
+  applyTo jettyRun
+}*/
