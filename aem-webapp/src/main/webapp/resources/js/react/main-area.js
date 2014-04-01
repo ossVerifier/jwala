@@ -37,7 +37,7 @@ var MainTabs = React.createClass({
 var ConfigureTabs = React.createClass({
     getInitialState:function() {
         items = [{title:"JVM", content:<Area theme="default"
-                                             template="public-resources/templates/jvm-config-area.html"/>},
+                               template="public-resources/templates/jvm-config-area.html"/>},
                  {title:"Web Servers", content:""},
                  {title: "Web Apps", content:""},
                  {title: "Resources", content:""},

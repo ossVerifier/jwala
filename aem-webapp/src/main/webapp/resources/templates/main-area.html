@@ -13,7 +13,7 @@
                               template: "public-resources/templates/jvm-config-area.html"});
 
     var groupConfigArea = Area({theme:"default",
-                                child: GroupConfig()});
+                                child: GroupConfig({class:"group-config"})});
 
     var items = [{title:"JVM", content:jvmConfigArea},
                  {title:"Web Servers", content:""},

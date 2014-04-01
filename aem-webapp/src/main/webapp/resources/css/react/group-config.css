@@ -1,12 +1,12 @@
-table.group-config {
+.group-config > table {
+    width: 100%
+}
+
+.group-config > table > tbody > tr > td {
     width: 100%;
-    border: 1px solid black
+    text-align: left
 }
 
-table.group-config tr td {
-    border: 1px solid black
-}
-
-table.group-config td {
-    text-align: right
+.group-config > table > tbody > tr > td > div > input  {
+    float: right
 }

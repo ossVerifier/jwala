@@ -1,5 +1,9 @@
-var /* statusService */groupService = {
+var groupService = {
 
+    getGroups: function() {
+        // TODO: Change to v1.0/groups?all when the underlying rest service is working
+        return serviceFoundation.get("v1.0/groups?offset=0&limit=10000");
+    },
 	insertNewGroup: function(name) {
 	    return serviceFoundation.post("v1.0/groups", "json", name);
 	},
@@ -13,6 +17,9 @@ var /* statusService */groupService = {
 	},
 	getGroup: function(id) {
 	    return serviceFoundation.get("v1.0/groups/" + id);
-	}
+	},
+	getGroupByName: function(name) {
+        return serviceFoundation.get("v1.0/groups/name/" + name);
+    }
 
-};
+}

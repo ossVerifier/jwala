@@ -1,47 +1,74 @@
 /** @jsx React.DOM */
 var GroupConfig = React.createClass({
     getInitialState: function() {
+        selectedGroup = null;
         return {
             showModalFormAddDialog: false,
             showDeleteConfirmDialog: false,
             showModalFormEditDialog: false,
-            groupData: {}
+            groupData: {},
+            groupTableData: [{"name":"","id":{"id":0}}]
         }
     },
     render: function() {
+        var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
-                    <table className={this.props.className}>
+                    <table>
                         <tr>
                             <td>
-                                <GenericButton label="Add" callback={this.addBtnCallback}/>
-                                <GenericButton label="Delete" callback={this.delBtnCallback}/>
-                                <GenericButton label="Temp Edit" callback={this.tmpEditBtnCallback}/>
+                                <div>
+                                    <GenericButton label="Delete" callback={this.delBtnCallback}/>
+                                    <GenericButton label="Add" callback={this.addBtnCallback}/>
+                                </div>
                             </td>
                         </tr>
                         <tr>
-                            <td>Data table here...</td>
+                            <td>
+                                <div>
+                                    <GroupDataTable data={this.state.groupTableData}
+                                                    selectItemCallback={this.selectItemCallback}
+                                                    editCallback={this.editCallback}/>
+                                </div>
+                            </td>
                         </tr>
                    </table>
                    <ModalFormDialog title="Add Group"
                                     show={this.state.showModalFormAddDialog}
                                     form={<GroupConfigForm service={this.props.service}/>}
+                                    successCallback={this.addEditSuccessCallback}
                                     destroyCallback={this.closeModalFormAddDialog}/>
                    <ModalFormDialog title="Edit Group"
                                     show={this.state.showModalFormEditDialog}
-                                    form={<GroupConfigForm service={this.props.service} data={this.state.groupData}/>}
+                                    form={<GroupConfigForm service={this.props.service}
+                                                           data={this.state.groupData}/>}
+                                    successCallback={this.addEditSuccessCallback}
                                     destroyCallback={this.closeModalFormEditDialog}/>
+                   <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
+                                             btnClickedCallback={this.confirmDeleteCallback} />
                </div>
     },
-    addBtnCallback: function() {
-        this.setState({showModalFormAddDialog: true})
+    confirmDeleteCallback: function(ans) {
+        var self = this;
+        this.setState({showDeleteConfirmDialog: false});
+        if (ans === "yes") {
+            this.props.service.deleteGroup(selectedGroup.id.id).then(
+                function(){
+                },
+                function(response) {
+                    if (response.status !== 200) {
+                        alert(JSON.stringify(response));
+                    }
+                    self.retrieveData();
+                }
+            );
+        }
     },
-    delBtnCallback: function() {
-        // this.setState({showDeleteConfirmDialog: true})
-        // TODO: Wire this up with the confirmation dialog once the datatable is done.
-        this.props.service.deleteGroup(102).then(
+    retrieveData: function() {
+        var self = this;
+        this.props.service.getGroups().then(
 
-            function(){
-                alert("Done!");
+            function(response){
+                self.setState({groupTableData:response.applicationResponseContent});
             },
             function(response) {
                 alert(JSON.stringify(response));
@@ -49,11 +76,23 @@ var GroupConfig = React.createClass({
 
         );
     },
-    // TODO: Remove once data table is already working
-    tmpEditBtnCallback: function() {
-
+    addEditSuccessCallback: function() {
+        this.retrieveData();
+    },
+    addBtnCallback: function() {
+        this.setState({showModalFormAddDialog: true})
+    },
+    selectItemCallback: function(item) {
+        selectedGroup = item;
+    },
+    delBtnCallback: function() {
+        if (selectedGroup != undefined) {
+            this.setState({showDeleteConfirmDialog: true});
+        }
+    },
+    editCallback: function(name) {
         var thisComponent = this;
-        this.props.service.getGroup(4).then(
+        this.props.service.getGroup(id).then(
             function(response){
                 thisComponent.setState({groupData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
@@ -62,13 +101,15 @@ var GroupConfig = React.createClass({
                 alert(JSON.stringify(response));
             }
         );
-
     },
     closeModalFormAddDialog: function() {
         this.setState({showModalFormAddDialog: false})
     },
     closeModalFormEditDialog: function() {
         this.setState({showModalFormEditDialog: false})
+    },
+    componentDidMount: function() {
+        this.retrieveData();
     }
 });
 
@@ -146,4 +187,18 @@ var GroupConfigForm = React.createClass({
         }
 
     }
+});
+
+var GroupDataTable = React.createClass({
+
+    render: function() {
+        var headerExt = [{sTitle:"Group ID", mData:"id.id", bVisible:false},
+                         {sTitle:"Group Name", mData:"name", tocType:"link"}];
+        return <TocDataTable2 theme="default"
+                              headerExt={headerExt}
+                              data={this.props.data}
+                              selectItemCallback={this.props.selectItemCallback}
+                              editCallback={this.props.editCallback}/>
+    }
+
 });
