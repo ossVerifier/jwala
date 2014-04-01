@@ -29,7 +29,7 @@ var TocDataTable2 = React.createClass({
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                 if(self.isMounted()) {
                     var capHtml = "";
-                    React.renderComponentToString(new Link({value:data, callback:self.props.editCallback}),
+                    React.renderComponentToString(new Link2({value:data, callback:self.props.editCallback}),
                                                   function(html) {capHtml = html;});
                         return capHtml;
                     } else { return ""; }
@@ -74,7 +74,7 @@ var TocDataTable2 = React.createClass({
     }
 });
 
-var Link = React.createClass({
+var Link2 = React.createClass({
     render: function() {
         return <a href="" onClick={this.linkClick}>{this.props.value}</a>
     },
