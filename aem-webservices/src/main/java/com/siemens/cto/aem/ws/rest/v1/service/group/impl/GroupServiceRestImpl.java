@@ -67,4 +67,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                        final Identifier<Jvm> aJvmId) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    @Override
+    public Response getGroup(final String aGroupName) {
+        return ResponseBuilder.ok(groupService.getGroup(aGroupName));
+    }
 }

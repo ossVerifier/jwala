@@ -89,6 +89,12 @@ public class GroupServiceImpl implements GroupService {
         groupDao.removeGroup(aGroupId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Group getGroup(String aGroupName) {
+        return groupDao.getGroup(aGroupName);
+    }
+
     protected boolean isValidGroupName(final String aGroupName) {
         return StringUtils.hasText(aGroupName);
     }
