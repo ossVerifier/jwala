@@ -91,10 +91,8 @@ ol.tabs-default-level-1 > div > li.current > a {
 }
 
 .tabs-default-level-1-panel {
-	visibility: hidden; /* Do not use "display: none" since it has an issue with JQuery data table size
-	                       when page is refreshed and the current tab is not the tab of the said
-	                       data table */
-    margin-top: 1em;
+    display: none;
+    margin-top: 1em
 }
 
 .tabs-default-level-1-panel-selected {
