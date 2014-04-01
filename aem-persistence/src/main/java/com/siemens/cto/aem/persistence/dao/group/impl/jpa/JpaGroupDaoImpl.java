@@ -122,11 +122,6 @@ public class JpaGroupDaoImpl implements GroupDao {
         entityManager.remove(group);
     }
 
-    @Override
-    public Group getGroup(String aGroupName) throws NotFoundException {
-        return groupFrom(getJpaGroup(aGroupName));
-    }
-
     protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups) {
 
         final List<Group> groups = new ArrayList<>();
@@ -146,19 +141,6 @@ public class JpaGroupDaoImpl implements GroupDao {
         if (jpaGroup == null) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
                                         "Group not found: " + aGroup);
-        }
-
-        return jpaGroup;
-    }
-
-    protected JpaGroup getJpaGroup(final String aGroupName) {
-
-        final JpaGroup jpaGroup = entityManager.find(JpaGroup.class,
-                aGroupName);
-
-        if (jpaGroup == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                    "Group not found: " + aGroupName);
         }
 
         return jpaGroup;

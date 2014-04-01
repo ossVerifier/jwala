@@ -25,6 +25,4 @@ public interface GroupService {
                       final User anUpdatingUser);
 
     void removeGroup(final Identifier<Group> aGroupId);
-
-    Group getGroup(final String aGroupName);
 }

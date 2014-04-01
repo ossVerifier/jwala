@@ -62,7 +62,7 @@ public class GroupServiceImpl implements GroupService {
                                   final PaginationParameter aPaginationParam) {
         if (isValidGroupName(aGroupNameFragment)) {
             return groupDao.findGroups(aGroupNameFragment,
-                    aPaginationParam);
+                                       aPaginationParam);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
                                           "Group Name fragment is invalid: " + aGroupNameFragment);
@@ -87,11 +87,6 @@ public class GroupServiceImpl implements GroupService {
     public void removeGroup(final Identifier<Group> aGroupId) {
         jvmService.removeJvmsBelongingTo(aGroupId);
         groupDao.removeGroup(aGroupId);
-    }
-
-    @Override
-    public Group getGroup(String aGroupName) {
-        return groupDao.getGroup(aGroupName);
     }
 
     protected boolean isValidGroupName(final String aGroupName) {

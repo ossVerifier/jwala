@@ -45,8 +45,4 @@ public interface GroupServiceRest {
     @Path("/{groupId}/jvms/{jvmId}")
     Response removeJvmFromGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
                                 @PathParam("jvmId") final Identifier<Jvm> aJvmId);
-
-    @GET
-    @Path("/name/{groupName}")
-    Response getGroup(@PathParam("groupName") final String aGroupName);
 }

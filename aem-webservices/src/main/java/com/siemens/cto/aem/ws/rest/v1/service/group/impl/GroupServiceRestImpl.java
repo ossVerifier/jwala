@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -67,10 +66,5 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId) {
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public Response getGroup(final String aGroupName) {
-        return ResponseBuilder.ok(groupService.getGroup(aGroupName));
     }
 }
