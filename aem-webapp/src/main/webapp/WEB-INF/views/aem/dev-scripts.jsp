@@ -21,6 +21,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/area.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-dialog.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-add-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-grid.js"></script>

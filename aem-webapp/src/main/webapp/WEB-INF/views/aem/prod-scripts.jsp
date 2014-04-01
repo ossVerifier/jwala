@@ -20,6 +20,7 @@
 <script src="gen-public-resources/js/react/generic-components/area.js"></script>
 <script src="gen-public-resources/js/react/generic-components/tabs.js"></script>
 <script src="gen-public-resources/js/react/generic-components/modal-form-dialog.js"></script>
+<script src="gen-public-resources/js/react/generic-components/modal-form-add-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-grid.js"></script>
