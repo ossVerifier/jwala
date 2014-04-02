@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 var TocDataTable2 = React.createClass({
-    dataTable:null,
+    dataTable: null,
     render: function() {
         return <div>
                     <table/>
@@ -45,18 +45,18 @@ var TocDataTable2 = React.createClass({
                                         "bJQueryUI": true,
                                         "bAutoWidth": false,
                                         "fnDrawCallback": function(){
-                                                dataTable = this;
-                                                $(dataTable).find("tr").off("click").on("click", function(e) {
+                                                var theDataTable = this;
+                                                $(theDataTable).find("tr").off("click").on("click", function(e) {
                                                     if ($(this).hasClass("row_selected") ) {
                                                         $(this).removeClass("row_selected");
                                                     } else {
-                                                        $(dataTable).find("tr").removeClass("row_selected");
+                                                        $(theDataTable).find("tr").removeClass("row_selected");
                                                         $(this).addClass("row_selected");
 
-                                                        var cell = dataTable.find("tbody tr.row_selected")[0];
+                                                        var cell = theDataTable.find("tbody tr.row_selected")[0];
                                                         if (cell !== undefined) {
-                                                            var i = dataTable.fnGetPosition(cell);
-                                                            var item = dataTable.fnGetData(i);
+                                                            var i = theDataTable.fnGetPosition(cell);
+                                                            var item = theDataTable.fnGetData(i);
                                                             self.props.selectItemCallback(item);
                                                         }
 
@@ -66,7 +66,7 @@ var TocDataTable2 = React.createClass({
                                         });
     },
     componentDidUpdate: function() {
-        if (this.dataTable != null) {
+        if (this.dataTable !== null) {
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
