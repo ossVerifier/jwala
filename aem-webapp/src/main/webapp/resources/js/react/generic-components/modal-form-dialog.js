@@ -38,7 +38,6 @@ var ModalFormDialog = React.createClass({
         });
     },
     okClick: function(onSuccessCallback) {
-        var thisComponent = this;
         this.props.form.submit(
             function() {
                 // You need to destroy this component in a callback
