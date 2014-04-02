@@ -78,6 +78,7 @@ var GroupConfig = React.createClass({
     },
     addEditSuccessCallback: function() {
         this.retrieveData();
+        return true;
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})

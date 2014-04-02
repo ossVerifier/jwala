@@ -24,8 +24,9 @@ var ModalFormDialog = React.createClass({
             buttons: {
                 "Ok": function () {
                     thisComponent.okClick(function(){
-                        thisComponent.props.successCallback();
-                        thisComponent.destroy();
+                        if (thisComponent.props.successCallback() === true) {
+                            thisComponent.destroy();
+                        }
                     });
                 },
                 "Cancel": function () {
