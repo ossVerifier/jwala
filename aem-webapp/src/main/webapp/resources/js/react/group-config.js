@@ -4,8 +4,8 @@ var GroupConfig = React.createClass({
         selectedGroup = null;
         return {
             showModalFormAddDialog: false,
-            showDeleteConfirmDialog: false,
             showModalFormEditDialog: false,
+            showDeleteConfirmDialog: false,
             groupFormData: {},
             groupTableData: [{"name":"","id":{"id":0}}]
         }
@@ -82,13 +82,13 @@ var GroupConfig = React.createClass({
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
     },
-    selectItemCallback: function(item) {
-        selectedGroup = item;
-    },
     delBtnCallback: function() {
         if (selectedGroup != undefined) {
             this.setState({showDeleteConfirmDialog: true});
         }
+    },
+    selectItemCallback: function(item) {
+        selectedGroup = item;
     },
     editCallback: function(name) {
         var thisComponent = this;
