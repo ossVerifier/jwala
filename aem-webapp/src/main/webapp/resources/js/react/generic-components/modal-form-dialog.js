@@ -11,7 +11,7 @@ var ModalFormDialog = React.createClass({
             this.show();
         }
     },
-    show: function(callback) {
+    show: function() {
         var thisComponent = this;
         var title = this.props.title;
 
