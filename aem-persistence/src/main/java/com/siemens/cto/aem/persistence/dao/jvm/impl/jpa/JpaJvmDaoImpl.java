@@ -98,7 +98,9 @@ public class JpaJvmDaoImpl implements JvmDao {
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
 
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return jvmsFrom(query.getResultList());
     }
@@ -111,7 +113,9 @@ public class JpaJvmDaoImpl implements JvmDao {
 
         query.setParameter("jvmName", "%" + aName + "%");
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return jvmsFrom(query.getResultList());
     }
@@ -124,7 +128,9 @@ public class JpaJvmDaoImpl implements JvmDao {
 
         query.setParameter("groupId", aGroup.getId());
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return jvmsFrom(query.getResultList());
     }
@@ -203,12 +209,15 @@ public class JpaJvmDaoImpl implements JvmDao {
         return jvm;
     }
 
-    protected List<Jvm> jvmsFrom(final List<JpaJvm> someJpaJvms) {
+    protected List<Jvm> jvmsFrom(final List<?> someJpaJvms) {
 
         final List<Jvm> jvms = new ArrayList<>();
 
-        for (final JpaJvm jvm : someJpaJvms) {
-            jvms.add(jvmFrom(jvm));
+        for (final Object jpaJvm : someJpaJvms) {
+            
+            assert jpaJvm instanceof JpaJvm;
+            
+            jvms.add(jvmFrom((JpaJvm)jpaJvm));
         }
 
         return jvms;

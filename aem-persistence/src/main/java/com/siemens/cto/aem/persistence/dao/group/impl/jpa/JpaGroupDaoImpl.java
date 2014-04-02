@@ -96,7 +96,9 @@ public class JpaGroupDaoImpl implements GroupDao {
         final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
 
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return groupsFrom(query.getResultList());
     }
@@ -110,7 +112,9 @@ public class JpaGroupDaoImpl implements GroupDao {
         query.setParameter("groupName", "?" + aName + "?");
 
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return groupsFrom(query.getResultList());
     }

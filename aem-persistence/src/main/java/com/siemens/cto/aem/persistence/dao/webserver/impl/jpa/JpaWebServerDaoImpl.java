@@ -107,7 +107,9 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         final TypedQuery<JpaWebServer> query = entityManager.createQuery(criteria);
 
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return webServersFrom(query.getResultList());
     }
@@ -121,7 +123,9 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         query.setParameter("WebServerName", "?" + aName + "?");
 
         query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+            query.setMaxResults(somePagination.getLimit());
+        }
 
         return webServersFrom(query.getResultList());
     }
@@ -206,7 +210,9 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
       query.setParameter("groupId", aGroup.getId());
       query.setFirstResult(somePagination.getOffset());
-      query.setMaxResults(somePagination.getLimit());
+      if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
+          query.setMaxResults(somePagination.getLimit());
+      }
 
       return webserversFrom(query.getResultList());
   }
