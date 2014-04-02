@@ -38,13 +38,13 @@ var ModalFormDialog = React.createClass({
             }
         });
     },
-    okClick: function(onSuccessCallback) {
+    okClick: function(callback) {
         this.props.form.submit(
             function() {
                 // You need to destroy this component in a callback
                 // to prevent has no method isMounted error if
                 // the component is destroyed here
-                onSuccessCallback();
+                callback();
             },
             function(errMsg) {
                 $.errorAlert(errMsg, "Error");
