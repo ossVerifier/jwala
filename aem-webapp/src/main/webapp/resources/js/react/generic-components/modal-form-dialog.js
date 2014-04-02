@@ -23,7 +23,7 @@ var ModalFormDialog = React.createClass({
             width: "auto",
             buttons: {
                 "Ok": function () {
-                    thisComponent.addItem(function(){
+                    thisComponent.okClick(function(){
                         thisComponent.props.successCallback();
                         thisComponent.destroy();
                     });
@@ -37,7 +37,7 @@ var ModalFormDialog = React.createClass({
             }
         });
     },
-    addItem: function(onSuccessCallback) {
+    okClick: function(onSuccessCallback) {
         var thisComponent = this;
         this.props.form.submit(
             function() {
