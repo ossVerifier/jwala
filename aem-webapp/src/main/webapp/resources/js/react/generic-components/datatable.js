@@ -4,7 +4,7 @@ var TocDataTable = React.createClass({
     },
     refresh: function() {
         $.ajax({
-            url: this.props.url,
+            url: this.props.url + "?all",
             dataType: "json",
             cache: false,
             success: function(data) {
