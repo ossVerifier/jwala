@@ -25,6 +25,16 @@ dependencies {
 test {
     // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
     jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
+    
+    jacoco {
+      excludes = ["com.siemens.cto.aem.persistence.configuration.*",
+                  "com.siemens.cto.aem.persistence.domain.*",
+                  "com.siemens.cto.aem.domain.model.*",
+                  "com.siemens.cto.aem.common.*",
+                  "*.configuration.*",
+                  "**.configuration.**",
+                  "com.siemens.cto.aem.service.configuration.service.*"]
+    }
 }
 
 publishing {
