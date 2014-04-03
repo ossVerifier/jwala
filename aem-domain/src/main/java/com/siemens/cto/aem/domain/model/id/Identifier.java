@@ -29,7 +29,7 @@ public class Identifier<T> implements Serializable {
             return false;
         }
 
-        final Identifier that = (Identifier) o;
+        final Identifier<?> that = (Identifier<?>) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
@@ -49,4 +49,18 @@ public class Identifier<T> implements Serializable {
                "id=" + id +
                '}';
     }
+    
+    /**
+     * Helper method to return an identifier templated by a type
+     */
+    public static <U> Identifier<U> id(final Long longId) {
+        return new Identifier<U>(longId);
+    }
+    /**
+     * Helper method to return an identifier templated by a type
+     */
+    public static <U> Identifier<U> id(final Long longId, Class<U> clazz ) {
+        return new Identifier<U>(longId);
+    }
+
 }

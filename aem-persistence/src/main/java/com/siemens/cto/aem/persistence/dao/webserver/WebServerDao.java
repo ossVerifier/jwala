@@ -27,7 +27,7 @@ public interface WebServerDao {
 	List<WebServer> findWebServers(final String aName,
 			final PaginationParameter somePagination);
 
-	void removeWebServer(final Identifier<WebServer> aGroupId);
+	void removeWebServer(final Identifier<WebServer> aWebServerId);
 
 	List<WebServer> findWebServersBelongingTo(Identifier<Group> aGroupId,
 			PaginationParameter aPaginationParam);

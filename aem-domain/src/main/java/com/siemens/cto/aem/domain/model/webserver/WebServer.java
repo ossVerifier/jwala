@@ -98,5 +98,11 @@ public class WebServer implements Serializable {
 		return "WebServer {id=" + id + ", group=" + group + ", host=" + host
 				+ ", name=" + name + ", port=" + port + "}";
 	}
-
+	
+    /**
+     * Helper method to return an identifier templated by this type
+     */
+    public static Identifier<WebServer> identifier(final Long longId) {
+        return new Identifier<>(longId);
+    }
 }
