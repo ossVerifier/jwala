@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 var TocDataTable2 = React.createClass({
     dataTable: null,
+    anOpen: [],
     render: function() {
         return <div>
                     <table/>
@@ -34,7 +35,12 @@ var TocDataTable2 = React.createClass({
                         return capHtml;
                     } else { return ""; }
                 };
+            } else if (item.tocType === "control") {
+                aoColumnDefs[itemIndex].mDataProp = null;
+                aoColumnDefs[itemIndex].sClass = "control center";
+                aoColumnDefs[itemIndex].sDefaultContent = "<img src='public-resources/img/react/components/details_open.png'/>";
             }
+
             aaSorting[itemIndex] = [itemIndex, 'asc'];
 
         });
@@ -65,13 +71,50 @@ var TocDataTable2 = React.createClass({
                                                 });
                                             }
                                         });
+
     },
     componentDidUpdate: function() {
+        var self = this;
         if (this.dataTable !== null) {
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
+
+            // TODO: Put a property that disables/enables expand-collapse feature
+            $(this.getDOMNode()).find("td.control").on("click", function () {
+                var nTr = this.parentNode;
+                var i = $.inArray(nTr, self.anOpen);
+
+                if ( i === -1 ) {
+                    $("img", this).attr("src", "public-resources/img/react/components/details_close.png");
+                    self.dataTable.fnOpen(nTr, self.fnFormatDetails(self.dataTable, nTr), "details");
+                    self.anOpen.push(nTr);
+                } else {
+                    $("img", this).attr("src", "public-resources/img/react/components/details_open.png");
+                    self.dataTable.fnClose(nTr);
+                    self.anOpen.splice(i, 1);
+                }
+            });
+
         }
+    },
+    // TODO: This should be a component
+    fnFormatDetails: function (oTable, nTr) {
+      var oData = oTable.fnGetData(nTr);
+
+      // TODO: Use REACT to string approach here
+      var sOut =
+        '<div class="innerDetails">'+
+          '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+            '<tr><td>Rendering engine:</td><td>'+oData.engine+'</td></tr>'+
+            '<tr><td>Browser:</td><td>'+oData.browser+'</td></tr>'+
+            '<tr><td>Platform:</td><td>'+oData.platform+'</td></tr>'+
+            '<tr><td>Version:</td><td>'+oData.version+'</td></tr>'+
+            '<tr><td>Grade:</td><td>'+oData.grade+'</td></tr>'+
+          '</table>'+
+        '</div>';
+
+      return sOut;
     }
 });
 
