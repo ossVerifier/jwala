@@ -92,13 +92,22 @@ $(document).ready(function() {
             </tr>
             <tr>
                 <td>
-                    <select id="groupNameId" name="groupId">
-                        <option value="1">Group 1</option>
-                        <option value="2">Group 2</option>
-                        <option value="3">Group 3</option>
-                        <option value="4">Group 4</option>
-                        <option value="5">Group 5</option>
-                    </select>
+                    <div id="groupCombobox"></div>
+                    <script>
+                        groupService.getGroups().then(
+                            function(response){
+                                var data = response.applicationResponseContent;
+                                React.renderComponent(DataCombobox({data:data,
+                                                                    key:"id.id",
+                                                                    val:"name",
+                                                                    selectedVal:$("#jvmId").val}),
+                                                                    document.getElementById("groupCombobox"));
+                            },
+                            function(response) {
+                                $.errorAlert(JSON.stringify(response), "Error");
+                            }
+                        );
+                    </script>
                 </td>
             </tr>
         </table>
