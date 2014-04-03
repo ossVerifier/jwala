@@ -37,13 +37,14 @@ var TocDataTable = React.createClass({
           }
           
           if(item.tocType == 'link') { 
-            aoColumnDefs[itemIndex].mRender = function ( data, type, full ) {
+            aoColumnDefs[itemIndex].mRender = function (data, type, full) {
               if(self.isMounted()) {
                 var capHtml = "";
-                React.renderComponentToString(new Link({value:data,
-                           editDialog:props.editDialog,
-                           thisGrid:self,
-                           jsonFormDataTransformerCallback:props.jsonFormDataTransformerCallback
+                React.renderComponentToString(new Link({valId:full.id.id,
+                                                        value:data,
+                                                        editDialog:props.editDialog,
+                                                        thisGrid:self,
+                                                        jsonFormDataTransformerCallback:props.jsonFormDataTransformerCallback
                        }), function(html) { capHtml = html; } );
                 return capHtml;
               } else { return ""; }
@@ -102,9 +103,8 @@ var Link = React.createClass({
         var editDialog = this.props.editDialog;
         var thisGrid = this.props.thisGrid;
         var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
-        $.getJSON("v1.0/jvm?name=" + this.props.value,
+        $.getJSON("v1.0/jvms/" + this.props.valId,
             function(data) {
-
                 editDialog.show(jsonFormDataTransformerCallback(data), function(){
                     thisGrid.refresh();
                 });

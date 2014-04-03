@@ -21,19 +21,17 @@ $(document).ready(function() {
     var jvmJsonFormDataTransformerCallback = function(data) {
         var formJson = {};
 
-        var nameMap = {};
-        nameMap["id"] = "jvmId";
-        nameMap["name"] = "jvmNameId";
-        nameMap["host"] = "hostNameId";
-        nameMap["groupInfo"] = "groupNameId";
+        var objFormIdMap = {id:"jvmId",
+                            jvmName:"jvmNameId",
+                            hostName:"hostNameId",
+                            group:"groupNameId"};
 
-        $.each(data.applicationResponseContent.content, function(i, obj) {
-
-            if (nameMap[i] !== undefined) {
-                if (i !== "groupInfo") {
-                    formJson[nameMap[i]] = obj;
+        $.each(data.applicationResponseContent, function(i, obj) {
+            if (objFormIdMap[i] !== undefined) {
+                if (i !== "group") {
+                    formJson[objFormIdMap[i]] = obj;
                 } else {
-                    formJson[nameMap[i]] = obj.name;
+                    formJson[objFormIdMap[i]] = obj.name;
                 }
             }
 
@@ -97,11 +95,11 @@ $(document).ready(function() {
                         groupService.getGroups().then(
                             function(response){
                                 var data = response.applicationResponseContent;
-                                React.renderComponent(DataCombobox({data:data,
-                                                                    key:"id.id",
-                                                                    val:"name",
-                                                                    selectedVal:$("#jvmId").val}),
-                                                                    document.getElementById("groupCombobox"));
+                                React.renderComponent(DataMultiSelectBox({data:data,
+                                                                          key:"id.id",
+                                                                          val:"name",
+                                                                          className:"data-multi-select-box"}),
+                                                                          document.getElementById("groupCombobox"));
                             },
                             function(response) {
                                 $.errorAlert(JSON.stringify(response), "Error");
