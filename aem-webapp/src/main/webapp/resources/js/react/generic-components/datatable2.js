@@ -2,6 +2,7 @@
 var TocDataTable2 = React.createClass({
     dataTable: null,
     anOpen: [],
+    expandCollapseEnabled: false,
     render: function() {
         return <div>
                     <table/>
@@ -29,13 +30,12 @@ var TocDataTable2 = React.createClass({
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                 if(self.isMounted()) {
-                    var capHtml = "";
-                    React.renderComponentToString(new Link2({value:data, callback:self.props.editCallback}),
-                                                  function(html) {capHtml = html;});
+                    var capHtml = React.renderComponentToString(new Link2({value:data, callback:self.props.editCallback}));
                         return capHtml;
                     } else { return ""; }
                 };
             } else if (item.tocType === "control") {
+                self.expandCollapseEnabled = true;
                 aoColumnDefs[itemIndex].mDataProp = null;
                 aoColumnDefs[itemIndex].sClass = "control center";
                 aoColumnDefs[itemIndex].sDefaultContent = "<img src='public-resources/img/react/components/details_open.png'/>";
@@ -80,21 +80,22 @@ var TocDataTable2 = React.createClass({
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
 
-            // TODO: Put a property that disables/enables expand-collapse feature
-            $(this.getDOMNode()).find("td.control").on("click", function () {
-                var nTr = this.parentNode;
-                var i = $.inArray(nTr, self.anOpen);
+            if (self.expandCollapseEnabled === true) {
+                    $(this.getDOMNode()).find("td.control").on("click", function () {
+                        var nTr = this.parentNode;
+                        var i = $.inArray(nTr, self.anOpen);
 
-                if ( i === -1 ) {
-                    $("img", this).attr("src", "public-resources/img/react/components/details_close.png");
-                    self.dataTable.fnOpen(nTr, self.fnFormatDetails(self.dataTable, nTr), "details");
-                    self.anOpen.push(nTr);
-                } else {
-                    $("img", this).attr("src", "public-resources/img/react/components/details_open.png");
-                    self.dataTable.fnClose(nTr);
-                    self.anOpen.splice(i, 1);
-                }
-            });
+                        if ( i === -1 ) {
+                            $("img", this).attr("src", "public-resources/img/react/components/details_close.png");
+                            self.dataTable.fnOpen(nTr, self.fnFormatDetails(self.dataTable, nTr), "details");
+                            self.anOpen.push(nTr);
+                        } else {
+                            $("img", this).attr("src", "public-resources/img/react/components/details_open.png");
+                            self.dataTable.fnClose(nTr);
+                            self.anOpen.splice(i, 1);
+                        }
+                    });
+            }
 
         }
     },
