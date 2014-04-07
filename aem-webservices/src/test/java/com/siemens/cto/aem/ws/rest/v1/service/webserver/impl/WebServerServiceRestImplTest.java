@@ -54,9 +54,13 @@ public class WebServerServiceRestImplTest {
         JsonUpdateWebServer templateUWSmulti = new JsonUpdateWebServer("1","webserver-modified","localhost","8080");
 
         Group templateGroup;
+        Group templateGroup2;
         Collection<Group> templateGroups;
+        Collection<Group> templateGroupsMulti;
         WebServer templateWS;
         WebServer templateWSmodified;
+        WebServer templateWSmulti;
+        WebServer templateWSmodifiedmulti;
 
         String cwsJsonSingleGroup = "[{ \"webserverName\": \"webserver\", \"groupId\": 1, \"hostName\":\"localhost\", \"portNumber\":8080}]";
         String cwsJsonMultiGroup = "[{ \"webserverName\": \"webserver\", \"groupIds\": [{\"groupId\": 1},{\"groupId\": \"2\"}], \"hostName\":\"localhost\", \"portNumber\":8080}]";
@@ -74,11 +78,16 @@ public class WebServerServiceRestImplTest {
             templateUWSmulti.addGroupId("2");
 
             templateGroups = new ArrayList<>();
+            templateGroupsMulti = new ArrayList<>();
             templateGroup = new Group(Identifier.id(1L, Group.class), "ws-group");
-            templateGroup = new Group(Identifier.id(2L, Group.class), "ws-group2");
+            templateGroup2 = new Group(Identifier.id(2L, Group.class), "ws-group2");
             templateGroups.add(templateGroup);
+            templateGroupsMulti.add(templateGroup);
+            templateGroupsMulti.add(templateGroup2);
             templateWS = new WebServer(Identifier.id(1L, WebServer.class), templateGroups, "webserver", "localhost",8080);
             templateWSmodified = new WebServer(Identifier.id(1L, WebServer.class), templateGroups, "webserver-modified", "localhost",8080);
+            templateWSmulti = new WebServer(Identifier.id(1L, WebServer.class), templateGroupsMulti, "webserver", "localhost",8080);
+            templateWSmodifiedmulti = new WebServer(Identifier.id(1L, WebServer.class), templateGroupsMulti, "webserver-modified", "localhost",8080);
 
         }
         
@@ -155,7 +164,7 @@ public class WebServerServiceRestImplTest {
         @Test
         public void testCreateWebServerMG() throws JsonParseException, IOException {
 
-            when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(templateWS);
+            when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(templateWSmulti);
             
             JsonParser parser = factory.createJsonParser(cwsJsonMultiGroup);
             
@@ -181,16 +190,17 @@ public class WebServerServiceRestImplTest {
 
             final String jsonStr = writer.toString();
             assertTrue(jsonStr.contains("\"id\":1"));
+            assertTrue(jsonStr.contains("\"groups\":[{\"name\":\"ws-group2\",\"id\":{\"id\":2}},{\"name\":\"ws-group\",\"id\":{\"id\":1}}],\"groupIds\":[{\"id\":2},{\"id\":1}]}"));
             assertTrue(jsonStr.contains("\"name\":\"webserver\""));
             assertTrue(jsonStr.contains("\"host\":\"localhost\""));
 
-            assertEquals(content, templateWS);
+            assertEquals(content, templateWSmulti);
         }
         
         @Test
         public void testUpdateWebServerMG() throws JsonParseException, IOException {
 
-            when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(templateWSmodified);
+            when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(templateWSmodifiedmulti);
             
             JsonParser parser = factory.createJsonParser(uwsJsonMultiGroup);
             
@@ -216,10 +226,11 @@ public class WebServerServiceRestImplTest {
 
             final String jsonStr = writer.toString();
             assertTrue(jsonStr.contains("\"id\":1"));
+            assertTrue(jsonStr.contains("\"groups\":[{\"name\":\"ws-group2\",\"id\":{\"id\":2}},{\"name\":\"ws-group\",\"id\":{\"id\":1}}],\"groupIds\":[{\"id\":2},{\"id\":1}]}"));
             assertTrue(jsonStr.contains("\"name\":\"webserver-modified\""));
             assertTrue(jsonStr.contains("\"host\":\"localhost\""));
         
-            assertEquals(content, templateWSmodified);            
+            assertEquals(content, templateWSmodifiedmulti);            
         }
 
  /*

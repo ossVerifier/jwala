@@ -63,6 +63,9 @@ public class JsonCreateWebServer {
 
         List<Identifier<Group>> ids = new ArrayList<Identifier<Group>>(groupIds.size());
         try {
+            for(String grp : groupIds) {
+                ids.add(Identifier.id(Long.parseLong(grp), Group.class));
+            }
             return new CreateWebServerCommand(ids,
                                         webserverName,
                                         hostName,
