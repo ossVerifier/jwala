@@ -30,7 +30,9 @@ var TocDataTable2 = React.createClass({
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                 if(self.isMounted()) {
-                    var capHtml = React.renderComponentToString(new Link2({value:data, callback:self.props.editCallback}));
+                    var capHtml = "";
+                    React.renderComponentToString(new Link2({value:data, callback:self.props.editCallback}),
+                                                  function(html) {capHtml = html;});
                         return capHtml;
                     } else { return ""; }
                 };
@@ -38,6 +40,7 @@ var TocDataTable2 = React.createClass({
                 self.expandCollapseEnabled = true;
                 aoColumnDefs[itemIndex].mDataProp = null;
                 aoColumnDefs[itemIndex].sClass = "control center";
+                aoColumnDefs[itemIndex].sWidth = "20px";
                 aoColumnDefs[itemIndex].sDefaultContent = "<img src='public-resources/img/react/components/details_open.png'/>";
             }
 
@@ -101,21 +104,15 @@ var TocDataTable2 = React.createClass({
     },
     // TODO: This should be a component
     fnFormatDetails: function (oTable, nTr) {
-      var oData = oTable.fnGetData(nTr);
+        var oData = oTable.fnGetData(nTr);
 
-      // TODO: Use REACT to string approach here
-      var sOut =
-        '<div class="innerDetails">'+
-          '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
-            '<tr><td>Rendering engine:</td><td>'+oData.engine+'</td></tr>'+
-            '<tr><td>Browser:</td><td>'+oData.browser+'</td></tr>'+
-            '<tr><td>Platform:</td><td>'+oData.platform+'</td></tr>'+
-            '<tr><td>Version:</td><td>'+oData.version+'</td></tr>'+
-            '<tr><td>Grade:</td><td>'+oData.grade+'</td></tr>'+
-          '</table>'+
-        '</div>';
+        var sOut = "";
+        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
+                                                           displayColumns:["jvmName", "hostName"],
+                                                           data:[{"id":{"id":275},"hostName":"host01","group":{"name":"Group 2","id":{"id":15}},"jvmName":"jvm01"},{"id":{"id":276},"hostName":"host02","group":{"name":"Group 2","id":{"id":15}},"jvmName":"jvm02"}]}),
+                                  function(html) {sOut = html;});
 
-      return sOut;
+        return sOut;
     }
 });
 

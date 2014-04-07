@@ -9,6 +9,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-grid.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/toc-datatable.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/simple-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/main-area.css">

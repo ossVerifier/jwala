@@ -1,0 +1,12 @@
+table.simple-data-table {
+    width: 90%;
+    border: 1px solid gray;
+    border-collapse:collapse;
+    border-spacing:0px 0px;
+    margin-left: 10%;
+}
+
+.simple-data-table tbody > tr > td {
+    border: 1px solid gray;
+    background: white
+}
