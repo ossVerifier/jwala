@@ -2,6 +2,7 @@ package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.EntityExistsException;
@@ -41,14 +42,22 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final AuditEvent auditEvent = aWebServer.getAuditEvent();
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
-            final Identifier<Group> groupId = createWebServerCommand.getGroup();
-            final JpaGroup group = getGroup(groupId);
+            final Collection<Identifier<Group>> groupIds = createWebServerCommand.getGroups();
+            
+            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
+            
+            if(groupIds != null) {
+                for(Identifier<Group> gid : groupIds) { 
+                    final JpaGroup group = getGroup(gid);
+                    groups.add(group);
+                }
+            }
 
             final JpaWebServer jpaWebServer = new JpaWebServer();
             jpaWebServer.setName(createWebServerCommand.getName());
             jpaWebServer.setHost(createWebServerCommand.getHost());
             jpaWebServer.setPort(createWebServerCommand.getPort());
-            jpaWebServer.setGroup(group);
+            jpaWebServer.setGroups(groups);
             jpaWebServer.setCreateBy(userId);
             jpaWebServer.setCreateDate(updateDate);
             jpaWebServer.setUpdateBy(userId);
@@ -72,12 +81,21 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final AuditEvent auditEvent = aWebServerToUpdate.getAuditEvent();
             final Identifier<WebServer> webServerId = updateWebServerCommand.getId();
             final JpaWebServer jpaWebServer = getJpaWebServer(webServerId);
-            final JpaGroup group = getGroup(updateWebServerCommand.getNewGroup());
 
+            final Collection<Identifier<Group>> groupIds = updateWebServerCommand.getNewGroupIds();
+            
+            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
+            
+            if(groupIds != null) {
+                for(Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
+                    groups.add(getGroup(id));
+                }
+            }
+            
             jpaWebServer.setName(updateWebServerCommand.getNewName());
             jpaWebServer.setPort(updateWebServerCommand.getNewPort());
             jpaWebServer.setHost(updateWebServerCommand.getNewHost());
-            jpaWebServer.setGroup(group);
+            jpaWebServer.setGroups(groups);
             jpaWebServer.setUpdateBy(auditEvent.getUser().getUserId());
             jpaWebServer.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
 

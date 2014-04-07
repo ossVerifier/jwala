@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -19,7 +22,7 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 @JsonDeserialize(using = JsonCreateWebServer.JsonCreateWebServerDeserializer.class)
 public class JsonCreateWebServer {
 
-    private String groupId;
+    private List<String> groupIds = new ArrayList<>(1);
     private String webserverName;
     private Integer portNumber;
     private String hostName;
@@ -27,22 +30,17 @@ public class JsonCreateWebServer {
     public JsonCreateWebServer() {
     }
 
-    public JsonCreateWebServer(final String aGroupId,
+    public JsonCreateWebServer(
                          final String aWebServerName,
                          final String aHostName,
                          final String aPortNumber) {
-        groupId = aGroupId;
         webserverName = aWebServerName;
         hostName = aHostName;
         portNumber = Integer.parseInt(aPortNumber);
     }
 
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(final String aGroupId) {
-        groupId = aGroupId;
+    public void addGroupId(final String aGroupId) {
+        groupIds.add(aGroupId);
     }
 
     public String getWebServerName() {
@@ -63,8 +61,9 @@ public class JsonCreateWebServer {
 
     public CreateWebServerCommand toCreateWebServerCommand() throws BadRequestException {
 
+        List<Identifier<Group>> ids = new ArrayList<Identifier<Group>>(groupIds.size());
         try {
-            return new CreateWebServerCommand(new Identifier<Group>(groupId),
+            return new CreateWebServerCommand(ids,
                                         webserverName,
                                         hostName,
                                         portNumber);
@@ -87,11 +86,23 @@ public class JsonCreateWebServer {
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp).get(0);
 
-            return new JsonCreateWebServer(node.get("groupId").getValueAsText(),
-                                     node.get("webserverName").getTextValue(),
+            JsonCreateWebServer jcws = new 
+                 JsonCreateWebServer(node.get("webserverName").getTextValue(),
                                      node.get("hostName").getTextValue(),
                                      node.get("portNumber").getValueAsText()
                                      );
+
+            final JsonNode groupNode = node.get("groupIds");
+            if(groupNode != null) {
+                Iterator<JsonNode> groupIt = groupNode.getElements();
+                while(groupIt.hasNext()) {
+                    JsonNode groupEntry = groupIt.next();
+                    jcws.addGroupId(groupEntry.get("groupId").getValueAsText());
+                }
+            } else if(node.get("groupId") != null) {
+                jcws.addGroupId(node.get("groupId").getValueAsText());
+            }
+            return jcws;
         }
     }
 
@@ -103,52 +114,68 @@ public class JsonCreateWebServer {
 		this.portNumber = portNumber;
 	}
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+        result = prime * result + ((groupIds == null) ? 0 : groupIds.hashCode());
         result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
         result = prime * result + ((portNumber == null) ? 0 : portNumber.hashCode());
         result = prime * result + ((webserverName == null) ? 0 : webserverName.hashCode());
         return result;
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         JsonCreateWebServer other = (JsonCreateWebServer) obj;
-        if (groupId == null) {
-            if (other.groupId != null)
+        if (groupIds == null) {
+            if (other.groupIds != null) {
                 return false;
-        } else if (!groupId.equals(other.groupId))
+            }
+        } else if (!groupIds.equals(other.groupIds)) {
             return false;
+        }
         if (hostName == null) {
-            if (other.hostName != null)
+            if (other.hostName != null) {
                 return false;
-        } else if (!hostName.equals(other.hostName))
+            }
+        } else if (!hostName.equals(other.hostName)) {
             return false;
+        }
         if (portNumber == null) {
-            if (other.portNumber != null)
+            if (other.portNumber != null) {
                 return false;
-        } else if (!portNumber.equals(other.portNumber))
+            }
+        } else if (!portNumber.equals(other.portNumber)) {
             return false;
+        }
         if (webserverName == null) {
-            if (other.webserverName != null)
+            if (other.webserverName != null) {
                 return false;
-        } else if (!webserverName.equals(other.webserverName))
+            }
+        } else if (!webserverName.equals(other.webserverName)) {
             return false;
+        }
         return true;
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     public String toString() {
-        return "JsonCreateWebServer {groupId=" + groupId + ", webserverName=" + webserverName + ", portNumber="
+        return "JsonCreateWebServer {groupIds=" + groupIds + ", webserverName=" + webserverName + ", portNumber="
                 + portNumber + ", hostName=" + hostName + "}";
     }
+
+
 }

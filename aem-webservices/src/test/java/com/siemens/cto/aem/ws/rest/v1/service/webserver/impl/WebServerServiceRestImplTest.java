@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.ws.rs.core.Response;
 
@@ -30,6 +32,13 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 
+/**
+ * New toMany Group JSON syntax:
+ * [{ \"webserverName\": \"webserver\", [{\"groupId\": 1},\"groupId\": 2}], \"hostName\":\"localhost\", \"portNumber\":8080}]");
+ * 
+ * @author horspe00
+ *
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
 
@@ -39,25 +48,46 @@ public class WebServerServiceRestImplTest {
         private WebServerServiceRestImpl cut;
         private JsonFactory factory = new JsonFactory();
         
-        JsonCreateWebServer templateCWS = new JsonCreateWebServer("1", "webserver", "localhost","8080");
-        Group templateGroup = new Group(Identifier.id(1L, Group.class), "ws-group");
-        WebServer templateWS = new WebServer(Identifier.id(1L, WebServer.class), templateGroup, "webserver", "localhost",8080);
-        WebServer templateWSmodified = new WebServer(Identifier.id(1L, WebServer.class), templateGroup, "webserver-modified", "localhost",8080);
+        JsonCreateWebServer templateCWS = new JsonCreateWebServer("webserver", "localhost","8080");
+        JsonUpdateWebServer templateUWS = new JsonUpdateWebServer("1","webserver-modified","localhost","8080");
+        JsonCreateWebServer templateCWSmulti = new JsonCreateWebServer("webserver", "localhost","8080");
+        JsonUpdateWebServer templateUWSmulti = new JsonUpdateWebServer("1","webserver-modified","localhost","8080");
 
-        
-        JsonUpdateWebServer templateUWS = new JsonUpdateWebServer("1","1","webserver-modified","localhost","8080");
+        Group templateGroup;
+        Collection<Group> templateGroups;
+        WebServer templateWS;
+        WebServer templateWSmodified;
+
+        String cwsJsonSingleGroup = "[{ \"webserverName\": \"webserver\", \"groupId\": 1, \"hostName\":\"localhost\", \"portNumber\":8080}]";
+        String cwsJsonMultiGroup = "[{ \"webserverName\": \"webserver\", \"groupIds\": [{\"groupId\": 1},{\"groupId\": \"2\"}], \"hostName\":\"localhost\", \"portNumber\":8080}]";
+        String uwsJsonSingleGroup = "[{ \"webserverId\" : \"1\", \"groupId\":\"1\", \"webserverName\":\"webserver-modified\", \"hostName\":\"localhost\",\"portNumber\":\"8080\"}]";
+        String uwsJsonMultiGroup = "[{ \"webserverId\" : \"1\", \"groupIds\": [{\"groupId\": \"1\"},{\"groupId\": \"2\"}], \"webserverName\":\"webserver-modified\", \"hostName\":\"localhost\",\"portNumber\":\"8080\"}]";
 
         @Before
         public void createWebServerService() {
             cut = new WebServerServiceRestImpl(impl);
-            
+            templateCWS.addGroupId("1");
+            templateUWS.addGroupId("1");
+            templateCWSmulti.addGroupId("1");
+            templateUWSmulti.addGroupId("1");
+            templateCWSmulti.addGroupId("2");
+            templateUWSmulti.addGroupId("2");
+
+            templateGroups = new ArrayList<>();
+            templateGroup = new Group(Identifier.id(1L, Group.class), "ws-group");
+            templateGroup = new Group(Identifier.id(2L, Group.class), "ws-group2");
+            templateGroups.add(templateGroup);
+            templateWS = new WebServer(Identifier.id(1L, WebServer.class), templateGroups, "webserver", "localhost",8080);
+            templateWSmodified = new WebServer(Identifier.id(1L, WebServer.class), templateGroups, "webserver-modified", "localhost",8080);
+
         }
+        
         @Test
         public void testCreateWebServer() throws JsonParseException, IOException {
 
             when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(templateWS);
             
-            JsonParser parser = factory.createJsonParser("[{ \"webserverName\": \"webserver\", \"groupId\": 1, \"hostName\":\"localhost\", \"portNumber\":8080}]");
+            JsonParser parser = factory.createJsonParser(cwsJsonSingleGroup);
             
             ObjectMapper mapper = new ObjectMapper();
 
@@ -121,7 +151,78 @@ public class WebServerServiceRestImplTest {
         
             assertEquals(content, templateWSmodified);            
         }
-/*
+
+        @Test
+        public void testCreateWebServerMG() throws JsonParseException, IOException {
+
+            when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(templateWS);
+            
+            JsonParser parser = factory.createJsonParser(cwsJsonMultiGroup);
+            
+            ObjectMapper mapper = new ObjectMapper();
+
+            parser.setCodec(mapper);
+            
+            JsonCreateWebServer cmd = mapper.readValue(parser, JsonCreateWebServer.class);
+            
+            assertEquals(cmd, templateCWSmulti);
+            
+            Response response = cut.createWebServer(cmd);
+            
+            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+
+            final ApplicationResponse applicationResponse =
+                    (ApplicationResponse) response.getEntity();
+
+            Object content = applicationResponse.getApplicationResponseContent();
+            
+            Writer writer = new StringWriter();
+            mapper.writeValue(writer, applicationResponse);
+
+            final String jsonStr = writer.toString();
+            assertTrue(jsonStr.contains("\"id\":1"));
+            assertTrue(jsonStr.contains("\"name\":\"webserver\""));
+            assertTrue(jsonStr.contains("\"host\":\"localhost\""));
+
+            assertEquals(content, templateWS);
+        }
+        
+        @Test
+        public void testUpdateWebServerMG() throws JsonParseException, IOException {
+
+            when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(templateWSmodified);
+            
+            JsonParser parser = factory.createJsonParser(uwsJsonMultiGroup);
+            
+            ObjectMapper mapper = new ObjectMapper();
+
+            parser.setCodec(mapper);
+            
+            JsonUpdateWebServer cmd = mapper.readValue(parser, JsonUpdateWebServer.class);
+            
+            assertEquals(templateUWSmulti, cmd);
+            
+            Response response = cut.updateWebServer(cmd);
+            
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+            final ApplicationResponse applicationResponse =
+                    (ApplicationResponse) response.getEntity();
+
+            Object content = applicationResponse.getApplicationResponseContent();
+            
+            Writer writer = new StringWriter();
+            mapper.writeValue(writer, applicationResponse);
+
+            final String jsonStr = writer.toString();
+            assertTrue(jsonStr.contains("\"id\":1"));
+            assertTrue(jsonStr.contains("\"name\":\"webserver-modified\""));
+            assertTrue(jsonStr.contains("\"host\":\"localhost\""));
+        
+            assertEquals(content, templateWSmodified);            
+        }
+
+ /*
         WebServer testGetWebServer(final Identifier<WebServer> aWebServerId);
         
         List<WebServer> testGetWebServers(final PaginationParameter aPaginationParam);

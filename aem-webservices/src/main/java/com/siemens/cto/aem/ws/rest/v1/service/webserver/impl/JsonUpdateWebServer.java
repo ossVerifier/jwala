@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -20,7 +23,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 @JsonDeserialize(using = JsonUpdateWebServer.JsonUpdateWebServerDeserializer.class)
 public class JsonUpdateWebServer {
 
-	private String groupId;
+	private List<String> groupIds = new ArrayList<>(1);
 	private String webServerId;
 	private String webserverName;
 	private Integer portNumber;
@@ -29,23 +32,19 @@ public class JsonUpdateWebServer {
 	public JsonUpdateWebServer() {
 	}
 
-	public JsonUpdateWebServer(final String aWebServerId,
-			final String aGroupId, final String aWebServerName,
-			final String aHostName, final String aPortNumber) {
-		groupId = aGroupId;
-		webserverName = aWebServerName;
-		hostName = aHostName;
-		portNumber = Integer.parseInt(aPortNumber);
-		webServerId = aWebServerId;
-	}
+    public JsonUpdateWebServer(final String aWebServerId,
+            final String aWebServerName,
+            final String aHostName, final String aPortNumber) {
+        
+        webserverName = aWebServerName;
+        hostName = aHostName;
+        portNumber = Integer.parseInt(aPortNumber);
+        webServerId = aWebServerId;
+    }
 
-	public String getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(final String aGroupId) {
-		groupId = aGroupId;
-	}
+    public void addGroupId(String gid) {
+        groupIds.add(gid);
+    }
 
 	public String getWebServerName() {
 		return webserverName;
@@ -67,8 +66,12 @@ public class JsonUpdateWebServer {
 			throws BadRequestException {
 
 		try {
+		    List<Identifier<Group> > groups= new ArrayList<>(groupIds.size());
+		    for(String grp : groupIds) {
+		        groups.add(Identifier.id(Long.parseLong(grp), Group.class));
+		    }
 			return new UpdateWebServerCommand(new Identifier<WebServer>(
-					webServerId), new Identifier<Group>(groupId),
+					webServerId), groups,
 					webserverName, hostName, portNumber);
 		} catch (final NumberFormatException nfe) {
 			throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
@@ -90,12 +93,23 @@ public class JsonUpdateWebServer {
 			final ObjectCodec obj = jp.getCodec();
 			final JsonNode node = obj.readTree(jp).get(0);
 
-			return new JsonUpdateWebServer(
+			JsonUpdateWebServer juws = new JsonUpdateWebServer(
 					node.get("webserverId").getValueAsText(), 
-					node.get("groupId").getValueAsText(),
 					node.get("webserverName").getTextValue(), 
 					node.get("hostName").getTextValue(), 
 					node.get("portNumber").getValueAsText());
+			
+            final JsonNode groupNode = node.get("groupIds");
+            if(groupNode != null) {
+                Iterator<JsonNode> groupIt = groupNode.getElements();
+                while(groupIt.hasNext()) {
+                    JsonNode groupEntry = groupIt.next();
+                    juws.addGroupId(groupEntry.get("groupId").getValueAsText());
+                }
+            } else if(node.get("groupId") != null) {
+                juws.addGroupId(node.get("groupId").getValueAsText());
+            }
+            return juws;
 		}
 	}
 
@@ -107,11 +121,19 @@ public class JsonUpdateWebServer {
         this.portNumber = portNumber;
     }
 
+    @SuppressWarnings({"PMD.InsufficientBranchCoverage"})
+    @Override
+    public String toString() {
+        return "JsonUpdateWebServer {groupIds=" + groupIds + ", webServerId=" + webServerId + ", webserverName="
+                + webserverName + ", portNumber=" + portNumber + ", hostName=" + hostName + "}";
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+        result = prime * result + ((groupIds == null) ? 0 : groupIds.hashCode());
         result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
         result = prime * result + ((portNumber == null) ? 0 : portNumber.hashCode());
         result = prime * result + ((webServerId == null) ? 0 : webServerId.hashCode());
@@ -119,46 +141,56 @@ public class JsonUpdateWebServer {
         return result;
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         JsonUpdateWebServer other = (JsonUpdateWebServer) obj;
-        if (groupId == null) {
-            if (other.groupId != null)
+        if (groupIds == null) {
+            if (other.groupIds != null) {
                 return false;
-        } else if (!groupId.equals(other.groupId))
+            }
+        } else if (!groupIds.equals(other.groupIds)) {
             return false;
+        }
         if (hostName == null) {
-            if (other.hostName != null)
+            if (other.hostName != null) {
                 return false;
-        } else if (!hostName.equals(other.hostName))
+            }
+        } else if (!hostName.equals(other.hostName)) {
             return false;
+        }
         if (portNumber == null) {
-            if (other.portNumber != null)
+            if (other.portNumber != null) {
                 return false;
-        } else if (!portNumber.equals(other.portNumber))
+            }
+        } else if (!portNumber.equals(other.portNumber)) {
             return false;
+        }
         if (webServerId == null) {
-            if (other.webServerId != null)
+            if (other.webServerId != null) {
                 return false;
-        } else if (!webServerId.equals(other.webServerId))
+            }
+        } else if (!webServerId.equals(other.webServerId)) {
             return false;
+        }
         if (webserverName == null) {
-            if (other.webserverName != null)
+            if (other.webserverName != null) {
                 return false;
-        } else if (!webserverName.equals(other.webserverName))
+            }
+        } else if (!webserverName.equals(other.webserverName)) {
             return false;
+        }
         return true;
     }
-
-    @Override
-    public String toString() {
-        return "JsonUpdateWebServer {groupId=" + groupId + ", webServerId=" + webServerId + ", webserverName="
-                + webserverName + ", portNumber=" + portNumber + ", hostName=" + hostName + "}";
-    }
+    
+	
 }

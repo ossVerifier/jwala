@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
+import java.util.Collection;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -12,12 +14,12 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 public class WebServerEventsTestHelper {
 
 	public static Event<CreateWebServerCommand> createCreateWebServerEvent(
-			final Identifier<Group> aGroupId, final String aNewWebServerName,
+			final Collection<Identifier<Group>> someGroupIds, final String aNewWebServerName,
 			final String aNewWebServerHost, final Integer aNewWebServerPort,
 			final String aUserId) {
 
 		final Event<CreateWebServerCommand> createWebServer = new Event<>(
-				new CreateWebServerCommand(aGroupId, aNewWebServerName,
+				new CreateWebServerCommand(someGroupIds, aNewWebServerName,
 						aNewWebServerHost, aNewWebServerPort),
 				createAuditEvent(aUserId));
 
@@ -25,12 +27,12 @@ public class WebServerEventsTestHelper {
 	}
 
 	public static Event<UpdateWebServerCommand> createUpdateWebServerEvent(
-			final Identifier<WebServer> id, final Identifier<Group> newGroupId,
+			final Identifier<WebServer> id, final Collection<Identifier<Group>> newGroupIds,
 			final String aNewWebServerName, final String aNewWebServerHost,
 			final Integer aNewWebServerPort, final String aUserId) {
 
 		final Event<UpdateWebServerCommand> updateWebServer = new Event<>(
-				new UpdateWebServerCommand(id, newGroupId, aNewWebServerName,
+				new UpdateWebServerCommand(id, newGroupIds, aNewWebServerName,
 						aNewWebServerHost, aNewWebServerPort),
 				createAuditEvent(aUserId));
 

@@ -8,6 +8,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Before;
@@ -39,6 +41,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
 	private WebServer preCreatedWebServer;
 	private Group preCreatedGroup;
+	
+	private Collection<Identifier<Group>> preCreatedGroupIds;
 
 	private String userName;
 	private static final String TEST_WS_NAME = "Tomcat Operations Center TEST";
@@ -52,7 +56,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	private static final Long NONEXISTANT_WS_ID = Long.valueOf(-123456L);
 	private static final Long NONEXISTANT_GROUP_ID = Long.valueOf(-123456L);
 	private static final Identifier<Group> NONEXISTANT_GROUP = new Identifier<>(
-			NONEXISTANT_GROUP_ID);
+            NONEXISTANT_GROUP_ID);
+	private static final Collection<Identifier<Group>> NONEXISTANT_GROUP_IDS = new ArrayList<>(1);
 	private static final String UNIQUE_NEW_WS_NAME = "Web Server Name to turn into a duplicate";
 	private static final String SECOND_WS_GROUP_NAME = "test group 2";
 	private static final String SECOND_TEST_WS_NAME = "TOC Test 2";
@@ -63,10 +68,17 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		preCreatedGroup = groupDao.createGroup(createCreateGroupEvent(
 				TEST_WS_GROUP_NAME, TEST_USER_NAME));
 
+		preCreatedGroupIds = new ArrayList<>(1);
+		preCreatedGroupIds.add(preCreatedGroup.getId());
+		
 		preCreatedWebServer = webServerDao
 				.createWebServer(createCreateWebServerEvent(
-						preCreatedGroup.getId(), TEST_WS_NAME, TEST_WS_HOST,
+						preCreatedGroupIds, TEST_WS_NAME, TEST_WS_HOST,
 						TEST_WS_PORT, userName));
+	}
+	
+	static { 
+	    NONEXISTANT_GROUP_IDS.add(NONEXISTANT_GROUP);
 	}
 
 	@Test
@@ -79,7 +91,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	public void testCreateDuplicateWebServer() {
 
 		final Event<CreateWebServerCommand> createWebServer = createCreateWebServerEvent(
-				preCreatedGroup.getId(), TEST_WS_NAME, UNCHECKED_WS_HOST,
+				preCreatedGroupIds, TEST_WS_NAME, UNCHECKED_WS_HOST,
 				UNCHECKED_WS_PORT, userName);
 
 		webServerDao.createWebServer(createWebServer);
@@ -89,7 +101,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	public void testUpdateWebServer() {
 
 		final Event<UpdateWebServerCommand> updateWebServer = createUpdateWebServerEvent(
-				preCreatedWebServer.getId(), preCreatedGroup.getId(),
+				preCreatedWebServer.getId(), preCreatedGroupIds,
 				"My New Name", "My New Host", Integer.valueOf(1), userName);
 
 		final WebServer actualWebServer = webServerDao
@@ -113,7 +125,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				NONEXISTANT_WS_ID);
 
 		webServerDao.updateWebServer(createUpdateWebServerEvent(
-				nonExistentWebServerId, preCreatedGroup.getId(),
+				nonExistentWebServerId, preCreatedGroupIds,
 				UNCHECKED_WS_NAME, UNCHECKED_WS_HOST, UNCHECKED_WS_PORT,
 				userName));
 	}
@@ -123,11 +135,11 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
 		final WebServer newWebServer = webServerDao
 				.createWebServer(createCreateWebServerEvent(
-						preCreatedGroup.getId(), UNIQUE_NEW_WS_NAME,
+				        preCreatedGroupIds, UNIQUE_NEW_WS_NAME,
 						UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, userName));
 
 		webServerDao.updateWebServer(createUpdateWebServerEvent(
-				newWebServer.getId(), preCreatedGroup.getId(),
+				newWebServer.getId(), preCreatedGroupIds,
 				preCreatedWebServer.getName(), UNCHECKED_WS_HOST,
 				UNCHECKED_WS_PORT, userName));
 	}
@@ -141,7 +153,9 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		final WebServer webServer = webServerDao
 				.getWebServer(expectedWebServerIdentifier);
 
-		assertEquals(preCreatedGroup, webServer.getGroup());
+        assertTrue(webServer.getGroupIds().containsAll(preCreatedGroupIds));
+        assertEquals(preCreatedGroupIds.size(), webServer.getGroups().size());
+		
 		assertEquals(preCreatedWebServer.getName(), webServer.getName());
 		assertEquals(preCreatedWebServer.getHost(), webServer.getHost());
 		assertEquals(preCreatedWebServer.getPort(), webServer.getPort());
@@ -164,7 +178,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
 		for (int i = 0; i <= pagination.getLimit(); i++) {
 			webServerDao.createWebServer(createCreateWebServerEvent(
-					preCreatedGroup.getId(), TEST_WS_NAME + (i + 1),
+					preCreatedGroupIds, TEST_WS_NAME + (i + 1),
 					UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, TEST_USER_NAME
 							+ (i + 1)));
 		}
@@ -216,7 +230,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	@Test(expected = NotFoundException.class)
 	public void testWebServerWithNotFoundGroup() {
 		WebServer webServer = webServerDao
-				.createWebServer(createCreateWebServerEvent(NONEXISTANT_GROUP,
+				.createWebServer(createCreateWebServerEvent(NONEXISTANT_GROUP_IDS,
 						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT,
 						TEST_USER_NAME));
 
@@ -224,29 +238,45 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		assertNotNull(webServer.getId().getId());
 	}
 
-	@Test
-	public void testWebServerWithNullGroup() {
-		WebServer webServer = webServerDao
-				.createWebServer(createCreateWebServerEvent(null, SECOND_TEST_WS_NAME,
-						TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
+    @Test
+    public void testWebServerWithNullGroup() {
+        WebServer webServer = webServerDao
+                .createWebServer(createCreateWebServerEvent(null, SECOND_TEST_WS_NAME,
+                        TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
 
-		assertNotNull(webServer.getId());
-		assertNotNull(webServer.getId().getId());
-	}
+        assertNotNull(webServer.getId());
+        assertNotNull(webServer.getId().getId());
+    }
+
+    @Test
+    public void testWebServerWithEmptyGroup() {
+        WebServer webServer = webServerDao
+                .createWebServer(createCreateWebServerEvent(new ArrayList<Identifier<Group>>(0), SECOND_TEST_WS_NAME,
+                        TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
+
+        assertNotNull(webServer.getId());
+        assertNotNull(webServer.getId().getId());
+    }
 
 	@Test
 	public void testUpdateWebServerGroup() {
 		Group newGroup = groupDao.createGroup(createCreateGroupEvent(
 				SECOND_WS_GROUP_NAME, TEST_USER_NAME));
+		
+		ArrayList<Identifier<Group>> newGroupIds = new ArrayList<>(1);
+		newGroupIds.add(newGroup.getId());
 
 		WebServer webServer = webServerDao
 				.updateWebServer(createUpdateWebServerEvent(
-						preCreatedWebServer.getId(), newGroup.getId(),
+						preCreatedWebServer.getId(), newGroupIds,
 						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT,
 						TEST_USER_NAME));
 
-		assertEquals(newGroup.getId(), webServer.getGroup().getId());
-		assertEquals(newGroup.getName(), webServer.getGroup().getName());
+		assertTrue(webServer.getGroupIds().containsAll(newGroupIds));
+
+		assertEquals(newGroupIds.size(), webServer.getGroups().size());
+
+        assertEquals(newGroup.getName(), webServer.getGroups().iterator().next().getName());
 	}
 
 	class GeneralizedDao {
@@ -289,33 +319,38 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		Group newGroup = generalizedDao.create(createCreateGroupEvent(
 				SECOND_WS_GROUP_NAME, TEST_USER_NAME));
 
-		WebServer webServer = generalizedDao.update(createUpdateWebServerEvent(
-				preCreatedWebServer.getId(), newGroup.getId(), TEST_WS_NAME,
+		ArrayList<Identifier<Group>> newGroupIds = new ArrayList<>(1);
+        newGroupIds.add(newGroup.getId());
+
+        WebServer webServer = generalizedDao.update(createUpdateWebServerEvent(
+				preCreatedWebServer.getId(), newGroupIds, TEST_WS_NAME,
 				TEST_WS_HOST, TEST_WS_PORT, TEST_USER_NAME));
 
-		assertEquals(newGroup.getId(), webServer.getGroup().getId());
-		assertEquals(newGroup.getName(), webServer.getGroup().getName());
+        assertTrue(webServer.getGroupIds().containsAll(newGroupIds));
+        assertEquals(newGroupIds.size(), webServer.getGroups().size());
+
+        assertEquals(newGroup.getName(), webServer.getGroups().iterator().next().getName());
 	}
 	
 	@Test
 	public void testCommands() {
-		Event<CreateWebServerCommand> cwsc = createCreateWebServerEvent(preCreatedGroup.getId(), 
+		Event<CreateWebServerCommand> cwsc = createCreateWebServerEvent(preCreatedGroupIds, 
 				TEST_WS_NAME, 
 				TEST_WS_HOST,
 				TEST_WS_PORT,
 				TEST_USER_NAME);
 
 		Event<UpdateWebServerCommand> uwsc = createUpdateWebServerEvent(preCreatedWebServer.getId(), 
-				preCreatedGroup.getId(), 
+				preCreatedGroupIds, 
 				TEST_WS_NAME, 
 				TEST_WS_HOST,
 				TEST_WS_PORT,
 				TEST_USER_NAME);
 
-		assertTrue(cwsc.toString().startsWith("Event{command=CreateWebServerCommand {newGroup=Identifier{id="));
+		assertTrue(cwsc.toString().startsWith("Event{command=CreateWebServerCommand {groupIds=[Identifier{id="));
 		assertTrue(uwsc.toString().startsWith("Event{command=UpdateWebServerCommand {id=Identifier{id="));
-		assertTrue(cwsc.toString().contains("}, newHost=localhost, newName=Tomcat Operations Center TEST, newPort=8080}, auditEvent=AuditEvent {"));
-		assertTrue(uwsc.toString().contains("}, newHost=localhost, newName=Tomcat Operations Center TEST, newPort=8080}, auditEvent=AuditEvent {"));
+		assertTrue(cwsc.toString().contains("}], host=localhost, name=Tomcat Operations Center TEST, port=8080}, auditEvent=AuditEvent {user=AuditUser {userId=Auto-constructed User }}}"));
+		assertTrue(uwsc.toString().contains("}], newHost=localhost, newName=Tomcat Operations Center TEST, newPort=8080}, auditEvent=AuditEvent {user=AuditUser {userId=Auto-constructed User }}}"));
 		assertNotSame(cwsc.hashCode(), 0);
 		assertNotSame(uwsc.hashCode(), 0);
 						

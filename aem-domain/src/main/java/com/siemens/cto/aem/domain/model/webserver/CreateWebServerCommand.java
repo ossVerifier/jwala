@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
@@ -16,22 +17,22 @@ public class CreateWebServerCommand implements Serializable, Command {
 
 	private static final long serialVersionUID = 1L;
 
-    private final Identifier<Group> group;
+    private final Collection<Identifier<Group> > groupIds;
 	private final String host;
 	private final String name;
 	private final Integer port;
 
 	public CreateWebServerCommand(
-			final Identifier<Group> theGroupId, 
+	        final Collection<Identifier<Group> > theGroupIds,
 			final String theName, final String theHost, final Integer thePort) {
 		host = theHost;
 		port = thePort;
 		name = theName;
-		group = theGroupId;
+		groupIds = theGroupIds;
 	}
 
-	public Identifier<Group> getGroup() {
-		return group;
+	public Collection<Identifier<Group>> getGroups() {
+		return groupIds;
 	}
 
 	public String getName() {
@@ -46,62 +47,79 @@ public class CreateWebServerCommand implements Serializable, Command {
 		return port;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((group == null) ? 0 : group.hashCode());
-		result = prime * result + ((host == null) ? 0 : host.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((port == null) ? 0 : port.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		CreateWebServerCommand other = (CreateWebServerCommand) obj;
-		if (group == null) {
-			if (other.group != null)
-				return false;
-		} else if (!group.equals(other.group))
-			return false;
-		if (host == null) {
-			if (other.host != null)
-				return false;
-		} else if (!host.equals(other.host))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (port == null) {
-			if (other.port != null)
-				return false;
-		} else if (!port.equals(other.port))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "CreateWebServerCommand {newGroup=" + group + ", newHost="
-				+ host + ", newName=" + name + ", newPort=" + port
-				+ "}";
-	}
-
 	public void validateCommand() {
         new MultipleRuleCommand(new JvmNameRule(name),
                 new HostNameRule(host),
-                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT ),
-                new GroupIdRule(group)).validateCommand();
+                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT )).validateCommand();
+        
+        for(Identifier<Group> gid : groupIds) {
+            new GroupIdRule(gid).validate();            
+        }
 	}
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((groupIds == null) ? 0 : groupIds.hashCode());
+        result = prime * result + ((host == null) ? 0 : host.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        return result;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        CreateWebServerCommand other = (CreateWebServerCommand) obj;
+        if (groupIds == null) {
+            if (other.groupIds != null) {
+                return false;
+            }
+        } else if (!groupIds.equals(other.groupIds)) {
+            return false;
+        }
+        if (host == null) {
+            if (other.host != null) {
+                return false;
+            }
+        } else if (!host.equals(other.host)) {
+            return false;
+        }
+        if (name == null) {
+            if (other.name != null) {
+                return false;
+            }
+        } else if (!name.equals(other.name)) {
+            return false;
+        }
+        if (port == null) {
+            if (other.port != null) {
+                return false;
+            }
+        } else if (!port.equals(other.port)) {
+            return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
+    @Override
+    public String toString() {
+        return "CreateWebServerCommand {groupIds=" + groupIds + ", host=" + host + ", name=" + name + ", port=" + port
+                + "}";
+    }
+	
+    
 
 }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Before;
@@ -49,26 +50,42 @@ public class WebServerServiceImplTest {
     
     private Group group;
     private Group group2;
+    private Identifier<Group> groupId;
+    private Identifier<Group> groupId2;
+    private Collection<Identifier<Group>> groupIds;
+    private Collection<Identifier<Group>> groupIds2;
+    private Collection<Group> groups;
+    private Collection<Group> groups2;
     
     private User testUser = new User("testUser");
 
     @Before
     public void setUp() {
         
-        group = new Group(new Identifier<Group>(1L), "the-ws-group-name");
+        groupId = new Identifier<Group>(1L);
+        groupId2 = new Identifier<Group>(2L);
+        groupIds = new ArrayList<>(1);
+        groupIds2 = new ArrayList<>(1);
+        groupIds.add(groupId);
+        groupIds2.add(groupId2);
+        group = new Group(groupId, "the-ws-group-name");
         group2 = new Group(new Identifier<Group>(2L), "the-ws-group-name-2");
+        groups = new ArrayList<>(1);
+        groups2 = new ArrayList<>(1);
+        groups.add(group);
+        groups2.add(group2);
 
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
         when(mockWebServer.getName()).thenReturn("the-ws-name");
         when(mockWebServer.getHost()).thenReturn("the-ws-hostname");
-        when(mockWebServer.getGroup()).thenReturn(group);
+        when(mockWebServer.getGroups()).thenReturn(groups);
         when(mockWebServer.getPort()).thenReturn(new Integer(51000));
         
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
         when(mockWebServer2.getName()).thenReturn("the-ws-name-2");
         when(mockWebServer2.getHost()).thenReturn("the-ws-hostname");
-        when(mockWebServer2.getGroup()).thenReturn(group2);
+        when(mockWebServer2.getGroups()).thenReturn(groups2);
         when(mockWebServer2.getPort()).thenReturn(new Integer(51000));
         
         mockWebServersAll.add(mockWebServer);
@@ -86,9 +103,9 @@ public class WebServerServiceImplTest {
         when(wsDao.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         final WebServer webServer= wsService.getWebServer(new Identifier<WebServer>(1L));
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
-        assertEquals(group.getId(), webServer.getGroup().getId());
+        assertEquals(group.getId(), webServer.getGroups().iterator().next().getId());
         assertEquals("the-ws-name", webServer.getName());
-        assertEquals("the-ws-group-name", webServer.getGroup().getName());
+        assertEquals("the-ws-group-name", webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
     }
 
@@ -118,13 +135,13 @@ public class WebServerServiceImplTest {
     @Test
     public void testCreateWebServers() {
         when(wsDao.createWebServer(any(Event.class))).thenReturn(mockWebServer);
-        CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroup().getId(), mockWebServer.getName(), mockWebServer.getHost(), mockWebServer.getPort());
+        CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroupIds(), mockWebServer.getName(), mockWebServer.getHost(), mockWebServer.getPort());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
-        assertEquals(group.getId(), webServer.getGroup().getId());
+        assertEquals(group.getId(), webServer.getGroups().iterator().next().getId());
         assertEquals("the-ws-name", webServer.getName());
-        assertEquals("the-ws-group-name", webServer.getGroup().getName());
+        assertEquals("the-ws-group-name", webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
     }
     
@@ -140,13 +157,13 @@ public class WebServerServiceImplTest {
     @Test
     public void testUpdateWebServers() {
         when(wsDao.updateWebServer(any(Event.class))).thenReturn(mockWebServer2);
-        UpdateWebServerCommand cmd = new UpdateWebServerCommand(mockWebServer2.getId(), mockWebServer2.getGroup().getId(), mockWebServer2.getName(), mockWebServer2.getHost(), mockWebServer2.getPort());
+        UpdateWebServerCommand cmd = new UpdateWebServerCommand(mockWebServer2.getId(), groupIds2, mockWebServer2.getName(), mockWebServer2.getHost(), mockWebServer2.getPort());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());
-        assertEquals(group2.getId(), webServer.getGroup().getId());
+        assertEquals(group2.getId(), webServer.getGroups().iterator().next().getId());
         assertEquals("the-ws-name-2", webServer.getName());
-        assertEquals(group2.getName(), webServer.getGroup().getName());
+        assertEquals(group2.getName(), webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
     }
 
@@ -167,7 +184,7 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testRemoveWebServersBelongingTo() {
-        wsService.removeWebServersBelongingTo(mockWebServer.getGroup().getId());
+        wsService.removeWebServersBelongingTo(mockWebServer.getGroups().iterator().next().getId());
         verify(wsDao, atLeastOnce()).removeWebServersBelongingTo(group.getId());
     }
 }
