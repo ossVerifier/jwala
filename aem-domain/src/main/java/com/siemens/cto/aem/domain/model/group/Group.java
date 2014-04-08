@@ -1,8 +1,12 @@
 package com.siemens.cto.aem.domain.model.group;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 public class Group implements Serializable {
 
@@ -10,11 +14,21 @@ public class Group implements Serializable {
 
     private final Identifier<Group> id;
     private final String name;
+    private final Set<Jvm> jvms;
 
     public Group(final Identifier<Group> theId,
                  final String theName) {
+        this(theId,
+             theName,
+             Collections.<Jvm>emptySet());
+    }
+
+    public Group(final Identifier<Group> theId,
+                 final String theName,
+                 final Set<Jvm> theJvms) {
         id = theId;
         name = theName;
+        jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
     }
 
     public Identifier<Group> getId() {
@@ -23,6 +37,10 @@ public class Group implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public Set<Jvm> getJvms() {
+        return jvms;
     }
 
     @Override

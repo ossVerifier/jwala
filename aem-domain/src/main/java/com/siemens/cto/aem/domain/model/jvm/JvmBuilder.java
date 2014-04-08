@@ -32,7 +32,6 @@ public class JvmBuilder {
 
     public Jvm build() {
         return new Jvm(id,
-                       group,
                        name,
                        hostName);
     }

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.dao.group.impl.springjdbc;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -39,13 +40,21 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
     public Group createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
 
         try {
-            final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
-                                                                                           QueryKey.CREATED_DATE.getQueryKeyPlus() +
-                                                                                           QueryKey.CREATED_BY.getQueryKey() + ")";
+            final String insert = "INSERT INTO GRP(NAME, CREATEDATE, CREATEBY, LASTUPDATEDATE, UPDATEBY) VALUES (" + QueryKey.NAME.getQueryKeyPlus() +
+                                                                                                                     QueryKey.CREATED_DATE.getQueryKeyPlus() +
+                                                                                                                     QueryKey.CREATED_BY.getQueryKeyPlus() +
+                                                                                                                     QueryKey.UPDATED_DATE.getQueryKeyPlus() +
+                                                                                                                     QueryKey.UPDATED_BY.getQueryKey() +
+                                                                                                                ")";
+
+            final String createUserId = aGroupToCreate.getAuditEvent().getUser().getUserId();
+            final Date createdDateTime = aGroupToCreate.getAuditEvent().getDateTime().getDate();
 
             final SqlParameterSource input = new MapSqlParameterSource().addValue(QueryKey.NAME.getKey(), aGroupToCreate.getCommand().getGroupName())
-                                                                        .addValue(QueryKey.CREATED_DATE.getKey(), aGroupToCreate.getAuditEvent().getDateTime().getDate())
-                                                                        .addValue(QueryKey.CREATED_BY.getKey(), aGroupToCreate.getAuditEvent().getUser().getUserId());
+                                                                        .addValue(QueryKey.CREATED_DATE.getKey(), createdDateTime)
+                                                                        .addValue(QueryKey.CREATED_BY.getKey(),createUserId)
+                                                                        .addValue(QueryKey.UPDATED_DATE.getKey(), createdDateTime)
+                                                                        .addValue(QueryKey.UPDATED_BY.getKey(), createUserId);
 
             final KeyHolder insertedKey = new GeneratedKeyHolder();
 
@@ -174,7 +183,7 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
         }
     }
 
-    @Override
+//    @Override//TODO Corey fix
     public Group getGroup(String aGroupName) throws NotFoundException {
         try {
             final String select = "SELECT ID, NAME FROM GRP WHERE NAME = " + QueryKey.NAME.getQueryKey();

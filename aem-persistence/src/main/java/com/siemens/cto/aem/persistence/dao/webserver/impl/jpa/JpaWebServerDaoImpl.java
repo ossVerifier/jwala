@@ -26,8 +26,8 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.persistence.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
 
@@ -43,11 +43,11 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
             final Collection<Identifier<Group>> groupIds = createWebServerCommand.getGroups();
-            
+
             final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
-            
+
             if(groupIds != null) {
-                for(Identifier<Group> gid : groupIds) { 
+                for(Identifier<Group> gid : groupIds) {
                     final JpaGroup group = getGroup(gid);
                     groups.add(group);
                 }
@@ -83,15 +83,15 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final JpaWebServer jpaWebServer = getJpaWebServer(webServerId);
 
             final Collection<Identifier<Group>> groupIds = updateWebServerCommand.getNewGroupIds();
-            
+
             final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
-            
+
             if(groupIds != null) {
                 for(Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
                     groups.add(getGroup(id));
                 }
             }
-            
+
             jpaWebServer.setName(updateWebServerCommand.getNewName());
             jpaWebServer.setPort(updateWebServerCommand.getNewPort());
             jpaWebServer.setHost(updateWebServerCommand.getNewHost());
@@ -182,7 +182,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     protected WebServer webServerFrom(final JpaWebServer aJpaWebServer) {
         return new JpaWebServerBuilder(aJpaWebServer).build();
     }
-    
+
 
     /**
      * TODO: DUPLICATED FROM JpaWebServerDaoImpl - need some wiring internal to the Dao to reuse.
@@ -193,7 +193,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     	if(aGroupId == null) return null;
     	if(aGroupId.getId() == null) return null;
-    	
+
         final JpaGroup group = entityManager.find(JpaGroup.class,
                                                   aGroupId.getId());
 
@@ -204,7 +204,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
         return group;
     }
-    
+
 
   @Override
   @SuppressWarnings("unchecked")
@@ -217,8 +217,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
       for (final JpaWebServer webserver : webservers) {
           entityManager.remove(webserver);
       }
-  }    
-    
+  }
+
   @SuppressWarnings("unchecked")
 @Override
   public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup,
@@ -234,7 +234,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
       return webserversFrom(query.getResultList());
   }
-    
+
 
 
   protected WebServer webserverFrom(final JpaWebServer aJpaWebServer) {

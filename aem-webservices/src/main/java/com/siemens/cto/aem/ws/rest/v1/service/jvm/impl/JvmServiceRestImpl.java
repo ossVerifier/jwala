@@ -42,8 +42,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate) {
         logger.debug("Create JVM requested: {}", aJvmToCreate);
-        return ResponseBuilder.created(jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
-                                                            User.getHardCodedUser()));
+        final User hardCodedUser = User.getHardCodedUser();
+
+        if (aJvmToCreate.areGroupsPresent()) {
+            return ResponseBuilder.created(jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
+                                                                         hardCodedUser));
+        } else {
+            return ResponseBuilder.created(jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
+                                                                hardCodedUser));
+        }
     }
 
     @Override

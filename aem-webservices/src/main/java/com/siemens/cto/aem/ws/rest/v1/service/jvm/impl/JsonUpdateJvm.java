@@ -12,7 +12,6 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
@@ -21,7 +20,6 @@ import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
 public class JsonUpdateJvm {
 
     private String jvmId;
-    private String groupId;
     private String jvmName;
     private String hostName;
 
@@ -29,11 +27,9 @@ public class JsonUpdateJvm {
     }
 
     public JsonUpdateJvm(final String aJvmId,
-                         final String aGroupId,
                          final String aJvmName,
                          final String aHostName) {
         jvmId = aJvmId;
-        groupId = aGroupId;
         jvmName = aJvmName;
         hostName = aHostName;
     }
@@ -44,14 +40,6 @@ public class JsonUpdateJvm {
 
     public void setJvmId(final String jvmId) {
         this.jvmId = jvmId;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(final String aGroupId) {
-        groupId = aGroupId;
     }
 
     public String getJvmName() {
@@ -75,7 +63,6 @@ public class JsonUpdateJvm {
         try {
 
             return new UpdateJvmCommand(new Identifier<Jvm>(jvmId),
-                                        new Identifier<Group>(groupId),
                                         jvmName,
                                         hostName);
         } catch (final NumberFormatException nfe) {
@@ -98,7 +85,6 @@ public class JsonUpdateJvm {
             final JsonNode node = obj.readTree(jp);
 
             return new JsonUpdateJvm(node.get("jvmId").getTextValue(),
-                                     node.get("groupId").getTextValue(),
                                      node.get("jvmName").getTextValue(),
                                      node.get("hostName").getTextValue());
         }

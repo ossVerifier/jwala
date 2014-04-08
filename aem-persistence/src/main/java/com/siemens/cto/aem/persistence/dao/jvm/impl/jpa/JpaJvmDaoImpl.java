@@ -21,8 +21,8 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
-import com.siemens.cto.aem.persistence.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 
 public class JpaJvmDaoImpl implements JvmDao {
 
@@ -41,11 +41,9 @@ public class JpaJvmDaoImpl implements JvmDao {
             final Calendar updateTime = auditEvent.getDateTime().getCalendar();
             final String userId = auditEvent.getUser().getUserId();
             final CreateJvmCommand command = aJvmToCreate.getCommand();
-            final JpaGroup group = getGroup(command.getGroup());
 
             jpaJvm.setName(command.getJvmName());
             jpaJvm.setHostName(command.getHostName());
-            jpaJvm.setGroup(group);
             jpaJvm.setCreateBy(userId);
             jpaJvm.setCreateDate(updateTime);
             jpaJvm.setUpdateBy(userId);
@@ -69,11 +67,8 @@ public class JpaJvmDaoImpl implements JvmDao {
             final Identifier<Jvm> jvmId = command.getId();
             final JpaJvm jvm = getJpaJvm(jvmId);
 
-            final JpaGroup group = getGroup(command.getNewGroupId());
-
             jvm.setName(command.getNewJvmName());
             jvm.setHostName(command.getNewHostName());
-            jvm.setGroup(group);
 
             entityManager.flush();
 
@@ -124,7 +119,7 @@ public class JpaJvmDaoImpl implements JvmDao {
     public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup,
                                          final PaginationParameter somePagination) {
 
-        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.group.id = :groupId ORDER BY j.name");
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j JOIN j.groups g WHERE g.id = :groupId ORDER BY j.name");
 
         query.setParameter("groupId", aGroup.getId());
         query.setFirstResult(somePagination.getOffset());
@@ -166,7 +161,7 @@ public class JpaJvmDaoImpl implements JvmDao {
     @SuppressWarnings("unchecked")
     public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
 
-        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.group.id = :groupId");
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j JOIN j.groups g WHERE g.id = :groupId");
         query.setParameter("groupId", aGroupId.getId());
 
         final List<JpaJvm> jvms = query.getResultList();
@@ -174,20 +169,6 @@ public class JpaJvmDaoImpl implements JvmDao {
             entityManager.remove(jvm);
         }
     }
-
-    protected JpaGroup getGroup(final Identifier<Group> aGroupId) {
-
-        final JpaGroup group = entityManager.find(JpaGroup.class,
-                                                  aGroupId.getId());
-
-        if (group == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Group not found: " + aGroupId);
-        }
-
-        return group;
-    }
-
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
 

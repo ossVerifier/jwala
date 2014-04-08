@@ -47,8 +47,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
         preCreatedGroup = groupDao.createGroup(createGroupCommandEvent("Pre-created Group Name",
                                                                        userName));
 
-        preCreatedJvm = jvmDao.createJvm(createCreateJvmCommand(preCreatedGroup.getId(),
-                                                                "Pre-created JVM Name",
+        preCreatedJvm = jvmDao.createJvm(createCreateJvmCommand(
+                "Pre-created JVM Name",
                                                                 "Pre-created Host Name",
                                                                 userName));
     }
@@ -56,8 +56,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test
     public void testCreateNewJvm() {
 
-        final Event<CreateJvmCommand> command = createCreateJvmCommand(preCreatedGroup.getId(),
-                                                                       "New Jvm Name",
+        final Event<CreateJvmCommand> command = createCreateJvmCommand(
+                "New Jvm Name",
                                                                        "New Host Name",
                                                                        userName);
 
@@ -70,19 +70,9 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testCreateDuplicateJvm() {
 
-        final Event<CreateJvmCommand> commandEvent = createCreateJvmCommand(preCreatedGroup.getId(),
-                                                                            preCreatedJvm.getJvmName(),
+        final Event<CreateJvmCommand> commandEvent = createCreateJvmCommand(
+                preCreatedJvm.getJvmName(),
                                                                             preCreatedJvm.getHostName(),
-                                                                            userName);
-        jvmDao.createJvm(commandEvent);
-    }
-
-    @Test(expected = NotFoundException.class)
-    public void testCreateJvmWithNonExistentGroup() {
-
-        final Event<CreateJvmCommand> commandEvent = createCreateJvmCommand(new Identifier<Group>(-123456L),
-                                                                            "New Jvm Name",
-                                                                            "New Host Name",
                                                                             userName);
         jvmDao.createJvm(commandEvent);
     }
@@ -99,8 +89,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test
     public void testRemoveJvmsFromGroup() {
 
-        final Jvm secondJvm = jvmDao.createJvm(createCreateJvmCommand(preCreatedGroup.getId(),
-                                                                      "Second JVM",
+        final Jvm secondJvm = jvmDao.createJvm(createCreateJvmCommand("Second JVM",
                                                                       "Second Host Name",
                                                                       userName));
 
@@ -139,8 +128,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateJvm() {
 
-        final Jvm newJvm = jvmDao.createJvm(createCreateJvmCommand(preCreatedGroup.getId(),
-                                                                   "Eventually duplicate JVM name",
+        final Jvm newJvm = jvmDao.createJvm(createCreateJvmCommand(
+                "Eventually duplicate JVM name",
                                                                    "Unused",
                                                                    userName));
 
@@ -160,12 +149,12 @@ public abstract class AbstractJvmDaoIntegrationTest {
         final String activeSuffix = "Active";
         final String passiveSuffix = "Passive";
 
-        createMultipleJvms(preCreatedGroup.getId(),
-                           numberActive,
+        createMultipleJvms(
+                numberActive,
                            activeSuffix,
                            activeSuffix);
-        createMultipleJvms(preCreatedGroup.getId(),
-                           numberToCreate - numberActive,
+        createMultipleJvms(
+                numberToCreate - numberActive,
                            passiveSuffix,
                            passiveSuffix);
 
@@ -199,12 +188,12 @@ public abstract class AbstractJvmDaoIntegrationTest {
         final Group secondGroup = groupDao.createGroup(createGroupCommandEvent("Second Group",
                                                                                userName));
 
-        createMultipleJvms(firstGroup.getId(),
-                           numberInFirstGroup,
+        createMultipleJvms(
+                numberInFirstGroup,
                            firstGroupSuffix,
                            firstGroupSuffix);
-        createMultipleJvms(secondGroup.getId(),
-                           numberInSecondGroup,
+        createMultipleJvms(
+                numberInSecondGroup,
                            secondGroupSuffix,
                            secondGroupSuffix);
 
@@ -233,8 +222,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
         final Group group = groupDao.createGroup(createGroupCommandEvent("Get JVMs Group",
                                                                          userName));
 
-        createMultipleJvms(group.getId(),
-                           numberToCreate,
+        createMultipleJvms(
+                numberToCreate,
                            suffix,
                            suffix);
 
@@ -250,12 +239,10 @@ public abstract class AbstractJvmDaoIntegrationTest {
                            AuditEvent.now(new User(aUserName)));
     }
 
-    protected Event<CreateJvmCommand> createCreateJvmCommand(final Identifier<Group> aGroupId,
-                                                             final String aJvmName,
+    protected Event<CreateJvmCommand> createCreateJvmCommand(final String aJvmName,
                                                              final String aHostName,
                                                              final String aUserName) {
-        return new Event<>(new CreateJvmCommand(aGroupId,
-                                                aJvmName,
+        return new Event<>(new CreateJvmCommand(aJvmName,
                                                 aHostName),
                            AuditEvent.now(new User(aUserName)));
     }
@@ -265,11 +252,10 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final String aNewJvmName,
                                                              final String aNewHostName,
                                                              final String aUserName) {
-        return new Event<UpdateJvmCommand>(new UpdateJvmCommand(aJvmId,
-                                                                aGroupId,
-                                                                aNewJvmName,
-                                                                aNewHostName),
-                                           AuditEvent.now(new User(aUserName)));
+        return new Event<>(new UpdateJvmCommand(aJvmId,
+                                                aNewJvmName,
+                                                aNewHostName),
+                           AuditEvent.now(new User(aUserName)));
     }
 
     protected void verifyBulkJvmAssertions(final List<Jvm> someJvms,
@@ -285,13 +271,11 @@ public abstract class AbstractJvmDaoIntegrationTest {
         }
     }
 
-    protected void createMultipleJvms(final Identifier<Group> aGroupId,
-                                      final int aNumberToCreate,
+    protected void createMultipleJvms(final int aNumberToCreate,
                                       final String aJvmNameSuffix,
                                       final String aHostNameSuffix) {
         for (int i=1; i <= aNumberToCreate; i++) {
-            jvmDao.createJvm(createCreateJvmCommand(aGroupId,
-                                                    "JVM" + i + aJvmNameSuffix,
+            jvmDao.createJvm(createCreateJvmCommand("JVM" + i + aJvmNameSuffix,
                                                     "HostName" + i + aHostNameSuffix,
                                                     userName));
         }

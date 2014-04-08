@@ -2,7 +2,6 @@ package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
 
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class Jvm implements Serializable {
@@ -10,26 +9,19 @@ public class Jvm implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<Jvm> id;
-    private final Group group;
     private final String jvmName;
     private final String hostName;
 
     public Jvm(final Identifier<Jvm> theId,
-               final Group theGroup,
                final String theName,
                final String theHostName) {
         id = theId;
-        group = theGroup;
         jvmName = theName;
         hostName = theHostName;
     }
 
     public Identifier<Jvm> getId() {
         return id;
-    }
-
-    public Group getGroup() {
-        return group;
     }
 
     public String getJvmName() {
@@ -51,9 +43,6 @@ public class Jvm implements Serializable {
 
         final Jvm jvm = (Jvm) o;
 
-        if (group != null ? !group.equals(jvm.group) : jvm.group != null) {
-            return false;
-        }
         if (hostName != null ? !hostName.equals(jvm.hostName) : jvm.hostName != null) {
             return false;
         }
@@ -70,7 +59,6 @@ public class Jvm implements Serializable {
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (group != null ? group.hashCode() : 0);
         result = 31 * result + (jvmName != null ? jvmName.hashCode() : 0);
         result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
         return result;
@@ -80,7 +68,6 @@ public class Jvm implements Serializable {
     public String toString() {
         return "Jvm{" +
                "id=" + id +
-               ", group=" + group +
                ", jvmName='" + jvmName + '\'' +
                ", hostName='" + hostName + '\'' +
                '}';

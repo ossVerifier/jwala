@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -14,32 +17,32 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
 public class JsonCreateJvm {
 
-    private String groupId;
     private String jvmName;
     private String hostName;
+    private Set<String> groupIds;
 
     public JsonCreateJvm() {
     }
 
-    public JsonCreateJvm(final String aGroupId,
-                         final String aJvmName,
-                         final String aHostName) {
-        groupId = aGroupId;
+    public JsonCreateJvm(final String jvmName,
+                         final String hostName) {
+        this(jvmName,
+             hostName,
+             Collections.<String>emptySet());
+    }
+
+    public JsonCreateJvm(final String aJvmName,
+                         final String aHostName,
+                         final Set<String> someGroupIds) {
         jvmName = aJvmName;
         hostName = aHostName;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(final String aGroupId) {
-        groupId = aGroupId;
+        groupIds = someGroupIds;
     }
 
     public String getJvmName() {
@@ -58,13 +61,41 @@ public class JsonCreateJvm {
         hostName = aHostName;
     }
 
+    public Set<String> getGroupIds() {
+        return groupIds;
+    }
+
+    public void setGroupIds(final Set<String> groupIds) {
+        this.groupIds = groupIds;
+    }
+
+    public boolean areGroupsPresent() {
+        return !groupIds.isEmpty();
+    }
+
     public CreateJvmCommand toCreateJvmCommand() throws BadRequestException {
 
+        return new CreateJvmCommand(jvmName,
+                                    hostName);
+    }
+
+    public CreateJvmAndAddToGroupsCommand toCreateAndAddCommand() throws BadRequestException {
+        final Set<Identifier<Group>> groups = convertGroupIds();
+
+        return new CreateJvmAndAddToGroupsCommand(jvmName,
+                                                  hostName,
+                                                  groups);
+    }
+
+    protected Set<Identifier<Group>> convertGroupIds() {
         try {
-            return new CreateJvmCommand(new Identifier<Group>(groupId),
-                                        jvmName,
-                                        hostName);
-        } catch (final NumberFormatException nfe) {
+            final Set<Identifier<Group>> groups = new HashSet<>();
+            for (final String groupId : groupIds) {
+                groups.add(new Identifier<Group>(groupId));
+            }
+
+            return groups;
+        } catch (NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
                                           nfe.getMessage(),
                                           nfe);
@@ -83,13 +114,28 @@ public class JsonCreateJvm {
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp);
 
-            final JsonNode g = node.get("groupId");
             final JsonNode j = node.get("jvmName");
             final JsonNode h = node.get("hostName");
+            final JsonNode g = node.get("groups");
 
-            return new JsonCreateJvm(node.get("groupId").getValueAsText(),
-                                     node.get("jvmName").getTextValue(),
-                                     node.get("hostName").getTextValue());
+            final Set<String> rawGroupIds = getGroupIds(g);
+
+            return new JsonCreateJvm(node.get("jvmName").getTextValue(),
+                                     node.get("hostName").getTextValue(),
+                                     rawGroupIds);
+        }
+
+        protected Set<String> getGroupIds(final JsonNode aGroupsNode) {
+
+            final Set<String> groups = new HashSet<>();
+
+            if (aGroupsNode != null) {
+                for (final JsonNode node : aGroupsNode) {
+                    groups.add(node.getValueAsText());
+                }
+            }
+
+            return groups;
         }
     }
 }

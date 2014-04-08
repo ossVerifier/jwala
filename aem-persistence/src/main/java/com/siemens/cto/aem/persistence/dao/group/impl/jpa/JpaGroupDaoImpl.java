@@ -24,7 +24,8 @@ import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 
 public class JpaGroupDaoImpl implements GroupDao {
 
@@ -126,7 +127,7 @@ public class JpaGroupDaoImpl implements GroupDao {
         entityManager.remove(group);
     }
 
-    @Override
+//    @Override TODO Corey Fix
     public Group getGroup(String aGroupName) throws NotFoundException {
         return groupFrom(getJpaGroup(aGroupName));
     }

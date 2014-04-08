@@ -1,27 +1,34 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 
 public class JvmServiceImpl implements JvmService {
 
-    private JvmDao dao;
+    private JvmPersistenceService jvmPersistenceService;
+    private GroupService groupService;
 
-    public JvmServiceImpl(final JvmDao theDao) {
-        dao = theDao;
+    public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
+                          final GroupService theGroupService) {
+        jvmPersistenceService = theJvmPersistenceService;
+        groupService = theGroupService;
     }
 
     @Override
@@ -34,21 +41,38 @@ public class JvmServiceImpl implements JvmService {
         final Event<CreateJvmCommand> event = new Event<>(aCreateJvmCommand,
                                                           AuditEvent.now(aCreatingUser));
 
-        return  dao.createJvm(event);
+        return jvmPersistenceService.createJvm(event);
+    }
+
+    @Override
+    @Transactional
+    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsCommand aCreateAndAssignCommand,
+                                  final User aCreatingUser) {
+
+        final Jvm newJvm = createJvm(aCreateAndAssignCommand,
+                                     aCreatingUser);
+
+        final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.getAssignmentCommandsFor(newJvm.getId());
+        for (final AddJvmToGroupCommand addCommand : addCommands) {
+            groupService.addJvmToGroup(addCommand,
+                                       aCreatingUser);
+        }
+
+        return newJvm;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Jvm getJvm(final Identifier<Jvm> aJvmId) {
 
-        return dao.getJvm(aJvmId);
+        return jvmPersistenceService.getJvm(aJvmId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Jvm> getJvms(final PaginationParameter aPaginationParam) {
 
-        return dao.getJvms(aPaginationParam);
+        return jvmPersistenceService.getJvms(aPaginationParam);
     }
 
     @Override
@@ -56,8 +80,8 @@ public class JvmServiceImpl implements JvmService {
     public List<Jvm> findJvms(final String aJvmNameFragment,
                               final PaginationParameter aPaginationParam) {
 
-        return dao.findJvms(aJvmNameFragment,
-                            aPaginationParam);
+        return jvmPersistenceService.findJvms(aJvmNameFragment,
+                                              aPaginationParam);
     }
 
     @Override
@@ -65,8 +89,8 @@ public class JvmServiceImpl implements JvmService {
     public List<Jvm> findJvms(final Identifier<Group> aJvmId,
                               final PaginationParameter aPaginationParam) {
 
-        return dao.findJvmsBelongingTo(aJvmId,
-                                       aPaginationParam);
+        return jvmPersistenceService.findJvmsBelongingTo(aJvmId,
+                                                         aPaginationParam);
 
     }
 
@@ -80,19 +104,12 @@ public class JvmServiceImpl implements JvmService {
         final Event<UpdateJvmCommand> event = new Event<>(anUpdateJvmCommand,
                                                           AuditEvent.now(anUpdatingUser));
 
-        return dao.updateJvm(event);
+        return jvmPersistenceService.updateJvm(event);
     }
 
     @Override
     @Transactional
     public void removeJvm(final Identifier<Jvm> aJvmId) {
-
-        dao.removeJvm(aJvmId);
-    }
-
-    @Override
-    @Transactional
-    public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
-        dao.removeJvmsBelongingTo(aGroupId);
+        jvmPersistenceService.removeJvm(aJvmId);
     }
 }

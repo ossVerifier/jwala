@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
@@ -14,6 +15,9 @@ public interface JvmService {
 
     Jvm createJvm(final CreateJvmCommand aCreateJvmCommand,
                   final User aCreatingUser);
+
+    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsCommand aCreateAndAssignCommand,
+                           final User aCreatingUser);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
@@ -30,5 +34,4 @@ public interface JvmService {
 
     void removeJvm(final Identifier<Jvm> aJvmId);
 
-    void removeJvmsBelongingTo(final Identifier<Group> aGroupId);
 }

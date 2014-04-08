@@ -2,7 +2,11 @@ package com.siemens.cto.aem.domain.model.group;
 
 import java.io.Serializable;
 
-public class CreateGroupCommand implements Serializable {
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.command.Command;
+import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
+
+public class CreateGroupCommand implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 
@@ -14,6 +18,11 @@ public class CreateGroupCommand implements Serializable {
 
     public String getGroupName() {
         return groupName;
+    }
+
+    @Override
+    public void validateCommand() throws BadRequestException {
+        new GroupNameRule(groupName).validate();
     }
 
     @Override

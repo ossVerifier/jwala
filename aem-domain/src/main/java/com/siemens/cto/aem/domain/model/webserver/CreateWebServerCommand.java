@@ -7,11 +7,11 @@ import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.rule.GroupIdRule;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.rule.JvmNameRule;
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
+import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
+import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 
 public class CreateWebServerCommand implements Serializable, Command {
 
@@ -49,12 +49,9 @@ public class CreateWebServerCommand implements Serializable, Command {
 
 	public void validateCommand() {
         new MultipleRuleCommand(new JvmNameRule(name),
-                new HostNameRule(host),
-                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT )).validateCommand();
-        
-        for(Identifier<Group> gid : groupIds) {
-            new GroupIdRule(gid).validate();            
-        }
+                new JvmHostNameRule(host),
+                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT ),
+                new GroupIdsRule(groupIds)).validateCommand();
 	}
 
     @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
@@ -119,7 +116,7 @@ public class CreateWebServerCommand implements Serializable, Command {
         return "CreateWebServerCommand {groupIds=" + groupIds + ", host=" + host + ", name=" + name + ", port=" + port
                 + "}";
     }
-	
-    
+
+
 
 }

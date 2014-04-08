@@ -12,6 +12,7 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -43,7 +44,7 @@ public class TestJpaConfiguration {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
-        factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
+        factory.setPersistenceXmlLocation("classpath:META-INF/test-persistence.xml");
         factory.setDataSource(getDataSource());
         factory.setJpaProperties(getJpaProperties());
 
@@ -59,5 +60,12 @@ public class TestJpaConfiguration {
     public PlatformTransactionManager getTransactionManager() {
         final PlatformTransactionManager manager = new JpaTransactionManager(getEntityManagerFactory());
         return manager;
+    }
+
+    @Bean
+    public SharedEntityManagerBean getSharedEntityManager() {
+        final SharedEntityManagerBean shared = new SharedEntityManagerBean();
+        shared.setEntityManagerFactory(getEntityManagerFactory());
+        return shared;
     }
 }

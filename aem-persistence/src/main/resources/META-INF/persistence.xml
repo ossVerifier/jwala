@@ -7,24 +7,25 @@
 
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-    <persistence-unit name="aem-unit" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="aem-unit" transaction-type="JTA">
         <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
 
-        <class>com.siemens.cto.aem.persistence.domain.AbstractEntity</class>
-        <class>com.siemens.cto.aem.persistence.domain.JpaGroup</class>
-        <class>com.siemens.cto.aem.persistence.domain.JpaJvm</class>
-        <class>com.siemens.cto.aem.persistence.domain.JpaWebServer</class>
-        <!-- class>com.siemens.cto.aem.persistence.domain.Environment</class> <class>com.siemens.cto.aem.persistence.domain.Event</class> <class>com.siemens.cto.aem.persistence.domain.Server</class>
-            <class>com.siemens.cto.aem.persistence.domain.ServerExecuteState</class -->
+        <class>com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroup</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvm</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
-            <property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />
-            <property name="openjpa.jdbc.SynchronizeMappings" value="false" />
-            <!--<property name="openjpa.Log" value="DefaultLevel=WARN, Tool=INFO" />-->
-            <property name="openjpa.RuntimeUnenhancedClasses" value="supported"/>
+            <!--<property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />-->
+            <property name="openjpa.Log" value="DefaultLevel=TRACE, Tool=TRACE, SQL=TRACE" />
+            <property name="openjpa.RuntimeUnenhancedClasses" value="unsupported"/>
             <!-- Use this to view SQL prepared statements -->
             <!--<property name="openjpa.Log" value="File=c:/temp/aem.db.trace.log, DefaultLevel=WARN, Tool=INFO, SQL=TRACE, RUNTIME=TRACE"/> -->
-            <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />
+            <!--<property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)"/>-->
+            <property name="openjpa.jdbc.DBDictionary" value="org.apache.openjpa.jdbc.sql.H2Dictionary"/>
+            <!--Keep below-->
+            <property name="openjpa.TransactionMode" value="managed"/>
+            <property name="openjpa.ManagedRuntime" value="jndi(TransactionManagerName=java:comp/UserTransaction)"/>
         </properties>
     </persistence-unit>
 </persistence>

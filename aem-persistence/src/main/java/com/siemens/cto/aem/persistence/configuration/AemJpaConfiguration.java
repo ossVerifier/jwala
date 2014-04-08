@@ -1,16 +1,15 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import java.util.Properties;
-
-import javax.naming.NamingException;
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver;
+import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 
 @Configuration
@@ -24,21 +23,15 @@ public class AemJpaConfiguration {
         return new OpenJpaVendorAdapter();
     }
 
-    @Bean(name = "openJpaProperties")
-    public Properties getJpaProperties() {
-        final Properties properties = new Properties();
-        properties.setProperty("openjpa.jdbc.DBDictionary", "org.apache.openjpa.jdbc.sql.H2Dictionary");
-        return properties;
-    }
-
     @Bean
     public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean() {
+
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
-        factory.setDataSource(dataSourceConfiguration.getAemDataSource());
-        factory.setJpaProperties(getJpaProperties());
+        factory.setJtaDataSource(dataSourceConfiguration.getSpringManagedAemDataSource());
+        factory.setLoadTimeWeaver(getLoadTimeWeaver());
 
         return factory;
     }
@@ -46,5 +39,20 @@ public class AemJpaConfiguration {
     @Bean
     public EntityManagerFactory getEntityManagerFactory() {
         return getEntityManagerFactoryBean().getObject();
+    }
+
+    @Bean
+    public LoadTimeWeaver getLoadTimeWeaver() {
+        return new InstrumentationLoadTimeWeaver();
+    }
+
+    @Bean
+    public SharedEntityManagerBean getSharedEntityManagerBean() {
+
+        final SharedEntityManagerBean shared = new SharedEntityManagerBean();
+
+        shared.setEntityManagerFactory(getEntityManagerFactory());
+
+        return shared;
     }
 }

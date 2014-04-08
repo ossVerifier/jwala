@@ -13,7 +13,7 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>
             com.siemens.cto.aem.web.configuration.application.ApacheEnterpriseManagerWebAppConfig,
-            com.siemens.cto.aem.service.configuration.application.ApacheEnterpriseManagerServiceAppConfigReference
+            com.siemens.cto.aem.service.configuration.application.AemServiceAppConfigReference
         </param-value>
     </context-param>
 

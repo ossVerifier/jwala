@@ -45,7 +45,7 @@ public class TestJpaConfiguration {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
-        factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
+        factory.setPersistenceXmlLocation("classpath:META-INF/test-persistence.xml");
         factory.setDataSource(getDataSource());
         factory.setJpaProperties(getJpaProperties());
 

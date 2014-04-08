@@ -24,7 +24,4 @@ public interface GroupDao {
                            final PaginationParameter somePagination);
 
     void removeGroup(final Identifier<Group> aGroupId);
-
-    Group getGroup(final String aGroupName) throws NotFoundException;
-
 }

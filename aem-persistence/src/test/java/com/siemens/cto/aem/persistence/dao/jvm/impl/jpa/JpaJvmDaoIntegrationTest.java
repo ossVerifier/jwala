@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
 @Transactional
+@Ignore
 public class JpaJvmDaoIntegrationTest extends AbstractJvmDaoIntegrationTest {
 
     @Configuration

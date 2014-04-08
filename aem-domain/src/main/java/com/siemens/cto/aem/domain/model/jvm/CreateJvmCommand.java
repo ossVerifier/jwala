@@ -5,30 +5,20 @@ import java.io.Serializable;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.rule.GroupIdRule;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.rule.JvmNameRule;
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
+import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
+import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 
 public class CreateJvmCommand implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 
-    private final Identifier<Group> group;
     private final String jvmName;
     private final String hostName;
 
-    public CreateJvmCommand(final Identifier<Group> theGroupId,
-                            final String theName,
+    public CreateJvmCommand(final String theName,
                             final String theHostName) {
-        group = theGroupId;
         jvmName = theName;
         hostName = theHostName;
-    }
-
-    public Identifier<Group> getGroup() {
-        return group;
     }
 
     public String getJvmName() {
@@ -42,8 +32,7 @@ public class CreateJvmCommand implements Serializable, Command {
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRuleCommand(new JvmNameRule(jvmName),
-                                new HostNameRule(hostName),
-                                new GroupIdRule(group)).validateCommand();
+                                new JvmHostNameRule(hostName)).validateCommand();
     }
 
     @Override
@@ -57,9 +46,6 @@ public class CreateJvmCommand implements Serializable, Command {
 
         final CreateJvmCommand that = (CreateJvmCommand) o;
 
-        if (group != null ? !group.equals(that.group) : that.group != null) {
-            return false;
-        }
         if (hostName != null ? !hostName.equals(that.hostName) : that.hostName != null) {
             return false;
         }
@@ -72,8 +58,7 @@ public class CreateJvmCommand implements Serializable, Command {
 
     @Override
     public int hashCode() {
-        int result = group != null ? group.hashCode() : 0;
-        result = 31 * result + (jvmName != null ? jvmName.hashCode() : 0);
+        int result = jvmName != null ? jvmName.hashCode() : 0;
         result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
         return result;
     }
@@ -81,13 +66,8 @@ public class CreateJvmCommand implements Serializable, Command {
     @Override
     public String toString() {
         return "CreateJvmCommand{" +
-               "group=" + group +
-               ", jvmName='" + jvmName + '\'' +
+               "jvmName='" + jvmName + '\'' +
                ", hostName='" + hostName + '\'' +
                '}';
-    }
-
-    protected boolean containsText(final String aValue) {
-        return (aValue != null) && (!"".equals(aValue.trim()));
     }
 }

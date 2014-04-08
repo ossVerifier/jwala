@@ -11,4 +11,16 @@
               xaProperties.password=""
               xaProperties.URL="jdbc:h2:tcp://localhost/~/aem"/>
 
+    <!--<Resource name="jdbc/toc-xa"-->
+              <!--auth="Container"-->
+              <!--type="org.h2.jdbcx.JdbcDataSource"-->
+              <!--factory="org.apache.tomcat.jdbc.naming.GenericNamingResourcesFactory"-->
+              <!--URL="jdbc:h2:tcp://localhost/~/aem"-->
+              <!--user="sa"-->
+              <!--password=""/>-->
+
+    <Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>
+
+    <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory"/>
+
 </Context>

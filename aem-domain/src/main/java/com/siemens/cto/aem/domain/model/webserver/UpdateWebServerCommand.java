@@ -8,12 +8,12 @@ import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.rule.GroupIdRule;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
-import com.siemens.cto.aem.domain.model.webserver.rule.WebServerIdRule;
-import com.siemens.cto.aem.domain.model.webserver.rule.WebServerNameRule;
+import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerIdRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
 public class UpdateWebServerCommand implements Serializable, Command {
 
@@ -26,7 +26,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
 	private final Integer newPort;
 
 	public UpdateWebServerCommand(final Identifier<WebServer> theId,
-			final Collection<Identifier<Group>> theNewGroupIds, 
+			final Collection<Identifier<Group>> theNewGroupIds,
 			final String theNewName, final String theNewHost, final Integer theNewPort) {
 		id = theId;
 		newHost = theNewHost;
@@ -58,15 +58,12 @@ public class UpdateWebServerCommand implements Serializable, Command {
     @Override
     public void validateCommand() throws BadRequestException {
         MultipleRuleCommand mrc = new MultipleRuleCommand(new WebServerNameRule(newName),
-                                new HostNameRule(newHost, AemFaultType.INVALID_WEBSERVER_HOST),
+                                new WebServerHostNameRule(newHost),
                                 new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
-                                new WebServerIdRule(id));
-        
+                                new WebServerIdRule(id),
+                                new GroupIdsRule(newGroupIds));
+
        mrc.validateCommand();
-       
-       for(Identifier<Group> groupId : newGroupIds) {
-           new GroupIdRule(groupId).validate();
-       }
     }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})

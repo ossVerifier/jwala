@@ -6,9 +6,9 @@ import java.util.List;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupBuilder;
-import com.siemens.cto.aem.persistence.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 
 public class JpaWebServerBuilder {
 
@@ -29,7 +29,7 @@ public class JpaWebServerBuilder {
         return new WebServer(
         				new Identifier<WebServer>(webServer.getId()),
         				groups,
-                        webServer.getName(), 
+                        webServer.getName(),
                         webServer.getHost(),
                         webServer.getPort());
     }

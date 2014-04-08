@@ -2,8 +2,10 @@ package com.siemens.cto.aem.service.group;
 
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -26,5 +28,9 @@ public interface GroupService {
 
     void removeGroup(final Identifier<Group> aGroupId);
 
-    Group getGroup(final String aGroupName);
+    Group addJvmToGroup(final AddJvmToGroupCommand aCommand,
+                        final User anAddingUser);
+
+    Group removeJvmFromGroup(final RemoveJvmFromGroupCommand aCommand,
+                             final User aRemovingUser);
 }
