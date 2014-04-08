@@ -46,9 +46,10 @@ ol.tabs-default > div > li.current > a {
     border: #C0C0C0 solid 1px;
     background: #E5E5E5;
  	width: 100%;
-	height: 542px;
+	/* height: 542px;*/
 	clear: left;
 	position: relative;
+	min-height: 542px;
 }
 
 /** Sub 2nd level tab style **/
@@ -104,7 +105,8 @@ ol.tabs-default-level-1 > div > li.current > a {
 
     background: #E5E5E5;
  	width: 100%;
-	height: 500px;
+	/* height: 500px; */
 	clear: left;
 	position: relative;
+	min-height: 500px;
 }
