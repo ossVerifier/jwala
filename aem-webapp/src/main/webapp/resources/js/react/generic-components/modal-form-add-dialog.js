@@ -8,10 +8,7 @@
  *
  */
 var ModalFormAddDialog = React.createClass({
-    getInitialState: function() {
-        validator = null;
-        submissionInProgress = false;
-    },
+    submissionInProgress: false,
     render: function() {
         if (this.props.show) {
             return React.DOM.div(null, this.props.form)
@@ -59,30 +56,25 @@ var ModalFormAddDialog = React.createClass({
         $(formId).one("submit", function(e) {
             if (submissionInProgress === false) {
                 submissionInProgress = true;
-                var postData = serializedFormToJsonNoId($(formId).serializeArray());
-                var formURL = $(formId).attr("action");
-                $.ajax({url : formURL,
-                        type: "POST",
-                        data: postData,
-                        contentType: "application/json",
-                        dataType: "json",
-                        success:function(data, textStatus, jqXHR) {
-                            submissionInProgress = false;
-                            for (var i = 0; i < callbacks.length; i++) {
-                                callbacks[i]();
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            submissionInProgress = false;
-                            var msg = jqXHR.responseText;
-                            var msgStr = "";
-                            if (msg !== undefined) {
-                                var jsonObj = JSON.parse(jqXHR.responseText);
-                                msgStr = jsonObj.message;
-                            }
-                            $.errorAlert(errorThrown + ": " + msgStr, "Error");
+
+                var postData = $(formId).serializeArray();
+
+                // NOTE: This operation is JVM specific because the modal-form-add-dialog
+                // will actually be deprecated. It is only used by JVM CRUD.
+                // All other CRUDs should use modal-form-dialog.
+                ServiceFactory.getJvmService().insertNewJvm(postData).then(
+                    function(){
+                        submissionInProgress = false;
+                        for (var i = 0; i < callbacks.length; i++) {
+                            callbacks[i]();
                         }
-                });
+                    },
+                    function(response) {
+                        submissionInProgress = false;
+                        $.errorAlert(JSON.parse(response.responseText).applicationResponseContent, "Error");
+                    }
+                );
+
             }
             e.preventDefault(); // stop the default action
         });
@@ -99,28 +91,3 @@ var ModalFormAddDialog = React.createClass({
         $(theDialog).dialog("destroy");
     }
 });
-
-/**
- * Form data converted to a serialized array will have a constant name-value pair i.e.
- * [{name:value}...] therefore using JSON stringify on it will not produce
- * the desired JSON format thus the need for the function serializedFormToJson
- * to correctly build the JSON data.
- *
- * Example of form data converted to a serialized array then "stringified"
- *
- * [{"name":"jvmName","value":"default-jvm-name"},{"name":"hostName","value":"default-host-name"}]
- *
- * NOTE: This is not what we want! It should be like this:
- *
- * [{"jvmName":"default-jvm-name"},{"hostName":"default-host-name"}]
- *
- */
-var serializedFormToJsonNoId = function(serializedArray) {
-    var json = {};
-    $.each(serializedArray, function() {
-        if (this.name !== "id") {
-            json[this.name] = this.value;
-        }
-    });
-    return JSON.stringify(json);
-}

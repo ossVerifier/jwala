@@ -1,37 +1,38 @@
-var /*healthService*/jvmService = {
-	getHealth : function() {
-		return serviceFoundation.get('services/rest/v1/health', 'json');
-	},
-	getDefaultHealth : function(unknownText, unknownSymbol) {
-		return {
-			message : {
-				messageText : unknownText,
-				messageID : unknownSymbol
-			},
-			machineInfo : {
-				upTime : {
-					timeInMinutes : unknownSymbol
-				},
-				jvmInstanceName : unknownText,
-				jvmPid : unknownSymbol,
-				machineName : unknownText,
-				httpListenPort : unknownSymbol
-			},
-			asOfDate : unknownText,
-			timings : {
-				serverTime : {
-					unit : unknownText,
-					elapsedTime : unknownSymbol
-				},
-				dbTime : {
-					unit : unknownText,
-					elapsedTime : unknownSymbol
-				},
-				jmsTime : {
-					unit : unknownText,
-					elapsedTime : unknownSymbol
-				}
-			}
-		}
-	}
+var jvmService = {
+    serializedJvmFormToJson: function(serializedArray, forUpdate) {
+        var json = {};
+        var groupIdArray = [];
+        $.each(serializedArray, function() {
+
+            var excludeProp = false;
+            if (forUpdate !== true && this.name === "id") {
+                excludeProp = true;
+            }
+
+            if (excludeProp !== true) {
+                if (this.name.indexOf("groupSelector[]") > -1) {
+                    var id = {};
+                    id["id"] = this.value;
+                    groupIdArray.push(id);
+                } else {
+                    json[this.name] = this.value;
+                }
+            }
+
+        });
+        json["groupInfo"] = groupIdArray;
+        return JSON.stringify(json);
+    },
+    insertNewJvm: function(jvm) {
+        jvm = this.serializedJvmFormToJson(jvm, false);
+        return serviceFoundation.post("v1.0/jvms",
+                                      "json",
+                                      jvm);
+    },
+    updateJvm: function(jvm) {
+        jvm = this.serializedJvmFormToJson(jvm, true);
+        return serviceFoundation.put("v1.0/jvms/",
+                                     "json",
+                                     jvm);
+    }
 };

@@ -15,12 +15,12 @@ $(document).ready(function() {
         ignore: ":hidden",
 
         rules: {
-            "groupSelector": {
+            "groupSelector[]": {
                 required: true
             }
         },
         messages: {
-            "groupSelector": {
+            "groupSelector[]": {
                 required: "Please select at least 1 group"
             }
         }
@@ -40,7 +40,11 @@ $(document).ready(function() {
         $.each(data.applicationResponseContent, function(i, obj) {
             if (objFormIdMap[i] !== undefined) {
                 if (i !== "group") {
-                    formJson[objFormIdMap[i]] = obj;
+                    if (i === "id") {
+                        formJson[objFormIdMap[i]] = obj.id;
+                    } else {
+                        formJson[objFormIdMap[i]] = obj;
+                    }
                 } else {
                     formJson[objFormIdMap[i]] = obj.name;
                 }
@@ -67,7 +71,8 @@ $(document).ready(function() {
 
     var jvmAddModalDialog = ModalFormAddDialog({formId:"jvmAddEditForm",
                                                 title:"Add JVM",
-                                                validator:validator});
+                                                validator:validator
+                                                });
 
     React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog, view:jvmDataGrid}),
         document.getElementById("addJvmBtn"));
@@ -87,7 +92,7 @@ $(document).ready(function() {
             </tr>
             <tr>
                 <td>
-                    <label for="jvmNameId" class="error" generated="true"></label>
+                    <label for="jvmNameId" class="error"></label>
                 </td>
             </tr>
             <tr>
@@ -98,7 +103,7 @@ $(document).ready(function() {
             </tr>
             <tr>
                 <td>
-                    <label for="hostNameId" class="error" generated="true"></label>
+                    <label for="hostNameId" class="error"></label>
                 </td>
             </tr>
             <tr>
@@ -111,7 +116,7 @@ $(document).ready(function() {
             </tr>
             <tr>
                 <td>
-                    <label for="groupSelector" class="error" generated="true"></label>
+                    <label for="groupSelector[]" class="error"></label>
                 </td>
             </tr>
             <tr>
@@ -121,9 +126,10 @@ $(document).ready(function() {
                         groupService.getGroups().then(
                             function(response){
                                 var data = response.applicationResponseContent;
-                                React.renderComponent(DataMultiSelectBox({name:"groupSelector",
+                                React.renderComponent(DataMultiSelectBox({name:"groupSelector[]",
                                                                           data:data,
-                                                                          key:"id.id",
+                                                                          key:"id",
+                                                                          keyIsIdObject:true,
                                                                           val:"name",
                                                                           className:"data-multi-select-box"}),
                                                                           document.getElementById("groupCombobox"));
