@@ -4,6 +4,10 @@ ext {
     localVersions = [jstl : "1.2"]
 }
 
+configurations {
+    all*.exclude group: 'org.apache.geronimo.specs'
+}
+
 dependencies {
 
     compile group: "org.springframework", name: "spring-webmvc", version: "$project.versions.spring"
