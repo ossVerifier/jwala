@@ -10,49 +10,49 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
-import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
 public class CreateWebServerCommand implements Serializable, Command {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final Collection<Identifier<Group> > groupIds;
-	private final String host;
-	private final String name;
-	private final Integer port;
+    private final String host;
+    private final String name;
+    private final Integer port;
 
-	public CreateWebServerCommand(
-	        final Collection<Identifier<Group> > theGroupIds,
-			final String theName, final String theHost, final Integer thePort) {
-		host = theHost;
-		port = thePort;
-		name = theName;
-		groupIds = theGroupIds;
-	}
+    public CreateWebServerCommand(
+            final Collection<Identifier<Group> > theGroupIds,
+            final String theName, final String theHost, final Integer thePort) {
+        host = theHost;
+        port = thePort;
+        name = theName;
+        groupIds = theGroupIds;
+    }
 
-	public Collection<Identifier<Group>> getGroups() {
-		return groupIds;
-	}
+    public Collection<Identifier<Group>> getGroups() {
+        return groupIds;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public Integer getPort() {
-		return port;
-	}
+    public Integer getPort() {
+        return port;
+    }
 
-	public void validateCommand() {
-        new MultipleRuleCommand(new JvmNameRule(name),
-                new JvmHostNameRule(host),
-                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT ),
-                new GroupIdsRule(groupIds)).validateCommand();
-	}
+    public void validateCommand() {
+        new MultipleRuleCommand(new WebServerNameRule(name),
+                                new WebServerHostNameRule(host),
+                                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
+                                new GroupIdsRule(groupIds)).validateCommand();
+    }
 
     @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
