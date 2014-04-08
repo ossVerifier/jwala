@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.jackson.JsonNode;
@@ -10,7 +9,6 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -18,6 +16,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
+import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonCreateWebServer.JsonCreateWebServerDeserializer.class)
 public class JsonCreateWebServer {
@@ -77,7 +76,7 @@ public class JsonCreateWebServer {
         }
     }
 
-    static class JsonCreateWebServerDeserializer extends JsonDeserializer<JsonCreateWebServer> {
+    static class JsonCreateWebServerDeserializer extends AbstractJsonDeserializer<JsonCreateWebServer> {
 
         public JsonCreateWebServerDeserializer() {
         }
@@ -95,18 +94,13 @@ public class JsonCreateWebServer {
                                      node.get("portNumber").getValueAsText()
                                      );
 
-            final JsonNode groupNode = node.get("groupIds");
-            if(groupNode != null) {
-                Iterator<JsonNode> groupIt = groupNode.getElements();
-                while(groupIt.hasNext()) {
-                    JsonNode groupEntry = groupIt.next();
-                    jcws.addGroupId(groupEntry.get("groupId").getValueAsText());
-                }
-            } else if(node.get("groupId") != null) {
-                jcws.addGroupId(node.get("groupId").getValueAsText());
+            for(String aGroupId : deserializeGroupIdentifiers(node)) {
+                jcws.addGroupId(aGroupId);
             }
+            
             return jcws;
         }
+
     }
 
 	public Integer getPortNumber() {
