@@ -1,4 +1,4 @@
-var jvmService = {
+    var jvmService = {
     serializedJvmFormToJson: function(serializedArray, forUpdate) {
         var json = {};
         var groupIdArray = [];
@@ -12,15 +12,16 @@ var jvmService = {
             if (excludeProp !== true) {
                 if (this.name.indexOf("groupSelector[]") > -1) {
                     var id = {};
-                    id["id"] = this.value;
+                    id["groupId"] = this.value;
                     groupIdArray.push(id);
+                    // groupIdArray.push(this.value);
                 } else {
                     json[this.name] = this.value;
                 }
             }
 
         });
-        json["groupInfo"] = groupIdArray;
+        json["groupIds"] = groupIdArray;
         return JSON.stringify(json);
     },
     insertNewJvm: function(jvm) {
