@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -31,6 +33,10 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     private Integer port;
 
     @ManyToMany
+    @JoinTable(name = "WEBSERVER_GRP",
+               joinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
+               inverseJoinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
+               uniqueConstraints = @UniqueConstraint(columnNames = {"WEBSERVER_ID", "GROUP_ID"}))
     private List<JpaGroup> groups = new ArrayList<>();
 
 	public Long getId() {
