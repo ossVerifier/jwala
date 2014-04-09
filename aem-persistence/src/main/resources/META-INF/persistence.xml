@@ -16,6 +16,11 @@
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
+            <!-- required to generate foreign key constraints
+            <property name="openjpa.jdbc.MappingDefaults" value="ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict"/>
+            <property name="openjpa.jdbc.MappingDefaults" value="jpa"/>
+             -->
+            <property name="openjpa.jdbc.MappingDefaults" value="jpa(ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict,IndexLogicalForeignKeys=true)"/>
             <!--<property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />-->
             <property name="openjpa.Log" value="DefaultLevel=TRACE, Tool=TRACE, SQL=TRACE" />
             <property name="openjpa.RuntimeUnenhancedClasses" value="unsupported"/>

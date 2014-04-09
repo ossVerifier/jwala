@@ -49,3 +49,41 @@ publishing {
         }
     }
 }
+
+Map<String, String> pm = new HashMap<String, String>()
+pm.put('openjpa.ConnectionDriverName', 'org.h2.Driver')
+pm.put('openjpa.ConnectionURL', 'jdbc:h2:tcp://localhost/~/test')
+pm.put('openjpa.ConnectionUserName', 'sa')
+pm.put('openjpa.ConnectionPassword', '')
+pm.put('org.apache.openjpa.jdbc.sql.DBDictionary','org.apache.openjpa.jdbc.sql.H2Dictionary')
+
+task createDdl (type:JavaExec) {
+    main = 'org.apache.openjpa.jdbc.meta.MappingTool'
+    classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
+    systemProperties = pm
+    args = ["-action","buildSchema",
+            "-schemaAction","build",
+            "-sql","create.sql",
+            "-pk","true",
+            "-fk","true",
+            "-ix","true",
+            "-sq","true",
+            "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
+}
+
+task dropDdl (type:JavaExec) {
+    main = 'org.apache.openjpa.jdbc.meta.MappingTool'
+    classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
+    systemProperties = pm
+    args = ["-action","buildSchema",
+            "-schemaAction","retain,drop",
+            "-sql","drop.sql",
+            "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
+}
+
+task mappingToolHelp (type:JavaExec) {
+    main = 'org.apache.openjpa.jdbc.meta.MappingTool'
+    classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
+    systemProperties = pm
+    args = ["-help"]
+}
