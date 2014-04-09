@@ -25,10 +25,18 @@ var Area = React.createClass({
             return React.DOM.div({className:theTheme});
         }
     },
-    componentDidMount: function() {
+    // This is going to be deprecated once JVM config has been refactored
+    loadTemplate: function() {
         if (this.props.template !== undefined) {
-            // This is going to be deprecated once JVM config has been refactored
             $(this.getDOMNode()).load(this.props.template);
         }
+    },
+    componentDidMount: function() {
+        // This is going to be deprecated once JVM config has been refactored
+        this.loadTemplate();
+    },
+    componentDidUpdate: function() {
+        // This is going to be deprecated once JVM config has been refactored
+        this.loadTemplate();
     }
 });
