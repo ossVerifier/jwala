@@ -58,7 +58,7 @@ public class JvmServiceImpl implements JvmService {
                                        aCreatingUser);
         }
 
-        return newJvm;
+        return getJvm(newJvm.getId());
     }
 
     @Override

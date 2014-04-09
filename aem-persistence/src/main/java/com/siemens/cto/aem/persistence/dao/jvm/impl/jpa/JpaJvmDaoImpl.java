@@ -23,13 +23,17 @@ import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaJvmDaoImpl implements JvmDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
+    private final JpaQueryPaginator paginator;
+
     public JpaJvmDaoImpl() {
+        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -92,10 +96,8 @@ public class JpaJvmDaoImpl implements JvmDao {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
 
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }
@@ -107,10 +109,8 @@ public class JpaJvmDaoImpl implements JvmDao {
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
 
         query.setParameter("jvmName", "%" + aName + "%");
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }
@@ -122,10 +122,8 @@ public class JpaJvmDaoImpl implements JvmDao {
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j JOIN j.groups g WHERE g.id = :groupId ORDER BY j.name");
 
         query.setParameter("groupId", aGroup.getId());
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }
@@ -195,9 +193,9 @@ public class JpaJvmDaoImpl implements JvmDao {
         final List<Jvm> jvms = new ArrayList<>();
 
         for (final Object jpaJvm : someJpaJvms) {
-            
+
             assert jpaJvm instanceof JpaJvm;
-            
+
             jvms.add(jvmFrom((JpaJvm)jpaJvm));
         }
 

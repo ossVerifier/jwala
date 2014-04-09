@@ -23,12 +23,19 @@ import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 
 public class GroupCrudServiceImpl implements GroupCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
+
+    private final JpaQueryPaginator paginator;
+
+    public GroupCrudServiceImpl() {
+        paginator = new JpaQueryPaginator();
+    }
 
     @Override
     public JpaGroup createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
@@ -101,8 +108,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
         final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
 
-        query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        paginator.paginate(query,
+                           somePagination);
 
         return query.getResultList();
     }
@@ -115,8 +122,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
         query.setParameter("groupName", "?" + aName + "?");
 
-        query.setFirstResult(somePagination.getOffset());
-        query.setMaxResults(somePagination.getLimit());
+        paginator.paginate(query,
+                           somePagination);
 
         return query.getResultList();
     }

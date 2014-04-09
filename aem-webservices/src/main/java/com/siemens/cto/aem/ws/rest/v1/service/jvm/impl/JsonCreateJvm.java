@@ -10,7 +10,6 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -19,6 +18,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
+import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
 public class JsonCreateJvm {
@@ -102,40 +102,24 @@ public class JsonCreateJvm {
         }
     }
 
-    static class JsonCreateJvmDeserializer extends JsonDeserializer<JsonCreateJvm> {
+    static class JsonCreateJvmDeserializer extends AbstractJsonDeserializer<JsonCreateJvm> {
 
         public JsonCreateJvmDeserializer() {
         }
 
         @Override
         public JsonCreateJvm deserialize(final JsonParser jp,
-                                           final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                                         final DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
             final ObjectCodec obj = jp.getCodec();
-            final JsonNode node = obj.readTree(jp);
+            final JsonNode rootNode = obj.readTree(jp);
+            final JsonNode jvmNode = rootNode.get("jvmName");
+            final JsonNode hostNameNode = rootNode.get("hostName");
+            final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
 
-            final JsonNode j = node.get("jvmName");
-            final JsonNode h = node.get("hostName");
-            final JsonNode g = node.get("groups");
-
-            final Set<String> rawGroupIds = getGroupIds(g);
-
-            return new JsonCreateJvm(node.get("jvmName").getTextValue(),
-                                     node.get("hostName").getTextValue(),
+            return new JsonCreateJvm(jvmNode.getTextValue(),
+                                     hostNameNode.getTextValue(),
                                      rawGroupIds);
-        }
-
-        protected Set<String> getGroupIds(final JsonNode aGroupsNode) {
-
-            final Set<String> groups = new HashSet<>();
-
-            if (aGroupsNode != null) {
-                for (final JsonNode node : aGroupsNode) {
-                    groups.add(node.getValueAsText());
-                }
-            }
-
-            return groups;
         }
     }
 }

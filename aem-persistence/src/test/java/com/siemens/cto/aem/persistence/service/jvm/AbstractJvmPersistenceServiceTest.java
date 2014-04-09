@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -62,6 +63,18 @@ public abstract class AbstractJvmPersistenceServiceTest {
                      jvm.getHostName());
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testCreateJvmWithDuplicateName() {
+
+        final Jvm existingJvm = jvmHelper.createJvm("A Jvm Name",
+                                                    "A Host Name",
+                                                    userId);
+
+        final Jvm duplicateNameJvm = jvmHelper.createJvm(existingJvm.getJvmName(),
+                                                         "A different Host Name",
+                                                         userId);
+    }
+
     @Test
     public void testUpdateJvm() {
 
@@ -83,6 +96,23 @@ public abstract class AbstractJvmPersistenceServiceTest {
                      updatedJvm.getJvmName());
         assertEquals(newHostName,
                      updatedJvm.getHostName());
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testUpdateJvmWithDuplicateName() {
+
+        final Jvm jvm = jvmHelper.createJvm("A Jvm Name",
+                                            "A Host Name",
+                                            userId);
+
+        final Jvm secondJvm = jvmHelper.createJvm("A different Jvm Name",
+                                                  "A different Host Name",
+                                                  userId);
+
+        jvmHelper.updateJvm(secondJvm.getId(),
+                            jvm.getJvmName(),
+                            "Some different Host Name",
+                            userId);
     }
 
     @Test(expected = NotFoundException.class)

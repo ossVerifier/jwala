@@ -1,28 +1,29 @@
 package com.siemens.cto.aem.ws.rest.v1.json;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonDeserializer;
 
 public abstract class AbstractJsonDeserializer<U> extends JsonDeserializer<U> {
 
-    protected List<String> deserializeGroupIdentifiers(JsonNode node) {
-        List<String> results = new ArrayList<String>();
+    private static final String GROUP_ID = "groupId";
+    private static final String GROUP_IDS = "groupIds";
 
-        final JsonNode groupNode = node.get("groupIds");
-        if(groupNode != null) {
-            Iterator<JsonNode> groupIt = groupNode.getElements();
-            while(groupIt.hasNext()) {
-                JsonNode groupEntry = groupIt.next();
-                results.add(groupEntry.get("groupId").getValueAsText());
+    protected Set<String> deserializeGroupIdentifiers(final JsonNode node) {
+
+        final Set<String> results = new HashSet<>();
+        final JsonNode groupNode = node.get(GROUP_IDS);
+
+        if (groupNode != null) {
+            for (final JsonNode group : groupNode) {
+                results.add(group.get(GROUP_ID).getValueAsText());
             }
-        } else if(node.get("groupId") != null) {
-            results.add(node.get("groupId").getValueAsText());
+        } else if (node.get(GROUP_ID) != null) {
+            results.add(node.get(GROUP_ID).getValueAsText());
         }
-        
+
         return results;
     }
 

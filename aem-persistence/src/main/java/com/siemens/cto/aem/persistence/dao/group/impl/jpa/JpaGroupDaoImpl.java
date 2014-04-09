@@ -26,11 +26,18 @@ import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaGroupDaoImpl implements GroupDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
+
+    private final JpaQueryPaginator paginator;
+
+    public JpaGroupDaoImpl() {
+        paginator = new JpaQueryPaginator();
+    }
 
     @Override
     public Group createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
@@ -96,10 +103,8 @@ public class JpaGroupDaoImpl implements GroupDao {
 
         final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
 
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return groupsFrom(query.getResultList());
     }
@@ -112,10 +117,8 @@ public class JpaGroupDaoImpl implements GroupDao {
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
         query.setParameter("groupName", "?" + aName + "?");
 
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return groupsFrom(query.getResultList());
     }
@@ -125,11 +128,6 @@ public class JpaGroupDaoImpl implements GroupDao {
 
         final JpaGroup group = getJpaGroup(aGroupId);
         entityManager.remove(group);
-    }
-
-//    @Override TODO Corey Fix
-    public Group getGroup(String aGroupName) throws NotFoundException {
-        return groupFrom(getJpaGroup(aGroupName));
     }
 
     protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups) {
@@ -151,19 +149,6 @@ public class JpaGroupDaoImpl implements GroupDao {
         if (jpaGroup == null) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
                                         "Group not found: " + aGroup);
-        }
-
-        return jpaGroup;
-    }
-
-    protected JpaGroup getJpaGroup(final String aGroupName) {
-
-        final JpaGroup jpaGroup = entityManager.find(JpaGroup.class,
-                aGroupName);
-
-        if (jpaGroup == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                    "Group not found: " + aGroupName);
         }
 
         return jpaGroup;

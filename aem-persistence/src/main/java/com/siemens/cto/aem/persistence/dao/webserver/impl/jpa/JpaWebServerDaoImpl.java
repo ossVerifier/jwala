@@ -28,11 +28,18 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
+
+    private final JpaQueryPaginator paginator;
+
+    public JpaWebServerDaoImpl() {
+        paginator = new JpaQueryPaginator();
+    }
 
     @Override
     public WebServer createWebServer(final Event<CreateWebServerCommand> aWebServer) {
@@ -124,10 +131,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
         final TypedQuery<JpaWebServer> query = entityManager.createQuery(criteria);
 
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return webServersFrom(query.getResultList());
     }
@@ -140,10 +145,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         final Query query = entityManager.createQuery("SELECT g FROM JpaWebServer g WHERE g.name LIKE :WebServerName");
         query.setParameter("WebServerName", "?" + aName + "?");
 
-        query.setFirstResult(somePagination.getOffset());
-        if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-            query.setMaxResults(somePagination.getLimit());
-        }
+        paginator.paginate(query,
+                           somePagination);
 
         return webServersFrom(query.getResultList());
     }
@@ -220,17 +223,15 @@ public class JpaWebServerDaoImpl implements WebServerDao {
   }
 
   @SuppressWarnings("unchecked")
-@Override
+  @Override
   public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup,
                                        final PaginationParameter somePagination) {
 
       final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId ORDER BY j.name");
 
       query.setParameter("groupId", aGroup.getId());
-      query.setFirstResult(somePagination.getOffset());
-      if(somePagination.getLimit() != PaginationParameter.NO_LIMIT) {
-          query.setMaxResults(somePagination.getLimit());
-      }
+      paginator.paginate(query,
+                         somePagination);
 
       return webserversFrom(query.getResultList());
   }

@@ -12,11 +12,11 @@ public class PaginationParameter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final Integer DEFAULT_BEGINNING_OFFSET = 0;
-    public static final Integer DEFAULT_NUMBER_TO_RETRIEVE = 10;
-    
-    public static final Integer BEGINNING = 0;
-    public static final Integer NO_LIMIT = 0;
+    private static final Integer DEFAULT_BEGINNING_OFFSET = 0;
+    private static final Integer DEFAULT_NUMBER_TO_RETRIEVE = 10;
+
+    private static final Integer BEGINNING = 0;
+    private static final Integer NO_LIMIT = 0;
 
     private final Integer offset;
     private final Integer limit;
@@ -41,6 +41,10 @@ public class PaginationParameter implements Serializable {
 
     public Integer getLimit() {
         return limit;
+    }
+
+    public boolean isLimited() {
+        return !NO_LIMIT.equals(limit);
     }
 
     @Override
