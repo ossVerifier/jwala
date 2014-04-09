@@ -125,7 +125,7 @@ $(document).ready(function() {
                 </td>
             </tr>
             <tr>
-                <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100" required></td>
+                <td><input id="jvmNameId" name="jvmName" type="text" maxlength="100" required class="textBox"></td>
             </tr>
             <tr>
                 <td>Host</td>
@@ -136,7 +136,7 @@ $(document).ready(function() {
                 </td>
             </tr>
             <tr>
-                <td><input id="hostNameId" name="hostName" type="text" maxlength="50" required/></td>
+                <td><input id="hostNameId" name="hostName" type="text" maxlength="50" required class="textBox"/></td>
             </tr>
             <tr>
                 <td>
@@ -158,7 +158,7 @@ $(document).ready(function() {
                                 React.renderComponent(DataMultiSelectBox({name:"groupSelector[]",
                                                                           data:data,
                                                                           key:"id",
-                                                                          keyIsIdObject:true,
+                                                                          keyPropertyName: "id",
                                                                           val:"name",
                                                                           className:"data-multi-select-box"}),
                                                                           document.getElementById("groupCombobox"));
