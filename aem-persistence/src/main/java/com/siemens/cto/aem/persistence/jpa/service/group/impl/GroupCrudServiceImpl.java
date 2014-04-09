@@ -120,7 +120,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
                                      final PaginationParameter somePagination) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
-        query.setParameter("groupName", "?" + aName + "?");
+        query.setParameter("groupName", "%" + aName + "%");
 
         paginator.paginate(query,
                            somePagination);

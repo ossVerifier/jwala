@@ -16,23 +16,6 @@ public class ApplicationResponse {
         applicationResponseContent = theContent;
     }
 
-    @Deprecated
-    public ApplicationResponse(final String msgCode,
-                               final String message) {
-        this(new MessageResponseStatus() {
-                @Override
-                public String getMessageCode() {
-                    return msgCode;
-                }
-
-                @Override
-                public String getMessage() {
-                    return message;
-                }
-            },
-             null);
-    }
-
     public String getMsgCode() {
         return responseStatus.getMessageCode();
     }

@@ -8,23 +8,38 @@ import org.codehaus.jackson.map.JsonDeserializer;
 
 public abstract class AbstractJsonDeserializer<U> extends JsonDeserializer<U> {
 
-    private static final String GROUP_ID = "groupId";
-    private static final String GROUP_IDS = "groupIds";
+    protected Set<String> deserializeGroupIdentifiers(final JsonNode aNode) {
 
-    protected Set<String> deserializeGroupIdentifiers(final JsonNode node) {
+        return deserializeIdentifiers("groupIds",
+                                      "groupId",
+                                      aNode);
+    }
+
+    protected Set<String> deserializeJvmIdentifiers(final JsonNode aNode) {
+
+        return deserializeIdentifiers("jvmIds",
+                                      "jvmId",
+                                      aNode);
+    }
+
+    private Set<String> deserializeIdentifiers(final String aMultipleIdentifierKey,
+                                               final String aSingleIdentifierKey,
+                                               final JsonNode aRootNode) {
 
         final Set<String> results = new HashSet<>();
-        final JsonNode groupNode = node.get(GROUP_IDS);
+        final JsonNode multiNode = aRootNode.get(aMultipleIdentifierKey);
 
-        if (groupNode != null) {
-            for (final JsonNode group : groupNode) {
-                results.add(group.get(GROUP_ID).getValueAsText());
+        if (multiNode != null) {
+            for (final JsonNode node : multiNode) {
+                results.add(node.get(aSingleIdentifierKey).getValueAsText());
             }
-        } else if (node.get(GROUP_ID) != null) {
-            results.add(node.get(GROUP_ID).getValueAsText());
+        } else {
+            final JsonNode singleNode = aRootNode.get(aSingleIdentifierKey);
+            if ( singleNode != null) {
+                results.add(singleNode.getValueAsText());
+            }
         }
 
         return results;
     }
-
 }

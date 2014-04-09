@@ -13,6 +13,7 @@ public class Identifier<T> implements Serializable {
     }
 
     public Identifier(final Long id) {
+        //TODO Throw new IllegalArgumentException if null?
         this.id = id;
     }
 
@@ -49,7 +50,7 @@ public class Identifier<T> implements Serializable {
                "id=" + id +
                '}';
     }
-    
+
     /**
      * Helper method to return an identifier templated by a type
      */

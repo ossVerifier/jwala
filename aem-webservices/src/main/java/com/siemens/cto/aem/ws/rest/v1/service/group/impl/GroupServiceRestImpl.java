@@ -1,17 +1,22 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import java.util.List;
+
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
@@ -27,10 +32,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroups(final PaginationParamProvider paginationParamProvider) {
+    public Response getGroups(final PaginationParamProvider paginationParamProvider,
+                              final NameSearchParameterProvider aGroupNameSearch) {
         final PaginationParameter pagination = paginationParamProvider.getPaginationParameter();
-        logger.debug("Get Groups requested with pagination: {}", pagination);
-        return ResponseBuilder.ok(groupService.getGroups(pagination));
+        logger.debug("Get Groups requested with pagination: {} and search: {}", pagination, aGroupNameSearch.getName());
+
+        final List<Group> groups;
+        if (aGroupNameSearch.isNamePresent()) {
+            groups = groupService.findGroups(aGroupNameSearch.getName(),
+                                             pagination);
+        } else {
+            groups = groupService.getGroups(pagination);
+        }
+
+        return ResponseBuilder.ok(groups);
     }
 
     @Override
@@ -63,8 +78,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response addJvmsToGroup(final Identifier<Group> aGroupId,
+                                   final JsonJvms someJvmsToAdd) {
+        logger.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
+        final AddJvmsToGroupCommand command = someJvmsToAdd.toCommand(aGroupId);
+        return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
+                                                              User.getHardCodedUser()));
+    }
+
+    @Override
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        logger.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
+        return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupCommand(aGroupId,
+                                                                                                aJvmId),
+                                                                  User.getHardCodedUser()));
     }
 }

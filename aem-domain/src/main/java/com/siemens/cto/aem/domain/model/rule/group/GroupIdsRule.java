@@ -4,41 +4,23 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.Rule;
+import com.siemens.cto.aem.domain.model.rule.identifier.MultipleIdentifiersRule;
 
-public class GroupIdsRule implements Rule {
-
-    private final Set<Rule> groupIdRules;
+public class GroupIdsRule extends MultipleIdentifiersRule<Group> implements Rule {
 
     public GroupIdsRule(final Collection<Identifier<Group>> theGroupIds) {
         this(new HashSet<>(theGroupIds));
     }
 
     public GroupIdsRule(final Set<Identifier<Group>> theGroupIds) {
-        groupIdRules = new HashSet<>();
-        for (final Identifier<Group> groupId : theGroupIds) {
-            groupIdRules.add(new GroupIdRule(groupId));
-        }
+        super(theGroupIds);
     }
 
     @Override
-    public boolean isValid() {
-        for (final Rule rule : groupIdRules) {
-            if (!rule.isValid()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public void validate() throws BadRequestException {
-        for (final Rule rule : groupIdRules) {
-            rule.validate();
-        }
+    protected Rule createRule(final Identifier<Group> anId) {
+        return new GroupIdRule(anId);
     }
 }

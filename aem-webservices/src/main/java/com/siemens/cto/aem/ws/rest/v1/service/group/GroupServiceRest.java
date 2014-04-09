@@ -15,7 +15,9 @@ import javax.ws.rs.core.Response;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonJvms;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 
 @Path("/groups")
@@ -23,7 +25,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 public interface GroupServiceRest {
 
     @GET
-    Response getGroups(@BeanParam final PaginationParamProvider paginationParamProvider);
+    Response getGroups(@BeanParam final PaginationParamProvider paginationParamProvider,
+                       @BeanParam final NameSearchParameterProvider aGroupNameSearch);
 
     @GET
     @Path("/{groupId}")
@@ -40,6 +43,11 @@ public interface GroupServiceRest {
     @DELETE
     @Path("/{groupId}")
     Response removeGroup(@PathParam("groupId") final Identifier<Group> aGroupId);
+
+    @POST
+    @Path("/{groupId}/jvms")
+    Response addJvmsToGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
+                            final JsonJvms someJvmsToAdd);
 
     @DELETE
     @Path("/{groupId}/jvms/{jvmId}")

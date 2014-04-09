@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
@@ -88,6 +89,21 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
+    public Group addJvmsToGroup(final AddJvmsToGroupCommand aCommand,
+                                final User anAddingUser) {
+
+        aCommand.validateCommand();
+        for (final AddJvmToGroupCommand command : aCommand.toCommands()) {
+            addJvmToGroup(command,
+                          anAddingUser);
+        }
+
+        return getGroup(aCommand.getGroupId());
+    }
+
+    @Override
+    @Transactional
     public Group removeJvmFromGroup(final RemoveJvmFromGroupCommand aCommand,
                                     final User aRemovingUser) {
 

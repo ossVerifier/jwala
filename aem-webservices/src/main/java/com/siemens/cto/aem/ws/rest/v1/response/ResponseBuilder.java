@@ -24,20 +24,6 @@ public class ResponseBuilder {
                                                                                         aFaultCode.getMessage())).build();
     }
 
-    @Deprecated
-    public static Response created() {
-        return new ResponseBuilder().status(Response.Status.CREATED).build();
-    }
-
-    @Deprecated
-    public static Response notOk(final Response.Status aStatus,
-                                 final ApplicationResponseStatus aMessageCode,
-                                 final Exception aMessage) {
-        return new ResponseBuilder(aStatus).applicationResponse(new ApplicationResponse(aMessageCode.getCode(),
-                                                                                        aMessage.getMessage()
-        )).build();
-    }
-
     private ApplicationResponse applicationResponse;
     private Response.Status status;
 
