@@ -17,7 +17,7 @@ var DeleteItemWidget = React.createClass({
         if (cell !== undefined) {
             var i = dataTable.fnGetPosition(cell);
             var idx = dataTable.fnGetData(i);
-            dialogConfirm.show(idx.id);
+            dialogConfirm.show(idx.id.id);
         }
     }
 });
@@ -49,25 +49,29 @@ var DialogConfirm = React.createClass({
         });
     },
     deleteItem: function(id) {
+
+
         var dataGrid = this.props.dataGrid;
         var url = this.props.url;
         if (submissionInProgress === false) {
             submissionInProgress = true;
-            $.ajax({
-                type: "DELETE",
-                dataType: "json",
-                cache: false,
-                url: url + id,
-                success: function(data, textStatus, jqXHR){
+
+            ServiceFactory.getJvmService().deleteJvm(id).then(
+                function(){
                     submissionInProgress = false;
                     dataGrid.refresh();
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                function(response) {
                     submissionInProgress = false;
-                    $.errorAlert("Error deleting selected item! The item may not be in the database anymore.");
-                },
-            });
+                    dataGrid.refresh();
+                    if (response.status !== 200) {
+                        $.errorAlert("Error deleting selected item! The item may not be in the database anymore.");
+                    }
+                }
+            );
+
         }
+
     },
     destroy: function(obj) {
         $(obj).html("");

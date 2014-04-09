@@ -35,5 +35,8 @@
         return serviceFoundation.put("v1.0/jvms/",
                                      "json",
                                      jvm);
+    },
+    deleteJvm: function(id) {
+        return serviceFoundation.del("v1.0/jvms/" + id, "json");
     }
 };
