@@ -87,7 +87,8 @@ var ModalFormAddDialog = React.createClass({
     },
     destroy: function(theDialog) {
         this.props.validator.resetForm();
-        $(theDialog).find("input.textBox").val("");
+        $(theDialog).find("input[type=text]").val("");
+        $(theDialog).find("input[type=checkbox]").removeAttr("checked");
         $(theDialog).dialog("destroy");
     }
 });
