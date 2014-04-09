@@ -24,6 +24,7 @@ sonarRunner {
         property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
         property 'sonar.jdbc.username', 'sonar'
         property 'sonar.jdbc.password', 'sonar'
+        property 'sonar.dynamicAnalysis', 'reuseReports'
         properties ["sonar.projectKey"] = 'cto.tco.toc'
         properties ["sonar.projectName"] = 'tomcat operations center'
         properties ["sonar.projectVersion"] = '1.0.0'
@@ -116,4 +117,38 @@ subprojects {
         systemProperties['run.test.types'] = 'integration'
         systemProperties['spring.profiles.active'] = 'integration'
     }
+
+    task copyResult(type: Copy) {
+      from file("${project.buildDir.path}/jacoco/")
+      into file("${project.rootProject.buildDir.path}/jacoco/")
+      include "accum-${project.name}.exec"
+      rename  "accum-${project.name}.exec", "accum.exec"
+    }
+    
+    task mergeTestCodeCoverageResults(type: JacocoMerge) {
+      description = 'Merge test code coverage results from all java projects'
+      destinationFile = file("${project.buildDir.path}/jacoco/accum-${project.name}.exec")
+      def mergeFile = file("${project.rootProject.buildDir.path}/jacoco/accum.exec")
+      def testFile = file("${project.buildDir.path}/jacoco/test.exec")
+      onlyIf { 
+        testFile.exists()
+      }
+      executionData { 
+          if(mergeFile.exists()) return files(mergeFile, testFile);
+          else return files(testFile);
+      }
+      doLast {
+          copyResult.execute();
+      }      
+    }    
+    
+    test.finalizedBy mergeTestCodeCoverageResults
+    
+    sonarRunner { 
+      sonarProperties {
+        property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
+        property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
+      }      
+    }
+    
 }
