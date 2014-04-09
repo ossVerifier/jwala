@@ -49,7 +49,16 @@ var TocDataTable = React.createClass({
                 return capHtml;
               } else { return ""; }
             };
+          } else if (item.tocType === "array") {
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                    var str = "";
+                    for (var i in data) {
+                        str = str + (str === "" ? "" : ", ") + data[i][item.displayProperty];
+                    }
+                    return str;
+                }
           }
+
           aaSorting[itemIndex] = [itemIndex, 'asc'];
         });
         
