@@ -17,9 +17,5 @@ var groupService = {
 	},
 	getGroup: function(id) {
 	    return serviceFoundation.get("v1.0/groups/" + id);
-	},
-	getGroupByName: function(name) {
-        return serviceFoundation.get("v1.0/groups/name/" + name);
-    }
-
+	}
 }
