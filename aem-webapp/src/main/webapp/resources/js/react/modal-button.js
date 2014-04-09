@@ -6,10 +6,20 @@ var ModalButton = React.createClass({
     },
     handleClick: function() {
         var view = this.props.view;
-        this.props.modalDialog.show(function(){
-            if (view !== undefined) {
-                view.refresh();
-            }
-        });
+
+        var checklistOk = true;
+        if (this.props.checklistCallback !== undefined) {
+            checklistOk = this.props.checklistCallback();
+            console.log(checklistOk);
+        }
+
+        if (checklistOk) {
+            this.props.modalDialog.show(function(){
+                if (view !== undefined) {
+                    view.refresh();
+                }
+            });
+        }
+
     }
 });

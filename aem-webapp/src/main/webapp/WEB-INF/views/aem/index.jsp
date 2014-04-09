@@ -18,6 +18,10 @@
 
 <jsp:include page="/scripts?devMode=${devMode}"/>
 
+<!-- Non React Components -->
+<script src="public-resources/js/alert.js"></script>
+<script src="public-resources/js/error-alert.js"></script>
+
 </head>
 <body>
     <!-- Only the main display area component should render here.

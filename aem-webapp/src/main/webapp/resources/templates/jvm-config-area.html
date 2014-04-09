@@ -74,8 +74,34 @@ $(document).ready(function() {
                                                 validator:validator
                                                 });
 
-    React.renderComponent(ModalButton({label:"Add", modalDialog:jvmAddModalDialog, view:jvmDataGrid}),
-        document.getElementById("addJvmBtn"));
+    var groups = [];
+    // TODO: Define a REST service that retrieves the group count so that
+    // we don't have to retrieve the whole group info just to determine
+    // if there are groups defined in the system.
+    ServiceFactory.getGroupService().getGroups().then(
+
+        function(response){
+            groups = response.applicationResponseContent;
+        },
+        function(response) {
+            $.errorAlert(JSON.stringify(response));
+        }
+
+    );
+
+    var addJvmChecklistCallback = function() {
+        if (groups.length < 1) {
+            $.alert("There are no groups defined in the system. Please define one before adding a JVM.");
+            return false;
+        }
+        return true;
+    }
+
+    React.renderComponent(ModalButton({label:"Add",
+                                       modalDialog:jvmAddModalDialog,
+                                       view:jvmDataGrid,
+                                       checklistCallback:addJvmChecklistCallback}),
+                                      document.getElementById("addJvmBtn"));
 
     React.renderComponent(DeleteItemWidget({dataGrid:jvmDataGrid, url:"v1.0/jvms/"}),
                           document.getElementById("delJvmBtn"));
