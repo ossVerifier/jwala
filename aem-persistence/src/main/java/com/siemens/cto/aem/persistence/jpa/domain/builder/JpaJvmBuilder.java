@@ -38,11 +38,13 @@ public class JpaJvmBuilder {
         final Set<LiteGroup> groups = new HashSet<>();
         final JpaLiteGroupBuilder builder = new JpaLiteGroupBuilder();
 
-        for (final JpaGroup group : jvm.getGroups()) {
-            builder.setGroup(group);
-            groups.add(builder.build());
-        }
+        if (jvm.getGroups() != null) {
+            for (final JpaGroup group : jvm.getGroups()) {
+                builder.setGroup(group);
+                groups.add(builder.build());
+            }
 
+        }
         return groups;
     }
 }
