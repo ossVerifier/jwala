@@ -1,7 +1,11 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class Jvm implements Serializable {
@@ -11,13 +15,16 @@ public class Jvm implements Serializable {
     private final Identifier<Jvm> id;
     private final String jvmName;
     private final String hostName;
+    private final Set<LiteGroup> groups;
 
     public Jvm(final Identifier<Jvm> theId,
                final String theName,
-               final String theHostName) {
+               final String theHostName,
+               final Set<LiteGroup> theGroups) {
         id = theId;
         jvmName = theName;
         hostName = theHostName;
+        groups = Collections.unmodifiableSet(new HashSet<LiteGroup>(theGroups));
     }
 
     public Identifier<Jvm> getId() {
@@ -32,6 +39,10 @@ public class Jvm implements Serializable {
         return hostName;
     }
 
+    public Set<LiteGroup> getGroups() {
+        return groups;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -43,6 +54,9 @@ public class Jvm implements Serializable {
 
         final Jvm jvm = (Jvm) o;
 
+        if (groups != null ? !groups.equals(jvm.groups) : jvm.groups != null) {
+            return false;
+        }
         if (hostName != null ? !hostName.equals(jvm.hostName) : jvm.hostName != null) {
             return false;
         }
@@ -61,6 +75,7 @@ public class Jvm implements Serializable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (jvmName != null ? jvmName.hashCode() : 0);
         result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
+        result = 31 * result + (groups != null ? groups.hashCode() : 0);
         return result;
     }
 
@@ -70,6 +85,7 @@ public class Jvm implements Serializable {
                "id=" + id +
                ", jvmName='" + jvmName + '\'' +
                ", hostName='" + hostName + '\'' +
+               ", groups=" + groups +
                '}';
     }
 }

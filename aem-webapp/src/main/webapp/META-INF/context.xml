@@ -19,7 +19,7 @@
               <!--user="sa"-->
               <!--password=""/>-->
 
-    <Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>
+    <!--<Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>-->
 
     <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory"/>
 
