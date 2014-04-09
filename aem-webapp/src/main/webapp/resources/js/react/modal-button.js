@@ -10,7 +10,6 @@ var ModalButton = React.createClass({
         var checklistOk = true;
         if (this.props.checklistCallback !== undefined) {
             checklistOk = this.props.checklistCallback();
-            console.log(checklistOk);
         }
 
         if (checklistOk) {
