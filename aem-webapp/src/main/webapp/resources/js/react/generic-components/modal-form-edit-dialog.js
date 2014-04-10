@@ -40,7 +40,7 @@ var ModalFormEditDialog = React.createClass({
                 $.each(data, function(i, obj) {
 
                     if (i.indexOf("[]") > -1) { // This means that this is a group of items like multiple checkboxes
-                        for (var i in obj) {
+                        for (var i = 0; i < obj.length; i++) {
                             $("input[value=" + obj[i] + "]").prop("checked", true)
                         }
                     } else {

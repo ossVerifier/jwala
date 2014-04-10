@@ -47,7 +47,7 @@ $(document).ready(function() {
                     }
                 } else {
                     formJson[objFormIdMap[i]] = [];
-                    for (var ii in obj) {
+                    for (var ii = 0; ii < obj.length; ii++) {
                             formJson[objFormIdMap[i]].push(obj[ii].id.id);
                     }
                 }
