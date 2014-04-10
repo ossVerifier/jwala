@@ -38,7 +38,15 @@ var ModalFormEditDialog = React.createClass({
             create: function() {
 
                 $.each(data, function(i, obj) {
-                    $("#" + i).val(obj);
+
+                    if (i.indexOf("[]") > -1) { // This means that this is a group of items like multiple checkboxes
+                        for (var i in obj) {
+                            console.log("input[value='" + obj[i] + "']");
+                            $("input[value=" + obj[i] + "]").prop("checked", true)
+                        }
+                    } else {
+                        $("#" + i).val(obj);
+                    }
                 });
 
             },
@@ -49,9 +57,9 @@ var ModalFormEditDialog = React.createClass({
     },
     destroy: function(theDialog, data) {
         // reset form data
-        $.each(data, function(i, obj) {
-            $("#" + i).val("");
-        });
+        $(theDialog).find("input[type=text]").val("");
+        $(theDialog).find("input[type=checkbox]").removeAttr("checked");
+
         $(theDialog).dialog("destroy");
     },
     updateItem: function(callbacks) {

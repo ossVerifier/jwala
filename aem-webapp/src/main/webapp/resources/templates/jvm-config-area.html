@@ -32,25 +32,31 @@ $(document).ready(function() {
     var jvmJsonFormDataTransformerCallback = function(data) {
         var formJson = {};
 
+        console.log(data.applicationResponseContent);
+
         var objFormIdMap = {id:"jvmId",
                             jvmName:"jvmNameId",
                             hostName:"hostNameId",
-                            group:"groupNameId"};
+                            groups:"groupSelector[]"};
 
         $.each(data.applicationResponseContent, function(i, obj) {
             if (objFormIdMap[i] !== undefined) {
-                if (i !== "group") {
+                if (i !== "groups") {
                     if (i === "id") {
                         formJson[objFormIdMap[i]] = obj.id;
                     } else {
                         formJson[objFormIdMap[i]] = obj;
                     }
                 } else {
-                    formJson[objFormIdMap[i]] = obj.name;
+                    formJson[objFormIdMap[i]] = [];
+                    for (var ii in obj) {
+                            formJson[objFormIdMap[i]].push(obj[ii].id.id);
+                    }
                 }
             }
 
         });
+        console.log(formJson);
         return formJson;
     }
 
