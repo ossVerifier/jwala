@@ -27,7 +27,12 @@ var GroupConfig = React.createClass({
                                 <div>
                                     <GroupDataTable data={this.state.groupTableData}
                                                     selectItemCallback={this.selectItemCallback}
-                                                    editCallback={this.editCallback}/>
+                                                    editCallback={this.editCallback}
+                                                    noUpdateWhen={
+                                                      this.state.showModalFormAddDialog || 
+                                                      this.state.showDeleteConfirmDialog ||
+                                                      this.state.showModalFormEditDialog 
+                                                      }/>
                                 </div>
                             </td>
                         </tr>
@@ -190,6 +195,11 @@ var GroupConfigForm = React.createClass({
 });
 
 var GroupDataTable = React.createClass({
+   shouldComponentUpdate: function(nextProps, nextState) {
+    
+      return !nextProps.noUpdateWhen;
+        
+    },
     render: function() {
         var headerExt = [{sTitle:"", mData: "jvms", tocType:"control"},
                          {sTitle:"Group ID", mData:"id.id", bVisible:false},
