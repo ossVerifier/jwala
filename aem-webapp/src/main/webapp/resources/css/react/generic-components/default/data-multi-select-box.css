@@ -1,6 +1,6 @@
 .data-multi-select-box {
     height: 100px;
-    overflow: scroll;
+    overflow-y: scroll;
     border-style: solid;
     border-width: 1px;
     border-color: gray
