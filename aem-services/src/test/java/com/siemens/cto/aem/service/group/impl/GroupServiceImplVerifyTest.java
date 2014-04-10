@@ -1,14 +1,11 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
@@ -19,15 +16,15 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class GroupServiceImplVerifyTest {
+public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private GroupServiceImpl impl;
     private GroupPersistenceService groupPersistenceService;
@@ -158,34 +155,4 @@ public class GroupServiceImplVerifyTest {
         verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
     }
 
-    protected Set<AddJvmToGroupCommand> createMockedAddCommands(final int aNumberToCreate) {
-
-        final Set<AddJvmToGroupCommand> commands = new HashSet<>(aNumberToCreate);
-
-        for (int i = 0; i < aNumberToCreate; i++) {
-            commands.add(mock(AddJvmToGroupCommand.class));
-        }
-
-        return commands;
-    }
-
-    protected <T> Event<T> matchCommandInEvent(final T aCommand) {
-        return argThat(new EventMatcher<T>(aCommand));
-    }
-
-    static class EventMatcher<T> extends ArgumentMatcher<Event<T>> {
-
-        private final T expectedCommand;
-
-        EventMatcher(final T theCommand) {
-            expectedCommand = theCommand;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public boolean matches(final Object argument) {
-            final Event<T> event = (Event<T>)argument;
-            return expectedCommand.equals(event.getCommand());
-        }
-    }
 }

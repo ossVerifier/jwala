@@ -52,10 +52,10 @@ public class JvmServiceImpl implements JvmService {
 
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
 
-        final Jvm newJvm = createJvm(aCreateAndAssignCommand,
+        final Jvm newJvm = createJvm(aCreateAndAssignCommand.getCreateCommand(),
                                      aCreatingUser);
 
-        final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.getAssignmentCommandsFor(newJvm.getId());
+        final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.toAddCommandsFor(newJvm.getId());
         addJvmToGroups(addCommands,
                        aCreatingUser);
 

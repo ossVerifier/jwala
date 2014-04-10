@@ -12,19 +12,25 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 
-public class CreateJvmAndAddToGroupsCommand extends CreateJvmCommand implements Serializable, Command {
+public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
 
+    private final CreateJvmCommand createCommand;
     private final Set<Identifier<Group>> groups;
 
     public CreateJvmAndAddToGroupsCommand(final String theName,
                                           final String theHostName,
                                           final Set<Identifier<Group>> theGroups) {
-        super(theName,
-              theHostName);
+
+        createCommand = new CreateJvmCommand(theName,
+                                             theHostName);
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 
-    public Set<AddJvmToGroupCommand> getAssignmentCommandsFor(final Identifier<Jvm> aJvmId) {
+    public CreateJvmCommand getCreateCommand() {
+        return createCommand;
+    }
+
+    public Set<AddJvmToGroupCommand> toAddCommandsFor(final Identifier<Jvm> aJvmId) {
         return new AddJvmToGroupCommandSetBuilder(aJvmId,
                                                   groups).build();
     }
@@ -35,7 +41,7 @@ public class CreateJvmAndAddToGroupsCommand extends CreateJvmCommand implements 
 
     @Override
     public void validateCommand() throws BadRequestException {
-        super.validateCommand();
+        createCommand.validateCommand();
         new GroupIdsRule(groups).validate();
     }
 }
