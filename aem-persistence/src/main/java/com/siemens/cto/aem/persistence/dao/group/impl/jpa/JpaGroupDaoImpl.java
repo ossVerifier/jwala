@@ -61,7 +61,8 @@ public class JpaGroupDaoImpl implements GroupDao {
             return groupFrom(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName());
+                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName(),
+                                          eee);
         }
     }
 
@@ -83,7 +84,8 @@ public class JpaGroupDaoImpl implements GroupDao {
             return groupFrom(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName());
+                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName(),
+                                          eee);
         }
     }
 

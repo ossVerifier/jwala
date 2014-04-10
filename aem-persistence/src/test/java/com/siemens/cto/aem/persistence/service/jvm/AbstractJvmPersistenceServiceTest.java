@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -262,5 +263,42 @@ public abstract class AbstractJvmPersistenceServiceTest {
                                   userId);
 
         jvmPersistenceService.removeJvm(jvmId);
+    }
+
+    @Test
+    public void testRemoveJvmFromAllGroups() {
+
+        final Jvm jvm = jvmHelper.createJvm("A new JVM",
+                                            "A host name",
+                                            userId);
+        final Identifier<Jvm> jvmId = jvm.getId();
+        final Group firstGroup = groupHelper.createGroup("Group 1",
+                                                         userId);
+        final Group secondGroup = groupHelper.createGroup("Group 2",
+                                                          userId);
+
+        groupHelper.addJvmToGroup(firstGroup.getId(),
+                                  jvmId,
+                                  userId);
+        groupHelper.addJvmToGroup(secondGroup.getId(),
+                                  jvmId,
+                                  userId);
+
+        final Set<Identifier<Group>> assignedGroups = new HashSet<>();
+        assignedGroups.add(firstGroup.getId());
+        assignedGroups.add(secondGroup.getId());
+
+        final Jvm jvmWithGroups = jvmPersistenceService.getJvm(jvmId);
+
+        assertFalse(jvmWithGroups.getGroups().isEmpty());
+        for (final LiteGroup group : jvmWithGroups.getGroups()) {
+            assertTrue(assignedGroups.contains(group.getId()));
+        }
+
+        jvmPersistenceService.removeJvmFromGroups(jvmId);
+
+        final Jvm jvmWithoutGroups = jvmPersistenceService.getJvm(jvmId);
+
+        assertTrue(jvmWithoutGroups.getGroups().isEmpty());
     }
 }

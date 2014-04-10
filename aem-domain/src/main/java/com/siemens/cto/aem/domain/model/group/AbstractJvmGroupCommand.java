@@ -8,7 +8,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
 
-abstract class AbstractJvmGroupCommand implements Command {
+public abstract class AbstractJvmGroupCommand implements Command {
 
     private final Identifier<Group> groupId;
     private final Identifier<Jvm> jvmId;

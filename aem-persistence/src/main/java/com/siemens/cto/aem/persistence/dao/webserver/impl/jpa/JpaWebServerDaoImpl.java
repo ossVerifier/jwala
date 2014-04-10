@@ -76,7 +76,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             return webServerFrom(jpaWebServer);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
-                                          "WebServer Name already exists: " + aWebServer.getCommand().getName());
+                                          "WebServer Name already exists: " + aWebServer.getCommand().getName(),
+                                          eee);
         }
     }
 
@@ -111,7 +112,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             return webServerFrom(jpaWebServer);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
-                                          "WebServer Name already exists: " + aWebServerToUpdate.getCommand().getNewName());
+                                          "WebServer Name already exists: " + aWebServerToUpdate.getCommand().getNewName(),
+                                          eee);
         }
     }
 

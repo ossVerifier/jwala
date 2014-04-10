@@ -56,7 +56,6 @@ public class GroupServiceImpl implements GroupService {
                                   final PaginationParameter aPaginationParam) {
 
         new GroupNameRule(aGroupNameFragment).validate();
-
         return groupPersistenceService.findGroups(aGroupNameFragment,
                                                   aPaginationParam);
     }
@@ -67,7 +66,6 @@ public class GroupServiceImpl implements GroupService {
                              final User anUpdatingUser) {
 
         anUpdateGroupCommand.validateCommand();
-
         return groupPersistenceService.updateGroup(createEvent(anUpdateGroupCommand,
                                                                anUpdatingUser));
     }

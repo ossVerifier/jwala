@@ -59,7 +59,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
             return jpaGroup;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName());
+                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName(),
+                                          eee);
         }
     }
 
@@ -79,7 +80,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
             entityManager.flush();
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName());
+                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName(),
+                                          eee);
         }
     }
 

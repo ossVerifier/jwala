@@ -59,7 +59,8 @@ public class JpaJvmDaoImpl implements JvmDao {
             return jvmFrom(jpaJvm);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                                          "JVM with name already exists: " + aJvmToCreate.getCommand().getJvmName());
+                                          "JVM with name already exists: " + aJvmToCreate.getCommand().getJvmName(),
+                                          eee);
         }
     }
 
@@ -79,7 +80,8 @@ public class JpaJvmDaoImpl implements JvmDao {
             return getJvm(jvmId);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                                          "JVM with name already exists: " + aJvmToUpdate.getCommand().getNewJvmName());
+                                          "JVM with name already exists: " + aJvmToUpdate.getCommand().getNewJvmName(),
+                                          eee);
         }
     }
 

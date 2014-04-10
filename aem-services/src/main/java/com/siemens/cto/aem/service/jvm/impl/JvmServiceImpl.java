@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
@@ -49,6 +50,8 @@ public class JvmServiceImpl implements JvmService {
     public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsCommand aCreateAndAssignCommand,
                                   final User aCreatingUser) {
 
+        //The commands are validated in createJvm() and groupService.addJvmToGroup()
+
         final Jvm newJvm = createJvm(aCreateAndAssignCommand,
                                      aCreatingUser);
 
@@ -78,16 +81,17 @@ public class JvmServiceImpl implements JvmService {
     public List<Jvm> findJvms(final String aJvmNameFragment,
                               final PaginationParameter aPaginationParam) {
 
+        new JvmNameRule(aJvmNameFragment).validate();
         return jvmPersistenceService.findJvms(aJvmNameFragment,
                                               aPaginationParam);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final Identifier<Group> aJvmId,
+    public List<Jvm> findJvms(final Identifier<Group> aGroupId,
                               final PaginationParameter aPaginationParam) {
 
-        return jvmPersistenceService.findJvmsBelongingTo(aJvmId,
+        return jvmPersistenceService.findJvmsBelongingTo(aGroupId,
                                                          aPaginationParam);
 
     }
