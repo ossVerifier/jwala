@@ -69,7 +69,8 @@ $(document).ready(function() {
                                 url:"v1.0/jvms/",
                                 editDialog:ModalFormEditDialog({formId:"jvmAddEditForm",
                                                                 title:"Edit JVM",
-                                                                validator:validator}),
+                                                                validator:validator,
+                                                                className:"textAlignLeft"}),
                                 jsonFormDataTransformerCallback:jvmJsonFormDataTransformerCallback});
 
     React.renderComponent(jvmDataGrid,
@@ -77,8 +78,8 @@ $(document).ready(function() {
 
     var jvmAddModalDialog = ModalFormAddDialog({formId:"jvmAddEditForm",
                                                 title:"Add JVM",
-                                                validator:validator
-                                                });
+                                                validator:validator,
+                                                className:"textAlignLeft"});
 
     var groups = [];
     // TODO: Define a REST service that retrieves the group count so that

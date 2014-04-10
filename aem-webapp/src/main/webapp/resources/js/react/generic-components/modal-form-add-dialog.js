@@ -11,7 +11,7 @@ var ModalFormAddDialog = React.createClass({
     submissionInProgress: false,
     render: function() {
         if (this.props.show) {
-            return React.DOM.div(null, this.props.form)
+            return React.DOM.div({className:this.props.className}, this.props.form)
         }
         return React.DOM.div({style:{"display":"none"}})
     },

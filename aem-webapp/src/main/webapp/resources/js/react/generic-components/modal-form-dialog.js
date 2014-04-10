@@ -2,7 +2,7 @@
 var ModalFormDialog = React.createClass({
     render: function() {
         if (this.props.show === true) {
-            return <div>{this.props.form}</div>
+            return <div className={this.props.className}>{this.props.form}</div>
         }
         return <div/>
     },

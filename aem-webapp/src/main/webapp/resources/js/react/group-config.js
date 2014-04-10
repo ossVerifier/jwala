@@ -41,13 +41,15 @@ var GroupConfig = React.createClass({
                                     show={this.state.showModalFormAddDialog}
                                     form={<GroupConfigForm service={this.props.service}/>}
                                     successCallback={this.addEditSuccessCallback}
-                                    destroyCallback={this.closeModalFormAddDialog}/>
+                                    destroyCallback={this.closeModalFormAddDialog}
+                                    className="textAlignLeft"/>
                    <ModalFormDialog title="Edit Group"
                                     show={this.state.showModalFormEditDialog}
                                     form={<GroupConfigForm service={this.props.service}
                                                            data={this.state.groupFormData}/>}
                                     successCallback={this.addEditSuccessCallback}
-                                    destroyCallback={this.closeModalFormEditDialog}/>
+                                    destroyCallback={this.closeModalFormEditDialog}
+                                    className="textAlignLeft"/>
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                              btnClickedCallback={this.confirmDeleteCallback} />
                </div>

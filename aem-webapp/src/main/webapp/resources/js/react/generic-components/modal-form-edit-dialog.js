@@ -10,7 +10,9 @@
 var ModalFormEditDialog = React.createClass({
     submissionInProgress: false,
     render: function() {
-        return React.DOM.div({id:"tempId" ,style:{"display":"none"}})
+        return React.DOM.div({id:"tempId",
+                              className:this.props.className,
+                              style:{"display":"none"}})
     },
     show: function(data, callback) {
         var thisComponent = this;
