@@ -7,7 +7,7 @@ var SimpleDataTable = React.createClass({
         var self = this;
         $.each(this.props.data, function(i, obj) {
             var colArray = [];
-            for (var idx in self.props.displayColumns) {
+            for (var idx = 0; idx < self.props.displayColumns.length; ++idx) {
                 colArray.push(React.DOM.td(null, obj[self.props.displayColumns[idx]]));
             }
             rowArray.push(React.DOM.tr(null, colArray));

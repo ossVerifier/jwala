@@ -68,6 +68,7 @@ var GroupConfig = React.createClass({
         this.props.service.getGroups().then(
 
             function(response){
+                
                 self.setState({groupTableData:response.applicationResponseContent});
             },
             function(response) {
