@@ -41,7 +41,6 @@ var ModalFormEditDialog = React.createClass({
 
                     if (i.indexOf("[]") > -1) { // This means that this is a group of items like multiple checkboxes
                         for (var i in obj) {
-                            console.log("input[value='" + obj[i] + "']");
                             $("input[value=" + obj[i] + "]").prop("checked", true)
                         }
                     } else {
@@ -71,7 +70,6 @@ var ModalFormEditDialog = React.createClass({
         });
 
         $(formId).one("submit", function(e) {
-            console.log(submissionInProgress);
             if (submissionInProgress === false) {
                 submissionInProgress = true;
 

@@ -32,8 +32,6 @@ $(document).ready(function() {
     var jvmJsonFormDataTransformerCallback = function(data) {
         var formJson = {};
 
-        console.log(data.applicationResponseContent);
-
         var objFormIdMap = {id:"jvmId",
                             jvmName:"jvmNameId",
                             hostName:"hostNameId",
@@ -56,7 +54,6 @@ $(document).ready(function() {
             }
 
         });
-        console.log(formJson);
         return formJson;
     }
 
