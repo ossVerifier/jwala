@@ -190,7 +190,7 @@ var GroupConfigForm = React.createClass({
 
 var GroupDataTable = React.createClass({
     render: function() {
-        var headerExt = [{sTitle:"", mData: null, tocType:"control"},
+        var headerExt = [{sTitle:"", mData: "jvms", tocType:"control"},
                          {sTitle:"Group ID", mData:"id.id", bVisible:false},
                          {sTitle:"Group Name", mData:"name", tocType:"link"}];
         return <TocDataTable2 theme="default"

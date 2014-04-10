@@ -43,7 +43,20 @@ var TocDataTable2 = React.createClass({
                 aoColumnDefs[itemIndex].mDataProp = null;
                 aoColumnDefs[itemIndex].sClass = "control center";
                 aoColumnDefs[itemIndex].sWidth = "20px";
-                aoColumnDefs[itemIndex].sDefaultContent = "<img src='public-resources/img/react/components/details_open.png'/>";
+
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                    var content;
+                    React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
+                                                  expandIcon:"public-resources/img/react/components/details_open.png",
+                                                  collapseIcon:"public-resources/img/react/components/details_close.png",
+                                                  data:data,
+                                                  getDataTableCallback:self.getDataTable}),
+                                                  function(html) {
+                                                    content = html;
+                                                 });
+                    return content;
+                }
+
             }
 
             aaSorting[itemIndex] = [itemIndex, 'asc'];
@@ -84,37 +97,10 @@ var TocDataTable2 = React.createClass({
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
-
-            if (self.expandCollapseEnabled === true) {
-                    $(this.getDOMNode()).find("td.control").on("click", function () {
-                        var nTr = this.parentNode;
-                        var i = $.inArray(nTr, self.anOpen);
-
-                        if ( i === -1 ) {
-                            $("img", this).attr("src", "public-resources/img/react/components/details_close.png");
-                            self.dataTable.fnOpen(nTr, self.fnFormatDetails(self.dataTable, nTr), "details");
-                            self.anOpen.push(nTr);
-                        } else {
-                            $("img", this).attr("src", "public-resources/img/react/components/details_open.png");
-                            self.dataTable.fnClose(nTr);
-                            self.anOpen.splice(i, 1);
-                        }
-                    });
-            }
-
         }
     },
-    // TODO: This should be a component
-    fnFormatDetails: function (oTable, nTr) {
-        var oData = oTable.fnGetData(nTr);
-
-        var sOut = "";
-        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
-                                                           displayColumns:["jvmName", "hostName"],
-                                                           data:[{"id":{"id":275},"hostName":"host01","group":{"name":"Group 2","id":{"id":15}},"jvmName":"jvm01"},{"id":{"id":276},"hostName":"host02","group":{"name":"Group 2","id":{"id":15}},"jvmName":"jvm02"}]}),
-                                  function(html) {sOut = html;});
-
-        return sOut;
+    getDataTable: function() {
+        return this.dataTable;
     }
 });
 
@@ -130,5 +116,42 @@ var Link2 = React.createClass({
         this.props.callback(this.props.valueId);
 
         return false;
+    }
+});
+
+var ExpandCollapseController = React.createClass({
+    currentIcon: "", // Tried to use state then re-render but can't get firstChild of undefined rears it's ungly head out.
+    render: function() {
+        this.currentIcon = this.props.expandIcon;
+        var controlFullId = "ExpandCollapseController_" + this.props.controlId;
+        return <img id={controlFullId}
+                    src={this.props.expandIcon}
+                    onClick={this.onClick}/>
+    },
+    onClick: function() {
+        var dataTable = this.props.getDataTableCallback();
+        var controlFullId = "ExpandCollapseController_" + this.props.controlId;
+
+        // We need the <tr> node for DataTable to insert the child table
+        var nTr = $("#" + controlFullId).parent().parent().get(0);
+
+        if (this.currentIcon === this.props.expandIcon) {
+            this.currentIcon = this.props.collapseIcon;
+            dataTable.fnOpen(nTr, this.fnFormatDetails(this.props.data), "details");
+        } else {
+            this.currentIcon = this.props.expandIcon;
+            dataTable.fnClose(nTr);
+        }
+        $("#" + controlFullId).attr("src", this.currentIcon);
+    },
+    fnFormatDetails: function(data) {
+        var sOut = "";
+        console.log(data);
+        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
+                                                           displayColumns:["jvmName", "hostName"],
+                                                           data:data}),
+                                  function(html) {sOut = html;});
+
+        return sOut;
     }
 });
