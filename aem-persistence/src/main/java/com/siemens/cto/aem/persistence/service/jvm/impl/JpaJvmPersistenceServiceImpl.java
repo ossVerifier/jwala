@@ -30,25 +30,19 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     @Override
     public Jvm createJvm(final Event<CreateJvmCommand> aJvmToCreate) {
-
         final JpaJvm jpaJvm = jvmCrudService.createJvm(aJvmToCreate);
-
         return jvmFrom(jpaJvm);
     }
 
     @Override
     public Jvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate) {
-
         final JpaJvm jpaJvm = jvmCrudService.updateJvm(aJvmToUpdate);
-
         return jvmFrom(jpaJvm);
     }
 
     @Override
     public Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException {
-
         final JpaJvm jpaJvm = jvmCrudService.getJvm(aJvmId);
-
         return jvmFrom(jpaJvm);
     }
 
@@ -75,6 +69,12 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     public void removeJvm(final Identifier<Jvm> aJvmId) {
         groupJvmRelationshipService.removeRelationshipsForJvm(aJvmId);
         jvmCrudService.removeJvm(aJvmId);
+    }
+
+    @Override
+    public Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId) {
+        groupJvmRelationshipService.removeRelationshipsForJvm(aJvmId);
+        return getJvm(aJvmId);
     }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {

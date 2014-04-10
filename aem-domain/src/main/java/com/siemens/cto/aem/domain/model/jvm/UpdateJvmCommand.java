@@ -1,11 +1,17 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
@@ -17,13 +23,16 @@ public class UpdateJvmCommand implements Serializable, Command {
     private final Identifier<Jvm> id;
     private final String newJvmName;
     private final String newHostName;
+    private final Set<Identifier<Group>> groupIds;
 
     public UpdateJvmCommand(final Identifier<Jvm> theId,
                             final String theNewJvmName,
-                            final String theNewHostName) {
+                            final String theNewHostName,
+                            final Set<Identifier<Group>> theGroupIds) {
         id = theId;
         newJvmName = theNewJvmName;
         newHostName = theNewHostName;
+        groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
     }
 
     public Identifier<Jvm> getId() {
@@ -38,11 +47,17 @@ public class UpdateJvmCommand implements Serializable, Command {
         return newHostName;
     }
 
+    public Set<AddJvmToGroupCommand> getAssignmentCommands() {
+        return new AddJvmToGroupCommandSetBuilder(id,
+                                                  groupIds).build();
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRuleCommand(new JvmNameRule(newJvmName),
                                 new JvmHostNameRule(newHostName),
-                                new JvmIdRule(id)).validateCommand();
+                                new JvmIdRule(id),
+                                new GroupIdsRule(groupIds)).validateCommand();
     }
 
     @Override
@@ -56,6 +71,9 @@ public class UpdateJvmCommand implements Serializable, Command {
 
         final UpdateJvmCommand that = (UpdateJvmCommand) o;
 
+        if (groupIds != null ? !groupIds.equals(that.groupIds) : that.groupIds != null) {
+            return false;
+        }
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
@@ -74,6 +92,7 @@ public class UpdateJvmCommand implements Serializable, Command {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (newJvmName != null ? newJvmName.hashCode() : 0);
         result = 31 * result + (newHostName != null ? newHostName.hashCode() : 0);
+        result = 31 * result + (groupIds != null ? groupIds.hashCode() : 0);
         return result;
     }
 
@@ -83,6 +102,7 @@ public class UpdateJvmCommand implements Serializable, Command {
                "id=" + id +
                ", newJvmName='" + newJvmName + '\'' +
                ", newHostName='" + newHostName + '\'' +
+               ", groupIds=" + groupIds +
                '}';
     }
 }

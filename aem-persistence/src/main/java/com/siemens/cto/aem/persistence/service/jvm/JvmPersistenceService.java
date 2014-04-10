@@ -28,4 +28,6 @@ public interface JvmPersistenceService {
                                   final PaginationParameter somePagination);
 
     void removeJvm(final Identifier<Jvm> aJvmId);
+
+    Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId);
 }
