@@ -31,6 +31,7 @@
             <!--Keep below-->
             <property name="openjpa.TransactionMode" value="managed"/>
             <property name="openjpa.ManagedRuntime" value="jndi(TransactionManagerName=java:comp/UserTransaction)"/>
+            <property name="openjpa.jdbc.SynchronizeMappings" value="validate(ForeignKeys=true)" />
         </properties>
     </persistence-unit>
 </persistence>
