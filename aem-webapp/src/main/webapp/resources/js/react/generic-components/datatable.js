@@ -52,8 +52,9 @@ var TocDataTable = React.createClass({
           } else if (item.tocType === "array") {
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                     var str = "";
-                    for (var i in data) {
-                        str = str + (str === "" ? "" : ", ") + data[i][item.displayProperty];
+                    /* would be better with _Underscore.js : */
+                    for (var idx = 0; idx < data.length; idx=idx+1) {
+                        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
                     }
                     return str;
                 }
