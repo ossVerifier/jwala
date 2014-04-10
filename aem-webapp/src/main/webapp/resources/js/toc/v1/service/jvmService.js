@@ -15,6 +15,8 @@
                     id["groupId"] = this.value;
                     groupIdArray.push(id);
                     // groupIdArray.push(this.value);
+                } else if (this.name === "id") {
+                    json["jvmId"] = this.value;
                 } else {
                     json[this.name] = this.value;
                 }
