@@ -53,10 +53,8 @@ public class JvmServiceImpl implements JvmService {
                                      aCreatingUser);
 
         final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.getAssignmentCommandsFor(newJvm.getId());
-        for (final AddJvmToGroupCommand addCommand : addCommands) {
-            groupService.addJvmToGroup(addCommand,
-                                       aCreatingUser);
-        }
+        addJvmToGroups(addCommands,
+                       aCreatingUser);
 
         return getJvm(newJvm.getId());
     }
@@ -104,6 +102,11 @@ public class JvmServiceImpl implements JvmService {
         final Event<UpdateJvmCommand> event = new Event<>(anUpdateJvmCommand,
                                                           AuditEvent.now(anUpdatingUser));
 
+        jvmPersistenceService.removeJvmFromGroups(anUpdateJvmCommand.getId());
+
+        addJvmToGroups(anUpdateJvmCommand.getAssignmentCommands(),
+                       anUpdatingUser);
+
         return jvmPersistenceService.updateJvm(event);
     }
 
@@ -111,5 +114,13 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void removeJvm(final Identifier<Jvm> aJvmId) {
         jvmPersistenceService.removeJvm(aJvmId);
+    }
+
+    protected void addJvmToGroups(final Set<AddJvmToGroupCommand> someAddCommands,
+                                  final User anAddingUser) {
+        for (final AddJvmToGroupCommand command : someAddCommands) {
+            groupService.addJvmToGroup(command,
+                                       anAddingUser);
+        }
     }
 }

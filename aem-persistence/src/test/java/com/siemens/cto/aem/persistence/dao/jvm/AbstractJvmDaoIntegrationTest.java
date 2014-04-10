@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.dao.jvm;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -112,7 +113,6 @@ public abstract class AbstractJvmDaoIntegrationTest {
     public void testUpdateJvm() {
 
         final Event<UpdateJvmCommand> update = createUpdateJvmCommand(preCreatedJvm.getId(),
-                                                                      preCreatedGroup.getId(),
                                                                       "New Jvm Name",
                                                                       "New Host Name",
                                                                       userName);
@@ -134,7 +134,6 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                                    userName));
 
         jvmDao.updateJvm(createUpdateJvmCommand(newJvm.getId(),
-                                                preCreatedGroup.getId(),
                                                 preCreatedJvm.getJvmName(),
                                                 preCreatedJvm.getHostName(),
                                                 userName));
@@ -248,13 +247,13 @@ public abstract class AbstractJvmDaoIntegrationTest {
     }
 
     protected Event<UpdateJvmCommand> createUpdateJvmCommand(final Identifier<Jvm> aJvmId,
-                                                             final Identifier<Group> aGroupId,
                                                              final String aNewJvmName,
                                                              final String aNewHostName,
                                                              final String aUserName) {
         return new Event<>(new UpdateJvmCommand(aJvmId,
                                                 aNewJvmName,
-                                                aNewHostName),
+                                                aNewHostName,
+                                                Collections.<Identifier<Group>>emptySet()),
                            AuditEvent.now(new User(aUserName)));
     }
 

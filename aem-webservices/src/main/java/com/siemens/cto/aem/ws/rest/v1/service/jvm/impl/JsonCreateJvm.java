@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jackson.JsonNode;
@@ -13,9 +12,9 @@ import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
@@ -88,18 +87,7 @@ public class JsonCreateJvm {
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
-        try {
-            final Set<Identifier<Group>> groups = new HashSet<>();
-            for (final String groupId : groupIds) {
-                groups.add(new Identifier<Group>(groupId));
-            }
-
-            return groups;
-        } catch (NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
-                                          nfe.getMessage(),
-                                          nfe);
-        }
+        return new IdentifierSetBuilder(groupIds).build();
     }
 
     static class JsonCreateJvmDeserializer extends AbstractJsonDeserializer<JsonCreateJvm> {

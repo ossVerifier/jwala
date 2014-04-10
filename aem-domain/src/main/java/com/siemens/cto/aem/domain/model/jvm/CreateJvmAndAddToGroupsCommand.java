@@ -25,13 +25,8 @@ public class CreateJvmAndAddToGroupsCommand extends CreateJvmCommand implements 
     }
 
     public Set<AddJvmToGroupCommand> getAssignmentCommandsFor(final Identifier<Jvm> aJvmId) {
-        final Set<AddJvmToGroupCommand> addCommands = new HashSet<>();
-        for (final Identifier<Group> groupId : groups) {
-            addCommands.add(new AddJvmToGroupCommand(groupId,
-                                                     aJvmId));
-        }
-
-        return addCommands;
+        return new AddJvmToGroupCommandSetBuilder(aJvmId,
+                                                  groups).build();
     }
 
     public Set<Identifier<Group>> getGroups() {

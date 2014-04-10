@@ -1,7 +1,10 @@
 package com.siemens.cto.aem.persistence.service;
 
+import java.util.Collections;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -59,7 +62,8 @@ public class CommonJvmPersistenceServiceBehavior {
 
         final Event<UpdateJvmCommand> event = new Event<>(new UpdateJvmCommand(aJvmId,
                                                                                aNewJvmName,
-                                                                               aNewHostName),
+                                                                               aNewHostName,
+                                                                               Collections.<Identifier<Group>>emptySet()),
                                                           createAuditEvent(aUserId));
 
         return event;
