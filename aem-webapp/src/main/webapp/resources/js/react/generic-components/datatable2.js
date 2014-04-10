@@ -45,15 +45,17 @@ var TocDataTable2 = React.createClass({
                 aoColumnDefs[itemIndex].sWidth = "20px";
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                    var content;
-                    React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
-                                                  expandIcon:"public-resources/img/react/components/details_open.png",
-                                                  collapseIcon:"public-resources/img/react/components/details_close.png",
-                                                  data:data,
-                                                  getDataTableCallback:self.getDataTable}),
-                                                  function(html) {
-                                                    content = html;
-                                                 });
+                    var content = "";
+                    if (data.length > 0) {
+                        React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
+                                                      expandIcon:"public-resources/img/react/components/details_open.png",
+                                                      collapseIcon:"public-resources/img/react/components/details_close.png",
+                                                      data:data,
+                                                      getDataTableCallback:self.getDataTable}),
+                                                      function(html) {
+                                                        content = html;
+                                                     });
+                    }
                     return content;
                 }
 
