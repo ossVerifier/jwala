@@ -1,16 +1,15 @@
-ol.tabs-default {
-    height: 2em;
+.tabs-default {
     list-style: none;
     padding: 0;
 }
 
-ol.tabs-default > div > li {
+.tabs-default > div > li {
     background-image: url(../../../../img/react/components/gray-tabs.png);
     float: left;
     padding-left: 10px;
 }
 
-ol.tabs-default > div > li > a {
+.tabs-default > div > li > a {
 
     background-image: url(../../../../img/react/components/gray-tabs.png);
     background-position: right top;
@@ -24,89 +23,23 @@ ol.tabs-default > div > li > a {
     font-size: 13px;
 }
 
-ol.tabs-default > div > li.current {
+.tabs-default > div > li.current {
     background-position: 0 -40px;
 }
 
-ol.tabs-default > div > li.current > a {
+.tabs-default > div > li.current > a {
     line-height: 200%;
     background-position: 100% -40px;
     color: black;
     font-weight: bold;
-}
-
-.tabs-default-panel {
-	visibility: hidden; /* Do not use "display: none" since it has an issue with JQuery data table size
-    	                   when page is refreshed and the current tab is not the tab of the said
-    	                   data table */
-    margin-top: 1em;
 }
 
 .tabs-default-panel-selected {
     border: #C0C0C0 solid 1px;
     background: #E5E5E5;
- 	width: 100%;
 	/* height: 542px;*/
 	clear: left;
 	position: relative;
-	min-height: 542px;
-}
-
-/** Sub 2nd level tab style **/
-
-ol.tabs-default-level-1 {
-    height: 2em;
-    list-style: none;
-    padding: 0;
-}
-
-ol.tabs-default-level-1 > div > li {
-    background-image: url(../../../../img/react/components/gray-tabs.png);
-    float: left;
-    padding-left: 10px;
-}
-
-ol.tabs-default-level-1 > div > li > a {
-
-    background-image: url(../../../../img/react/components/gray-tabs.png);
-    background-position: right top;
-
-    color: C0C0C0;
-    float: left;
-    line-height: 200%;
-    padding-right: 10px;
-    text-decoration: none;
-    /* font-family: arial; */
-    font-size: 13px;
-}
-
-ol.tabs-default-level-1 > div > li.current {
-    background-position: 0 -40px;
-}
-
-ol.tabs-default-level-1 > div > li.current > a {
-    line-height: 200%;
-    background-position: 100% -40px;
-    color: black;
-    font-weight: bold;
-}
-
-.tabs-default-level-1-panel {
-    display: none;
-    margin-top: 1em
-}
-
-.tabs-default-level-1-panel-selected {
-
-    border: #C0C0C0 solid 1px;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-
-    background: #E5E5E5;
- 	width: 100%;
-	/* height: 500px; */
-	clear: left;
-	position: relative;
-	min-height: 500px;
+	min-height: 400px;
+	padding: 5px 5px 5px 5px
 }

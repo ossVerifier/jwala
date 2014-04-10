@@ -46,7 +46,7 @@ var ConfigureTabs = React.createClass({
                  {title: "Role Mapping", content:""}];
     },
     render: function() {
-        return <Tabs theme="default-level-1" items={items} depth="1"/>
+        return <Tabs theme="default" items={items} depth="1"/>
     }
 });
 

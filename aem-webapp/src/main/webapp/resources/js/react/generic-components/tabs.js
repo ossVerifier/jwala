@@ -14,9 +14,11 @@ var Tabs = React.createClass({displayName:"Tabs",
         return React.DOM.div(null,
                     React.DOM.ol({className:this.state.themeName},
                         TabsSwitcher({items:this.state.tabs, active:this.state.active,
-                                       onTabClick:this.handleTabClick}),
-                        TabsContent({theme:this.state.themeName, items:this.state.tabs, active:this.state.active})
-                    )
+                                      onTabClick:this.handleTabClick})
+                    ),
+                    TabsContent({theme:this.state.themeName,
+                                 items:this.state.tabs,
+                                 active:this.state.active})
                );
     },
     handleTabClick: function(index) {
@@ -94,14 +96,18 @@ var TabsSwitcher = React.createClass({displayName:"TabsSwitcher",
     }
 });
 
-var TabsContent = React.createClass({displayName:"TabsContent",
+var TabsContent = React.createClass({
+    displayName: "TabsContent",
     render: function() {
         var theme = this.props.theme;
         var active = this.props.active;
+
         var items = this.props.items.map(function(item, index) {
-            return React.DOM.div({className:theme + "-panel" + (active === index ? "tabs-panel-selected" : "")},
-                                  item.content);
+            if (index === active) {
+                return item.content;
+            }
         });
+
         return React.DOM.div({className:theme + "-panel-selected"}, items);
     }
 });
