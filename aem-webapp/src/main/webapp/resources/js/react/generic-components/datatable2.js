@@ -148,11 +148,9 @@ var ExpandCollapseController = React.createClass({
     },
     fnFormatDetails: function(data) {
         var sOut = "";
-        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
-                                                           displayColumns:["jvmName", "hostName"],
-                                                           data:data}),
-                                  function(html) {sOut = html;});
-
+        return React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
+                                             displayColumns:["jvmName", "hostName"],
+                                             data:data}), function(html) {sOut = html;});
         return sOut;
     }
 });
