@@ -48,8 +48,8 @@ var TocDataTable2 = React.createClass({
                     var content = "";
                     if (data.length > 0) {
                         React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
-                                                      expandIcon:"public-resources/img/react/components/details_open.png",
-                                                      collapseIcon:"public-resources/img/react/components/details_close.png",
+                                                      expandIcon:self.props.expandIcon,
+                                                      collapseIcon:self.props.collapseIcon,
                                                       data:data,
                                                       getDataTableCallback:self.getDataTable}),
                                                       function(html) {

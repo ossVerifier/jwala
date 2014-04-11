@@ -210,6 +210,8 @@ var GroupDataTable = React.createClass({
                               headerExt={headerExt}
                               data={this.props.data}
                               selectItemCallback={this.props.selectItemCallback}
-                              editCallback={this.props.editCallback}/>
+                              editCallback={this.props.editCallback}
+                              expandIcon="public-resources/img/react/components/details-expand.png"
+                              collapseIcon="public-resources/img/react/components/details-collapse.png"/>
     }
 });
