@@ -361,10 +361,14 @@ tr.even td.sorting_3 {
 	background-color: #F9F9FF;
 }
  
+/** For row's child component */
+.row-sub-component-container {
+
+}
 
 
-/ * For the Conditional-CSS grading rows * /
-/ *
+/* For the Conditional-CSS grading rows */
+/*
  	Colour calculations (based off the main row colours)
   Level 1:
 		dd > c4
@@ -372,7 +376,8 @@ tr.even td.sorting_3 {
 	Level 2:
 	  dd > d1
 	  ee > e2
- * /
+*/
+
 tr.odd.gradeA td.sorting_1 {
 	background-color: #c4ffc4;
 }
@@ -469,16 +474,3 @@ tr.even.gradeU td.sorting_3 {
 	background-color: #e2e2e2;
 }
 
- */
-
-
-/*
- * Row highlighting example
-.ex_highlight #example tbody tr.even:hover, #example tbody tr.even td.highlighted {
-	background-color: #ECFFB3;
-}
-
-.ex_highlight #example tbody tr.odd:hover, #example tbody tr.odd td.highlighted {
-	background-color: #E6FF99;
-}
- */

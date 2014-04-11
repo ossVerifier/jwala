@@ -208,10 +208,12 @@ var GroupDataTable = React.createClass({
                          {sTitle:"Group Name", mData:"name", tocType:"link"}];
         return <TocDataTable2 theme="default"
                               headerExt={headerExt}
+                              colHeaders={["JVM Name", "Host Name"]}
                               data={this.props.data}
                               selectItemCallback={this.props.selectItemCallback}
                               editCallback={this.props.editCallback}
                               expandIcon="public-resources/img/react/components/details-expand.png"
-                              collapseIcon="public-resources/img/react/components/details-collapse.png"/>
+                              collapseIcon="public-resources/img/react/components/details-collapse.png"
+                              rowSubComponentContainerClassName="row-sub-component-container"/>
     }
 });

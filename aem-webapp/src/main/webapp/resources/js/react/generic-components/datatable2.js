@@ -50,8 +50,10 @@ var TocDataTable2 = React.createClass({
                         React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
                                                       expandIcon:self.props.expandIcon,
                                                       collapseIcon:self.props.collapseIcon,
+                                                      colHeaders:self.props.colHeaders,
                                                       data:data,
-                                                      getDataTableCallback:self.getDataTable}),
+                                                      getDataTableCallback:self.getDataTable,
+                                                      rowSubComponentContainerClassName:self.props.rowSubComponentContainerClassName}),
                                                       function(html) {
                                                         content = html;
                                                      });
@@ -139,7 +141,9 @@ var ExpandCollapseController = React.createClass({
 
         if (this.currentIcon === this.props.expandIcon) {
             this.currentIcon = this.props.collapseIcon;
-            dataTable.fnOpen(nTr, this.fnFormatDetails(this.props.data), "details");
+            dataTable.fnOpen(nTr,
+                             this.fnFormatDetails(this.props.data),
+                             this.props.rowSubComponentContainerClassName);
         } else {
             this.currentIcon = this.props.expandIcon;
             dataTable.fnClose(nTr);
@@ -148,9 +152,10 @@ var ExpandCollapseController = React.createClass({
     },
     fnFormatDetails: function(data) {
         var sOut = "";
-        return React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
-                                             displayColumns:["jvmName", "hostName"],
-                                             data:data}), function(html) {sOut = html;});
+        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
+                                      colHeaders:this.props.colHeaders,
+                                      displayColumns:["jvmName", "hostName"],
+                                      data:data}), function(html) {sOut = html;});
         return sOut;
     }
 });
