@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.JsonDeserializer;
@@ -19,32 +18,21 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 @JsonDeserialize(using = JsonUpdateGroup.JsonUpdateGroupDeserializer.class)
 public class JsonUpdateGroup {
 
-    private String id;
-    private String name;
+    private final String id;
+    private final String name;
 
-    public JsonUpdateGroup() {
-    }
-
-    public JsonUpdateGroup(final String anId,
-                           final String aName) {
-        id = anId;
-        name = aName;
+    public JsonUpdateGroup(final String theId,
+                           final String theName) {
+        id = theId;
+        name = theName;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setId(final String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
     }
 
     public UpdateGroupCommand toUpdateGroupCommand() throws BadRequestException {
@@ -66,7 +54,7 @@ public class JsonUpdateGroup {
 
         @Override
         public JsonUpdateGroup deserialize(final JsonParser jp,
-                                           final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                                           final DeserializationContext ctxt) throws IOException {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp);

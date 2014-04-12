@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
@@ -22,21 +22,14 @@ import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 @JsonDeserialize(using = JsonJvms.JsonJvmsDeserializer.class)
 public class JsonJvms {
 
-    private Set<String> jvmIds;
-
-    public JsonJvms() {
-    }
+    private final Set<String> jvmIds;
 
     public JsonJvms(final Set<String> someJvmIds) {
-        jvmIds = someJvmIds;
+        jvmIds = Collections.unmodifiableSet(new HashSet<>(someJvmIds));
     }
 
     public Set<String> getJvmIds() {
         return jvmIds;
-    }
-
-    public void setJvmIds(final Set<String> someJvmIds) {
-        jvmIds = someJvmIds;
     }
 
     public AddJvmsToGroupCommand toCommand(final Identifier<Group> aGroupId) {
@@ -67,7 +60,7 @@ public class JsonJvms {
 
         @Override
         public JsonJvms deserialize(final JsonParser jp,
-                                    final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                                    final DeserializationContext ctxt) throws IOException {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode rootNode = obj.readTree(jp);
