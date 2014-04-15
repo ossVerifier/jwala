@@ -21,6 +21,8 @@ dependencies {
     compile project(":aem-services")
     compile project(":aem-webservices")
 
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+
 }
 
 task generateMyResources {
