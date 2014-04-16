@@ -13,7 +13,6 @@ var WebServerConfig = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
-        console.log("render");
         return  <div className={this.props.className}>
                     <table>
                         <tr>
