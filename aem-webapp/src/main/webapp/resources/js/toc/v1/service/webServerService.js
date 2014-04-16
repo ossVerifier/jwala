@@ -33,9 +33,9 @@ var webServerService = {
 	        }
 	    });
 	 */
-	insertNewWebServer : function(webserverName, groupId, hostName, portNumber) {
+	insertNewWebServer : function(webserverName, groupIds, hostName, portNumber) {
 		return serviceFoundation
-				.post("v1.0/webservers", "json", JSON.stringify([{ webserverName: webserverName, groupId: groupId, hostName:hostName, portNumber:portNumber}]) );
+				.post("v1.0/webservers", "json", JSON.stringify([{ webserverName: webserverName, groupIds: groupIds, hostName:hostName, portNumber:portNumber}]) );
 	},
 	
 	/* 		jQuery.getScript('/aem/public-resources/js/toc/v1/service/webServerService.js');

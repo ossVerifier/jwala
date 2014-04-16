@@ -4,5 +4,8 @@ var ServiceFactory = {
 	},
 	getGroupService : function() {
 		return groupService;
-	}
+	},
+	getWebServerService : function() {
+        return webServerService;
+    }
 };

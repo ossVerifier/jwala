@@ -61,6 +61,15 @@ var TocDataTable2 = React.createClass({
                     return content;
                 }
 
+            } else if (item.tocType === "array") {
+                  aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                      var str = "";
+                      /* would be better with _Underscore.js : */
+                      for (var idx = 0; idx < data.length; idx=idx+1) {
+                          str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+                      }
+                      return str;
+                  }
             }
 
             aaSorting[itemIndex] = [itemIndex, 'asc'];

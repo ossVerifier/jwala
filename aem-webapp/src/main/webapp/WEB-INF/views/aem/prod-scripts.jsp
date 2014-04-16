@@ -13,6 +13,7 @@
 <script src="public-resources/ext/js/bluebird/bluebird-1.0.4.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>
+<script src="public-resources/js/toc/v1/service/webServerService.js"></script>
 <script src="public-resources/js/toc/v1/service/jvmService.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFactory.js"></script>
 
@@ -32,4 +33,5 @@
 <script src="gen-public-resources/js/react/delete-item-widget.js"></script>
 <script src="gen-public-resources/js/react/generic-components/generic-button.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
+<script src="gen-public-resources/js/react/webserver-config.js"></script>
 <script src="gen-public-resources/js/react/main-area.js"></script>
