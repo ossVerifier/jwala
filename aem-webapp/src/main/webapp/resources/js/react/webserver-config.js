@@ -224,6 +224,10 @@ var WebServerConfigForm = React.createClass({
             rules: {
                 "groupSelector[]": {
                     required: true
+                },
+                "portNumber": {
+                    required: true,
+                    range: [1, 65535]
                 }
             },
             messages: {
