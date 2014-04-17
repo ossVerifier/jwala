@@ -136,23 +136,29 @@ var WebServerConfig = React.createClass({
 
 var WebServerConfigForm = React.createClass({
     getInitialState: function() {
-        var webServerId = "";
-        var webServerName = "";
+        var id = "";
+        var name = "";
+        var host = "";
+        var port = "";
 
         if (this.props.data !== undefined) {
-            webServerId = this.props.data.id.id;
-            webServerName = this.props.data.name;
+            id = this.props.data.id.id;
+            name = this.props.data.name;
+            host = this.props.data.host;
+            port = this.props.data.port;
         }
         return {
             validator: null,
-            webServerId: webServerId,
-            webServerName: webServerName
+            id: id,
+            name: name,
+            host: host,
+            port: port
         }
     },
     render: function() {
         var self = this;
         return <form action="v1.0/webServers">
-                    <input name="id" type="hidden" defaultValue={this.state.webServerId} />
+                    <input name="webserverId" type="hidden" defaultValue={this.state.id} />
                     <table>
                         <tr>
                             <td>Name</td>
@@ -163,7 +169,7 @@ var WebServerConfigForm = React.createClass({
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="name" type="text" defaultValue={this.state.webServerName} required/></td>
+                            <td><input name="webserverName" type="text" defaultValue={this.state.name} required/></td>
                         </tr>
                         <tr>
                             <td>Host</td>
@@ -174,7 +180,7 @@ var WebServerConfigForm = React.createClass({
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="host" type="text" defaultValue={this.state.webServerHost} required/></td>
+                            <td><input name="hostName" type="text" defaultValue={this.state.host} required/></td>
                         </tr>
                         <tr>
                             <td>Port</td>
@@ -185,7 +191,7 @@ var WebServerConfigForm = React.createClass({
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="port" type="text" defaultValue={this.state.webServerPort} required/></td>
+                            <td><input name="portNumber" type="text" defaultValue={this.state.port} required/></td>
                         </tr>
                         <tr>
                             <td>
@@ -227,6 +233,14 @@ var WebServerConfigForm = React.createClass({
             }
         });
 
+
+        if (this.props.data !== undefined) {
+            // Process multi-select data if there are any
+            $.each(this.props.data.groups, function(i, obj) {
+                $("input[value=" + obj.id.id + "]").prop("checked", true)
+            });
+        }
+
         this.setState({validator:validator});
     },
     submit: function(done, fail) {
@@ -245,10 +259,10 @@ var WebServerConfigForm = React.createClass({
                     }
                 });
 
-                svc.insertNewWebServer($("input[name=name]").val(),
+                svc.insertNewWebServer($("input[name=webserverName]").val(),
                                        groupIds,
-                                       $("input[name=host]").val(),
-                                       $("input[name=port]").val()).then(
+                                       $("input[name=hostName]").val(),
+                                       $("input[name=portNumber]").val()).then(
                     function(){
                         done();
                     },
