@@ -226,8 +226,13 @@ var WebServerConfigForm = React.createClass({
                     required: true
                 },
                 "portNumber": {
-                    required: true,
                     range: [1, 65535]
+                },
+                "webserverName": {
+                    regex: true
+                },
+                "hostName": {
+                    regex: true
                 }
             },
             messages: {
@@ -237,6 +242,9 @@ var WebServerConfigForm = React.createClass({
             }
         });
 
+        $.validator.addMethod("regex", function(value, element) {
+            return this.optional(element) || /^[a-zA-Z0-9-_]+$/i.test(value);
+        }, "The field must only contain letters, numbers, underscore, or dashes.");
 
         if (this.props.data !== undefined) {
             // Process multi-select data if there are any
