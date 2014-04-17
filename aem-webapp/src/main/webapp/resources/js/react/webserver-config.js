@@ -161,41 +161,41 @@ var WebServerConfigForm = React.createClass({
                     <input name="webserverId" type="hidden" defaultValue={this.state.id} />
                     <table>
                         <tr>
-                            <td>Name</td>
+                            <td>*Name</td>
                         </tr>
                         <tr>
                             <td>
-                                <label htmlFor="name" className="error"></label>
+                                <label htmlFor="webserverName" className="error"></label>
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="webserverName" type="text" defaultValue={this.state.name} required/></td>
+                            <td><input name="webserverName" type="text" defaultValue={this.state.name} required maxLength="35"/></td>
                         </tr>
                         <tr>
-                            <td>Host</td>
+                            <td>*Host</td>
                         </tr>
                         <tr>
                             <td>
-                                <label htmlFor="host" className="error"></label>
+                                <label htmlFor="hostName" className="error"></label>
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="hostName" type="text" defaultValue={this.state.host} required/></td>
+                            <td><input name="hostName" type="text" defaultValue={this.state.host} required maxLength="35"/></td>
                         </tr>
                         <tr>
-                            <td>Port</td>
+                            <td>*Port</td>
                         </tr>
                         <tr>
                             <td>
-                                <label htmlFor="port" className="error"></label>
+                                <label htmlFor="portNumber" className="error"></label>
                             </td>
                         </tr>
                         <tr>
-                            <td><input name="portNumber" type="text" defaultValue={this.state.port} required/></td>
+                            <td><input name="portNumber" type="text" defaultValue={this.state.port} required maxLength="5"/></td>
                         </tr>
                         <tr>
                             <td>
-                                Group
+                                *Group
                             </td>
                         </tr>
                         <tr>
