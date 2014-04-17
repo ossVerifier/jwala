@@ -61,6 +61,6 @@ var webServerService = {
 	 * if(e.readyState > 1) { alert(e.applicationResponseContent); } },null);
 	 */
 	getWebServers : function() {
-		return serviceFoundation.get("v1.0/webservers");
+		return serviceFoundation.get("v1.0/webservers?all");
 	}
 };
