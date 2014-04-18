@@ -64,7 +64,7 @@ var WebServerConfig = React.createClass({
             this.props.service.deleteWebServer(selectedWebServer.id.id).then(
                 function(){
                 }
-            ).catch(function(e){
+            ).caught(function(e){
                 if (e.status !== 200) {
                     $.errorAlert(JSON.stringify(e), "Error");
                 }
@@ -77,7 +77,7 @@ var WebServerConfig = React.createClass({
         this.props.service.getWebServers().then(
             function(response){
                 self.setState({webServerTableData:response.applicationResponseContent});
-            }).catch(function(e){
+            }).caught(function(e){
                 $.errorAlert(JSON.stringify(e), "Error");
             });
 
@@ -85,7 +85,7 @@ var WebServerConfig = React.createClass({
             function(response){
                 self.setState({groupMultiSelectData:response.applicationResponseContent});
             }
-        ).catch(function(e){
+        ).caught(function(e){
             $.errorAlert(JSON.stringify(e), "Error");
         });
     },
@@ -111,7 +111,7 @@ var WebServerConfig = React.createClass({
                 thisComponent.setState({webServerFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
             }
-        ).catch(function(e){
+        ).caught(function(e){
             $.errorAlert(JSON.parse(e.responseText).applicationResponseContent, "Error");
         });
     },
@@ -272,7 +272,7 @@ var WebServerConfigForm = React.createClass({
                                           $("input[name=portNumber]").val()).then(
                     function(){
                         done();
-                    }).catch(function(e){
+                    }).caught(function(e){
                         fail(JSON.parse(e.responseText).applicationResponseContent);
                     });
 
@@ -280,7 +280,7 @@ var WebServerConfigForm = React.createClass({
                 svc.updateWebServer($(thisComponent.getDOMNode()).serializeArray()).then(
                     function(){
                         done();
-                    }).catch(function(e){
+                    }).caught(function(e){
                         fail(JSON.parse(e.responseText).applicationResponseContent);
                     });
             }
