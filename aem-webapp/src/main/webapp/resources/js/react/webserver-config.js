@@ -223,8 +223,11 @@ var WebServerConfigForm = React.createClass({
         });
 
         $.validator.addMethod("regex", function(value, element) {
-            return this.optional(element) || /^[a-zA-Z0-9-_]+$/i.test(value);
-        }, "The field must only contain letters, numbers, underscore, or dashes.");
+            // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
+            // var exp = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+            var exp = /^[a-zA-Z0-9-_.]+$/i;
+            return this.optional(element) || exp.test(value);
+        }, "The field must only contain letters, numbers, underscore, dashes or periods.");
 
         if (this.props.data !== undefined) {
             // Process multi-select data if there are any
