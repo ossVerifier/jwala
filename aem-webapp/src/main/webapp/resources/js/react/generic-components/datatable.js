@@ -82,6 +82,9 @@ var TocDataTable = React.createClass({
                                         "bJQueryUI": true,
                                         "bAutoWidth": false,
                                         "bStateSave": true,
+                                        "aLengthMenu": [[25, 50, 100, 200, -1],
+                                                        [25, 50, 100, 200, "All"]],
+                                        "iDisplayLength": 25,
                                         "fnDrawCallback": function(){
                                                 var theDataTable = this;
                                                 $(theDataTable).find("tr").off("click").on("click", function(e) {

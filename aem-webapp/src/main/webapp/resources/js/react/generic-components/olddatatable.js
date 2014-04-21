@@ -68,6 +68,9 @@ var OldTocDataTable = React.createClass({
             "aaSorting": aaSorting,
             "aoColumnDefs": aoColumnDefs,
             "bJQueryUI": true,
+            "aLengthMenu": [[25, 50, 100, 200, -1],
+                            [25, 50, 100, 200, "All"]],
+            "iDisplayLength": 25,
             "fnDrawCallback": function(){
 
                 dataTable = this;
