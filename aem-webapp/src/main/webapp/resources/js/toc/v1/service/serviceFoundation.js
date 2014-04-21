@@ -1,15 +1,22 @@
 var serviceFoundation = {
 
-    get : function (url, dataType) {
-        return Promise.cast($.ajax({
-                                       url: url,
-                                       dataType: dataType,
-                                       type: 'GET',
-                                       cache: false
-                                   }));
+    get : function (url, dataType, caughtCallback) {
+        return Promise.cast($.ajax({url: url,
+                                    dataType: dataType,
+                                    type: 'GET',
+                                    ache: false
+                                })).then(function(response){
+                                    if ($.isFunction(caughtCallback)) {
+                                        caughtCallback(response);
+                                    }
+                                }).caught(function(response){
+                                    if (response.status !== 200) {
+                                        $.errorAlert(JSON.stringify(response), "Error");
+                                    }
+                                });
     },
 
-    post : function(url, dataType, content) {
+    post : function(url, dataType, content, thenCallback, caughtCallback) {
         return Promise.cast($.ajax({
                                        url: url,
                                        dataType: dataType,
@@ -17,26 +24,51 @@ var serviceFoundation = {
                                        data: content,
                                        contentType: 'application/json',
                                        cache: false
-                                   }))},
+                                   })).then(function(){
+                                        if ($.isFunction(thenCallback)) {
+                                            thenCallback();
+                                        }
+                                   }).caught(function(e) {
+                                        if ($.isFunction(caughtCallback)) {
+                                            caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                        }
+                                   });
+            },
 
-    del : function(url, dataType) {
+    del : function(url, dataType, caughtCallback) {
         return Promise.cast($.ajax({
             url: url,
             dataType: dataType,
             type: 'DELETE',
             cache: false
-        }));
+        })).caught(function(e){
+           if (e.status !== 200) {
+               $.errorAlert(JSON.stringify(e), "Error");
+           }
+
+           if ($.isFunction(caughtCallback)) {
+                caughtCallback();
+           }
+        });
     },
 
-    put : function(url, dataType, content) {
-            return Promise.cast($.ajax({
-                                           url: url,
-                                           dataType: dataType,
-                                           type: 'PUT',
-                                           data: content,
-                                           contentType: 'application/json',
-                                           cache: false
-                                       }))},
+    put : function(url, dataType, content, thenCallback, caughtCallback) {
+            return Promise.cast($.ajax({url: url,
+                                        dataType: dataType,
+                                        type: 'PUT',
+                                        data: content,
+                                        contentType: 'application/json',
+                                        cache: false
+                                    })).then(function(){
+                                        if ($.isFunction(thenCallback)) {
+                                            thenCallback();
+                                        }
+                                    }).caught(function(e) {
+                                        if ($.isFunction(caughtCallback)) {
+                                            caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                        }
+                                    });
+            },
 
     /**
      * Form data converted to a serialized array will have a constant name-value pair i.e.

@@ -25,21 +25,25 @@ var webServerService = {
         json["groupIds"] = groupIdArray;
         return "[" + JSON.stringify(json) + "]";
     },
-	insertNewWebServer : function(webserverName, groupIds, hostName, portNumber) {
+	insertNewWebServer : function(webserverName, groupIds, hostName, portNumber, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/webservers",
 		                              "json",
 		                              JSON.stringify([{ webserverName: webserverName,
 		                                                groupIds: groupIds,
 		                                                hostName:hostName,
-		                                                portNumber:portNumber}]) );
+		                                                portNumber:portNumber}]),
+		                                                successCallback,
+		                                                errorCallback);
 	},
-	updateWebServer : function(webserverFormArray) {
+	updateWebServer : function(webserverFormArray, successCallback, errorCallback) {
 		return serviceFoundation.put("v1.0/webservers/",
 		                             "json",
-				                     this.serializedWebServerFormToJson(webserverFormArray));
+				                     this.serializedWebServerFormToJson(webserverFormArray),
+				                     successCallback,
+				                     errorCallback);
 	},
-	deleteWebServer : function(id) {
-        return serviceFoundation.del("v1.0/webservers/" + id, "json");
+	deleteWebServer : function(id, caughtCallback) {
+        return serviceFoundation.del("v1.0/webservers/" + id, "json", caughtCallback);
     },
 	/*
 	 * Get details of one defined web server - pass identifier integer Console
@@ -50,8 +54,8 @@ var webServerService = {
 	 * if(e.readyState == 4) { alert(e.responseText); } else
 	 * alert(e.responseText); });
 	 */
-	getWebServer : function(id) {
-		return serviceFoundation.get("v1.0/webservers/" + id);
+	getWebServer : function(id, responseCallback) {
+		return serviceFoundation.get("v1.0/webservers/" + id, "json", responseCallback);
 	},
 	/*
 	 * Get list of defined web servers - no parameters needed Console test code:
@@ -60,7 +64,7 @@ var webServerService = {
 	 * 
 	 * if(e.readyState > 1) { alert(e.applicationResponseContent); } },null);
 	 */
-	getWebServers : function() {
-		return serviceFoundation.get("v1.0/webservers?all");
+	getWebServers : function(responseCallback) {
+		return serviceFoundation.get("v1.0/webservers?all", "json", responseCallback);
 	}
 };

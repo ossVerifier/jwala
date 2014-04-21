@@ -58,31 +58,14 @@ var GroupConfig = React.createClass({
         var self = this;
         this.setState({showDeleteConfirmDialog: false});
         if (ans === "yes") {
-            this.props.service.deleteGroup(selectedGroup.id.id).then(
-                function(){
-                },
-                function(response) {
-                    if (response.status !== 200) {
-                        $.errorAlert(JSON.stringify(response), "Error");
-                    }
-                    self.retrieveData();
-                }
-            );
+            this.props.service.deleteGroup(selectedGroup.id.id, self.retrieveData);
         }
     },
     retrieveData: function() {
         var self = this;
-        this.props.service.getGroups().then(
-
-            function(response){
-                
-                self.setState({groupTableData:response.applicationResponseContent});
-            },
-            function(response) {
-                $.errorAlert(JSON.stringify(response), "Error");
-            }
-
-        );
+        this.props.service.getGroups(function(response){
+                                        self.setState({groupTableData:response.applicationResponseContent});
+                                     });
     },
     addEditSuccessCallback: function() {
         this.retrieveData();
@@ -101,13 +84,10 @@ var GroupConfig = React.createClass({
     },
     editCallback: function(id) {
         var thisComponent = this;
-        this.props.service.getGroup(id).then(
+        this.props.service.getGroup(id,
             function(response){
                 thisComponent.setState({groupFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
-            },
-            function(response) {
-                $.errorAlert(JSON.stringify(response), "Error");
             }
         );
     },
@@ -161,23 +141,9 @@ var GroupConfigForm = React.createClass({
 
             if (data === undefined) {
                 // TODO: Specifying group name to get value seems brittle, I think this has to be refactored.
-                svc.insertNewGroup($("input[name=name]").val()).then(
-                    function(){
-                        done();
-                    },
-                    function(response) {
-                        fail(JSON.parse(response.responseText).applicationResponseContent);
-                    }
-                );
+                svc.insertNewGroup($("input[name=name]").val(), done, fail);
             } else {
-                svc.updateGroup($(thisComponent.getDOMNode()).serializeArray()).then(
-                    function(){
-                        done();
-                    },
-                    function(response) {
-                        fail(JSON.parse(response.responseText).applicationResponseContent);
-                    }
-                );
+                svc.updateGroup($(thisComponent.getDOMNode()).serializeArray(), done, fail);
             }
 
             e.preventDefault(); // stop the default action

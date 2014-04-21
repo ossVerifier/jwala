@@ -61,33 +61,20 @@ var WebServerConfig = React.createClass({
         var self = this;
         this.setState({showDeleteConfirmDialog: false});
         if (ans === "yes") {
-            this.props.service.deleteWebServer(selectedWebServer.id.id).then(
-                function(){
-                }
-            ).caught(function(e){
-                if (e.status !== 200) {
-                    $.errorAlert(JSON.stringify(e), "Error");
-                }
-                self.retrieveData();
-            });
+            this.props.service.deleteWebServer(selectedWebServer.id.id, self.retrieveData);
         }
     },
     retrieveData: function() {
         var self = this;
-        this.props.service.getWebServers().then(
-            function(response){
-                self.setState({webServerTableData:response.applicationResponseContent});
-            }).caught(function(e){
-                $.errorAlert(JSON.stringify(e), "Error");
+        this.props.service.getWebServers(function(response){
+                self.setState({webServerTableData:response.applicationResponseContent})
             });
 
-        groupService.getGroups().then(
+        groupService.getGroups(
             function(response){
                 self.setState({groupMultiSelectData:response.applicationResponseContent});
             }
-        ).caught(function(e){
-            $.errorAlert(JSON.stringify(e), "Error");
-        });
+        );
     },
     addEditSuccessCallback: function() {
         this.retrieveData();
@@ -106,14 +93,12 @@ var WebServerConfig = React.createClass({
     },
     editCallback: function(id) {
         var thisComponent = this;
-        this.props.service.getWebServer(id).then(
+        this.props.service.getWebServer(id,
             function(response){
                 thisComponent.setState({webServerFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
             }
-        ).caught(function(e){
-            $.errorAlert(JSON.parse(e.responseText).applicationResponseContent, "Error");
-        });
+        );
     },
     closeModalFormAddDialog: function() {
         this.setState({showModalFormAddDialog: false})
@@ -269,20 +254,14 @@ var WebServerConfigForm = React.createClass({
                 svc.insertNewWebServer($("input[name=webserverName]").val(),
                                           groupIds,
                                           $("input[name=hostName]").val(),
-                                          $("input[name=portNumber]").val()).then(
-                    function(){
-                        done();
-                    }).caught(function(e){
-                        fail(JSON.parse(e.responseText).applicationResponseContent);
-                    });
+                                          $("input[name=portNumber]").val(),
+                                          done,
+                                          fail);
 
             } else {
-                svc.updateWebServer($(thisComponent.getDOMNode()).serializeArray()).then(
-                    function(){
-                        done();
-                    }).caught(function(e){
-                        fail(JSON.parse(e.responseText).applicationResponseContent);
-                    });
+                svc.updateWebServer($(thisComponent.getDOMNode()).serializeArray(),
+                                    done,
+                                    fail);
             }
 
             e.preventDefault(); // stop the default action

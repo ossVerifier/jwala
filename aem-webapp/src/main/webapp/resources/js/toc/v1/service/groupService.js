@@ -1,21 +1,26 @@
 var groupService = {
 
-    getGroups: function() {
-        // TODO: Change to v1.0/groups?all when the underlying rest service is working
-        return serviceFoundation.get("v1.0/groups?offset=0&limit=10000");
+    getGroups: function(responseCallback) {
+        return serviceFoundation.get("v1.0/groups?all", "json", responseCallback);
     },
-	insertNewGroup: function(name) {
-	    return serviceFoundation.post("v1.0/groups", "json", name);
+	insertNewGroup: function(name, successCallback, errorCallback) {
+	    return serviceFoundation.post("v1.0/groups",
+	                                  "json",
+	                                  name,
+	                                  successCallback,
+	                                  errorCallback);
 	},
-	updateGroup: function(group) {
+	updateGroup: function(group, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/groups/",
                                      "json",
-                                     serviceFoundation.serializedFormToJsonNoId(group));
+                                     serviceFoundation.serializedFormToJsonNoId(group),
+                                     successCallback,
+                                     errorCallback);
     },
-	deleteGroup: function(id) {
-	    return serviceFoundation.del("v1.0/groups/" + id, "json");
+	deleteGroup: function(id, caughtCallback) {
+	    return serviceFoundation.del("v1.0/groups/" + id, "json", caughtCallback);
 	},
-	getGroup: function(id) {
-	    return serviceFoundation.get("v1.0/groups/" + id);
+	getGroup: function(id, responseCallback) {
+	    return serviceFoundation.get("v1.0/groups/" + id, "json", responseCallback);
 	}
 }

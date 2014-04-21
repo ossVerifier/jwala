@@ -85,16 +85,10 @@ $(document).ready(function() {
     // TODO: Define a REST service that retrieves the group count so that
     // we don't have to retrieve the whole group info just to determine
     // if there are groups defined in the system.
-    ServiceFactory.getGroupService().getGroups().then(
-
+    ServiceFactory.getGroupService().getGroups(
         function(response){
             groups = response.applicationResponseContent;
-        },
-        function(response) {
-            $.errorAlert(JSON.stringify(response));
-        }
-
-    );
+        });
 
     var addJvmChecklistCallback = function() {
         if (groups.length < 1) {
@@ -156,7 +150,7 @@ $(document).ready(function() {
                 <td>
                     <div id="groupCombobox"></div>
                     <script>
-                        groupService.getGroups().then(
+                        groupService.getGroups(
                             function(response){
                                 var data = response.applicationResponseContent;
                                 React.renderComponent(DataMultiSelectBox({name:"groupSelector[]",
@@ -166,11 +160,7 @@ $(document).ready(function() {
                                                                           val:"name",
                                                                           className:"data-multi-select-box"}),
                                                                           document.getElementById("groupCombobox"));
-                            },
-                            function(response) {
-                                $.errorAlert(JSON.stringify(response), "Error");
-                            }
-                        );
+                            });
                     </script>
                 </td>
             </tr>
