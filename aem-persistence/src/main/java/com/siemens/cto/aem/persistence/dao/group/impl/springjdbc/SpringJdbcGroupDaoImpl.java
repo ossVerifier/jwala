@@ -167,7 +167,8 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
 
-        //TODO We should consider whether we support hard/soft deletes (this will affect method signature similar to create/update)
+        //TODO We should consider whether we support hard/soft deletes 
+        //     (this will affect method signature similar to create/update)
         final String delete = "DELETE FROM GRP WHERE ID=" + QueryKey.ID.getQueryKey();
 
         final SqlParameterSource input = new MapSqlParameterSource(QueryKey.ID.getKey(), aGroupId.getId());
@@ -178,7 +179,8 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
         if (deleteCount > 1) {
             throw new ApplicationException("Unknown problem when deleting Group " + aGroupId);
         } else if (deleteCount == 0) {
-            //TODO Decide whether deleting something that doesn't exist should result in a failure or not
+            //TODO Decide whether deleting something that doesn't exist should
+            //     result in a failure or not
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
                                         "Group not found: " + aGroupId.getId());
         }
