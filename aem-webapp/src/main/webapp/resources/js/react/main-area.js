@@ -43,8 +43,7 @@ var ConfigureTabs = React.createClass({
                  {title: "Web Apps", content:""},
                  {title: "Resources", content:""},
                  {title: "Group", content:<GroupConfig className="group-config"
-                                                       service={ServiceFactory.getGroupService()}/>},
-                 {title: "Role Mapping", content:""}];
+                                                       service={ServiceFactory.getGroupService()}/>}];
     },
     render: function() {
         return <Tabs theme="default" items={items} depth="1"/>
