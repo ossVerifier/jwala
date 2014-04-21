@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -63,7 +64,7 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
                                                     insertedKey);
 
             if (insertCount != 1) {
-                throw new RuntimeException("Insert failed for GroupCreation " + aGroupToCreate);
+                throw new ApplicationException("Insert failed for GroupCreation " + aGroupToCreate);
             }
 
             return getGroup(new Identifier<Group>(insertedKey.getKey().longValue()));
@@ -96,7 +97,7 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
                 throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
                                             "Update failed for GroupUpdate " + aGroupToUpdate.getCommand().getId());
             } else if (updateCount > 1) {
-                throw new RuntimeException("Unknown problem when updating Group " + aGroupToUpdate.getCommand().getId());
+                throw new ApplicationException("Unknown problem when updating Group " + aGroupToUpdate.getCommand().getId());
             }
 
             return getGroup(aGroupToUpdate.getCommand().getId());
@@ -175,7 +176,7 @@ public class SpringJdbcGroupDaoImpl implements GroupDao {
                                                 input);
 
         if (deleteCount > 1) {
-            throw new RuntimeException("Unknown problem when deleting Group " + aGroupId);
+            throw new ApplicationException("Unknown problem when deleting Group " + aGroupId);
         } else if (deleteCount == 0) {
             //TODO Decide whether deleting something that doesn't exist should result in a failure or not
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,

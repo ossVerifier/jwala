@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.jndi.JndiLocatorDelegate;
 
+import com.siemens.cto.aem.common.ApplicationException;
+
 @Configuration
 public class AemDataSourceConfiguration {
 
@@ -17,7 +19,7 @@ public class AemDataSourceConfiguration {
             return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/toc-xa",
                                                                                 DataSource.class);
         } catch (final NamingException ne) {
-            throw new RuntimeException(ne);
+            throw new ApplicationException(ne);
         }
     }
 
