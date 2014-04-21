@@ -1,128 +1,170 @@
+/** @jsx React.DOM */
 var TocDataTable = React.createClass({
-    getInitialState: function() {
-        return {data: {applicationResponseContent:[]}};
-    },
-    refresh: function() {
-        $.ajax({
-            url: this.props.url + "?all",
-            dataType: "json",
-            cache: false,
-            success: function(data) {
-                this.setState({data: data});
-            }.bind(this),
-            error: function(xhr, status, err) {
-
-            }.bind(this)
-        });
-    },
-    componentWillMount: function() {
-        this.refresh();
+    dataTable: null,
+    anOpen: [],
+    expandCollapseEnabled: false,
+    render: function() {
+        return <div>
+                    <table/>
+               </div>
     },
     componentDidMount: function() {
         var self = this;
-        
+
         // build column definitions based on props
-        var aoColumnDefs  = [];
-        var aaSorting     = [];
+        var aoColumnDefs = [];
+        var aaSorting = [];
         var props = this.props;
-        
+
         $(this.props.headerExt).each(function(itemIndex, item, itemArray) {
-          aoColumnDefs[itemIndex] = {
-            "sTitle": item.sTitle,
-            "mData": item.mData,
-            "aTargets": [ itemIndex ]};
-            
-          if(item.bVisible !== undefined) {
-            aoColumnDefs[itemIndex].bVisible = item.bVisible;
-          }
-          
-          if(item.tocType == 'link') { 
-            aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-              if(self.isMounted()) {
-                var capHtml = "";
-                React.renderComponentToString(new Link({valId:full.id.id,
-                                                        value:data,
-                                                        editDialog:props.editDialog,
-                                                        thisGrid:self,
-                                                        jsonFormDataTransformerCallback:props.jsonFormDataTransformerCallback
-                       }), function(html) { capHtml = html; } );
-                return capHtml;
-              } else { return ""; }
-            };
-          } else if (item.tocType === "array") {
-                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                    var str = "";
-                    /* would be better with _Underscore.js : */
-                    for (var idx = 0; idx < data.length; idx=idx+1) {
-                        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
-                    }
-                    return str;
-                }
-          }
 
-          aaSorting[itemIndex] = [itemIndex, 'asc'];
-        });
-        
-        this.dataTable = 
-          $(self.getDOMNode().children[1]).dataTable({
-            "aaSorting": aaSorting,
-            "aoColumnDefs": aoColumnDefs,
-            "bJQueryUI": true,
-            "fnDrawCallback": function(){
+            aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
+                                       "mData": item.mData,
+                                       "aTargets": [itemIndex]};
 
-                dataTable = this;
-                $(dataTable).find("tr").off("click").on("click", function(e) {
-                    if ($(this).hasClass("row_selected") ) {
-                        $(this).removeClass("row_selected");
-                    } else {
-                        $(dataTable).find("tr").removeClass("row_selected");
-                        $(this).addClass("row_selected");
-                    }
-                });
-
+            if(item.bVisible !== undefined) {
+                aoColumnDefs[itemIndex].bVisible = item.bVisible;
             }
+
+            if(item.tocType === "link") {
+
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                if(self.isMounted()) {
+                    var capHtml = "";
+                    React.renderComponentToString(new Link2({valueId:full.id.id,
+                                                             value:data,
+                                                             callback:self.props.editCallback}),
+                                                  function(html) {capHtml = html;});
+                        return capHtml;
+                    } else { return ""; }
+                };
+            } else if (item.tocType === "control") {
+                self.expandCollapseEnabled = true;
+                aoColumnDefs[itemIndex].mDataProp = null;
+                aoColumnDefs[itemIndex].sClass = "control center";
+                aoColumnDefs[itemIndex].sWidth = "20px";
+
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                    var content = "";
+                    if (data.length > 0) {
+                        React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
+                                                      expandIcon:self.props.expandIcon,
+                                                      collapseIcon:self.props.collapseIcon,
+                                                      colHeaders:self.props.colHeaders,
+                                                      data:data,
+                                                      getDataTableCallback:self.getDataTable,
+                                                      rowSubComponentContainerClassName:self.props.rowSubComponentContainerClassName}),
+                                                      function(html) {
+                                                        content = html;
+                                                     });
+                    }
+                    return content;
+                }
+
+            } else if (item.tocType === "array") {
+                  aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                      var str = "";
+                      /* would be better with _Underscore.js : */
+                      for (var idx = 0; idx < data.length; idx=idx+1) {
+                          str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+                      }
+                      return str;
+                  }
+            }
+
+            aaSorting[itemIndex] = [itemIndex, 'asc'];
+
         });
+
+        this.dataTable =
+        $(this.getDOMNode().children[0]).dataTable({"aaSorting": aaSorting,
+                                        "aoColumnDefs": aoColumnDefs,
+                                        "bJQueryUI": true,
+                                        "bAutoWidth": false,
+                                        "bStateSave": true,
+                                        "fnDrawCallback": function(){
+                                                var theDataTable = this;
+                                                $(theDataTable).find("tr").off("click").on("click", function(e) {
+                                                    if ($(this).hasClass("row_selected") ) {
+                                                        $(this).removeClass("row_selected");
+                                                    } else {
+                                                        $(theDataTable).find("tr").removeClass("row_selected");
+                                                        $(this).addClass("row_selected");
+
+                                                        var cell = theDataTable.find("tbody tr.row_selected")[0];
+                                                        if (cell !== undefined) {
+                                                            var i = theDataTable.fnGetPosition(cell);
+                                                            var item = theDataTable.fnGetData(i);
+                                                            self.props.selectItemCallback(item);
+                                                        }
+
+                                                    }
+                                                });
+                                            }
+                                        });
 
     },
-    render: function() {
-      
-        // Table must be in a DIV so that css will work with a table as container
-        var table = React.DOM.table({className:"tocDataTable-" + this.props.theme});
-        
-        var div = React.DOM.div({className:"tocDataTable-" + this.props.theme},
-                             this.props.editDialog,
-                             table
-                             );
-                             
-        if(this.dataTable !== undefined) {
-          this.dataTable.fnClearTable(this.state.data.applicationResponseContent);
-          this.dataTable.fnAddData(this.state.data.applicationResponseContent);
-          this.dataTable.fnDraw();
+    componentDidUpdate: function() {
+        var self = this;
+        if (this.dataTable !== null) {
+            this.dataTable.fnClearTable(this.props.data);
+            this.dataTable.fnAddData(this.props.data);
+            this.dataTable.fnDraw();
         }
-        return div;        
+    },
+    getDataTable: function() {
+        return this.dataTable;
     }
 });
 
-var Link = React.createClass({
+var Link2 = React.createClass({
     render: function() {
-        // TODO: Remove inline style
-        var linkStyle = {"text-decoration":"underline", "background":"none", "color":"blue"};
-        return React.DOM.a({href:"", style:linkStyle, onClick:this.linkClick}, this.props.value);
+        return <a href="" onClick={this.linkClick}>{this.props.value}</a>
     },
     linkClick: function(e) {
-        var editDialog = this.props.editDialog;
-        var thisGrid = this.props.thisGrid;
-        var jsonFormDataTransformerCallback = this.props.jsonFormDataTransformerCallback;
-        $.getJSON("v1.0/jvms/" + this.props.valId,
-            function(data) {
-                editDialog.show(jsonFormDataTransformerCallback(data), function(){
-                    thisGrid.refresh();
-                });
-
-         });
         // next 3 lines stop the browser navigating
         e.preventDefault();
         e.stopPropagation();
-        return false; 
+
+        this.props.callback(this.props.valueId);
+
+        return false;
+    }
+});
+
+var ExpandCollapseController = React.createClass({
+    currentIcon: "", // Tried to use state then re-render but can't get firstChild of undefined rears it's ungly head out.
+    render: function() {
+        this.currentIcon = this.props.expandIcon;
+        var controlFullId = "ExpandCollapseController_" + this.props.controlId;
+        return <img id={controlFullId}
+                    src={this.props.expandIcon}
+                    onClick={this.onClick}/>
+    },
+    onClick: function() {
+        var dataTable = this.props.getDataTableCallback();
+        var controlFullId = "ExpandCollapseController_" + this.props.controlId;
+
+        // We need the <tr> node for DataTable to insert the child table
+        var nTr = $("#" + controlFullId).parent().parent().get(0);
+
+        if (this.currentIcon === this.props.expandIcon) {
+            this.currentIcon = this.props.collapseIcon;
+            dataTable.fnOpen(nTr,
+                             this.fnFormatDetails(this.props.data),
+                             this.props.rowSubComponentContainerClassName);
+        } else {
+            this.currentIcon = this.props.expandIcon;
+            dataTable.fnClose(nTr);
+        }
+        $("#" + controlFullId).attr("src", this.currentIcon);
+    },
+    fnFormatDetails: function(data) {
+        var sOut = "";
+        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
+                                      colHeaders:this.props.colHeaders,
+                                      displayColumns:["jvmName", "hostName"],
+                                      data:data}), function(html) {sOut = html;});
+        return sOut;
     }
 });

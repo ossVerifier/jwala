@@ -28,8 +28,8 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-edit-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-grid.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/olddatatable.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/datatable.js"></script>
-<script type="text/jsx" src="public-resources/js/react/generic-components/datatable2.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/simple-data-table.js"></script>
 <script type="text/jsx" src="public-resources/js/react/delete-item-widget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
