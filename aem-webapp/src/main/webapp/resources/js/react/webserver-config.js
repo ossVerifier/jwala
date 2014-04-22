@@ -197,7 +197,6 @@ var WebServerConfigForm = React.createClass({
                </form>
     },
     componentDidMount: function() {
-
         var validator = $(this.getDOMNode()).validate({
             ignore: ":hidden",
             rules: {

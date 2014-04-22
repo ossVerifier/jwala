@@ -10,7 +10,9 @@ var serviceFoundation = {
                                         caughtCallback(response);
                                     }
                                 }).caught(function(response){
-                                    if (response.status !== 200) {
+                                    if (response.message !== undefined) {
+                                        $.errorAlert(response.message, "Error");
+                                    } else if (response.status !== 200) {
                                         $.errorAlert(JSON.stringify(response), "Error");
                                     }
                                 });

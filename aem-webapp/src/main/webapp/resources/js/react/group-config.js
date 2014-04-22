@@ -172,7 +172,8 @@ var GroupDataTable = React.createClass({
         var headerExt = [{sTitle:"", mData: "jvms", tocType:"control"},
                          {sTitle:"Group ID", mData:"id.id", bVisible:false},
                          {sTitle:"Group Name", mData:"name", tocType:"link"}];
-        return <TocDataTable theme="default"
+        return <TocDataTable tableId="groupDataTable"
+                             theme="default"
                              headerExt={headerExt}
                              colHeaders={["JVM Name", "Host Name"]}
                              data={this.props.data}

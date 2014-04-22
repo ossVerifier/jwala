@@ -28,16 +28,14 @@ var TocDataTable = React.createClass({
 
             if(item.tocType === "link") {
 
-                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                if(self.isMounted()) {
-                    var capHtml = "";
-                    React.renderComponentToString(new Link2({valueId:full.id.id,
-                                                             value:data,
-                                                             callback:self.props.editCallback}),
-                                                  function(html) {capHtml = html;});
-                        return capHtml;
-                    } else { return ""; }
+                aoColumnDefs[itemIndex].mRender = function(data, type, full) {
+                    var id = self.props.tableId + "link" + data + full.id.id;
+                    return React.renderComponentToStaticMarkup(new Anchor({id:id,
+                                                                   valueId:full.id.id,
+                                                                   value:data,
+                                                                   callback:self.props.editCallback}));
                 };
+
             } else if (item.tocType === "control") {
                 self.expandCollapseEnabled = true;
                 aoColumnDefs[itemIndex].mDataProp = null;
@@ -47,17 +45,14 @@ var TocDataTable = React.createClass({
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                     var content = "";
                     if (data.length > 0) {
-                        React.renderComponentToString(new ExpandCollapseController({controlId:full.id.id,
-                                                      expandIcon:self.props.expandIcon,
-                                                      collapseIcon:self.props.collapseIcon,
-                                                      colHeaders:self.props.colHeaders,
-                                                      data:data,
-                                                      getDataTableCallback:self.getDataTable,
-                                                      rowSubComponentContainerClassName:self.props.rowSubComponentContainerClassName}),
-                                                      function(html) {
-                                                        content = html;
-                                                     });
-                    }
+                        return React.renderComponentToStaticMarkup (new ExpandCollapseController({controlId:full.id.id,
+                                                                        expandIcon:self.props.expandIcon,
+                                                                        collapseIcon:self.props.collapseIcon,
+                                                                        colHeaders:self.props.colHeaders,
+                                                                        data:data,
+                                                                        getDataTableCallback:self.getDataTable,
+                                                                        rowSubComponentContainerClassName:self.props.rowSubComponentContainerClassName}));
+                        }
                     return content;
                 }
 
@@ -120,29 +115,29 @@ var TocDataTable = React.createClass({
     }
 });
 
-var Link2 = React.createClass({
+var Anchor = React.createClass({
     render: function() {
-        return <a href="" onClick={this.linkClick}>{this.props.value}</a>
+        $("#" + this.props.id).off("click");
+        $("#" + this.props.id).click(this.linkClick);
+        return <a id={this.props.id} href="#">{this.props.value}</a>
     },
-    linkClick: function(e) {
-        // next 3 lines stop the browser navigating
-        e.preventDefault();
-        e.stopPropagation();
-
+    linkClick: function() {
         this.props.callback(this.props.valueId);
-
-        return false;
     }
 });
 
 var ExpandCollapseController = React.createClass({
-    currentIcon: "", // Tried to use state then re-render but can't get firstChild of undefined rears it's ungly head out.
+    currentIcon: "", // Tried to use state then re-render but can't. I get firstChild of undefined rears for some reason.
+                     // Upgrading to 0.10.0 should resolve this.
     render: function() {
         this.currentIcon = this.props.expandIcon;
         var controlFullId = "ExpandCollapseController_" + this.props.controlId;
+
+        $("#" + controlFullId).off("click");
+        $("#" + controlFullId).click(this.onClick);
+
         return <img id={controlFullId}
-                    src={this.props.expandIcon}
-                    onClick={this.onClick}/>
+                    src={this.props.expandIcon}/>
     },
     onClick: function() {
         var dataTable = this.props.getDataTableCallback();
@@ -163,11 +158,9 @@ var ExpandCollapseController = React.createClass({
         $("#" + controlFullId).attr("src", this.currentIcon);
     },
     fnFormatDetails: function(data) {
-        var sOut = "";
-        React.renderComponentToString(new SimpleDataTable({className:"simple-data-table",
-                                      colHeaders:this.props.colHeaders,
-                                      displayColumns:["jvmName", "hostName"],
-                                      data:data}), function(html) {sOut = html;});
-        return sOut;
+        return React.renderComponentToStaticMarkup (new SimpleDataTable({className:"simple-data-table",
+                                                        colHeaders:this.props.colHeaders,
+                                                        displayColumns:["jvmName", "hostName"],
+                                                        data:data}));
     }
 });

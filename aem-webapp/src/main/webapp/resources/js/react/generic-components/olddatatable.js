@@ -39,14 +39,14 @@ var OldTocDataTable = React.createClass({
           if(item.tocType == 'link') { 
             aoColumnDefs[itemIndex].mRender = function (data, type, full) {
               if(self.isMounted()) {
-                var capHtml = "";
-                React.renderComponentToString(new Link({valId:full.id.id,
-                                                        value:data,
-                                                        editDialog:props.editDialog,
-                                                        thisGrid:self,
-                                                        jsonFormDataTransformerCallback:props.jsonFormDataTransformerCallback
-                       }), function(html) { capHtml = html; } );
-                return capHtml;
+                var id = self.props.tableId + "link" + data + full.id.id;
+                return React.renderComponentToString(new Link({id:id,
+                                                               valId:full.id.id,
+                                                               value:data,
+                                                               editDialog:props.editDialog,
+                                                               thisGrid:self,
+                                                               jsonFormDataTransformerCallback:props.jsonFormDataTransformerCallback
+                       }));
               } else { return ""; }
             };
           } else if (item.tocType === "array") {
@@ -110,7 +110,10 @@ var Link = React.createClass({
     render: function() {
         // TODO: Remove inline style
         var linkStyle = {"text-decoration":"underline", "background":"none", "color":"blue"};
-        return React.DOM.a({href:"", style:linkStyle, onClick:this.linkClick}, this.props.value);
+
+        $("#" + this.props.id).off("click");
+        $("#" + this.props.id).click(this.linkClick);
+        return React.DOM.a({id:this.props.id, href:"#", style:linkStyle}, this.props.value);
     },
     linkClick: function(e) {
         var editDialog = this.props.editDialog;

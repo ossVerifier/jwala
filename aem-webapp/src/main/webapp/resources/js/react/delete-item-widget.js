@@ -6,6 +6,7 @@ var DeleteItemWidget = React.createClass({
         dataTable = $(this.props.dataGrid.getDOMNode()).find("table").dataTable();
         dialogConfirm = DialogConfirm({dataGrid:this.props.dataGrid, url:this.props.url});
         submissionInProgress = false;
+        return null;
     },
     render: function() {
         return React.DOM.div(null,

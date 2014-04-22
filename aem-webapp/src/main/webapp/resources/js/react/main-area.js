@@ -27,6 +27,7 @@ var MainTabs = React.createClass({
         items = [{title:"Groups", content:""},
                  {title:"Web Servers", content:""},
                  {title: "Configure", content:<ConfigureTabs/>}];
+        return null;
     },
     render: function() {
         return <Tabs theme="default" items={items} depth="0"/>
@@ -44,6 +45,7 @@ var ConfigureTabs = React.createClass({
                  {title: "Resources", content:""},
                  {title: "Group", content:<GroupConfig className="group-config"
                                                        service={ServiceFactory.getGroupService()}/>}];
+        return null;
     },
     render: function() {
         return <Tabs theme="default" items={items} depth="1"/>
