@@ -67,14 +67,13 @@ var WebServerConfig = React.createClass({
     retrieveData: function() {
         var self = this;
         this.props.service.getWebServers(function(response){
-                self.setState({webServerTableData:response.applicationResponseContent})
-            });
-
-        groupService.getGroups(
-            function(response){
-                self.setState({groupMultiSelectData:response.applicationResponseContent});
-            }
-        );
+                var webServerTableData = response.applicationResponseContent;
+                groupService.getGroups(
+                    function(response){
+                        self.setState({webServerTableData:webServerTableData, groupMultiSelectData:response.applicationResponseContent});
+                    }
+                );
+        });
     },
     addEditSuccessCallback: function() {
         this.retrieveData();
