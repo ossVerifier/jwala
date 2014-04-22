@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.model.jvm.CreateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 

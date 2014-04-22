@@ -9,11 +9,15 @@ import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmControlCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmControlCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.group.impl.JpaGroupPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmControlPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
 
 @Configuration
@@ -34,9 +38,13 @@ public class AemPersistenceServiceConfiguration {
     }
 
     @Bean
+    public JvmControlPersistenceService getJvmControlPersistenceService() {
+        return new JpaJvmControlPersistenceServiceImpl(getJvmControlCrudService());
+    }
+
+    @Bean
     protected GroupJvmRelationshipService getGroupJvmRelationshipService() {
-        return new GroupJvmRelationshipServiceImpl(
-                getGroupCrudService(),
+        return new GroupJvmRelationshipServiceImpl(getGroupCrudService(),
                                                    getJvmCrudService());
     }
 
@@ -48,5 +56,10 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected JvmCrudService getJvmCrudService() {
         return new JvmCrudServiceImpl();
+    }
+
+    @Bean
+    protected JvmControlCrudService getJvmControlCrudService() {
+        return new JvmControlCrudServiceImpl();
     }
 }

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.domain.model.jvm;
+package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -10,6 +10,7 @@ import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 
 public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.domain.model.jvm;
+package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,6 +6,7 @@ import java.util.Set;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 public class AddJvmToGroupCommandSetBuilder {
 

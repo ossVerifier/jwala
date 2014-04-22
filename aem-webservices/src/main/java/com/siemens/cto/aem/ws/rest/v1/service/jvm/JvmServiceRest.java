@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonCreateJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonUpdateJvm;
 
@@ -40,5 +41,10 @@ public interface JvmServiceRest {
     @DELETE
     @Path("/{jvmId}")
     Response removeJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
+
+    @POST
+    @Path("/{jvmId}/commands")
+    Response controlJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                        final JsonControlJvm aJvmToControl);
 
 }

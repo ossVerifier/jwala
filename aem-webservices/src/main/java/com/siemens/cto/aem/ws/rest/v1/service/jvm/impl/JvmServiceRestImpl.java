@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -20,10 +22,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final Logger logger;
 
     private final JvmService jvmService;
+    private final JvmControlService jvmControlService;
 
-    public JvmServiceRestImpl(final JvmService theJvmService) {
+    public JvmServiceRestImpl(final JvmService theJvmService,
+                              final JvmControlService theJvmControlService) {
         logger = LoggerFactory.getLogger(JvmServiceRestImpl.class);
         jvmService = theJvmService;
+        jvmControlService = theJvmControlService;
     }
 
     @Override
@@ -65,5 +70,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         logger.debug("Delete JVM requested: {}", aJvmId);
         jvmService.removeJvm(aJvmId);
         return ResponseBuilder.ok();
+    }
+
+    @Override
+    public Response controlJvm(final Identifier<Jvm> aJvmId,
+                               final JsonControlJvm aJvmToControl) {
+        logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
+        return ResponseBuilder.ok(jvmControlService.controlJvm(new ControlJvmCommand(aJvmId,
+                                                                                     aJvmToControl.toControlOperation()),
+                                                               User.getHardCodedUser())); //Or ResponseBuilder.created();
     }
 }

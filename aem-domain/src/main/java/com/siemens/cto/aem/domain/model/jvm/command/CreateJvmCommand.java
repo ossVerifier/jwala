@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.domain.model.jvm;
+package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 

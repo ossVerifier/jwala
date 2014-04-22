@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
@@ -36,6 +37,9 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerService webServerService;
+
+    @Autowired
+    private JvmControlService jvmControlService;
 
     @Autowired
     private ApplicationService applicationService;
@@ -72,7 +76,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService);
+        return new JvmServiceRestImpl(jvmService,
+                                      jvmControlService);
     }
 
     @Bean

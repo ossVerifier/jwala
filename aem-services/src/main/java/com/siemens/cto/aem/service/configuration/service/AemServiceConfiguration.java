@@ -10,7 +10,9 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
@@ -43,5 +45,10 @@ public class AemServiceConfiguration {
     @Bean
     public ApplicationService getApplicationService() {
         return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao());
+    }
+
+    @Bean
+    public JvmControlService getJvmControlService() {
+        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService());
     }
 }
