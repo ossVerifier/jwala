@@ -119,10 +119,11 @@ var Anchor = React.createClass({
     render: function() {
         $("#" + this.props.id).off("click");
         $("#" + this.props.id).click(this.linkClick);
-        return <a id={this.props.id} href="#">{this.props.value}</a>
+        return <a id={this.props.id} href="">{this.props.value}</a>
     },
     linkClick: function() {
         this.props.callback(this.props.valueId);
+        return false;
     }
 });
 
