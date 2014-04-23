@@ -31,7 +31,7 @@ var GroupConfig = React.createClass({
                                                     noUpdateWhen={
                                                       this.state.showModalFormAddDialog || 
                                                       this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog 
+                                                      this.state.showModalFormEditDialog
                                                       }/>
                                 </div>
                             </td>
@@ -39,17 +39,25 @@ var GroupConfig = React.createClass({
                    </table>
                    <ModalFormDialog title="Add Group"
                                     show={this.state.showModalFormAddDialog}
-                                    form={<GroupConfigForm service={this.props.service}/>}
-                                    successCallback={this.addEditSuccessCallback}
+                                    form={<GroupConfigForm service={this.props.service}
+                                                           successCallback={this.addSuccessCallback}/>}
                                     destroyCallback={this.closeModalFormAddDialog}
-                                    className="textAlignLeft"/>
+                                    className="textAlignLeft"
+                                    noUpdateWhen={
+                                        this.state.showDeleteConfirmDialog ||
+                                        this.state.showModalFormEditDialog
+                                    }/>
                    <ModalFormDialog title="Edit Group"
                                     show={this.state.showModalFormEditDialog}
                                     form={<GroupConfigForm service={this.props.service}
-                                                           data={this.state.groupFormData}/>}
-                                    successCallback={this.addEditSuccessCallback}
+                                                           data={this.state.groupFormData}
+                                                           successCallback={this.editSuccessCallback}/>}
                                     destroyCallback={this.closeModalFormEditDialog}
-                                    className="textAlignLeft"/>
+                                    className="textAlignLeft"
+                                    noUpdateWhen={
+                                        this.state.showModalFormAddDialog ||
+                                        this.state.showDeleteConfirmDialog
+                                    }/>
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                              btnClickedCallback={this.confirmDeleteCallback} />
                </div>
@@ -67,9 +75,13 @@ var GroupConfig = React.createClass({
                                         self.setState({groupTableData:response.applicationResponseContent});
                                      });
     },
-    addEditSuccessCallback: function() {
+    addSuccessCallback: function() {
         this.retrieveData();
-        return true;
+        this.closeModalFormAddDialog();
+    },
+    editSuccessCallback: function() {
+        this.retrieveData();
+        this.closeModalFormEditDialog();
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
@@ -117,7 +129,7 @@ var GroupConfigForm = React.createClass({
         }
     },
     render: function() {
-        return <form action="v1.0/groups">
+        return <form>
                     <input name="id" type="hidden" defaultValue={this.state.groupId} />
                     <table>
                         <tr>
@@ -130,35 +142,32 @@ var GroupConfigForm = React.createClass({
                </form>
     },
     componentDidMount: function() {
-        this.setState({validator:$(this.getDOMNode()).validate({ignore: ":hidden"})});
-    },
-    submit: function(done, fail) {
+
         var thisComponent = this;
         var svc = thisComponent.props.service;
         var data = thisComponent.props.data;
 
-        $(this.getDOMNode()).one("submit", function(e) {
+        $(this.getDOMNode()).off("submit");
+        $(this.getDOMNode()).on("submit", function(e) {
 
             if (data === undefined) {
-                // TODO: Specifying group name to get value seems brittle, I think this has to be refactored.
-                svc.insertNewGroup($("input[name=name]").val(), done, fail);
+                svc.insertNewGroup($("input[name=name]").val(),
+                                   thisComponent.props.successCallback,
+                                   function(errMsg) {
+                                        $.errorAlert(errMsg, "Error");
+                                   });
             } else {
-                svc.updateGroup($(thisComponent.getDOMNode()).serializeArray(), done, fail);
+                svc.updateGroup($(thisComponent.getDOMNode()).serializeArray(),
+                                  thisComponent.props.successCallback,
+                                  function(errMsg) {
+                                        $.errorAlert(errMsg, "Error");
+                                  });
             }
 
             e.preventDefault(); // stop the default action
         });
 
-        if (this.state.validator !== null) {
-            this.state.validator.cancelSubmit = true;
-            this.state.validator.form();
-            if (this.state.validator.numberOfInvalids() === 0) {
-                $(this.getDOMNode()).submit();
-            }
-        } else {
-            alert("There is no validator for the form!");
-        }
-
+        this.setState({validator:$(this.getDOMNode()).validate({ignore: ":hidden"})});
     }
 });
 

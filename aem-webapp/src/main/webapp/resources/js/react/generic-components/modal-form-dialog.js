@@ -1,5 +1,9 @@
 /** @jsx React.DOM */
 var ModalFormDialog = React.createClass({
+    isShowing: false,
+    shouldComponentUpdate: function(nextProps, nextState) {
+        return !nextProps.noUpdateWhen;
+    },
     render: function() {
         if (this.props.show === true) {
             return <div className={this.props.className}>{this.props.form}</div>
@@ -9,6 +13,12 @@ var ModalFormDialog = React.createClass({
     componentDidUpdate: function () {
         if (this.props.show === true) {
             this.show();
+            this.isShowing = true;
+        } else {
+            if (this.isShowing) {
+                $(this.getDOMNode()).dialog("destroy");
+            }
+            this.isShowing = false;
         }
     },
     show: function() {
@@ -23,11 +33,7 @@ var ModalFormDialog = React.createClass({
             width: "auto",
             buttons: {
                 "Ok": function () {
-                    thisComponent.okClick(function(){
-                        if (thisComponent.props.successCallback() === true) {
-                            thisComponent.destroy();
-                        }
-                    });
+                    thisComponent.okClick();
                 },
                 "Cancel": function () {
                     thisComponent.destroy();
@@ -39,22 +45,22 @@ var ModalFormDialog = React.createClass({
         });
     },
     okClick: function(callback) {
-        this.props.form.submit(
-            function() {
-                // You need to destroy this component in a callback
-                // to prevent has no method isMounted error if
-                // the component is destroyed here
-                callback();
-            },
-            function(errMsg) {
-                $.errorAlert(errMsg, "Error");
+        var theForm = $(this.getDOMNode()).children("form:first");
+        var validator = theForm.data("validator");
+
+        if (validator !== null) {
+            validator.cancelSubmit = true;
+            validator.form();
+            if (validator.numberOfInvalids() === 0) {
+                theForm.submit();
             }
-        );
+        } else {
+            alert("There is no validator for the form!");
+        }
     },
     destroy: function() {
         if (this.props.destroyCallback !== undefined) {
             this.props.destroyCallback();
         }
-        $(this.getDOMNode()).dialog("destroy");
     }
 });

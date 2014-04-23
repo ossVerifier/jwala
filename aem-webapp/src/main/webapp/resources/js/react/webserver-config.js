@@ -41,18 +41,26 @@ var WebServerConfig = React.createClass({
                    <ModalFormDialog title="Add Web Server"
                                     show={this.state.showModalFormAddDialog}
                                     form={<WebServerConfigForm service={this.props.service}
-                                                               groupMultiSelectData={this.state.groupMultiSelectData}/>}
-                                    successCallback={this.addEditSuccessCallback}
+                                                               groupMultiSelectData={this.state.groupMultiSelectData}
+                                                               successCallback={this.addSuccessCallback}/>}
                                     destroyCallback={this.closeModalFormAddDialog}
-                                    className="textAlignLeft"/>
+                                    className="textAlignLeft"
+                                    noUpdateWhen={
+                                        this.state.showDeleteConfirmDialog ||
+                                        this.state.showModalFormEditDialog
+                                    }/>
                    <ModalFormDialog title="Edit Web Server"
                                     show={this.state.showModalFormEditDialog}
                                     form={<WebServerConfigForm service={this.props.service}
                                                            data={this.state.webServerFormData}
-                                                           groupMultiSelectData={this.state.groupMultiSelectData}/>}
-                                    successCallback={this.addEditSuccessCallback}
+                                                           groupMultiSelectData={this.state.groupMultiSelectData}
+                                                           successCallback={this.editSuccessCallback}/>}
                                     destroyCallback={this.closeModalFormEditDialog}
-                                    className="textAlignLeft"/>
+                                    className="textAlignLeft"
+                                    noUpdateWhen={
+                                        this.state.showModalFormAddDialog ||
+                                        this.state.showDeleteConfirmDialog
+                                    }/>
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                              btnClickedCallback={this.confirmDeleteCallback} />
                </div>
@@ -75,9 +83,13 @@ var WebServerConfig = React.createClass({
                 );
         });
     },
-    addEditSuccessCallback: function() {
+    addSuccessCallback: function() {
         this.retrieveData();
-        return true;
+        this.closeModalFormAddDialog();
+    },
+    editSuccessCallback: function() {
+        this.retrieveData();
+        this.closeModalFormEditDialog();
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
@@ -136,7 +148,7 @@ var WebServerConfigForm = React.createClass({
     },
     render: function() {
         var self = this;
-        return <form action="v1.0/webServers">
+        return <form>
                     <input name="webserverId" type="hidden" defaultValue={this.state.id} />
                     <table>
                         <tr>
@@ -234,15 +246,12 @@ var WebServerConfigForm = React.createClass({
             });
         }
 
-        this.setState({validator:validator});
-    },
-    submit: function(done, fail) {
         var thisComponent = this;
         var svc = thisComponent.props.service;
         var data = thisComponent.props.data;
 
-        $(this.getDOMNode()).one("submit", function(e) {
-
+        $(this.getDOMNode()).off("submit");
+        $(this.getDOMNode()).on("submit", function(e) {
             if (data === undefined) {
 
                 var groupIds = [];
@@ -256,28 +265,23 @@ var WebServerConfigForm = React.createClass({
                                           groupIds,
                                           $("input[name=hostName]").val(),
                                           $("input[name=portNumber]").val(),
-                                          done,
-                                          fail);
+                                          thisComponent.props.successCallback,
+                                          function(errMsg) {
+                                                $.errorAlert(errMsg, "Error");
+                                          });
 
             } else {
                 svc.updateWebServer($(thisComponent.getDOMNode()).serializeArray(),
-                                    done,
-                                    fail);
+                                    thisComponent.props.successCallback,
+                                    function(errMsg) {
+                                        $.errorAlert(errMsg, "Error");
+                                    });
             }
 
             e.preventDefault(); // stop the default action
         });
 
-        if (this.state.validator !== null) {
-            this.state.validator.cancelSubmit = true;
-            this.state.validator.form();
-            if (this.state.validator.numberOfInvalids() === 0) {
-                $(this.getDOMNode()).submit();
-            }
-        } else {
-            alert("There is no validator for the form!");
-        }
-
+        this.setState({validator:validator});
     }
 });
 
