@@ -4,14 +4,54 @@ import com.siemens.cto.aem.domain.model.group.Group;
 
 public class Application {
     
-    public Group group;
+    private Group group;
     
-    public String webAppContext;
+    private String webAppContext;
 
-    public String name;
+    private String name;
 
-    public String warPath;
+    private String warPath;
     
-    public String version;    
+    private String version;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public String getWebAppContext() {
+        return webAppContext;
+    }
+
+    public void setWebAppContext(String webAppContext) {
+        this.webAppContext = webAppContext;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getWarPath() {
+        return warPath;
+    }
+
+    public void setWarPath(String warPath) {
+        this.warPath = warPath;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }    
 
 }

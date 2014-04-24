@@ -53,11 +53,11 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
 
     private Application buildApplication(JpaApplication jpa) {
         Application a = new Application();
-        a.name = jpa.name;
-        a.warPath = jpa.warPath;
-        a.version = jpa.version;
-        a.webAppContext = jpa.webAppContext;        
-        a.group = jpa.group == null ? null : new JpaGroupBuilder(jpa.group).build(); 
+        a.setName(jpa.name);
+        a.setWarPath(jpa.warPath);
+        a.setVersion(jpa.version);
+        a.setWebAppContext(jpa.webAppContext);        
+        a.setGroup(jpa.group == null ? null : new JpaGroupBuilder(jpa.group).build()); 
         return a;
     }
 

@@ -116,12 +116,12 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     }
     
     private void assertJpaApplicationMatches(Application a, JpaApplication jpaApplication) {
-        assertEquals(jpaApplication.version, a.version);
-        assertEquals(jpaApplication.warPath, a.warPath);
-        assertEquals(jpaApplication.name, a.name);
-        assertEquals(jpaApplication.webAppContext, a.webAppContext);    
-        if(a.group != null || jpaApplication.group != null) {
-            assertGroupMatches(jpaApplication.group, a.group);
+        assertEquals(jpaApplication.version, a.getVersion());
+        assertEquals(jpaApplication.warPath, a.getWarPath());
+        assertEquals(jpaApplication.name, a.getName());
+        assertEquals(jpaApplication.webAppContext, a.getWebAppContext());    
+        if(a.getGroup() != null || jpaApplication.group != null) {
+            assertGroupMatches(jpaApplication.group, a.getGroup());
         }
     }
     
