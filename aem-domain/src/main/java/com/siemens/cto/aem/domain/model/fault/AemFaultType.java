@@ -18,7 +18,12 @@ public enum AemFaultType implements MessageResponseStatus {
     INVALID_WEBSERVER_HOST("AEM12", "InvalidWebServerHostName"),
     INVALID_WEBSERVER_PORT("AEM13", "InvalidWebServerPortNUmber"),
     WEBSERVER_NOT_SPECIFIED("AEM14", "WebServerNotSpecified"),
-    JVM_ALREADY_BELONGS_TO_GROUP("AEM14", "JvmAlreadyBelongsToGroup")
+    JVM_ALREADY_BELONGS_TO_GROUP("AEM14", "JvmAlreadyBelongsToGroup"),
+    APPLICATION_NOT_FOUND("AEM15","ApplicationNotFound"),
+    INVALID_APPLICATION_NAME("AEM16","InvalidApplicationName"),
+    INVALID_APPLICATION_CTX("AEM17", "InvalidApplicationContextPath"),
+    INVALID_APPLICATION_WAR("AEM18", "InvalidApplicationWarPath"),
+    APPLICATION_NOT_SPECIFIED("AEM19", "WebServerNotSpecified")
 	;
 
 	private final String faultCode;
