@@ -15,6 +15,7 @@
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerService.js"></script>
+<script src="public-resources/js/toc/v1/service/webAppService.js"></script>
 <script src="public-resources/js/toc/v1/service/jvmService.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFactory.js"></script>
 
@@ -35,4 +36,5 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
+<script type="text/jsx" src="public-resources/js/react/webapp-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/main-area.js"></script>

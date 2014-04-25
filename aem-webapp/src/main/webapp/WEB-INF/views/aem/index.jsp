@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="x-ua-compatible" content="IE=Edge"/>
-<title>Apache Enterprise Manager</title>
+<title>Tomcat Operations Center</title>
 <link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
