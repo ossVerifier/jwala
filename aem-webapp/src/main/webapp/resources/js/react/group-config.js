@@ -47,7 +47,7 @@ var GroupConfig = React.createClass({
                                         this.state.showDeleteConfirmDialog ||
                                         this.state.showModalFormEditDialog
                                     }/>
-                  <GroupConfigForm title="Add Group"
+                  <GroupConfigForm title="Edit Group"
                                   show={this.state.showModalFormEditDialog}
                                   service={this.props.service}
                                   data={this.state.groupFormData}
