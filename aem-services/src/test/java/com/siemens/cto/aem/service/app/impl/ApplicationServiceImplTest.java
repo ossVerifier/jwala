@@ -1,0 +1,108 @@
+package com.siemens.cto.aem.service.app.impl;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.service.app.ApplicationService;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ApplicationServiceImplTest {
+
+
+    @Mock
+    private ApplicationDao applicationDao;
+
+    private ApplicationService applicationService;
+
+    @Mock
+    private Application mockApplication; 
+    @Mock
+    private Application mockApplication2; 
+        
+    private Group group;
+    private Group group2;
+    private Identifier<Group> groupId;
+    private Identifier<Group> groupId2;
+    
+    private ArrayList<Application> applications2 = new ArrayList<>(1);
+    
+    // private User testUser = new User("testUser");
+
+    @Before
+    public void setUp() {
+        
+        groupId = new Identifier<Group>(1L);
+        groupId2 = new Identifier<Group>(2L);
+        group = new Group(groupId, "the-ws-group-name");
+        group2 = new Group(groupId2, "the-ws-group-name-2");
+
+        when(mockApplication.getId()).thenReturn(new Identifier<Application>(1L));
+        when(mockApplication.getWarPath()).thenReturn("the-ws-group-name/toc-1.0.war");
+        when(mockApplication.getVersion()).thenReturn("1.0");
+        when(mockApplication.getName()).thenReturn("TOC 1.0");
+        when(mockApplication.getGroup()).thenReturn(group);
+        when(mockApplication.getWebAppContext()).thenReturn("/aem");
+        
+
+        when(mockApplication2.getId()).thenReturn(new Identifier<Application>(2L));
+        when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/toc-1.1.war");
+        when(mockApplication2.getName()).thenReturn("TOC 1.1");
+        when(mockApplication2.getVersion()).thenReturn("1.1");
+        when(mockApplication2.getGroup()).thenReturn(group2);
+        when(mockApplication2.getWebAppContext()).thenReturn("/aem");
+        
+        applications2.add(mockApplication);
+        applications2.add(mockApplication2);
+        
+        applicationService = new ApplicationServiceImpl(applicationDao);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSingleGet() {
+        when(applicationDao.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+        final Application application = applicationService.getApplication(new Identifier<Application>(1L));
+        assertEquals(new Identifier<Application>(1L), application.getId());
+        assertEquals(groupId, application.getGroup().getId());
+        assertEquals("TOC 1.0", application.getName());
+        assertEquals("the-ws-group-name", application.getGroup().getName());
+        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+    }
+
+    @Test
+    public void testAllGet() {
+        when(applicationDao.getApplications(any(PaginationParameter.class))).thenReturn(applications2);
+        final List<Application> apps = applicationService.getApplications(PaginationParameter.all());
+        assertEquals(applications2.size(), apps.size());
+        
+        Application application = apps.get(0);
+        assertEquals(new Identifier<Application>(1L), application.getId());
+        assertEquals(groupId, application.getGroup().getId());
+        assertEquals("TOC 1.0", application.getName());
+        assertEquals("the-ws-group-name", application.getGroup().getName());
+        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+
+        application = apps.get(1);
+        assertEquals(new Identifier<Application>(2L), application.getId());
+        assertEquals(groupId2, application.getGroup().getId());
+        assertEquals("TOC 1.1", application.getName());
+        assertEquals("the-ws-group-name-2", application.getGroup().getName());
+        assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
+    }
+
+}

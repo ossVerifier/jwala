@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
@@ -33,6 +36,9 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerService webServerService;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @Bean
     public Server getV1JaxResServer() {
@@ -54,6 +60,7 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1GroupServiceRest());
         serviceBeans.add(getV1JvmServiceRest());
         serviceBeans.add(getV1WebServerServiceRest());
+        serviceBeans.add(getV1ApplicationServiceRest());
 
         return serviceBeans;
     }
@@ -71,6 +78,11 @@ public class AemWebServiceConfiguration {
     @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService);
+    }
+
+    @Bean
+    public ApplicationServiceRest getV1ApplicationServiceRest() {
+        return new ApplicationServiceRestImpl(applicationService);
     }
 
     @Bean

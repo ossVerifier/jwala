@@ -1,8 +1,11 @@
 package com.siemens.cto.aem.domain.model.app;
 
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class Application {
+    
+    private Identifier<Application> id;
     
     private Group group;
     
@@ -52,6 +55,14 @@ public class Application {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Identifier<Application> getId() {
+        return id;
+    }
+
+    public void setId(Identifier<Application> id) {
+        this.id = id;
     }    
 
 }
