@@ -7,7 +7,7 @@ var ServiceFactory = {
 	},
 	getWebServerService : function() {
         return webServerService;
-  }
+  },
   getWebAppService : function() { 
       return webAppService;
   }

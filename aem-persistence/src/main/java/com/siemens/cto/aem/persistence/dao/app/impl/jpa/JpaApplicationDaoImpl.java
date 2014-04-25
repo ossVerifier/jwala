@@ -56,7 +56,6 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         Application a = new Application();
         a.setName(jpa.name);
         a.setWarPath(jpa.warPath);
-        a.setVersion(jpa.version);
         a.setWebAppContext(jpa.webAppContext);   
         a.setId(id(jpa.id, Application.class));
         a.setGroup(jpa.group == null ? null : new JpaGroupBuilder(jpa.group).build()); 

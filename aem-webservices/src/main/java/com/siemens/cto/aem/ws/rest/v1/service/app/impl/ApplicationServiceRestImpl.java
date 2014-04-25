@@ -29,18 +29,23 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getApplications(PaginationParamProvider paginationParamProvider) {
-        logger.debug("Get Apps requested with pagination: {}", paginationParamProvider);
-        PaginationParameter page = paginationParamProvider.getPaginationParameter();
-        final List<Application> apps = service.getApplications(page);
-        return ResponseBuilder.ok(apps);
-    }
-
-    @Override
     public Response getApplication(Identifier<Application> anAppId) {
         logger.debug("Get App by id: {}", anAppId);
         final Application app = service.getApplication(anAppId);
         return ResponseBuilder.ok(app);
+    }
+
+    @Override
+    public Response getApplications(Identifier<Group> aGroupId, PaginationParamProvider paginationParamProvider) {
+        logger.debug("Get Apps requested with pagination: {}, groupId: {}", paginationParamProvider, aGroupId != null ? aGroupId : "null");
+        PaginationParameter page = paginationParamProvider.getPaginationParameter();
+        if(aGroupId != null) {
+            final List<Application> apps = service.findApplications(aGroupId, page);
+            return ResponseBuilder.ok(apps); 
+        } else {
+            final List<Application> apps = service.getApplications(page);
+            return ResponseBuilder.ok(apps);             
+        }
     }
 
 }

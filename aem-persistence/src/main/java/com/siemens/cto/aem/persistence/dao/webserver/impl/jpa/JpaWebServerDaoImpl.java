@@ -190,7 +190,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
 
     /**
-     * TODO: DUPLICATED FROM JpaWebServerDaoImpl - need some wiring internal to the Dao to reuse.
+     * TODO: DUPLICATED FROM JpaGroupDaoImpl - need some wiring internal to the Dao to reuse.
      * @param aGroupId
      * @return
      */

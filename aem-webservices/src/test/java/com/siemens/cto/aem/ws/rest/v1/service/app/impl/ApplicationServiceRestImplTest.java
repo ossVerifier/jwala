@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -36,7 +37,8 @@ public class ApplicationServiceRestImplTest {
 
     Application application = new Application();
     List<Application> applications = new ArrayList<Application>(1);
-    
+    List<Application> emptyList = new ArrayList<Application>(0);
+    PaginationParamProvider allProvider = new PaginationParamProvider(null,null, "true");
     @Before
     public void setUp() {
         cut = new ApplicationServiceRestImpl(service);
@@ -45,8 +47,8 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testGetApplications() {
         when(service.getApplications(any(PaginationParameter.class))).thenReturn(applications);
-        PaginationParamProvider provider = new PaginationParamProvider(null,null, "true");
-        Response resp = cut.getApplications(provider);
+        
+        Response resp = cut.getApplications(null, allProvider);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
@@ -64,6 +66,18 @@ public class ApplicationServiceRestImplTest {
         Object entity = appResponse.getApplicationResponseContent();
         assertTrue(entity instanceof Application);
         assertEquals(application, entity);
+    }
+
+    @Test 
+    @SuppressWarnings("unchecked")
+    public void testFindApplicationsByGroupIdNone() {
+        when(service.findApplications(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
+        Response resp = cut.getApplications(id(2L, Group.class), allProvider);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof List<?>);
+        assertEquals(emptyList, entity);
     }
 
     

@@ -25,7 +25,6 @@ var Tabs = React.createClass({displayName:"Tabs",
         this.setState({active: index})
         var newhash = this.mergeIndexIntoHash(index, window.location.hash, this.props.depth);
         if(history.pushState) {
-        	// TODO: bind to onhashchange, then we have full history over hashes
         	history.pushState(null,null, newhash);
         } else {
         	window.location.hash = newhash;

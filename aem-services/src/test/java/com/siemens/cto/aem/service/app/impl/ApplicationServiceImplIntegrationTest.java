@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
@@ -28,6 +29,7 @@ import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 
 
@@ -63,7 +65,7 @@ public class ApplicationServiceImplIntegrationTest {
     @Autowired
     private ApplicationDao           applicationDao;
     
-    private ApplicationServiceImpl   cut;
+    private ApplicationService      cut;
 
     @Before
     public void setup() { 
@@ -81,14 +83,21 @@ public class ApplicationServiceImplIntegrationTest {
     }
 
     /**
-     * With this revision there is no capacity to create. Therefore integration
-     * testing at the service layer can only return NotFound.
-     * We'll mock the rest.
+     * Test getting the full list.
      */
     @Test
     public void testGetAllApplications() {
         List<Application> all = cut.getApplications(PaginationParameter.all());
         assertEquals(0, all.size());
+    }
+    
+    /**
+     * Test getting the partial list.
+     */
+    @Test
+    public void testGetApplicationsByGroup() {
+        List<Application> partial = cut.findApplications(new Identifier<Group>(0L), PaginationParameter.all());
+        assertEquals(0, partial.size());
     }
 
 }

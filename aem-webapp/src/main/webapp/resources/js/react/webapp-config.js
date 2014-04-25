@@ -7,7 +7,7 @@ var WebAppConfig = React.createClass({
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
             WebAppFormData: {},
-            WebAppTableData: [{"name":"","id":{"id":0}}]
+            WebAppTableData: []
         }
     },
     render: function() {
@@ -47,7 +47,7 @@ var WebAppConfig = React.createClass({
                                         this.state.showDeleteConfirmDialog ||
                                         this.state.showModalFormEditDialog
                                     }/>
-                  <WebAppConfigForm title="Add WebApp"
+                  <WebAppConfigForm title="Edit WebApp"
                                   show={this.state.showModalFormEditDialog}
                                   service={this.props.service}
                                   data={this.state.WebAppFormData}
@@ -230,13 +230,18 @@ var WebAppDataTable = React.createClass({
 
     },
     render: function() {
-        var headerExt = [{sTitle:"", mData: "jvms", tocType:"control"},
+        var headerExt = [
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
-                         {sTitle:"WebApp Name", mData:"name", tocType:"link"}];
+                         {sTitle:"WebApp Name", mData:"name", tocType:"link"},
+                         {sTitle:"Context", mData:"webAppContext"},
+                         {sTitle:"Web Archive", mData:"warPath"},
+                         {sTitle:"Group ID", mData:"group.id.id", bVisible:false},
+                         {sTitle:"Group", mData:"group.name"},
+                        ];
         return <TocDataTable tableId="WebAppDataTable"
                              theme="default"
                              headerExt={headerExt}
-                             colHeaders={["JVM Name", "Host Name"]}
+                             colHeaders={["...", "..."]}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}

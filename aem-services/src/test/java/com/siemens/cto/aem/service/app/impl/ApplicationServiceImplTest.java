@@ -53,7 +53,6 @@ public class ApplicationServiceImplTest {
 
         when(mockApplication.getId()).thenReturn(new Identifier<Application>(1L));
         when(mockApplication.getWarPath()).thenReturn("the-ws-group-name/toc-1.0.war");
-        when(mockApplication.getVersion()).thenReturn("1.0");
         when(mockApplication.getName()).thenReturn("TOC 1.0");
         when(mockApplication.getGroup()).thenReturn(group);
         when(mockApplication.getWebAppContext()).thenReturn("/aem");
@@ -62,7 +61,6 @@ public class ApplicationServiceImplTest {
         when(mockApplication2.getId()).thenReturn(new Identifier<Application>(2L));
         when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/toc-1.1.war");
         when(mockApplication2.getName()).thenReturn("TOC 1.1");
-        when(mockApplication2.getVersion()).thenReturn("1.1");
         when(mockApplication2.getGroup()).thenReturn(group2);
         when(mockApplication2.getWebAppContext()).thenReturn("/aem");
         
@@ -105,4 +103,19 @@ public class ApplicationServiceImplTest {
         assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testFindByGroupId() {
+        when(applicationDao.findApplicationsBelongingTo(any(Identifier.class), any(PaginationParameter.class))).thenReturn(applications2);
+        final List<Application> apps = applicationService.findApplications(groupId, PaginationParameter.all());
+        assertEquals(applications2.size(), apps.size());
+        
+        Application application = apps.get(1);
+
+        assertEquals(new Identifier<Application>(2L), application.getId());
+        assertEquals(groupId2, application.getGroup().getId());
+        assertEquals("TOC 1.1", application.getName());
+        assertEquals("the-ws-group-name-2", application.getGroup().getName());
+        assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
+    }
 }

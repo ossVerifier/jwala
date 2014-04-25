@@ -68,9 +68,6 @@ public class JpaApplication extends AbstractEntity<JpaGroup> {
     @Column(nullable = false, unique = false)
     public String warPath;
     
-    @Column(unique = false)
-    public String version;
-
     public void setWarPath(String aWarPath) {
         warPath = aWarPath;
     }
@@ -82,24 +79,5 @@ public class JpaApplication extends AbstractEntity<JpaGroup> {
     public void setGroup(JpaGroup jpaGroup) {
         this.group = jpaGroup;
     }
-    
-    /* Unused 
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((group == null) ? 0 : group.hashCode());
-            result = prime * result + ((version == null) ? 0 : version.hashCode());
-            result = prime * result + ((warPath == null) ? 0 : warPath.hashCode());
-            result = prime * result + ((webAppContext == null) ? 0 : webAppContext.hashCode());
-            return result;
-        }
-    
-        @Override
-        public boolean equals(Object obj) {
-            return obj != null && (obj instanceof JpaApplication) && ((JpaApplication)obj).id == id; 
-        }
-    */
-    
     
 }

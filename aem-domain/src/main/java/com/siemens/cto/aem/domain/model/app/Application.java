@@ -14,8 +14,6 @@ public class Application {
     private String name;
 
     private String warPath;
-    
-    private String version;
 
     public Group getGroup() {
         return group;
@@ -47,14 +45,6 @@ public class Application {
 
     public void setWarPath(String warPath) {
         this.warPath = warPath;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public Identifier<Application> getId() {

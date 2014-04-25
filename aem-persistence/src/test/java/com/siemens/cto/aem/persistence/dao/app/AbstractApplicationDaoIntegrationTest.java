@@ -119,7 +119,6 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         if(a.getId() != null || jpaApplication.id != 0) {
             assertEquals(jpaApplication.id, a.getId().getId());
         }
-        assertEquals(jpaApplication.version, a.getVersion());
         assertEquals(jpaApplication.warPath, a.getWarPath());
         assertEquals(jpaApplication.name, a.getName());
         assertEquals(jpaApplication.webAppContext, a.getWebAppContext());    
