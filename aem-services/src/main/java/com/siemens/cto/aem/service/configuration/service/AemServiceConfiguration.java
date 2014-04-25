@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
+import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -36,5 +38,10 @@ public class AemServiceConfiguration {
     @Bean
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao());
+    }
+
+    @Bean
+    public ApplicationService getApplicationService() {
+        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao());
     }
 }
