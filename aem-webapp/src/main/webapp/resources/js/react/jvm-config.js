@@ -38,7 +38,7 @@ var JvmConfig = React.createClass({
                             </td>
                         </tr>
                    </table>
-                   <JvmConfigForm title="Add Web Server"
+                   <JvmConfigForm title="Add JVM"
                                         show={this.state.showModalFormAddDialog}
                                         service={this.props.service}
                                         groupMultiSelectData={this.state.groupMultiSelectData}
@@ -49,7 +49,7 @@ var JvmConfig = React.createClass({
                                             this.state.showDeleteConfirmDialog ||
                                             this.state.showModalFormEditDialog
                                         }/>
-                   <JvmConfigForm title="Edit Web Server"
+                   <JvmConfigForm title="Edit JVM"
                                     show={this.state.showModalFormEditDialog}
                                     service={this.props.service}
                                     data={this.state.jvmFormData}
