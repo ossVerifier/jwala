@@ -38,23 +38,23 @@ var WebServerConfig = React.createClass({
                             </td>
                         </tr>
                    </table>
-                   <ModalFormDialog title="Add Web Server"
-                                    show={this.state.showModalFormAddDialog}
-                                    form={<WebServerConfigForm service={this.props.service}
-                                                               groupMultiSelectData={this.state.groupMultiSelectData}
-                                                               successCallback={this.addSuccessCallback}/>}
-                                    destroyCallback={this.closeModalFormAddDialog}
-                                    className="textAlignLeft"
-                                    noUpdateWhen={
-                                        this.state.showDeleteConfirmDialog ||
-                                        this.state.showModalFormEditDialog
-                                    }/>
-                   <ModalFormDialog title="Edit Web Server"
+                   <WebServerConfigForm title="Add Web Server"
+                                        show={this.state.showModalFormAddDialog}
+                                        service={this.props.service}
+                                        groupMultiSelectData={this.state.groupMultiSelectData}
+                                        successCallback={this.addSuccessCallback}
+                                        destroyCallback={this.closeModalFormAddDialog}
+                                        className="textAlignLeft"
+                                        noUpdateWhen={
+                                            this.state.showDeleteConfirmDialog ||
+                                            this.state.showModalFormEditDialog
+                                        }/>
+                   <WebServerConfigForm title="Edit Web Server"
                                     show={this.state.showModalFormEditDialog}
-                                    form={<WebServerConfigForm service={this.props.service}
-                                                           data={this.state.webServerFormData}
-                                                           groupMultiSelectData={this.state.groupMultiSelectData}
-                                                           successCallback={this.editSuccessCallback}/>}
+                                    service={this.props.service}
+                                    data={this.state.webServerFormData}
+                                    groupMultiSelectData={this.state.groupMultiSelectData}
+                                    successCallback={this.editSuccessCallback}
                                     destroyCallback={this.closeModalFormEditDialog}
                                     className="textAlignLeft"
                                     noUpdateWhen={
@@ -78,7 +78,8 @@ var WebServerConfig = React.createClass({
                 var webServerTableData = response.applicationResponseContent;
                 groupService.getGroups(
                     function(response){
-                        self.setState({webServerTableData:webServerTableData, groupMultiSelectData:response.applicationResponseContent});
+                        self.setState({webServerTableData:webServerTableData,
+                                       groupMultiSelectData:response.applicationResponseContent});
                     }
                 );
         });
@@ -126,90 +127,121 @@ var WebServerConfig = React.createClass({
 });
 
 var WebServerConfigForm = React.createClass({
+    validator: null,
+    shouldComponentUpdate: function(nextProps, nextState) {
+        return !nextProps.noUpdateWhen;
+    },
     getInitialState: function() {
-        var id = "";
-        var name = "";
-        var host = "";
-        var port = "";
-
-        if (this.props.data !== undefined) {
-            id = this.props.data.id.id;
-            name = this.props.data.name;
-            host = this.props.data.host;
-            port = this.props.data.port;
-        }
         return {
-            validator: null,
-            id: id,
-            name: name,
-            host: host,
-            port: port
+            id: "",
+            name: "",
+            host: "",
+            port: "",
+            groupIds: undefined
         }
     },
+    getPropVal: function(props, name) {
+        var val = "";
+        if (props.data !== undefined) {
+            if (name === "id" && props.data[name] !== undefined) {
+                val = props.data[name].id;
+            } else if (name !== "id") {
+                val = props.data[name];
+            }
+        }
+        return val;
+    },
+    componentWillReceiveProps: function(nextProps) {
+        this.setState({id:this.getPropVal(nextProps, "id"),
+                       name:this.getPropVal(nextProps, "name"),
+                       host:this.getPropVal(nextProps, "host"),
+                       port:this.getPropVal(nextProps, "port"),
+                       groupIds:this.getPropVal(nextProps, "groupIds")});
+    },
+    mixins: [React.addons.LinkedStateMixin],
     render: function() {
         var self = this;
-        return <form>
-                    <input name="webserverId" type="hidden" defaultValue={this.state.id} />
-                    <table>
-                        <tr>
-                            <td>*Name</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label htmlFor="webserverName" className="error"></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input name="webserverName" type="text" defaultValue={this.state.name} required maxLength="35"/></td>
-                        </tr>
-                        <tr>
-                            <td>*Host</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label htmlFor="hostName" className="error"></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input name="hostName" type="text" defaultValue={this.state.host} required maxLength="35"/></td>
-                        </tr>
-                        <tr>
-                            <td>*Port</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label htmlFor="portNumber" className="error"></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input name="portNumber" type="text" defaultValue={this.state.port} required maxLength="5"/></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                *Group
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label htmlFor="groupSelector[]" className="error"></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <DataMultiSelectBox name="groupSelector[]"
-                                                    data={this.props.groupMultiSelectData}
-                                                    key="id"
-                                                    keyPropertyName="id"
-                                                    val="name"
-                                                    className="data-multi-select-box"/>
-                            </td>
-                        </tr>
+        return  <div className={this.props.className} style={{display:"none"}}>
+                    <form>
+                        <input name="webserverId" type="hidden" value={this.state.id} />
+                        <table>
+                            <tr>
+                                <td>*Name</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="webserverName" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="35"/></td>
+                            </tr>
+                            <tr>
+                                <td>*Host</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="hostName" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="35"/></td>
+                            </tr>
+                            <tr>
+                                <td>*Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="portNumber" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="portNumber" type="text" valueLink={this.linkState("port")} required maxLength="5"/></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    *Group
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="groupSelector[]" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <DataMultiSelectBox name="groupSelector[]"
+                                                        data={this.props.groupMultiSelectData}
+                                                        selectedValIds={this.state.groupIds}
+                                                        key="id"
+                                                        keyPropertyName="id"
+                                                        val="name"
+                                                        className="data-multi-select-box"
+                                                        onSelectCallback={this.onSelectGroups}
+                                                        idKey="groupId"/>
+                                </td>
+                            </tr>
 
-                    </table>
-               </form>
+                        </table>
+                    </form>
+                </div>
+    },
+    onSelectGroups: function(groupIds) {
+        this.setState({groupIds:groupIds});
+    },
+    isValid: function() {
+        if (this.validator !== null) {
+            this.validator.form();
+            if (this.validator.numberOfInvalids() === 0) {
+                return true;
+            }
+        } else {
+            alert("There is no validator for the form!");
+        }
+        return false;
     },
     componentDidMount: function() {
-        var validator = $(this.getDOMNode()).validate({
+        this.validator = $(this.getDOMNode().children[0]).validate({
             ignore: ":hidden",
             rules: {
                 "groupSelector[]": {
@@ -239,57 +271,51 @@ var WebServerConfigForm = React.createClass({
             return this.optional(element) || exp.test(value);
         }, "The field must only contain letters, numbers, underscore, dashes or periods.");
 
-        if (this.props.data !== undefined) {
-            // Process multi-select data if there are any
-            $.each(this.props.data.groups, function(i, obj) {
-                $("input[value=" + obj.id.id + "]").prop("checked", true)
-            });
+    },
+    success: function() {
+        this.props.successCallback();
+        $(this.getDOMNode()).dialog("destroy");
+    },
+    insertNewWebServer: function() {
+        if (this.isValid()) {
+            this.props.service.insertNewWebServer(this.state.name,
+                                                  this.state.groupIds,
+                                                  this.state.host,
+                                                  this.state.port,
+                                                  this.success,
+                                                  function(errMsg) {
+                                                        $.errorAlert(errMsg, "Error");
+                                                  });
         }
-
-        var thisComponent = this;
-        var svc = thisComponent.props.service;
-        var data = thisComponent.props.data;
-
-        $(this.getDOMNode()).off("submit");
-        $(this.getDOMNode()).on("submit", function(e) {
-            if (data === undefined) {
-
-                var groupIds = [];
-                $("input[name='groupSelector[]']").each(function () {
-                    if ($(this).prop("checked")) {
-                        groupIds.push({groupId:$(this).val()});
-                    }
-                });
-
-                svc.insertNewWebServer($("input[name=webserverName]").val(),
-                                          groupIds,
-                                          $("input[name=hostName]").val(),
-                                          $("input[name=portNumber]").val(),
-                                          thisComponent.props.successCallback,
-                                          function(errMsg) {
-                                                $.errorAlert(errMsg, "Error");
-                                          });
-
-            } else {
-                svc.updateWebServer($(thisComponent.getDOMNode()).serializeArray(),
-                                    thisComponent.props.successCallback,
-                                    function(errMsg) {
-                                        $.errorAlert(errMsg, "Error");
-                                    });
-            }
-
-            e.preventDefault(); // stop the default action
-        });
-
-        this.setState({validator:validator});
+    },
+    updateWebServer: function() {
+        if (this.isValid()) {
+            this.props.service.updateWebServer($(this.getDOMNode().children[0]).serializeArray(),
+                                               this.success,
+                                               function(errMsg) {
+                                                    $.errorAlert(errMsg, "Error");
+                                               });
+        }
+    },
+    componentDidUpdate: function() {
+        if (this.props.show === true) {
+            var okCallback = this.props.data === undefined ? this.insertNewWebServer : this.updateWebServer;
+            decorateNodeAsModalFormDialog(this.getDOMNode(),
+                                          this.props.title,
+                                          okCallback,
+                                          this.destroy,
+                                          this.props.destroyCallback);
+        }
+    },
+    destroy: function() {
+        $(this.getDOMNode()).dialog("destroy");
+        this.props.destroyCallback();
     }
 });
 
 var WebServerDataTable = React.createClass({
-   shouldComponentUpdate: function(nextProps, nextState) {
-    
+    shouldComponentUpdate: function(nextProps, nextState) {
       return !nextProps.noUpdateWhen;
-        
     },
     render: function() {
         var headerExt = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
