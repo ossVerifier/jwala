@@ -26,19 +26,31 @@
         json["groupIds"] = groupIdArray;
         return JSON.stringify(json);
     },
-    insertNewJvm: function(jvm) {
-        jvm = this.serializedJvmFormToJson(jvm, false);
+    insertNewJvm: function(jvmName, groupIds, hostName, successCallback, errorCallback) {
         return serviceFoundation.post("v1.0/jvms",
                                       "json",
-                                      jvm);
+                                      JSON.stringify({jvmName: jvmName,
+                                                      groupIds: groupIds,
+                                                      hostName:hostName}),
+                                                      successCallback,
+                                                      errorCallback);
     },
-    updateJvm: function(jvm) {
+    updateJvm: function(jvm, successCallback, errorCallback) {
         jvm = this.serializedJvmFormToJson(jvm, true);
         return serviceFoundation.put("v1.0/jvms/",
                                      "json",
-                                     jvm);
+                                     jvm,
+                                     successCallback,
+                                     errorCallback );
     },
-    deleteJvm: function(id) {
-        return serviceFoundation.del("v1.0/jvms/" + id, "json");
+    deleteJvm: function(id, caughtCallback) {
+        return serviceFoundation.del("v1.0/jvms/" + id, "json", caughtCallback);
+    },
+    getJvm : function(id, responseCallback) {
+        return serviceFoundation.get("v1.0/jvms/" + id, "json", responseCallback);
+    },
+    getJvms : function(responseCallback) {
+        return serviceFoundation.get("v1.0/jvms?all", "json", responseCallback);
     }
+
 };

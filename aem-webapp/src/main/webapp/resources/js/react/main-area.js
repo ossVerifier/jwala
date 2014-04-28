@@ -37,9 +37,9 @@ var MainTabs = React.createClass({
 // TODO: Refactor jvm config area once it is "Reactified" already
 var ConfigureTabs = React.createClass({
     getInitialState:function() {
-        items = [{title:"JVM", content:<Area theme="default"
-                               template="public-resources/templates/jvm-config-area.html"/>},
-                 {title:"Web Servers", content:<WebServerConfig className="group-config"
+        items = [{title:"JVM", content:<JvmConfig className="jvm-config"
+                                                  service={ServiceFactory.getJvmService()}/>},
+                 {title:"Web Servers", content:<WebServerConfig className="webserver-config"
                                                                 service={ServiceFactory.getWebServerService()}/>},
                  {title: "Web Apps", content:<WebAppConfig className="group-config"
                                                                 service={ServiceFactory.getWebAppService()}/>},

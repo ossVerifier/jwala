@@ -13,7 +13,9 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/main-area.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/jvm-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/group-config.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/webserver-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-multi-select-box.css">
 
 <jsp:include page="/scripts?devMode=${devMode}"/>
