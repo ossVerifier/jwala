@@ -19,33 +19,32 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRes
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
-    private final Logger logger;
+    private final static Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class); 
 
     private ApplicationService service; 
     
     public ApplicationServiceRestImpl(ApplicationService applicationService) {
-        logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
         service = applicationService;
     }
 
     @Override
     public Response getApplication(Identifier<Application> anAppId) {
-        logger.debug("Get App by id: {}", anAppId);
+        LOGGER.debug("Get App by id: {}", anAppId);
         final Application app = service.getApplication(anAppId);
         return ResponseBuilder.ok(app);
     }
 
     @Override
     public Response getApplications(Identifier<Group> aGroupId, PaginationParamProvider paginationParamProvider) {
-        logger.debug("Get Apps requested with pagination: {}, groupId: {}", paginationParamProvider, aGroupId != null ? aGroupId : "null");
+        LOGGER.debug("Get Apps requested with pagination: {}, groupId: {}", paginationParamProvider, aGroupId != null ? aGroupId : "null");
+        final List<Application> apps; 
         PaginationParameter page = paginationParamProvider.getPaginationParameter();
         if(aGroupId != null) {
-            final List<Application> apps = service.findApplications(aGroupId, page);
-            return ResponseBuilder.ok(apps); 
+            apps = service.findApplications(aGroupId, page);
         } else {
-            final List<Application> apps = service.getApplications(page);
-            return ResponseBuilder.ok(apps);             
+            apps = service.getApplications(page);
         }
+        return ResponseBuilder.ok(apps); 
     }
 
 }

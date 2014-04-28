@@ -12,16 +12,32 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaApplicationDaoImpl implements ApplicationDao {
     
     @PersistenceContext(unitName = "aem-unit")
     EntityManager em;
+    
+    JpaQueryPaginator paginator = new JpaQueryPaginator();
+    
+    /*
+     * When creating create/update methods, we must call the methods to update the 
+     * audit columns:
+     * 
+     * jpaGroup.setCreateBy(userId);
+     * jpaGroup.setCreateDate(updateDate);
+     * jpaGroup.setUpdateBy(userId);
+     * jpaGroup.setLastUpdateDate(updateDate);
+     *  
+     */
 
     @Override
     public Application getApplication(Identifier<Application> aApplicationId) throws NotFoundException {
@@ -36,10 +52,8 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     @Override
     public List<Application> getApplications(PaginationParameter somePagination) {        
         Query q = em.createQuery("select a from JpaApplication a");
-        if(somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        } 
+        paginator.paginate(q,
+                somePagination);
         return buildApplications(q.getResultList());              
     }
 
@@ -66,10 +80,7 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     public List<Application> findApplications(String aGroupName, PaginationParameter somePagination) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);
         q.setParameter(JpaApplication.GROUP_NAME_PARAM, aGroupName);
-        if(somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        } 
+        paginator.paginate(q, somePagination); 
         return buildApplications(q.getResultList());
     }
 
@@ -78,10 +89,7 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
             PaginationParameter somePagination) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_ID);
         q.setParameter(JpaApplication.GROUP_ID_PARAM, aGroupId.getId());
-        if(somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        } 
+        paginator.paginate(q, somePagination); 
         return buildApplications(q.getResultList());
     }
 
