@@ -9,15 +9,12 @@ import com.siemens.cto.aem.io.FullInputStreamReader;
 
 public class SimpleCommandProcessorImpl implements SimpleCommandProcessor {
 
-    private final CommandProcessor commandProcessor;
     private final String commandOutput;
     private final String errorOutput;
 
-    public SimpleCommandProcessorImpl(final String theCommand) throws IOException {
-        //TODO use the command when constructing the command processor
-        commandProcessor = null;
-        commandOutput = readAllOutput(commandProcessor.getCommandOutput());
-        errorOutput = readAllOutput(commandProcessor.getErrorOutput());
+    public SimpleCommandProcessorImpl(final CommandProcessor theCommandProcessor) throws IOException {
+        commandOutput = readAllOutput(theCommandProcessor.getCommandOutput());
+        errorOutput = readAllOutput(theCommandProcessor.getErrorOutput());
     }
 
     @Override

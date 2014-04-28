@@ -37,7 +37,7 @@ public class FullInputStreamReader {
     protected ByteArrayOutputStream readStream() throws IOException {
         final ByteArrayOutputStream bytesRead = new ByteArrayOutputStream();
         final byte[] buffer = new byte[bufferSize];
-        int numberRead = 0;
+        int numberRead;
         while ((numberRead = inputStream.read(buffer)) != -1) {
             bytesRead.write(buffer,
                             0,
