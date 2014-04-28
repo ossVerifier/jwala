@@ -1,0 +1,19 @@
+ext {
+    localVersions = [jsch : "0.1.51"]
+}
+
+dependencies {
+
+    compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
+
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
