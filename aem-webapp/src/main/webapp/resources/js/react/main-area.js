@@ -8,6 +8,10 @@ var MainArea = React.createClass({
                         </tr>
                         <tr>
                             <td>
+                                <div id="loading" style={{display:"none"}}>
+                                    <br/>
+                                    <img src="public-resources/img/gears.gif"/>
+                                </div>
                                 <MainTabs/>
                             </td>
                         </tr>
@@ -54,5 +58,32 @@ var ConfigureTabs = React.createClass({
 });
 
 $(document).ready(function(){
+    /**
+     * This shows a busy status when there is an on-going ajax process.
+     */
+    $.ajaxSetup({
+        beforeSend: function () {
+            _loading();
+        },
+        complete: function () {
+        }
+    });
+
+    function _loading(){
+        var loading = $("#loading");
+        loading.dialog({
+            modal:true,
+            resizable:false,
+            draggable:false,
+            width:"auto",
+            height:"auto"
+        });
+        loading.parents(".ui-dialog")
+            .css("border", "0 none")
+            .css("background", "transparent")
+            .find(".ui-dialog-titlebar").remove();
+        setTimeout(function(){loading.dialog("close")},500);
+    }
+
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
