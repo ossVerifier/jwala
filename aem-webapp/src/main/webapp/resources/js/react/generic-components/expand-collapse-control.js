@@ -28,10 +28,10 @@ var ExpandCollapseControl = React.createClass({
 
             this.dataTable = decorateTableAsDataTable(this.props.childTableDetails.tableIdPrefix + this.props.controlId,
                                                       this.props.childTableDetails.tableDef,
+                                                      false,
                                                       false);
 
             if (this.dataTable !== null) {
-                console.log(this.props.data);
                 this.dataTable.fnClearTable(this.props.data);
                 this.dataTable.fnAddData(this.props.data);
                 this.dataTable.fnDraw();
@@ -45,6 +45,7 @@ var ExpandCollapseControl = React.createClass({
     },
     fnFormatDetails: function() {
         return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.controlId}
-                                                    tableDef={this.props.childTableDetails.tableDef}/>)
+                                                    tableDef={this.props.childTableDetails.tableDef}
+                                                    className={this.props.childTableDetails.className}/>)
     }
 });

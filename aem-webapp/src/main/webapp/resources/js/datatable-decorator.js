@@ -3,6 +3,7 @@
  */
 var decorateTableAsDataTable = function(tableId,
                                         tableDef,
+                                        applyThemeRoller,
                                         hideHeaderAndFooter,
                                         editCallback,
                                         rowSelectCallback,
@@ -74,7 +75,7 @@ var decorateTableAsDataTable = function(tableId,
 
         var dataTableProperties = {"aaSorting": aaSorting,
                                    "aoColumnDefs": aoColumnDefs,
-                                   "bJQueryUI": true,
+                                   "bJQueryUI": applyThemeRoller,
                                    "bAutoWidth": false,
                                    "bStateSave": true,
                                    "aLengthMenu": [[25, 50, 100, 200, -1],

@@ -6,7 +6,7 @@ table.simple-data-table {
     border-spacing:0px 0px;
 }
 
-.simple-data-table tbody > tr > td {
+table.simple-data-table tbody > tr > td {
     border: 1px solid gray;
-    background: white
+    background-color: white
 }

@@ -232,7 +232,8 @@ var GroupConfigDataTable = React.createClass({
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
                         {sTitle:"Group Name", mData:"name", tocType:"link"}];
 
-        var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table"};
+        var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
+                                 className:"simple-data-table"};
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                              {sTitle:"Name", mData:"jvmName"},

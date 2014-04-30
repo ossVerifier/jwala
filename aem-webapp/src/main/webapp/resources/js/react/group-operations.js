@@ -14,12 +14,15 @@ var GroupOperations = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <GroupOperationsDataTable data={this.state.groupTableData}/>
+                                    <GroupOperationsDataTable data={this.state.groupTableData}
+                                                              selectItemCallback={this.selectItemCallback}/>
                                 </div>
                             </td>
                         </tr>
                    </table>
                </div>
+    },
+    selectItemCallback: function(item) {
     },
     retrieveData: function() {
         var self = this;
@@ -41,7 +44,8 @@ var GroupOperationsDataTable = React.createClass({
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
                         {sTitle:"Group Name", mData:"name"}];
 
-        var childTableDetails = {tableIdPrefix:"group-operations-jvm-child-table"};
+        var childTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
+                                 className:"simple-data-table"};
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                              {sTitle:"Name", mData:"jvmName"},
@@ -55,6 +59,7 @@ var GroupOperationsDataTable = React.createClass({
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"
-                             childTableDetails={childTableDetails}/>
+                             childTableDetails={childTableDetails}
+                             selectItemCallback={this.props.selectItemCallback}/>
     }
 });
