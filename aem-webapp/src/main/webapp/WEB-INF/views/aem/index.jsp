@@ -23,6 +23,7 @@
 <script src="public-resources/js/alert.js"></script>
 <script src="public-resources/js/error-alert.js"></script>
 <script src="public-resources/js/modal-form-decorator.js"></script>
+<script src="public-resources/js/datatable-decorator.js"></script>
 
 </head>
 <body>

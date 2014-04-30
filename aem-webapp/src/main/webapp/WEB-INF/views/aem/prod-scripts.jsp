@@ -25,10 +25,13 @@
 <script src="gen-public-resources/js/react/generic-components/modal-form-dialog.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-grid.js"></script>
+<script src="gen-public-resources/js/react/generic-components/anchor.js"></script>
+<script src="gen-public-resources/js/react/generic-components/expand-collapse-control.js"></script>
 <script src="gen-public-resources/js/react/generic-components/datatable.js"></script>
 <script src="gen-public-resources/js/react/generic-components/simple-data-table.js"></script>
 <script src="gen-public-resources/js/react/delete-item-widget.js"></script>
 <script src="gen-public-resources/js/react/generic-components/generic-button.js"></script>
+<script src="gen-public-resources/js/react/group-operations.js"></script>
 <script src="gen-public-resources/js/react/jvm-config.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
 <script src="gen-public-resources/js/react/webserver-config.js"></script>

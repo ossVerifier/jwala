@@ -230,7 +230,7 @@ var WebAppDataTable = React.createClass({
 
     },
     render: function() {
-        var headerExt = [
+        var tableDef = [
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
                          {sTitle:"WebApp Name", mData:"name", tocType:"link"},
                          {sTitle:"Context", mData:"webAppContext"},
@@ -239,8 +239,7 @@ var WebAppDataTable = React.createClass({
                          {sTitle:"Group", mData:"group.name"},
                         ];
         return <TocDataTable tableId="WebAppDataTable"
-                             theme="default"
-                             headerExt={headerExt}
+                             tableDef={tableDef}
                              colHeaders={["...", "..."]}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}

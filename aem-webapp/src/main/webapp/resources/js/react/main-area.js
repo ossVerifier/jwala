@@ -28,7 +28,8 @@ var Banner = React.createClass({
 
 var MainTabs = React.createClass({
     getInitialState:function() {
-        items = [{title:"Groups", content:""},
+        items = [{title:"Groups", content:<GroupOperations className="group-config"
+                                           service={ServiceFactory.getGroupService()}/>},
                  {title:"Web Servers", content:""},
                  {title: "Configure", content:<ConfigureTabs/>}];
         return null;
@@ -38,7 +39,6 @@ var MainTabs = React.createClass({
     }
 });
 
-// TODO: Refactor jvm config area once it is "Reactified" already
 var ConfigureTabs = React.createClass({
     getInitialState:function() {
         items = [{title:"JVM", content:<JvmConfig className="jvm-config"

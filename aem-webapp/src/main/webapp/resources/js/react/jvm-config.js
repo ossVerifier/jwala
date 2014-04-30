@@ -316,15 +316,15 @@ var JvmDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var headerExt = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                         {sTitle:"Name", mData:"jvmName", tocType:"link"},
-                         {sTitle:"Host", mData:"hostName"},
-                         {sTitle:"Group Assignment",
-                          mData:"groups",
-                          tocType:"array",
-                          displayProperty:"name"}];
-        return <TocDataTable theme="default"
-                             headerExt={headerExt}
+        var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                        {sTitle:"Name", mData:"jvmName", tocType:"link"},
+                        {sTitle:"Host", mData:"hostName"},
+                        {sTitle:"Group Assignment",
+                         mData:"groups",
+                         tocType:"array",
+                         displayProperty:"name"}];
+        return <TocDataTable tableId="jvm-config-datatable"
+                             tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}/>
