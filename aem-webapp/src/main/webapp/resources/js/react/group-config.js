@@ -25,14 +25,14 @@ var GroupConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <GroupDataTable data={this.state.groupTableData}
-                                                    selectItemCallback={this.selectItemCallback}
-                                                    editCallback={this.editCallback}
-                                                    noUpdateWhen={
-                                                      this.state.showModalFormAddDialog ||
-                                                      this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog
-                                                      }/>
+                                    <GroupConfigDataTable data={this.state.groupTableData}
+                                                          selectItemCallback={this.selectItemCallback}
+                                                          editCallback={this.editCallback}
+                                                          noUpdateWhen={
+                                                                this.state.showModalFormAddDialog ||
+                                                                this.state.showDeleteConfirmDialog ||
+                                                                this.state.showModalFormEditDialog
+                                                          }/>
                                 </div>
                             </td>
                         </tr>
@@ -223,25 +223,31 @@ var GroupConfigForm = React.createClass({
     }
 });
 
-var GroupDataTable = React.createClass({
-   shouldComponentUpdate: function(nextProps, nextState) {
-
+var GroupConfigDataTable = React.createClass({
+    shouldComponentUpdate: function(nextProps, nextState) {
       return !nextProps.noUpdateWhen;
-
     },
     render: function() {
-        var headerExt = [{sTitle:"", mData: "jvms", tocType:"control"},
-                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                         {sTitle:"Group Name", mData:"name", tocType:"link"}];
-        return <TocDataTable tableId="groupDataTable"
-                             theme="default"
-                             headerExt={headerExt}
-                             colHeaders={["JVM Name", "Host Name"]}
+        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
+                        {sTitle:"Group ID", mData:"id.id", bVisible:false},
+                        {sTitle:"Group Name", mData:"name", tocType:"link"}];
+
+        var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table"};
+
+        var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                             {sTitle:"Name", mData:"jvmName"},
+                             {sTitle:"Host", mData:"hostName"}];
+
+        childTableDetails["tableDef"] = childTableDef;
+
+        return <TocDataTable tableId="group-config-table"
+                             tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
-                             rowSubComponentContainerClassName="row-sub-component-container"/>
+                             rowSubComponentContainerClassName="row-sub-component-container"
+                             childTableDetails={childTableDetails}/>
     }
 });

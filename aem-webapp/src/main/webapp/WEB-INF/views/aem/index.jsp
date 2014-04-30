@@ -4,7 +4,6 @@
 <meta http-equiv="x-ua-compatible" content="IE=Edge"/>
 <title>Tomcat Operations Center</title>
 <link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-grid.css">
@@ -24,6 +23,7 @@
 <script src="public-resources/js/alert.js"></script>
 <script src="public-resources/js/error-alert.js"></script>
 <script src="public-resources/js/modal-form-decorator.js"></script>
+<script src="public-resources/js/datatable-decorator.js"></script>
 
 </head>
 <body>

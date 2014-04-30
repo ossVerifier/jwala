@@ -318,16 +318,16 @@ var WebServerDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var headerExt = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
-                         {sTitle:"Name", mData:"name", tocType:"link"},
-                         {sTitle:"Host", mData:"host"},
-                         {sTitle:"Port", mData:"port"},
-                         {sTitle:"Group Assignment",
-                          mData:"groups",
-                          tocType:"array",
-                          displayProperty:"name"}];
-        return <TocDataTable theme="default"
-                             headerExt={headerExt}
+        var tableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
+                        {sTitle:"Name", mData:"name", tocType:"link"},
+                        {sTitle:"Host", mData:"host"},
+                        {sTitle:"Port", mData:"port"},
+                        {sTitle:"Group Assignment",
+                         mData:"groups",
+                         tocType:"array",
+                         displayProperty:"name"}];
+        return <TocDataTable tableId="webserver-config-datatable"
+                             tableDef={tableDef}
                              colHeaders={["JVM Name", "Host Name"]}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}

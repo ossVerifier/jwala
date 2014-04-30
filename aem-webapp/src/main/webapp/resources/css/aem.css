@@ -11,3 +11,7 @@ body {
 .error {
     color: red
 }
+
+.textAlignLeft {
+    text-align: left;
+}

@@ -38,7 +38,7 @@ var JvmConfig = React.createClass({
                             </td>
                         </tr>
                    </table>
-                   <JvmConfigForm title="Add Web Server"
+                   <JvmConfigForm title="Add JVM"
                                         show={this.state.showModalFormAddDialog}
                                         service={this.props.service}
                                         groupMultiSelectData={this.state.groupMultiSelectData}
@@ -49,7 +49,7 @@ var JvmConfig = React.createClass({
                                             this.state.showDeleteConfirmDialog ||
                                             this.state.showModalFormEditDialog
                                         }/>
-                   <JvmConfigForm title="Edit Web Server"
+                   <JvmConfigForm title="Edit JVM"
                                     show={this.state.showModalFormEditDialog}
                                     service={this.props.service}
                                     data={this.state.jvmFormData}
@@ -316,15 +316,15 @@ var JvmDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var headerExt = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                         {sTitle:"Name", mData:"jvmName", tocType:"link"},
-                         {sTitle:"Host", mData:"hostName"},
-                         {sTitle:"Group Assignment",
-                          mData:"groups",
-                          tocType:"array",
-                          displayProperty:"name"}];
-        return <TocDataTable theme="default"
-                             headerExt={headerExt}
+        var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                        {sTitle:"Name", mData:"jvmName", tocType:"link"},
+                        {sTitle:"Host", mData:"hostName"},
+                        {sTitle:"Group Assignment",
+                         mData:"groups",
+                         tocType:"array",
+                         displayProperty:"name"}];
+        return <TocDataTable tableId="jvm-config-datatable"
+                             tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}/>
