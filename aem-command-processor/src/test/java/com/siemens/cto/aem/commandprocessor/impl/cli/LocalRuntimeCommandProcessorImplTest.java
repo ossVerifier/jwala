@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
+import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
+import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
+import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
 import com.siemens.cto.aem.commandprocessor.impl.SimpleCommandProcessorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.WindowsTest;
 
@@ -18,15 +20,16 @@ public class LocalRuntimeCommandProcessorImplTest extends WindowsTest {
     @Test
     public void testSendSomeInput() throws Exception {
 
-        final LocalRuntimeCommandProcessorImpl impl = new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "date"));
-        final OutputStream commandInput = impl.getCommandInput();
-        commandInput.write("\n".getBytes(StandardCharsets.UTF_8));
-        commandInput.flush();
-        commandInput.close();
+        try (final LocalRuntimeCommandProcessorImpl impl = new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "date"))) {
+            final OutputStream commandInput = impl.getCommandInput();
+            commandInput.write("\n".getBytes(StandardCharsets.UTF_8));
+            commandInput.flush();
+            commandInput.close();
 
-        final SimpleCommandProcessor processor = new SimpleCommandProcessorImpl(impl);
-        final String commandOutput = processor.getCommandOutput();
-        assertTrue(commandOutput.contains("Enter the new date"));
+            final SimpleCommandProcessor processor = new SimpleCommandProcessorImpl(impl);
+            final String commandOutput = processor.getCommandOutput();
+            assertTrue(commandOutput.contains("Enter the new date"));
+        }
     }
 
     @Test
@@ -48,4 +51,11 @@ public class LocalRuntimeCommandProcessorImplTest extends WindowsTest {
         assertFalse(impl.wasTerminatedAbnormally());
     }
 
+    @Test(expected = NotYetReturnedException.class)
+    public void testGetReturnCodeBeforeFinishing() throws Exception {
+
+        try (final LocalRuntimeCommandProcessorImpl impl = new LocalRuntimeCommandProcessorImpl(new ExecCommand("ping", "-t", "localhost"))) {
+            final ExecutionReturnCode returnCode = impl.getExecutionReturnCode();
+        }
+    }
 }

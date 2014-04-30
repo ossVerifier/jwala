@@ -23,4 +23,13 @@ public class ExecCommand implements Serializable {
     public List<String> getCommandFragments() {
         return commandFragments;
     }
+
+    public String toCommandString() {
+        final StringBuilder builder = new StringBuilder();
+        for (final String fragment : commandFragments) {
+            builder.append(fragment);
+            builder.append(" ");
+        }
+        return builder.toString();
+    }
 }

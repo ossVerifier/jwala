@@ -6,25 +6,35 @@ import java.io.OutputStream;
 
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
+import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
+import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
+import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
 
     private final Process process;
     private boolean wasClosed;
     private boolean wasTerminatedAbnormally;
+    private final ExecCommand command;
 
-    public LocalRuntimeCommandProcessorImpl(final ExecCommand theCommand) throws IOException {
+    public LocalRuntimeCommandProcessorImpl(final ExecCommand theCommand) throws CommandFailureException {
 
         this(theCommand,
              new ProcessBuilder());
     }
 
     public LocalRuntimeCommandProcessorImpl(final ExecCommand theCommand,
-                                            final ProcessBuilder theProcessBuilder) throws IOException {
+                                            final ProcessBuilder theProcessBuilder) throws CommandFailureException {
 
-        process = theProcessBuilder.command(theCommand.getCommandFragments()).start();
-        wasClosed = false;
-        wasTerminatedAbnormally = false;
+        try {
+            command = theCommand;
+            process = theProcessBuilder.command(theCommand.getCommandFragments()).start();
+            wasClosed = false;
+            wasTerminatedAbnormally = false;
+        } catch (final IOException ioe) {
+            throw new CommandFailureException(theCommand,
+                                              ioe);
+        }
     }
 
     @Override
@@ -43,13 +53,26 @@ public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        if (!wasClosed) {
+            try {
+                wasClosed = true;
+                process.exitValue();
+            } catch (final IllegalThreadStateException itse) {
+                process.destroy();
+                wasTerminatedAbnormally = true;
+            }
+        }
+    }
+
+    @Override
+    public ExecutionReturnCode getExecutionReturnCode() throws NotYetReturnedException {
         try {
-            wasClosed = true;
-            process.exitValue();
+            final Integer returnCode = process.exitValue();
+            return new ExecutionReturnCode(returnCode);
         } catch (final IllegalThreadStateException itse) {
-            process.destroy();
-            wasTerminatedAbnormally = true;
+            throw new NotYetReturnedException(command,
+                                              itse);
         }
     }
 

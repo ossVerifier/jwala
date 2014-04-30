@@ -13,24 +13,29 @@ public class SimpleCommandProcessorImplTest extends WindowsTest {
     @Test
     public void testSimpleExecute() throws Exception {
 
-        final SimpleCommandProcessorImpl impl = new SimpleCommandProcessorImpl(new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "type", "c:\\temp\\test.txt")));
+        try (final LocalRuntimeCommandProcessorImpl command = new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "ipconfig"))) {
+            final SimpleCommandProcessorImpl impl = new SimpleCommandProcessorImpl(command);
 
-        final String output = impl.getCommandOutput();
-        final String errorOutput = impl.getErrorOutput();
-        assertTrue(output.contains("This is only a test"));
-        assertEquals("",
-                     errorOutput);
+            final String output = impl.getCommandOutput();
+            final String errorOutput = impl.getErrorOutput();
+            assertTrue(output.contains("Windows IP Configuration"));
+            assertEquals("",
+                         errorOutput);
+        }
     }
 
     @Test
     public void testSimpleExecuteWithErrorOutput() throws Exception {
 
-        final SimpleCommandProcessorImpl impl = new SimpleCommandProcessorImpl(new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "type", "c:\\temp\\IShouldNotExist.abcdefg")));
-        final String output = impl.getCommandOutput();
-        final String errorOutput = impl.getErrorOutput();
+        try (final LocalRuntimeCommandProcessorImpl command = new LocalRuntimeCommandProcessorImpl(new ExecCommand("cmd", "/c", "type", "c:\\temp\\IShouldNotExist.abcdefg"))) {
 
-        assertEquals("",
-                     output);
-        assertTrue(errorOutput.contains("The system cannot find the file specified"));
+            final SimpleCommandProcessorImpl impl = new SimpleCommandProcessorImpl(command);
+            final String output = impl.getCommandOutput();
+            final String errorOutput = impl.getErrorOutput();
+
+            assertEquals("",
+                         output);
+            assertTrue(errorOutput.contains("The system cannot find the file specified"));
+        }
     }
 }

@@ -4,9 +4,16 @@ ext {
 
 dependencies {
 
+    compile project(":aem-common")
+
     compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+}
+
+test {
+    workingDir(rootProject.projectDir)
 }
 
 publishing {

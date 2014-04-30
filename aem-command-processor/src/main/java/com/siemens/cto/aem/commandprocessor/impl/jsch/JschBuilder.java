@@ -3,26 +3,26 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 
-public class JSchBuilder {
+public class JschBuilder {
 
     private String knownHostsFileName;
     private String privateKeyFileName;
 
-    public JSchBuilder() {
+    public JschBuilder() {
     }
 
-    public JSchBuilder(final String aKnownHostsFileName,
+    public JschBuilder(final String aKnownHostsFileName,
                        final String aPrivateKeyFileName) {
         knownHostsFileName = aKnownHostsFileName;
         privateKeyFileName = aPrivateKeyFileName;
     }
 
-    public JSchBuilder setKnownHostsFileName(final String aKnownHostsFileName) {
+    public JschBuilder setKnownHostsFileName(final String aKnownHostsFileName) {
         knownHostsFileName = aKnownHostsFileName;
         return this;
     }
 
-    public JSchBuilder setPrivateKeyFileName(final String aPrivateKeyFileName) {
+    public JschBuilder setPrivateKeyFileName(final String aPrivateKeyFileName) {
         privateKeyFileName = aPrivateKeyFileName;
         return this;
     }
