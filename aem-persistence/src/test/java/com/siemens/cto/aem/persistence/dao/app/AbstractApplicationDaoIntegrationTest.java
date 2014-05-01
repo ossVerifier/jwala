@@ -15,6 +15,9 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+
 import static com.siemens.cto.aem.domain.model.id.Identifier.*;
 
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -115,6 +118,36 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
     
+    @Test public void testFindApplicationsBelongingToJvm() {
+        JpaGroup jpaGroup2 = new JpaGroup();
+        jpaGroup2.setName("testJpaApp" + randomAscii(5));
+        jpaGroup2.setJvms(Arrays.asList(jpaJvm));
+        entityManager.persist(jpaGroup2);
+
+        JpaApplication jpaApplicationWithGroup2 = new JpaApplication();
+        jpaApplicationWithGroup2.setName(randomAlphanumeric(5));
+        jpaApplicationWithGroup2.setWarPath(randomAscii(10));
+        jpaApplicationWithGroup2.setWebAppContext("/" + randomAscii(5));
+        jpaApplicationWithGroup2.setGroup(jpaGroup2);
+        entityManager.persist(jpaApplicationWithGroup2);
+        entityManager.flush();
+
+        List<Application> applications = applicationDao.findApplicationsBelongingToJvm(id(jpaJvm.getId(), Jvm.class), limit10);
+
+        assertTrue(applications.size() == 2);
+        assertNotEquals(applications.get(0), applications.get(1));
+
+        for (Application application : applications) {
+            if (application.getId().equals(id(jpaApplicationWithGroup.id, Application.class))) {
+                assertJpaApplicationMatches(application, jpaApplicationWithGroup);
+            } else if (application.getId().equals(id(jpaApplicationWithGroup2.id, Application.class))) {
+                assertJpaApplicationMatches(application, jpaApplicationWithGroup2);
+            } else {
+                fail();
+            }
+        }
+    }
+
     private void assertJpaApplicationMatches(Application a, JpaApplication jpaApplication) {
         if(a.getId() != null || jpaApplication.id != 0) {
             assertEquals(jpaApplication.id, a.getId().getId());

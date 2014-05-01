@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,5 +81,27 @@ public class ApplicationServiceRestImplTest {
         assertEquals(emptyList, entity);
     }
 
-    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testFindApplicationsByJvmId() {
+        when(service.findApplicationsByJvmId(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
+        Response resp = cut.findApplicationsByJvmId(id(2L, Jvm.class), allProvider);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof List<?>);
+        assertEquals(emptyList, entity);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testFindApplicationsByNullJvmId() {
+        when(service.findApplicationsByJvmId(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
+        Response resp = cut.findApplicationsByJvmId(null, allProvider);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof List<?>);
+        assertEquals(emptyList, entity);
+    }
 }
