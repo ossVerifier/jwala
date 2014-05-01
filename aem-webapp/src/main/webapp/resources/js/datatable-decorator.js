@@ -87,6 +87,10 @@ var decorateTableAsDataTable = function(tableId,
                 return str;
                 }
             } else if (item.tocType === "button") {
+
+                aoColumnDefs[itemIndex].sClass = "control center";
+                aoColumnDefs[itemIndex].sWidth = "90px";
+
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                     var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
                     return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
