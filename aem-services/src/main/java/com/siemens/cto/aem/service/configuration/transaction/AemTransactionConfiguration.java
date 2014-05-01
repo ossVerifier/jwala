@@ -19,6 +19,5 @@ public class AemTransactionConfiguration {
     @Bean(name = "transactionManager")
     public PlatformTransactionManager getPlatformTransactionManager() {
         return new JtaTransactionManager();
-//        return new JpaTransactionManager(jpaConfiguration.getEntityManagerFactory());
     }
 }
