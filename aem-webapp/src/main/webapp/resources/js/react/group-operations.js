@@ -67,7 +67,35 @@ var GroupOperationsDataTable = React.createClass({
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                              {sTitle:"Name", mData:"jvmName"},
-                             {sTitle:"Host", mData:"hostName"}];
+                             {sTitle:"Host", mData:"hostName"},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Manager",
+                              btnCallback:this.jvmManager},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Heap Dump",
+                              btnCallback:this.jvmHeapDump},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Thread Dump",
+                              btnCallback:this.jvmThreadDump},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Deploy",
+                              btnCallback:this.jvmDeploy},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Start",
+                              btnCallback:this.jvmStart,
+                              isToggleBtn:true,
+                              label2:"Stop",
+                              callback2:this.jvmStop}];
 
         childTableDetails["tableDef"] = childTableDef;
 
@@ -91,5 +119,24 @@ var GroupOperationsDataTable = React.createClass({
    },
    stop: function(id) {
         alert("Stop applications for group_" + id + "...");
+   },
+   jvmManager: function(id) {
+        alert("JVM show manager for jvm_" + id + "...");
+   },
+   jvmHeapDump: function(id) {
+        alert("JVM show heap dump for jvm_" + id + "...");
+   },
+   jvmThreadDump: function(id) {
+        alert("JVM show thread dump for jvm_" + id + "...");
+   },
+   jvmDeploy: function(id) {
+        alert("JVM deploy applications for jvm_" + id + "...");
+   },
+   jvmStart: function(id) {
+        alert("JVM start applications for jvm_" + id + "...");
+   },
+   jvmStop: function(id) {
+        alert("JVM stop applications for jvm_" + id + "...");
    }
+
 });
