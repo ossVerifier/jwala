@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.dao.app;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -42,7 +43,10 @@ public abstract class AbstractApplicationDaoIntegrationTest {
 
     /** Expected data */
     private JpaApplication jpaApplicationWithGroup;
-    
+
+    /** Expected data */
+    private JpaJvm jpaJvm;
+
     private PaginationParameter limitNone = new PaginationParameter(1000, 1);
     private PaginationParameter limit10 = new PaginationParameter(0,10);
     private PaginationParameter limitAll = PaginationParameter.all();
@@ -50,25 +54,31 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     private JpaGroup        jpaGroup;
     
     @Before public void setUp() {
+
+        jpaJvm = new JpaJvm();
+        jpaJvm.setHostName("usmlvv1junit00");
+        jpaJvm.setName("jvm_name");
+        entityManager.persist(jpaJvm);
+
         jpaApplication = new JpaApplication();
         jpaApplication.setName(randomAlphanumeric(5));
         jpaApplication.setWarPath(randomAscii(10));
         jpaApplication.setWebAppContext("/" + randomAscii(5));
         entityManager.persist(jpaApplication);
-        
+
         jpaGroup = new JpaGroup();
         jpaGroup.setName("testJpaApp" + randomAscii(5));
+        jpaGroup.setJvms(Arrays.asList(jpaJvm));
         entityManager.persist(jpaGroup);
-        
+
         jpaApplicationWithGroup = new JpaApplication();
         jpaApplicationWithGroup.setName(randomAlphanumeric(5));
         jpaApplicationWithGroup.setWarPath(randomAscii(10));
         jpaApplicationWithGroup.setWebAppContext("/" + randomAscii(5));
         jpaApplicationWithGroup.setGroup(jpaGroup);
         entityManager.persist(jpaApplicationWithGroup);
-        
+
         entityManager.flush(); // need ids for testing.
-        
     }
 
     @After public void tearDown() {
