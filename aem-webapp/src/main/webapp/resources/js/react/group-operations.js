@@ -42,7 +42,25 @@ var GroupOperationsDataTable = React.createClass({
     render: function() {
         var tableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name"}];
+                        {sTitle:"Group Name", mData:"name"},
+                        {sTitle:"",
+                         mData:null,
+                         tocType:"button",
+                         btnLabel:"Deploy",
+                         btnCallback:this.deploy},
+                        {sTitle:"",
+                         mData:null,
+                         tocType:"button",
+                         btnLabel:"Undeploy",
+                         btnCallback:this.undeploy},
+                        {sTitle:"",
+                         mData:null,
+                         tocType:"button",
+                         btnLabel:"Start",
+                         btnCallback:this.start,
+                         isToggleBtn:true,
+                         label2:"Stop",
+                         callback2:this.stop}];
 
         var childTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                  className:"simple-data-table"};
@@ -61,5 +79,17 @@ var GroupOperationsDataTable = React.createClass({
                              rowSubComponentContainerClassName="row-sub-component-container"
                              childTableDetails={childTableDetails}
                              selectItemCallback={this.props.selectItemCallback}/>
-    }
+   },
+   deploy: function(id) {
+        alert("Deploy applications for group_" + id + "...");
+   },
+   undeploy: function(id) {
+        alert("Undeploy applications for group_" + id + "...");
+   },
+   start: function(id) {
+        alert("Start applications for group_" + id + "...");
+   },
+   stop: function(id) {
+        alert("Stop applications for group_" + id + "...");
+   }
 });

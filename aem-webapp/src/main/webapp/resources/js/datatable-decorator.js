@@ -1,4 +1,20 @@
 /**
+ * Creates an id delimited by dash "-"
+ * e.g. ["btn", "1"] returns btn-1
+ */
+var createDashDelimitedId = function(idFragments) {
+    var tmpId;
+    for (var i = 0; i < idFragments.length; i++) {
+        if (tmpId === undefined) {
+            tmpId = idFragments[i];
+        } else {
+            tmpId = tmpId + "-" + idFragments[i]
+        }
+    }
+    return tmpId;
+}
+
+/**
  * This method transforms a table to a JQuery DataTable.
  */
 var decorateTableAsDataTable = function(tableId,
@@ -30,8 +46,9 @@ var decorateTableAsDataTable = function(tableId,
 
             if(item.tocType === "link") {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
-                    var id = tableId + "link" + data + full.id.id;
-                    return React.renderComponentToStaticMarkup(new Anchor({id:id,
+                    return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
+                                                                                                     "link",
+                                                                                                     full.id.id]),
                                                                    valueId:full.id.id,
                                                                    value:data,
                                                                    callback:editCallback}));
@@ -48,7 +65,9 @@ var decorateTableAsDataTable = function(tableId,
                     var content = "";
                     if (data.length > 0) {
                         return React.renderComponentToStaticMarkup(
-                                    new ExpandCollapseControl({controlId:full.id.id,
+                                    new ExpandCollapseControl({id:createDashDelimitedId([tableId,
+                                                                                         "ctrl-expand-collapse",
+                                                                                         full.id.id]),
                                                                expandIcon:expandIcon,
                                                                collapseIcon:collapseIcon,
                                                                childTableDetails:childTableDetails,
@@ -59,14 +78,25 @@ var decorateTableAsDataTable = function(tableId,
                 }
 
             } else if (item.tocType === "array") {
-                  aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                      var str = "";
-                      /* would be better with _Underscore.js : */
-                      for (var idx = 0; idx < data.length; idx=idx+1) {
-                          str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
-                      }
-                      return str;
-                  }
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                    var str = "";
+                    /* would be better with _Underscore.js : */
+                    for (var idx = 0; idx < data.length; idx=idx+1) {
+                        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+                    }
+                return str;
+                }
+            } else if (item.tocType === "button") {
+                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+                    var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
+                    return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
+                                                                                    itemId:full.id.id,
+                                                                                    label:item.btnLabel,
+                                                                                    callback:item.btnCallback,
+                                                                                    isToggleBtn:item.isToggleBtn,
+                                                                                    label2:item.label2,
+                                                                                    callback2:item.callback2}));
+                }
             }
 
             aaSorting[itemIndex] = [itemIndex, 'asc'];
