@@ -17,14 +17,13 @@ public class CreateWebServerCommand implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 
-    private final Collection<Identifier<Group> > groupIds;
+    private final Collection<Identifier<Group>> groupIds;
     private final String host;
     private final String name;
     private final Integer port;
 
-    public CreateWebServerCommand(
-            final Collection<Identifier<Group> > theGroupIds,
-            final String theName, final String theHost, final Integer thePort) {
+    public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds, final String theName,
+            final String theHost, final Integer thePort) {
         host = theHost;
         port = thePort;
         name = theName;
@@ -47,28 +46,25 @@ public class CreateWebServerCommand implements Serializable, Command {
         return port;
     }
 
+    @Override
     public void validateCommand() {
-        new MultipleRuleCommand(new WebServerNameRule(name),
-                                new WebServerHostNameRule(host),
-                                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
-                                new GroupIdsRule(groupIds)).validateCommand();
+        new MultipleRuleCommand(new WebServerNameRule(name), new WebServerHostNameRule(host), new PortNumberRule(port,
+                AemFaultType.INVALID_WEBSERVER_PORT), new GroupIdsRule(groupIds)).validateCommand();
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groupIds == null) ? 0 : groupIds.hashCode());
-        result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        result = prime * result + (groupIds == null ? 0 : groupIds.hashCode());
+        result = prime * result + (host == null ? 0 : host.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
+        result = prime * result + (port == null ? 0 : port.hashCode());
         return result;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -78,7 +74,7 @@ public class CreateWebServerCommand implements Serializable, Command {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        CreateWebServerCommand other = (CreateWebServerCommand) obj;
+        final CreateWebServerCommand other = (CreateWebServerCommand) obj;
         if (groupIds == null) {
             if (other.groupIds != null) {
                 return false;
@@ -110,13 +106,9 @@ public class CreateWebServerCommand implements Serializable, Command {
         return true;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public String toString() {
         return "CreateWebServerCommand {groupIds=" + groupIds + ", host=" + host + ", name=" + name + ", port=" + port
                 + "}";
     }
-
-
-
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,4 +48,16 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         return ResponseBuilder.ok(apps); 
     }
 
+    @Override
+    public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId, PaginationParamProvider paginationParamProvider) {
+        logger.debug("Find Apps requested with pagination: {}, aJvmId: {}", paginationParamProvider, aJvmId != null ? aJvmId : "null");
+        PaginationParameter page = paginationParamProvider.getPaginationParameter();
+        if(aJvmId != null) {
+            final List<Application> apps = service.findApplicationsByJvmId(aJvmId, page);
+            return ResponseBuilder.ok(apps);
+        } else {
+            final List<Application> apps = service.getApplications(page);
+            return ResponseBuilder.ok(apps);
+        }
+    }
 }

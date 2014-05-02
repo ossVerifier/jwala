@@ -2,19 +2,16 @@ package com.siemens.cto.aem.common.exception;
 
 public class FaultCodeException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
     private final MessageResponseStatus messageResponseStatus;
 
-    public FaultCodeException(final MessageResponseStatus theMessageResponseStatus,
-                              final String theMessage) {
-        super(theMessage);
-        messageResponseStatus = theMessageResponseStatus;
+    public FaultCodeException(final MessageResponseStatus theMessageResponseStatus, final String theMessage) {
+        this(theMessageResponseStatus, theMessage, null);
     }
 
-    public FaultCodeException(final MessageResponseStatus theMessageResponseStatus,
-                              final String theMessage,
-                              final Throwable theCause) {
-        super(theMessage,
-              theCause);
+    public FaultCodeException(final MessageResponseStatus theMessageResponseStatus, final String theMessage,
+            final Throwable theCause) {
+        super(theMessage, theCause);
         messageResponseStatus = theMessageResponseStatus;
     }
 

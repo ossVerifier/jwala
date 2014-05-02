@@ -5,20 +5,18 @@ var ExpandCollapseControl = React.createClass({
                      // Upgrading to 0.10.0 should resolve this.
     render: function() {
         this.currentIcon = this.props.expandIcon;
-        var controlFullId = "ExpandCollapseControl_" + this.props.controlId;
 
-        $("#" + controlFullId).off("click");
-        $("#" + controlFullId).on("click", this.onClick);
+        $("#" + this.props.id).off("click");
+        $("#" + this.props.id).on("click", this.onClick);
 
-        return <img id={controlFullId}
+        return <img id={this.props.id}
                     src={this.props.expandIcon}/>
     },
     onClick: function() {
         var dataTable = this.props.getDataTableCallback();
-        var controlFullId = "ExpandCollapseControl_" + this.props.controlId;
 
         // We need the <tr> node for DataTable to insert the child table
-        var nTr = $("#" + controlFullId).parent().parent().get(0);
+        var nTr = $("#" + this.props.id).parent().parent().get(0);
 
         if (this.currentIcon === this.props.expandIcon) {
             this.currentIcon = this.props.collapseIcon;
@@ -26,12 +24,12 @@ var ExpandCollapseControl = React.createClass({
                              this.fnFormatDetails(),
                              this.props.rowSubComponentContainerClassName);
 
-            this.dataTable = decorateTableAsDataTable(this.props.childTableDetails.tableIdPrefix + this.props.controlId,
+            this.dataTable = decorateTableAsDataTable(this.props.childTableDetails.tableIdPrefix + this.props.id,
                                                       this.props.childTableDetails.tableDef,
+                                                      false,
                                                       false);
 
             if (this.dataTable !== null) {
-                console.log(this.props.data);
                 this.dataTable.fnClearTable(this.props.data);
                 this.dataTable.fnAddData(this.props.data);
                 this.dataTable.fnDraw();
@@ -41,10 +39,11 @@ var ExpandCollapseControl = React.createClass({
             this.currentIcon = this.props.expandIcon;
             dataTable.fnClose(nTr);
         }
-        $("#" + controlFullId).attr("src", this.currentIcon);
+        $("#" + this.props.id).attr("src", this.currentIcon);
     },
     fnFormatDetails: function() {
-        return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.controlId}
-                                                    tableDef={this.props.childTableDetails.tableDef}/>)
+        return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
+                                                    tableDef={this.props.childTableDetails.tableDef}
+                                                    className={this.props.childTableDetails.className}/>)
     }
 });

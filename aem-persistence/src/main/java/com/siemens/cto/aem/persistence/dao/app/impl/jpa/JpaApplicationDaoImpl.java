@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.dao.app.impl.jpa;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -12,9 +13,9 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
@@ -52,6 +53,7 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     @Override
     public List<Application> getApplications(PaginationParameter somePagination) {        
         Query q = em.createQuery("select a from JpaApplication a");
+
         paginator.paginate(q,
                 somePagination);
         return buildApplications(q.getResultList());              
@@ -80,6 +82,7 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     public List<Application> findApplications(String aGroupName, PaginationParameter somePagination) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);
         q.setParameter(JpaApplication.GROUP_NAME_PARAM, aGroupName);
+
         paginator.paginate(q, somePagination); 
         return buildApplications(q.getResultList());
     }
@@ -90,6 +93,17 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_ID);
         q.setParameter(JpaApplication.GROUP_ID_PARAM, aGroupId.getId());
         paginator.paginate(q, somePagination); 
+        return buildApplications(q.getResultList());
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId, PaginationParameter somePagination) {
+        Query q = em.createNamedQuery(JpaApplication.QUERY_BY_JVM_ID);
+        q.setParameter(JpaApplication.JVM_ID_PARAM, aJvmId.getId());
+        if(somePagination.isLimited()) {
+            q.setFirstResult(somePagination.getOffset());
+            q.setMaxResults(somePagination.getLimit());
+        }
         return buildApplications(q.getResultList());
     }
 

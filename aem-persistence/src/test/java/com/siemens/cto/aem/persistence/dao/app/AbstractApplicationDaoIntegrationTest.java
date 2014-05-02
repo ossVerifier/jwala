@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.dao.app;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -14,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
+
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import static com.siemens.cto.aem.domain.model.id.Identifier.*;
 
@@ -39,7 +43,10 @@ public abstract class AbstractApplicationDaoIntegrationTest {
 
     /** Expected data */
     private JpaApplication jpaApplicationWithGroup;
-    
+
+    /** Expected data */
+    private JpaJvm jpaJvm;
+
     private PaginationParameter limitNone = new PaginationParameter(1000, 1);
     private PaginationParameter limit10 = new PaginationParameter(0,10);
     private PaginationParameter limitAll = PaginationParameter.all();
@@ -47,25 +54,31 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     private JpaGroup        jpaGroup;
     
     @Before public void setUp() {
+
+        jpaJvm = new JpaJvm();
+        jpaJvm.setHostName("usmlvv1junit00");
+        jpaJvm.setName("jvm_name");
+        entityManager.persist(jpaJvm);
+
         jpaApplication = new JpaApplication();
         jpaApplication.setName(randomAlphanumeric(5));
         jpaApplication.setWarPath(randomAscii(10));
         jpaApplication.setWebAppContext("/" + randomAscii(5));
         entityManager.persist(jpaApplication);
-        
+
         jpaGroup = new JpaGroup();
         jpaGroup.setName("testJpaApp" + randomAscii(5));
+        jpaGroup.setJvms(Arrays.asList(jpaJvm));
         entityManager.persist(jpaGroup);
-        
+
         jpaApplicationWithGroup = new JpaApplication();
         jpaApplicationWithGroup.setName(randomAlphanumeric(5));
         jpaApplicationWithGroup.setWarPath(randomAscii(10));
         jpaApplicationWithGroup.setWebAppContext("/" + randomAscii(5));
         jpaApplicationWithGroup.setGroup(jpaGroup);
         entityManager.persist(jpaApplicationWithGroup);
-        
+
         entityManager.flush(); // need ids for testing.
-        
     }
 
     @After public void tearDown() {
@@ -115,6 +128,36 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
     
+    @Test public void testFindApplicationsBelongingToJvm() {
+        JpaGroup jpaGroup2 = new JpaGroup();
+        jpaGroup2.setName("testJpaApp" + randomAscii(5));
+        jpaGroup2.setJvms(Arrays.asList(jpaJvm));
+        entityManager.persist(jpaGroup2);
+
+        JpaApplication jpaApplicationWithGroup2 = new JpaApplication();
+        jpaApplicationWithGroup2.setName(randomAlphanumeric(5));
+        jpaApplicationWithGroup2.setWarPath(randomAscii(10));
+        jpaApplicationWithGroup2.setWebAppContext("/" + randomAscii(5));
+        jpaApplicationWithGroup2.setGroup(jpaGroup2);
+        entityManager.persist(jpaApplicationWithGroup2);
+        entityManager.flush();
+
+        List<Application> applications = applicationDao.findApplicationsBelongingToJvm(id(jpaJvm.getId(), Jvm.class), limit10);
+
+        assertTrue(applications.size() == 2);
+        assertNotEquals(applications.get(0), applications.get(1));
+
+        for (Application application : applications) {
+            if (application.getId().equals(id(jpaApplicationWithGroup.id, Application.class))) {
+                assertJpaApplicationMatches(application, jpaApplicationWithGroup);
+            } else if (application.getId().equals(id(jpaApplicationWithGroup2.id, Application.class))) {
+                assertJpaApplicationMatches(application, jpaApplicationWithGroup2);
+            } else {
+                fail();
+            }
+        }
+    }
+
     private void assertJpaApplicationMatches(Application a, JpaApplication jpaApplication) {
         if(a.getId() != null || jpaApplication.id != 0) {
             assertEquals(jpaApplication.id, a.getId().getId());

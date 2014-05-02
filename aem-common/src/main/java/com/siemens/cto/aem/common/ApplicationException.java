@@ -2,7 +2,7 @@ package com.siemens.cto.aem.common;
 
 public class ApplicationException extends RuntimeException {
 
-    private static final long serialVersionUID = -8174136830251072619L;
+    private static final long serialVersionUID = 1;
 
     public ApplicationException() {
         super();

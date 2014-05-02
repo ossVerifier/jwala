@@ -2,6 +2,11 @@
 var TocDataTable = React.createClass({
     dataTable: null,
     render: function() {
+        if (this.props.className !== undefined) {
+            $.fn.dataTableExt.oStdClasses = {sTable:this.props.className,
+                                             sSortAsc:$.fn.dataTableExt.oStdClasses.sSortAsc,
+                                             sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
+        }
         return <div>
                     <table id={this.props.tableId} />
                </div>
@@ -10,6 +15,7 @@ var TocDataTable = React.createClass({
         if (this.dataTable === null) {
             this.dataTable = decorateTableAsDataTable(this.props.tableId,
                                                       this.props.tableDef,
+                                                      true,
                                                       true,
                                                       this.props.editCallback,
                                                       this.rowSelectCallback,
