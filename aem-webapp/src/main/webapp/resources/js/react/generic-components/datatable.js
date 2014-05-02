@@ -8,14 +8,14 @@ var TocDataTable = React.createClass({
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
         return <div>
-                    <table id={this.props.tableId} />
+                    <table id={this.props.tableId}/>
                </div>
     },
     componentDidUpdate: function() {
         if (this.dataTable === null) {
             this.dataTable = decorateTableAsDataTable(this.props.tableId,
                                                       this.props.tableDef,
-                                                      true,
+                                                      this.props.applyThemeRoller,
                                                       true,
                                                       this.props.editCallback,
                                                       this.rowSelectCallback,

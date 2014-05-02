@@ -62,42 +62,57 @@ var GroupOperationsDataTable = React.createClass({
                          label2:"Stop",
                          callback2:this.stop}];
 
-        var childTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
-                                 className:"simple-data-table"};
+        var webAppChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
+                                       className:"simple-data-table",
+                                       getDataCallback:this.getApplication};
 
-        var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                             {sTitle:"Name", mData:"jvmName"},
-                             {sTitle:"Host", mData:"hostName"},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Manager",
-                              btnCallback:this.jvmManager},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Heap Dump",
-                              btnCallback:this.jvmHeapDump},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Thread Dump",
-                              btnCallback:this.jvmThreadDump},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Deploy",
-                              btnCallback:this.jvmDeploy},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Start",
-                              btnCallback:this.jvmStart,
-                              isToggleBtn:true,
-                              label2:"Stop",
-                              callback2:this.jvmStop}];
+        var webAppChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                                   {sTitle:"Name", mData:"name"},
+                                   {sTitle:"War Path", mData:"warPath"},
+                                   {sTitle:"Context", mData:"webAppContext"}];
 
-        childTableDetails["tableDef"] = childTableDef;
+        webAppChildTableDetails["tableDef"] = webAppChildTableDef;
+
+
+        var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
+                                    className:"simple-data-table",
+                                    childTableDetails:webAppChildTableDetails};
+
+        var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
+                                {sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                                {sTitle:"Name", mData:"jvmName"},
+                                {sTitle:"Host", mData:"hostName"},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Manager",
+                                 btnCallback:this.jvmManager},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Heap Dump",
+                                 btnCallback:this.jvmHeapDump},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Thread Dump",
+                                 btnCallback:this.jvmThreadDump},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Deploy",
+                                 btnCallback:this.jvmDeploy},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Start",
+                                 btnCallback:this.jvmStart,
+                                 isToggleBtn:true,
+                                 label2:"Stop",
+                                 callback2:this.jvmStop}];
+
+        jvmChildTableDetails["tableDef"] = jvmChildTableDef;
+
 
         return <TocDataTable tableId="group-operations-table"
                              tableDef={tableDef}
@@ -105,8 +120,11 @@ var GroupOperationsDataTable = React.createClass({
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"
-                             childTableDetails={childTableDetails}
+                             childTableDetails={jvmChildTableDetails}
                              selectItemCallback={this.props.selectItemCallback}/>
+   },
+   getApplication: function(groupId, responseCallback) {
+        webAppService.getWebAppByGroup(groupId, responseCallback);
    },
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");

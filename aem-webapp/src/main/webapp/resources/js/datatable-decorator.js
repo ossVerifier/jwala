@@ -26,7 +26,8 @@ var decorateTableAsDataTable = function(tableId,
                                         expandIcon,
                                         collapseIcon,
                                         getDataTableCallback,
-                                        childTableDetails){
+                                        childTableDetails,
+                                        rootId /* temp only until Web App is mapped to JVMs. This should contain the group id. */){
 
     var self = this;
 
@@ -35,7 +36,6 @@ var decorateTableAsDataTable = function(tableId,
     var aaSorting = [];
 
     $(tableDef).each(function(itemIndex, item, itemArray) {
-
             aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
                                        "mData": item.mData,
                                        "aTargets": [itemIndex]};
@@ -60,10 +60,11 @@ var decorateTableAsDataTable = function(tableId,
                 aoColumnDefs[itemIndex].mDataProp = null;
                 aoColumnDefs[itemIndex].sClass = "control center";
                 aoColumnDefs[itemIndex].sWidth = "20px";
+                aoColumnDefs[itemIndex].bSortable = false;
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                    var content = "";
-                    if (data.length > 0) {
+
+                        var theRootId = (rootId === undefined ? full.id.id : rootId);
                         return React.renderComponentToStaticMarkup(
                                     new ExpandCollapseControl({id:createDashDelimitedId([tableId,
                                                                                          "ctrl-expand-collapse",
@@ -72,9 +73,10 @@ var decorateTableAsDataTable = function(tableId,
                                                                collapseIcon:collapseIcon,
                                                                childTableDetails:childTableDetails,
                                                                getDataTableCallback:getDataTableCallback,
-                                                               data:data}));
-                        }
-                    return content;
+                                                               data:data,
+                                                               rowSubComponentContainerClassName:"row-sub-component-container",
+                                                               rootId:theRootId /* Temp only, please see comment above re Web Apps */}));
+
                 }
 
             } else if (item.tocType === "array") {
@@ -88,8 +90,9 @@ var decorateTableAsDataTable = function(tableId,
                 }
             } else if (item.tocType === "button") {
 
-                aoColumnDefs[itemIndex].sClass = "control center";
+                aoColumnDefs[itemIndex].sClass = aoColumnDefs[itemIndex].sClass + " control center";
                 aoColumnDefs[itemIndex].sWidth = "90px";
+                aoColumnDefs[itemIndex].bSortable = false;
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                     var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
@@ -109,7 +112,7 @@ var decorateTableAsDataTable = function(tableId,
 
         var dataTableProperties = {"aaSorting": aaSorting,
                                    "aoColumnDefs": aoColumnDefs,
-                                   "bJQueryUI": applyThemeRoller,
+                                   "bJQueryUI": applyThemeRoller === undefined ? true : applyThemeRoller,
                                    "bAutoWidth": false,
                                    "bStateSave": true,
                                    "aLengthMenu": [[25, 50, 100, 200, -1],
