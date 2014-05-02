@@ -41,7 +41,7 @@ var webAppService = {
 	getWebApps : function(responseCallback) {
 		return serviceFoundation.get("v1.0/applications?all", "json", responseCallback);
 	},
-	getWebAppByGroup : function(groupId, responseCallback) {
+	getWebAppsByGroup : function(groupId, responseCallback) {
         return serviceFoundation.get("v1.0/applications?group.id=" + groupId, "json", responseCallback);
     }
 };

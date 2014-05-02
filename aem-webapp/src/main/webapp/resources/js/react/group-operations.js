@@ -64,7 +64,7 @@ var GroupOperationsDataTable = React.createClass({
 
         var webAppChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                        className:"simple-data-table",
-                                       getDataCallback:this.getApplication};
+                                       getDataCallback:this.getApplications};
 
         var webAppChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                    {sTitle:"Name", mData:"name"},
@@ -123,8 +123,8 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={jvmChildTableDetails}
                              selectItemCallback={this.props.selectItemCallback}/>
    },
-   getApplication: function(groupId, responseCallback) {
-        webAppService.getWebAppByGroup(groupId, responseCallback);
+   getApplications: function(groupId, responseCallback) {
+        webAppService.getWebAppsByGroup(groupId, responseCallback);
    },
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
