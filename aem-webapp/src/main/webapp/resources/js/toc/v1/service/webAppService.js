@@ -1,5 +1,5 @@
 var webAppService = {
-    serializedWebAppsFormToJson: function(serializedArray, forUpdate) {
+    serializedWebAppFormToJson: function(serializedArray, forUpdate) {
         var json = {};
         $.each(serializedArray, function() {
 
