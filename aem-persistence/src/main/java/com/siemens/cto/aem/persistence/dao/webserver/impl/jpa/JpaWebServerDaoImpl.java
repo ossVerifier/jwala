@@ -51,10 +51,10 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
             final Collection<Identifier<Group>> groupIds = createWebServerCommand.getGroups();
 
-            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
+            final List<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
 
-            if(groupIds != null) {
-                for(Identifier<Group> gid : groupIds) {
+            if (groupIds != null) {
+                for (final Identifier<Group> gid : groupIds) {
                     final JpaGroup group = getGroup(gid);
                     groups.add(group);
                 }
@@ -75,9 +75,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
             return webServerFrom(jpaWebServer);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
-                                          "WebServer Name already exists: " + aWebServer.getCommand().getName(),
-                                          eee);
+            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
+                    + aWebServer.getCommand().getName(), eee);
         }
     }
 
@@ -92,10 +91,10 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
             final Collection<Identifier<Group>> groupIds = updateWebServerCommand.getNewGroupIds();
 
-            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds!=null ? groupIds.size():0);
+            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
 
-            if(groupIds != null) {
-                for(Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
+            if (groupIds != null) {
+                for (final Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
                     groups.add(getGroup(id));
                 }
             }
@@ -111,9 +110,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
             return webServerFrom(jpaWebServer);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
-                                          "WebServer Name already exists: " + aWebServerToUpdate.getCommand().getNewName(),
-                                          eee);
+            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
+                    + aWebServerToUpdate.getCommand().getNewName(), eee);
         }
     }
 
@@ -133,22 +131,19 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
         final TypedQuery<JpaWebServer> query = entityManager.createQuery(criteria);
 
-        paginator.paginate(query,
-                           somePagination);
+        paginator.paginate(query, somePagination);
 
         return webServersFrom(query.getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<WebServer> findWebServers(final String aName,
-                                  final PaginationParameter somePagination) {
+    public List<WebServer> findWebServers(final String aName, final PaginationParameter somePagination) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaWebServer g WHERE g.name LIKE :WebServerName");
         query.setParameter("WebServerName", "?" + aName + "?");
 
-        paginator.paginate(query,
-                           somePagination);
+        paginator.paginate(query, somePagination);
 
         return webServersFrom(query.getResultList());
     }
@@ -173,12 +168,10 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     protected JpaWebServer getJpaWebServer(final Identifier<WebServer> aWebServer) {
 
-        final JpaWebServer jpaWebServer = entityManager.find(JpaWebServer.class,
-                                                     aWebServer.getId());
+        final JpaWebServer jpaWebServer = entityManager.find(JpaWebServer.class, aWebServer.getId());
 
         if (jpaWebServer == null) {
-            throw new NotFoundException(AemFaultType.WEBSERVER_NOT_FOUND,
-                                        "WebServer not found: " + aWebServer);
+            throw new NotFoundException(AemFaultType.WEBSERVER_NOT_FOUND, "WebServer not found: " + aWebServer);
         }
 
         return jpaWebServer;
@@ -188,74 +181,72 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         return new JpaWebServerBuilder(aJpaWebServer).build();
     }
 
-
     /**
      * TODO: DUPLICATED FROM JpaGroupDaoImpl - need some wiring internal to the Dao to reuse.
+     * 
      * @param aGroupId
      * @return
      */
     protected JpaGroup getGroup(final Identifier<Group> aGroupId) {
 
-    	if(aGroupId == null) return null;
-    	if(aGroupId.getId() == null) return null;
+        if (aGroupId == null) {
+            return null;
+        }
+        if (aGroupId.getId() == null) {
+            return null;
+        }
 
-        final JpaGroup group = entityManager.find(JpaGroup.class,
-                                                  aGroupId.getId());
+        final JpaGroup group = entityManager.find(JpaGroup.class, aGroupId.getId());
 
         if (group == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Group not found: " + aGroupId);
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + aGroupId);
         }
 
         return group;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
+        final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId");
+        query.setParameter("groupId", aGroupId.getId());
 
-      final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId");
-      query.setParameter("groupId", aGroupId.getId());
+        final List<JpaWebServer> webservers = query.getResultList();
+        for (final JpaWebServer webserver : webservers) {
+            entityManager.remove(webserver);
+        }
+    }
 
-      final List<JpaWebServer> webservers = query.getResultList();
-      for (final JpaWebServer webserver : webservers) {
-          entityManager.remove(webserver);
-      }
-  }
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup,
+            final PaginationParameter somePagination) {
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup,
-                                       final PaginationParameter somePagination) {
+        final Query query =
+                entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId ORDER BY j.name");
 
-      final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId ORDER BY j.name");
+        query.setParameter("groupId", aGroup.getId());
+        paginator.paginate(query, somePagination);
 
-      query.setParameter("groupId", aGroup.getId());
-      paginator.paginate(query,
-                         somePagination);
+        return webserversFrom(query.getResultList());
+    }
 
-      return webserversFrom(query.getResultList());
-  }
+    protected WebServer webserverFrom(final JpaWebServer aJpaWebServer) {
 
+        final JpaWebServerBuilder builder = new JpaWebServerBuilder(aJpaWebServer);
 
+        return builder.build();
+    }
 
-  protected WebServer webserverFrom(final JpaWebServer aJpaWebServer) {
+    protected List<WebServer> webserversFrom(final List<JpaWebServer> someJpaWebServers) {
 
-      final JpaWebServerBuilder builder = new JpaWebServerBuilder(aJpaWebServer);
+        final List<WebServer> webservers = new ArrayList<>();
 
-      return builder.build();
-  }
+        for (final JpaWebServer webserver : someJpaWebServers) {
+            webservers.add(webserverFrom(webserver));
+        }
 
-
-  protected List<WebServer> webserversFrom(final List<JpaWebServer> someJpaWebServers) {
-
-      final List<WebServer> webservers = new ArrayList<>();
-
-      for (final JpaWebServer webserver : someJpaWebServers) {
-          webservers.add(webserverFrom(webserver));
-      }
-
-      return webservers;
-  }
+        return webservers;
+    }
 }

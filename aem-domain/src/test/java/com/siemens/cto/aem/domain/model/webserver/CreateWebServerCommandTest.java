@@ -18,7 +18,7 @@ public class CreateWebServerCommandTest {
 
     private static final String NAME = "name";
 
-    Integer portNumber = Integer.valueOf(10000);
+    private static final Integer portNumber = Integer.valueOf(10000);
 
     List<Identifier<Group>> groupIds = new ArrayList<Identifier<Group>>();
 
@@ -43,12 +43,13 @@ public class CreateWebServerCommandTest {
 
     final CreateWebServerCommand webServerEleven = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, null);
     final CreateWebServerCommand webServerTwelve = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, null);
-    final CreateWebServerCommand webServerThirteen = new CreateWebServerCommand(groupIdsFour, "otherName", HOST,
-            Integer.valueOf(0));
+    final CreateWebServerCommand webServerThirteen = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0);
+    final CreateWebServerCommand webServerNulls = new CreateWebServerCommand(null, null, null, null);
 
     @Test
     public void testHashCode() {
-        assertEquals(webServerOne.hashCode(), webServerThree.hashCode());
+        assertEquals(webServerTwo.hashCode(), webServerFour.hashCode());
+        assertEquals(31 * 31 * 31 * 31, webServerNulls.hashCode());
     }
 
     @Test

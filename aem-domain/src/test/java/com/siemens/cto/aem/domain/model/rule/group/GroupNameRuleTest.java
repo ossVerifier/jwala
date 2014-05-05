@@ -1,0 +1,23 @@
+package com.siemens.cto.aem.domain.model.rule.group;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
+
+public class GroupNameRuleTest {
+    private final GroupNameRule rule = new GroupNameRule("");
+
+    @Test
+    public void testGetMessageResponseStatus() {
+        final MessageResponseStatus messageResponseStatus = rule.getMessageResponseStatus();
+        assertEquals("InvalidGroupName", messageResponseStatus.getMessage());
+    }
+
+    @Test
+    public void testGetMessage() {
+        final String message = rule.getMessage();
+        assertEquals("Invalid Group Name: \"\"", message);
+    }
+}
