@@ -50,7 +50,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId, PaginationParamProvider paginationParamProvider) {
-        logger.debug("Find Apps requested with pagination: {}, aJvmId: {}", paginationParamProvider, aJvmId != null ? aJvmId : "null");
+        LOGGER.debug("Find Apps requested with pagination: {}, aJvmId: {}", paginationParamProvider, aJvmId != null ? aJvmId : "null");
         PaginationParameter page = paginationParamProvider.getPaginationParameter();
         if(aJvmId != null) {
             final List<Application> apps = service.findApplicationsByJvmId(aJvmId, page);
