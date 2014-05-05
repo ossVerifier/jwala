@@ -10,50 +10,40 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class WebServer implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final Identifier<WebServer> id;
-	private final Map<Identifier<Group>, Group> groups = new ConcurrentHashMap<>();
-	private final String host;
-	private final String name;
-	private final Integer port;
+    private final Identifier<WebServer> id;
+    private final Map<Identifier<Group>, Group> groups = new ConcurrentHashMap<>();
+    private final String host;
+    private final String name;
+    private final Integer port;
 
-	@Deprecated
-    public WebServer(final Identifier<WebServer> theId, final Group theGroup,
-            final String theName, final String theHost, final Integer thePort) {
+    public WebServer(final Identifier<WebServer> theId, final Collection<Group> theGroups, final String theName,
+            final String theHost, final Integer thePort) {
         id = theId;
         host = theHost;
         port = thePort;
         name = theName;
-        groups.put(theGroup.getId(), theGroup);
-    }
-
-    public WebServer(final Identifier<WebServer> theId, final Collection<Group> theGroups,
-            final String theName, final String theHost, final Integer thePort) {
-        id = theId;
-        host = theHost;
-        port = thePort;
-        name = theName;
-        for(Group grp : theGroups) {            
+        for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
     }
 
-	public Identifier<WebServer> getId() {
-		return id;
-	}
+    public Identifier<WebServer> getId() {
+        return id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public Integer getPort() {
-		return port;
-	}
+    public Integer getPort() {
+        return port;
+    }
 
     public Collection<Group> getGroups() {
         return groups.values();
@@ -63,22 +53,21 @@ public class WebServer implements Serializable {
         return groups.keySet();
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.InsufficientBranchCoverage"})
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groups == null) ? 0 : groups.hashCode());
-        result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        result = prime * result + (groups == null ? 0 : groups.hashCode());
+        result = prime * result + (host == null ? 0 : host.hashCode());
+        result = prime * result + (id == null ? 0 : id.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
+        result = prime * result + (port == null ? 0 : port.hashCode());
         return result;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -88,7 +77,7 @@ public class WebServer implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        WebServer other = (WebServer) obj;
+        final WebServer other = (WebServer) obj;
         if (groups == null) {
             if (other.groups != null) {
                 return false;
@@ -127,12 +116,9 @@ public class WebServer implements Serializable {
         return true;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public String toString() {
         return "WebServer {id=" + id + ", groups=" + groups + ", host=" + host + ", name=" + name + ", port=" + port
                 + "}";
     }
-
-
 }

@@ -5,13 +5,13 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public class HostNameRule extends ValidNameRule {
 
-	private AemFaultType error = AemFaultType.INVALID_HOST_NAME;
-	
+    private final AemFaultType error;
+
     public HostNameRule(final String theName) {
-        super(theName);
+        this(theName, AemFaultType.INVALID_HOST_NAME);
     }
 
-    public HostNameRule(final String theName, AemFaultType errorCode) {
+    public HostNameRule(final String theName, final AemFaultType errorCode) {
         super(theName);
         this.error = errorCode;
     }
