@@ -1,0 +1,24 @@
+ext {
+    localVersions = [csa : "2.3"]
+}
+
+dependencies {
+
+    compile project(":aem-common")
+    compile project(":aem-domain")
+    compile project(":aem-command-processor")
+
+    compile group: "com.siemens.cac", name: "csa", version: "$localVersions.csa"
+
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+

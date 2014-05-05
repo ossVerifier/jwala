@@ -32,4 +32,27 @@ public class ExecCommand implements Serializable {
         }
         return builder.toString();
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final ExecCommand that = (ExecCommand) o;
+
+        if (commandFragments != null ? !commandFragments.equals(that.commandFragments) : that.commandFragments != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return commandFragments != null ? commandFragments.hashCode() : 0;
+    }
 }

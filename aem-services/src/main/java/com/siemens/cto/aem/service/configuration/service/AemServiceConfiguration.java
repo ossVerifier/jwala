@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
+import com.siemens.cto.aem.control.configuration.AemControlConfigReference;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -25,6 +27,9 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemDaoConfiguration aemDaoConfiguration;
+
+    @Autowired
+    private AemCommandExecutorConfig aemCommandExecutorConfig;
 
     @Bean
     public GroupService getGroupService() {
@@ -49,6 +54,8 @@ public class AemServiceConfiguration {
 
     @Bean
     public JvmControlService getJvmControlService() {
-        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService());
+        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService(),
+                                         getJvmService(),
+                                         aemCommandExecutorConfig.getJvmCommandExecutor());
     }
 }

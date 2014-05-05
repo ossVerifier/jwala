@@ -4,6 +4,8 @@ configurations {
 
 dependencies {
     compile project(":aem-persistence")
+    compile project(":aem-command-processor") //TODO remove maybe?
+    compile project(":aem-control")
 
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
@@ -25,7 +27,7 @@ dependencies {
 test {
     // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
     jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
-    
+
     jacoco {
       excludes = ["com.siemens.cto.aem.persistence.configuration.*",
                   "com.siemens.cto.aem.persistence.domain.*",

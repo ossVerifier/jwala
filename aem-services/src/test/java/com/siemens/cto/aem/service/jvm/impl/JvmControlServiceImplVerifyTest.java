@@ -21,7 +21,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Before
     public void setup() {
         persistenceService = mock(JvmControlPersistenceService.class);
-        impl = new JvmControlServiceImpl(persistenceService);
+        impl = new JvmControlServiceImpl(persistenceService, );
         user = new User("unused");
     }
 
