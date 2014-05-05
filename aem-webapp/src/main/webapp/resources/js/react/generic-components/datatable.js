@@ -8,7 +8,9 @@ var TocDataTable = React.createClass({
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
         return <div>
-                    <table id={this.props.tableId}/>
+                    <table id={this.props.tableId}>
+                        <caption>{this.props.title !== undefined ? this.props.title : ""}</caption>
+                    </table>
                </div>
     },
     componentDidUpdate: function() {
@@ -21,7 +23,6 @@ var TocDataTable = React.createClass({
                                                       this.rowSelectCallback,
                                                       this.props.expandIcon,
                                                       this.props.collapseIcon,
-                                                      this.getDataTable,
                                                       this.props.childTableDetails);
         }
 

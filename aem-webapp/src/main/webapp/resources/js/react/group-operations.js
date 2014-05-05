@@ -40,31 +40,32 @@ var GroupOperationsDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
-                        {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name"},
-                        {sTitle:"",
-                         mData:null,
-                         tocType:"button",
-                         btnLabel:"Deploy",
-                         btnCallback:this.deploy},
-                        {sTitle:"",
-                         mData:null,
-                         tocType:"button",
-                         btnLabel:"Undeploy",
-                         btnCallback:this.undeploy},
-                        {sTitle:"",
-                         mData:null,
-                         tocType:"button",
-                         btnLabel:"Start",
-                         btnCallback:this.start,
-                         isToggleBtn:true,
-                         label2:"Stop",
-                         callback2:this.stop}];
+        var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
+                             {sTitle:"Group ID", mData:"id.id", bVisible:false},
+                             {sTitle:"Group Name", mData:"name"},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Deploy",
+                              btnCallback:this.deploy},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Undeploy",
+                              btnCallback:this.undeploy},
+                             {sTitle:"",
+                              mData:null,
+                              tocType:"button",
+                              btnLabel:"Start",
+                              btnCallback:this.start,
+                              isToggleBtn:true,
+                              label2:"Stop",
+                              callback2:this.stop}];
 
         var webAppChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                        className:"simple-data-table",
-                                       getDataCallback:this.getApplications};
+                                       title: "Web Applications",
+                                       dataCallback:this.getApplications};
 
         var webAppChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                    {sTitle:"Name", mData:"name"},
@@ -76,7 +77,8 @@ var GroupOperationsDataTable = React.createClass({
 
         var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                     className:"simple-data-table",
-                                    childTableDetails:webAppChildTableDetails};
+                                    childTableDetails:webAppChildTableDetails,
+                                    title: "JVMS"};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
@@ -113,14 +115,15 @@ var GroupOperationsDataTable = React.createClass({
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
+        var childTableDetailsArray = [jvmChildTableDetails, webAppChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
-                             tableDef={tableDef}
+                             tableDef={groupTableDef}
                              data={this.props.data}
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"
-                             childTableDetails={jvmChildTableDetails}
+                             childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}/>
    },
    getApplications: function(groupId, responseCallback) {

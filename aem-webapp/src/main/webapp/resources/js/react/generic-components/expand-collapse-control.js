@@ -1,44 +1,54 @@
 /** @jsx React.DOM */
 var ExpandCollapseControl = React.createClass({
-    dataTable: null,
     currentIcon: "", // Tried to use state then re-render but can't. I get firstChild of undefined rears for some reason.
                      // Upgrading to 0.10.0 should resolve this.
     render: function() {
         this.currentIcon = this.props.expandIcon;
 
+        var dataSources = [];
+        var childTableDetailsArray = [];
+
+        if(Object.prototype.toString.call(this.props.childTableDetails) === "[object Array]") {
+            for (var i = 0; i < this.props.childTableDetails.length; i++) {
+                dataSources[i] = this.props.childTableDetails[i].dataCallback === undefined ?
+                                    {jsonData:this.props.childTableDetails[i].data} :
+                                    {dataCallback:this.props.childTableDetails[i].dataCallback};
+                childTableDetailsArray[i] = this.props.childTableDetails[i];
+            }
+        } else {
+                dataSources[0] = this.props.childTableDetails.dataCallback === undefined ?
+                                    {jsonData:this.props.childTableDetails.data} :
+                                    {dataCallback:this.props.childTableDetails.dataCallback};
+                childTableDetailsArray[0] = this.props.childTableDetails;
+        }
+
         $("#" + this.props.id).off("click");
-        $("#" + this.props.id).on("click", this.onClick);
+        $("#" + this.props.id).on("click", this.onClick.bind(this, dataSources, childTableDetailsArray));
 
         return <img id={this.props.id}
                     src={this.props.expandIcon}/>
     },
-    getDataTableCallback: function() {
-        return this.dataTable;
+    decorateTable: function(childTableDetails) {
+        return decorateTableAsDataTable(childTableDetails.tableIdPrefix + this.props.id,
+                                        childTableDetails.tableDef,
+                                        false,
+                                        false,
+                                        null,
+                                        null,
+                                        this.props.expandIcon,
+                                        this.props.collapseIcon,
+                                        childTableDetails.childTableDetails,
+                                        this.props.rootId);
     },
-    drawDataTable: function() {
-
-        this.dataTable = decorateTableAsDataTable(this.props.childTableDetails.tableIdPrefix + this.props.id,
-                                                  this.props.childTableDetails.tableDef,
-                                                  false,
-                                                  false,
-                                                  null,
-                                                  null,
-                                                  this.props.expandIcon,
-                                                  this.props.collapseIcon,
-                                                  this.getDataTableCallback,
-                                                  this.props.childTableDetails.childTableDetails,
-                                                  this.props.rootId);
-
-        if (this.dataTable !== null) {
-            this.dataTable.fnClearTable(this.props.data);
-            this.dataTable.fnAddData(this.props.data);
-            this.dataTable.fnDraw();
-        }
-
+    drawDataTable: function(dataTable, data) {
+        dataTable.fnClearTable(data);
+        dataTable.fnAddData(data);
+        dataTable.fnDraw();
     },
-    onClick: function() {
+    onClick: function(dataSources, childTableDetailsArray) {
+
         var self = this;
-        var dataTable = this.props.getDataTableCallback();
+        var dataTable = this.props.dataTable;
 
         // We need the <tr> node for DataTable to insert the child table
         var nTr = $("#" + this.props.id).parent().parent().get(0);
@@ -49,16 +59,23 @@ var ExpandCollapseControl = React.createClass({
                              this.fnFormatDetails(),
                              this.props.rowSubComponentContainerClassName);
 
-            if (this.props.data !== null) {
-                this.drawDataTable();
-            } else {
-                this.props.childTableDetails.getDataCallback(this.props.rootId,
-                                                             function(resp){
-                                                                self.props.data = resp.applicationResponseContent[0];
-                                                                if (self.props.data !== undefined) {
-                                                                    self.drawDataTable();
-                                                                }
-                                                             });
+            for (var i = 0; i < dataSources.length; i++) {
+                var subDataTable = this.decorateTable(childTableDetailsArray[i]);
+                var data = dataSources[i].jsonData;
+                if (data !== undefined && data !== null) {
+                    this.drawDataTable(subDataTable, data);
+                } else {
+                    if (dataSources[i].dataCallback !== undefined) {
+                            dataSources[i].dataCallback(this.props.rootId,
+                                                        function(resp){
+                                                            var data = resp.applicationResponseContent[0];
+                                                            if (data !== undefined) {
+                                                                self.drawDataTable(subDataTable, data);
+                                                            }
+                                                        });
+                    }
+
+                }
             }
 
         } else {
@@ -66,10 +83,26 @@ var ExpandCollapseControl = React.createClass({
             dataTable.fnClose(nTr);
         }
         $("#" + this.props.id).attr("src", this.currentIcon);
+
     },
     fnFormatDetails: function() {
-        return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
-                                                    tableDef={this.props.childTableDetails.tableDef}
-                                                    className={this.props.childTableDetails.className}/>)
+
+        if(Object.prototype.toString.call(this.props.childTableDetails) === "[object Array]") {
+            var tocDataTables = [];
+            for (var i = 0; i < this.props.childTableDetails.length; i++) {
+                tocDataTables[i] = new TocDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
+                                                     tableDef:this.props.childTableDetails[i].tableDef,
+                                                     className:this.props.childTableDetails[i].className,
+                                                     title:this.props.childTableDetails[i].title
+                                                    });
+            }
+            return React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
+        } else {
+            return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
+                                                                     tableDef={this.props.childTableDetails.tableDef}
+                                                                     className={this.props.childTableDetails.className}
+                                                                     title={this.props.childTableDetails.title}/>)
+        }
+
     }
 });

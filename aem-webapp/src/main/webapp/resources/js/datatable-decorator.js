@@ -25,7 +25,6 @@ var decorateTableAsDataTable = function(tableId,
                                         rowSelectCallback,
                                         expandIcon,
                                         collapseIcon,
-                                        getDataTableCallback,
                                         childTableDetails,
                                         rootId /* temp only until Web App is mapped to JVMs. This should contain the group id. */){
 
@@ -65,6 +64,15 @@ var decorateTableAsDataTable = function(tableId,
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
 
                         var theRootId = (rootId === undefined ? full.id.id : rootId);
+
+                        if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
+                            for (var i = 0; i < childTableDetails.length; i++) {
+                                childTableDetails[i]["data"] = data;
+                            }
+                        } else {
+                            childTableDetails["data"] = data;
+                        }
+
                         return React.renderComponentToStaticMarkup(
                                     new ExpandCollapseControl({id:createDashDelimitedId([tableId,
                                                                                          "ctrl-expand-collapse",
@@ -72,10 +80,9 @@ var decorateTableAsDataTable = function(tableId,
                                                                expandIcon:expandIcon,
                                                                collapseIcon:collapseIcon,
                                                                childTableDetails:childTableDetails,
-                                                               getDataTableCallback:getDataTableCallback,
-                                                               data:data,
                                                                rowSubComponentContainerClassName:"row-sub-component-container",
-                                                               rootId:theRootId /* Temp only, please see comment above re Web Apps */}));
+                                                               rootId:theRootId, /* Temp only, please see comment above re Web Apps */
+                                                               dataTable:$("#" + tableId).dataTable()}));
 
                 }
 
