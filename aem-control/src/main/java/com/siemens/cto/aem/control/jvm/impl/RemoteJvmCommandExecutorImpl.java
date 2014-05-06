@@ -2,7 +2,7 @@ package com.siemens.cto.aem.control.jvm.impl;
 
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionData;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.JvmExecCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.DefaultJvmExecCommandBuilderImpl;
@@ -26,7 +26,7 @@ public class RemoteJvmCommandExecutorImpl implements JvmCommandExecutor {
     }
 
     @Override
-    public ExecutionData controlJvm(final ControlJvmCommand aCommand,
+    public ExecData controlJvm(final ControlJvmCommand aCommand,
                                     final Jvm aJvm) throws CommandFailureException {
 
         final JvmExecCommandBuilder commandBuilder = new DefaultJvmExecCommandBuilderImpl();

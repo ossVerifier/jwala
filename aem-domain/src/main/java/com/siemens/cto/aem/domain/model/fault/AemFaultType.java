@@ -45,23 +45,27 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     APPLICATION_NOT_SPECIFIED("AEM20", "WebServerNotSpecified"),
     /**/
-    INVALID_JVM_OPERATION("AEM21", "InvalidJvmOperation");
+    INVALID_JVM_OPERATION("AEM21", "InvalidJvmOperation"),
+    /**/
+    JVM_CONTROL_HISTORY_NOT_FOUND("AEM22", "JvmControlHistoryNotFound")
+	;
 
-    private final String faultCode;
-    private final String faultMessage;
+	private final String faultCode;
+	private final String faultMessage;
 
-    private AemFaultType(final String theFaultCode, final String theFaultMessage) {
-        faultCode = theFaultCode;
-        faultMessage = theFaultMessage;
-    }
+	private AemFaultType(final String theFaultCode,
+                         final String theFaultMessage) {
+		faultCode = theFaultCode;
+		faultMessage = theFaultMessage;
+	}
 
-    @Override
-    public String getMessageCode() {
-        return faultCode;
-    }
+	@Override
+	public String getMessageCode() {
+		return faultCode;
+	}
 
-    @Override
-    public String getMessage() {
-        return faultMessage;
-    }
+	@Override
+	public String getMessage() {
+		return faultMessage;
+	}
 }

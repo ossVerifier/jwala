@@ -10,17 +10,18 @@ import org.junit.Test;
 
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionData;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.control.IntegrationTestRule;
+import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,10 +65,11 @@ public class RemoteJvmCommandExecutorImplTest {
         when(jvm.getJvmName()).thenReturn("jvm-integration-1");
         when(jvm.getHostName()).thenReturn("usmlvv1cto989");
 
-        final ExecutionData exec = impl.controlJvm(command,
-                                                   jvm);
+        final ExecData exec = impl.controlJvm(command,
+                                              jvm);
         final String output = exec.getStandardOutput();
         final String error = exec.getStandardError();
+        assumeFalse(error.contains("The requested service has already been started"));
         assertTrue(exec.getReturnCode().wasSuccessful());
     }
 }

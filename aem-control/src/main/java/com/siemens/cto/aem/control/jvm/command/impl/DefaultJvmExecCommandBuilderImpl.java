@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.control.jvm.command.impl;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.control.jvm.command.JvmExecCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;

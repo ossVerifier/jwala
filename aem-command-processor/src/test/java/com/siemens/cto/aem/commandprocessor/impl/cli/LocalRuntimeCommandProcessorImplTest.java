@@ -6,11 +6,11 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.commandprocessor.impl.SimpleCommandProcessorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.WindowsTest;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +55,7 @@ public class LocalRuntimeCommandProcessorImplTest extends WindowsTest {
     public void testGetReturnCodeBeforeFinishing() throws Exception {
 
         try (final LocalRuntimeCommandProcessorImpl impl = new LocalRuntimeCommandProcessorImpl(new ExecCommand("ping", "-t", "localhost"))) {
-            final ExecutionReturnCode returnCode = impl.getExecutionReturnCode();
+            final ExecReturnCode returnCode = impl.getExecutionReturnCode();
         }
     }
 }

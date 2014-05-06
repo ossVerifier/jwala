@@ -4,29 +4,28 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteExecCommand;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteNotYetReturnedException;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteSystemConnection;
+import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.SimpleCommandProcessorImpl;
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.IntegrationTestRule;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
+import com.siemens.cto.aem.domain.model.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
-@RunWith(SpringJUnit4ClassRunner.class)
 public class JschCommandProcessorImplTest {
+
+    @ClassRule
+    public static IntegrationTestRule integrationTestRule = new IntegrationTestRule();
 
     private JschBuilder builder;
     private RemoteSystemConnection remoteSystemConnection;
@@ -86,7 +85,7 @@ public class JschCommandProcessorImplTest {
                                                                           new ExecCommand("vi"));
         try (final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand)) {
 
-            final ExecutionReturnCode returnCode = sshProcessor.getExecutionReturnCode();
+            final ExecReturnCode returnCode = sshProcessor.getExecutionReturnCode();
         }
     }
 

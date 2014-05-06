@@ -1,24 +1,24 @@
-package com.siemens.cto.aem.commandprocessor.domain;
+package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 
-public class ExecutionData implements Serializable {
+public class ExecData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final ExecutionReturnCode returnCode;
+    private final ExecReturnCode returnCode;
     private final String standardOutput;
     private final String standardError;
 
-    public ExecutionData(final ExecutionReturnCode theReturnCode,
-                         final String theStandardOutput,
-                         final String theStandardError) {
+    public ExecData(final ExecReturnCode theReturnCode,
+                    final String theStandardOutput,
+                    final String theStandardError) {
         returnCode = theReturnCode;
         standardOutput = theStandardOutput;
         standardError = theStandardError;
     }
 
-    public ExecutionReturnCode getReturnCode() {
+    public ExecReturnCode getReturnCode() {
         return returnCode;
     }
 

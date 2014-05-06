@@ -1,4 +1,6 @@
-package com.siemens.cto.aem.commandprocessor.domain;
+package com.siemens.cto.aem.exception;
+
+import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
 
 public class RemoteNotYetReturnedException extends NotYetReturnedException {
 

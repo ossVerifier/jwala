@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.commandprocessor.domain;
+package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;

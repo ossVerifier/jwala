@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.control;
+package com.siemens.cto.aem.common;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

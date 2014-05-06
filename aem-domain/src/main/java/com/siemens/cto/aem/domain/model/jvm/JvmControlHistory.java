@@ -3,6 +3,7 @@ package com.siemens.cto.aem.domain.model.jvm;
 import java.io.Serializable;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class JvmControlHistory implements Serializable {
@@ -13,15 +14,18 @@ public class JvmControlHistory implements Serializable {
     private final Identifier<Jvm> jvmId;
     private final JvmControlOperation controlOperation;
     private final AuditEvent whenRequested;
+    private final ExecData execData;
 
     public JvmControlHistory(final Identifier<JvmControlHistory> theId,
                              final Identifier<Jvm> theJvmId,
                              final JvmControlOperation theControlOperation,
-                             final AuditEvent theWhenRequested) {
+                             final AuditEvent theWhenRequested,
+                             final ExecData theExecData) {
         id = theId;
         jvmId = theJvmId;
         controlOperation = theControlOperation;
         whenRequested = theWhenRequested;
+        execData = theExecData;
     }
 
     public Identifier<JvmControlHistory> getId() {
@@ -40,6 +44,10 @@ public class JvmControlHistory implements Serializable {
         return whenRequested;
     }
 
+    public ExecData getExecData() {
+        return execData;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -52,6 +60,9 @@ public class JvmControlHistory implements Serializable {
         final JvmControlHistory that = (JvmControlHistory) o;
 
         if (controlOperation != that.controlOperation) {
+            return false;
+        }
+        if (execData != null ? !execData.equals(that.execData) : that.execData != null) {
             return false;
         }
         if (id != null ? !id.equals(that.id) : that.id != null) {
@@ -73,6 +84,7 @@ public class JvmControlHistory implements Serializable {
         result = 31 * result + (jvmId != null ? jvmId.hashCode() : 0);
         result = 31 * result + (controlOperation != null ? controlOperation.hashCode() : 0);
         result = 31 * result + (whenRequested != null ? whenRequested.hashCode() : 0);
+        result = 31 * result + (execData != null ? execData.hashCode() : 0);
         return result;
     }
 
@@ -83,6 +95,7 @@ public class JvmControlHistory implements Serializable {
                ", jvmId=" + jvmId +
                ", controlOperation=" + controlOperation +
                ", whenRequested=" + whenRequested +
+               ", execData=" + execData +
                '}';
     }
 }

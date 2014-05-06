@@ -11,11 +11,11 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteExecCommand;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteNotYetReturnedException;
-import com.siemens.cto.aem.commandprocessor.domain.RemoteSystemConnection;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
+import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
+import com.siemens.cto.aem.domain.model.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
@@ -75,13 +75,13 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     }
 
     @Override
-    public ExecutionReturnCode getExecutionReturnCode() throws NotYetReturnedException {
+    public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
         final int returnCode = channel.getExitStatus();
         if (returnCode == -1) {
             throw new RemoteNotYetReturnedException(remoteCommand);
         }
 
-        return new ExecutionReturnCode(returnCode);
+        return new ExecReturnCode(returnCode);
     }
 
     protected Session prepareSession(final JSch aJsch,

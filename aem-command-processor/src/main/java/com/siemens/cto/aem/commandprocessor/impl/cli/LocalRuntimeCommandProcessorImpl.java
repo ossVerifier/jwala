@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
@@ -66,10 +66,10 @@ public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
     }
 
     @Override
-    public ExecutionReturnCode getExecutionReturnCode() throws NotYetReturnedException {
+    public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
         try {
             final Integer returnCode = process.exitValue();
-            return new ExecutionReturnCode(returnCode);
+            return new ExecReturnCode(returnCode);
         } catch (final IllegalThreadStateException itse) {
             throw new NotYetReturnedException(command,
                                               itse);

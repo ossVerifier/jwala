@@ -3,7 +3,7 @@ package com.siemens.cto.aem.control.jvm.command.windows;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.control.jvm.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 

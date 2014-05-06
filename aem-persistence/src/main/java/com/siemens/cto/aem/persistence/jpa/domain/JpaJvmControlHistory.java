@@ -14,6 +14,8 @@ import javax.persistence.TemporalType;
 @Entity(name = "jvm_control_history")
 public class JpaJvmControlHistory implements Serializable {
 
+    public static final int MAX_OUTPUT_LENGTH = 2048;
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -36,6 +38,15 @@ public class JpaJvmControlHistory implements Serializable {
 
     @Column(name = "requestedBy")
     public String requestedBy;
+
+    @Column(name = "returnCode")
+    public Integer returnCode;
+
+    @Column(name = "returnOutput", length = MAX_OUTPUT_LENGTH)
+    public String returnOutput;
+
+    @Column(name = "returnErrorOutput", length = MAX_OUTPUT_LENGTH)
+    public String returnErrorOutput;
 
     public Long getId() {
         return id;
@@ -85,6 +96,30 @@ public class JpaJvmControlHistory implements Serializable {
         this.requestedBy = requestedBy;
     }
 
+    public Integer getReturnCode() {
+        return returnCode;
+    }
+
+    public void setReturnCode(final Integer returnCode) {
+        this.returnCode = returnCode;
+    }
+
+    public String getReturnOutput() {
+        return returnOutput;
+    }
+
+    public void setReturnOutput(final String returnOutput) {
+        this.returnOutput = returnOutput;
+    }
+
+    public String getReturnErrorOutput() {
+        return returnErrorOutput;
+    }
+
+    public void setReturnErrorOutput(final String returnErrorOutput) {
+        this.returnErrorOutput = returnErrorOutput;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -99,6 +134,9 @@ public class JpaJvmControlHistory implements Serializable {
         if (completedDate != null ? !completedDate.equals(that.completedDate) : that.completedDate != null) {
             return false;
         }
+        if (controlOperation != null ? !controlOperation.equals(that.controlOperation) : that.controlOperation != null) {
+            return false;
+        }
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
@@ -111,6 +149,15 @@ public class JpaJvmControlHistory implements Serializable {
         if (requestedDate != null ? !requestedDate.equals(that.requestedDate) : that.requestedDate != null) {
             return false;
         }
+        if (returnCode != null ? !returnCode.equals(that.returnCode) : that.returnCode != null) {
+            return false;
+        }
+        if (returnErrorOutput != null ? !returnErrorOutput.equals(that.returnErrorOutput) : that.returnErrorOutput != null) {
+            return false;
+        }
+        if (returnOutput != null ? !returnOutput.equals(that.returnOutput) : that.returnOutput != null) {
+            return false;
+        }
 
         return true;
     }
@@ -119,9 +166,13 @@ public class JpaJvmControlHistory implements Serializable {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (jvmId != null ? jvmId.hashCode() : 0);
+        result = 31 * result + (controlOperation != null ? controlOperation.hashCode() : 0);
         result = 31 * result + (requestedDate != null ? requestedDate.hashCode() : 0);
         result = 31 * result + (completedDate != null ? completedDate.hashCode() : 0);
         result = 31 * result + (requestedBy != null ? requestedBy.hashCode() : 0);
+        result = 31 * result + (returnCode != null ? returnCode.hashCode() : 0);
+        result = 31 * result + (returnOutput != null ? returnOutput.hashCode() : 0);
+        result = 31 * result + (returnErrorOutput != null ? returnErrorOutput.hashCode() : 0);
         return result;
     }
 }

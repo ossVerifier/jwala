@@ -9,9 +9,9 @@ import java.util.concurrent.Future;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionData;
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.io.FullInputStreamReaderTask;
 
@@ -24,19 +24,19 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
     }
 
     @Override
-    public ExecutionData execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException {
+    public ExecData execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException {
 
         try (final CommandProcessor processor = aBuilder.build()) {
 
             final Future<String> standardOutput = consumeOutput(processor.getCommandOutput());
             final Future<String> standardError = consumeOutput(processor.getErrorOutput());
-            final ExecutionReturnCode returnCode = getReturnCodeWhenFinished(processor,
-                                                                             standardOutput,
-                                                                             standardError);
+            final ExecReturnCode returnCode = getReturnCodeWhenFinished(processor,
+                                                                        standardOutput,
+                                                                        standardError);
 
-            return new ExecutionData(returnCode,
-                                     get(standardOutput),
-                                     get(standardError));
+            return new ExecData(returnCode,
+                                get(standardOutput),
+                                get(standardError));
         } catch (final NotYetReturnedException nyre) {
             throw new CommandFailureException(nyre.getCommand(),
                                               nyre);
@@ -50,8 +50,8 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
         return executorService.submit(new FullInputStreamReaderTask(someInput));
     }
 
-    protected ExecutionReturnCode getReturnCodeWhenFinished(final CommandProcessor aProcessor,
-                                                            final Future<?>... someFutures) throws NotYetReturnedException {
+    protected ExecReturnCode getReturnCodeWhenFinished(final CommandProcessor aProcessor,
+                                                       final Future<?>... someFutures) throws NotYetReturnedException {
 
         for (final Future<?> future : someFutures) {
             get(future);

@@ -3,7 +3,7 @@ package com.siemens.cto.aem.control.jvm.command.impl;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 

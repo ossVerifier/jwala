@@ -1,16 +1,16 @@
-package com.siemens.cto.aem.commandprocessor.domain;
+package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 
-public class ExecutionReturnCode implements Serializable {
+public class ExecReturnCode implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Integer ZERO = Integer.valueOf(0);
+    private static final Integer ZERO = 0;
 
     private final Integer returnCode;
 
-    public ExecutionReturnCode(final Integer theReturnCode) {
+    public ExecReturnCode(final Integer theReturnCode) {
         returnCode = theReturnCode;
     }
 
@@ -18,8 +18,20 @@ public class ExecutionReturnCode implements Serializable {
         return returnCode;
     }
 
+    public Boolean getWasSuccessful() {
+        return wasSuccessful();
+    }
+
+    public Boolean getWasCompleted() {
+        return wasCompleted();
+    }
+
     public boolean wasSuccessful() {
         return (returnCode.equals(ZERO));
+    }
+
+    public boolean wasCompleted() {
+        return (returnCode != null);
     }
 
     @Override
@@ -31,7 +43,7 @@ public class ExecutionReturnCode implements Serializable {
             return false;
         }
 
-        final ExecutionReturnCode that = (ExecutionReturnCode) o;
+        final ExecReturnCode that = (ExecReturnCode) o;
 
         if (returnCode != null ? !returnCode.equals(that.returnCode) : that.returnCode != null) {
             return false;
@@ -47,7 +59,7 @@ public class ExecutionReturnCode implements Serializable {
 
     @Override
     public String toString() {
-        return "ExecutionReturnCode{" +
+        return "ExecReturnCode{" +
                "returnCode=" + returnCode +
                '}';
     }

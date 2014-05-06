@@ -69,7 +69,7 @@ public class JpaJvmControlPersistenceServiceImplTest {
         final Event<ControlJvmCommand> event = new Event<>(command,
                                                            auditEvent);
 
-        final JvmControlHistory history = persistenceService.addControlHistoryEvent(event);
+        final JvmControlHistory history = persistenceService.addIncompleteControlHistoryEvent(event);
 
         assertNotNull(history.getId());
         assertEquals(jvmId,

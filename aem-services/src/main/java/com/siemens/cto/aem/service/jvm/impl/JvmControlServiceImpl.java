@@ -2,12 +2,13 @@ package com.siemens.cto.aem.service.jvm.impl;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionData;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -37,15 +38,18 @@ public class JvmControlServiceImpl implements JvmControlService {
         try {
             aCommand.validateCommand();
 
-            final JvmControlHistory history = persistenceService.addControlHistoryEvent(new Event<>(aCommand,
-                                                                                                    AuditEvent.now(aUser)));
+            final JvmControlHistory incompleteHistory = persistenceService.addIncompleteControlHistoryEvent(new Event<>(aCommand,
+                                                                                                                        AuditEvent.now(aUser)));
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
-            final ExecutionData returnCode = jvmCommandExecutor.controlJvm(aCommand,
-                                                                           jvm);
+            final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
+                                                                    jvm);
 
-            //TODO Update history with result of command execution?
-            return history;
+            final JvmControlHistory completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(new CompleteControlJvmCommand(incompleteHistory.getId(),
+                                                                                                                                               execData),
+                                                                                                                 AuditEvent.now(aUser)));
+
+            return completeHistory;
         } catch (final CommandFailureException cfe) {
             throw new RuntimeException("CommandFailureException when attempting to control a JVM: " + aCommand,
                                        cfe);

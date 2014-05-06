@@ -4,8 +4,8 @@ import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecutionReturnCode;
-import com.siemens.cto.aem.commandprocessor.domain.NotYetReturnedException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 
 public interface CommandProcessor extends Closeable {
 
@@ -15,5 +15,5 @@ public interface CommandProcessor extends Closeable {
 
     OutputStream getCommandInput();
 
-    ExecutionReturnCode getExecutionReturnCode() throws NotYetReturnedException;
+    ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException;
 }

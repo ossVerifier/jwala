@@ -2,8 +2,8 @@ package com.siemens.cto.aem.commandprocessor.impl.cli;
 
 import org.junit.Test;
 
-import com.siemens.cto.aem.commandprocessor.domain.ExecCommand;
 import com.siemens.cto.aem.commandprocessor.impl.WindowsTest;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class LocalRuntimeCommandProcessorBuilderTest extends WindowsTest {
