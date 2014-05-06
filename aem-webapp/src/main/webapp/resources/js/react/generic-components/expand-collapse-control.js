@@ -38,7 +38,7 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.expandIcon,
                                         this.props.collapseIcon,
                                         childTableDetails.childTableDetails,
-                                        this.props.rootId);
+                                        this.props.parentItemId);
     },
     drawDataTable: function(dataTable, data) {
         dataTable.fnClearTable(data);
@@ -66,7 +66,7 @@ var ExpandCollapseControl = React.createClass({
                     this.drawDataTable(subDataTable, data);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
-                            dataSources[i].dataCallback(this.props.rootId,
+                            dataSources[i].dataCallback(this.props.parentItemId,
                                                         function(resp){
                                                             var data = resp.applicationResponseContent[0];
                                                             if (data !== undefined) {
