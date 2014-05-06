@@ -62,22 +62,32 @@ var GroupOperationsDataTable = React.createClass({
                               label2:"Stop",
                               callback2:this.stop}];
 
-        var webAppChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
-                                       className:"simple-data-table",
-                                       title: "Web Applications",
-                                       dataCallback:this.getApplications};
+        var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
+                                            className:"simple-data-table",
+                                            title: "Web Applications",
+                                            dataCallback:this.getApplicationsOfGrp};
 
-        var webAppChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                   {sTitle:"Name", mData:"name"},
-                                   {sTitle:"War Path", mData:"warPath"},
-                                   {sTitle:"Context", mData:"webAppContext"}];
+        var webAppOfGrpChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                                        {sTitle:"Name", mData:"name"},
+                                        {sTitle:"War Path", mData:"warPath"},
+                                        {sTitle:"Context", mData:"webAppContext"}];
 
-        webAppChildTableDetails["tableDef"] = webAppChildTableDef;
+        webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
+        var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
+                                                    className:"simple-data-table",
+                                                    dataCallback:this.getApplicationsOfJvm};
+
+        var webAppOfJvmChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
+                                        {sTitle:"Name", mData:"name"},
+                                        {sTitle:"War Path", mData:"warPath"},
+                                        {sTitle:"Context", mData:"webAppContext"}];
+
+        webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
 
         var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                     className:"simple-data-table",
-                                    childTableDetails:webAppChildTableDetails,
+                                    childTableDetails:webAppOfJvmChildTableDetails,
                                     title: "JVMS"};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
@@ -115,7 +125,7 @@ var GroupOperationsDataTable = React.createClass({
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
-        var childTableDetailsArray = [jvmChildTableDetails, webAppChildTableDetails];
+        var childTableDetailsArray = [jvmChildTableDetails, webAppOfGrpChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
                              tableDef={groupTableDef}
@@ -126,8 +136,11 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}/>
    },
-   getApplications: function(groupId, responseCallback) {
+   getApplicationsOfGrp: function(groupId, responseCallback) {
         webAppService.getWebAppsByGroup(groupId, responseCallback);
+   },
+   getApplicationsOfJvm: function(jvmId, responseCallback) {
+        webAppService.getWebAppsByJvm(jvmId, responseCallback);
    },
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");

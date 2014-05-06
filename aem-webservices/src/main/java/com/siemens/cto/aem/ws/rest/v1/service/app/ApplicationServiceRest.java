@@ -31,6 +31,7 @@ public interface ApplicationServiceRest {
 
     @GET
     @Path("/jvm/{jvmId}")
-    Response findApplicationsByJvmId(Identifier<Jvm> aJvmId, PaginationParamProvider paginationParamProvider);
+    Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
+                                     @BeanParam PaginationParamProvider paginationParamProvider);
 
 }

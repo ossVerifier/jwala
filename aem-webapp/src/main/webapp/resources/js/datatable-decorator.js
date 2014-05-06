@@ -26,7 +26,7 @@ var decorateTableAsDataTable = function(tableId,
                                         expandIcon,
                                         collapseIcon,
                                         childTableDetails,
-                                        rootId /* temp only until Web App is mapped to JVMs. This should contain the group id. */){
+                                        parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */){
 
     var self = this;
 
@@ -63,7 +63,7 @@ var decorateTableAsDataTable = function(tableId,
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
 
-                        var theRootId = (rootId === undefined ? full.id.id : rootId);
+                        var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
 
                         if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
                             for (var i = 0; i < childTableDetails.length; i++) {
@@ -81,7 +81,7 @@ var decorateTableAsDataTable = function(tableId,
                                                                collapseIcon:collapseIcon,
                                                                childTableDetails:childTableDetails,
                                                                rowSubComponentContainerClassName:"row-sub-component-container",
-                                                               rootId:theRootId, /* Temp only, please see comment above re Web Apps */
+                                                               parentItemId:full.id.id,
                                                                dataTable:$("#" + tableId).dataTable()}));
 
                 }
