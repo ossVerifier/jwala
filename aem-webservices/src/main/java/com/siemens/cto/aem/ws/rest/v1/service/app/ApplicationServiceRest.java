@@ -1,7 +1,11 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -14,6 +18,8 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonCreateApplication;
+import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonUpdateApplication;
 
 @Path("/applications")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,4 +40,15 @@ public interface ApplicationServiceRest {
     Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
                                      @BeanParam PaginationParamProvider paginationParamProvider);
 
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    Response createApplication(final JsonCreateApplication anAppToCreate);
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    Response updateApplication(final JsonUpdateApplication anAppToUpdate);
+    
+    @DELETE
+    @Path("/{appId}")
+    Response removeApplication(@PathParam("appId") Identifier<Application> anAppToRemove);
 }

@@ -12,17 +12,19 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
@@ -37,12 +39,18 @@ public class ApplicationServiceRestImplTest {
     private ApplicationServiceRest cut;
 
     Application application = new Application();
+    Application newlyCreatedApp = new Application();
     List<Application> applications = new ArrayList<Application>(1);
+    List<Application> applications2 = new ArrayList<Application>(2);
     List<Application> emptyList = new ArrayList<Application>(0);
     PaginationParamProvider allProvider = new PaginationParamProvider(null,null, "true");
     @Before
     public void setUp() {
         cut = new ApplicationServiceRestImpl(service);
+        applications.add(application);
+
+        applications2.add(application);
+        applications2.add(newlyCreatedApp);
     }
 
     @Test
@@ -98,6 +106,51 @@ public class ApplicationServiceRestImplTest {
     public void testFindApplicationsByNullJvmId() {
         when(service.findApplicationsByJvmId(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
         Response resp = cut.findApplicationsByJvmId(null, allProvider);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof Application);
+        assertEquals(entity, application);
+    }
+    
+    /**
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#createApplication(JsonCreateApplication)}
+     */
+    @Test
+    public void testCreate() {
+        when(service.createApplication(any(com.siemens.cto.aem.domain.model.app.CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
+        Response resp = cut.createApplication(jsonCreateAppRequest);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof List<?>);
+        assertEquals(this.applications2, entity);
+    }
+    
+    /**
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#updateApplication(JsonUpdateApplication)}
+     */
+    @Test
+    public void testUpdate() {
+        when(service.updateApplication(any(com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
+        Response resp = cut.updateApplication(jsonUpdateAppRequest);
+        assertNotNull(resp.getEntity());
+        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        Object entity = appResponse.getApplicationResponseContent();
+        assertTrue(entity instanceof List<?>);
+        assertEquals(this.applications, entity);        
+    }
+   
+    /**
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#removeApplication(Identifier)}
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testRemove() {
+        Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class),  any(User.class));
+        Response resp = cut.removeApplication(application.getId());
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();

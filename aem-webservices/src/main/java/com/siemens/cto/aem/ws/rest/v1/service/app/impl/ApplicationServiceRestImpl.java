@@ -4,14 +4,15 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -59,5 +60,26 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             final List<Application> apps = service.getApplications(page);
             return ResponseBuilder.ok(apps);
         }
+    }
+
+    @Override
+    public Response createApplication(final JsonCreateApplication anAppToCreate) {
+        LOGGER.debug("Create Application requested: {}", anAppToCreate);
+        return ResponseBuilder.ok(service.createApplication(anAppToCreate.toCreateCommand(),
+                User.getHardCodedUser()));
+    }
+
+    @Override
+    public Response updateApplication(final JsonUpdateApplication anAppToUpdate) {
+        LOGGER.debug("Update Application requested: {}", anAppToUpdate);
+        return ResponseBuilder.ok(service.updateApplication(anAppToUpdate.toUpdateCommand(),
+                                                       User.getHardCodedUser()));
+    }
+
+    @Override
+    public Response removeApplication(final Identifier<Application> anAppToRemove) {
+        LOGGER.debug("Delete JVM requested: {}", anAppToRemove);
+        service.removeApplication(anAppToRemove, User.getHardCodedUser());
+        return ResponseBuilder.ok();
     }
 }
