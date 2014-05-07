@@ -16,16 +16,11 @@ public class Group implements Serializable {
     private final String name;
     private final Set<Jvm> jvms;
 
-    public Group(final Identifier<Group> theId,
-                 final String theName) {
-        this(theId,
-             theName,
-             Collections.<Jvm>emptySet());
+    public Group(final Identifier<Group> theId, final String theName) {
+        this(theId, theName, Collections.<Jvm> emptySet());
     }
 
-    public Group(final Identifier<Group> theId,
-                 final String theName,
-                 final Set<Jvm> theJvms) {
+    public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms) {
         id = theId;
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
@@ -69,5 +64,10 @@ public class Group implements Serializable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Group {id=" + id + ", name=" + name + "}";
     }
 }

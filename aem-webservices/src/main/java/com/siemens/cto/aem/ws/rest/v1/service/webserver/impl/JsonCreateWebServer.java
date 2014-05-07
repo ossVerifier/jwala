@@ -21,7 +21,7 @@ import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 @JsonDeserialize(using = JsonCreateWebServer.JsonCreateWebServerDeserializer.class)
 public class JsonCreateWebServer {
 
-    private List<String> groupIds = new ArrayList<>(1);
+    private final List<String> groupIds = new ArrayList<>(1);
     private String webserverName;
     private Integer portNumber;
     private String hostName;
@@ -29,10 +29,7 @@ public class JsonCreateWebServer {
     public JsonCreateWebServer() {
     }
 
-    public JsonCreateWebServer(
-                         final String aWebServerName,
-                         final String aHostName,
-                         final String aPortNumber) {
+    public JsonCreateWebServer(final String aWebServerName, final String aHostName, final String aPortNumber) {
         webserverName = aWebServerName;
         hostName = aHostName;
         portNumber = Integer.parseInt(aPortNumber);
@@ -60,19 +57,14 @@ public class JsonCreateWebServer {
 
     public CreateWebServerCommand toCreateWebServerCommand() throws BadRequestException {
 
-        List<Identifier<Group>> ids = new ArrayList<Identifier<Group>>(groupIds.size());
+        final List<Identifier<Group>> ids = new ArrayList<Identifier<Group>>(groupIds.size());
         try {
-            for(String grp : groupIds) {
+            for (final String grp : groupIds) {
                 ids.add(Identifier.id(Long.parseLong(grp), Group.class));
             }
-            return new CreateWebServerCommand(ids,
-                                        webserverName,
-                                        hostName,
-                                        portNumber);
+            return new CreateWebServerCommand(ids, webserverName, hostName, portNumber);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
-                                          nfe.getMessage(),
-                                          nfe);
+            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER, nfe.getMessage(), nfe);
         }
     }
 
@@ -82,50 +74,46 @@ public class JsonCreateWebServer {
         }
 
         @Override
-        public JsonCreateWebServer deserialize(final JsonParser jp,
-                                           final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public JsonCreateWebServer deserialize(final JsonParser jp, final DeserializationContext ctxt)
+                throws IOException, JsonProcessingException {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp).get(0);
 
-            JsonCreateWebServer jcws = new 
-                 JsonCreateWebServer(node.get("webserverName").getTextValue(),
-                                     node.get("hostName").getTextValue(),
-                                     node.get("portNumber").getValueAsText()
-                                     );
+            final JsonCreateWebServer jcws =
+                    new JsonCreateWebServer(node.get("webserverName").getTextValue(), node.get("hostName")
+                            .getTextValue(), node.get("portNumber").getValueAsText());
 
-            for(String aGroupId : deserializeGroupIdentifiers(node)) {
+            for (final String aGroupId : deserializeGroupIdentifiers(node)) {
                 jcws.addGroupId(aGroupId);
             }
-            
+
             return jcws;
         }
 
     }
 
-	public Integer getPortNumber() {
-		return portNumber;
-	}
+    public Integer getPortNumber() {
+        return portNumber;
+    }
 
-	public void setPortNumber(Integer portNumber) {
-		this.portNumber = portNumber;
-	}
+    public void setPortNumber(final Integer portNumber) {
+        this.portNumber = portNumber;
+    }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groupIds == null) ? 0 : groupIds.hashCode());
-        result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
-        result = prime * result + ((portNumber == null) ? 0 : portNumber.hashCode());
-        result = prime * result + ((webserverName == null) ? 0 : webserverName.hashCode());
+        result = prime * result + (groupIds == null ? 0 : groupIds.hashCode());
+        result = prime * result + (hostName == null ? 0 : hostName.hashCode());
+        result = prime * result + (portNumber == null ? 0 : portNumber.hashCode());
+        result = prime * result + (webserverName == null ? 0 : webserverName.hashCode());
         return result;
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -135,7 +123,7 @@ public class JsonCreateWebServer {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        JsonCreateWebServer other = (JsonCreateWebServer) obj;
+        final JsonCreateWebServer other = (JsonCreateWebServer) obj;
         if (groupIds == null) {
             if (other.groupIds != null) {
                 return false;
@@ -168,11 +156,8 @@ public class JsonCreateWebServer {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity","PMD.InsufficientBranchCoverage"})
     public String toString() {
         return "JsonCreateWebServer {groupIds=" + groupIds + ", webserverName=" + webserverName + ", portNumber="
                 + portNumber + ", hostName=" + hostName + "}";
     }
-
-
 }
