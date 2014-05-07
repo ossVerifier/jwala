@@ -64,11 +64,10 @@ var GroupOperationsDataTable = React.createClass({
 
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                             className:"simple-data-table",
-                                            title: "Web Applications",
                                             dataCallback:this.getApplicationsOfGrp};
 
-        var webAppOfGrpChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                        {sTitle:"Name", mData:"name"},
+        var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
+                                        {sTitle:"Web App Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"}];
 
@@ -78,8 +77,8 @@ var GroupOperationsDataTable = React.createClass({
                                                     className:"simple-data-table",
                                                     dataCallback:this.getApplicationsOfJvm};
 
-        var webAppOfJvmChildTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                        {sTitle:"Name", mData:"name"},
+        var webAppOfJvmChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
+                                        {sTitle:"Web App Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"}];
 
@@ -87,12 +86,11 @@ var GroupOperationsDataTable = React.createClass({
 
         var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                     className:"simple-data-table",
-                                    childTableDetails:webAppOfJvmChildTableDetails,
-                                    title: "JVMS"};
+                                    childTableDetails:webAppOfJvmChildTableDetails};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                {sTitle:"Name", mData:"jvmName"},
+                                {sTitle:"JVM Name", mData:"jvmName"},
                                 {sTitle:"Host", mData:"hostName"},
                                 {sTitle:"",
                                  mData:null,

@@ -1,12 +1,16 @@
 table.simple-data-table {
     float: right;
     width: 95%;
-    border: 1px solid gray;
+    border: 1px solid #d3d3d3;
     border-collapse:collapse;
     border-spacing:0px 0px;
 }
 
+table.simple-data-table thead > tr > th {
+    background-color: rgb(179, 217, 255)
+}
+
 table.simple-data-table tbody > tr > td {
-    border: 1px solid gray;
+    border: 1px solid #d3d3d3;
     background-color: white
 }
