@@ -4,13 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
 
 public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalRuntimeCommandProcessorImpl.class);
 
     private final Process process;
     private boolean wasClosed;
@@ -59,6 +64,7 @@ public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
                 wasClosed = true;
                 process.exitValue();
             } catch (final IllegalThreadStateException itse) {
+                LOGGER.warn("Closing a Process that has not yet finished", itse);
                 process.destroy();
                 wasTerminatedAbnormally = true;
             }
