@@ -16,10 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
@@ -78,5 +81,38 @@ public class JpaJvmControlPersistenceServiceImplTest {
                      history.getControlOperation());
         assertEquals(user.getId(),
                      history.getWhenRequested().getUser().getUserId());
+        assertEquals(new ExecData(new ExecReturnCode(null),
+                                  null,
+                                  null),
+                     history.getExecData());
+    }
+
+    @Test
+    public void testCompleteControlOperation() {
+        final Identifier<Jvm> jvmId = new Identifier<>(123456L);
+        final JvmControlOperation operation = JvmControlOperation.START;
+        final ControlJvmCommand command = new ControlJvmCommand(jvmId,
+                                                                operation);
+        final User user = new User("unused");
+        final AuditEvent auditEvent = AuditEvent.now(user);
+        final Event<ControlJvmCommand> event = new Event<>(command,
+                                                           auditEvent);
+
+        final JvmControlHistory history = persistenceService.addIncompleteControlHistoryEvent(event);
+
+        final ExecData execData = new ExecData(new ExecReturnCode(0),
+                                               "Completed successfully",
+                                               "");
+        final CompleteControlJvmCommand completeCommand = new CompleteControlJvmCommand(history.getId(),
+                                                                                        execData);
+        final Event<CompleteControlJvmCommand> completeEvent = new Event<>(completeCommand,
+                                                                           auditEvent);
+
+        final JvmControlHistory completedHistory = persistenceService.completeControlHistoryEvent(completeEvent);
+
+        assertEquals(history.getId(),
+                     completedHistory.getId());
+        assertEquals(execData,
+                     completedHistory.getExecData());
     }
 }

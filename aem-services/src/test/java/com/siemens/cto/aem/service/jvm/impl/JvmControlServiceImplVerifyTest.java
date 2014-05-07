@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 
@@ -23,7 +22,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Ignore
 public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmControlServiceImpl impl;
