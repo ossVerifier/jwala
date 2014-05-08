@@ -24,8 +24,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
 
-    public JvmServiceRestImpl(final JvmService theJvmService,
-                              final JvmControlService theJvmControlService) {
+    public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService) {
         logger = LoggerFactory.getLogger(JvmServiceRestImpl.class);
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
@@ -49,20 +48,19 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         logger.debug("Create JVM requested: {}", aJvmToCreate);
         final User hardCodedUser = User.getHardCodedUser();
 
+        Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
-            return ResponseBuilder.created(jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
-                                                                         hardCodedUser));
+            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(), hardCodedUser);
         } else {
-            return ResponseBuilder.created(jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
-                                                                hardCodedUser));
+            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(), hardCodedUser);
         }
+        return ResponseBuilder.created(jvm);
     }
 
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate) {
         logger.debug("Update JVM requested: {}", aJvmToUpdate);
-        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
-                                                       User.getHardCodedUser()));
+        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(), User.getHardCodedUser()));
     }
 
     @Override
@@ -73,11 +71,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId,
-                               final JsonControlJvm aJvmToControl) {
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
-        return ResponseBuilder.ok(jvmControlService.controlJvm(new ControlJvmCommand(aJvmId,
-                                                                                     aJvmToControl.toControlOperation()),
-                                                               User.getHardCodedUser())); //Or ResponseBuilder.created();
+        return ResponseBuilder.ok(jvmControlService.controlJvm(
+                new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()), User.getHardCodedUser()));
     }
 }
