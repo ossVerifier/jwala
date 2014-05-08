@@ -73,14 +73,15 @@ var GroupOperationsDataTable = React.createClass({
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
-        var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
+        var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-of-jvm-child-table",
                                                     className:"simple-data-table",
                                                     dataCallback:this.getApplicationsOfJvm};
 
         var webAppOfJvmChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Web App Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
-                                        {sTitle:"Context", mData:"webAppContext"}];
+                                        {sTitle:"Context", mData:"webAppContext"},
+                                        {sTitle:"Status", mData:"status", bVisible:false}];
 
         webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
 
@@ -123,7 +124,7 @@ var GroupOperationsDataTable = React.createClass({
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
-        var childTableDetailsArray = [jvmChildTableDetails, webAppOfGrpChildTableDetails];
+        var childTableDetailsArray = [webAppOfGrpChildTableDetails, jvmChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
                              tableDef={groupTableDef}
@@ -134,11 +135,26 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}/>
    },
-   getApplicationsOfGrp: function(groupId, responseCallback) {
-        webAppService.getWebAppsByGroup(groupId, responseCallback);
+   getApplicationsOfGrp: function(idObj, responseCallback) {
+        webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
    },
-   getApplicationsOfJvm: function(jvmId, responseCallback) {
-        webAppService.getWebAppsByJvm(jvmId, responseCallback);
+   getApplicationsOfJvm: function(idObj, responseCallback) {
+
+            webAppService.getWebAppsByJvm(idObj.parentId, function(data) {
+
+                var webApps = data.applicationResponseContent;
+                for (var i = 0; i < webApps.length; i++) {
+                    if (idObj.rootId !== webApps[i].group.id.id) {
+                        webApps[i]["status"] = "disabled";
+                    } else {
+                        webApps[i]["status"] = "enabled";
+                    }
+                }
+
+                responseCallback(data);
+
+            });
+
    },
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");

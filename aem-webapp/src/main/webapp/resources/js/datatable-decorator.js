@@ -26,7 +26,8 @@ var decorateTableAsDataTable = function(tableId,
                                         expandIcon,
                                         collapseIcon,
                                         childTableDetails,
-                                        parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */){
+                                        parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */,
+                                        rootId /* This is the first element id in a hierarchy */ ){
 
     var self = this;
 
@@ -73,6 +74,7 @@ var decorateTableAsDataTable = function(tableId,
                             childTableDetails["data"] = data;
                         }
 
+                        var theRootId = (rootId === undefined ? full.id.id : rootId);
                         return React.renderComponentToStaticMarkup(
                                     new ExpandCollapseControl({id:createDashDelimitedId([tableId,
                                                                                          "ctrl-expand-collapse",
@@ -82,7 +84,8 @@ var decorateTableAsDataTable = function(tableId,
                                                                childTableDetails:childTableDetails,
                                                                rowSubComponentContainerClassName:"row-sub-component-container",
                                                                parentItemId:full.id.id,
-                                                               dataTable:$("#" + tableId).dataTable()}));
+                                                               dataTable:$("#" + tableId).dataTable(),
+                                                               rootId:theRootId}));
 
                 }
 

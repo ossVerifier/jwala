@@ -1,7 +1,6 @@
 /** @jsx React.DOM */
 var ExpandCollapseControl = React.createClass({
-    currentIcon: "", // Tried to use state then re-render but can't. I get firstChild of undefined rears for some reason.
-                     // Upgrading to 0.10.0 should resolve this.
+    currentIcon: "",
     render: function() {
         this.currentIcon = this.props.expandIcon;
 
@@ -38,12 +37,25 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.expandIcon,
                                         this.props.collapseIcon,
                                         childTableDetails.childTableDetails,
-                                        this.props.parentItemId);
+                                        this.props.parentItemId,
+                                        this.props.rootId);
     },
     drawDataTable: function(dataTable, data) {
         dataTable.fnClearTable(data);
         dataTable.fnAddData(data);
         dataTable.fnDraw();
+
+        // Check for a "enable/disable" status field
+        // Disable row(s) that have a status of "disabled"
+        var data = dataTable.fnGetData();
+        for(var i = 0;i < data.length;i++) {
+            if (data[i].status !== undefined) {
+                if (data[i].status === "disabled") {
+                    $("td:contains('" + data[i].name + "')").closest("tr").addClass("disabled");
+                }
+            }
+        }
+
     },
     onClick: function(dataSources, childTableDetailsArray) {
 
@@ -66,13 +78,8 @@ var ExpandCollapseControl = React.createClass({
                     this.drawDataTable(subDataTable, data);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
-                            dataSources[i].dataCallback(this.props.parentItemId,
-                                                        function(resp){
-                                                            var data = resp.applicationResponseContent[0];
-                                                            if (data !== undefined) {
-                                                                self.drawDataTable(subDataTable, data);
-                                                            }
-                                                        });
+                            dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
+                                                        self.retrieveDataAndRenderTableCallback(subDataTable));
                     }
 
                 }
@@ -104,5 +111,14 @@ var ExpandCollapseControl = React.createClass({
                                                                      title={this.props.childTableDetails.title}/>)
         }
 
+    },
+    retrieveDataAndRenderTableCallback: function(subDataTable) {
+        var self = this;
+        return function(resp) {
+            var data = resp.applicationResponseContent;
+            if (data !== undefined) {
+                self.drawDataTable(subDataTable, data);
+            }
+        }
     }
 });

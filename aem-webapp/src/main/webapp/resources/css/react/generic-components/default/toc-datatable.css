@@ -31,3 +31,16 @@ td.row-sub-component-container {
     p   adding-top: 0px;
     padding-bottom: 10px
 }
+
+/**
+ *  This is required to make sure that all other rows that aren't disabled
+ *  does not get the given color of a disabled row.
+ *  This happens in IE, particularly IE8
+ */
+tr {
+    color: black
+}
+
+tr.disabled {
+    color: orange
+}
