@@ -12,8 +12,12 @@ public class Identifier<T> implements Serializable {
         this(Long.valueOf(id));
     }
 
+    public Identifier(final long id) {
+        this(Long.valueOf(id));
+    }
+
     public Identifier(final Long id) {
-        //TODO Throw new IllegalArgumentException if null?
+        // TODO Throw new IllegalArgumentException if null?
         this.id = id;
     }
 
@@ -46,9 +50,9 @@ public class Identifier<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "Identifier{" +
-               "id=" + id +
-               '}';
+        return "Identifier{" + 
+                "id=" + id + 
+                '}';
     }
 
     /**
@@ -57,11 +61,18 @@ public class Identifier<T> implements Serializable {
     public static <U> Identifier<U> id(final Long longId) {
         return new Identifier<U>(longId);
     }
+
     /**
      * Helper method to return an identifier templated by a type
      */
-    public static <U> Identifier<U> id(final Long longId, Class<U> clazz ) {
+    public static <U> Identifier<U> id(final Long longId, final Class<U> clazz) {
         return new Identifier<U>(longId);
     }
 
+    /**
+     * Helper method to return an identifier templated by a type
+     */
+    public static <U> Identifier<U> id(final long longId, final Class<U> clazz) {
+        return new Identifier<U>(longId);
+    }
 }
