@@ -48,10 +48,11 @@ var ExpandCollapseControl = React.createClass({
         // Check for a "enable/disable" status field
         // Disable row(s) that have a status of "disabled"
         var data = dataTable.fnGetData();
+        var nodes = dataTable.fnGetNodes();
         for(var i = 0;i < data.length;i++) {
             if (data[i].status !== undefined) {
                 if (data[i].status === "disabled") {
-                    $("td:contains('" + data[i].name + "')").closest("tr").addClass("disabled");
+                    $(nodes[i]).closest("tr").addClass("disabled");
                 }
             }
         }
