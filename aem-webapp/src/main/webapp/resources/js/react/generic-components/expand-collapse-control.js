@@ -50,10 +50,8 @@ var ExpandCollapseControl = React.createClass({
         var data = dataTable.fnGetData();
         var nodes = dataTable.fnGetNodes();
         for(var i = 0;i < data.length;i++) {
-            if (data[i].status !== undefined) {
-                if (data[i].status === "disabled") {
-                    $(nodes[i]).closest("tr").addClass("disabled");
-                }
+            if (data[i].status === "disabled") {
+                $(nodes[i]).closest("tr").addClass("disabled");
             }
         }
 
