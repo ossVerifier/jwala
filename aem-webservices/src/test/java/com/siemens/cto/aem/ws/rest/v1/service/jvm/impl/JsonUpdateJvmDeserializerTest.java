@@ -1,5 +1,22 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
+
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyValue;
@@ -7,23 +24,13 @@ import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
-
 public class JsonUpdateJvmDeserializerTest {
 
     private ObjectMapper mapper;
 
     @Before
     public void setUp() {
-        mapper =
-                new JsonDeserializationBehavior().addMapping(JsonUpdateJvm.class,
-                        new JsonUpdateJvm.JsonUpdateJvmDeserializer()).toObjectMapper();
+        mapper = new JsonDeserializationBehavior().addMapping(JsonUpdateJvm.class, new JsonUpdateJvm.JsonUpdateJvmDeserializer()).toObjectMapper();
     }
 
     @Test
@@ -35,18 +42,20 @@ public class JsonUpdateJvmDeserializerTest {
         final String firstGroupId = "1";
         final String secondGroupId = "2";
 
-        final String json =
-                object(keyTextValue("jvmId", jvmId),
-                        keyTextValue("jvmName", jvmName),
-                        keyTextValue("hostName", hostName),
-                        keyValue(
-                                "groupIds",
-                                array(object(keyTextValue("groupId", firstGroupId)),
-                                        object(keyTextValue("groupId", secondGroupId)))));
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)),
+                                                              object(keyTextValue("groupId", secondGroupId)))));
 
         final JsonUpdateJvm update = readValue(json);
 
-        verifyAssertions(update, jvmId, jvmName, hostName, firstGroupId, secondGroupId);
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName,
+                         firstGroupId,
+                         secondGroupId);
     }
 
     @Test
@@ -57,14 +66,19 @@ public class JsonUpdateJvmDeserializerTest {
         final String hostName = "a host name";
         final String firstGroupId = "1";
 
-        final String json =
-                object(keyTextValue("jvmId", jvmId), keyTextValue("jvmName", jvmName),
-                        keyTextValue("hostName", hostName),
-                        keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)))));
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyValue("groupIds", array(object(keyTextValue("groupId",
+                                                                                  firstGroupId)))));
 
         final JsonUpdateJvm update = readValue(json);
 
-        verifyAssertions(update, jvmId, jvmName, hostName, firstGroupId);
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName,
+                         firstGroupId);
     }
 
     @Test
@@ -75,28 +89,106 @@ public class JsonUpdateJvmDeserializerTest {
         final String hostName = "a host name";
         final String firstGroupId = "1";
 
-        final String json =
-                object(keyTextValue("jvmId", jvmId), keyTextValue("jvmName", jvmName),
-                        keyTextValue("hostName", hostName), keyTextValue("groupId", firstGroupId));
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("groupId", firstGroupId));
 
         final JsonUpdateJvm update = readValue(json);
 
-        verifyAssertions(update, jvmId, jvmName, hostName, firstGroupId);
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName,
+                         firstGroupId);
+    }
+
+    @Test
+    public void testDeserializeNoGroups() throws Exception {
+
+        final String jvmId = "1";
+        final String jvmName = "a jvm name";
+        final String hostName = "a host name";
+
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName));
+
+        final JsonUpdateJvm update = readValue(json);
+
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testDeserializeBadGroupIdentifier() throws Exception {
+
+        final String jvmId = "1";
+        final String jvmName = "a jvm name";
+        final String hostName = "a host name";
+        final String firstGroupId = "this is not a valid group identifier";
+
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("groupId", firstGroupId));
+
+        final JsonUpdateJvm update = readValue(json);
+
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName,
+                         firstGroupId);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testDeserializeBadJvmIdentifier() throws Exception {
+
+        final String jvmId = "this is not a valid JVM identifier";
+        final String jvmName = "a jvm name";
+        final String hostName = "a host name";
+        final String firstGroupId = "1";
+
+        final String json = object(keyTextValue("jvmId", jvmId),
+                                   keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("groupId", firstGroupId));
+
+        final JsonUpdateJvm update = readValue(json);
+
+        verifyAssertions(update,
+                         jvmId,
+                         jvmName,
+                         hostName,
+                         firstGroupId);
     }
 
     protected JsonUpdateJvm readValue(final String someJson) throws IOException {
         return mapper.readValue(someJson, JsonUpdateJvm.class);
     }
 
-    protected void verifyAssertions(final JsonUpdateJvm anUpdate, final String aJvmId, final String aJvmName,
-            final String aHostName, final String... someGroupIds) {
+    protected void verifyAssertions(final JsonUpdateJvm anUpdate,
+                                    final String aJvmId,
+                                    final String aJvmName,
+                                    final String aHostName,
+                                    final String... someGroupIds) {
 
-        assertEquals(aJvmId, anUpdate.getJvmId());
-        assertEquals(aJvmName, anUpdate.getJvmName());
-        assertEquals(aHostName, anUpdate.getHostName());
-        assertEquals(someGroupIds.length, anUpdate.getGroupIds().size());
-        for (final String groupId : someGroupIds) {
-            assertTrue(anUpdate.getGroupIds().contains(groupId));
+        final UpdateJvmCommand update = anUpdate.toUpdateJvmCommand();
+
+        assertEquals(new Identifier<Jvm>(aJvmId),
+                     update.getId());
+        assertEquals(aJvmName,
+                     update.getNewJvmName());
+        assertEquals(aHostName,
+                     update.getNewHostName());
+        assertEquals(someGroupIds.length,
+                     update.getAssignmentCommands().size());
+        final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
+        for (final AddJvmToGroupCommand addCommand : update.getAssignmentCommands()) {
+            assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));
         }
     }
 }

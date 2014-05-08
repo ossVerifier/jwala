@@ -48,7 +48,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         logger.debug("Create JVM requested: {}", aJvmToCreate);
         final User hardCodedUser = User.getHardCodedUser();
 
-        Jvm jvm;
+        final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
             jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(), hardCodedUser);
         } else {

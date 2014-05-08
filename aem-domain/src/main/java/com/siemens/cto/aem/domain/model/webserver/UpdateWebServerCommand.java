@@ -2,6 +2,8 @@ package com.siemens.cto.aem.domain.model.webserver;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
@@ -20,7 +22,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<WebServer> id;
-    private final Collection<Identifier<Group>> newGroupIds;
+    private final Collection<Identifier<Group>> newGroupIds; //TODO Change this to a Set all the way down the line...
     private final String newHost;
     private final String newName;
     private final Integer newPort;
@@ -32,7 +34,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
         newHost = theNewHost;
         newPort = theNewPort;
         newName = theNewName;
-        newGroupIds = theNewGroupIds;
+        newGroupIds = Collections.unmodifiableCollection(new HashSet<>(theNewGroupIds));
     }
 
     public Identifier<WebServer> getId() {

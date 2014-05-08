@@ -41,18 +41,6 @@ public class JsonCreateJvm {
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
     }
 
-    public String getJvmName() {
-        return jvmName;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public Set<String> getGroupIds() {
-        return groupIds;
-    }
-
     public boolean areGroupsPresent() {
         return !groupIds.isEmpty();
     }

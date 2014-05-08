@@ -45,6 +45,15 @@ public class JsonControlJvmDeserializerTest {
         fail("Control Operation should have been invalid");
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testNoOperation() throws Exception {
+
+        final String json = "{\"controlOperation\": null}";
+        final JsonControlJvm control = readValue(json);
+        final JvmControlOperation operation = control.toControlOperation();
+        fail("Control Operation should have been invalid");
+    }
+
     protected JsonControlJvm readValue(final String someJson) throws IOException {
         return mapper.readValue(someJson, JsonControlJvm.class);
     }

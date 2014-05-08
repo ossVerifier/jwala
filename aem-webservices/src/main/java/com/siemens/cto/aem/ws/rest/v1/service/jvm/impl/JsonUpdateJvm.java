@@ -38,31 +38,20 @@ public class JsonUpdateJvm {
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
     }
 
-    public String getJvmId() {
-        return jvmId;
-    }
-
-    public String getJvmName() {
-        return jvmName;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public Set<String> getGroupIds() {
-        return groupIds;
-    }
-
     public UpdateJvmCommand toUpdateJvmCommand() throws BadRequestException {
 
-        try {
-            final Set<Identifier<Group>> groupIds = convertGroupIds();
+        final Identifier<Jvm> id = convertJvmId();
+        final Set<Identifier<Group>> groupIds = convertGroupIds();
 
-            return new UpdateJvmCommand(new Identifier<Jvm>(jvmId),
-                                        jvmName,
-                                        hostName,
-                                        groupIds);
+        return new UpdateJvmCommand(id,
+                                    jvmName,
+                                    hostName,
+                                    groupIds);
+    }
+
+    protected Identifier<Jvm> convertJvmId() {
+        try {
+            return new Identifier<>(jvmId);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
                                           nfe.getMessage(),

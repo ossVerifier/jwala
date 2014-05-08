@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.domain.model.id;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,16 +9,16 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public class IdentifierSetBuilder {
 
-    private Set<String> ids;
+    private Collection<String> ids;
 
     public IdentifierSetBuilder() {
     }
 
-    public IdentifierSetBuilder(final Set<String> someIds) {
+    public IdentifierSetBuilder(final Collection<String> someIds) {
         ids = someIds;
     }
 
-    public IdentifierSetBuilder setIds(final Set<String> someIds) {
+    public IdentifierSetBuilder setIds(final Collection<String> someIds) {
         ids = someIds;
         return this;
     }

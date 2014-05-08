@@ -1,11 +1,16 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
@@ -86,6 +91,22 @@ public class JsonCreateJvmDeserializerTest {
                          firstGroupId);
     }
 
+    @Test
+    public void testDeserializeNoGroups() throws Exception {
+
+        final String jvmName = "a jvm name";
+        final String hostName = "a host name";
+
+        final String json = object(keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName));
+
+        final JsonCreateJvm create = readValue(json);
+
+        verifyAssertions(create,
+                         jvmName,
+                         hostName);
+    }
+
     @Test(expected = IOException.class)
     public void testInvalidInput() throws Exception {
 
@@ -94,20 +115,43 @@ public class JsonCreateJvmDeserializerTest {
         final JsonCreateJvm create = readValue(json);
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testInvalidGroupId() throws Exception {
+
+        final String jvmName = "a jvm name";
+        final String hostName = "a host name";
+        final String firstGroupId = "this is not a valid group id";
+
+        final String json = object(keyTextValue("jvmName", jvmName),
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("groupId", firstGroupId));
+
+        final JsonCreateJvm create = readValue(json);
+        verifyAssertions(create,
+                         jvmName,
+                         hostName,
+                         firstGroupId);
+    }
+
     protected void verifyAssertions(final JsonCreateJvm aCreate,
                                     final String aJvmName,
                                     final String aHostName,
                                     final String... groupIds) {
 
+        final CreateJvmAndAddToGroupsCommand createAndAddCommand = aCreate.toCreateAndAddCommand();
+        final CreateJvmCommand createCommand = createAndAddCommand.getCreateCommand();
+
+        assertEquals(aCreate.toCreateJvmCommand(),
+                     createCommand);
         assertEquals(aJvmName,
-                     aCreate.getJvmName());
+                     createCommand.getJvmName());
         assertEquals(aHostName,
-                     aCreate.getHostName());
+                     createCommand.getHostName());
         assertEquals(groupIds.length,
-                     aCreate.getGroupIds().size());
-        for (final String groupId : groupIds) {
-            assertTrue(aCreate.getGroupIds().contains(groupId));
-        }
+                     createAndAddCommand.getGroups().size());
+        assertTrue(new IdentifierSetBuilder(Arrays.asList(groupIds)).build().containsAll(createAndAddCommand.getGroups()));
+        assertEquals(groupIds.length > 0,
+                     aCreate.areGroupsPresent());
     }
 
     protected JsonCreateJvm readValue(final String someJson) throws IOException {

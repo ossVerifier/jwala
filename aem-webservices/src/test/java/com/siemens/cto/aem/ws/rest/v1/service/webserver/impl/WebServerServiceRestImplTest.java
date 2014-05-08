@@ -1,13 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +22,19 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 /**
- * 
+ *
  * @author horspe00
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
@@ -104,7 +105,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testCreateWebServer() {
-        final JsonCreateWebServer jsonCreateWebServer = new JsonCreateWebServer(name, host, portNumber);
+        final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
         jsonCreateWebServer.addGroupId(groupIdOne);
         jsonCreateWebServer.addGroupId(groupIdTwo);
         when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(webServer);
@@ -122,9 +123,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testUpdateWebServer() {
-        final JsonUpdateWebServer jsonUpdateWebServer = new JsonUpdateWebServer("1", name, host, portNumber);
-        jsonUpdateWebServer.addGroupId(groupIdOne);
-        jsonUpdateWebServer.addGroupId(groupIdTwo);
+        final JsonUpdateWebServer jsonUpdateWebServer = mock(JsonUpdateWebServer.class);
         when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
         final Response response = cut.updateWebServer(jsonUpdateWebServer);
