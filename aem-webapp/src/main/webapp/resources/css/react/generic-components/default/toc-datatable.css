@@ -28,8 +28,9 @@ th.ui-state-default {
 }
 
 td.row-sub-component-container {
-    p   adding-top: 0px;
-    padding-bottom: 10px
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 15px !important
 }
 
 /**
