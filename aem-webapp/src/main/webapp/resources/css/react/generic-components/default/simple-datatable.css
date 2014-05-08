@@ -14,3 +14,7 @@ table.simple-data-table tbody > tr > td {
     border: 1px solid #d3d3d3;
     background-color: white
 }
+
+table.simple-data-table tbody > tr > td.row-sub-component-container {
+    background: #E5E5E5
+}

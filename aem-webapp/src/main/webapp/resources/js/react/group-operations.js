@@ -81,6 +81,7 @@ var GroupOperationsDataTable = React.createClass({
                                         {sTitle:"Web App Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"},
+                                        {sTitle:"Group", mData:"group.name"},
                                         {sTitle:"Status", mData:"status", bVisible:false}];
 
         webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
