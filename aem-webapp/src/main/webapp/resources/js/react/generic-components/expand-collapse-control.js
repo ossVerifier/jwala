@@ -45,12 +45,12 @@ var ExpandCollapseControl = React.createClass({
         dataTable.fnAddData(data);
         dataTable.fnDraw();
 
-        // If class is defined, add it to the row node's class
+        // If className is defined, add it to the row node's class
         var data = dataTable.fnGetData();
         var nodes = dataTable.fnGetNodes();
         for(var i = 0;i < data.length;i++) {
-            if (data[i].class !== undefined) {
-                $(nodes[i]).closest("tr").addClass(data[i].class);
+            if (data[i].className !== undefined) {
+                $(nodes[i]).closest("tr").addClass(data[i].className);
             }
         }
 

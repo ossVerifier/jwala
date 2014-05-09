@@ -82,7 +82,7 @@ var GroupOperationsDataTable = React.createClass({
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"},
                                         {sTitle:"Group", mData:"group.name"},
-                                        {sTitle:"Class", mData:"class", bVisible:false},
+                                        {sTitle:"Class Name", mData:"className", bVisible:false},
                                         {sTitle:"",
                                          mData:null,
                                          tocType:"button",
@@ -151,11 +151,11 @@ var GroupOperationsDataTable = React.createClass({
                 var webApps = data.applicationResponseContent;
                 for (var i = 0; i < webApps.length; i++) {
                     if (idObj.rootId !== webApps[i].group.id.id) {
-                        webApps[i]["class"] = "disabled";
+                        webApps[i]["className"] = "disabled";
                     } else {
-                        webApps[i]["class"] = ""; // This is needed to prevent datatable from complaining
-                                                  // for a missing "class" data since "class" is a defined
-                                                  // filed in mData (please research for JQuery DataTable)
+                        webApps[i]["className"] = ""; // This is needed to prevent datatable from complaining
+                                                      // for a missing "className" data since "className" is a defined
+                                                      // filed in mData (please research for JQuery DataTable)
                     }
                 }
 
