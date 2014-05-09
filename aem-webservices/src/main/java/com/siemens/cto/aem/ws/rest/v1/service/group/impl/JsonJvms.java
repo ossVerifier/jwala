@@ -11,11 +11,10 @@ import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
@@ -28,29 +27,13 @@ public class JsonJvms {
         jvmIds = Collections.unmodifiableSet(new HashSet<>(someJvmIds));
     }
 
-    public Set<String> getJvmIds() {
-        return jvmIds;
-    }
-
     public AddJvmsToGroupCommand toCommand(final Identifier<Group> aGroupId) {
         return new AddJvmsToGroupCommand(aGroupId,
                                          convertJvmIds());
     }
 
     protected Set<Identifier<Jvm>> convertJvmIds() {
-        try {
-            final Set<Identifier<Jvm>> ids = new HashSet<>();
-
-            for (final String id : jvmIds) {
-                ids.add(new Identifier<Jvm>(id));
-            }
-
-            return ids;
-        } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
-                                          nfe.getMessage(),
-                                          nfe);
-        }
+        return new IdentifierSetBuilder(jvmIds).build();
     }
 
     static class JsonJvmsDeserializer extends AbstractJsonDeserializer<JsonJvms> {

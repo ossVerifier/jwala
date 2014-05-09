@@ -27,14 +27,6 @@ public class JsonUpdateGroup {
         name = theName;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public UpdateGroupCommand toUpdateGroupCommand() throws BadRequestException {
         try {
             final Identifier<Group> groupId = new Identifier<>(id);

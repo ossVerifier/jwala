@@ -6,6 +6,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
@@ -31,10 +35,9 @@ public class JsonUpdateGroupDeserializerTest {
 
         final JsonUpdateGroup update = readUpdate(json);
 
-        assertEquals(groupId,
-                     update.getId());
-        assertEquals(groupName,
-                     update.getName());
+        verifyAssertions(update,
+                         groupId,
+                         groupName);
     }
 
     @Test(expected = IOException.class)
@@ -45,8 +48,34 @@ public class JsonUpdateGroupDeserializerTest {
         final JsonUpdateGroup update = readUpdate(json);
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testBadGroupIdentifier() throws Exception {
+
+        final String groupId = "this is not a valid group identifier";
+        final String groupName = "a group name";
+        final String json = object(keyTextValue("id", groupId),
+                                   keyTextValue("name", groupName));
+
+        final JsonUpdateGroup update = readUpdate(json);
+
+        verifyAssertions(update,
+                         groupId,
+                         groupName);
+    }
+
     protected JsonUpdateGroup readUpdate(final String someJson) throws IOException {
         return mapper.readValue(someJson, JsonUpdateGroup.class);
     }
 
+    protected void verifyAssertions(final JsonUpdateGroup anUpdate,
+                                    final String aGroupId,
+                                    final String aGroupName) {
+
+        final UpdateGroupCommand updateCommand = anUpdate.toUpdateGroupCommand();
+
+        assertEquals(new Identifier<Group>(aGroupId),
+                     updateCommand.getId());
+        assertEquals(aGroupName,
+                     updateCommand.getNewName());
+    }
 }

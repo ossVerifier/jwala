@@ -1,12 +1,20 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
@@ -73,16 +81,33 @@ public class JsonJvmsDeserializerTest {
         final JsonJvms jvms = readJvms(json);
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testInvalidIdentifier() throws Exception {
+
+        final String jvmId = "this is not a valid identifier";
+        final String json = object(keyTextValue("jvmId", jvmId));
+
+        final JsonJvms jvms = readJvms(json);
+
+        verifyAssertions(jvms,
+                         jvmId);
+    }
+
     protected void verifyAssertions(final JsonJvms someJvms,
                                     final String... expectedIds) {
 
-        final Set<String> jvmIds = someJvms.getJvmIds();
+        final Identifier<Group> groupId = new Identifier<>(123456L);
+        final AddJvmsToGroupCommand addCommand = someJvms.toCommand(groupId);
+        final Set<AddJvmToGroupCommand> jvmCommands = addCommand.toCommands();
+        final Set<Identifier<Jvm>> expectedJvmIds = new IdentifierSetBuilder(Arrays.asList(expectedIds)).build();
 
-        assertEquals(expectedIds.length,
-                     jvmIds.size());
+        assertEquals(expectedJvmIds.size(),
+                     jvmCommands.size());
 
-        for (final String id : expectedIds) {
-            assertTrue(jvmIds.contains(id));
+        for (final AddJvmToGroupCommand jvmCommand : jvmCommands) {
+            assertTrue(expectedJvmIds.contains(jvmCommand.getJvmId()));
+            assertEquals(groupId,
+                         jvmCommand.getGroupId());
         }
     }
 
