@@ -75,7 +75,8 @@ var GroupOperationsDataTable = React.createClass({
 
         var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-of-jvm-child-table",
                                                     className:"simple-data-table",
-                                                    dataCallback:this.getApplicationsOfJvm};
+                                                    dataCallback:this.getApplicationsOfJvm,
+                                                    defaultSorting: {col:5, sort:"asc"}};
 
         var webAppOfJvmChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Web App in JVM", mData:"name"},
@@ -151,7 +152,7 @@ var GroupOperationsDataTable = React.createClass({
                 var webApps = data.applicationResponseContent;
                 for (var i = 0; i < webApps.length; i++) {
                     if (idObj.rootId !== webApps[i].group.id.id) {
-                        webApps[i]["className"] = "disabled";
+                        webApps[i]["className"] = "highlight";
                     } else {
                         webApps[i]["className"] = ""; // This is needed to prevent datatable from complaining
                                                       // for a missing "className" data since "className" is a defined

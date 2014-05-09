@@ -40,7 +40,7 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.parentItemId,
                                         this.props.rootId);
     },
-    drawDataTable: function(dataTable, data) {
+    drawDataTable: function(dataTable, data, defaultSorting) {
         dataTable.fnClearTable(data);
         dataTable.fnAddData(data);
         dataTable.fnDraw();
@@ -52,6 +52,10 @@ var ExpandCollapseControl = React.createClass({
             if (data[i].className !== undefined) {
                 $(nodes[i]).closest("tr").addClass(data[i].className);
             }
+        }
+
+        if (defaultSorting !== undefined) {
+            dataTable.fnSort([[defaultSorting.col, defaultSorting.sort]]);
         }
 
     },
@@ -73,11 +77,12 @@ var ExpandCollapseControl = React.createClass({
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
                 var data = dataSources[i].jsonData;
                 if (data !== undefined && data !== null) {
-                    this.drawDataTable(subDataTable, data);
+                    this.drawDataTable(subDataTable, data, childTableDetailsArray[i].defaultSortting);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
                             dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
-                                                        self.retrieveDataAndRenderTableCallback(subDataTable));
+                                                        self.retrieveDataAndRenderTableCallback(subDataTable,
+                                                        childTableDetailsArray[i].defaultSorting));
                     }
 
                 }
@@ -110,12 +115,12 @@ var ExpandCollapseControl = React.createClass({
         }
 
     },
-    retrieveDataAndRenderTableCallback: function(subDataTable) {
+    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting) {
         var self = this;
         return function(resp) {
             var data = resp.applicationResponseContent;
             if (data !== undefined) {
-                self.drawDataTable(subDataTable, data);
+                self.drawDataTable(subDataTable, data, defaultSorting);
             }
         }
     }

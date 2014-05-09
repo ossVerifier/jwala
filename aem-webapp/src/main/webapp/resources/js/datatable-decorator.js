@@ -116,11 +116,9 @@ var decorateTableAsDataTable = function(tableId,
                 }
             }
 
-            aaSorting[itemIndex] = [itemIndex, 'asc'];
-
         });
 
-        var dataTableProperties = {"aaSorting": aaSorting,
+        var dataTableProperties = {"aaSorting": [],
                                    "aoColumnDefs": aoColumnDefs,
                                    "bJQueryUI": applyThemeRoller === undefined ? true : applyThemeRoller,
                                    "bAutoWidth": false,
