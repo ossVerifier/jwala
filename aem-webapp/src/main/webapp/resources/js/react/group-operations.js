@@ -51,11 +51,6 @@ var GroupOperationsDataTable = React.createClass({
                              {sTitle:"",
                               mData:null,
                               tocType:"button",
-                              btnLabel:"Undeploy",
-                              btnCallback:this.undeploy},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
                               btnLabel:"Start",
                               btnCallback:this.start,
                               isToggleBtn:true,
@@ -67,9 +62,14 @@ var GroupOperationsDataTable = React.createClass({
                                             dataCallback:this.getApplicationsOfGrp};
 
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
-                                        {sTitle:"Web App Name", mData:"name"},
+                                        {sTitle:"Web App in Group", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
-                                        {sTitle:"Context", mData:"webAppContext"}];
+                                        {sTitle:"Context", mData:"webAppContext"},
+                                        {sTitle:"",
+                                         mData:null,
+                                         tocType:"button",
+                                         btnLabel:"Undeploy",
+                                         btnCallback:this.undeploy}];
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
@@ -78,11 +78,16 @@ var GroupOperationsDataTable = React.createClass({
                                                     dataCallback:this.getApplicationsOfJvm};
 
         var webAppOfJvmChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
-                                        {sTitle:"Web App Name", mData:"name"},
+                                        {sTitle:"Web App in JVM", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"},
                                         {sTitle:"Group", mData:"group.name"},
-                                        {sTitle:"Status", mData:"status", bVisible:false}];
+                                        {sTitle:"Class", mData:"class", bVisible:false},
+                                        {sTitle:"",
+                                         mData:null,
+                                         tocType:"button",
+                                         btnLabel:"Undeploy",
+                                         btnCallback:this.undeploy}];
 
         webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
 
@@ -146,9 +151,11 @@ var GroupOperationsDataTable = React.createClass({
                 var webApps = data.applicationResponseContent;
                 for (var i = 0; i < webApps.length; i++) {
                     if (idObj.rootId !== webApps[i].group.id.id) {
-                        webApps[i]["status"] = "disabled";
+                        webApps[i]["class"] = "disabled";
                     } else {
-                        webApps[i]["status"] = "enabled";
+                        webApps[i]["class"] = ""; // This is needed to prevent datatable from complaining
+                                                  // for a missing "class" data since "class" is a defined
+                                                  // filed in mData (please research for JQuery DataTable)
                     }
                 }
 

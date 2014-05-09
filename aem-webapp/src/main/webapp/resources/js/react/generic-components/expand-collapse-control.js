@@ -45,13 +45,12 @@ var ExpandCollapseControl = React.createClass({
         dataTable.fnAddData(data);
         dataTable.fnDraw();
 
-        // Check for a "enable/disable" status field
-        // Disable row(s) that have a status of "disabled"
+        // If class is defined, add it to the row node's class
         var data = dataTable.fnGetData();
         var nodes = dataTable.fnGetNodes();
         for(var i = 0;i < data.length;i++) {
-            if (data[i].status === "disabled") {
-                $(nodes[i]).closest("tr").addClass("disabled");
+            if (data[i].class !== undefined) {
+                $(nodes[i]).closest("tr").addClass(data[i].class);
             }
         }
 
