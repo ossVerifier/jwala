@@ -12,10 +12,6 @@ public class Identifier<T> implements Serializable {
         this(Long.valueOf(id));
     }
 
-    public Identifier(final long id) {
-        this(Long.valueOf(id));
-    }
-
     public Identifier(final Long id) {
         // TODO Throw new IllegalArgumentException if null?
         this.id = id;
@@ -66,13 +62,6 @@ public class Identifier<T> implements Serializable {
      * Helper method to return an identifier templated by a type
      */
     public static <U> Identifier<U> id(final Long longId, final Class<U> clazz) {
-        return new Identifier<U>(longId);
-    }
-
-    /**
-     * Helper method to return an identifier templated by a type
-     */
-    public static <U> Identifier<U> id(final long longId, final Class<U> clazz) {
         return new Identifier<U>(longId);
     }
 }

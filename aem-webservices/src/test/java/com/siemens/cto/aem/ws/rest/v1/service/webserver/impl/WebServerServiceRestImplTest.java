@@ -32,18 +32,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- *
+ * 
  * @author horspe00
- *
+ * 
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
 
     private static final String name = "webserverName";
     private static final String host = "localhost";
-    private static final String portNumber = "8080";
-    private static final String groupIdOne = "1";
-    private static final String groupIdTwo = "2";
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
 
@@ -106,8 +103,6 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testCreateWebServer() {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
-        jsonCreateWebServer.addGroupId(groupIdOne);
-        jsonCreateWebServer.addGroupId(groupIdTwo);
         when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
         final Response response = cut.createWebServer(jsonCreateWebServer);
