@@ -29,8 +29,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response getWebServers(final PaginationParamProvider paginationParamProvider) {
         logger.debug("Get WS requested with pagination: {}", paginationParamProvider);
-        final List<WebServer> jvms = webServerService.getWebServers(paginationParamProvider.getPaginationParameter());
-        return ResponseBuilder.ok(jvms);
+        final List<WebServer> webServers = webServerService.getWebServers(paginationParamProvider.getPaginationParameter());
+        return ResponseBuilder.ok(webServers);
     }
 
     @Override
