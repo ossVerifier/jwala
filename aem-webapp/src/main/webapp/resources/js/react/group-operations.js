@@ -190,10 +190,10 @@ var GroupOperationsDataTable = React.createClass({
         alert("JVM deploy applications for jvm_" + id + "...");
    },
    jvmStart: function(id) {
-        alert("JVM start applications for jvm_" + id + "...");
+        jvmControlService.startJvm(id);
    },
    jvmStop: function(id) {
-        alert("JVM stop applications for jvm_" + id + "...");
+        jvmControlService.stopJvm(id);
    }
 
 });
