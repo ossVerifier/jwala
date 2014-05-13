@@ -236,7 +236,7 @@ var GroupConfigDataTable = React.createClass({
                                  className:"simple-data-table"};
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                             {sTitle:"Name", mData:"jvmName"},
+                             {sTitle:"JVM Name", mData:"jvmName"},
                              {sTitle:"Host", mData:"hostName"}];
 
         childTableDetails["tableDef"] = childTableDef;
