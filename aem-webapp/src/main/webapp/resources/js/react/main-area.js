@@ -30,7 +30,8 @@ var MainTabs = React.createClass({
     getInitialState:function() {
         items = [{title:"Groups", content:<GroupOperations className="group-config"
                                            service={ServiceFactory.getGroupService()}/>},
-                 {title:"Web Servers", content:""},
+                 {title:"Web Servers", content:<WebServerOperations className="webserver-config"
+                                                service={ServiceFactory.getWebServerService()}/>},
                  {title: "Configure", content:<ConfigureTabs/>}];
         return null;
     },
