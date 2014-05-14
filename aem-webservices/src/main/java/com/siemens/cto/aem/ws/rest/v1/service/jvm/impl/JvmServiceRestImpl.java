@@ -7,8 +7,12 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -50,9 +54,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
-            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(), hardCodedUser);
+            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
+                                                hardCodedUser);
         } else {
-            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(), hardCodedUser);
+            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
+                                       hardCodedUser);
         }
         return ResponseBuilder.created(jvm);
     }
@@ -60,11 +66,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate) {
         logger.debug("Update JVM requested: {}", aJvmToUpdate);
-        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(), User.getHardCodedUser()));
+        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
+                                                       User.getHardCodedUser()));
     }
 
     @Override
     public Response removeJvm(final Identifier<Jvm> aJvmId) {
+        //TODO This needs to be audited
         logger.debug("Delete JVM requested: {}", aJvmId);
         jvmService.removeJvm(aJvmId);
         return ResponseBuilder.ok();
@@ -73,7 +81,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
-        return ResponseBuilder.ok(jvmControlService.controlJvm(
-                new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()), User.getHardCodedUser()));
+        final JvmControlHistory controlHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
+                                                                              User.getHardCodedUser());
+        final ExecData execData = controlHistory.getExecData();
+        if (execData.getReturnCode().wasSuccessful()) {
+            return ResponseBuilder.ok(controlHistory);
+        } else {
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
+                                             execData.getStandardError());
+        }
     }
 }

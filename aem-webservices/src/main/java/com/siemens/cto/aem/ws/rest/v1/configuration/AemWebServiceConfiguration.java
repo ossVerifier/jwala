@@ -16,6 +16,7 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
@@ -97,6 +98,7 @@ public class AemWebServiceConfiguration {
         providers.add(getV1JsonProvider());
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
+        providers.add(getV1InternalErrorExceptionMapper());
 
         return providers;
     }
@@ -114,6 +116,11 @@ public class AemWebServiceConfiguration {
     @Bean
     public BadRequestExceptionMapper getV1BadRequestExceptionMapper() {
         return new BadRequestExceptionMapper();
+    }
+
+    @Bean
+    public InternalErrorExceptionMapper getV1InternalErrorExceptionMapper() {
+        return new InternalErrorExceptionMapper();
     }
 
 }

@@ -2,10 +2,12 @@ package com.siemens.cto.aem.service.jvm.impl;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
@@ -51,8 +53,9 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             return completeHistory;
         } catch (final CommandFailureException cfe) {
-            throw new RuntimeException("CommandFailureException when attempting to control a JVM: " + aCommand,
-                                       cfe);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                                             "CommandFailureException when attempting to control a JVM: " + aCommand,
+                                             cfe);
         }
     }
 }

@@ -47,7 +47,11 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_JVM_OPERATION("AEM21", "InvalidJvmOperation"),
     /**/
-    JVM_CONTROL_HISTORY_NOT_FOUND("AEM22", "JvmControlHistoryNotFound")
+    JVM_CONTROL_HISTORY_NOT_FOUND("AEM22", "JvmControlHistoryNotFound"),
+    /**/
+    REMOTE_COMMAND_FAILURE("AEM23", "RemoteCommandFailure"),
+    /**/
+    CONTROL_OPERATION_UNSUCCESSFUL("AEM24", "ControlOperationUnsuccessful")
 	;
 
 	private final String faultCode;
