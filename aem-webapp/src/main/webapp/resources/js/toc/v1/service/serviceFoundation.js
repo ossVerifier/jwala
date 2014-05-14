@@ -4,7 +4,7 @@ var serviceFoundation = {
         return Promise.cast($.ajax({url: url,
                                     dataType: dataType,
                                     type: 'GET',
-                                    ache: false
+                                    cache: false
                                 })).then(function(response){
                                     if ($.isFunction(caughtCallback)) {
                                         caughtCallback(response);
