@@ -29,16 +29,20 @@ var DataTableButton = React.createClass({
                                                   value:this.toggleStatus === 0 ? this.props.label: this.props.label2}));
     },
     handleClick: function(id) {
-        if (this.props.isToggleBtn === true) {
+        if (this.props.isToggleBtn) {
             if (this.toggleStatus === 0) {
-                this.props.callback(id);
-                this.toggleStatus = 1;
-                $("#" + this.props.id).val(this.props.label2);
+                if (this.props.callback(id)) {
+                    this.toggleStatus = 1;
+                }
             } else {
-                this.props.callback2(id);
-                this.toggleStatus = 0;
-                $("#" + this.props.id).val(this.props.label);
+                if (this.props.callback2(id)) {
+                    this.toggleStatus = 0;
+                }
             }
+
+            $("#" + this.props.id).val(this.toggleStatus === 1 ?
+                                       this.props.label2 :
+                                       this.props.label);
         } else {
             this.props.callback(id);
         }

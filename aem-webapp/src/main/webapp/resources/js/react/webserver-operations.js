@@ -81,9 +81,11 @@ var WebServerOperationsDataTable = React.createClass({
    },
    start: function(id) {
         alert("Start web server with id = " + id);
+        return true;
    },
    stop: function(id) {
         alert("Stop web server with id = " + id);
+        return true;
    }
 
 });

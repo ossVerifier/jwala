@@ -191,9 +191,11 @@ var GroupOperationsDataTable = React.createClass({
    },
    jvmStart: function(id) {
         jvmControlService.startJvm(id);
+        return true; // TODO Once status can be retrieved, return true if JVM was successfully started
    },
    jvmStop: function(id) {
         jvmControlService.stopJvm(id);
+        return true; // TODO Once status can be retrieved, return true if JVM was successfully stopped
    }
 
 });
