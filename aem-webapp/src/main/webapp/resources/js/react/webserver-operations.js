@@ -41,6 +41,7 @@ var WebServerOperationsDataTable = React.createClass({
     },
     render: function() {
         var webServerTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
+                                 {sTitle:"Name", mData:"name"},
                                  {sTitle:"Host", mData:"host"},
                                  {sTitle:"Port", mData:"port"},
                                  {sTitle:"Group Assignment",
