@@ -9,7 +9,8 @@
 <script src="public-resources/ext/js/jquery/jquery.dataTables.min.js"></script>
 <script src="public-resources/ext/js/json2.min.js"></script>
 
-<!--  Services -->
+<!-- Services -->
+<!-- TODO: minimize -->
 <script src="public-resources/ext/js/bluebird/bluebird-1.0.4.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>

@@ -27,9 +27,9 @@ public class IndexController {
         return "aem/sandbox";
     }
 
-    @RequestMapping(value = "/scripts")
-    public String scripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
-                          @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {
+    @RequestMapping(value = "/index-page-scripts")
+    public String indexPageScripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
+                                   @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {
 
         /**
          * If model contains devMode this means that this was called
@@ -42,9 +42,9 @@ public class IndexController {
         }
 
         if (devMode) {
-            return "aem/dev-scripts";
+            return "aem/dev-index-page-scripts";
         }
-        return "aem/prod-scripts";
+        return "aem/prod-index-page-scripts";
     }
 
     @RequestMapping(value = "/devMode", method = RequestMethod.GET)

@@ -25,19 +25,19 @@ public class IndexControllerTest extends TestCase {
         assertEquals("aem/sandbox", ic.sandbox());
     }
 
-    public void testScripts() {
-        String result = ic.scripts("true", false);
-        assertEquals("aem/dev-scripts", result);
-        result = ic.scripts("true", true);
-        assertEquals("aem/dev-scripts", result);
-        result = ic.scripts("false", false);
-        assertEquals("aem/prod-scripts", result);
-        result = ic.scripts("false", true);
-        assertEquals("aem/prod-scripts", result);
-        result = ic.scripts(null, true);
-        assertEquals("aem/dev-scripts", result);
-        result = ic.scripts(null, false);
-        assertEquals("aem/prod-scripts", result);
+    public void testIndexPageScripts() {
+        String result = ic.indexPageScripts("true", false);
+        assertEquals("aem/dev-index-page-scripts", result);
+        result = ic.indexPageScripts("true", true);
+        assertEquals("aem/dev-index-page-scripts", result);
+        result = ic.indexPageScripts("false", false);
+        assertEquals("aem/prod-index-page-scripts", result);
+        result = ic.indexPageScripts("false", true);
+        assertEquals("aem/prod-index-page-scripts", result);
+        result = ic.indexPageScripts(null, true);
+        assertEquals("aem/dev-index-page-scripts", result);
+        result = ic.indexPageScripts(null, false);
+        assertEquals("aem/prod-index-page-scripts", result);
     }
 
     public void testDevModeTrue() {
