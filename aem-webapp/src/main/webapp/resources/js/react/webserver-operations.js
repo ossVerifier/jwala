@@ -20,8 +20,6 @@ var WebServerOperations = React.createClass({
                    </table>
                </div>
     },
-    selectItemCallback: function(item) {
-    },
     retrieveData: function() {
         var self = this;
         this.props.service.getWebServers(function(response){
@@ -69,8 +67,7 @@ var WebServerOperationsDataTable = React.createClass({
                              tableDef={webServerTableDef}
                              data={this.props.data}
                              expandIcon="public-resources/img/react/components/details-expand.png"
-                             collapseIcon="public-resources/img/react/components/details-collapse.png"
-                             selectItemCallback={this.props.selectItemCallback}/>
+                             collapseIcon="public-resources/img/react/components/details-collapse.png"/>
    },
    showLoadBalancerConfig: function(id) {
         alert("Show load balancer config for web server with id = " + id);
