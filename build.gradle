@@ -36,6 +36,7 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "pmd"
     apply plugin: 'maven-publish'
+    apply plugin: "eclipse"
 
     sourceCompatibility = 1.7
     group = "com.siemens.cto.aem"

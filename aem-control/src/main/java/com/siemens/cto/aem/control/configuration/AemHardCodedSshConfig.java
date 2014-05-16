@@ -12,7 +12,7 @@ public class AemHardCodedSshConfig extends AemSshConfig {
     @Override
     public SshConfiguration getSshConfiguration() {
 
-        final SshConfiguration configuration = new SshConfiguration("z002xuvs",
+        final SshConfiguration configuration = new SshConfiguration("peter",
                                                                     22,
                                                                     getPrivateKeyFile(),
                                                                     getKnownHostsFile());
