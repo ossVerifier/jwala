@@ -1,9 +1,7 @@
 /** @jsx React.DOM */
 var WebServerOperations = React.createClass({
     getInitialState: function() {
-        // selectedGroup = null;
         return {
-        //    groupFormData: {},
             webServerTableData: [{"id":{"id":0},"host":"b","port":9000,"groups":[]}]
         }
     },
