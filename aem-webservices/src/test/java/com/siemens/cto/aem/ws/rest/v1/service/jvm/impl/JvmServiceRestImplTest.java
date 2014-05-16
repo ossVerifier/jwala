@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,6 +13,8 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -168,6 +168,12 @@ public class JvmServiceRestImplTest {
     @Test
     public void testControlJvm() {
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
+
+        final ExecData execData = mock(ExecData.class);
+        final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
+        when(execDataReturnCode.wasSuccessful()).thenReturn(true);
+        when(execData.getReturnCode()).thenReturn(execDataReturnCode);
+        when(jvmControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlJvm jsonControlJvm = new JsonControlJvm("start");
         final Response response = cut.controlJvm(Identifier.id(Long.valueOf(1l), Jvm.class), jsonControlJvm);
