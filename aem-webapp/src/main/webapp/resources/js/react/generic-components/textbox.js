@@ -27,15 +27,18 @@ var TextBox = React.createClass({
                            onChange={this.handleChange}/>
                 </div>
     },
-    handleFocus: function() {
-        this.setState({inputClassName:"input-on-focus " + this.props.className});
-    },
     handleBlur: function() {
-        if (this.state.value.trim() === "") {
+        if (this.state.value === "") {
             this.setState({inputClassName:"input-on-blur " + this.props.className});
         }
     },
     handleChange: function(event) {
-        this.setState({value: event.target.value});
+        var className;
+        if (event.target.value === "") {
+            className = "input-on-blur " + this.props.className;
+        } else {
+            className = "input-on-focus " + this.props.className;
+        }
+        this.setState({inputClassName: className, value: event.target.value});
     }
 })
