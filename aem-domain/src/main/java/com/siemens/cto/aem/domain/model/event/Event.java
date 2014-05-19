@@ -11,9 +11,9 @@ public class Event<T> implements Serializable {
 	private final T command;
 	private final AuditEvent auditEvent;
 
-	public Event(final T theCommand, final AuditEvent theEvent) {
+	public Event(final T theCommand, final AuditEvent theAuditEvent) {
 		command = theCommand;
-		auditEvent = theEvent;
+		auditEvent = theAuditEvent;
 	}
 
 	public T getCommand() {

@@ -20,6 +20,8 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -119,8 +121,12 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testCreate() {
         when(service.createApplication(any(com.siemens.cto.aem.domain.model.app.CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        ArrayList<CreateApplicationCommand> multiCreate = new ArrayList<>();
+        multiCreate.add(new CreateApplicationCommand(Identifier.id(0L, Group.class), "", ""));
+        ArrayList<JsonCreateApplication> jsonMultiCreate = new ArrayList<>();
         JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
-        Response resp = cut.createApplication(jsonCreateAppRequest);
+        jsonMultiCreate.add(jsonCreateAppRequest);
+        Response resp = cut.createApplication(jsonMultiCreate);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
@@ -134,8 +140,12 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testUpdate() {
         when(service.updateApplication(any(com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        ArrayList<UpdateApplicationCommand> multiUpdate = new ArrayList<>();
+        multiUpdate.add(new UpdateApplicationCommand(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", ""));
+        ArrayList<JsonUpdateApplication> jsonMultiUpdate = new ArrayList<>();
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
-        Response resp = cut.updateApplication(jsonUpdateAppRequest);
+        jsonMultiUpdate.add(jsonUpdateAppRequest);
+        Response resp = cut.updateApplication(jsonMultiUpdate);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();

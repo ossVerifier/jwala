@@ -51,7 +51,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     REMOTE_COMMAND_FAILURE("AEM23", "RemoteCommandFailure"),
     /**/
-    CONTROL_OPERATION_UNSUCCESSFUL("AEM24", "ControlOperationUnsuccessful")
+    CONTROL_OPERATION_UNSUCCESSFUL("AEM24", "ControlOperationUnsuccessful"), 
+    /**/
+    OBJECT_CONSTRUCTION_FAILURE("AEM25", "ObjectConstructionFailure")
 	;
 
 	private final String faultCode;

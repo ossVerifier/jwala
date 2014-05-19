@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
@@ -63,17 +64,27 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response createApplication(final JsonCreateApplication anAppToCreate) {
-        LOGGER.debug("Create Application requested: {}", anAppToCreate);
-        return ResponseBuilder.ok(service.createApplication(anAppToCreate.toCreateCommand(),
-                User.getHardCodedUser()));
+    public Response createApplication(final ArrayList<JsonCreateApplication> appsToCreate) {
+        ArrayList<Application> result = new ArrayList<>();
+        for(JsonCreateApplication anAppToCreate : appsToCreate) {
+            LOGGER.debug("Create Application requested: {}", anAppToCreate);            
+            Application created = service.createApplication(anAppToCreate.toCreateCommand(),
+                    User.getHardCodedUser());
+            result.add(created);
+        }
+        return ResponseBuilder.ok(result);
     }
 
     @Override
-    public Response updateApplication(final JsonUpdateApplication anAppToUpdate) {
-        LOGGER.debug("Update Application requested: {}", anAppToUpdate);
-        return ResponseBuilder.ok(service.updateApplication(anAppToUpdate.toUpdateCommand(),
-                                                       User.getHardCodedUser()));
+    public Response updateApplication(final ArrayList<JsonUpdateApplication> appsToUpdate) {
+        ArrayList<Application> result = new ArrayList<>();
+        for(JsonUpdateApplication anAppToUpdate : appsToUpdate) {
+            LOGGER.debug("Update Application requested: {}", anAppToUpdate);
+            Application created = service.updateApplication(anAppToUpdate.toUpdateCommand(),
+                    User.getHardCodedUser());
+            result.add(created);
+        }
+        return ResponseBuilder.ok(result);
     }
 
     @Override

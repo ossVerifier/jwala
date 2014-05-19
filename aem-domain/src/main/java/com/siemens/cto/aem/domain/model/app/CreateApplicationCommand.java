@@ -16,12 +16,12 @@ public class CreateApplicationCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private String name;
-    private String context;
+    private String webAppContext;
     private Identifier<Group> groupId;
     
-    public CreateApplicationCommand(Identifier<Group> groupId, String name, String context) {
+    public CreateApplicationCommand(Identifier<Group> groupId, String name, String webAppContext) {
         this.name = name;
-        this.context = context;
+        this.webAppContext = webAppContext;
         this.groupId = groupId;
     }
 
@@ -32,14 +32,14 @@ public class CreateApplicationCommand implements Serializable, Command {
     public String getName() {
         return name;
     }
-    public String getContext() {
-        return context;
+    public String getWebAppContext() {
+        return webAppContext;
     }
 
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRuleCommand(new GroupIdRule(groupId),
                                 new ApplicationNameRule(name),
-                                new ApplicationContextRule(context)).validateCommand();
+                                new ApplicationContextRule(webAppContext)).validateCommand();
     }
 }

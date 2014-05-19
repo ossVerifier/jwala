@@ -18,19 +18,19 @@ public class UpdateApplicationCommand implements Serializable, Command {
 
     private final Identifier<Application> id;
     private final Identifier<Group> newGroupId;
-    private final String newContext;
+    private final String newWebAppContext;
     private final String newName;
 
     public UpdateApplicationCommand(
             final Identifier<Application> theId,
             final Identifier<Group> theGroupId,
-            final String theContext,
+            final String theNewWebAppContext,
             final String theNewName
             ) {
         id = theId;
         newGroupId = theGroupId;
         newName = theNewName;
-        newContext = theContext;
+        newWebAppContext = theNewWebAppContext;
     }
 
     public Identifier<Application> getId() {
@@ -41,8 +41,8 @@ public class UpdateApplicationCommand implements Serializable, Command {
         return newGroupId;
     }
 
-    public String getNewContext() {
-        return newContext;
+    public String getNewWebAppContext() {
+        return newWebAppContext;
     }
     public String getNewName() {
         return newName;
@@ -53,6 +53,6 @@ public class UpdateApplicationCommand implements Serializable, Command {
         new MultipleRuleCommand(new ApplicationIdRule(id),
                                 new GroupIdRule(newGroupId),
                                 new ApplicationNameRule(newName),
-                                new ApplicationContextRule(newContext)).validateCommand();
+                                new ApplicationContextRule(newWebAppContext)).validateCommand();
     }
 }

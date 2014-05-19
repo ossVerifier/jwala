@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app;
 
+import java.util.ArrayList;
+
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -42,11 +44,11 @@ public interface ApplicationServiceRest {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createApplication(final JsonCreateApplication anAppToCreate);
+    Response createApplication(final ArrayList<JsonCreateApplication> appsToCreate);
     
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateApplication(final JsonUpdateApplication anAppToUpdate);
+    Response updateApplication(final ArrayList<JsonUpdateApplication> appsToUpdate);
     
     @DELETE
     @Path("/{appId}")

@@ -21,7 +21,7 @@ public abstract class IdentifierRule<T> implements Rule {
 
     @Override
     public boolean isValid() {
-        return id != null;
+        return id != null && id.getId() != null;
     }
 
     @Override

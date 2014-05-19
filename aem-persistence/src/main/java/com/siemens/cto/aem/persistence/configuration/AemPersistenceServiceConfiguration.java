@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 
+import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
@@ -13,6 +15,8 @@ import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmControlCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmControlCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.group.impl.JpaGroupPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
@@ -61,5 +65,18 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected JvmControlCrudService getJvmControlCrudService() {
         return new JvmControlCrudServiceImpl();
+    }
+    
+
+    // TODO: Consider; by calling service getters directly, Spring lifetime is not considered.
+    
+    @Bean
+    protected ApplicationCrudService getApplicationCrudService() {
+        return new ApplicationCrudServiceImpl();
+    }
+
+    @Bean
+    protected ApplicationPersistenceService getApplicationPersistenceService() {
+        return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
     }
 }

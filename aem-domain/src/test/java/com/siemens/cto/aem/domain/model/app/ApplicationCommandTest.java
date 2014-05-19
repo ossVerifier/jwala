@@ -16,7 +16,7 @@ public class ApplicationCommandTest {
                 name, 
                 ctx);
         assertEquals(name, cac.getName());
-        assertEquals(ctx, cac.getContext());
+        assertEquals(ctx, cac.getWebAppContext());
         assertEquals(Identifier.id(id, Group.class), cac.getGroupId());
         
         return cac;
@@ -50,11 +50,11 @@ public class ApplicationCommandTest {
         UpdateApplicationCommand uac = new UpdateApplicationCommand(
                 Identifier.id(appId, Application.class),
                 Identifier.id(groupId, Group.class),
-                name, 
-                ctx
+                ctx,
+                name
                 );
         assertEquals(name, uac.getNewName());
-        assertEquals(ctx, uac.getNewContext());
+        assertEquals(ctx, uac.getNewWebAppContext());
         assertEquals(Identifier.id(appId, Application.class), uac.getId());
         assertEquals(Identifier.id(groupId, Group.class), uac.getNewGroupId());
         

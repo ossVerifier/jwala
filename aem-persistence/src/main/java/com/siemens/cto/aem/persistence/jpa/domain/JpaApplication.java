@@ -28,7 +28,7 @@ import javax.persistence.UniqueConstraint;
  *
  */
 @Entity
-@Table(name = "app", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "webAppContext"})})
+@Table(name = "app", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedQueries({
     @NamedQuery(
         name=JpaApplication.QUERY_BY_GROUP_NAME,
@@ -71,7 +71,7 @@ public class JpaApplication extends AbstractEntity<JpaGroup> {
     @Column(nullable = false, unique = true)
     public String webAppContext;
 
-    @Column(nullable = false, unique = false)
+    @Column(nullable = true, unique = false)
     public String warPath;
 
     public void setWarPath(String aWarPath) {
@@ -84,6 +84,18 @@ public class JpaApplication extends AbstractEntity<JpaGroup> {
 
     public void setGroup(JpaGroup jpaGroup) {
         this.group = jpaGroup;
+    }
+    
+    public JpaGroup getGroup() {
+        return this.group;
+    }
+
+    public String getWarPath() {
+        return this.warPath;
+    }
+    
+    public String getWebAppContext() {
+        return this.webAppContext;
     }
 
 }
