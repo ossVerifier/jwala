@@ -55,4 +55,23 @@ public class IndexControllerTest extends TestCase {
         assertNotNull(mv);
         assertEquals("{devMode=false}", mv.getModel().toString());
     }
+
+    public void testLogin() {
+        assertEquals("aem/login", ic.login());
+    }
+
+    public void testLoginPageScripts() {
+        String result = ic.loginPageScripts("true", false);
+        assertEquals("aem/dev-login-page-scripts", result);
+        result = ic.loginPageScripts("true", true);
+        assertEquals("aem/dev-login-page-scripts", result);
+        result = ic.loginPageScripts("false", false);
+        assertEquals("aem/prod-login-page-scripts", result);
+        result = ic.loginPageScripts("false", true);
+        assertEquals("aem/prod-login-page-scripts", result);
+        result = ic.loginPageScripts(null, true);
+        assertEquals("aem/dev-login-page-scripts", result);
+        result = ic.loginPageScripts(null, false);
+        assertEquals("aem/prod-login-page-scripts", result);
+    }
 }

@@ -62,4 +62,30 @@ public class IndexController {
         return mv;
     }
 
+    // TODO: Verify if this should be here since the controller's name is IndexController
+    @RequestMapping(value = "/login")
+    public String login() {
+        return "aem/login";
+    }
+
+    @RequestMapping(value = "/login-page-scripts")
+    public String loginPageScripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
+                                   @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {
+
+        /**
+         * If model contains devMode this means that this was called
+         * after devMode was set and cookie is not yet added
+         * therefore we disregard the cookie and check the model
+         * instead
+         */
+        if (!StringUtils.isEmpty(modelDevMode)) {
+            devMode = Boolean.valueOf(modelDevMode);
+        }
+
+        if (devMode) {
+            return "aem/dev-login-page-scripts";
+        }
+        return "aem/prod-login-page-scripts";
+    }
+
 }
