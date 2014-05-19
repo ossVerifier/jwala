@@ -2,34 +2,37 @@
 var TextBox = React.createClass({
     getInitialState: function() {
         return {
+            theType: this.props.isPassword ? "password" : "text",
             hintClassName: this.props.hintClassName,
-            typeName: "text",
-            value: this.props.hint
+            inputClassName: "input-on-blur " + this.props.className,
+            value: ""
         }
     },
     render: function() {
         if (this.props.hint === undefined) {
-            return <input type={this.props.isPassword ? "password" : "text"}/>
+            return <div><input id={this.props.id}
+                               className={this.props.className}
+                               type={this.state.theType}/></div>
         }
-        return <input type={this.state.typeName}
-                      className={this.state.hintClassName}
-                      value={this.state.value}
-                      onFocus={this.handleFocus}
-                      onBlur={this.handleBlur}
-                      onChange={this.handleChange}/>
+        return  <div>
+                    <label className={this.props.hintClassName}
+                           htmlFor={this.props.id}>{this.props.hint}</label>
+                    <input id={this.props.id}
+                           name={this.props.name}
+                           className={this.state.inputClassName}
+                           type={this.state.theType}
+                           value={this.state.value}
+                           onFocus={this.handleFocus}
+                           onBlur={this.handleBlur}
+                           onChange={this.handleChange}/>
+                </div>
     },
     handleFocus: function() {
-        if (this.state.value === this.props.hint) {
-            if (this.props.isPassword) {
-                this.setState({typeName:"password", hintClassName:"", value:""});
-            } else {
-                this.setState({hintClassName:"", value:""});
-            }
-        }
+        this.setState({inputClassName:"input-on-focus " + this.props.className});
     },
     handleBlur: function() {
         if (this.state.value.trim() === "") {
-            this.setState({typeName:"text", hintClassName:this.props.hintClassName, value:this.props.hint});
+            this.setState({inputClassName:"input-on-blur " + this.props.className});
         }
     },
     handleChange: function(event) {
