@@ -4,7 +4,7 @@ var webAppService = {
         $.each(serializedArray, function() {
 
             var excludeProp = false;
-            if (forUpdate !== true && this.name === "id") {
+            if (forUpdate !== true && this.name === "webappId") {
                 excludeProp = true;
             }
 
@@ -28,7 +28,7 @@ var webAppService = {
 	updateWebApp : function(webserverFormArray, successCallback, errorCallback) {
 		return serviceFoundation.put("v1.0/applications/",
 		                             "json",
-				                     this.serializedWebAppFormToJson(webserverFormArray),
+				                     this.serializedWebAppFormToJson(webserverFormArray, true),
 				                     successCallback,
 				                     errorCallback);
 	},

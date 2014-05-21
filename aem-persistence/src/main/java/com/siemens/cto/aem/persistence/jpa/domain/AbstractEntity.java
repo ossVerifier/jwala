@@ -8,8 +8,10 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.siemens.cto.aem.domain.model.id.Identifier;
+
 @MappedSuperclass
-public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Serializable, Audited {
+public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> implements Serializable, Audited {
 
     private static final long serialVersionUID = 5211000020477780062L;
 
@@ -76,5 +78,11 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
 
     public void setName(final String name) {
         this.name = name;
+    }
+    
+    public abstract Long getId();
+    
+    public Identifier<POJO> id() {
+        return Identifier.<POJO>id(this.getId());
     }
 }

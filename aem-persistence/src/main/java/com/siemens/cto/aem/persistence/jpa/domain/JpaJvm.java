@@ -10,9 +10,11 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+
 @Entity
 @Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
-public class JpaJvm extends AbstractEntity<JpaJvm> {
+public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
 

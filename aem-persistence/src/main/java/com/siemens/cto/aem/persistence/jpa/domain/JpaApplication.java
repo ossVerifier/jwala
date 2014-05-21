@@ -11,6 +11,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.siemens.cto.aem.domain.model.app.Application;
+
 
 /**
  * An application is usually a web application stored in a war file
@@ -42,7 +44,7 @@ import javax.persistence.UniqueConstraint;
         name=JpaApplication.QUERY_BY_GROUP_ID,
         query="SELECT a FROM JpaApplication a WHERE a.group.id= :groupId"
     )})
-public class JpaApplication extends AbstractEntity<JpaGroup> {
+public class JpaApplication extends AbstractEntity<JpaApplication, Application> {
 
     /**
      *
@@ -96,6 +98,11 @@ public class JpaApplication extends AbstractEntity<JpaGroup> {
     
     public String getWebAppContext() {
         return this.webAppContext;
+    }
+
+    @Override
+    public Long getId() {
+        return this.id;
     }
 
 }

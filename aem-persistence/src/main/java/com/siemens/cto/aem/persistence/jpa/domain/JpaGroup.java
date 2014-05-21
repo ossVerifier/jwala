@@ -13,9 +13,11 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.siemens.cto.aem.domain.model.group.Group;
+
 @Entity
 @Table(name = "grp", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
-public class JpaGroup extends AbstractEntity<JpaGroup> {
+public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     private static final long serialVersionUID = -2125399708516728584L;
 
@@ -31,6 +33,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
                uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "JVM_ID"}))
     private List<JpaJvm> jvms;
 
+    @Override
     public Long getId() {
         return id;
     }

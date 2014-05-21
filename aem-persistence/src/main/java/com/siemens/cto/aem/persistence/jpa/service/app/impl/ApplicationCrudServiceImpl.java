@@ -53,7 +53,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
 
             return jpaApp;
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
+            throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
                                           "App already exists: " + anAppToCreate.getCommand().getName(),
                                           eee);
         } catch (final IllegalAccessException | InvocationTargetException eee) {

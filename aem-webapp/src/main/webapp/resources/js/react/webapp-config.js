@@ -7,7 +7,8 @@ var WebAppConfig = React.createClass({
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
             WebAppFormData: {},
-            WebAppTableData: []
+            WebAppTableData: [],
+            groupSelectData: [],
         }
     },
     render: function() {
@@ -51,6 +52,7 @@ var WebAppConfig = React.createClass({
                                   show={this.state.showModalFormEditDialog}
                                   service={this.props.service}
                                   data={this.state.WebAppFormData}
+                                  groupSelectData={this.state.groupSelectData}
                                   successCallback={this.editSuccessCallback}
                                   destroyCallback={this.closeModalFormEditDialog}
                                   className="textAlignLeft"
@@ -58,8 +60,6 @@ var WebAppConfig = React.createClass({
                                       this.state.showModalFormAddDialog ||
                                       this.state.showDeleteConfirmDialog
                                   }/>
-
-
 
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                              btnClickedCallback={this.confirmDeleteCallback} />
@@ -77,6 +77,11 @@ var WebAppConfig = React.createClass({
         this.props.service.getWebApps(function(response){
                                         self.setState({WebAppTableData:response.applicationResponseContent});
                                      });
+        this.props.groupService.getGroups(
+            function(response){
+                self.setState({groupSelectData:response.applicationResponseContent});
+            }
+        );                                     
     },
     addSuccessCallback: function() {
         this.retrieveData();
@@ -118,6 +123,7 @@ var WebAppConfig = React.createClass({
 });
 
 var WebAppConfigForm = React.createClass({
+    mixins: [React.addons.LinkedStateMixin],
     validator: null,
     shouldComponentUpdate: function(nextProps, nextState) {
         return !nextProps.noUpdateWhen;
@@ -126,6 +132,8 @@ var WebAppConfigForm = React.createClass({
         return {
             WebAppId: "",
             WebAppName: "",
+            GroupId: "",
+            groupIds: [],
         }
     },
     getWebAppIdProp: function(props) {
@@ -146,7 +154,7 @@ var WebAppConfigForm = React.createClass({
     render: function() {
         return <div className={this.props.className} style={{display:"none"}}>
                     <form>
-                        <input name="id" type="hidden" value={this.state.WebAppId} />
+                        <input name="webappId" type="hidden" value={this.state.WebAppId} />
                         <table>
                             <tr>
                                 <td>Name</td>
@@ -158,9 +166,43 @@ var WebAppConfigForm = React.createClass({
                                            onChange={this.onChangeWebAppName}
                                            required/></td>
                             </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="portNumber" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="portNumber" type="text" valueLink={this.linkState("port")} required maxLength="5"/></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    *Group
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="groupSelector[]" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <DataMultiSelectBox name="groupSelector[]"
+                                                        data={this.props.groupSelectData}
+                                                        selectedValIds={this.state.groupIds}
+                                                        key="id"
+                                                        keyPropertyName="id"
+                                                        val="name"
+                                                        className="data-multi-select-box"
+                                                        onSelectCallback={this.onSelectGroups}
+                                                        idKey="groupId"/>
+                                </td>
+                            </tr>
                         </table>
                     </form>
                </div>
+    },
+    onSelectGroups: function(groupIds) {
+        this.setState({groupIds:groupIds});
     },
     onChangeWebAppName: function(event) {
         this.setState({WebAppName:event.target.value});

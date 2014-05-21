@@ -13,12 +13,13 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
 @Entity
 @Table(name = "webserver", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
-public class JpaWebServer extends AbstractEntity<JpaWebServer> {
+public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     private static final long serialVersionUID = 1L;
 

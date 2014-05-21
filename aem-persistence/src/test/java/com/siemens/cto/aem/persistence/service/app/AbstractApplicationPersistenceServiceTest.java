@@ -60,7 +60,6 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void setup() {
         aUser = "TestUserId";
         userObj = new User(aUser);
-        //todo create two groups
         Group group = groupPersistenceService.createGroup(new Event<CreateGroupCommand>(new CreateGroupCommand(textGroup), AuditEvent.now(userObj)));        
         Group updGroup = groupPersistenceService.createGroup(new Event<CreateGroupCommand>(new CreateGroupCommand(textUpdatedGroup), AuditEvent.now(userObj)));        
         expGroupId = group.getId();

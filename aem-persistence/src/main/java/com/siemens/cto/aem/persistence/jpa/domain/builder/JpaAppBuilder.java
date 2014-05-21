@@ -18,7 +18,7 @@ public class JpaAppBuilder {
             app.setName(jpaApp.getName());
             app.setWarPath(jpaApp.getWarPath());
             app.setWebAppContext(jpaApp.getWebAppContext());
-            app.setId(Identifier.id(jpaApp.id, Application.class));
+            app.setId(Identifier.id(jpaApp.getId(), Application.class));
 /*        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new InternalErrorException(AemFaultType.OBJECT_CONSTRUCTION_FAILURE, "Bean reflection failed", e);
         }*/
