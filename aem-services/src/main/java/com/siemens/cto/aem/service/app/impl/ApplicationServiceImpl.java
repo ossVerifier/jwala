@@ -31,26 +31,31 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.applicationDao = applicationDao;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Application getApplication(Identifier<Application> aApplicationId) {
         return applicationDao.getApplication(aApplicationId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Application> getApplications(PaginationParameter somePagination) {
         return applicationDao.getApplications(somePagination);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Application> findApplications(Identifier<Group> groupId, PaginationParameter somePagination) {
         return applicationDao.findApplicationsBelongingTo(groupId, somePagination);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId, PaginationParameter somePagination) {
         return applicationDao.findApplicationsBelongingToJvm(jvmId, somePagination);
     }
 
+    @Transactional
     @Override
     public Application updateApplication(UpdateApplicationCommand anUpdateCommand, User anUpdatingUser) {
         anUpdateCommand.validateCommand();
@@ -74,6 +79,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationPersistenceService.createApplication(event);
     }
 
+    @Transactional( )
     @Override
     public void removeApplication(Identifier<Application> anAppIdToRemove, User user) {
         applicationPersistenceService.removeApplication(anAppIdToRemove);

@@ -40,6 +40,7 @@ var WebAppConfig = React.createClass({
                    </table>
                    <WebAppConfigForm title="Add WebApp"
                                     show={this.state.showModalFormAddDialog}
+                                    groupSelectData={this.state.groupSelectData}
                                     service={this.props.service}
                                     successCallback={this.addSuccessCallback}
                                     destroyCallback={this.closeModalFormAddDialog}
@@ -132,6 +133,7 @@ var WebAppConfigForm = React.createClass({
         return {
             WebAppId: "",
             WebAppName: "",
+            WebAppContext: "",
             GroupId: "",
             groupIds: [],
         }
@@ -148,10 +150,29 @@ var WebAppConfigForm = React.createClass({
         }
         return "";
     },
+    getWebAppGroupIdProp: function(props) {
+        if (props.data !== undefined && props.data.group !== undefined && props.data.group.id !== undefined) {
+            return props.data.group.id.id;
+        }
+        return "";
+    },
+    getWebAppGroupProp: function(props, name) {
+        if (props.data !== undefined && props.data.group !== undefined ) {
+            return props.data.group[name];
+        }
+        return "";
+    },
     componentWillReceiveProps: function(nextProps) {
-        this.setState({WebAppId:this.getWebAppIdProp(nextProps), WebAppName:this.getWebAppProp(nextProps, "name")});
+        this.setState(
+          { WebAppId:this.getWebAppIdProp(nextProps), 
+            WebAppName:this.getWebAppProp(nextProps, "name"),
+            WebAppContext:this.getWebAppProp(nextProps, "webAppContext"),
+            GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
+            GroupName:this.getWebAppGroupProp(nextProps, "name"),
+          });
     },
     render: function() {
+      
         return <div className={this.props.className} style={{display:"none"}}>
                     <form>
                         <input name="webappId" type="hidden" value={this.state.WebAppId} />
@@ -164,29 +185,47 @@ var WebAppConfigForm = React.createClass({
                                            type="text"
                                            value={this.state.WebAppName}
                                            onChange={this.onChangeWebAppName}
+                                           maxLength="255"
                                            required/></td>
                             </tr>
                             <tr>
                                 <td>
-                                    <label htmlFor="portNumber" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="portNumber" type="text" valueLink={this.linkState("port")} required maxLength="5"/></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    *Group
+                                    *Context path
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <label htmlFor="groupSelector[]" className="error"></label>
+                                    <label htmlFor="webappContext" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="webappContext" type="text" valueLink={this.linkState("WebAppContext")} required maxLength="255"/></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    *Associated Group
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <DataMultiSelectBox name="groupSelector[]"
+                                    <label htmlFor="groupId" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                <DataCombobox           name="groupId"
+                                                        data={this.props.groupSelectData}
+                                                        selectedVal={this.state.GroupId}
+                                                        key="id.id"
+                                                        val="name"
+                                                        onChange={this.onSelectGroup}/>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+               </div>
+    },
+    /*                                    <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.props.groupSelectData}
                                                         selectedValIds={this.state.groupIds}
                                                         key="id"
@@ -194,15 +233,13 @@ var WebAppConfigForm = React.createClass({
                                                         val="name"
                                                         className="data-multi-select-box"
                                                         onSelectCallback={this.onSelectGroups}
-                                                        idKey="groupId"/>
-                                </td>
-                            </tr>
-                        </table>
-                    </form>
-               </div>
-    },
+                                                        idKey="groupId"/>*/
+
     onSelectGroups: function(groupIds) {
         this.setState({groupIds:groupIds});
+    },
+    onSelectGroup: function(e) {
+        this.setState({GroupId:e.target.value});
     },
     onChangeWebAppName: function(event) {
         this.setState({WebAppName:event.target.value});
@@ -236,7 +273,7 @@ var WebAppConfigForm = React.createClass({
     insertNewWebApp: function() {
         var self = this;
         if (this.isValid()) {
-            this.props.service.insertNewWebApp(this.state.WebAppName,
+            this.props.service.insertNewWebApp($(this.getDOMNode().children[0]).serializeArray(),
                                               function(){
                                                 self.props.successCallback();
                                                 $(self.getDOMNode()).dialog("destroy");

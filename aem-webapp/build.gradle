@@ -62,6 +62,31 @@ task compileJsx(type:Exec) {
     }
 }
 
+
+task watchJsx(type:Exec) {
+    println "JSX Build " + reactBuildPath
+    println "JSX WAR Build " + reactCompiledOutputPath
+    println "JSX WAR Output " + reactCompiledOutputWarPath
+    println "JSX Cache Path " + reactCachePath
+    build.mustRunAfter clean
+    workingDir "."
+
+    // jsx tool hangs (and does not say a word why)
+    // if the complete directory name was passed to it
+    commandLine "cmd",
+                "/c",
+                "jsx" +
+                " -w" +
+                " ./" + reactSrcPath +
+                " ./" + reactBuildPath +
+                " --cache-dir ./" + reactCachePath
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
+
 war{
     manifest {
         attributes(

@@ -32,7 +32,11 @@ var serviceFoundation = {
                                         }
                                    }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {
-                                            caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                            try {
+                                                caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                            }catch(e) {
+                                                caughtCallback("Unexpected content in error response: " + e.responseText);
+                                            }
                                         }
                                    });
             },
@@ -67,7 +71,11 @@ var serviceFoundation = {
                                         }
                                     }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {
-                                            caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                            try {
+                                                caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                            }catch(e) {
+                                                caughtCallback("Unexpected content in error response: " + e.responseText);
+                                            }
                                         }
                                     });
             },

@@ -15,13 +15,10 @@ var webAppService = {
         });
         return "[" + JSON.stringify(json) + "]";
     },
-	 insertNewWebApp : function(webappName, groupId, warPath, webAppContext, successCallback, errorCallback) {
+	 insertNewWebApp : function(webserverFormArray, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/applications",
 		                              "json",
-		                              JSON.stringify([{ webappName: webappName,
-		                                                groupId: groupId,
-		                                                warPath:warPath,
-		                                                webAppContext:webAppContext}]),
+		                              this.serializedWebAppFormToJson(webserverFormArray, false),
 		                                                successCallback,
 		                                                errorCallback);
 	},

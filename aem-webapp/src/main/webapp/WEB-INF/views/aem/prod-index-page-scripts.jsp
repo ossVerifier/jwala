@@ -24,6 +24,7 @@
 <script src="gen-public-resources/js/react/generic-components/tabs.js"></script>
 <script src="gen-public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-multi-select-box.js"></script>
+<script src="gen-public-resources/js/react/generic-components/data-combobox.js"></script>
 <script src="gen-public-resources/js/react/generic-components/modal-form-dialog.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-grid.js"></script>

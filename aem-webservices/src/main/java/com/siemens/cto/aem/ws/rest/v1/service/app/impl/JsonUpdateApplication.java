@@ -10,15 +10,15 @@ public class JsonUpdateApplication {
 
     public Long   webappId;
     public String name;
-    public Long   newGroupId;
-    public String newContext;
+    public Long   groupId;
+    public String webappContext;
     
     public JsonUpdateApplication() {  }
 
     public UpdateApplicationCommand toUpdateCommand() throws BadRequestException {
         return  new UpdateApplicationCommand(
                     Identifier.id(webappId, Application.class),
-                    Identifier.id(newGroupId, Group.class),name,newContext);
+                    Identifier.id(groupId, Group.class), webappContext, name);
     }
 
 }

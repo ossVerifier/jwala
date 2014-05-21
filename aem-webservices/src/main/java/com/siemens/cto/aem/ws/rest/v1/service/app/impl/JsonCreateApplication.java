@@ -7,15 +7,15 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class JsonCreateApplication {
 
-    public String webappName;
+    public String name;
     public Long   groupId;
-    public String context;
+    public String webappContext;
     
     public JsonCreateApplication() {  }
 
     public CreateApplicationCommand toCreateCommand() throws BadRequestException {
         return  new CreateApplicationCommand(
-                    Identifier.id(groupId, Group.class),webappName,context);
+                    Identifier.id(groupId, Group.class),name,webappContext);
     }
 
 }

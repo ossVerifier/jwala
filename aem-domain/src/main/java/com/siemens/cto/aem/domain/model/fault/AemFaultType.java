@@ -55,7 +55,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     OBJECT_CONSTRUCTION_FAILURE("AEM25", "ObjectConstructionFailure"),
     /**/
-    DUPLICATE_APPLICATION("AEM26", "DuplicateApplication")    
+    DUPLICATE_APPLICATION("AEM26", "DuplicateApplication"),
+    /**/
+    PERSISTENCE_ERROR("AEM27","PersistenceError")
 	;
 
 	private final String faultCode;
