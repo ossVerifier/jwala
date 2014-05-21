@@ -29,6 +29,10 @@ import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 
@@ -50,7 +54,11 @@ public class ApplicationServiceImplIntegrationTest {
             return new JpaWebServerDaoImpl();
         }
 
-
+        @Bean
+        public ApplicationPersistenceService getApplicationPersistenceService() {
+            return new JpaApplicationPersistenceServiceImpl(new ApplicationCrudServiceImpl(), new GroupCrudServiceImpl());
+        }
+    
         @Bean
         public ApplicationDao getApplicationDao() {
             return new JpaApplicationDaoImpl();
@@ -64,12 +72,15 @@ public class ApplicationServiceImplIntegrationTest {
     
     @Autowired
     private ApplicationDao           applicationDao;
+
+    @Autowired
+    private ApplicationPersistenceService applicationPersistenceService;
     
     private ApplicationService      cut;
 
     @Before
     public void setup() { 
-        cut = new ApplicationServiceImpl(applicationDao);
+        cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService);
     }
 
     /**

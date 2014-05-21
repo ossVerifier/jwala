@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.app.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -11,13 +12,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,6 +34,9 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private ApplicationDao applicationDao;
+
+    @Mock
+    private ApplicationPersistenceService applicationPersistenceService;
 
     private ApplicationService applicationService;
 
@@ -67,7 +78,7 @@ public class ApplicationServiceImplTest {
         applications2.add(mockApplication);
         applications2.add(mockApplication2);
         
-        applicationService = new ApplicationServiceImpl(applicationDao);
+        applicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService);
     }
 
     @SuppressWarnings("unchecked")
@@ -117,5 +128,48 @@ public class ApplicationServiceImplTest {
         assertEquals("TOC 1.1", application.getName());
         assertEquals("the-ws-group-name-2", application.getGroup().getName());
         assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected=BadRequestException.class)
+    public void testCreateBadRequest() {
+        when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
+        
+        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "");
+        Application created = applicationService.createApplication(cac, new User("user"));
+
+        assertTrue(created == mockApplication2);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreate() {
+        when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
+        
+        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan");
+        Application created = applicationService.createApplication(cac, new User("user"));
+
+        assertTrue(created == mockApplication2);
+    }
+    
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUpdate() {
+        when(applicationPersistenceService.updateApplication(any(Event.class))).thenReturn(mockApplication2);
+        
+        UpdateApplicationCommand cac = new UpdateApplicationCommand(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan");
+        Application created = applicationService.updateApplication(cac, new User("user"));
+
+        assertTrue(created == mockApplication2);
+    }
+    
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testRemove() {
+        applicationService.removeApplication(mockApplication.getId(), new User("user"));
+
+        Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));        
     }
 }

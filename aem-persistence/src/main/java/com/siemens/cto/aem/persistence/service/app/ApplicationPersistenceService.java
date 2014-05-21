@@ -12,6 +12,6 @@ public interface ApplicationPersistenceService {
 
     Application updateApplication(final Event<UpdateApplicationCommand> anAppToUpdate);
 
-    void removeApplication(final Identifier<Application> aJvmId);
+    void removeApplication(final Identifier<Application> anAppToRemove);
 
 }

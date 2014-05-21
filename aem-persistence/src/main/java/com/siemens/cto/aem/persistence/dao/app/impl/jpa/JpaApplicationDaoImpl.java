@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.dao.app.impl.jpa;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -13,13 +12,11 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaApplicationDaoImpl implements ApplicationDao {
@@ -47,7 +44,7 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
             throw new NotFoundException(AemFaultType.APPLICATION_NOT_FOUND,
                     "Application not found: " + aApplicationId);
         }
-        return buildApplication(jpaApp);
+        return JpaAppBuilder.appFrom(jpaApp);
     }
 
     @Override
@@ -63,21 +60,10 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     private List<Application> buildApplications(List<?> resultList) {
         ArrayList<Application> apps = new ArrayList<>(resultList.size());
         for(JpaApplication jpa : (List<JpaApplication>)resultList) {
-            apps.add(buildApplication(jpa));
+            apps.add(JpaAppBuilder.appFrom(jpa));
         }
         return apps;
     }
-
-    private Application buildApplication(JpaApplication jpa) {
-        Application a = new Application();
-        a.setName(jpa.name);
-        a.setWarPath(jpa.warPath);
-        a.setWebAppContext(jpa.webAppContext);   
-        a.setId(id(jpa.id, Application.class));
-        a.setGroup(jpa.group == null ? null : new JpaGroupBuilder(jpa.group).build()); 
-        return a;
-    }
-
     @Override
     public List<Application> findApplications(String aGroupName, PaginationParameter somePagination) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);

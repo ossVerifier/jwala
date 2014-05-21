@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -20,7 +21,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -40,8 +40,10 @@ public class ApplicationServiceRestImplTest {
     
     private ApplicationServiceRest cut;
 
-    Application application = new Application();
-    Application newlyCreatedApp = new Application();
+    Group group1 = new Group(Identifier.id(0L, Group.class), "");
+    Application application = new Application(Identifier.id(1L, Application.class), "","","", group1);
+    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "","","", group1);
+    
     List<Application> applications = new ArrayList<Application>(1);
     List<Application> applications2 = new ArrayList<Application>(2);
     List<Application> emptyList = new ArrayList<Application>(0);
@@ -111,8 +113,8 @@ public class ApplicationServiceRestImplTest {
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
-        assertTrue(entity instanceof Application);
-        assertEquals(entity, application);
+        assertTrue(entity instanceof List<?>);
+        assertEquals(emptyList, entity);        
     }
     
     /**
@@ -121,17 +123,15 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testCreate() {
         when(service.createApplication(any(com.siemens.cto.aem.domain.model.app.CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
-        ArrayList<CreateApplicationCommand> multiCreate = new ArrayList<>();
-        multiCreate.add(new CreateApplicationCommand(Identifier.id(0L, Group.class), "", ""));
-        ArrayList<JsonCreateApplication> jsonMultiCreate = new ArrayList<>();
-        JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
-        jsonMultiCreate.add(jsonCreateAppRequest);
-        Response resp = cut.createApplication(jsonMultiCreate);
+
+        JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();        
+
+        Response resp = cut.createApplication(jsonCreateAppRequest);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
-        assertTrue(entity instanceof List<?>);
-        assertEquals(this.applications2, entity);
+        assertEquals(this.newlyCreatedApp, entity);
+        assertEquals(201, resp.getStatus());
     }
     
     /**
@@ -142,15 +142,12 @@ public class ApplicationServiceRestImplTest {
         when(service.updateApplication(any(com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
         ArrayList<UpdateApplicationCommand> multiUpdate = new ArrayList<>();
         multiUpdate.add(new UpdateApplicationCommand(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", ""));
-        ArrayList<JsonUpdateApplication> jsonMultiUpdate = new ArrayList<>();
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
-        jsonMultiUpdate.add(jsonUpdateAppRequest);
-        Response resp = cut.updateApplication(jsonMultiUpdate);
+        Response resp = cut.updateApplication(jsonUpdateAppRequest);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
-        assertTrue(entity instanceof List<?>);
-        assertEquals(this.applications, entity);        
+        assertEquals(this.newlyCreatedApp, entity);        
     }
    
     /**
@@ -159,12 +156,9 @@ public class ApplicationServiceRestImplTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testRemove() {
-        Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class),  any(User.class));
         Response resp = cut.removeApplication(application.getId());
-        assertNotNull(resp.getEntity());
-        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
-        Object entity = appResponse.getApplicationResponseContent();
-        assertTrue(entity instanceof List<?>);
-        assertEquals(emptyList, entity);
+        Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class),  any(User.class));
+        assertNull(resp.getEntity());
+        assertEquals(200, resp.getStatus());
     }
 }

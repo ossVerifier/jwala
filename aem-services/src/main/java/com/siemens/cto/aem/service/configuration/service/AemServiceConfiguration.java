@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
-import com.siemens.cto.aem.control.configuration.AemControlConfigReference;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -49,7 +48,7 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService() {
-        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao());
+        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(), persistenceServiceConfiguration.getApplicationPersistenceService());
     }
 
     @Bean

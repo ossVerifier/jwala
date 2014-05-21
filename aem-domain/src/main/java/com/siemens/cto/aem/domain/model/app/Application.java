@@ -15,6 +15,14 @@ public class Application {
 
     private String warPath;
 
+    public Application(Identifier<Application> anId, String aName, String aWarPath, String aWebAppContext, Group aGroup) {
+        group = aGroup;
+        id = anId;
+        webAppContext = aWebAppContext;
+        warPath = aWarPath;
+        name = aName;
+    }
+
     public Group getGroup() {
         return group;
     }

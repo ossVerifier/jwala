@@ -13,7 +13,7 @@ var webAppService = {
             }
 
         });
-        return "[" + JSON.stringify(json) + "]";
+        return JSON.stringify(json);
     },
 	 insertNewWebApp : function(webserverFormArray, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/applications",

@@ -45,7 +45,7 @@ public class AemPersistenceServiceConfiguration {
     public JvmControlPersistenceService getJvmControlPersistenceService() {
         return new JpaJvmControlPersistenceServiceImpl(getJvmControlCrudService());
     }
-
+    
     @Bean
     protected GroupJvmRelationshipService getGroupJvmRelationshipService() {
         return new GroupJvmRelationshipServiceImpl(getGroupCrudService(),
@@ -66,17 +66,14 @@ public class AemPersistenceServiceConfiguration {
     protected JvmControlCrudService getJvmControlCrudService() {
         return new JvmControlCrudServiceImpl();
     }
-    
-
-    // TODO: Consider; by calling service getters directly, Spring lifetime is not considered.
-    
+       
     @Bean
     protected ApplicationCrudService getApplicationCrudService() {
         return new ApplicationCrudServiceImpl();
     }
 
     @Bean
-    protected ApplicationPersistenceService getApplicationPersistenceService() {
+    public ApplicationPersistenceService getApplicationPersistenceService() {
         return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
     }
 }

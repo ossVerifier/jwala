@@ -27,8 +27,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
 
-    public ApplicationServiceImpl(ApplicationDao applicationDao) {
+    public ApplicationServiceImpl(ApplicationDao applicationDao, ApplicationPersistenceService applicationPersistenceService) {
         this.applicationDao = applicationDao;
+        this.applicationPersistenceService = applicationPersistenceService;
     }
 
     @Transactional(readOnly = true)

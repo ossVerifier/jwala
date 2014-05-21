@@ -16,7 +16,6 @@ import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;

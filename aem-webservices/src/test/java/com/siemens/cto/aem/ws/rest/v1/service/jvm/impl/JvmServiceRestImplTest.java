@@ -21,6 +21,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -167,6 +169,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testControlJvm() {
+        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
 
         final ExecData execData = mock(ExecData.class);
