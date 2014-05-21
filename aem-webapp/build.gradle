@@ -64,10 +64,10 @@ task compileJsx(type:Exec) {
 
 
 task watchJsx(type:Exec) {
-    println "JSX Build " + reactBuildPath
-    println "JSX WAR Build " + reactCompiledOutputPath
-    println "JSX WAR Output " + reactCompiledOutputWarPath
-    println "JSX Cache Path " + reactCachePath
+    //println "JSX Build " + reactBuildPath
+    //println "JSX WAR Build " + reactCompiledOutputPath
+    //println "JSX WAR Output " + reactCompiledOutputWarPath
+    //println "JSX Cache Path " + reactCachePath
     build.mustRunAfter clean
     workingDir "."
 
