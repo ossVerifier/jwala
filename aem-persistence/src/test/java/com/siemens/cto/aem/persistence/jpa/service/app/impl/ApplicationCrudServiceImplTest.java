@@ -125,7 +125,7 @@ public class ApplicationCrudServiceImplTest {
     
     @After
     public void tearDown() {
-        try { groupCrudService.removeGroup(expGroupId); } catch (Exception x) { }
+        try { groupCrudService.removeGroup(expGroupId); } catch (Exception x) { /*intentionally empty*/ }
     }
     
     @Test(expected = BadRequestException.class)
@@ -144,7 +144,7 @@ public class ApplicationCrudServiceImplTest {
             assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally { 
-            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { }
+            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { /*intentionally empty*/ }
         }
         
     }

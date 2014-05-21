@@ -71,10 +71,10 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @After
     public void tearDown() {
         if(updateAppId != null) { 
-            try { applicationPersistenceService.removeApplication(updateAppId); } catch (Exception x) { }
+            try { applicationPersistenceService.removeApplication(updateAppId); } catch (Exception x) { /*intentionally empty*/ }
         }
-        try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { }
-        try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { }
+        try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { /*intentionally empty*/ }
+        try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { /*intentionally empty*/ }
     }
     
     @Test
