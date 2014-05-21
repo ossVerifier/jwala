@@ -148,26 +148,5 @@ public class ApplicationCrudServiceImplTest {
         }
         
     }
-    
-    @SuppressWarnings("serial")
-    @Test(expected = BadRequestException.class)
-    public void testApplicationCrudServiceOCF() {
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext) {
-          @Override
-            public String getWebAppContext() {
-              throw new RuntimeException("Test forced failure");
-            }  
-        };
-        Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-
-        try {
-            JpaApplication created = applicationCrudService.createApplication(anAppToCreate, jpaGroup);  
-            fail(created.toString());
-        } catch(BadRequestException e) {
-            assertEquals(AemFaultType.OBJECT_CONSTRUCTION_FAILURE, e.getMessageResponseStatus());
-            throw e;
-        }
-        
-    }
 
 }
