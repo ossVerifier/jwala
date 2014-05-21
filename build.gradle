@@ -13,8 +13,7 @@ ext {
                  mockito: "1.9.5",
                  slf4j : '1.7.5',
                  slf4j_log4j12 : '1.7.5',
-                 javax_servlet_api: '3.0',
-                 commons_beanutils: '1.9.1'
+                 javax_servlet_api: '3.0'
                 ]
 }
 

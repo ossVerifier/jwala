@@ -6,9 +6,6 @@ dependencies {
     compile project(":aem-common")
     compile project(":aem-domain")
 
-    // compile(group: 'commons-beanutils',name: 'commons-beanutils','version':'$project.versions.commons_beanutils')
-    compile files("$rootDir/thirdparty/m2/commons-beanutils-${project.versions.commons_beanutils}.jar")
-
     compile("org.apache.openjpa:openjpa:$project.versions.jpa"){
         exclude group: "junit"
     }

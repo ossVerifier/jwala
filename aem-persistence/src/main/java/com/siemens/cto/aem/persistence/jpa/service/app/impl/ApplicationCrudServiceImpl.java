@@ -1,13 +1,10 @@
 package com.siemens.cto.aem.persistence.jpa.service.app.impl;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import org.apache.commons.beanutils.BeanUtils;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -41,8 +38,8 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             final JpaApplication jpaApp = new JpaApplication();
             jpaApp.setName(createAppCommand.getName());
             jpaApp.setGroup(jpaGroup);
-            
-            BeanUtils.copyProperties(jpaApp, createAppCommand);
+            jpaApp.setWebAppContext(createAppCommand.getWebAppContext());
+
             jpaApp.setCreateBy(userId);
             jpaApp.setCreateDate(updateDate);
             jpaApp.setUpdateBy(userId);
@@ -56,8 +53,6 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
                                           "App already exists: " + anAppToCreate.getCommand().getName(),
                                           eee);
-        } catch (final IllegalAccessException | InvocationTargetException eee) {
-            throw new BadRequestException(AemFaultType.OBJECT_CONSTRUCTION_FAILURE, "Failed copying audit parameters");
         }
     }
 
