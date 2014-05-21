@@ -5,6 +5,11 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +52,12 @@ public class WebServerServiceRestImplTest {
     @Mock
     private WebServerServiceImpl impl;
 
+    @Mock
+    private WebServerControlService controlImpl;
+
+    @Mock
+    private WebServerControlHistory webServerControlHistory;
+
     private WebServerServiceRestImpl cut;
 
     private static List<WebServer> createWebServerList() {
@@ -65,7 +76,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new WebServerServiceRestImpl(impl);
+        cut = new WebServerServiceRestImpl(impl, controlImpl);
     }
 
     @Test
@@ -141,5 +152,27 @@ public class WebServerServiceRestImplTest {
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         assertNull(applicationResponse);
+    }
+
+    @Test
+    public void testControlWebServer() {
+        when(controlImpl.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(webServerControlHistory);
+
+        final ExecData execData = mock(ExecData.class);
+        final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
+        when(execDataReturnCode.wasSuccessful()).thenReturn(true);
+        when(execData.getReturnCode()).thenReturn(execDataReturnCode);
+        when(webServerControlHistory.getExecData()).thenReturn(execData);
+
+        final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
+        final Response response = cut.controlWebServer(Identifier.id(Long.valueOf(1l), WebServer.class), jsonControlWebServer);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        final Object content = applicationResponse.getApplicationResponseContent();
+        assertTrue(content instanceof WebServerControlHistory);
+
+        final WebServerControlHistory received = (WebServerControlHistory) content;
+        assertEquals(webServerControlHistory, received);
     }
 }

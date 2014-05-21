@@ -51,11 +51,13 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     REMOTE_COMMAND_FAILURE("AEM23", "RemoteCommandFailure"),
     /**/
-    CONTROL_OPERATION_UNSUCCESSFUL("AEM24", "ControlOperationUnsuccessful"), 
+    CONTROL_OPERATION_UNSUCCESSFUL("AEM24", "ControlOperationUnsuccessful"),
     /**/
     DUPLICATE_APPLICATION("AEM25", "DuplicateApplication"),
     /**/
-    PERSISTENCE_ERROR("AEM26","PersistenceError")
+    PERSISTENCE_ERROR("AEM26","PersistenceError"),
+    /**/
+    INVALID_WEBSERVER_OPERATION("AEM27", "InvalidWebServerOperation")
 	;
 
 	private final String faultCode;

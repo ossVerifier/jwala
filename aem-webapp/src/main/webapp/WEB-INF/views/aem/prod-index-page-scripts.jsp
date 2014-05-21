@@ -19,6 +19,7 @@
 <script src="public-resources/js/toc/v1/service/jvmService.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFactory.js"></script>
 <script src="public-resources/js/toc/v1/service/jvmControlService.js"></script>
+<script src="public-resources/js/toc/v1/service/webServerControlService.js"></script>
 
 <!-- React UI -->
 <script src="gen-public-resources/js/react/generic-components/tabs.js"></script>

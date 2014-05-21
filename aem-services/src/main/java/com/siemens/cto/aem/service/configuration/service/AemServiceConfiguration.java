@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.configuration.service;
 
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,5 +58,12 @@ public class AemServiceConfiguration {
         return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService(),
                                          getJvmService(),
                                          aemCommandExecutorConfig.getJvmCommandExecutor());
+    }
+
+    @Bean
+    public WebServerControlService getWebServerControlService() {
+        return new WebServerControlServiceImpl(/* persistenceServiceConfiguration.getWebServerControlPersistenceService(), */  // TODO: Revisit once control history implementation has been decided
+                                               getWebServerService(),
+                                               aemCommandExecutorConfig.getWebServerCommandExecutor());
     }
 }

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.control.jvm.command;
+package com.siemens.cto.aem.control.command;
 
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 

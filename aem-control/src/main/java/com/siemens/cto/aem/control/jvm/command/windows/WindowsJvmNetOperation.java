@@ -4,7 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.control.jvm.command.ServiceCommandBuilder;
+import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 
 public enum WindowsJvmNetOperation implements ServiceCommandBuilder {

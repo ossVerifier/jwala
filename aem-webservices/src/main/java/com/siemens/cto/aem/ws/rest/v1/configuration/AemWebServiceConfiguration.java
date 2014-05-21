@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -38,13 +39,16 @@ public class AemWebServiceConfiguration {
     private JvmService jvmService;
 
     @Autowired
-    private WebServerService webServerService;
+        private WebServerService webServerService;
 
     @Autowired
     private JvmControlService jvmControlService;
 
     @Autowired
     private ApplicationService applicationService;
+
+    @Autowired
+    private WebServerControlService webServerControlService;
 
     @Bean
     public Server getV1JaxResServer() {
@@ -84,7 +88,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
-        return new WebServerServiceRestImpl(webServerService);
+        return new WebServerServiceRestImpl(webServerService,
+                                            webServerControlService);
     }
 
     @Bean

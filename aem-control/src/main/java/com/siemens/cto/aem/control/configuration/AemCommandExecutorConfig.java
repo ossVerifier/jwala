@@ -3,6 +3,8 @@ package com.siemens.cto.aem.control.configuration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
+import com.siemens.cto.aem.control.webserver.impl.RemoteWebServerCommandExecutorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,5 +37,14 @@ public class AemCommandExecutorConfig {
     @Bean(destroyMethod = "shutdownNow")
     protected ExecutorService getExecutorService() {
         return Executors.newFixedThreadPool(12);
+    }
+
+    @Bean
+    public WebServerCommandExecutor getWebServerCommandExecutor() {
+        final WebServerCommandExecutor webServerCommandExecutor =
+                new RemoteWebServerCommandExecutorImpl(getCommandExecutor(),
+                                                       sshConfig.getJsch(),
+                                                       sshConfig.getSshConfiguration());
+        return webServerCommandExecutor;
     }
 }

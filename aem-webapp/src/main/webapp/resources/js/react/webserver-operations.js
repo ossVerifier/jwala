@@ -76,11 +76,11 @@ var WebServerOperationsDataTable = React.createClass({
         alert("Show load balancer for web server with id = " + id);
    },
    start: function(id) {
-        alert("Start web server with id = " + id);
-        return true;
+        webServerControlService.startWebServer(id);
+        return true; // TODO Once status can be retrieved, return true if JVM was successfully started
    },
    stop: function(id) {
-        alert("Stop web server with id = " + id);
+        webServerControlService.stopWebServer(id);
         return true;
    }
 

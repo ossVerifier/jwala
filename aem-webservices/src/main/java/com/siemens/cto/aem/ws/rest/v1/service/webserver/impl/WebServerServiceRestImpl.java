@@ -4,6 +4,12 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +26,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final Logger logger;
 
     private final WebServerService webServerService;
+    private final WebServerControlService webServerControlService;
 
-    public WebServerServiceRestImpl(final WebServerService theWebServerService) {
+    public WebServerServiceRestImpl(final WebServerService theWebServerService,
+                                    final WebServerControlService theWebServerControlService) {
         logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
         webServerService = theWebServerService;
+        webServerControlService = theWebServerControlService;
     }
 
     @Override
@@ -43,14 +52,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate) {
         logger.debug("Create WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerCommand(),
-                                                            User.getHardCodedUser()));
+                User.getHardCodedUser()));
     }
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate) {
         logger.debug("Update WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerCommand(),
-                                                       User.getHardCodedUser()));
+                User.getHardCodedUser()));
     }
 
     @Override
@@ -58,5 +67,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         logger.debug("Delete WS requested: {}", aWsId);
         webServerService.removeWebServer(aWsId);
         return ResponseBuilder.ok();
+    }
+
+    @Override
+    public Response controlWebServer(final Identifier<WebServer> aWebServerId, final JsonControlWebServer aWebServerToControl) {
+        logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
+        final WebServerControlHistory controlHistory = webServerControlService.controlWebServer(
+                new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
+                User.getHardCodedUser());
+        final ExecData execData = controlHistory.getExecData();
+        if (execData.getReturnCode().wasSuccessful()) {
+            return ResponseBuilder.ok(controlHistory);
+        } else {
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
+                    execData.getStandardError());
+        }
     }
 }

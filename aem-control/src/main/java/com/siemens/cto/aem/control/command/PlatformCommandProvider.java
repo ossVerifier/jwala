@@ -1,12 +1,13 @@
-package com.siemens.cto.aem.control.jvm.command.impl;
+package com.siemens.cto.aem.control.command;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.siemens.cto.aem.control.jvm.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
+import com.siemens.cto.aem.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.platform.Platform;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 
 public enum PlatformCommandProvider {
 
@@ -14,6 +15,11 @@ public enum PlatformCommandProvider {
         @Override
         public ServiceCommandBuilder getServiceCommandBuilderFor(final JvmControlOperation anOperation) {
             return WindowsJvmNetOperation.lookup(anOperation);
+        }
+
+        @Override
+        public ServiceCommandBuilder getServiceCommandBuilderFor(final WebServerControlOperation anOperation) {
+            return WindowsWebServerNetOperation.lookup(anOperation);
         }
     };
 
@@ -36,4 +42,6 @@ public enum PlatformCommandProvider {
     }
 
     public abstract ServiceCommandBuilder getServiceCommandBuilderFor(JvmControlOperation anOperation);
+
+    public abstract ServiceCommandBuilder getServiceCommandBuilderFor(WebServerControlOperation anOperation);
 }

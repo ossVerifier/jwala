@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.control.jvm.command.impl;
+package com.siemens.cto.aem.control.command;
 
 import java.util.Collections;
 import java.util.HashSet;
