@@ -33,6 +33,11 @@ var TocDataTable = React.createClass({
         }
     },
     rowSelectCallback: function() {
+
+        if (this.props.selectItemCallback === undefined) {
+            return;
+        }
+
         var self = this;
         var dataTable = this.dataTable;
         $(dataTable).find("tr").off("click").on("click", function(e) {
@@ -50,6 +55,7 @@ var TocDataTable = React.createClass({
                 }
             }
         });
+
     },
     getDataTable: function() {
         return this.dataTable;
