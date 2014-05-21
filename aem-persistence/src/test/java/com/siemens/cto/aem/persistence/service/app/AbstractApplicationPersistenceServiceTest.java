@@ -7,6 +7,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,8 @@ import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 
 @Transactional
 public abstract class AbstractApplicationPersistenceServiceTest {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractApplicationPersistenceServiceTest.class); 
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -71,10 +75,10 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @After
     public void tearDown() {
         if(updateAppId != null) { 
-            try { applicationPersistenceService.removeApplication(updateAppId); } catch (Exception x) { /*intentionally empty*/ }
+            try { applicationPersistenceService.removeApplication(updateAppId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         }
-        try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { /*intentionally empty*/ }
-        try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { /*intentionally empty*/ }
+        try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+        try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
     }
     
     @Test

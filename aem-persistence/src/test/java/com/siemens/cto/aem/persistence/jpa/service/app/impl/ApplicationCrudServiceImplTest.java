@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,6 +55,8 @@ import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceService
                       classes = {ApplicationCrudServiceImplTest.Config.class
                       })
 public class ApplicationCrudServiceImplTest {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationCrudServiceImplTest.class); 
 
     @Configuration
     @Import(TestJpaConfiguration.class)
@@ -125,7 +129,7 @@ public class ApplicationCrudServiceImplTest {
     
     @After
     public void tearDown() {
-        try { groupCrudService.removeGroup(expGroupId); } catch (Exception x) { /*intentionally empty*/ }
+        try { groupCrudService.removeGroup(expGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
     }
     
     @Test(expected = BadRequestException.class)
@@ -144,7 +148,7 @@ public class ApplicationCrudServiceImplTest {
             assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally { 
-            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { /*intentionally empty*/ }
+            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         }
         
     }
