@@ -83,8 +83,8 @@ var TabsSwitcher = React.createClass({displayName:"TabsSwitcher",
     render: function() {
         var active = this.props.active;
         var items = this.props.items.map(function(item, index) {
-            return React.DOM.li({className:"" + (active === index ? "current" : "")},
-                   React.DOM.a({onClick:this.onClick.bind(this, index)},
+            return React.DOM.li({key:"li"+index, className:"" + (active === index ? "current" : "")},
+                   React.DOM.a({key:"a"+index, onClick:this.onClick.bind(this, index)},
                 item.title
             ));
         }.bind(this));
@@ -103,10 +103,12 @@ var TabsContent = React.createClass({
 
         var items = this.props.items.map(function(item, index) {
             if (index === active) {
-                return item.content;
+                return React.DOM.span({key:"tc.span"+index}, item.content);
             }
         });
 
-        return React.DOM.div({className:theme + "-panel-selected"}, items);
+        return React.DOM.div({
+          key:"tc.t"+this.props.active,
+          className:theme + "-panel-selected"}, items);
     }
 });

@@ -315,7 +315,7 @@ var WebAppDataTable = React.createClass({
                          {sTitle:"Context", mData:"webAppContext"},
                          {sTitle:"Web Archive", mData:"warPath"},
                          {sTitle:"Group ID", mData:"group.id.id", bVisible:false},
-                         {sTitle:"Group", mData:"group.name"},
+                         {sTitle:"Group", mData:"group.name"}
                         ];
         return <TocDataTable tableId="WebAppDataTable"
                              tableDef={tableDef}
