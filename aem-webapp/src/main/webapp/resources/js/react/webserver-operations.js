@@ -77,7 +77,7 @@ var WebServerOperationsDataTable = React.createClass({
    },
    start: function(id) {
         webServerControlService.startWebServer(id);
-        return true; // TODO Once status can be retrieved, return true if JVM was successfully started
+        return true; // TODO Once status can be retrieved, return true if Web Server was successfully started
    },
    stop: function(id) {
         webServerControlService.stopWebServer(id);
