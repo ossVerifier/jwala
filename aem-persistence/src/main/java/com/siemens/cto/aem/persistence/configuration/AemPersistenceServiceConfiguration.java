@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.jpa.service.webserver.WebServerControlCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.webserver.impl.WebServerControlCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.webserver.WebServerControlPersistenceService;
+import com.siemens.cto.aem.persistence.service.webserver.impl.JpaWebServerControlPersistenceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -75,5 +79,15 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     public ApplicationPersistenceService getApplicationPersistenceService() {
         return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
+    }
+
+    @Bean
+    public WebServerControlPersistenceService getWebServerControlPersistenceService() {
+        return new JpaWebServerControlPersistenceServiceImpl(getWebServerControlCrudService());
+    }
+
+    @Bean
+    protected WebServerControlCrudService getWebServerControlCrudService() {
+        return new WebServerControlCrudServiceImpl();
     }
 }

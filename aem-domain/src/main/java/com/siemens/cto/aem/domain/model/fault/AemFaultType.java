@@ -57,7 +57,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     PERSISTENCE_ERROR("AEM26","PersistenceError"),
     /**/
-    INVALID_WEBSERVER_OPERATION("AEM27", "InvalidWebServerOperation")
+    INVALID_WEBSERVER_OPERATION("AEM27", "InvalidWebServerOperation"),
+    /**/
+    WEBSERVER_CONTROL_HISTORY_NOT_FOUND("AEM28", "WebServerControlHistoryNotFound"),
 	;
 
 	private final String faultCode;

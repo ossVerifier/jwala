@@ -62,7 +62,7 @@ public class AemServiceConfiguration {
 
     @Bean
     public WebServerControlService getWebServerControlService() {
-        return new WebServerControlServiceImpl(/* persistenceServiceConfiguration.getWebServerControlPersistenceService(), */  // TODO: Revisit once control history implementation has been decided
+        return new WebServerControlServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService(),
                                                getWebServerService(),
                                                aemCommandExecutorConfig.getWebServerCommandExecutor());
     }
