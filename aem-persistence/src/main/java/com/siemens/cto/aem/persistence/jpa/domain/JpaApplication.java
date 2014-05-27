@@ -70,7 +70,7 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
      */
     @ManyToOne(optional=true) public JpaGroup group;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     public String webAppContext;
 
     @Column(nullable = true, unique = false)

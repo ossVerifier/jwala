@@ -153,4 +153,26 @@ public class ApplicationCrudServiceImplTest {
         
     }
 
+    @Test
+    public void testDuplicateContextsOk() {
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
+
+        JpaApplication created2 = null;
+        JpaApplication created = applicationCrudService.createApplication(anAppToCreate, jpaGroup);  
+        
+        assertNotNull(created);
+
+        try {
+            CreateApplicationCommand cmd2 = new CreateApplicationCommand(expGroupId,  textName + "-another", textContext);
+            Event<CreateApplicationCommand> anAppToCreate2 = new Event<>(cmd2, AuditEvent.now(new User(aUser)));
+    
+            created2 = applicationCrudService.createApplication(anAppToCreate2, jpaGroup);  
+    
+            assertNotNull(created2);
+        } finally { 
+            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+            try { if(created2 != null) { applicationCrudService.removeApplication(created2.id()); } } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+        }
+    }
 }
