@@ -87,6 +87,7 @@ task h2Reset (type:JavaExec) {
     systemProperties = pm
     args = ["-action","buildSchema",
             "-schemaAction","deleteTableContents,drop,add",
+            "-ignoreErrors","true",
             "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
 }
 
