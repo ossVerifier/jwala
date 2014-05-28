@@ -71,10 +71,14 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @ManyToOne(optional=true) public JpaGroup group;
 
     @Column(nullable = false, unique = false)
-    public String webAppContext;
+    private String webAppContext;
 
     @Column(nullable = true, unique = false)
-    public String warPath;
+    private String warPath;
+    
+    @SuppressWarnings("Unused")
+    @Column(nullable = true)
+    private String documentRoot; // potential addition to track the static content files TODO - coverage, et al.
 
     public void setWarPath(String aWarPath) {
         warPath = aWarPath;
