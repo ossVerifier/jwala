@@ -88,7 +88,7 @@ task h2Reset (type:JavaExec) {
     args = ["-action","buildSchema",
             "-schemaAction","deleteTableContents,drop,add",
             "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
-`}
+}
 
 task mappingToolHelp (type:JavaExec) {
     main = 'org.apache.openjpa.jdbc.meta.MappingTool'
