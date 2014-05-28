@@ -164,7 +164,7 @@ public class ApplicationCrudServiceImplTest {
         assertNotNull(created);
 
         try {
-            CreateApplicationCommand cmd2 = new CreateApplicationCommand(expGroupId,  textName + "-another", textContext);
+            CreateApplicationCommand cmd2 = new CreateApplicationCommand(expGroupId,  textName + "-another", textContext + "-another");
             Event<CreateApplicationCommand> anAppToCreate2 = new Event<>(cmd2, AuditEvent.now(new User(aUser)));
     
             created2 = applicationCrudService.createApplication(anAppToCreate2, jpaGroup);  
