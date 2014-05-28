@@ -81,9 +81,19 @@ task dropDdl (type:JavaExec) {
             "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
 }
 
+task h2Reset (type:JavaExec) {
+    main = 'org.apache.openjpa.jdbc.meta.MappingTool'
+    classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
+    systemProperties = pm
+    args = ["-action","buildSchema",
+            "-schemaAction","deleteTableContents,drop,add",
+            "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
+`}
+
 task mappingToolHelp (type:JavaExec) {
     main = 'org.apache.openjpa.jdbc.meta.MappingTool'
     classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
     systemProperties = pm
     args = ["-help"]
 }
+
