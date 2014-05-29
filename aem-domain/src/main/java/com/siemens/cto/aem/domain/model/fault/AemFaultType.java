@@ -60,7 +60,11 @@ public enum AemFaultType implements MessageResponseStatus {
     INVALID_WEBSERVER_OPERATION("AEM27", "InvalidWebServerOperation"),
     /**/
     WEBSERVER_CONTROL_HISTORY_NOT_FOUND("AEM28", "WebServerControlHistoryNotFound"),
-	;
+    /**/
+    BAD_STREAM("AEM29", "UploadStreamNotReadable"), 
+    /**/
+    INVALID_WEB_ARCHIVE_NAME("AEM30", "InvalidWebArchiveName"),
+    ;
 
 	private final String faultCode;
 	private final String faultMessage;

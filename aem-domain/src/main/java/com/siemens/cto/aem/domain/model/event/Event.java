@@ -2,6 +2,7 @@ package com.siemens.cto.aem.domain.model.event;
 
 import java.io.Serializable;
 
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 
 public class Event<T> implements Serializable {
@@ -59,4 +60,8 @@ public class Event<T> implements Serializable {
 		return "Event{" + "command=" + command + ", auditEvent=" + auditEvent
 				+ '}';
 	}
+
+    public static <T> Event<T> create(T cmd, AuditEvent ae) {
+        return new Event<T>(cmd, ae);
+    }
 }

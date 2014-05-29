@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 
@@ -31,8 +31,8 @@ public class CreateJvmCommand implements Serializable, Command {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new MultipleRuleCommand(new JvmNameRule(jvmName),
-                                new JvmHostNameRule(hostName)).validateCommand();
+        new MultipleRules(new JvmNameRule(jvmName),
+                                new JvmHostNameRule(hostName)).validate();
     }
 
     @Override

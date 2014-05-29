@@ -11,6 +11,8 @@ dependencies {
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
 
+    compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"
+
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.springframework', name: 'spring-context', version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-core', version: "$project.versions.spring"

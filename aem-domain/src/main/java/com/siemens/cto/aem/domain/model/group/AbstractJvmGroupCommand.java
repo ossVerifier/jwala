@@ -2,9 +2,9 @@ package com.siemens.cto.aem.domain.model.group;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
 
@@ -29,7 +29,7 @@ public abstract class AbstractJvmGroupCommand implements Command {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new MultipleRuleCommand(new GroupIdRule(groupId),
-                                new JvmIdRule(jvmId)).validateCommand();
+        new MultipleRules(new GroupIdRule(groupId),
+                                new JvmIdRule(jvmId)).validate();
     }
 }

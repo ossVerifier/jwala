@@ -7,10 +7,10 @@ import java.util.HashSet;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
@@ -59,12 +59,12 @@ public class UpdateWebServerCommand implements Serializable, Command {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        final MultipleRuleCommand mrc =
-                new MultipleRuleCommand(new WebServerNameRule(newName), new WebServerHostNameRule(newHost),
+        final MultipleRules mr =
+                new MultipleRules(new WebServerNameRule(newName), new WebServerHostNameRule(newHost),
                         new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT), new WebServerIdRule(id),
                         new GroupIdsRule(newGroupIds));
 
-        mrc.validateCommand();
+        mr.validate();
     }
 
     @Override

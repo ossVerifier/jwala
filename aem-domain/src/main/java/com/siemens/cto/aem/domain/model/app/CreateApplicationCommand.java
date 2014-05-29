@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.app.ApplicationContextRule;
 import com.siemens.cto.aem.domain.model.rule.app.ApplicationNameRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
@@ -38,8 +38,8 @@ public class CreateApplicationCommand implements Serializable, Command {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new MultipleRuleCommand(new GroupIdRule(groupId),
+        new MultipleRules(new GroupIdRule(groupId),
                                 new ApplicationNameRule(name),
-                                new ApplicationContextRule(webAppContext)).validateCommand();
+                                new ApplicationContextRule(webAppContext)).validate();
     }
 }

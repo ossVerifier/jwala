@@ -1,14 +1,10 @@
-ext {
-    localVersions = [csa : "2.3"]
-}
-
 dependencies {
 
     compile project(":aem-common")
     compile project(":aem-domain")
     compile project(":aem-command-processor")
 
-    compile group: "com.siemens.cac", name: "csa", version: "$localVersions.csa"
+    compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"
 
     testCompile project(path: ":aem-common", configuration: "commonTest")
     testCompile project(path: ":aem-command-processor", configuration: "commonTestSshConfig")

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.configuration.application;
 
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -15,6 +16,7 @@ import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfi
          AemDaoConfiguration.class,
          AemTransactionConfiguration.class,
          AemControlConfigReference.class})
+@ComponentScan("com.siemens.cto.toc.files.configuration")
 public class AemServiceAppConfigReference {
 
 }

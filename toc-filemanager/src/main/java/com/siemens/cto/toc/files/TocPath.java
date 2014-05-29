@@ -1,0 +1,22 @@
+package com.siemens.cto.toc.files;
+
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+
+public enum TocPath {
+
+    WEB_ARCHIVE("paths.web-archive", "D:/apache/tomcat/webapps")
+    ;
+    
+    
+    final String property;
+    final Path defaultPath;
+    TocPath(final String property, final String defaultPath) {
+        this.property = property;
+        this.defaultPath = FileSystems.getDefault().getPath(defaultPath).toAbsolutePath();
+    }
+    
+    public String getProperty() { return property; }
+    public Path getDefaultPath() { return defaultPath; } 
+    
+}

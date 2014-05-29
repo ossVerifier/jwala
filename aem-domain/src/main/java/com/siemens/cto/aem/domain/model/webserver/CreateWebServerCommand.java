@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
@@ -48,8 +48,8 @@ public class CreateWebServerCommand implements Serializable, Command {
 
     @Override
     public void validateCommand() {
-        new MultipleRuleCommand(new WebServerNameRule(name), new WebServerHostNameRule(host), new PortNumberRule(port,
-                AemFaultType.INVALID_WEBSERVER_PORT), new GroupIdsRule(groupIds)).validateCommand();
+        new MultipleRules(new WebServerNameRule(name), new WebServerHostNameRule(host), new PortNumberRule(port,
+                AemFaultType.INVALID_WEBSERVER_PORT), new GroupIdsRule(groupIds)).validate();
     }
 
     @Override

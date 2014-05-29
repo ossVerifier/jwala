@@ -7,11 +7,11 @@ import java.util.Set;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
@@ -55,10 +55,10 @@ public class UpdateJvmCommand implements Serializable, Command {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new MultipleRuleCommand(new JvmNameRule(newJvmName),
+        new MultipleRules(new JvmNameRule(newJvmName),
                                 new JvmHostNameRule(newHostName),
                                 new JvmIdRule(id),
-                                new GroupIdsRule(groupIds)).validateCommand();
+                                new GroupIdsRule(groupIds)).validate();
     }
 
     @Override
