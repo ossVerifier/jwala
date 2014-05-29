@@ -5,8 +5,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,21 +20,14 @@ import com.siemens.med.hs.soarian.config.PropertiesStore;
 
 @Configuration
 public class TocFileManagerConfiguration {
-    
-    private final static Logger LOGGER = LoggerFactory.getLogger(TocFileManagerConfiguration.class); 
 
     private static final String TOC_FILEMANAGER_PROPERTY_SET = "TocFiles";
 
     @Bean
     public FilesConfiguration getFilesConfiguration() {
-        Properties fmProperties;
-        
-        try {
-            fmProperties = PropertiesStore.getProperties(TOC_FILEMANAGER_PROPERTY_SET);
-        } catch(Exception e) {
-            LOGGER.trace(TOC_FILEMANAGER_PROPERTY_SET.toString()+".properties is missing: ", e);
-            fmProperties = new Properties();
-        }
+
+        final Properties fmProperties = PropertiesStore.getProperties(TOC_FILEMANAGER_PROPERTY_SET);
+
         return new PropertyFilesConfigurationImpl(fmProperties);
     }
     
