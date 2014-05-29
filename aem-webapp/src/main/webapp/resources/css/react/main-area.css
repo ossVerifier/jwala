@@ -4,3 +4,10 @@ div.main-area {
     text-align: left;
     margin: 0 auto;
 }
+
+div.logout {
+    margin-top: 5px;
+    width: 960px;
+    text-align: right;
+    position: absolute
+}

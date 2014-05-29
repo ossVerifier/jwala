@@ -22,7 +22,15 @@ var MainArea = React.createClass({
 
 var Banner = React.createClass({
     render: function() {
-        return <img src="public-resources/img/toc-banner-960px.jpg"/>
+        return <div>
+                    <div className="logout">
+                        <a href="#" onClick={this.handleLogoutClick}>Logout</a>
+                    </div>
+                    <img src="public-resources/img/toc-banner-960px.jpg"/>
+               </div>
+    },
+    handleLogoutClick: function() {
+        alert("Logout!");
     }
 });
 
