@@ -45,13 +45,20 @@ var decorateTableAsDataTable = function(tableId,
             }
 
             if(item.tocType === "link") {
+
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
-                    return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
-                                                                                                     "link",
-                                                                                                     full.id.id]),
-                                                                   valueId:full.id.id,
-                                                                   value:data,
-                                                                   callback:editCallback}));
+
+                    if (item.hRefCallback === undefined) {
+                        return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
+                                                                                "link",
+                                                                                full.id.id]),
+                                                                                valueId:full.id.id,
+                                                                                value:data,
+                                                                                callback:editCallback}));
+                    } else {
+                        return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
+                    }
+
                 };
 
             } else if (item.tocType === "control") {

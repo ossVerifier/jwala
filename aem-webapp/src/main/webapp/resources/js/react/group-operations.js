@@ -102,9 +102,9 @@ var GroupOperationsDataTable = React.createClass({
                                 {sTitle:"Host", mData:"hostName"},
                                 {sTitle:"",
                                  mData:null,
-                                 tocType:"button",
-                                 btnLabel:"Manager",
-                                 btnCallback:this.jvmManager},
+                                 tocType:"link",
+                                 linkLabel:"Manager",
+                                 hRefCallback:this.buildHRef},
                                 {sTitle:"",
                                  mData:null,
                                  tocType:"button",
@@ -196,6 +196,8 @@ var GroupOperationsDataTable = React.createClass({
    jvmStop: function(id) {
         jvmControlService.stopJvm(id);
         return true; // TODO Once status can be retrieved, return true if JVM was successfully stopped
+   },
+   buildHRef: function(data) {
+        return "http://" + data.hostName + ":8080/manager";
    }
-
 });
