@@ -2,15 +2,16 @@ package com.siemens.cto.toc.files.impl;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.toc.files.NameSynthesizer;
 import com.siemens.cto.toc.files.Repository;
+import com.siemens.cto.toc.files.RepositoryAction;
 import com.siemens.cto.toc.files.TocPath;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
@@ -26,16 +27,20 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     private Repository fileSystemStorage;
     
     @Override
-    public int store(Event<UploadWebArchiveCommand> event) throws IOException {
+    public RepositoryAction store(Event<UploadWebArchiveCommand> event) throws IOException {
  
-        UploadWebArchiveCommand cmd = event.getCommand();
-        Path place = synth.unique(FileSystems.getDefault().getPath(cmd.getFilename()));
-        int bytesWritten = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData());
-
-        // TODO return object with size and location
+        RepositoryAction action = null;
         
-        return bytesWritten;
+        UploadWebArchiveCommand cmd = event.getCommand();       
+        Application app = event.getCommand().getApplication();
+        String existing = app.getWarPath();
         
+        if(existing != null && existing.trim().length() > 0) {
+            action = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing));
+        }
+        Path place = synth.unique(platformFileSystem.getPath(cmd.getFilename()));
+        
+        return fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData(), action);
     }
 
 }

@@ -17,7 +17,7 @@ public class DefaultNameSynthesizer implements NameSynthesizer {
             suffix = "";
         } else {
             prefix = fn.substring(0, idx);
-            suffix = fn.substring(idx+1);
+            suffix = fn.substring(idx);
         }
         return path.getFileSystem().getPath(prefix + "-" + UUID.randomUUID().toString() + suffix);
     }

@@ -113,8 +113,8 @@ public class WebArchiveManagerTest {
         
     }
     
-    private void testResults(int expectedSize, int actualSize) throws IOException {
-        assertEquals("Size mismatch after store of file.", expectedSize, actualSize);
+    private void testResults(long expectedSize, RepositoryAction result) throws IOException {
+        assertEquals("Size mismatch after store of file.", expectedSize, (long)result.getLength());
         
         Path storedPath = ((MemoryNameSynthesizer)nameSynthesizer).pop();
         
@@ -135,12 +135,12 @@ public class WebArchiveManagerTest {
     @Test
     public void testWriteArchive() throws IOException { 
                 
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024, uploadedFile);
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
         cmd.validateCommand(); // may trigger BadRequestException
         
         
         testResults(
-                1*1024*1024,
+                1*1024*1024L,
                 webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(new User("test-user")))));  
     }
 

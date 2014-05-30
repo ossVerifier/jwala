@@ -19,10 +19,10 @@ public class UploadWebArchiveCommand implements Serializable, Command {
     transient private InputStream data;   
     private Application application;
     private String filename;
-    private Integer length;
+    private Long length;
     
     
-    public UploadWebArchiveCommand(Application application, String filename, Integer length, InputStream data) {
+    public UploadWebArchiveCommand(Application application, String filename, Long length, InputStream data) {
         this.application = application;
         this.filename = filename;
         this.length = length;
@@ -44,7 +44,7 @@ public class UploadWebArchiveCommand implements Serializable, Command {
         return filename; 
     }
     
-    public Integer getLength() { 
+    public Long getLength() { 
         return length;
     }
     

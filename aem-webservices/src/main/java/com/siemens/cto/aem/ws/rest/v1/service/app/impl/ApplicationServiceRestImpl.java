@@ -1,22 +1,21 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.FileItem;
-
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpRequest;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -103,32 +102,35 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(Identifier<Application> anAppToGet, List<Attachment> attachments) {
-        LOGGER.debug("Upload Archive requested: {} attachmentCount {}", anAppToGet, attachments.size());
-        
-        if(attachments.size() != 1) { 
-            return ResponseBuilder.notOk(Status.BAD_REQUEST, new FaultCodeException(AemFaultType.BAD_STREAM, "Just one attachment please."));
-        }
+    public Response uploadWebArchive(Identifier<Application> anAppToGet) {
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
         
         Application app = service.getApplication(anAppToGet);
         
-        Attachment archive = attachments.get(0);
-        
         ServletFileUpload sfu = new ServletFileUpload();
-        List<FileItem> fileItems = sfu.parseRequest( context.getHttpServletRequest() );
-        FileItem file1 = fileItems.get(0);
+        InputStream data = null;
         try {
-            new UploadWebArchiveCommand(app,
-                archive.getContentDisposition().getParameter("filename"),
-                (int) file1.getSize(),
-                archive.getDataHandler().getInputStream());
-        } /* catch (NumberFormatException e) {
-            throw new BadRequestException(AemFaultType.BAD_STREAM, "Invalid or no length specified", e);
-            // TODO return ResponseBuilder.notOk(Status.LENGTH_REQUIRED);
-        } */ catch (IOException e) {
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Erorr receiving data", e);
+            FileItemIterator iter = sfu.getItemIterator( context.getHttpServletRequest() );
+            FileItemStream file1;
+            
+            while(iter.hasNext()) {
+                file1 =  iter.next();
+                try { 
+                    data = file1.openStream();
+                    
+                    UploadWebArchiveCommand command = new UploadWebArchiveCommand(app,
+                        file1.getName(),
+                        -1L,
+                        data);
+                    
+                    return ResponseBuilder.created(service.uploadWebArchive(command,User.getHardCodedUser())); // early out on first attachment
+                } finally {
+                    data.close();
+                }
+            }
+            return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_APPLICATION_WAR, "No data"));
+        } catch (IOException | FileUploadException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
-        
-        return ResponseBuilder.created(app);
     }
 }

@@ -33,6 +33,7 @@ public class TocFileManagerConfiguration {
         
         try {
             fmProperties = PropertiesStore.getProperties(TOC_FILEMANAGER_PROPERTY_SET);
+            PropertiesStore.stopPropertiesMonitor();            // BETTER APPROACH?
         } catch(Exception e) {
             LOGGER.trace(TOC_FILEMANAGER_PROPERTY_SET.toString()+".properties is missing: ", e);
             fmProperties = new Properties();
