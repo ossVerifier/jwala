@@ -9,5 +9,6 @@
 <script src="public-resources/ext/js/jquery/jquery.validate.js"></script>
 
 <!-- React UI -->
+<script type="text/jsx" src="public-resources/js/react/generic-components/message-label.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/textbox.js"></script>
 <script type="text/jsx" src="public-resources/js/react/login-area.js"></script>

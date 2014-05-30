@@ -11,7 +11,7 @@ div.login-area {
     -moz-border-radius: 5px;
     border-radius: 5px;
     width: 300px;
-    height: 300px;
+    height: auto;
     text-align: center;
     -moz-box-shadow: 0px 0px 20px 1px #e6e6e6;
     -webkit-box-shadow: 0px 0px 20px 1px #e6e6e6;
@@ -29,4 +29,9 @@ span.title-2 {
 
 span.remember {
     font-size: 13px;
+}
+
+.login-error-msg > span {
+    color: red;
+    font-style: italic
 }
