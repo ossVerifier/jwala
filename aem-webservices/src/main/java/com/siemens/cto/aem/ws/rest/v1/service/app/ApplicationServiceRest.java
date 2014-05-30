@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app;
 
+import java.util.List;
+
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -12,6 +14,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -34,7 +38,6 @@ public interface ApplicationServiceRest {
     @Path("/{applicationId}")
     Response getApplication(@PathParam("applicationId") final Identifier<Application> anAppId);
 
-
     @GET
     @Path("/jvm/{jvmId}")
     Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
@@ -49,6 +52,11 @@ public interface ApplicationServiceRest {
     Response updateApplication(final JsonUpdateApplication appsToUpdate);
     
     @DELETE
-    @Path("/{appId}")
-    Response removeApplication(@PathParam("appId") Identifier<Application> anAppToRemove);
+    @Path("/{applicationId}")
+    Response removeApplication(@PathParam("applicationId") Identifier<Application> anAppToRemove);
+
+    @POST
+    @Path("/{applicationId}/war")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet, List<Attachment> attachments);
 }
