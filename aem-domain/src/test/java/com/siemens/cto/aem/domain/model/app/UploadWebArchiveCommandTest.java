@@ -25,9 +25,9 @@ public class UploadWebArchiveCommandTest {
     }
     
     private UploadWebArchiveCommand initUploadCommand(Application app, String filename, byte[] data) {
-        return initUploadCommand(app, filename, data == null ? 0 : data.length, new ByteArrayInputStream(data));
+        return initUploadCommand(app, filename, data == null ? 0L : (long)data.length, new ByteArrayInputStream(data));
     }
-    private UploadWebArchiveCommand initUploadCommand(Application app, String filename, Integer size, InputStream data) {
+    private UploadWebArchiveCommand initUploadCommand(Application app, String filename, Long size, InputStream data) {
         UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(
                 app,
                 filename, 
@@ -71,7 +71,7 @@ public class UploadWebArchiveCommandTest {
         
         Application app = new Application(null, null, null, null, null);
         
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2, badInputStream);
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2L, badInputStream);
         cmd.validateCommand(); // should trigger BadRequestException
     }
     
@@ -84,7 +84,7 @@ public class UploadWebArchiveCommandTest {
         
         Application app = new Application(null, null, null, null, null);
         
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2, badInputStream);
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2L, badInputStream);
         cmd.validateCommand(); // should trigger BadRequestException
     }
 }

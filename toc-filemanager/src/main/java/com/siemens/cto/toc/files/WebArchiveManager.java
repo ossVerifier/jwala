@@ -7,6 +7,6 @@ import com.siemens.cto.aem.domain.model.event.Event;
 
 public interface WebArchiveManager {
 
-    int store(Event<UploadWebArchiveCommand> event) throws IOException;
+    RepositoryAction store(Event<UploadWebArchiveCommand> event) throws IOException;
 
 }

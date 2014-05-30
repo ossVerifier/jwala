@@ -10,5 +10,5 @@ popd
 goto :eof
 :fail
 echo BUILD FAILURE - NO UPDATE
-goto :eof
 popd
+goto :eof

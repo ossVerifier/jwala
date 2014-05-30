@@ -58,5 +58,5 @@ public interface ApplicationServiceRest {
     @POST
     @Path("/{applicationId}/war")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet, List<Attachment> attachments);
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet);
 }
