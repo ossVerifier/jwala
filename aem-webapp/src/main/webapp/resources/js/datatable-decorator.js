@@ -61,6 +61,13 @@ var decorateTableAsDataTable = function(tableId,
 
                 };
 
+            } else if (item.tocType === "custom") {
+              if(item.tocRenderer == 'undefined') {
+                 alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
+              }
+              
+              item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
+              
             } else if (item.tocType === "control") {
 
                 self.expandCollapseEnabled = true;

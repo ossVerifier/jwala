@@ -27,6 +27,7 @@ var WebAppConfig = React.createClass({
                             <td>
                                 <div>
                                     <WebAppDataTable data={this.state.WebAppTableData}
+                                                    service={this.props.service}
                                                     selectItemCallback={this.selectItemCallback}
                                                     editCallback={this.editCallback}
                                                     noUpdateWhen={
@@ -64,6 +65,7 @@ var WebAppConfig = React.createClass({
 
                    <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                              btnClickedCallback={this.confirmDeleteCallback} />
+
                </div>
     },
     confirmDeleteCallback: function(ans) {
@@ -313,7 +315,7 @@ var WebAppDataTable = React.createClass({
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
                          {sTitle:"WebApp Name", mData:"name", tocType:"link"},
                          {sTitle:"Context", mData:"webAppContext"},
-                         {sTitle:"Web Archive", mData:"warPath"},
+                         {sTitle:"Web Archive", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderRowData },
                          {sTitle:"Group ID", mData:"group.id.id", bVisible:false},
                          {sTitle:"Group", mData:"group.name"}
                         ];
@@ -326,5 +328,231 @@ var WebAppDataTable = React.createClass({
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"/>
+    },
+    renderRowData:function(dataTable, data, aoColumnDefs, itemIndex) {
+
+          dataTable.expandCollapseEnabled = true;
+          aoColumnDefs[itemIndex].mDataProp = null;
+          aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
+          aoColumnDefs[itemIndex].bSortable = false;
+          aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+                  var data = sData;
+                  var full = oData;
+                  var parentItemId = (dataTable.parentItemId === undefined ? full.id.id : dataTable.parentItemId);
+                  var theRootId = (dataTable.rootId === undefined ? full.id.id : dataTable.rootId);
+                  
+                  if(data != null && full != null) { 
+                    return React.renderComponent(
+                      <WARUpload service={this.props.service} war={sData} full={oData} row={iRow} />
+                      ,nTd
+                    );
+                  } else { 
+                    return ;
+                  }            
+          }.bind(this);
+
+          aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+
+                  return "<div />";
+                }.bind(this);
     }
+});
+
+var WARUpload = React.createClass({ 
+    getInitialState: function() {
+        return {
+          editable : false,
+          uploadData: null,
+          showDeleteConfirmDialog: false,
+          warPath: (this.props.full.warPath !== undefined && this.props.full.warPath != "" )? this.props.full.warPath : "No Web Archive",
+        }
+    },    
+    componentDidMount: function() {
+      if(this.state.editable) {
+        this.initFileUpload();
+      } 
+      //$('span.btnAppsCfgClose', this.getDOMNode()).on('click', this.editRequest);
+    },
+    componentDidUpdate: function() {
+      //$('span.btnAppsCfgClose', this.getDOMNode()).on('click', this.editRequest);
+  
+      if(this.state.editable) {        
+        this.initFileUpload();
+      } 
+
+    },
+    componentWillUnmount: function() {
+      //$('span.btnAppsCfgClose', this.getDOMNode()).off('click', this.editRequest);
+    },
+    shouldComponentUpdate: function(nextProps, nextState) {
+      if( nextState.showDeleteConfirmDialog === true ) { 
+        return true;
+      }
+      if( nextState.uploadData !== undefined &&
+          nextState.uploadData != null) {
+            return false;
+      } else { 
+        return true;
+      }
+    },
+    render: function() { 
+      
+      if(!this.state.editable) { 
+        return <div className="tocTable"> 
+                <div className="tocRowContent">
+                  <span>{this.state.warPath}</span> 
+                </div>
+                <div className="tocRowIcons">
+                  <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
+                  {this.props.full.warPath !== undefined && this.props.full.warPath !== ""?
+                    <img onClick={this.delBtnCallback} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
+                    :""}               
+                </div>
+               <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
+                                         btnClickedCallback={this.confirmDeleteCallback} />
+              </div>
+       
+        ;
+      } else { 
+  
+        var progressStyle = {
+           clear: 'left',
+           height: '10px',
+           width: '100%',
+           paddingTop: '0.5em'
+        };
+        var progressStyleInner = {
+           clear: 'left',
+           height: '10px',
+           width: '0%',
+           backgroundColor: 'green'
+        };
+        
+        return <div className="tocTable"> 
+                <div className="tocRowContents">
+                  <form encType='multipart/form-data' method="POST" action={'v1.0/applications/"'+this.props.full.id.id+'/war"'} >
+                    <span dangerouslySetInnerHTML={{__html: '<input type="file" style="display:none" name="file"></input>'}} />
+                    <span className="textFileChosen">No file chosen...</span>
+                    <input className="btnChooseFile" onClick={this.handleChooseClicked2} type="button" value="Choose WAR"></input>
+                    <input type="button" value="Upload" onClick={this.performUpload}></input> 
+                    <div style={progressStyle}>
+                      <div style={progressStyleInner} className="progress" />
+                    </div>
+                  </form>
+                </div>
+                 <div className="tocRowIcons">
+                  <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
+                </div>
+              </div>
+              ;
+      }
+    },
+    initFileUpload :function() {
+      var self = this;
+      var thisForm = $('form', this.getDOMNode());
+      var fileInput = $('input[type="file"]', thisForm);
+
+      var thisProgress = $('div.progress', thisForm);
+      thisProgress.css({
+          'width' : '0%',
+          'background-color' : 'green'
+      });
+      
+      var d = new Date();
+
+      thisForm.fileupload({
+        dataType: 'json',  
+        url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+d.getTime(),
+        add: function(event, data) {
+          self.setState({ 
+              uploadData: data
+             });
+          self.handleFileInputChanged(event, data);
+          // no submit
+        },
+        progressall: function(event,data) {
+          var progress = parseInt(data.loaded / data.total * 100, 10);
+          thisProgress.css({
+              'width' : progress + '%',
+              'background-color' : 'green'
+          });
+        }
+      });
+    },
+    performUpload: function(event) {
+        var thisForm = $('form', this.getDOMNode());
+        var self = this;
+        if(this.state.uploadData) {
+          this.props.service.prepareUploadForm(this.props.full.id.id, thisForm);
+          this.state.uploadData.submit().success(function(result, textStatus, jqXHR) { 
+            self.setState({
+              uploadData: undefined, 
+              editable: false,
+              warPath: result.applicationResponseContent.warPath
+            });       
+          }).error(function(result, textStatus, jqXHR) {
+            var thisProgress = $('div.progress', thisForm);
+            thisProgress.css(
+                'background-color',
+                'red'
+            );
+                        
+          });
+        } else { 
+          alert('Choose a file first.');
+        }
+        
+        event.preventDefault();
+        return false;
+    },
+    handleFileInputChanged: function(event, data) {
+        var thisForm = $('form', this.getDOMNode());
+        var fileInput = $('input[type="file"]', thisForm);
+        $('span.textFileChosen', thisForm).text(data.files[0].name.replace(/C:\\fakepath\\/i, ''));
+        //$('span.textFileChosen', thisForm).text(fileInput.val().replace(/C:\\fakepath\\/i, ''));
+        //thisForm.fileupload('add', {
+        //       fileInput: data.fileInput
+        //});
+    },
+    handleChooseClicked : function(event) {
+      var thisForm = $('form', this.getDOMNode());
+      var fileInput = $('input[type="file"]', this.getDOMNode());
+      fileInput.replaceWith( fileInput = fileInput.clone( true ) );
+      fileInput.trigger('click');
+      event.preventDefault();
+      return false;
+    },
+    handleChooseClicked2 : function(event) {
+      var thisForm = $('form', this.getDOMNode());
+      var fileInput = $('input[type="file"]', this.getDOMNode());
+      fileInput.click();
+      event.preventDefault();
+      return false;
+    },
+    editRequest : function(event) {
+      
+      this.setState({ editable: !this.state.editable });
+
+      event.preventDefault();
+      return false;
+    },
+    postUploadWarForm : function(event, data) { 
+      var thisForm = $('form', this.getDOMNode());
+      this.props.service.postUploadWarForm(this.props.full.id.id, thisForm);
+      event.preventDefault();
+      return false;
+    },
+    delBtnCallback: function() {
+        this.setState({showDeleteConfirmDialog: true});
+    },
+    confirmDeleteCallback: function(ans) {
+        var self = this;
+        try {
+          this.setState({showDeleteConfirmDialog: false});
+          if (ans === "yes") {
+              this.props.service.deleteWar(this.props.full.id.id, null);
+          }
+        } finally { 
+        }
+    }    
 });

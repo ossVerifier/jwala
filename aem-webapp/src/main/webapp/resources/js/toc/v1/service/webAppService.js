@@ -1,4 +1,22 @@
+/*
+Application:
+  .group {.id, .name, .jvms }
+  .id {.id}
+  .name
+  .warPath
+  .webAppContext
+*/
 var webAppService = {
+    baseUrl: "v1.0/applications",
+    postUploadWarForm: function(id, uploadForm) { 
+      uploadForm.action=this.baseUrl + "/" + id + "/war";
+      uploadForm.method="POST";
+      return uploadForm.submit();
+    },
+    prepareUploadForm: function(id, uploadForm) {
+      uploadForm.action=this.baseUrl + "/" + id + "/war";
+      uploadForm.method="POST";
+    },
     serializedWebAppFormToJson: function(serializedArray, forUpdate) {
         var json = {};
         $.each(serializedArray, function() {
@@ -14,6 +32,9 @@ var webAppService = {
 
         });
         return JSON.stringify(json);
+    },
+	  deleteWar : function(id, caughtCallback) {
+        return serviceFoundation.del("v1.0/applications/" + id + "/war", "json", caughtCallback);
     },
 	 insertNewWebApp : function(webserverFormArray, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/applications",

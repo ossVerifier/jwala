@@ -15,3 +15,83 @@ body {
 .textAlignLeft {
     text-align: left;
 }
+
+td.toc-icon-right {
+  width:16px;
+  text-align: right;
+}
+table.toc-col-full-width {
+  width: 100%;
+}
+span.toc-icon-right {
+  display:inline;
+}
+.tocNinetyPcInline {
+  display:inline;
+  width:90%;
+}  
+.tocFloatRight {
+  float:right;
+  width:32px;
+}
+.tocTable {
+  display:table;
+  width:100%;
+}
+.tocRow {
+  width:100%;
+  display:table-row;
+}
+.tocRowContents { 
+  width:90%;
+  display:table-cell;
+}
+.tocRowIcons {
+  width:10%;
+  display:table-cell;
+}
+
+.roomForIcon { 
+  overflow:hidden;
+  width: 250px;
+}
+
+span.btnAppsCfgClose { display:inline !important; }
+
+span.toc-icon-right:hover { 
+  -moz-box-shadow: 0 0 10px #ccc; 
+  -webkit-box-shadow: 0 0 10px #ccc;
+   box-shadow: 0 0 10px #ccc;    
+}
+
+.fileupload.row_selected {
+    transition: all 0.2s ease;
+    -webkit-animation: down-bump 0.4s ease;
+    animation: down-bump 0.4s ease;
+}
+
+.fileupload:hover  {
+   -webkit-animation: up-bump 0.4s ease;
+   animation: up-bump 0.4s ease;
+}
+
+@-webkit-keyframes up-bump {
+  0% { padding-top: 2em; }
+  50% { padding-top: 1.5em; }
+  100% { padding-top: 2em; }
+}
+@-webkit-keyframes down-bump {
+  0% { padding-top: 2em; }
+  50% { padding-top: 2.5em; }
+  100% { padding-top: 2em; }
+}
+@keyframes up-bump {
+  0% { padding-top: 2em; }
+  50% { padding-top: 1.5em; }
+  100% { padding-top: 2em; }
+}
+@keyframes down-bump {
+  0% { padding-top: 2em; }
+  50% { padding-top: 2.5em; }
+  100% { padding-top: 2em; }
+}

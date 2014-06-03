@@ -121,8 +121,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new BadRequestException(AemFaultType.BAD_STREAM, "Post-condition file length check failed");
         }
         
-        applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
+        Application updated = applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
         
-        return command.getApplication();
+        return updated;
     }
 }

@@ -65,8 +65,10 @@ public class RepositoryAction {
         
         if(inResponseTo != null) { 
             for(RepositoryAction action : inResponseTo) {
-                msg = msg + csep + action.toString();
-                csep = ", ";
+                if(action != null) {
+                    msg = msg + csep + action.toString();
+                    csep = ", ";
+                }
             }
         }
         
