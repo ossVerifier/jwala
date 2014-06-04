@@ -198,6 +198,6 @@ var GroupOperationsDataTable = React.createClass({
         return true; // TODO Once status can be retrieved, return true if JVM was successfully stopped
    },
    buildHRef: function(data) {
-        return "http://" + data.hostName + ":8080/manager";
+        return "http://" + data.hostName + ":" + data.httpPort + "/manager";
    }
 });
