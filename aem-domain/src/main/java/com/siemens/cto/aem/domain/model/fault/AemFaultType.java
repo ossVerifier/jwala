@@ -64,6 +64,16 @@ public enum AemFaultType implements MessageResponseStatus {
     BAD_STREAM("AEM29", "UploadStreamNotReadable"), 
     /**/
     INVALID_WEB_ARCHIVE_NAME("AEM30", "InvalidWebArchiveName"),
+    /**/
+    INVALID_JVM_HTTP_PORT("AEM31", "InvalidJvmHttpPortNumber"),
+    /**/
+    INVALID_JVM_HTTPS_PORT("AEM32", "InvalidJvmHttpsPortNumber"),
+    /**/
+    INVALID_JVM_REDIRECT_PORT("AEM33", "InvalidJvmRedirectPortNumber"),
+    /**/
+    INVALID_JVM_SHUTDOWN_PORT("AEM34", "InvalidJvmShutdownPortNumber"),
+    /**/
+    INVALID_JVM_AJP_PORT("AEM35", "InvalidJvmAjpPortNumber")
     ;
 
 	private final String faultCode;

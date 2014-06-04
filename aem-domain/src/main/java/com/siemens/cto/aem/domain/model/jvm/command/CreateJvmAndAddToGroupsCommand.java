@@ -20,10 +20,20 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
 
     public CreateJvmAndAddToGroupsCommand(final String theName,
                                           final String theHostName,
-                                          final Set<Identifier<Group>> theGroups) {
+                                          final Set<Identifier<Group>> theGroups,
+                                          final Integer theHttpPort,
+                                          final Integer theHttpsPort,
+                                          final Integer theRedirectPort,
+                                          final Integer theShutdownPort,
+                                          final Integer theAjpPort) {
 
         createCommand = new CreateJvmCommand(theName,
-                                             theHostName);
+                                             theHostName,
+                                             theHttpPort,
+                                             theHttpsPort,
+                                             theRedirectPort,
+                                             theShutdownPort,
+                                             theAjpPort);
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 

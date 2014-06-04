@@ -136,7 +136,12 @@ var JvmConfigForm = React.createClass({
             id: "",
             name: "",
             host: "",
-            groupIds: undefined
+            groupIds: undefined,
+            httpPort: "",
+            httpsPort: "",
+            redirectPort: "",
+            shutdownPort: "",
+            ajpPort: ""
         }
     },
     getPropVal: function(props, name) {
@@ -169,7 +174,12 @@ var JvmConfigForm = React.createClass({
         this.setState({id:this.getPropVal(nextProps, "id"),
                        name:this.getPropVal(nextProps, "jvmName"),
                        host:this.getPropVal(nextProps, "hostName"),
-                       groupIds:this.getPropVal(nextProps, "groups")});
+                       groupIds:this.getPropVal(nextProps, "groups"),
+                       httpPort:this.getPropVal(nextProps, "httpPort"),
+                       httpsPort:this.getPropVal(nextProps, "httpsPort"),
+                       redirectPort:this.getPropVal(nextProps, "redirectPort"),
+                       shutdownPort:this.getPropVal(nextProps, "shutdownPort"),
+                       ajpPort:this.getPropVal(nextProps, "ajpPort")});
     },
     mixins: [React.addons.LinkedStateMixin],
     render: function() {
@@ -200,6 +210,67 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="35"/></td>
                             </tr>
+
+                            <tr>
+                                <td>*HTTP Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="httpPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="httpPort" type="text" valueLink={this.linkState("httpPort")} required maxLength="5"/></td>
+                            </tr>
+
+                            <tr>
+                                <td>HTTPS Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="httpsPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="httpsPort" type="text" valueLink={this.linkState("httpsPort")} maxLength="5"/></td>
+                            </tr>
+
+                            <tr>
+                                <td>Redirect Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="redirectPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="redirectPort" type="text" valueLink={this.linkState("redirectPort")} maxLength="5"/></td>
+                            </tr>
+
+                            <tr>
+                                <td>Shutdown Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="shutdownPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="shutdownPort" type="text" valueLink={this.linkState("shutdownPort")} maxLength="5"/></td>
+                            </tr>
+
+                            <tr>
+                                <td>AJP Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="ajpPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="ajpPort" type="text" valueLink={this.linkState("ajpPort")} maxLength="5"/></td>
+                            </tr>
+
                             <tr>
                                 <td>
                                     *Group
@@ -254,7 +325,22 @@ var JvmConfigForm = React.createClass({
                 },
                 "hostName": {
                     regex: true
-                }
+                },
+                "httpPort": {
+                    range: [1, 65535]
+                },
+                "httpsPort": {
+                    range: [1, 65535]
+                },
+                "redirectPort": {
+                    range: [1, 65535]
+                },
+                "shutdownPort": {
+                    range: [1, 65535]
+                },
+                "ajpPort": {
+                    range: [1, 65535]
+                },
             },
             messages: {
                 "groupSelector[]": {
@@ -280,6 +366,11 @@ var JvmConfigForm = React.createClass({
             this.props.service.insertNewJvm(this.state.name,
                                                   this.state.groupIds,
                                                   this.state.host,
+                                                  this.state.httpPort,
+                                                  this.state.httpsPort,
+                                                  this.state.redirectPort,
+                                                  this.state.shutdownPort,
+                                                  this.state.ajpPort,
                                                   this.success,
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
@@ -322,7 +413,12 @@ var JvmDataTable = React.createClass({
                         {sTitle:"Group Assignment",
                          mData:"groups",
                          tocType:"array",
-                         displayProperty:"name"}];
+                         displayProperty:"name"},
+                        {sTitle:"Http", mData:"httpPort"},
+                        {sTitle:"Https", mData:"httpsPort"},
+                        {sTitle:"Redirect", mData:"redirectPort"},
+                        {sTitle:"Shutdown", mData:"shutdownPort"},
+                        {sTitle:"AJP", mData:"ajpPort"}];
         return <TocDataTable tableId="jvm-config-datatable"
                              tableDef={tableDef}
                              data={this.props.data}

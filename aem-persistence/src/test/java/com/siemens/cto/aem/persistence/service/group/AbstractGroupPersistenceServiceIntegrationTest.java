@@ -50,6 +50,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
         preCreatedJvm = jvmHelper.createJvm("Pre-Created JVM Name",
                                             "Pre-Created JVM Host Name",
+                                            5, 4, 3, 2, 1,
                                             userId);
     }
 
@@ -266,6 +267,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
         final Jvm aSecondJvm = jvmHelper.createJvm("anotherJvmName",
                                                    "anotherJvmHostName",
+                                                   5, 4, 3, 2, 1,
                                                    userId);
 
         final Identifier<Group> groupId = preCreatedGroup.getId();

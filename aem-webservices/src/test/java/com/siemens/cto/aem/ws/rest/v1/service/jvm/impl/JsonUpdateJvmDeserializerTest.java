@@ -28,6 +28,12 @@ public class JsonUpdateJvmDeserializerTest {
 
     private ObjectMapper mapper;
 
+    private static final String httpPort = "5";
+    private static final String httpsPort = "4";
+    private static final String redirectPort = "3";
+    private static final String shutdownPort = "2";
+    private static final String ajpPort = "1";
+
     @Before
     public void setUp() {
         mapper = new JsonDeserializationBehavior().addMapping(JsonUpdateJvm.class, new JsonUpdateJvm.JsonUpdateJvmDeserializer()).toObjectMapper();
@@ -46,7 +52,12 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
                                    keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)),
-                                                              object(keyTextValue("groupId", secondGroupId)))));
+                                                              object(keyTextValue("groupId", secondGroupId)))),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -54,6 +65,11 @@ public class JsonUpdateJvmDeserializerTest {
                          jvmId,
                          jvmName,
                          hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort,
                          firstGroupId,
                          secondGroupId);
     }
@@ -70,7 +86,12 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
                                    keyValue("groupIds", array(object(keyTextValue("groupId",
-                                                                                  firstGroupId)))));
+                                                                                  firstGroupId)))),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -78,6 +99,11 @@ public class JsonUpdateJvmDeserializerTest {
                          jvmId,
                          jvmName,
                          hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort,
                          firstGroupId);
     }
 
@@ -92,7 +118,12 @@ public class JsonUpdateJvmDeserializerTest {
         final String json = object(keyTextValue("jvmId", jvmId),
                                    keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId));
+                                   keyTextValue("groupId", firstGroupId),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -100,6 +131,11 @@ public class JsonUpdateJvmDeserializerTest {
                          jvmId,
                          jvmName,
                          hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort,
                          firstGroupId);
     }
 
@@ -112,14 +148,24 @@ public class JsonUpdateJvmDeserializerTest {
 
         final String json = object(keyTextValue("jvmId", jvmId),
                                    keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName));
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
                          jvmId,
                          jvmName,
-                         hostName);
+                         hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort);
     }
 
     @Test(expected = BadRequestException.class)
@@ -133,7 +179,12 @@ public class JsonUpdateJvmDeserializerTest {
         final String json = object(keyTextValue("jvmId", jvmId),
                                    keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId));
+                                   keyTextValue("groupId", firstGroupId),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -141,6 +192,11 @@ public class JsonUpdateJvmDeserializerTest {
                          jvmId,
                          jvmName,
                          hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort,
                          firstGroupId);
     }
 
@@ -155,7 +211,12 @@ public class JsonUpdateJvmDeserializerTest {
         final String json = object(keyTextValue("jvmId", jvmId),
                                    keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId));
+                                   keyTextValue("groupId", firstGroupId),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -163,6 +224,11 @@ public class JsonUpdateJvmDeserializerTest {
                          jvmId,
                          jvmName,
                          hostName,
+                         httpPort,
+                         httpsPort,
+                         redirectPort,
+                         shutdownPort,
+                         ajpPort,
                          firstGroupId);
     }
 
@@ -170,11 +236,20 @@ public class JsonUpdateJvmDeserializerTest {
         return mapper.readValue(someJson, JsonUpdateJvm.class);
     }
 
+    private String integerToString(Integer i) {
+        return i == null ? "" : i.toString();
+    }
+
     protected void verifyAssertions(final JsonUpdateJvm anUpdate,
                                     final String aJvmId,
                                     final String aJvmName,
                                     final String aHostName,
-                                    final String... someGroupIds) {
+                                    final String aHttpPort,
+                                    final String aHttpsPort,
+                                    final String aRedirectPort,
+                                    final String aShutdownPort,
+                                    final String aAjpPort,
+                                    final String ... someGroupIds) {
 
         final UpdateJvmCommand update = anUpdate.toUpdateJvmCommand();
 
@@ -184,8 +259,18 @@ public class JsonUpdateJvmDeserializerTest {
                      update.getNewJvmName());
         assertEquals(aHostName,
                      update.getNewHostName());
+        assertEquals(aHttpPort,
+                     integerToString(update.getNewHttpPort()));
+        assertEquals(aHttpsPort,
+                     integerToString(update.getNewHttpsPort()));
+        assertEquals(aRedirectPort,
+                     integerToString(update.getNewRedirectPort()));
+        assertEquals(aShutdownPort,
+                     integerToString(update.getNewShutdownPort()));
+        assertEquals(aAjpPort,
+                     integerToString(update.getNewAjpPort()));
         assertEquals(someGroupIds.length,
-                     update.getAssignmentCommands().size());
+                update.getAssignmentCommands().size());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupCommand addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

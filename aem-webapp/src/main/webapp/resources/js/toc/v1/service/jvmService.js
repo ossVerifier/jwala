@@ -26,12 +26,26 @@
         json["groupIds"] = groupIdArray;
         return JSON.stringify(json);
     },
-    insertNewJvm: function(jvmName, groupIds, hostName, successCallback, errorCallback) {
+    insertNewJvm: function(jvmName,
+                           groupIds,
+                           hostName,
+                           httpPort,
+                           httpsPort,
+                           redirectPort,
+                           shutdownPort,
+                           ajpPort,
+                           successCallback,
+                           errorCallback) {
         return serviceFoundation.post("v1.0/jvms",
                                       "json",
                                       JSON.stringify({jvmName: jvmName,
                                                       groupIds: groupIds,
-                                                      hostName:hostName}),
+                                                      hostName:hostName,
+                                                      httpPort: httpPort,
+                                                      httpsPort: httpsPort,
+                                                      redirectPort: redirectPort,
+                                                      shutdownPort: shutdownPort,
+                                                      ajpPort: ajpPort}),
                                                       successCallback,
                                                       errorCallback);
     },

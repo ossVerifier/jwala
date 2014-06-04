@@ -24,6 +24,12 @@ public class JsonCreateJvmDeserializerTest {
 
     private ObjectMapper mapper;
 
+    private static final String httpPort = "5";
+    private static final String httpsPort = "4";
+    private static final String redirectPort = "3";
+    private static final String shutdownPort = "2";
+    private static final String ajpPort = "1";
+
     @Before
     public void setup() {
         mapper = new JsonDeserializationBehavior().addMapping(JsonCreateJvm.class, new JsonCreateJvm.JsonCreateJvmDeserializer()).toObjectMapper();
@@ -42,7 +48,12 @@ public class JsonCreateJvmDeserializerTest {
                                    keyValue("groupIds", array(object(keyTextValue("groupId",
                                                                                   firstGroupId)),
                                                               object(keyTextValue("groupId",
-                                                                                  secondGroupId)))));
+                                                                                  secondGroupId)))),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -60,9 +71,15 @@ public class JsonCreateJvmDeserializerTest {
         final String hostName = "a host name";
         final String firstGroupId = "1";
 
+
         final String json = object(keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)))));
+                                   keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)))),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -81,7 +98,12 @@ public class JsonCreateJvmDeserializerTest {
 
         final String json = object(keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId));
+                                   keyTextValue("groupId", firstGroupId),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -98,7 +120,12 @@ public class JsonCreateJvmDeserializerTest {
         final String hostName = "a host name";
 
         final String json = object(keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName));
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -124,7 +151,12 @@ public class JsonCreateJvmDeserializerTest {
 
         final String json = object(keyTextValue("jvmName", jvmName),
                                    keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId));
+                                   keyTextValue("groupId", firstGroupId),
+                                   keyTextValue("httpPort", httpPort),
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("redirectPort", redirectPort),
+                                   keyTextValue("shutdownPort", shutdownPort),
+                                   keyTextValue("ajpPort", ajpPort));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,

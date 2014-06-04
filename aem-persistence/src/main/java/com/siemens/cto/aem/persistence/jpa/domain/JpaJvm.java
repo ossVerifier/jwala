@@ -2,13 +2,7 @@ package com.siemens.cto.aem.persistence.jpa.domain;
 
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
@@ -26,6 +20,17 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     @ManyToMany(mappedBy = "jvms")
     private List<JpaGroup> groups;
+
+    @Column(nullable = false)
+    private Integer httpPort;
+
+    private Integer httpsPort;
+
+    private Integer redirectPort;
+
+    private Integer shutdownPort;
+
+    private Integer ajpPort;
 
     public Long getId() {
         return id;
@@ -49,6 +54,46 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     public void setGroups(final List<JpaGroup> groups) {
         this.groups = groups;
+    }
+
+    public Integer getHttpPort() {
+        return httpPort;
+    }
+
+    public void setHttpPort(Integer httpPort) {
+        this.httpPort = httpPort;
+    }
+
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
+    public void setHttpsPort(Integer httpsPort) {
+        this.httpsPort = httpsPort;
+    }
+
+    public Integer getRedirectPort() {
+        return redirectPort;
+    }
+
+    public void setRedirectPort(Integer redirectPort) {
+        this.redirectPort = redirectPort;
+    }
+
+    public Integer getShutdownPort() {
+        return shutdownPort;
+    }
+
+    public void setShutdownPort(Integer shutdownPort) {
+        this.shutdownPort = shutdownPort;
+    }
+
+    public Integer getAjpPort() {
+        return ajpPort;
+    }
+
+    public void setAjpPort(Integer ajpPort) {
+        this.ajpPort = ajpPort;
     }
 
     @Override
