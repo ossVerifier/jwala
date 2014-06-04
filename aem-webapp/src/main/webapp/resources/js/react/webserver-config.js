@@ -7,7 +7,7 @@ var WebServerConfig = React.createClass({
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
             webServerFormData: {},
-            webServerTableData: [{"name":"","id":{"id":0},"host":"b","port":9000,"groups":[]}],
+            webServerTableData: [],
             groupMultiSelectData: []
         }
     },
