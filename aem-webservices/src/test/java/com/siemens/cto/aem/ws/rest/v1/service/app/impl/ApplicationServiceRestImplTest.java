@@ -21,6 +21,8 @@ import java.util.List;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -58,6 +60,7 @@ public class ApplicationServiceRestImplTest {
     
     @Mock private MessageContext mockMc;
     @Mock private HttpServletRequest mockHsr;    
+    @Mock private HttpHeaders mockHh;
     /*NoMock*/ private ApplicationService service;
     @InjectMocks @Spy
     private ApplicationServiceRestImpl cutImpl = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
@@ -84,6 +87,10 @@ public class ApplicationServiceRestImplTest {
         applications2.add(application);
         applications2.add(newlyCreatedApp);
 
+        List<MediaType> mtOk =new ArrayList<MediaType>();
+        mtOk.add(MediaType.APPLICATION_JSON_TYPE);
+        when(mockHh.getAcceptableMediaTypes()).thenReturn(mtOk);
+        when(mockMc.getHttpHeaders()).thenReturn(mockHh);
         when(mockMc.getHttpServletRequest()).thenReturn(mockHsr);        
     }
     
@@ -111,7 +118,7 @@ public class ApplicationServiceRestImplTest {
             return true;
         } 
         
-    }
+    }    
     
     @Test
     public void testUploadWebArchive() throws IOException {
@@ -254,6 +261,20 @@ public class ApplicationServiceRestImplTest {
         Response resp = cut.uploadWebArchive(application.getId());  
         
         assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
+
+    @Test
+    public void testDeleteWebArchive() throws IOException {
+        when(service.getApplication(Matchers.eq(id(1L, Application.class)))).thenReturn(applicationWithWar);
+        when(service.deleteWebArchive(Matchers.eq(id(1L, Application.class)), any(User.class))).thenReturn(application);
+        
+        Response currentResponse = cut.getApplication(id(1L, Application.class));
+        Application current = getApplicationFromResponse(currentResponse);
+        assertEquals(applicationWithWar, current);
+        
+        Response updatedResponse = cut.deleteWebArchive(id(1L, Application.class));
+        Application updated = getApplicationFromResponse(updatedResponse);
+        assertEquals(application, updated);
     }
 
     @Test

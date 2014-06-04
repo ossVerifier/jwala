@@ -66,7 +66,7 @@ var decorateTableAsDataTable = function(tableId,
                  alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
               }
               
-              item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
+              return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
               
             } else if (item.tocType === "control") {
 

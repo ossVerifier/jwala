@@ -430,8 +430,8 @@ var WARUpload = React.createClass({
         
         return <div className="tocTable"> 
                 <div className="tocRowContents">
-                  <form encType='multipart/form-data' method="POST" action={'v1.0/applications/"'+this.props.full.id.id+'/war"'} >
-                    <span dangerouslySetInnerHTML={{__html: '<input type="file" style="display:none" name="file"></input>'}} />
+                  <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
+                    <span dangerouslySetInnerHTML={{__html: '<input type="file" name="file"></input>'}} />
                     <span className="textFileChosen">No file chosen...</span>
                     <input className="btnChooseFile" onClick={this.handleChooseClicked2} type="button" value="Choose WAR"></input>
                     <input type="button" value="Upload" onClick={this.performUpload}></input> 
@@ -463,6 +463,8 @@ var WARUpload = React.createClass({
       thisForm.fileupload({
         dataType: 'json',  
         url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+d.getTime(),
+        forceIframeTransport: true,
+        replaceFileInput: true,        
         add: function(event, data) {
           self.setState({ 
               uploadData: data
@@ -485,18 +487,20 @@ var WARUpload = React.createClass({
         if(this.state.uploadData) {
           this.props.service.prepareUploadForm(this.props.full.id.id, thisForm);
           this.state.uploadData.submit().success(function(result, textStatus, jqXHR) { 
-            self.setState({
-              uploadData: undefined, 
-              editable: false,
-              warPath: result.applicationResponseContent.warPath
-            });       
+            if(result !== undefined && result.applicationResponseContent !== undefined) {
+              self.setState({
+                uploadData: undefined, 
+                editable: false,
+                warPath: result.applicationResponseContent.warPath
+              });       
+            }
           }).error(function(result, textStatus, jqXHR) {
             var thisProgress = $('div.progress', thisForm);
-            thisProgress.css(
-                'background-color',
-                'red'
-            );
-                        
+            thisProgress.css({
+                'width' : '100%',
+                'background-color' : 'red'
+            });
+            $.errorAlert(textStatus, "Error");                        
           });
         } else { 
           alert('Choose a file first.');

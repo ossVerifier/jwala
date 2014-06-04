@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -25,6 +26,7 @@ import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.RepositoryAction.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
 public class ApplicationServiceImpl implements ApplicationService {
@@ -124,5 +126,30 @@ public class ApplicationServiceImpl implements ApplicationService {
         Application updated = applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
         
         return updated;
+    }
+
+    @Transactional    
+    @Override
+    public Application deleteWebArchive(Identifier<Application> appId, User user) {
+
+        Application app = this.getApplication(appId);           
+        RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
+        Event<RemoveWebArchiveCommand> event = Event.create(rwac, AuditEvent.now(user));
+        
+        RepositoryAction result = RepositoryAction.none();
+        
+        try {
+            result = webArchiveManager.remove(event);
+            LOGGER.info("Archive Delete: " + result.toString());
+        } catch (IOException e) {
+            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
+        }
+        
+        if(result.getType() == Type.DELETED) {
+            return applicationPersistenceService.removeWARPath(event);
+        }
+        else {
+            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Archive not found to delete.");
+        }
     }
 }

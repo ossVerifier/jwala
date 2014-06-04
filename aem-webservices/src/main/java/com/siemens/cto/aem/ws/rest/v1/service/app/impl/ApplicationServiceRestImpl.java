@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.print.attribute.standard.Media;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -104,6 +106,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response uploadWebArchive(Identifier<Application> anAppToGet) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
+
+        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        if(!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) { 
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
         
         Application app = service.getApplication(anAppToGet);
         
@@ -132,5 +139,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         } catch (IOException | FileUploadException e) {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
+    }
+
+    @Override
+    public Response deleteWebArchive(Identifier<Application> appToRemoveWAR) {
+        LOGGER.debug("Delete Archive requested: {}", appToRemoveWAR);
+        
+        Application updated = service.deleteWebArchive(appToRemoveWAR, User.getHardCodedUser());
+        
+        return ResponseBuilder.ok(updated);
     }
 }
