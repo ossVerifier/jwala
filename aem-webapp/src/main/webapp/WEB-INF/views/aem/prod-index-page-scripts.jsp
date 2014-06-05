@@ -8,6 +8,9 @@
 <script src="public-resources/ext/js/jquery/jquery.validate.min.js"></script>
 <script src="public-resources/ext/js/jquery/jquery.dataTables.min.js"></script>
 <script src="public-resources/ext/js/json2.min.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.ui.widget.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.iframe-transport.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 
 <!-- Services -->
 <!-- TODO: minimize -->

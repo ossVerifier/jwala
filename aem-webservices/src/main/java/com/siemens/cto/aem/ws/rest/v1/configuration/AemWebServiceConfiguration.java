@@ -3,7 +3,10 @@ package com.siemens.cto.aem.ws.rest.v1.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.ext.MessageBodyWriter;
+
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
+
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -20,6 +23,8 @@ import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
@@ -39,7 +44,7 @@ public class AemWebServiceConfiguration {
     private JvmService jvmService;
 
     @Autowired
-        private WebServerService webServerService;
+    private WebServerService webServerService;
 
     @Autowired
     private JvmControlService jvmControlService;
@@ -101,6 +106,7 @@ public class AemWebServiceConfiguration {
     public List<?> getV1Providers() {
         final List<? super Object> providers = new ArrayList<>();
 
+        providers.add(getV1FormUploadProvider());
         providers.add(getV1JsonProvider());
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
@@ -108,6 +114,11 @@ public class AemWebServiceConfiguration {
         providers.add(getV1TransactionRequiredExceptionMapper());
 
         return providers;
+    }
+    
+    @Bean 
+    public MessageBodyWriter<ApplicationResponse> getV1FormUploadProvider() { 
+        return new ResponseMessageBodyWriter();
     }
 
     @Bean

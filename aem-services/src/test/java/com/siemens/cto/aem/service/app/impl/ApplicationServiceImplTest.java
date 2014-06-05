@@ -5,20 +5,27 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -27,19 +34,28 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.WebArchiveManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
 
 
-    @Mock
+    /*Mock by hand*/
     private ApplicationDao applicationDao;
 
-    @Mock
+    /*Mock by hand*/
     private ApplicationPersistenceService applicationPersistenceService;
+    
+    @Mock /*injected*/
+    private WebArchiveManager webArchiveManager;
 
-    private ApplicationService applicationService;
-
+    @InjectMocks @Spy
+    private ApplicationService applicationService = new ApplicationServiceImpl(
+            applicationDao = Mockito.mock(ApplicationDao.class),
+            applicationPersistenceService = Mockito.mock(ApplicationPersistenceService.class)            
+            );
+    
     @Mock
     private Application mockApplication; 
     @Mock
@@ -52,8 +68,12 @@ public class ApplicationServiceImplTest {
     
     private ArrayList<Application> applications2 = new ArrayList<>(1);
     
-    // private User testUser = new User("testUser");
+    private User testUser = new User("testUser");
 
+    // Managed by setup/teardown
+    ByteArrayInputStream uploadedFile;
+    Application app;
+    
     @Before
     public void setUp() {
         
@@ -78,7 +98,10 @@ public class ApplicationServiceImplTest {
         applications2.add(mockApplication);
         applications2.add(mockApplication2);
         
-        applicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService);
+        ByteBuffer buf = java.nio.ByteBuffer.allocate(2); // 2 byte file
+        buf.asShortBuffer().put((short)0xc0de);
+
+        uploadedFile = new ByteArrayInputStream(buf.array());
     }
 
     @SuppressWarnings("unchecked")
@@ -168,8 +191,32 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testRemove() {
-        applicationService.removeApplication(mockApplication.getId(), new User("user"));
+        applicationService.removeApplication(mockApplication.getId(), testUser);
 
         Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));        
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUploadWebArchive() throws IOException { 
+        UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);
+
+        when(webArchiveManager.store(any(Event.class))).thenReturn(RepositoryAction.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        
+        applicationService.uploadWebArchive(uwac, testUser);
+
+        Mockito.verify(webArchiveManager, Mockito.times(1)).store(any(Event.class));        
+        Mockito.verify(applicationPersistenceService, Mockito.times(1)).updateWARPath(any(Event.class), any(String.class));        
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDeleteWebArchive() throws IOException { 
+        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryAction.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
+        
+        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
+
+        Mockito.verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));        
+        Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));        
     }
 }

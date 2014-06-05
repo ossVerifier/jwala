@@ -28,4 +28,5 @@ public interface ApplicationService {
 
     Application uploadWebArchive(UploadWebArchiveCommand command, User user);
 
+    Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 }

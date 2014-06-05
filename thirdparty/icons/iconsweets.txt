@@ -1,0 +1,10 @@
+Eject icon
+Delete icon
+
+License:	 Free for commercial use (read me)
+By:		 Yummygum - http://www.yummygum.nl/
+Icon set:	 IconSweets (View all icons)
+Resolution:	25 x 25 pixels
+Categories:	UI
+Styles:	Glyph
+
