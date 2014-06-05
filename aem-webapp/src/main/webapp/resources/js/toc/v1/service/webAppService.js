@@ -8,11 +8,6 @@ Application:
 */
 var webAppService = {
     baseUrl: "v1.0/applications",
-    postUploadWarForm: function(id, uploadForm) { 
-      uploadForm.action=this.baseUrl + "/" + id + "/war";
-      uploadForm.method="POST";
-      return uploadForm.submit();
-    },
     prepareUploadForm: function(id, uploadForm) {
       uploadForm.action=this.baseUrl + "/" + id + "/war";
       uploadForm.method="POST";

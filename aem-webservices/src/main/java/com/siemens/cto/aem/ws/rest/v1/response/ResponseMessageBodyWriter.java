@@ -25,10 +25,9 @@ import org.springframework.util.StringUtils;
 @Produces(MediaType.TEXT_HTML)
 public class ResponseMessageBodyWriter implements MessageBodyWriter<ApplicationResponse> {
 
-    JacksonJsonProvider jsonProvider; 
+    JacksonJsonProvider jsonProvider = new JacksonJsonProvider(); 
     
-    public ResponseMessageBodyWriter(JacksonJsonProvider jsonProvider) {
-        this.jsonProvider = jsonProvider;
+    public ResponseMessageBodyWriter() {
     }
     
     @Override
@@ -56,18 +55,19 @@ public class ResponseMessageBodyWriter implements MessageBodyWriter<ApplicationR
         }
 
         Writer osWriter = new OutputStreamWriter(entityStream);
-        String code, text;
+        String code, text, prefix;
         if(StringUtils.hasText(t.getMsgCode())) { 
-            code = "200";
+            code = "400"; prefix = t.getMsgCode();
         } else {
-            code = t.getMsgCode();
+            code = "200"; prefix = "";
         }
         if(StringUtils.hasText(t.getMessage())) { 
-            text = "ok";
+            text = prefix + " " + t.getMessage();
         } else {
-            text = t.getMessage();
+            text = "ok";
         }
         osWriter.write("<html><body status='"+code+"' statusText='" + text + "'>");
+        osWriter.flush();
         entityStream.write(boss.toByteArray());
         boss.close();
         osWriter.write("</body></html>");

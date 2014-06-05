@@ -360,11 +360,15 @@ var WebAppDataTable = React.createClass({
 
 var WARUpload = React.createClass({ 
     getInitialState: function() {
+        var noArchive = "No Web Archive";
+        var hasWar = (this.props.full.warPath !== undefined && this.props.full.warPath !== null && this.props.full.warPath != "" );
         return {
           editable : false,
           uploadData: null,
           showDeleteConfirmDialog: false,
-          warPath: (this.props.full.warPath !== undefined && this.props.full.warPath != "" )? this.props.full.warPath : "No Web Archive",
+          hasWar: hasWar,
+          noArchive : noArchive,
+          warPath: hasWar ? this.props.full.warPath : noArchive,
         }
     },    
     componentDidMount: function() {
@@ -404,8 +408,8 @@ var WARUpload = React.createClass({
                 </div>
                 <div className="tocRowIcons">
                   <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
-                  {this.props.full.warPath !== undefined && this.props.full.warPath !== ""?
-                    <img onClick={this.delBtnCallback} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
+                  {this.state.hasWar?
+                    <img onClick={this.handleDelete} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
                     :""}               
                 </div>
                <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
@@ -432,8 +436,6 @@ var WARUpload = React.createClass({
                 <div className="tocRowContents">
                   <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
                     <span dangerouslySetInnerHTML={{__html: '<input type="file" name="file"></input>'}} />
-                    <span className="textFileChosen">No file chosen...</span>
-                    <input className="btnChooseFile" onClick={this.handleChooseClicked2} type="button" value="Choose WAR"></input>
                     <input type="button" value="Upload" onClick={this.performUpload}></input> 
                     <div style={progressStyle}>
                       <div style={progressStyleInner} className="progress" />
@@ -463,13 +465,12 @@ var WARUpload = React.createClass({
       thisForm.fileupload({
         dataType: 'json',  
         url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+d.getTime(),
-        forceIframeTransport: true,
-        replaceFileInput: true,        
+        forceIframeTransport: false,
+        replaceFileInput: false,        
         add: function(event, data) {
           self.setState({ 
               uploadData: data
              });
-          self.handleFileInputChanged(event, data);
           // no submit
         },
         progressall: function(event,data) {
@@ -488,11 +489,22 @@ var WARUpload = React.createClass({
           this.props.service.prepareUploadForm(this.props.full.id.id, thisForm);
           this.state.uploadData.submit().success(function(result, textStatus, jqXHR) { 
             if(result !== undefined && result.applicationResponseContent !== undefined) {
-              self.setState({
-                uploadData: undefined, 
-                editable: false,
-                warPath: result.applicationResponseContent.warPath
-              });       
+              if(result.msgCode !== undefined && result.msgCode !== '0' /*success*/) {
+                // actually an error
+                var thisProgress = $('div.progress', thisForm);
+                thisProgress.css({
+                    'width' : '100%',
+                    'background-color' : 'red'
+                });
+                $.errorAlert(result.applicationResponseContent, result.msgCode);
+              } else {
+                self.setState({
+                  uploadData: undefined, 
+                  editable: false,
+                  hasWar: true,
+                  warPath: result.applicationResponseContent.warPath
+                });       
+              }
             }
           }).error(function(result, textStatus, jqXHR) {
             var thisProgress = $('div.progress', thisForm);
@@ -500,7 +512,7 @@ var WARUpload = React.createClass({
                 'width' : '100%',
                 'background-color' : 'red'
             });
-            $.errorAlert(textStatus, "Error");                        
+            $.errorAlert(result.responseJSON.applicationResponseContent, result.responseJSON.msgCode);                        
           });
         } else { 
           alert('Choose a file first.');
@@ -508,30 +520,6 @@ var WARUpload = React.createClass({
         
         event.preventDefault();
         return false;
-    },
-    handleFileInputChanged: function(event, data) {
-        var thisForm = $('form', this.getDOMNode());
-        var fileInput = $('input[type="file"]', thisForm);
-        $('span.textFileChosen', thisForm).text(data.files[0].name.replace(/C:\\fakepath\\/i, ''));
-        //$('span.textFileChosen', thisForm).text(fileInput.val().replace(/C:\\fakepath\\/i, ''));
-        //thisForm.fileupload('add', {
-        //       fileInput: data.fileInput
-        //});
-    },
-    handleChooseClicked : function(event) {
-      var thisForm = $('form', this.getDOMNode());
-      var fileInput = $('input[type="file"]', this.getDOMNode());
-      fileInput.replaceWith( fileInput = fileInput.clone( true ) );
-      fileInput.trigger('click');
-      event.preventDefault();
-      return false;
-    },
-    handleChooseClicked2 : function(event) {
-      var thisForm = $('form', this.getDOMNode());
-      var fileInput = $('input[type="file"]', this.getDOMNode());
-      fileInput.click();
-      event.preventDefault();
-      return false;
     },
     editRequest : function(event) {
       
@@ -546,7 +534,7 @@ var WARUpload = React.createClass({
       event.preventDefault();
       return false;
     },
-    delBtnCallback: function() {
+    handleDelete: function() {
         this.setState({showDeleteConfirmDialog: true});
     },
     confirmDeleteCallback: function(ans) {
@@ -554,7 +542,12 @@ var WARUpload = React.createClass({
         try {
           this.setState({showDeleteConfirmDialog: false});
           if (ans === "yes") {
-              this.props.service.deleteWar(this.props.full.id.id, null);
+              self.props.service.deleteWar(self.props.full.id.id).then( function() {
+                  self.setState({
+                    hasWar: false,
+                    warPath: self.state.noArchive
+                });
+              });
           }
         } finally { 
         }

@@ -44,7 +44,7 @@ public class AemWebServiceConfiguration {
     private JvmService jvmService;
 
     @Autowired
-        private WebServerService webServerService;
+    private WebServerService webServerService;
 
     @Autowired
     private JvmControlService jvmControlService;
@@ -118,7 +118,7 @@ public class AemWebServiceConfiguration {
     
     @Bean 
     public MessageBodyWriter<ApplicationResponse> getV1FormUploadProvider() { 
-        return new ResponseMessageBodyWriter(getV1JsonProvider());
+        return new ResponseMessageBodyWriter();
     }
 
     @Bean
