@@ -11,9 +11,11 @@ import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -24,6 +26,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class RemoteWebServerCommandExecutorImplTest {
 
     private RemoteWebServerCommandExecutorImpl impl;

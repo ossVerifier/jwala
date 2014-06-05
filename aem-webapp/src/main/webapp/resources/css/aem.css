@@ -12,28 +12,14 @@ body {
     color: red
 }
 
+.ok {
+    color: green
+}
+
 .textAlignLeft {
     text-align: left;
 }
 
-td.toc-icon-right {
-  width:16px;
-  text-align: right;
-}
-table.toc-col-full-width {
-  width: 100%;
-}
-span.toc-icon-right {
-  display:inline;
-}
-.tocNinetyPcInline {
-  display:inline;
-  width:90%;
-}  
-.tocFloatRight {
-  float:right;
-  width:32px;
-}
 .tocTable {
   display:table;
   width:100%;
@@ -47,13 +33,9 @@ span.toc-icon-right {
   display:table-cell;
 }
 .tocRowIcons {
+  min-width:55px;
   width:10%;
   display:table-cell;
-}
-
-.roomForIcon { 
-  overflow:hidden;
-  width: 250px;
 }
 
 span.btnAppsCfgClose { display:inline !important; }

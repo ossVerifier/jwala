@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.jcraft.jsch.JSch;
@@ -25,6 +26,7 @@ import static org.junit.Assume.assumeFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class RemoteJvmCommandExecutorImplTest {
 
     private RemoteJvmCommandExecutorImpl impl;

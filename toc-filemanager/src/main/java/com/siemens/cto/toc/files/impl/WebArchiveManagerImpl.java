@@ -31,18 +31,25 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     @Override
     public RepositoryAction store(Event<UploadWebArchiveCommand> event) throws IOException {
  
-        RepositoryAction action = null;
-        
         UploadWebArchiveCommand cmd = event.getCommand();       
         Application app = event.getCommand().getApplication();
         String existing = app.getWarPath();
         
-        if(existing != null && existing.trim().length() > 0) {
-            action = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing));
-        }
         Path place = synth.unique(platformFileSystem.getPath(cmd.getFilename()));
         
-        return fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData(), action);
+        RepositoryAction writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData());
+
+        if(writeResult.getType() == RepositoryAction.Type.STORED) {
+            // attempt to delete since store succeeded
+            if(existing != null && existing.trim().length() > 0) {
+                RepositoryAction deleted = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing), writeResult);
+                
+                // Wrap the response, so that the primary action is a STORE
+                return RepositoryAction.stored(writeResult.getPath(), writeResult.getLength(), deleted);
+            }
+        }
+        
+        return writeResult;        
     }
 
     @Override

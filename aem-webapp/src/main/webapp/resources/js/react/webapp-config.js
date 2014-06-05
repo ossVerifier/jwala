@@ -359,6 +359,7 @@ var WebAppDataTable = React.createClass({
 });
 
 var WARUpload = React.createClass({ 
+    stripPathRegEx: /(([A-Z]{1}:)?[/\\]?([^/\\]*))(-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(.war)/,
     getInitialState: function() {
         var noArchive = "No Web Archive";
         var hasWar = (this.props.full.warPath !== undefined && this.props.full.warPath !== null && this.props.full.warPath != "" );
@@ -369,24 +370,23 @@ var WARUpload = React.createClass({
           hasWar: hasWar,
           noArchive : noArchive,
           warPath: hasWar ? this.props.full.warPath : noArchive,
+          warName: hasWar ? this.stripPathRegEx.exec(this.props.full.warPath)[3] : noArchive,
         }
-    },    
+    },
+    componentWillUpdate: function(nextProps, nextState) {
+      nextState.warName = nextState.hasWar ? this.stripPathRegEx.exec(nextState.warPath)[3] : this.state.noArchive;
+    },
     componentDidMount: function() {
       if(this.state.editable) {
         this.initFileUpload();
       } 
-      //$('span.btnAppsCfgClose', this.getDOMNode()).on('click', this.editRequest);
     },
     componentDidUpdate: function() {
-      //$('span.btnAppsCfgClose', this.getDOMNode()).on('click', this.editRequest);
   
       if(this.state.editable) {        
         this.initFileUpload();
       } 
 
-    },
-    componentWillUnmount: function() {
-      //$('span.btnAppsCfgClose', this.getDOMNode()).off('click', this.editRequest);
     },
     shouldComponentUpdate: function(nextProps, nextState) {
       if( nextState.showDeleteConfirmDialog === true ) { 
@@ -402,20 +402,21 @@ var WARUpload = React.createClass({
     render: function() { 
       
       if(!this.state.editable) { 
-        return <div className="tocTable"> 
-                <div className="tocRowContent">
-                  <span>{this.state.warPath}</span> 
+        return <div>
+                <div className="tocTable"> 
+                  <div className="tocRowContent">
+                    <span title={this.state.warPath}>{this.state.warName}</span> 
+                  </div>
+                  <div className="tocRowIcons">
+                    <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
+                    {this.state.hasWar?
+                      <img onClick={this.handleDelete} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
+                      :""}               
+                  </div>
                 </div>
-                <div className="tocRowIcons">
-                  <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
-                  {this.state.hasWar?
-                    <img onClick={this.handleDelete} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
-                    :""}               
-                </div>
-               <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
+                <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
                                          btnClickedCallback={this.confirmDeleteCallback} />
               </div>
-       
         ;
       } else { 
   
@@ -435,11 +436,12 @@ var WARUpload = React.createClass({
         return <div className="tocTable"> 
                 <div className="tocRowContents">
                   <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
-                    <span dangerouslySetInnerHTML={{__html: '<input type="file" name="file"></input>'}} />
+                    <input type="file" name="file"></input>
                     <input type="button" value="Upload" onClick={this.performUpload}></input> 
                     <div style={progressStyle}>
                       <div style={progressStyleInner} className="progress" />
                     </div>
+                    <span className="uploadResult"></span>
                   </form>
                 </div>
                  <div className="tocRowIcons">
@@ -480,7 +482,37 @@ var WARUpload = React.createClass({
               'background-color' : 'green'
           });
         }
+      });      
+    },
+    progressClean: function() {
+      var thisForm = $('form', this.getDOMNode());
+      var thisResult = $('span.uploadResult', thisForm);
+      thisResult.removeClass('error');
+      thisResult.addClass('ok');
+      thisResult.text('');
+    },
+    progressError: function(errorMsg, progress) {
+      var thisForm = $('form', this.getDOMNode());
+      var thisProgress = $('div.progress', thisForm);
+      thisProgress.css({
+          'width' : (progress !== undefined ? progress : 100) + '%',
+          'background-color' : 'red'
+      });                
+      var thisResult = $('span.uploadResult', thisForm);
+      thisResult.addClass('error');
+      thisResult.removeClass('ok');
+      thisResult.text(errorMsg);
+    },
+    progressOk: function(okMsg) {
+      var thisForm = $('form', this.getDOMNode());
+      var thisProgress = $('div.progress', thisForm);
+      thisProgress.css({
+          'background-color' : 'green'
       });
+      var thisResult = $('span.uploadResult', thisForm);
+      thisResult.addClass('ok');
+      thisResult.removeClass('error');
+      thisResult.text(okMsg);
     },
     performUpload: function(event) {
         var thisForm = $('form', this.getDOMNode());
@@ -491,31 +523,23 @@ var WARUpload = React.createClass({
             if(result !== undefined && result.applicationResponseContent !== undefined) {
               if(result.msgCode !== undefined && result.msgCode !== '0' /*success*/) {
                 // actually an error
-                var thisProgress = $('div.progress', thisForm);
-                thisProgress.css({
-                    'width' : '100%',
-                    'background-color' : 'red'
-                });
-                $.errorAlert(result.applicationResponseContent, result.msgCode);
+                self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
               } else {
                 self.setState({
                   uploadData: undefined, 
                   editable: false,
                   hasWar: true,
-                  warPath: result.applicationResponseContent.warPath
-                });       
+                  warPath: result.applicationResponseContent.warPath,
+                });
               }
             }
           }).error(function(result, textStatus, jqXHR) {
-            var thisProgress = $('div.progress', thisForm);
-            thisProgress.css({
-                'width' : '100%',
-                'background-color' : 'red'
-            });
-            $.errorAlert(result.responseJSON.applicationResponseContent, result.responseJSON.msgCode);                        
+            self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
           });
         } else { 
-          alert('Choose a file first.');
+          var fileInput = $('input[type="file"]', thisForm);
+          fileInput.effect("highlight");
+          self.progressError("Choose a file first",0);
         }
         
         event.preventDefault();
@@ -523,10 +547,8 @@ var WARUpload = React.createClass({
     },
     editRequest : function(event) {
       
-      this.setState({ editable: !this.state.editable });
+      this.setState({ editable: !this.state.editable, uploadData: undefined });
 
-      event.preventDefault();
-      return false;
     },
     postUploadWarForm : function(event, data) { 
       var thisForm = $('form', this.getDOMNode());

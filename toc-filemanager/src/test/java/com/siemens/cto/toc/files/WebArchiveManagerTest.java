@@ -10,13 +10,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,9 +52,10 @@ public class WebArchiveManagerTest {
         
         LinkedList<Path> appliedNames = new LinkedList<>();
         
-        public Path unique(Path originalName) { 
-            synchronized(appliedNames) { appliedNames.push(originalName); }
-            return originalName;
+        public Path unique(Path originalName) {
+            Path uniquePath = Paths.get(originalName.toString() + UUID.randomUUID().toString());
+            synchronized(appliedNames) { appliedNames.push(uniquePath); }
+            return uniquePath;
         }
         
         public Path pop() { return appliedNames.pop(); }
@@ -104,10 +111,42 @@ public class WebArchiveManagerTest {
         
     // static test constants
     private static final User TEST_USER = new User("test-user");
+    private static Path cleanupPath;
     
+    @AfterClass
+    public static void tearDownClass() throws IOException {
+        if(cleanupPath == null) return;
+        
+        Files.walkFileTree(cleanupPath, new FileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path arg0, IOException arg1) throws IOException {
+                Files.delete(arg0);
+                return FileVisitResult.CONTINUE;
+           }
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path arg0, BasicFileAttributes arg1) throws IOException {
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path arg0, BasicFileAttributes arg1) throws IOException {
+                Files.delete(arg0);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path arg0, IOException arg1) throws IOException {
+                return FileVisitResult.TERMINATE;
+            }
+
+        });
+    }
     @Before
     public void setup() throws IOException {
-        Files.createDirectory(filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE));
+        Path arcDir = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
+
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
 
@@ -118,7 +157,7 @@ public class WebArchiveManagerTest {
     
     @After
     public void tearDown() throws IOException {
-        Files.delete(filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE));
+        cleanupPath = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
     }
     
     private void testResults(long expectedSize, RepositoryAction result) throws IOException {
