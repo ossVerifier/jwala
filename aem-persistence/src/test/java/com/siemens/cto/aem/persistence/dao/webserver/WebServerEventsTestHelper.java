@@ -15,12 +15,12 @@ public class WebServerEventsTestHelper {
 
 	public static Event<CreateWebServerCommand> createCreateWebServerEvent(
 			final Collection<Identifier<Group>> someGroupIds, final String aNewWebServerName,
-			final String aNewWebServerHost, final Integer aNewWebServerPort,
+			final String aNewWebServerHost, final Integer aNewWebServerPort, final Integer aNewWebServerHttpPort,
 			final String aUserId) {
 
 		final Event<CreateWebServerCommand> createWebServer = new Event<>(
 				new CreateWebServerCommand(someGroupIds, aNewWebServerName,
-						aNewWebServerHost, aNewWebServerPort),
+						aNewWebServerHost, aNewWebServerPort, aNewWebServerHttpPort),
 				createAuditEvent(aUserId));
 
 		return createWebServer;
@@ -29,11 +29,13 @@ public class WebServerEventsTestHelper {
 	public static Event<UpdateWebServerCommand> createUpdateWebServerEvent(
 			final Identifier<WebServer> id, final Collection<Identifier<Group>> newGroupIds,
 			final String aNewWebServerName, final String aNewWebServerHost,
-			final Integer aNewWebServerPort, final String aUserId) {
+			final Integer aNewWebServerPort,
+            final Integer aNewWebServerHttpsPort,
+            final String aUserId) {
 
 		final Event<UpdateWebServerCommand> updateWebServer = new Event<>(
 				new UpdateWebServerCommand(id, newGroupIds, aNewWebServerName,
-						aNewWebServerHost, aNewWebServerPort),
+						aNewWebServerHost, aNewWebServerPort, aNewWebServerHttpsPort),
 				createAuditEvent(aUserId));
 
 		return updateWebServer;

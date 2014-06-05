@@ -68,7 +68,7 @@ public class WebServerServiceRestImplTest {
         groupsList.add(groupOne);
         groupsList.add(groupTwo);
 
-        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080);
+        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009);
         final List<WebServer> result = new ArrayList<WebServer>();
         result.add(ws);
         return result;

@@ -80,6 +80,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getHost()).thenReturn("the-ws-hostname");
         when(mockWebServer.getGroups()).thenReturn(groups);
         when(mockWebServer.getPort()).thenReturn(new Integer(51000));
+        when(mockWebServer.getHttpsPort()).thenReturn(new Integer(52000));
         
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
@@ -87,6 +88,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer2.getHost()).thenReturn("the-ws-hostname");
         when(mockWebServer2.getGroups()).thenReturn(groups2);
         when(mockWebServer2.getPort()).thenReturn(new Integer(51000));
+        when(mockWebServer2.getHttpsPort()).thenReturn(new Integer(52000));
         
         mockWebServersAll.add(mockWebServer);
         mockWebServersAll.add(mockWebServer2);
@@ -135,7 +137,11 @@ public class WebServerServiceImplTest {
     @Test
     public void testCreateWebServers() {
         when(wsDao.createWebServer(any(Event.class))).thenReturn(mockWebServer);
-        CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroupIds(), mockWebServer.getName(), mockWebServer.getHost(), mockWebServer.getPort());
+        CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroupIds(),
+                                                                mockWebServer.getName(),
+                                                                mockWebServer.getHost(),
+                                                                mockWebServer.getPort(),
+                                                                mockWebServer.getHttpsPort());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
@@ -157,7 +163,12 @@ public class WebServerServiceImplTest {
     @Test
     public void testUpdateWebServers() {
         when(wsDao.updateWebServer(any(Event.class))).thenReturn(mockWebServer2);
-        UpdateWebServerCommand cmd = new UpdateWebServerCommand(mockWebServer2.getId(), groupIds2, mockWebServer2.getName(), mockWebServer2.getHost(), mockWebServer2.getPort());
+
+        UpdateWebServerCommand cmd = new UpdateWebServerCommand(mockWebServer2.getId(), groupIds2,
+                                                                mockWebServer2.getName(),
+                                                                mockWebServer2.getHost(),
+                                                                mockWebServer2.getPort(),
+                                                                mockWebServer2.getHttpsPort());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());

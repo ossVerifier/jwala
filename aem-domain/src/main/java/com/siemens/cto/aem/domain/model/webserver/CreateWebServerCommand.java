@@ -21,11 +21,13 @@ public class CreateWebServerCommand implements Serializable, Command {
     private final String host;
     private final String name;
     private final Integer port;
+    private final Integer httpsPort;
 
     public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds, final String theName,
-            final String theHost, final Integer thePort) {
+            final String theHost, final Integer thePort, final Integer theHttpsPort) {
         host = theHost;
         port = thePort;
+        httpsPort = theHttpsPort;
         name = theName;
         groupIds = theGroupIds;
     }
@@ -46,10 +48,16 @@ public class CreateWebServerCommand implements Serializable, Command {
         return port;
     }
 
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
     @Override
     public void validateCommand() {
-        new MultipleRules(new WebServerNameRule(name), new WebServerHostNameRule(host), new PortNumberRule(port,
-                AemFaultType.INVALID_WEBSERVER_PORT), new GroupIdsRule(groupIds)).validate();
+        new MultipleRules(new WebServerNameRule(name), new WebServerHostNameRule(host),
+                          new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
+                          new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
+                          new GroupIdsRule(groupIds)).validate();
     }
 
     @Override
@@ -103,12 +111,19 @@ public class CreateWebServerCommand implements Serializable, Command {
         } else if (!port.equals(other.port)) {
             return false;
         }
+        if (httpsPort == null) {
+            if (other.httpsPort != null) {
+                return false;
+            }
+        } else if (!httpsPort.equals(other.httpsPort)) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
         return "CreateWebServerCommand {groupIds=" + groupIds + ", host=" + host + ", name=" + name + ", port=" + port
-                + "}";
+                + ", httpsPort=" + httpsPort + "}";
     }
 }

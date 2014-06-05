@@ -73,7 +73,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_JVM_SHUTDOWN_PORT("AEM34", "InvalidJvmShutdownPortNumber"),
     /**/
-    INVALID_JVM_AJP_PORT("AEM35", "InvalidJvmAjpPortNumber")
+    INVALID_JVM_AJP_PORT("AEM35", "InvalidJvmAjpPortNumber"),
+    /**/
+    INVALID_WEBSERVER_HTTPS_PORT("AEM36", "InvalidWebServerHttpsPortNumber")
     ;
 
 	private final String faultCode;

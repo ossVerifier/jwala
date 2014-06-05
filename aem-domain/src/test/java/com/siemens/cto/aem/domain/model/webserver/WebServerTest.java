@@ -18,6 +18,7 @@ public class WebServerTest {
     private static final String NAME = "name";
 
     private static final Integer port = Integer.valueOf(10000);
+    private static final Integer httpsPort = Integer.valueOf(20000);
 
     private static final Long id = Long.valueOf(1);
     private static final Long idOne = Long.valueOf(1);
@@ -30,13 +31,13 @@ public class WebServerTest {
     final Identifier<Group> groupId = new Identifier<Group>(id);
     final Group group = new Group(groupId, NAME);
     final List<Group> groups = new ArrayList<Group>();
-    final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port);
-    final WebServer wsNulls = new WebServer(null, groups, null, null, null);
+    final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort);
+    final WebServer wsNulls = new WebServer(null, groups, null, null, null, null);
 
     @Test
     public void testHashCode() {
         assertEquals(ws.hashCode(), ws.hashCode());
-        assertEquals(31 * 31 * 31 * 31 * 31, wsNulls.hashCode());
+        assertEquals(31 * 31 * 31 * 31 * 31 * 31, wsNulls.hashCode());
     }
 
     @Test
@@ -79,21 +80,21 @@ public class WebServerTest {
         groupsOne.add(groupOne);
         groupsTwo.add(groupTwo);
 
-        final WebServer wsOne = new WebServer(wsIdOne, groupsOne, NAME, HOST, port);
-        final WebServer wsTwo = new WebServer(null, groupsTwo, NAME, HOST, port);
-        final WebServer wsThree = new WebServer(null, groupsTwo, NAME, HOST, port);
-        final WebServer wsFour = new WebServer(null, groupsTwo, NAME, null, port);
-        final WebServer wsFive = new WebServer(null, groupsTwo, NAME, null, port);
-        final WebServer wsSix = new WebServer(null, groupsTwo, NAME, null, port);
-        final WebServer wsSeven = new WebServer(wsIdOne, groupsTwo, NAME, null, port);
-        final WebServer wsEight = new WebServer(wsIdTwo, groupsTwo, NAME, null, port);
-        final WebServer wsNine = new WebServer(wsIdOne, groupsTwo, NAME, null, port);
-        final WebServer wsTen = new WebServer(wsIdOne, groupsTwo, null, null, port);
-        final WebServer wsEleven = new WebServer(wsIdOne, groupsTwo, null, null, port);
-        final WebServer wsTwelve = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, port);
-        final WebServer wsThirteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, null);
-        final WebServer wsFourteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, null);
-        final WebServer wsFifteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, port);
+        final WebServer wsOne = new WebServer(wsIdOne, groupsOne, NAME, HOST, port, httpsPort);
+        final WebServer wsTwo = new WebServer(null, groupsTwo, NAME, HOST, port, httpsPort);
+        final WebServer wsThree = new WebServer(null, groupsTwo, NAME, HOST, port, httpsPort);
+        final WebServer wsFour = new WebServer(null, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsFive = new WebServer(null, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsSix = new WebServer(null, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsSeven = new WebServer(wsIdOne, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsEight = new WebServer(wsIdTwo, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsNine = new WebServer(wsIdOne, groupsTwo, NAME, null, port, httpsPort);
+        final WebServer wsTen = new WebServer(wsIdOne, groupsTwo, null, null, port, httpsPort);
+        final WebServer wsEleven = new WebServer(wsIdOne, groupsTwo, null, null, port, httpsPort);
+        final WebServer wsTwelve = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, port, httpsPort);
+        final WebServer wsThirteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, null, null);
+        final WebServer wsFourteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, null, null);
+        final WebServer wsFifteen = new WebServer(wsIdOne, groupsTwo, "nameTwo", null, port, httpsPort);
 
         assertTrue(groupsOne.equals(groupsOne));
         assertTrue(wsOne.equals(wsOne));
@@ -123,6 +124,6 @@ public class WebServerTest {
 
     @Test
     public void testToString() {
-        assertEquals("WebServer {id=Identifier{id=1}, groups={}, host=host, name=name, port=10000}", ws.toString());
+        assertEquals("WebServer {id=Identifier{id=1}, groups={}, host=host, name=name, port=10000, httpsPort=20000}", ws.toString());
     }
 }

@@ -33,6 +33,8 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     private Integer port;
 
+    private Integer httpsPort;
+
     @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",
                joinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
@@ -68,4 +70,12 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 	    groups.clear();
 	    groups.addAll(newGroups);
 	}
+
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
+    public void setHttpsPort(Integer httpsPort) {
+        this.httpsPort = httpsPort;
+    }
 }
