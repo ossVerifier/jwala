@@ -38,6 +38,7 @@ import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.toc.files.RepositoryAction.Type;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
 import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
@@ -145,7 +146,7 @@ public class WebArchiveManagerTest {
     }
     @Before
     public void setup() throws IOException {
-        Path arcDir = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
+        filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
 
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
@@ -194,6 +195,34 @@ public class WebArchiveManagerTest {
                 1*1024*1024L,
                 webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER))));  
     }
+
+    @Test
+    public void testWriteArchiveTwice() throws IOException { 
+                
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validateCommand();        
+        RepositoryAction result1 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER)));
+
+        app.setWarPath(result1.getPath().toAbsolutePath().toString());
+        
+        ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
+        buf.asShortBuffer().put((short)0xc0de);
+        
+        UploadWebArchiveCommand cmd2 = new UploadWebArchiveCommand(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
+        cmd2.validateCommand();        
+        RepositoryAction result2 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd2, AuditEvent.now(TEST_USER)));
+
+        assertNotNull(result2.getCauses());
+        assertEquals(1, result2.getCauses().length);
+        assertEquals(Type.DELETED, result2.getCauses()[0].getType());
+        assertEquals(1, result2.getCauses()[0].getCauses().length);
+        assertEquals(Type.STORED, result2.getCauses()[0].getCauses()[0].getType());
+
+        testResults(
+                1*1024*1024L,
+                result2
+                );  
+}
 
     @Test
     public void testDeleteArchive() throws IOException {
