@@ -39,18 +39,17 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
         
         RepositoryAction writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData());
 
-        if(existing != null && existing.trim().length() > 0) {
-            return writeResult;
-        }
+        if( RepositoryAction.Type.STORED.equals(writeResult.getType())
+            && existing != null 
+            && existing.trim().length() > 0) {
 
-        if(writeResult.getType() == RepositoryAction.Type.STORED) {
-        // attempt to delete since store succeeded
+            // attempt to delete since store succeeded and the previous file is no longer needed
             RepositoryAction deleted = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing), writeResult);
-
+            
             // Wrap the response, so that the primary action is a STORE
             return RepositoryAction.stored(writeResult.getPath(), writeResult.getLength(), deleted);
         }
-
+        
         return writeResult;        
     }
 
