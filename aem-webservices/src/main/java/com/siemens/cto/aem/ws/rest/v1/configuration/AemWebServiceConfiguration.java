@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -71,8 +73,14 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1JvmServiceRest());
         serviceBeans.add(getV1WebServerServiceRest());
         serviceBeans.add(getV1ApplicationServiceRest());
+        serviceBeans.add(getV1UserServiceRest());
 
         return serviceBeans;
+    }
+
+    @Bean
+    public UserServiceRest getV1UserServiceRest() {
+        return new UserServiceRestImpl();
     }
 
     @Bean

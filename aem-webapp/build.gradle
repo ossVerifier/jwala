@@ -15,7 +15,7 @@ dependencies {
     compile group: "org.springframework", name: "spring-webmvc", version: "$project.versions.spring"
     compile group: "javax.servlet", name: "jstl", version: "$localVersions.jstl"
     compile group: "org.codehaus.jackson", name: "jackson-mapper-asl", version: "$project.versions.jackson"
-    compile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
+    providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
 
     compile project(":aem-common")
     compile project(":aem-persistence")

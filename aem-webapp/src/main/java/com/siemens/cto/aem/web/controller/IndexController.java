@@ -68,6 +68,16 @@ public class IndexController {
         return "aem/login";
     }
 
+    @RequestMapping(value = "/page-constants")
+    public String pageConstants() {
+        return "aem/page-constants";
+    }
+
+    @RequestMapping(value = "/common-login-page-scripts")
+    public String commonLogin() {
+        return "aem/common-login-page-scripts";
+    }
+
     @RequestMapping(value = "/login-page-scripts")
     public String loginPageScripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
                                    @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {

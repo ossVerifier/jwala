@@ -8,6 +8,7 @@ dependencies {
     compile group: "javax.ws.rs", name: "javax.ws.rs-api", version: "$project.versions.javax_ws_rs_api"
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
     compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
+    compile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
 }
 
 publishing {
