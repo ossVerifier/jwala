@@ -2,7 +2,9 @@ package com.siemens.cto.aem.persistence.service.app.impl;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
@@ -43,4 +45,18 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         applicationCrudService.removeApplication(anAppId);
     }
     
+    @Override
+    public Application updateWARPath(final Event<UploadWebArchiveCommand> anAppToUpdate, String warPath) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
+        jpaOriginal.setWarPath(warPath);
+        return JpaAppBuilder.appFrom(jpaOriginal);
+    }
+
+    @Override
+    public Application removeWARPath(final Event<RemoveWebArchiveCommand> anAppToUpdate) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
+        jpaOriginal.setWarPath(null);
+        return JpaAppBuilder.appFrom(jpaOriginal);
+    }
+
 }

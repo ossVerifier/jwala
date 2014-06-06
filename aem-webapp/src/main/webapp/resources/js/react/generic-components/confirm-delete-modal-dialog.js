@@ -13,9 +13,10 @@ var ConfirmDeleteModalDialog = React.createClass({
     },
     show: function() {
         var dialogConfirm = this;
-
+        var thisDomNode = dialogConfirm.getDOMNode();
+        
         // Define the Dialog and its properties.
-        $(this.getDOMNode()).dialog({
+        $(thisDomNode).dialog({
             resizable: false,
             modal: true,
             title: "Confirmation Dialog Box",
@@ -23,11 +24,11 @@ var ConfirmDeleteModalDialog = React.createClass({
             width: "auto",
             buttons: {
                 "Yes": function () {
-                    $(dialogConfirm.getDOMNode()).dialog("destroy");
+                    $(thisDomNode).dialog("destroy");
                     dialogConfirm.props.btnClickedCallback("yes");
                 },
                     "No": function () {
-                    $(dialogConfirm.getDOMNode()).dialog("destroy");
+                    $(thisDomNode).dialog("destroy");
                     dialogConfirm.props.btnClickedCallback("no");
                 }
             }

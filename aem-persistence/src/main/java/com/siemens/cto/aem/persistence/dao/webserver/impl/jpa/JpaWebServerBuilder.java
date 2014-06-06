@@ -31,6 +31,6 @@ public class JpaWebServerBuilder {
         				groups,
                         webServer.getName(),
                         webServer.getHost(),
-                        webServer.getPort());
+                        webServer.getPort(), webServer.getHttpsPort());
     }
 }

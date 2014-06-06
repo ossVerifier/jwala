@@ -25,14 +25,16 @@ public class JsonUpdateWebServer {
     private final String webServerId;
     private final String webServerName;
     private final String portNumber;
+    private final String httpsPort;
     private final String hostName;
 
     public JsonUpdateWebServer(final String aWebServerId, final String aWebServerName, final String aHostName,
-            final String aPortNumber, final Set<String> someGroupIds) {
+            final String aPortNumber, final String aHttpsPort, final Set<String> someGroupIds) {
 
         webServerName = aWebServerName;
         hostName = aHostName;
         portNumber = aPortNumber;
+        httpsPort = aHttpsPort;
         webServerId = aWebServerId;
         groupIds = someGroupIds;
     }
@@ -42,7 +44,8 @@ public class JsonUpdateWebServer {
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
         final Identifier<WebServer> webServerId = convertWebServerId();
         final Integer port = convertPortNumber();
-        return new UpdateWebServerCommand(webServerId, groups, webServerName, hostName, port);
+        final Integer httpsPort = convertHttpsPortNumber();
+        return new UpdateWebServerCommand(webServerId, groups, webServerName, hostName, port, httpsPort);
     }
 
     protected Identifier<WebServer> convertWebServerId() {
@@ -58,6 +61,17 @@ public class JsonUpdateWebServer {
             return Integer.valueOf(portNumber);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_PORT, nfe.getMessage(), nfe);
+        }
+    }
+
+    protected Integer convertHttpsPortNumber() {
+        try {
+            if (httpsPort != null && httpsPort.trim() != "") {
+                return Integer.valueOf(httpsPort);
+            }
+            return null;
+        } catch (final NumberFormatException nfe) {
+            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, nfe.getMessage(), nfe);
         }
     }
 
@@ -78,6 +92,7 @@ public class JsonUpdateWebServer {
                                             node.get("webserverName").getTextValue(),
                                             node.get("hostName").getTextValue(),
                                             node.get("portNumber").getValueAsText(),
+                                            node.get("httpsPort").getValueAsText(),
                                             groupIds);
             return juws;
         }

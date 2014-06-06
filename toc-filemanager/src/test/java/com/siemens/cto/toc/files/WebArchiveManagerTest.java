@@ -1,8 +1,8 @@
 package com.siemens.cto.toc.files;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,13 +10,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -45,9 +52,10 @@ public class WebArchiveManagerTest {
         
         LinkedList<Path> appliedNames = new LinkedList<>();
         
-        public Path unique(Path originalName) { 
-            synchronized(appliedNames) { appliedNames.push(originalName); }
-            return originalName;
+        public Path unique(Path originalName) {
+            Path uniquePath = Paths.get(originalName.toString() + UUID.randomUUID().toString());
+            synchronized(appliedNames) { appliedNames.push(uniquePath); }
+            return uniquePath;
         }
         
         public Path pop() { return appliedNames.pop(); }
@@ -93,13 +101,52 @@ public class WebArchiveManagerTest {
     
     @Autowired 
     NameSynthesizer nameSynthesizer;
+    
+    @Autowired
+    FileSystem platformFileSystem;
 
     // Managed by setup/teardown
     ByteArrayInputStream uploadedFile;
     Application app;
+        
+    // static test constants
+    private static final User TEST_USER = new User("test-user");
+    private static Path cleanupPath;
     
+    @AfterClass
+    public static void tearDownClass() throws IOException {
+        if(cleanupPath == null) return;
+        
+        Files.walkFileTree(cleanupPath, new FileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path arg0, IOException arg1) throws IOException {
+                Files.delete(arg0);
+                return FileVisitResult.CONTINUE;
+           }
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path arg0, BasicFileAttributes arg1) throws IOException {
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path arg0, BasicFileAttributes arg1) throws IOException {
+                Files.delete(arg0);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path arg0, IOException arg1) throws IOException {
+                return FileVisitResult.TERMINATE;
+            }
+
+        });
+    }
     @Before
-    public void setup() {
+    public void setup() throws IOException {
+        Path arcDir = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
+
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
 
@@ -108,17 +155,20 @@ public class WebArchiveManagerTest {
         app = new Application(null, null, null, null, null);        
     }
     
-    @After 
-    public void tearDown() {
-        
+    @After
+    public void tearDown() throws IOException {
+        cleanupPath = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
     }
     
-    private void testResults(int expectedSize, int actualSize) throws IOException {
-        assertEquals("Size mismatch after store of file.", expectedSize, actualSize);
+    private void testResults(long expectedSize, RepositoryAction result) throws IOException {
+        testResults(expectedSize, result, false);
+    }
+    private Path testResults(long expectedSize, RepositoryAction result, boolean preserve) throws IOException {
+        assertEquals("Size mismatch after store of file.", expectedSize, (long)result.getLength());
         
         Path storedPath = ((MemoryNameSynthesizer)nameSynthesizer).pop();
         
-        FileChannel fc = FileChannel.open(filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE).resolve(storedPath), StandardOpenOption.READ, StandardOpenOption.DELETE_ON_CLOSE );
+        FileChannel fc = FileChannel.open(filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE).resolve(storedPath), StandardOpenOption.READ, preserve==false?StandardOpenOption.DELETE_ON_CLOSE:StandardOpenOption.READ );
         
         assertNotNull(fc);
         
@@ -129,19 +179,41 @@ public class WebArchiveManagerTest {
         
         assertTrue(dst.asShortBuffer().get(0) == (short)0xc0de);
         
-        fc.close();        
+        fc.close();       
+        
+        return result.getPath();
     }
     
     @Test
     public void testWriteArchive() throws IOException { 
                 
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024, uploadedFile);
-        cmd.validateCommand(); // may trigger BadRequestException
-        
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validateCommand();        
         
         testResults(
-                1*1024*1024,
-                webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(new User("test-user")))));  
+                1*1024*1024L,
+                webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER))));  
     }
 
+    @Test
+    public void testDeleteArchive() throws IOException {
+        
+        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validateCommand();        
+        
+        Path expectedPath = 
+                testResults(
+                    1*1024*1024L,
+                    webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER))),
+                    true);  
+
+        app.setWarPath(expectedPath.toString());
+        
+        RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
+        rwac.validateCommand();
+        
+        RepositoryAction result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
+        
+        assertEquals(RepositoryAction.deleted(expectedPath), result);
+    }
 }

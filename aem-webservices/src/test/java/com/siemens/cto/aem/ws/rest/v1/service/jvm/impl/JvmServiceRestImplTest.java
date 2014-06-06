@@ -1,26 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.core.Response;
-
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
@@ -37,6 +16,21 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * 
@@ -51,6 +45,13 @@ public class JvmServiceRestImplTest {
     private static final List<Jvm> jvmList = createJvmList();
     private static final Jvm jvm = jvmList.get(0);
 
+    // JVM ports
+    private static final String httpPort = "80";
+    private static final String httpsPort = "81";
+    private static final String redirectPort = "82";
+    private static final String shutdownPort = "83";
+    private static final String ajpPort = "84";
+
     @Mock
     private JvmServiceImpl impl;
     @Mock
@@ -62,7 +63,15 @@ public class JvmServiceRestImplTest {
 
     private static List<Jvm> createJvmList() {
         final Set<LiteGroup> groups = new HashSet<>();
-        final Jvm ws = new Jvm(Identifier.id(1L, Jvm.class), name, hostName, groups);
+        final Jvm ws = new Jvm(Identifier.id(1L, Jvm.class),
+                               name,
+                               hostName,
+                               groups,
+                               Integer.valueOf(httpPort),
+                               Integer.valueOf(httpsPort),
+                               Integer.valueOf(redirectPort),
+                               Integer.valueOf(shutdownPort),
+                               Integer.valueOf(ajpPort));
         final List<Jvm> result = new ArrayList<Jvm>();
         result.add(ws);
         return result;
@@ -109,7 +118,7 @@ public class JvmServiceRestImplTest {
     public void testCreateJvm() {
         when(impl.createJvm(any(CreateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName);
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort);
         final Response response = cut.createJvm(jsonCreateJvm);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -127,7 +136,8 @@ public class JvmServiceRestImplTest {
 
         final Set<String> groupIds = new HashSet<String>();
         groupIds.add("1");
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, groupIds);
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, groupIds, httpPort, httpsPort,
+                                                              redirectPort, shutdownPort, ajpPort);
         final Response response = cut.createJvm(jsonCreateJvm);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -142,7 +152,7 @@ public class JvmServiceRestImplTest {
     @Test
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<String>();
-        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds);
+        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1");
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
         final Response response = cut.updateJvm(jsonUpdateJvm);

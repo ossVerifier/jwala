@@ -17,13 +17,15 @@ public class WebServer implements Serializable {
     private final String host;
     private final String name;
     private final Integer port;
+    private final Integer httpsPort;
 
     public WebServer(final Identifier<WebServer> theId, final Collection<Group> theGroups, final String theName,
-            final String theHost, final Integer thePort) {
+            final String theHost, final Integer thePort, final Integer theHttpsPort) {
         id = theId;
         host = theHost;
         port = thePort;
         name = theName;
+        httpsPort = theHttpsPort;
         for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
@@ -45,6 +47,10 @@ public class WebServer implements Serializable {
         return port;
     }
 
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
     public Collection<Group> getGroups() {
         return groups.values();
     }
@@ -63,6 +69,7 @@ public class WebServer implements Serializable {
         result = prime * result + (id == null ? 0 : id.hashCode());
         result = prime * result + (name == null ? 0 : name.hashCode());
         result = prime * result + (port == null ? 0 : port.hashCode());
+        result = prime * result + (httpsPort == null ? 0 : httpsPort.hashCode());
         return result;
     }
 
@@ -113,12 +120,19 @@ public class WebServer implements Serializable {
         } else if (!port.equals(other.port)) {
             return false;
         }
+        if (httpsPort == null) {
+            if (other.httpsPort != null) {
+                return false;
+            }
+        } else if (!httpsPort.equals(other.httpsPort)) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
-        return "WebServer {id=" + id + ", groups=" + groups + ", host=" + host + ", name=" + name + ", port=" + port
-                + "}";
+        return "WebServer {id=" + id + ", groups=" + groups + ", host=" + host + ", name=" + name + ", port="
+                + port  + ", httpsPort=" + httpsPort + "}";
     }
 }

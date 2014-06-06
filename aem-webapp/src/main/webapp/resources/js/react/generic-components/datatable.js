@@ -40,14 +40,14 @@ var TocDataTable = React.createClass({
 
         var self = this;
         var dataTable = this.dataTable;
-        $(dataTable).find("tr").off("click").on("click", function(e) {
+        $(dataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function(e) {
             if ($(this).hasClass("row_selected") ) {
                 $(this).removeClass("row_selected");
             } else {
-                $(dataTable).find("tr").removeClass("row_selected");
+                $(dataTable).find("thead > tr, tbody > tr, > tr").removeClass("row_selected");
                 $(this).addClass("row_selected");
 
-                var cell = dataTable.find("tbody tr.row_selected")[0];
+                var cell = dataTable.find("tbody > tr.row_selected")[0];
                 if (cell !== undefined) {
                     var i = dataTable.fnGetPosition(cell);
                     var item = dataTable.fnGetData(i);

@@ -27,15 +27,30 @@ public class JsonUpdateJvm {
     private final String jvmName;
     private final String hostName;
     private final Set<String> groupIds;
+    private final String httpPort;
+    private final String httpsPort;
+    private final String redirectPort;
+    private final String shutdownPort;
+    private final String ajpPort;
 
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
                          final String theHostName,
-                         final Set<String> someGroupIds) {
+                         final Set<String> someGroupIds,
+                         final String theHttpPort,
+                         final String theHttpsPort,
+                         final String theRedirectPort,
+                         final String theShutdownPort,
+                         final String theAjpPort) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
+        httpPort = theHttpPort;
+        httpsPort = theHttpsPort;
+        redirectPort = theRedirectPort;
+        shutdownPort = theShutdownPort;
+        ajpPort = theAjpPort;
     }
 
     public UpdateJvmCommand toUpdateJvmCommand() throws BadRequestException {
@@ -46,7 +61,12 @@ public class JsonUpdateJvm {
         return new UpdateJvmCommand(id,
                                     jvmName,
                                     hostName,
-                                    groupIds);
+                                    groupIds,
+                                    JsonUtilJvm.stringToInteger(httpPort),
+                                    JsonUtilJvm.stringToInteger(httpsPort),
+                                    JsonUtilJvm.stringToInteger(redirectPort),
+                                    JsonUtilJvm.stringToInteger(shutdownPort),
+                                    JsonUtilJvm.stringToInteger(ajpPort));
     }
 
     protected Identifier<Jvm> convertJvmId() {
@@ -78,7 +98,12 @@ public class JsonUpdateJvm {
             return new JsonUpdateJvm(node.get("jvmId").getValueAsText(),
                                      node.get("jvmName").getTextValue(),
                                      node.get("hostName").getTextValue(),
-                                     deserializeGroupIdentifiers(node));
+                                     deserializeGroupIdentifiers(node),
+                                     node.get("httpPort").getValueAsText(),
+                                     node.get("httpsPort").getValueAsText(),
+                                     node.get("redirectPort").getValueAsText(),
+                                     node.get("shutdownPort").getValueAsText(),
+                                     node.get("ajpPort").getValueAsText());
         }
     }
 }

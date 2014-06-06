@@ -22,10 +22,20 @@ public class CommonJvmPersistenceServiceBehavior {
 
     public Jvm createJvm(final String aJvmName,
                          final String aHostName,
+                         final Integer aHttpPort,
+                         final Integer aHttpsPort,
+                         final Integer aRedirectPort,
+                         final Integer aShutdownPort,
+                         final Integer aAjpPort,
                          final String aUserId) {
 
         final Event<CreateJvmCommand> event = createCreateJvmEvent(aJvmName,
                                                                    aHostName,
+                                                                   aHttpPort,
+                                                                   aHttpsPort,
+                                                                   aRedirectPort,
+                                                                   aShutdownPort,
+                                                                   aAjpPort,
                                                                    aUserId);
 
         return jvmPersistenceService.createJvm(event);
@@ -34,11 +44,21 @@ public class CommonJvmPersistenceServiceBehavior {
     public Jvm updateJvm(final Identifier<Jvm> aJvmId,
                          final String aNewJvmName,
                          final String aNewHostName,
+                         final Integer aNewHttpPort,
+                         final Integer aNewHttpsPort,
+                         final Integer aNewRedirectPort,
+                         final Integer aNewShutdownPort,
+                         final Integer aNewAjpPort,
                          final String aUserId) {
 
         final Event<UpdateJvmCommand> event = createUpdateJvmEvent(aJvmId,
                                                                    aNewJvmName,
                                                                    aNewHostName,
+                                                                   aNewHttpPort,
+                                                                   aNewHttpsPort,
+                                                                   aNewRedirectPort,
+                                                                   aNewShutdownPort,
+                                                                   aNewAjpPort,
                                                                    aUserId);
 
         return jvmPersistenceService.updateJvm(event);
@@ -46,11 +66,21 @@ public class CommonJvmPersistenceServiceBehavior {
 
     protected Event<CreateJvmCommand> createCreateJvmEvent(final String aJvmName,
                                                            final String aJvmHostName,
+                                                           final Integer httpPort,
+                                                           final Integer httpsPort,
+                                                           final Integer redirectPort,
+                                                           final Integer shutdownPort,
+                                                           final Integer ajpPort,
                                                            final String aUserId) {
 
         final Event<CreateJvmCommand> createJvm = new Event<>(new CreateJvmCommand(aJvmName,
-                                                                                   aJvmHostName),
-                                                              createAuditEvent(aUserId));
+                                                                                   aJvmHostName,
+                                                                                   httpPort,
+                                                                                   httpsPort,
+                                                                                   redirectPort,
+                                                                                   shutdownPort,
+                                                                                   ajpPort),
+                                                                                   createAuditEvent(aUserId));
 
         return createJvm;
     }
@@ -58,13 +88,23 @@ public class CommonJvmPersistenceServiceBehavior {
     protected Event<UpdateJvmCommand> createUpdateJvmEvent(final Identifier<Jvm> aJvmId,
                                                            final String aNewJvmName,
                                                            final String aNewHostName,
+                                                           final Integer aNewHttpPort,
+                                                           final Integer aNewHttpsPort,
+                                                           final Integer aNewRedirectPort,
+                                                           final Integer aNewShutdownPort,
+                                                           final Integer aNewAjpPort,
                                                            final String aUserId) {
 
         final Event<UpdateJvmCommand> event = new Event<>(new UpdateJvmCommand(aJvmId,
                                                                                aNewJvmName,
                                                                                aNewHostName,
-                                                                               Collections.<Identifier<Group>>emptySet()),
-                                                          createAuditEvent(aUserId));
+                                                                               Collections.<Identifier<Group>>emptySet(),
+                                                                               aNewHttpPort,
+                                                                               aNewHttpsPort,
+                                                                               aNewRedirectPort,
+                                                                               aNewShutdownPort,
+                                                                               aNewAjpPort),
+                                                                               createAuditEvent(aUserId));
 
         return event;
     }

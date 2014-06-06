@@ -30,7 +30,12 @@ public class JpaJvmBuilder {
         final JvmBuilder builder = new JvmBuilder().setId(new Identifier<Jvm>(jvm.getId()))
                                                    .setName(jvm.getName())
                                                    .setHostName(jvm.getHostName())
-                                                   .setGroups(createLiteGroups());
+                                                   .setGroups(createLiteGroups())
+                                                   .setHttpPort(jvm.getHttpPort())
+                                                   .setHttpsPort(jvm.getHttpsPort())
+                                                   .setRedirectPort(jvm.getRedirectPort())
+                                                   .setShutdownPort(jvm.getShutdownPort())
+                                                   .setAjpPort(jvm.getAjpPort());
         return builder.build();
     }
 

@@ -9,6 +9,9 @@
 <script src="public-resources/ext/js/jquery/jquery.validate.js"></script>
 <script src="public-resources/ext/js/jquery/jquery.dataTables.js"></script>
 <script src="public-resources/ext/js/json2.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.ui.widget.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.iframe-transport.js"></script>
+<script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-1.0.4.js"></script>

@@ -34,7 +34,6 @@ public interface ApplicationServiceRest {
     @Path("/{applicationId}")
     Response getApplication(@PathParam("applicationId") final Identifier<Application> anAppId);
 
-
     @GET
     @Path("/jvm/{jvmId}")
     Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
@@ -49,6 +48,16 @@ public interface ApplicationServiceRest {
     Response updateApplication(final JsonUpdateApplication appsToUpdate);
     
     @DELETE
-    @Path("/{appId}")
-    Response removeApplication(@PathParam("appId") Identifier<Application> anAppToRemove);
+    @Path("/{applicationId}")
+    Response removeApplication(@PathParam("applicationId") Identifier<Application> anAppToRemove);
+
+    @POST
+    @Path("/{applicationId}/war")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet);
+
+    @DELETE
+    @Path("/{applicationId}/war")
+    Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet);
+
 }

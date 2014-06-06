@@ -39,12 +39,14 @@ public abstract class AbstractJvmDaoIntegrationTest {
         userName = "jvmTestUserName";
 
         preCreatedJvm =
-                jvmDao.createJvm(createCreateJvmCommand("Pre-created JVM Name", "Pre-created Host Name", userName));
+                jvmDao.createJvm(createCreateJvmCommand("Pre-created JVM Name", "Pre-created Host Name",
+                                                         5, 4, 3, 2, 1, userName));
     }
 
     @Test
     public void testCreateNewJvm() {
-        final Event<CreateJvmCommand> command = createCreateJvmCommand("New Jvm Name", "New Host Name", userName);
+        final Event<CreateJvmCommand> command = createCreateJvmCommand("New Jvm Name", "New Host Name",
+                                                                        5, 4, 3, 2, 1, userName);
         final Jvm createdJvm = jvmDao.createJvm(command);
 
         assertEquals(command.getCommand().getJvmName(), createdJvm.getJvmName());
@@ -54,7 +56,14 @@ public abstract class AbstractJvmDaoIntegrationTest {
     public void testCreateDuplicateJvm() {
 
         final Event<CreateJvmCommand> commandEvent =
-                createCreateJvmCommand(preCreatedJvm.getJvmName(), preCreatedJvm.getHostName(), userName);
+                createCreateJvmCommand(preCreatedJvm.getJvmName(),
+                                       preCreatedJvm.getHostName(),
+                                       preCreatedJvm.getHttpPort(),
+                                       preCreatedJvm.getHttpsPort(),
+                                       preCreatedJvm.getRedirectPort(),
+                                       preCreatedJvm.getShutdownPort(),
+                                       preCreatedJvm.getAjpPort(),
+                                       userName);
         jvmDao.createJvm(commandEvent);
     }
 
@@ -69,20 +78,32 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test
     public void testUpdateJvm() {
         final Event<UpdateJvmCommand> update =
-                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", userName);
+                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName);
         final Jvm actualJvm = jvmDao.updateJvm(update);
 
         assertEquals(update.getCommand().getNewJvmName(), actualJvm.getJvmName());
         assertEquals(update.getCommand().getNewHostName(), actualJvm.getHostName());
+        assertEquals(update.getCommand().getNewHttpPort(), actualJvm.getHttpPort());
+        assertEquals(update.getCommand().getNewHttpsPort(), actualJvm.getHttpsPort());
+        assertEquals(update.getCommand().getNewRedirectPort(), actualJvm.getRedirectPort());
+        assertEquals(update.getCommand().getNewShutdownPort(), actualJvm.getShutdownPort());
+        assertEquals(update.getCommand().getNewAjpPort(), actualJvm.getAjpPort());
     }
 
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateJvm() {
         final Jvm newJvm =
-                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", userName));
+                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", 5, 4, 3, 2, 1, userName));
 
-        jvmDao.updateJvm(createUpdateJvmCommand(newJvm.getId(), preCreatedJvm.getJvmName(),
-                preCreatedJvm.getHostName(), userName));
+        jvmDao.updateJvm(createUpdateJvmCommand(newJvm.getId(),
+                                                preCreatedJvm.getJvmName(),
+                                                preCreatedJvm.getHostName(),
+                                                preCreatedJvm.getHttpPort(),
+                                                preCreatedJvm.getHttpsPort(),
+                                                preCreatedJvm.getRedirectPort(),
+                                                preCreatedJvm.getShutdownPort(),
+                                                preCreatedJvm.getAjpPort(),
+                                                userName));
     }
 
     @Test
@@ -99,8 +120,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
         final List<Jvm> activeJvms = jvmDao.findJvms(activeSuffix, new PaginationParameter(0, numberToCreate));
         final List<Jvm> passiveJvms = jvmDao.findJvms(passiveSuffix, new PaginationParameter(0, numberToCreate));
 
-        verifyBulkJvmAssertions(activeJvms, numberActive, activeSuffix, activeSuffix);
-        verifyBulkJvmAssertions(passiveJvms, numberToCreate - numberActive, passiveSuffix, passiveSuffix);
+        verifyBulkJvmAssertions(activeJvms, numberActive, activeSuffix, activeSuffix, 5, 4, 3, 2, 1);
+        verifyBulkJvmAssertions(passiveJvms, numberToCreate - numberActive, passiveSuffix, passiveSuffix, 5, 4, 3, 2, 1);
     }
 
     @Test
@@ -118,24 +139,56 @@ public abstract class AbstractJvmDaoIntegrationTest {
         return new Event<>(new CreateGroupCommand(aGroupName), AuditEvent.now(new User(aUserName)));
     }
 
-    protected Event<CreateJvmCommand> createCreateJvmCommand(final String aJvmName, final String aHostName,
-            final String aUserName) {
-        return new Event<>(new CreateJvmCommand(aJvmName, aHostName), AuditEvent.now(new User(aUserName)));
+    protected Event<CreateJvmCommand> createCreateJvmCommand(final String aJvmName,
+                                                             final String aHostName,
+                                                             final Integer httpPort,
+                                                             final Integer httpsPort,
+                                                             final Integer redirectPort,
+                                                             final Integer shutdownPort,
+                                                             final Integer ajpPort,
+                                                             final String aUserName) {
+        return new Event<>(new CreateJvmCommand(aJvmName, aHostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort), AuditEvent.now(new User(aUserName)));
     }
 
     protected Event<UpdateJvmCommand> createUpdateJvmCommand(final Identifier<Jvm> aJvmId, final String aNewJvmName,
-            final String aNewHostName, final String aUserName) {
-        return new Event<>(new UpdateJvmCommand(aJvmId, aNewJvmName, aNewHostName,
-                Collections.<Identifier<Group>> emptySet()), AuditEvent.now(new User(aUserName)));
+                                                             final String aNewHostName,
+                                                             final Integer aNewHttpPort,
+                                                             final Integer aNewHttpsPort,
+                                                             final Integer aNewRedirectPort,
+                                                             final Integer aNewShutdownPort,
+                                                             final Integer aNewAjpPort,
+                                                             final String aUserName) {
+        return new Event<>(new UpdateJvmCommand(aJvmId,
+                                                aNewJvmName,
+                                                aNewHostName,
+                                                Collections.<Identifier<Group>> emptySet(),
+                                                aNewHttpPort,
+                                                aNewHttpsPort,
+                                                aNewRedirectPort,
+                                                aNewShutdownPort,
+                                                aNewAjpPort), AuditEvent.now(new User(aUserName)));
     }
 
-    protected void verifyBulkJvmAssertions(final List<Jvm> someJvms, final int anExpectedSize,
-            final String anExpectedJvmSuffix, final String anExpectedHostNameSuffix) {
+    protected void verifyBulkJvmAssertions(final List<Jvm> someJvms,
+                                           final int anExpectedSize,
+                                           final String anExpectedJvmSuffix,
+                                           final String anExpectedHostNameSuffix,
+                                           final Integer httpPort,
+                                           final Integer httpsPort,
+                                           final Integer redirectPort,
+                                           final Integer shutdownPort,
+                                           final Integer ajpPort) {
 
         assertEquals(anExpectedSize, someJvms.size());
         for (final Jvm jvm : someJvms) {
             assertTrue(jvm.getJvmName().contains(anExpectedJvmSuffix));
             assertTrue(jvm.getHostName().contains(anExpectedHostNameSuffix));
+
+            assertTrue(jvm.getHttpPort().equals(httpPort));
+            assertTrue(jvm.getHttpsPort().equals(httpsPort));
+            assertTrue(jvm.getRedirectPort().equals(redirectPort));
+            assertTrue(jvm.getShutdownPort().equals(shutdownPort));
+            assertTrue(jvm.getAjpPort().equals(ajpPort));
         }
     }
 
@@ -143,7 +196,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
             final String aHostNameSuffix) {
         for (int i = 1; i <= aNumberToCreate; i++) {
             jvmDao.createJvm(createCreateJvmCommand("JVM" + i + aJvmNameSuffix, "HostName" + i + aHostNameSuffix,
-                    userName));
+                                                    5, 4, 3, 2, 1, userName));
         }
     }
 }

@@ -26,13 +26,15 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private final String newHost;
     private final String newName;
     private final Integer newPort;
+    private final Integer newHttpsPort;
 
     public UpdateWebServerCommand(final Identifier<WebServer> theId,
             final Collection<Identifier<Group>> theNewGroupIds, final String theNewName, final String theNewHost,
-            final Integer theNewPort) {
+            final Integer theNewPort, final Integer theNewHttpsPort) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
+        newHttpsPort = theNewHttpsPort;
         newName = theNewName;
         newGroupIds = Collections.unmodifiableCollection(new HashSet<>(theNewGroupIds));
     }
@@ -53,6 +55,10 @@ public class UpdateWebServerCommand implements Serializable, Command {
         return newPort;
     }
 
+    public Integer getNewHttpsPort() {
+        return newHttpsPort;
+    }
+
     public Collection<Identifier<Group>> getNewGroupIds() {
         return newGroupIds;
     }
@@ -61,7 +67,9 @@ public class UpdateWebServerCommand implements Serializable, Command {
     public void validateCommand() throws BadRequestException {
         final MultipleRules mr =
                 new MultipleRules(new WebServerNameRule(newName), new WebServerHostNameRule(newHost),
-                        new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT), new WebServerIdRule(id),
+                        new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
+                        new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
+                        new WebServerIdRule(id),
                         new GroupIdsRule(newGroupIds));
 
         mr.validate();
@@ -70,7 +78,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
     @Override
     public String toString() {
         return "UpdateWebServerCommand {id=" + id + ", groupIds=" + newGroupIds + ", newHost=" + newHost + ", newName="
-                + newName + ", newPort=" + newPort + "}";
+                + newName + ", newPort=" + newPort + ", newHttpsPort=" + newHttpsPort + "}";
     }
 
     @Override
@@ -82,6 +90,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
         result = prime * result + (newHost == null ? 0 : newHost.hashCode());
         result = prime * result + (newName == null ? 0 : newName.hashCode());
         result = prime * result + (newPort == null ? 0 : newPort.hashCode());
+        result = prime * result + (newHttpsPort == null ? 0 : newHttpsPort.hashCode());
         return result;
     }
 
@@ -130,6 +139,13 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 return false;
             }
         } else if (!newPort.equals(other.newPort)) {
+            return false;
+        }
+        if (newHttpsPort == null) {
+            if (other.newHttpsPort != null) {
+                return false;
+            }
+        } else if (!newHttpsPort.equals(other.newHttpsPort)) {
             return false;
         }
         return true;

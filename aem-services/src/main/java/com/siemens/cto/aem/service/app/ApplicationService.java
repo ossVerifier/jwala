@@ -5,6 +5,7 @@ import java.util.List;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -25,4 +26,7 @@ public interface ApplicationService {
 
     List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId, PaginationParameter somePagination);
 
+    Application uploadWebArchive(UploadWebArchiveCommand command, User user);
+
+    Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 }

@@ -27,12 +27,17 @@ public class JsonCreateWebServer {
     private String webserverName;
     private String portNumber;
     private String hostName;
+    private String httpsPort;
 
-    public JsonCreateWebServer(final String theName, final String theHostName, final String thePortNumber,
-            Set<String> theGroupIds) {
+    public JsonCreateWebServer(final String theName,
+                               final String theHostName,
+                               final String thePortNumber,
+                               final String theHttpsPort,
+                               Set<String> theGroupIds) {
         webserverName = theName;
         hostName = theHostName;
         portNumber = thePortNumber;
+        httpsPort = theHttpsPort;
         groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
     }
 
@@ -40,12 +45,17 @@ public class JsonCreateWebServer {
         final Set<Identifier<Group>> ids = new IdentifierSetBuilder(groupIds).build();
 
         Integer port = null;
+        Integer httpsPort = null;
         try {
             port = Integer.valueOf(portNumber);
+
+            if (this.httpsPort != null && this.httpsPort.trim() != "") {
+                httpsPort = Integer.valueOf(this.httpsPort);
+            }
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_PORT, nfe.getMessage(), nfe);
         }
-        return new CreateWebServerCommand(ids, webserverName, hostName, port);
+        return new CreateWebServerCommand(ids, webserverName, hostName, port, httpsPort);
     }
 
     static class JsonCreateWebServerDeserializer extends AbstractJsonDeserializer<JsonCreateWebServer> {
@@ -62,6 +72,7 @@ public class JsonCreateWebServer {
             final JsonCreateWebServer jcws = new JsonCreateWebServer(node.get("webserverName").getTextValue(),
                                                                      node.get("hostName").getTextValue(),
                                                                      node.get("portNumber").getValueAsText(),
+                                                                     node.get("httpsPort").getValueAsText(),
                                                                      deserializeGroupIdentifiers(node));
             return jcws;
         }

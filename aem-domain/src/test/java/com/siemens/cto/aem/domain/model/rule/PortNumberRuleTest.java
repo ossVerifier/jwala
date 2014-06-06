@@ -16,6 +16,11 @@ public class PortNumberRuleTest {
     PortNumberRule pnrOne = new PortNumberRule(Integer.valueOf(0), error);
     PortNumberRule pnrTwo = new PortNumberRule(Integer.valueOf(65536), error);
 
+    PortNumberRule nullValueValid = new PortNumberRule(null, error, true);
+    PortNumberRule nullValueInvalid1 = new PortNumberRule(null, error);
+    PortNumberRule nullValueInvalid2 = new PortNumberRule(null, error, false);
+
+
     @Test
     public void testIsValid() {
         assertTrue(pnrValid.isValid());
@@ -43,5 +48,12 @@ public class PortNumberRuleTest {
     public void testGetMessage() {
         assertEquals("Port specified is invalid.", pnrNull.getMessage());
         assertEquals("Port specified is invalid (0).", pnrOne.getMessage());
+    }
+
+    @Test
+    public void testPortValidationIfNullableIsTrue() {
+        assertTrue(nullValueValid.isValid());
+        assertEquals("Port specified is invalid.", nullValueInvalid1.getMessage());
+        assertEquals("Port specified is invalid.", nullValueInvalid2.getMessage());
     }
 }

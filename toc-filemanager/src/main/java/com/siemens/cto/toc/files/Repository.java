@@ -6,11 +6,7 @@ import java.nio.file.Path;
 
 public interface Repository {
 
-    /**
-     * Write a file
-     * @return number of bytes written
-     * @throws IOException
-     */
-    int writeStream(TocPath refPlace, Path filename, InputStream transientData) throws IOException;
-
+    RepositoryAction writeStream(TocPath refPlace, Path filename, InputStream transientData, RepositoryAction... inResponseTo) throws IOException;
+    
+    RepositoryAction deleteIfExisting(TocPath refPlace, Path filename, RepositoryAction... inResponseTo) throws IOException;
 }

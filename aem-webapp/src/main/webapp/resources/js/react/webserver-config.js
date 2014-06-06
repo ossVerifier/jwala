@@ -7,7 +7,7 @@ var WebServerConfig = React.createClass({
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
             webServerFormData: {},
-            webServerTableData: [{"name":"","id":{"id":0},"host":"b","port":9000,"groups":[]}],
+            webServerTableData: [],
             groupMultiSelectData: []
         }
     },
@@ -137,6 +137,7 @@ var WebServerConfigForm = React.createClass({
             name: "",
             host: "",
             port: "",
+            httpsPort: "",
             groupIds: undefined
         }
     },
@@ -156,6 +157,7 @@ var WebServerConfigForm = React.createClass({
                        name:this.getPropVal(nextProps, "name"),
                        host:this.getPropVal(nextProps, "host"),
                        port:this.getPropVal(nextProps, "port"),
+                       httpsPort:this.getPropVal(nextProps, "httpsPort"),
                        groupIds:this.getPropVal(nextProps, "groupIds")});
     },
     mixins: [React.addons.LinkedStateMixin],
@@ -188,7 +190,7 @@ var WebServerConfigForm = React.createClass({
                                 <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="35"/></td>
                             </tr>
                             <tr>
-                                <td>*Port</td>
+                                <td>*HTTP Port</td>
                             </tr>
                             <tr>
                                 <td>
@@ -197,6 +199,17 @@ var WebServerConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td><input name="portNumber" type="text" valueLink={this.linkState("port")} required maxLength="5"/></td>
+                            </tr>
+                            <tr>
+                                <td>HTTPS Port</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="httpsPort" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="httpsPort" type="text" valueLink={this.linkState("httpsPort")} maxLength="5"/></td>
                             </tr>
                             <tr>
                                 <td>
@@ -250,6 +263,9 @@ var WebServerConfigForm = React.createClass({
                 "portNumber": {
                     range: [1, 65535]
                 },
+                "httpsPort": {
+                    range: [1, 65535]
+                },
                 "webserverName": {
                     regex: true
                 },
@@ -282,6 +298,7 @@ var WebServerConfigForm = React.createClass({
                                                   this.state.groupIds,
                                                   this.state.host,
                                                   this.state.port,
+                                                  this.state.httpsPort,
                                                   this.success,
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
@@ -322,6 +339,7 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Name", mData:"name", tocType:"link"},
                         {sTitle:"Host", mData:"host"},
                         {sTitle:"Port", mData:"port"},
+                        {sTitle:"Https Port", mData:"httpsPort"},
                         {sTitle:"Group Assignment",
                          mData:"groups",
                          tocType:"array",

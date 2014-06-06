@@ -8,15 +8,25 @@ public class PortNumberRule implements Rule {
 
     protected final Integer port;
 	private AemFaultType error = AemFaultType.INVALID_HOST_NAME;
+    protected boolean nullable;
 
     public PortNumberRule(final Integer thePort, final AemFaultType errorCode) {
         port = thePort;
         error = errorCode;
     }
 
+    public PortNumberRule(final Integer thePort, final AemFaultType errorCode, final boolean nullable) {
+        port = thePort;
+        error = errorCode;
+        this.nullable = nullable;
+    }
+
     @Override
     public boolean isValid() {
-        return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
+        if (!nullable || port != null) {
+            return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
+        }
+        return true;
     }
 
     @Override
