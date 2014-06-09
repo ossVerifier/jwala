@@ -35,3 +35,9 @@ span.remember {
     color: red;
     font-style: italic
 }
+
+.gear-position {
+    position: absolute;
+    left: 65px;
+    margin-top: 2px
+}
