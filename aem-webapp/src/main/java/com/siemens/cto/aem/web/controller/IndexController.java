@@ -88,4 +88,13 @@ public class IndexController {
         return "aem/prod-login-page-scripts";
     }
 
+    @RequestMapping(value = "/page-constants")
+    public String pageConstants() {
+        return "aem/page-constants";
+    }
+
+    @RequestMapping(value = "/common-login-page-scripts")
+    public String commonLogin() {
+        return "aem/common-login-page-scripts";
+    }
 }
