@@ -74,9 +74,9 @@ public class CreateJvmCommand implements Serializable, Command {
                           new JvmHostNameRule(hostName),
                           new PortNumberRule(httpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
-                          new PortNumberRule(redirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT, true),
-                          new PortNumberRule(shutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT, true),
-                          new PortNumberRule(ajpPort, AemFaultType.INVALID_JVM_AJP_PORT, true)).validate();
+                          new PortNumberRule(redirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
+                          new PortNumberRule(shutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
+                          new PortNumberRule(ajpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 
     @Override
