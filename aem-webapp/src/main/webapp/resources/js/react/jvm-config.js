@@ -220,7 +220,7 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="httpPort" type="text" valueLink={this.linkState("httpPort")} required maxLength="5"/></td>
+                                <td><input name="httpPort" type="text" valueLink={this.linkState("httpPort")} required maxLength="5" onBlur={this.handleHttpBlur}/></td>
                             </tr>
 
                             <tr>
@@ -236,7 +236,7 @@ var JvmConfigForm = React.createClass({
                             </tr>
 
                             <tr>
-                                <td>Redirect Port</td>
+                                <td>*Redirect Port</td>
                             </tr>
                             <tr>
                                 <td>
@@ -244,11 +244,11 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="redirectPort" type="text" valueLink={this.linkState("redirectPort")} maxLength="5"/></td>
+                                <td><input name="redirectPort" type="text" valueLink={this.linkState("redirectPort")} required maxLength="5"/></td>
                             </tr>
 
                             <tr>
-                                <td>Shutdown Port</td>
+                                <td>*Shutdown Port</td>
                             </tr>
                             <tr>
                                 <td>
@@ -256,11 +256,11 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="shutdownPort" type="text" valueLink={this.linkState("shutdownPort")} maxLength="5"/></td>
+                                <td><input name="shutdownPort" type="text" valueLink={this.linkState("shutdownPort")} required maxLength="5"/></td>
                             </tr>
 
                             <tr>
-                                <td>AJP Port</td>
+                                <td>*AJP Port</td>
                             </tr>
                             <tr>
                                 <td>
@@ -268,7 +268,7 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="ajpPort" type="text" valueLink={this.linkState("ajpPort")} maxLength="5"/></td>
+                                <td><input name="ajpPort" type="text" valueLink={this.linkState("ajpPort")} required maxLength="5"/></td>
                             </tr>
 
                             <tr>
@@ -299,6 +299,35 @@ var JvmConfigForm = React.createClass({
                     </form>
                 </div>
     },
+    isHttpPortInteger: function() {
+        return (this.state.httpPort % 1 === 0);
+    },
+    isValidHttpPort: function() {
+        var port = this.state.httpPort;
+        if ($.trim(port) && !isNaN(port) && this.isHttpPortInteger() && (port > 0 && port < 65532)) {
+            return true;
+        }
+        return false;
+    },
+    handleHttpBlur: function() {
+        if (this.isValidHttpPort()) {
+            var basePort = parseInt(this.state.httpPort);
+            var ports = {};
+            if (!$.trim(this.state.httpsPort)) {
+                ports.httpsPort = basePort + 1;
+            }
+            if (!$.trim(this.state.redirectPort)) {
+                ports.redirectPort = basePort + 2;
+            }
+            if (!$.trim(this.state.shutdownPort)) {
+                ports.shutdownPort = basePort + 3;
+            }
+            if (!$.trim(this.state.ajpPort)) {
+                ports.ajpPort = basePort + 4;
+            }
+            this.setState(ports);
+        }
+    },
     onSelectGroups: function(groupIds) {
         this.setState({groupIds:groupIds});
     },
@@ -327,7 +356,7 @@ var JvmConfigForm = React.createClass({
                     regex: true
                 },
                 "httpPort": {
-                    range: [1, 65535]
+                    range: [1, 65531]
                 },
                 "httpsPort": {
                     range: [1, 65535]
