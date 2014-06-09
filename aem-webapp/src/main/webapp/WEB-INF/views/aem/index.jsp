@@ -17,7 +17,6 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/webserver-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-multi-select-box.css">
 
-<jsp:include page="/page-constants"/>
 <jsp:include page="/index-page-scripts?devMode=${devMode}"/>
 
 <!-- Non React Components -->

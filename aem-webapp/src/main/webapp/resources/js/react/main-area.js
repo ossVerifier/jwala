@@ -30,7 +30,7 @@ var Banner = React.createClass({
                </div>
     },
     handleLogoutClick: function() {
-        ServiceFactory.getUserService().logout();
+        alert("Logout!");
     }
 });
 

@@ -99,9 +99,9 @@ public class UpdateJvmCommand implements Serializable, Command {
                           new GroupIdsRule(groupIds),
                           new PortNumberRule(newHttpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(newHttpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
-                          new PortNumberRule(newRedirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
-                          new PortNumberRule(newShutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
-                          new PortNumberRule(newAjpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
+                          new PortNumberRule(newRedirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT, true),
+                          new PortNumberRule(newShutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT, true),
+                          new PortNumberRule(newAjpPort, AemFaultType.INVALID_JVM_AJP_PORT, true)).validate();
     }
 
     @Override

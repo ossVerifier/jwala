@@ -59,9 +59,6 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         jpaJvm.setHostName("usmlvv1junit00");
         jpaJvm.setName("jvm_name");
         jpaJvm.setHttpPort(5);
-        jpaJvm.setRedirectPort(4);
-        jpaJvm.setShutdownPort(3);
-        jpaJvm.setAjpPort(2);
         entityManager.persist(jpaJvm);
 
         jpaApplication = new JpaApplication();

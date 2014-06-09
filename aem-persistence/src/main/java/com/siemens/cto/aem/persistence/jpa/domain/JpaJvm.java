@@ -26,13 +26,10 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     private Integer httpsPort;
 
-    @Column(nullable = false)
     private Integer redirectPort;
 
-    @Column(nullable = false)
     private Integer shutdownPort;
 
-    @Column(nullable = false)
     private Integer ajpPort;
 
     public Long getId() {
