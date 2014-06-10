@@ -24,9 +24,9 @@ import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonUpdateApplication;
 @Path("/applications")
 @Produces(MediaType.APPLICATION_JSON)
 public interface ApplicationServiceRest {
-    
+
     @GET
-    Response getApplications(   
+    Response getApplications(
             @QueryParam("group.id") final Identifier<Group> aGroupId,
             @BeanParam final PaginationParamProvider paginationParamProvider );
 
@@ -35,18 +35,18 @@ public interface ApplicationServiceRest {
     Response getApplication(@PathParam("applicationId") final Identifier<Application> anAppId);
 
     @GET
-    @Path("/jvm/{jvmId}")
+    @Path("/jvm/{jvmId}") //TODO The @PathParam and the Path variables don't align
     Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
                                      @BeanParam PaginationParamProvider paginationParamProvider);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     Response createApplication(final JsonCreateApplication anAppToCreate);
-    
+
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     Response updateApplication(final JsonUpdateApplication appsToUpdate);
-    
+
     @DELETE
     @Path("/{applicationId}")
     Response removeApplication(@PathParam("applicationId") Identifier<Application> anAppToRemove);

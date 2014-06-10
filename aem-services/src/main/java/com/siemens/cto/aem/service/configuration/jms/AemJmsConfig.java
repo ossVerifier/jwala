@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jndi.JndiLocatorDelegate;
 
+import com.siemens.cto.aem.service.jvm.state.jms.JmsPackageBuilder;
+
 @Configuration
 public class AemJmsConfig {
 
@@ -32,6 +34,12 @@ public class AemJmsConfig {
     @Bean
     public JmsTemplate getJmsTemplate() {
         return new JmsTemplate(getConnectionFactory());
+    }
+
+    @Bean
+    public JmsPackageBuilder getJmsPackageBuilder() {
+        return new JmsPackageBuilder().setConnectionFactory(getConnectionFactory())
+                                      .setDestination(getJvmStateNotificationDestination());
     }
 
     protected <T> T lookup(final String aJndiReference,

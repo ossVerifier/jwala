@@ -39,6 +39,9 @@ var decorateTableAsDataTable = function(tableId,
             aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
                                        "mData": item.mData,
                                        "aTargets": [itemIndex]};
+            if (item.mRender !== undefined) {
+                aoColumnDefs[itemIndex].mRender = item.mRender;
+            }
 
             if(item.bVisible !== undefined) {
                 aoColumnDefs[itemIndex].bVisible = item.bVisible;
@@ -65,9 +68,9 @@ var decorateTableAsDataTable = function(tableId,
               if(item.tocRenderer == 'undefined') {
                  alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
               }
-              
+
               return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
-              
+
             } else if (item.tocType === "control") {
 
                 self.expandCollapseEnabled = true;

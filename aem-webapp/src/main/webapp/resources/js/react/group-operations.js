@@ -2,10 +2,16 @@
 var GroupOperations = React.createClass({
     getInitialState: function() {
         selectedGroup = null;
+        this.allJvmData = { jvms: [],
+                            jvmStates: []};
         return {
+//            Rationalize/unify all the groups/jvms/webapps/groupTableData/etc. stuff so it's coherent
             groupFormData: {},
-            groupTableData: [{"name":"","id":{"id":0}}]
-        }
+            groupTableData: [{"name":"","id":{"id":0}, jvms:[]}],
+            groups: [{"name":"","id":{"id":0}, jvms:[]}],
+            jvms: [],
+            jvmStates: []
+        };
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
@@ -15,7 +21,10 @@ var GroupOperations = React.createClass({
                             <td>
                                 <div>
                                     <GroupOperationsDataTable data={this.state.groupTableData}
-                                                              selectItemCallback={this.selectItemCallback}/>
+                                                              selectItemCallback={this.selectItemCallback}
+                                                              groups={this.state.groups}
+                                                              jvms={this.state.jvms}
+                                                              jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}/>
                                 </div>
                             </td>
                         </tr>
@@ -28,16 +37,63 @@ var GroupOperations = React.createClass({
         var self = this;
         this.props.service.getGroups(function(response){
                                         self.setState({groupTableData:response.applicationResponseContent});
+                                        self.updateJvmData(self.state.groupTableData);
+                                        self.setState({ groups: response.applicationResponseContent});
                                      });
+    },
+    updateJvmData: function(jvmDataInGroups) {
+        this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
+                                                           groupOperationsHelper.extractJvmDataFromGroups(jvmDataInGroups),
+                                                           this.state.jvmStates,
+                                                           []));
+    },
+    updateJvmStateData: function(newJvmStates) {
+        this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
+                                                           [],
+                                                           this.state.jvmStates,
+                                                           newJvmStates));
+
+        var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
+        jvmsToUpdate.forEach(function(jvm) { groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state);});
+    },
+    pollJvmStates: function() {
+        var self = this;
+        this.dataSink = this.props.jvmStateService.createDataSink(function(data) { self.updateJvmStateData(data);});
+        this.props.jvmStateService.pollForUpdates(this.props.jvmStateTimeout, this.dataSink);
+    },
+    fetchCurrentJvmStates: function() {
+        var self = this;
+        this.props.jvmStateService.getCurrentStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
+                                                     .caught(function(e) {});
+    },
+    markGroupExpanded: function(groupId, isExpanded) {
+        this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
+                                                              groupId,
+                                                              isExpanded));
+    },
+    markJvmExpanded: function(jvmId, isExpanded) {
+        this.setState(groupOperationsHelper.markJvmExpanded(this.state.jvms,
+                                                            jvmId,
+                                                            isExpanded));
     },
     componentDidMount: function() {
         this.retrieveData();
+        this.pollJvmStates();
+        this.fetchCurrentJvmStates();
+    },
+    componentWillUnmount: function() {
+        this.dataSink.stop();
     }
 });
 
 var GroupOperationsDataTable = React.createClass({
    shouldComponentUpdate: function(nextProps, nextState) {
-      return !nextProps.noUpdateWhen;
+       this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
+       if (!this.hasDrawn) {
+           this.hasDrawn = true;
+           return true;
+       }
+       return false;
     },
     render: function() {
         var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
@@ -124,10 +180,15 @@ var GroupOperationsDataTable = React.createClass({
                                  mData:null,
                                  tocType:"button",
                                  btnLabel:"Start",
-                                 btnCallback:this.jvmStart,
-                                 isToggleBtn:true,
-                                 label2:"Stop",
-                                 callback2:this.jvmStop}];
+                                 btnCallback:this.jvmStart},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Stop",
+                                 btnCallback:this.jvmStop},
+                                {sTitle:"State",
+                                 mData:null,
+                                 mRender: this.getStateForJvm}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
@@ -153,7 +214,7 @@ var GroupOperationsDataTable = React.createClass({
                   return React.renderComponentToStaticMarkup(
                       <WARUpload war={data} readOnly={true} full={full} row={0} />
                     );
-                }.bind(this);    
+                }.bind(this);
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
         webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
@@ -214,5 +275,10 @@ var GroupOperationsDataTable = React.createClass({
         return  "idp?saml_redirectUrl=" +
                 window.location.protocol + "//" +
                 data.hostName + ":" + data.httpPort + "/manager/";
-   }
+   },
+    getStateForJvm: function(mData, type, fullData) {
+        var jvmId = fullData.id.id;
+        $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.jvmState);
+        return "<span class='jvm-state-" + jvmId + "'/>"
+    }
 });

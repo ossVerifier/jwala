@@ -65,7 +65,7 @@ public class JvmStateMessage implements Serializable {
 
     protected CurrentJvmState getCurrentJvmState() {
         return new CurrentJvmState(new Identifier<Jvm>(id),
-                                   JvmState.valueOf(state),
+                                   JvmState.convertFrom(state),
                                    createAsOf());
     }
 

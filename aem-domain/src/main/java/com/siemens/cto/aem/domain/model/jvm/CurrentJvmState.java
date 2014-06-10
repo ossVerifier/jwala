@@ -13,6 +13,18 @@ public class CurrentJvmState implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static CurrentJvmState createUnknownState(final Identifier<Jvm> theJvmId) {
+        return createUnknownState(theJvmId,
+                                  DateTime.now());
+    }
+
+    public static CurrentJvmState createUnknownState(final Identifier<Jvm> theJvmId,
+                                                     final DateTime theAsOf) {
+        return new CurrentJvmState(theJvmId,
+                                   JvmState.UNKNOWN,
+                                   theAsOf);
+    }
+
     private final Identifier<Jvm> jvmId;
     private final JvmState jvmState;
     private final DateTime asOf;

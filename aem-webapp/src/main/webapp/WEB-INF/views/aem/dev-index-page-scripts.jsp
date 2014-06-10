@@ -14,8 +14,10 @@
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 
 <!--  Services -->
-<script src="public-resources/ext/js/bluebird/bluebird-1.0.4.js"></script>
+<script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
+<script src="public-resources/js/toc/loading-indicator.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
+<script src="public-resources/js/toc/v1/service/serviceFoundationUi.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerService.js"></script>
 <script src="public-resources/js/toc/v1/service/webAppService.js"></script>
@@ -24,6 +26,8 @@
 <script src="public-resources/js/toc/v1/service/jvmControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/userService.js"></script>
+<script src="public-resources/js/toc/v1/service/jvmStateService.js"></script>
+<script src="public-resources/js/toc/group-operations-helper.js"></script>
 
 <!-- React UI -->
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>

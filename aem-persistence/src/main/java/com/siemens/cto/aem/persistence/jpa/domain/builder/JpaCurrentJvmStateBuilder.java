@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -11,6 +12,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentJvmState;
 
 public class JpaCurrentJvmStateBuilder {
 
+    public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaCurrentJvmState jvmState;
 
     public JpaCurrentJvmStateBuilder() {
@@ -26,10 +28,17 @@ public class JpaCurrentJvmStateBuilder {
     }
 
     public CurrentJvmState build() {
-        final CurrentJvmStateBuilder builder = new CurrentJvmStateBuilder().setJvmId(new Identifier<Jvm>(jvmState.getId()))
-                                                                           .setJvmState(JvmState.valueOf(jvmState.getState()))
-                                                                           .setAsOf(new DateTime(jvmState.getAsOf()));
+        if (jvmState != null) {
+            return buildActual();
+        }
+        return null;
+    }
 
+    CurrentJvmState buildActual() {
+        final CurrentJvmStateBuilder builder = new CurrentJvmStateBuilder().setJvmId(new Identifier<Jvm>(jvmState.getId()))
+                                                                           .setJvmState(JvmState.convertFrom(jvmState.getState()))
+                                                                           .setAsOf(new DateTime(jvmState.getAsOf(),
+                                                                                                 USE_DEFAULT_CHRONOLOGY));
         return builder.build();
     }
 }

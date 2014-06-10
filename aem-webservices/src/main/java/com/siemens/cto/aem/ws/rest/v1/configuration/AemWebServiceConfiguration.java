@@ -5,12 +5,6 @@ import java.util.List;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
-
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -22,6 +16,9 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
@@ -29,12 +26,17 @@ import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
+import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl.JvmStateConsumerManager;
+import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 
@@ -58,6 +60,12 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerControlService webServerControlService;
+
+    @Autowired
+    private JvmStateService jvmStateService;
+
+    @Autowired
+    private JvmStateNotificationService jvmStateNotificationService;
 
     @Bean
     public Server getV1JaxResServer() {
@@ -104,7 +112,15 @@ public class AemWebServiceConfiguration {
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
         return new JvmServiceRestImpl(jvmService,
-                                      jvmControlService);
+                                      jvmControlService,
+                                      jvmStateService,
+                                      jvmStateNotificationService,
+                                      getJvmStateConsumerManager());
+    }
+
+    @Bean
+    public JvmStateConsumerManager getJvmStateConsumerManager() {
+        return new JvmStateConsumerManager(jvmStateNotificationService);
     }
 
     @Bean
@@ -131,9 +147,9 @@ public class AemWebServiceConfiguration {
 
         return providers;
     }
-    
-    @Bean 
-    public MessageBodyWriter<ApplicationResponse> getV1FormUploadProvider() { 
+
+    @Bean
+    public MessageBodyWriter<ApplicationResponse> getV1FormUploadProvider() {
         return new ResponseMessageBodyWriter();
     }
 

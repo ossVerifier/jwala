@@ -37,7 +37,8 @@ var Banner = React.createClass({
 var MainTabs = React.createClass({
     getInitialState:function() {
         items = [{title:"Groups", content:<GroupOperations className="group-config"
-                                           service={ServiceFactory.getGroupService()}/>},
+                                           service={ServiceFactory.getGroupService()}
+                                           jvmStateService={ServiceFactory.getJvmStateService()}/>},
                  {title:"Web Servers", content:<WebServerOperations className="webserver-config"
                                                 service={ServiceFactory.getWebServerService()}/>},
                  {title: "Configure", content:<ConfigureTabs/>}];
@@ -73,25 +74,25 @@ $(document).ready(function(){
 
     /**
      * This shows a busy status when there is an on-going ajax process.
-     */    
-    $.ajaxSetup({
-        beforeSend: function () {
-            Toc.Timer._startLoading();
-        },
-        complete: function () {
-          Toc.Timer._clearLoading();
-        }
-    });
+     */
+//    $.ajaxSetup({
+//        beforeSend: function () {
+//            Toc.Timer._startLoading();
+//        },
+//        complete: function () {
+//          Toc.Timer._clearLoading();
+//        }
+//    });
 
     Toc.Timer.timeout = undefined;
     Toc.Timer.loading = undefined;
-    Toc.Timer._startLoading = function() { 
+    Toc.Timer._startLoading = function() {
       if(this.timeout === undefined) {
         this.timeout = setTimeout(this._loading,100);
       }
     }.bind(Toc.Timer);
     Toc.Timer._clearLoading = function() {
-      if(this.timeout !== undefined) { 
+      if(this.timeout !== undefined) {
         var temp = this.timeout;
         this.timeout= undefined;
         clearTimeout(temp);
@@ -99,7 +100,7 @@ $(document).ready(function(){
         if(this.loading !== undefined) {
           var temp = this.loading;
           this.loading = undefined;
-          temp.dialog("close");        
+          temp.dialog("close");
         }
       }
     }.bind(Toc.Timer);

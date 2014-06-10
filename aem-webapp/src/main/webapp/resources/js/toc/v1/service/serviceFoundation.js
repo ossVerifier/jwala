@@ -1,10 +1,13 @@
 var serviceFoundation = {
 
     get : function (url, dataType, caughtCallback) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
         return Promise.cast($.ajax({url: url,
                                     dataType: dataType,
                                     type: 'GET',
-                                    cache: false
+                                    cache: false,
+                                    beforeSend: loadingUiBehavior.showLoading,
+                                    complete: loadingUiBehavior.hideLoading
                                 })).then(function(response){
                                     if ($.isFunction(caughtCallback)) {
                                         caughtCallback(response);
@@ -17,15 +20,27 @@ var serviceFoundation = {
                                     }
                                 });
     },
-
+    promisedGet : function(url, dataType) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(false);
+        return Promise.cast($.ajax({url: url,
+                                       dataType: dataType,
+                                       type: 'GET',
+                                       cache: false,
+                                       beforeSend: loadingUiBehavior.showLoading,
+                                       complete: loadingUiBehavior.hideLoading
+                                   }));
+    },
     post : function(url, dataType, content, thenCallback, caughtCallback) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
         return Promise.cast($.ajax({
                                        url: url,
                                        dataType: dataType,
                                        type: 'POST',
                                        data: content,
                                        contentType: 'application/json',
-                                       cache: false
+                                       cache: false,
+                                       beforeSend: loadingUiBehavior.showLoading,
+                                       complete: loadingUiBehavior.hideLoading
                                    })).then(function(){
                                         if ($.isFunction(thenCallback)) {
                                             thenCallback();
@@ -42,11 +57,14 @@ var serviceFoundation = {
             },
 
     del : function(url, dataType, caughtCallback) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
         return Promise.cast($.ajax({
             url: url,
             dataType: dataType,
             type: 'DELETE',
-            cache: false
+            cache: false,
+            beforeSend: loadingUiBehavior.showLoading,
+            complete: loadingUiBehavior.hideLoading
         })).caught(function(e){
            if (e.status !== 200) {
                $.errorAlert(JSON.stringify(e), "Error");
@@ -59,12 +77,15 @@ var serviceFoundation = {
     },
 
     put : function(url, dataType, content, thenCallback, caughtCallback) {
-            return Promise.cast($.ajax({url: url,
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
+        return Promise.cast($.ajax({url: url,
                                         dataType: dataType,
                                         type: 'PUT',
                                         data: content,
                                         contentType: 'application/json',
-                                        cache: false
+                                        cache: false,
+                                        beforeSend: loadingUiBehavior.showLoading,
+                                        complete: loadingUiBehavior.hideLoading
                                     })).then(function(){
                                         if ($.isFunction(thenCallback)) {
                                             thenCallback();

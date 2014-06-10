@@ -12,8 +12,8 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
-import com.siemens.cto.aem.service.jvm.jms.listener.JvmStateMessageListener;
-import com.siemens.cto.aem.service.jvm.jms.listener.message.JvmStateMapMessageConverterImpl;
+import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
+import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 
 @Configuration
 public class AemMessageListenerConfig {

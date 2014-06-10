@@ -19,12 +19,12 @@ import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.JvmStateNotificationService;
-import com.siemens.cto.aem.service.jvm.JvmStateService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
-import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
-import com.siemens.cto.aem.service.jvm.jms.sender.JmsJvmStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.jvm.state.impl.JvmStateServiceImpl;
+import com.siemens.cto.aem.service.jvm.state.jms.JmsJvmStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
@@ -103,7 +103,8 @@ public class AemServiceConfiguration {
 
     @Bean
     public JvmStateNotificationService getJvmStateNotificationService() {
-        return new JmsJvmStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
+        return new JmsJvmStateNotificationServiceImpl(aemJmsConfig.getJmsPackageBuilder(),
+                                                      aemJmsConfig.getJmsTemplate(),
                                                       aemJmsConfig.getJvmStateNotificationDestination());
     }
 }

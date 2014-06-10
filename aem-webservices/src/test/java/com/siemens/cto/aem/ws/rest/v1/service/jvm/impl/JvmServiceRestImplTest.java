@@ -1,5 +1,18 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.ws.rs.core.Response;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
@@ -14,28 +27,25 @@ import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl.JvmStateConsumerManager;
 
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
- * 
+ *
  * @author meleje00
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class JvmServiceRestImplTest {
@@ -58,6 +68,12 @@ public class JvmServiceRestImplTest {
     private JvmControlService controlImpl;
     @Mock
     private JvmControlHistory jvmControlHistory;
+    @Mock
+    private JvmStateService jvmStateService;
+    @Mock
+    private JvmStateNotificationService jvmStateNotificationService;
+    @Mock
+    private JvmStateConsumerManager jvmStateConsumerManager;
 
     private JvmServiceRestImpl cut;
 
@@ -79,7 +95,7 @@ public class JvmServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new JvmServiceRestImpl(impl, controlImpl);
+        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, jvmStateNotificationService, jvmStateConsumerManager);
     }
 
     @Test
