@@ -1,7 +1,11 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmStateCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmStateCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.webserver.WebServerControlCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.webserver.impl.WebServerControlCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
+import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmStatePersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.webserver.WebServerControlPersistenceService;
 import com.siemens.cto.aem.persistence.service.webserver.impl.JpaWebServerControlPersistenceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +53,7 @@ public class AemPersistenceServiceConfiguration {
     public JvmControlPersistenceService getJvmControlPersistenceService() {
         return new JpaJvmControlPersistenceServiceImpl(getJvmControlCrudService());
     }
-    
+
     @Bean
     protected GroupJvmRelationshipService getGroupJvmRelationshipService() {
         return new GroupJvmRelationshipServiceImpl(getGroupCrudService(),
@@ -70,7 +74,7 @@ public class AemPersistenceServiceConfiguration {
     protected JvmControlCrudService getJvmControlCrudService() {
         return new JvmControlCrudServiceImpl();
     }
-       
+
     @Bean
     protected ApplicationCrudService getApplicationCrudService() {
         return new ApplicationCrudServiceImpl();
@@ -89,5 +93,15 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected WebServerControlCrudService getWebServerControlCrudService() {
         return new WebServerControlCrudServiceImpl();
+    }
+
+    @Bean
+    public JvmStatePersistenceService getJvmStatePersistenceService() {
+        return new JpaJvmStatePersistenceServiceImpl(getJvmStateCrudService());
+    }
+
+    @Bean
+    protected JvmStateCrudService getJvmStateCrudService() {
+        return new JvmStateCrudServiceImpl();
     }
 }

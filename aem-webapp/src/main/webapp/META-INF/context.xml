@@ -21,6 +21,36 @@
 
     <!--<Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>-->
 
+    <Resource name="jms/toc-status"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsQueue"
+              address="tocStatus"/>
+
+    <Resource name="jms/toc-jvm-state-notification"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocJvmStateNotification"/>
+
+    <!--<Resource name="jms/toc-cf"-->
+              <!--auth="Container"-->
+              <!--type="com.atomikos.jms.AtomikosConnectionFactoryBean"-->
+              <!--factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"-->
+              <!--uniqueResourceName="AtomikosJndiJmsXaConnectionFactory"-->
+              <!--xaConnectionFactoryClassName="com.tibco.tibjms.TibjmsXAConnectionFactory"-->
+              <!--xaProperties.serverUrl="tcp://localhost:7222"-->
+              <!--xaProperties.userName="admin"-->
+              <!--xaProperties.userPassword="Passw0rd"/>-->
+
+    <Resource auth="Container"
+              name="jms/toc-cf"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsConnectionFactory"
+              serverUrl="tcp://localhost:7222"
+              userName="admin"
+              userPassword="Passw0rd"/>
+
     <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory"/>
 
 </Context>

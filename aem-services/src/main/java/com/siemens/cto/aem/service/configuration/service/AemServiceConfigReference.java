@@ -1,13 +1,11 @@
-package com.siemens.cto.aem.service.configuration.application;
+package com.siemens.cto.aem.service.configuration.service;
 
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.siemens.cto.aem.control.configuration.AemControlConfigReference;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceConfigurationReference;
-import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfiguration;
 
 @Configuration
@@ -15,8 +13,6 @@ import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfi
          AemPersistenceConfigurationReference.class,
          AemDaoConfiguration.class,
          AemTransactionConfiguration.class,
-         AemControlConfigReference.class})
-@ComponentScan("com.siemens.cto.toc.files.configuration")
-public class AemServiceAppConfigReference {
-
+         AemControlConfigReference.class,})
+public class AemServiceConfigReference {
 }

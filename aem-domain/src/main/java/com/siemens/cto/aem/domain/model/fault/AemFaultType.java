@@ -61,7 +61,7 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     WEBSERVER_CONTROL_HISTORY_NOT_FOUND("AEM28", "WebServerControlHistoryNotFound"),
     /**/
-    BAD_STREAM("AEM29", "UploadStreamNotReadable"), 
+    BAD_STREAM("AEM29", "UploadStreamNotReadable"),
     /**/
     INVALID_WEB_ARCHIVE_NAME("AEM30", "InvalidWebArchiveName"),
     /**/
@@ -75,7 +75,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_JVM_AJP_PORT("AEM35", "InvalidJvmAjpPortNumber"),
     /**/
-    INVALID_WEBSERVER_HTTPS_PORT("AEM36", "InvalidWebServerHttpsPortNumber")
+    INVALID_WEBSERVER_HTTPS_PORT("AEM36", "InvalidWebServerHttpsPortNumber"),
+    /**/
+    JVM_STATE_NOT_SPECIFIED("AEM37", "JvmStateNotSpecified")
     ;
 
 	private final String faultCode;

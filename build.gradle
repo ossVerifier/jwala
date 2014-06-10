@@ -15,7 +15,10 @@ ext {
                  slf4j_log4j12 : '1.7.5',
                  javax_servlet_api: '3.0',
                  csa : "2.3",
-                 commons_fileupload: '1.3.1'
+                 commons_fileupload: '1.3.1',
+                 jodaTime : "2.2",
+                 jms : "1.1",
+                 infrastructureProvided : "1.0-SNAPSHOT"
                 ]
 }
 
@@ -57,6 +60,8 @@ subprojects {
     }
 
     repositories {
+        mavenLocal()
+
         maven {
             url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/"
         }
@@ -127,31 +132,31 @@ subprojects {
       include "accum-${project.name}.exec"
       rename  "accum-${project.name}.exec", "accum.exec"
     }
-    
+
     task mergeTestCodeCoverageResults(type: JacocoMerge) {
       description = 'Merge test code coverage results from all java projects'
       destinationFile = file("${project.buildDir.path}/jacoco/accum-${project.name}.exec")
       def mergeFile = file("${project.rootProject.buildDir.path}/jacoco/accum.exec")
       def testFile = file("${project.buildDir.path}/jacoco/test.exec")
-      onlyIf { 
+      onlyIf {
         testFile.exists()
       }
-      executionData { 
+      executionData {
           if(mergeFile.exists()) return files(mergeFile, testFile);
           else return files(testFile);
       }
       doLast {
           copyResult.execute();
-      }      
-    }    
-    
+      }
+    }
+
     test.finalizedBy mergeTestCodeCoverageResults
-    
-    sonarRunner { 
+
+    sonarRunner {
       sonarProperties {
         property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
         property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
-      }      
+      }
     }
-    
+
 }

@@ -21,6 +21,7 @@ dependencies {
     compile project(":aem-persistence")
     compile project(":aem-services")
     compile project(":aem-webservices")
+    compile project(":aem-config")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 
