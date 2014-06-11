@@ -16,17 +16,15 @@ var Tabs = React.createClass({displayName:"Tabs",
           var newHash = location.hash;
           var newTabIndex = this.lookupIndexFromHash(newHash, this.props.depth /*nesting depth*/);
           if(newTabIndex !== undefined && newTabIndex != this.state.active) { 
-  	  	    this.handleTabClick(newTabIndex);
-
-            // unwind this item off of the history
-            if(history.back) { 
-              history.back();
-            }  	  	    
+            this.setState({active: newTabIndex})
           }
         } else { 
           /* higher level tab managed the state change */
           $(window).off('hashchange', this.handleBack.bind(this));
         }
+    },
+    componentDidUpdate: function(prevProps, prevState) {
+       document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
     },
     componentWillUnmount: function() {
        $(window).off('hashchange', this.handleBack.bind(this));
@@ -55,7 +53,6 @@ var Tabs = React.createClass({displayName:"Tabs",
         } else {
         	window.location.hash = newhash;
         }
-      	document.title = title;
         return true;
     },
 	/* Merge into the hash in the URL by mapping this tab into existing fragments */
