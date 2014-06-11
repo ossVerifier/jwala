@@ -2,13 +2,38 @@ var Tabs = React.createClass({displayName:"Tabs",
     getInitialState: function() {
         this.hashRegex = /#\/([^/]*)\/(([^/]*)\/)?(([^/]*)\/)?/; // zero-three levels deep, prefix with / suffixes with /, indexes 1 3 5, null zero match
 
-        var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/);
+        var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/) || 0;
         var items = this.props.items;
         return {
+            titlePrefix: "Tomcat Operations Center - ",
             tabs: items,
             active: activeTabIndex,
             themeName: "tabs-" + this.props.theme
         };
+    },
+    handleBack: function() {
+   	    if(this.isMounted()) {
+          var newHash = location.hash;
+          var newTabIndex = this.lookupIndexFromHash(newHash, this.props.depth /*nesting depth*/);
+          if(newTabIndex !== undefined && newTabIndex != this.state.active) { 
+  	  	    this.handleTabClick(newTabIndex);
+
+            // unwind this item off of the history
+            if(history.back) { 
+              history.back();
+            }  	  	    
+          }
+        } else { 
+          /* higher level tab managed the state change */
+          $(window).off('hashchange', this.handleBack.bind(this));
+        }
+    },
+    componentWillUnmount: function() {
+       $(window).off('hashchange', this.handleBack.bind(this));
+    },
+    componentDidMount: function() { 
+       $(window).on('hashchange', this.handleBack.bind(this));
+       document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
     },
     render: function() {
         return React.DOM.div(null,
@@ -24,11 +49,13 @@ var Tabs = React.createClass({displayName:"Tabs",
     handleTabClick: function(index) {
         this.setState({active: index})
         var newhash = this.mergeIndexIntoHash(index, window.location.hash, this.props.depth);
+        var title = this.state.titlePrefix + this.props.items[index].title;
         if(history.pushState) {
-        	history.pushState(null,null, newhash);
+        	history.pushState(null,title, newhash);
         } else {
         	window.location.hash = newhash;
         }
+      	document.title = title;
         return true;
     },
 	/* Merge into the hash in the URL by mapping this tab into existing fragments */
@@ -68,7 +95,7 @@ var Tabs = React.createClass({displayName:"Tabs",
 			   to this particular tab component.
 			*/
     	var localHash = this.hashRegex.exec(currentHash)[1+depth*2];
-    	var localIndex = 0;
+    	var localIndex = undefined;
     	this.props.items.every(function(itemName, itemIndex, harray) {
     		 if(itemName.title == localHash) {
     		 	localIndex = itemIndex; return false;
