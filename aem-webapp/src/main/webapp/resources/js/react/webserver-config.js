@@ -160,7 +160,10 @@ var WebServerConfigForm = React.createClass({
                        httpsPort:this.getPropVal(nextProps, "httpsPort"),
                        groupIds:this.getPropVal(nextProps, "groupIds")});
     },
-    mixins: [React.addons.LinkedStateMixin],
+    mixins: [
+        React.addons.LinkedStateMixin,
+        Toc.mixins.PreventEnterSubmit
+    ],
     render: function() {
         var self = this;
         return  <div className={this.props.className} style={{display:"none"}}>

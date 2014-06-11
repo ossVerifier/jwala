@@ -64,3 +64,17 @@ var ModalFormDialog = React.createClass({
         }
     }
 });
+
+var Toc = Toc || { mixins: {} }; var TocMixins = Toc.mixins || {}; Toc.mixins = TocMixins;
+
+TocMixins.PreventEnterSubmit = {
+  componentDidMount: function() {
+        $("form input[type!='button']",this.getDOMNode()).bind("keyup keypress", function(e) {
+          var code = e.keyCode || e.which; 
+          if (code  == 13) {               
+            e.preventDefault();
+            return false;
+          }
+        });        
+    }
+};

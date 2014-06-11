@@ -127,6 +127,9 @@ var JvmConfig = React.createClass({
 });
 
 var JvmConfigForm = React.createClass({
+    mixins: [
+      Toc.mixins.PreventEnterSubmit
+    ],
     validator: null,
     shouldComponentUpdate: function(nextProps, nextState) {
         return !nextProps.noUpdateWhen;

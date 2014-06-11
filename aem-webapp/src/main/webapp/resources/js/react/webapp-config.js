@@ -126,7 +126,10 @@ var WebAppConfig = React.createClass({
 });
 
 var WebAppConfigForm = React.createClass({
-    mixins: [React.addons.LinkedStateMixin],
+    mixins: [
+      React.addons.LinkedStateMixin,
+      Toc.mixins.PreventEnterSubmit
+    ],
     validator: null,
     shouldComponentUpdate: function(nextProps, nextState) {
         return !nextProps.noUpdateWhen;
@@ -401,7 +404,16 @@ var WARUpload = React.createClass({
     },
     render: function() { 
       
-      if(!this.state.editable) { 
+      if(this.props.readOnly ) { 
+        return <div>
+                <div className="tocTable"> 
+                  <div className="tocRowContent">
+                    <span title={this.state.warPath}>{this.state.warName}</span> 
+                  </div>
+                </div>
+               </div>
+        ;
+      } else if(!this.state.editable) {
         return <div>
                 <div className="tocTable"> 
                   <div className="tocRowContent">
@@ -534,7 +546,14 @@ var WARUpload = React.createClass({
               }
             }
           }).error(function(result, textStatus, jqXHR) {
-            self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
+        	if(result.responseJSON !== undefined) {
+        		self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
+        	} else if( textStatus ) {
+        		self.progressError("AEM: " + textStatus.substring(0,100));
+        	} else {         	
+        		self.progressError("AEM: Please retry your upload. ");
+        	}
+        	
           });
         } else { 
           var fileInput = $('input[type="file"]', thisForm);

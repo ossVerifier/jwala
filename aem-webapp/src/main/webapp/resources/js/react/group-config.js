@@ -118,6 +118,9 @@ var GroupConfig = React.createClass({
 });
 
 var GroupConfigForm = React.createClass({
+    mixins: [
+      Toc.mixins.PreventEnterSubmit
+    ],
     validator: null,
     shouldComponentUpdate: function(nextProps, nextState) {
         return !nextProps.noUpdateWhen;
