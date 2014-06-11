@@ -93,6 +93,14 @@ public class ApplicationServiceRestImplTest {
         when(mockMc.getHttpHeaders()).thenReturn(mockHh);
         when(mockMc.getHttpServletRequest()).thenReturn(mockHsr);        
     }
+
+    @Test
+    public void testJsonSettersGetters() { 
+        JsonUpdateApplication testJua = new JsonUpdateApplication((Long)2L, "name", "/ctx", 1L);
+        JsonCreateApplication testJca = new JsonCreateApplication((Long)2L, "name", "/ctx");
+        assertEquals(testJca,testJca.clone());
+        assertEquals(testJua,testJua.clone());
+    }
     
     private class MyIS extends ServletInputStream {
 
