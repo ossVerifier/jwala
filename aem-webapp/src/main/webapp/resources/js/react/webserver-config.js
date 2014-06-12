@@ -11,6 +11,15 @@ var WebServerConfig = React.createClass({
             groupMultiSelectData: []
         }
     },
+    shouldComponentUpdate: function(nextProps, nextState) {
+        if(
+          (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
+        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog) 
+        ){
+          return false; 
+        }
+        return true;
+    },    
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
