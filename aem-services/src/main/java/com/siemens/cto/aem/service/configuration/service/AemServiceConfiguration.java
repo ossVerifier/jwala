@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.configuration.service;
 
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,9 @@ import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
+import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -51,6 +54,11 @@ public class AemServiceConfiguration {
     @Bean
     public ApplicationService getApplicationService() {
         return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(), persistenceServiceConfiguration.getApplicationPersistenceService());
+    }
+
+    @Bean
+    public PrivateApplicationService getPrivateApplicationService() {
+        return new PrivateApplicationServiceImpl(/** Relying on autowire */);
     }
 
     @Bean

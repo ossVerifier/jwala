@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.app.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +16,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -34,6 +36,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryAction;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
@@ -49,6 +52,9 @@ public class ApplicationServiceImplTest {
     
     @Mock /*injected*/
     private WebArchiveManager webArchiveManager;
+
+    @Mock /*injected*/
+    private PrivateApplicationService privateApplicationService = new PrivateApplicationServiceImpl();
 
     @InjectMocks @Spy
     private ApplicationService applicationService = new ApplicationServiceImpl(
@@ -196,6 +202,19 @@ public class ApplicationServiceImplTest {
         Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));        
     }
     
+    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveCommand>> {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean matches(Object arg) {
+            Event<UploadWebArchiveCommand> event = (Event<UploadWebArchiveCommand>)arg;
+            UploadWebArchiveCommand uwac = event.getCommand();
+            uwac.validateCommand();
+            return true;
+        } 
+        
+    }    
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testUploadWebArchive() throws IOException { 
@@ -205,8 +224,8 @@ public class ApplicationServiceImplTest {
         
         applicationService.uploadWebArchive(uwac, testUser);
 
-        Mockito.verify(webArchiveManager, Mockito.times(1)).store(any(Event.class));        
-        Mockito.verify(applicationPersistenceService, Mockito.times(1)).updateWARPath(any(Event.class), any(String.class));        
+        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(argThat(new IsValidUploadEvent()));        
+        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryAction.class));        
     }
     
     @SuppressWarnings("unchecked")

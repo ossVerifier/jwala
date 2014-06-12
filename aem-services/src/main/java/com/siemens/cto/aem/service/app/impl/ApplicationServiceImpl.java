@@ -25,6 +25,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryAction;
 import com.siemens.cto.toc.files.RepositoryAction.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
@@ -41,8 +42,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     
     @Autowired
     private WebArchiveManager webArchiveManager;
-    
 
+    @Autowired
+    private PrivateApplicationService privateApplicationService;
+    
     public ApplicationServiceImpl(ApplicationDao applicationDao, ApplicationPersistenceService applicationPersistenceService) {
         this.applicationDao = applicationDao;
         this.applicationPersistenceService = applicationPersistenceService;
@@ -102,30 +105,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationPersistenceService.removeApplication(anAppIdToRemove);
     }
 
-    @Transactional    
+    /** Non-transactional entry point, utilizes {@link PrivateApplicationServiceImpl}*/
     @Override
     public Application uploadWebArchive(UploadWebArchiveCommand command, User user) {
         command.validateCommand();
         
         Event<UploadWebArchiveCommand> event = Event.create(command, AuditEvent.now(user));
-
-        RepositoryAction result = null;
-        try {
-            result = webArchiveManager.store(event);
-            LOGGER.info("Archive Upload: " + result.toString());
-        } catch (IOException e) {
-            throw new BadRequestException(AemFaultType.BAD_STREAM, "Error storing data");
-        }
-
-        Long bytes = result.getLength();
         
-        if(command.getLength() != -1 && bytes != null && bytes != command.getLength()) {
-            throw new BadRequestException(AemFaultType.BAD_STREAM, "Post-condition file length check failed");
-        }
-        
-        Application updated = applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
-        
-        return updated;
+        return privateApplicationService.uploadWebArchiveUpdateDB(event, privateApplicationService.uploadWebArchiveData(event));
     }
 
     @Transactional    
