@@ -47,9 +47,9 @@ var WebServerOperationsDataTable = React.createClass({
                                   displayProperty:"name"},
                                  {sTitle:"",
                                   mData:null,
-                                  tocType:"button",
-                                  btnLabel:"Load Balancer Configuration",
-                                  btnCallback:this.showLoadBalancerConfig},
+                                  tocType:"link",
+                                  linkLabel:"Load Balancer Configuration",
+                                  hRefCallback:this.buildHRefLoadBalancerConfig},
                                  {sTitle:"",
                                   mData:null,
                                   tocType:"button",
@@ -70,8 +70,8 @@ var WebServerOperationsDataTable = React.createClass({
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"/>
    },
-   showLoadBalancerConfig: function(id) {
-        alert("Show load balancer config for web server with id = " + id);
+   buildHRefLoadBalancerConfig: function(data) {
+        return "http://" + data.host + ":" + data.port + "/jkmanager/status";
    },
    showLoadBalancer: function(id) {
         alert("Show load balancer for web server with id = " + id);
