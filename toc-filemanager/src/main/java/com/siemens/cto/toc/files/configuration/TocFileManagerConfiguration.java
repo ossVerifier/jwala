@@ -43,7 +43,7 @@ public class TocFileManagerConfiguration implements ApplicationListener<ContextC
     }
     
 
-    @Bean FileSystem getPlatformFileSystem() {
+    @Bean(destroyMethod="") FileSystem getPlatformFileSystem() {
         return FileSystems.getDefault();
     }
 
