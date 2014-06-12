@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -63,6 +64,11 @@ public class JsonUpdateApplication {
     }
     
     @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(getGroupId()).append(getName()).append(getWebappContext()).append(getWebappId()).toHashCode();
+    }
+
+    @Override
     public Object clone( ) {
         return new JsonUpdateApplication(
                 getGroupId(),
@@ -77,7 +83,8 @@ public class JsonUpdateApplication {
     }
     
     /* test code:
-     * `assertEquals(testJua,testJua.clone())
+     * assertEquals(testJua,testJua.clone())
+     * assertEquals(testJua.hashCode(),testJua.clone().hashCode())
      */
 
 }

@@ -100,6 +100,8 @@ public class ApplicationServiceRestImplTest {
         JsonCreateApplication testJca = new JsonCreateApplication((Long)2L, "name", "/ctx");
         assertEquals(testJca,testJca.clone());
         assertEquals(testJua,testJua.clone());
+        assertEquals(testJca.hashCode(),testJca.clone().hashCode());
+        assertEquals(testJua.hashCode(),testJua.clone().hashCode());
     }
     
     private class MyIS extends ServletInputStream {

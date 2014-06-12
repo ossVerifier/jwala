@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
@@ -37,6 +38,11 @@ public class JsonCreateApplication {
     }
     
     @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(getGroupId()).append(getName()).append(getWebappContext()).toHashCode();
+    }
+    
+    @Override
     public boolean equals(Object other) {
         return EqualsBuilder.reflectionEquals(this, other);        
     }
@@ -67,6 +73,7 @@ public class JsonCreateApplication {
     
     /* test code:
      * assertEquals(testJca,testJca.clone())
+     * assertEquals(testJca.hashCode(),testJca.clone().hashCode())
      */
 
 }
