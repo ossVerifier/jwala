@@ -68,32 +68,56 @@ var ConfigureTabs = React.createClass({
 });
 
 $(document).ready(function(){
+// Initialize a namespace
+    var Toc = Toc || { Timer : {} }; var Timer = Toc.Timer || {}; Toc.Timer = Timer;
+
     /**
      * This shows a busy status when there is an on-going ajax process.
-     */
+     */    
     $.ajaxSetup({
         beforeSend: function () {
-            _loading();
+            Toc.Timer._startLoading();
         },
         complete: function () {
+          Toc.Timer._clearLoading();
         }
     });
 
-    function _loading(){
-        var loading = $("#loading");
-        loading.dialog({
+    Toc.Timer.timeout = undefined;
+    Toc.Timer.loading = undefined;
+    Toc.Timer._startLoading = function() { 
+      if(this.timeout === undefined) {
+        this.timeout = setTimeout(this._loading,100);
+      }
+    }.bind(Toc.Timer);
+    Toc.Timer._clearLoading = function() {
+      if(this.timeout !== undefined) { 
+        var temp = this.timeout;
+        this.timeout= undefined;
+        clearTimeout(temp);
+        this.timeout = undefined;
+        if(this.loading !== undefined) {
+          var temp = this.loading;
+          this.loading = undefined;
+          temp.dialog("close");        
+        }
+      }
+    }.bind(Toc.Timer);
+    Toc.Timer._loading = function() {
+        this.loading = $("#loading");
+        this.loading.dialog({
             modal:true,
             resizable:false,
             draggable:false,
             width:"auto",
             height:"auto"
         });
-        loading.parents(".ui-dialog")
+        this.loading.parents(".ui-dialog")
             .css("border", "0 none")
             .css("background", "transparent")
             .find(".ui-dialog-titlebar").remove();
-        setTimeout(function(){loading.dialog("close")},500);
-    }
+        this.timeout = setTimeout(this._clearLoading,500);
+    }.bind(Toc.Timer);
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
