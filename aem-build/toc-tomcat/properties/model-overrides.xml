@@ -6,6 +6,7 @@
 
     <propertyset name="TocFiles">
         <property name="paths.web-archive" value="..\..\..\webapps" />
+        <property name="mod_jk.load-balancer.status.mount" value="/jkmanager/status" />
     </propertyset>
     
     <propertyset name="gsm">
