@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +7,10 @@ import org.junit.Test;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class WebServerTest {
     private static final String HOST = "host";
@@ -33,12 +33,6 @@ public class WebServerTest {
     final List<Group> groups = new ArrayList<Group>();
     final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort);
     final WebServer wsNulls = new WebServer(null, groups, null, null, null, null);
-
-    @Test
-    public void testHashCode() {
-        assertEquals(ws.hashCode(), ws.hashCode());
-        assertEquals(31 * 31 * 31 * 31 * 31 * 31, wsNulls.hashCode());
-    }
 
     @Test
     public void testGetId() {
@@ -120,10 +114,5 @@ public class WebServerTest {
         // assertFalse(wsSixteen.equals(wsFifteen));
         // assertTrue(wsSixteen.equals(wsSeventeen));
         // assertFalse(wsSeventeen.equals(wsEighteen));
-    }
-
-    @Test
-    public void testToString() {
-        assertEquals("WebServer {id=Identifier{id=1}, groups={}, host=host, name=name, port=10000, httpsPort=20000}", ws.toString());
     }
 }
