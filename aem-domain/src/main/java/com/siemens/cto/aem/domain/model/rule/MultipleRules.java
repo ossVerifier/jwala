@@ -3,6 +3,10 @@ package com.siemens.cto.aem.domain.model.rule;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 
 public class MultipleRules implements Rule {
@@ -27,11 +31,41 @@ public class MultipleRules implements Rule {
     @Override
     public boolean isValid() {
         for (final Rule rule : rules) {
-            if(!rule.isValid()) { 
-                return false; 
+            if(!rule.isValid()) {
+                return false;
             }
         }
         return true;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        MultipleRules rhs = (MultipleRules) obj;
+        return new EqualsBuilder()
+                .append(this.rules, rhs.rules)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(rules)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("rules", rules)
+                .toString();
+    }
 }

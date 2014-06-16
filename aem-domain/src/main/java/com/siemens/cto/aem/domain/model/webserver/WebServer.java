@@ -5,6 +5,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
@@ -59,80 +63,49 @@ public class WebServer implements Serializable {
         return groups.keySet();
     }
 
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.InsufficientBranchCoverage"})
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (groups == null ? 0 : groups.hashCode());
-        result = prime * result + (host == null ? 0 : host.hashCode());
-        result = prime * result + (id == null ? 0 : id.hashCode());
-        result = prime * result + (name == null ? 0 : name.hashCode());
-        result = prime * result + (port == null ? 0 : port.hashCode());
-        result = prime * result + (httpsPort == null ? 0 : httpsPort.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
+    public boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
             return false;
         }
-        final WebServer other = (WebServer) obj;
-        if (groups == null) {
-            if (other.groups != null) {
-                return false;
-            }
-        } else if (!groups.equals(other.groups)) {
-            return false;
-        }
-        if (host == null) {
-            if (other.host != null) {
-                return false;
-            }
-        } else if (!host.equals(other.host)) {
-            return false;
-        }
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
-        }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        if (port == null) {
-            if (other.port != null) {
-                return false;
-            }
-        } else if (!port.equals(other.port)) {
-            return false;
-        }
-        if (httpsPort == null) {
-            if (other.httpsPort != null) {
-                return false;
-            }
-        } else if (!httpsPort.equals(other.httpsPort)) {
-            return false;
-        }
-        return true;
+        WebServer rhs = (WebServer) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.groups, rhs.groups)
+                .append(this.host, rhs.host)
+                .append(this.name, rhs.name)
+                .append(this.port, rhs.port)
+                .append(this.httpsPort, rhs.httpsPort)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(id)
+                .append(groups)
+                .append(host)
+                .append(name)
+                .append(port)
+                .append(httpsPort)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "WebServer {id=" + id + ", groups=" + groups + ", host=" + host + ", name=" + name + ", port="
-                + port  + ", httpsPort=" + httpsPort + "}";
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("groups", groups)
+                .append("host", host)
+                .append("name", name)
+                .append("port", port)
+                .append("httpsPort", httpsPort)
+                .toString();
     }
 }

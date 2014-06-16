@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class ExecCommand implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -34,25 +38,33 @@ public class ExecCommand implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final ExecCommand that = (ExecCommand) o;
-
-        if (commandFragments != null ? !commandFragments.equals(that.commandFragments) : that.commandFragments != null) {
-            return false;
-        }
-
-        return true;
+        ExecCommand rhs = (ExecCommand) obj;
+        return new EqualsBuilder()
+                .append(this.commandFragments, rhs.commandFragments)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return commandFragments != null ? commandFragments.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(commandFragments)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("commandFragments", commandFragments)
+                .toString();
     }
 }

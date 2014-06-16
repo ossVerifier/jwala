@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -80,65 +84,51 @@ public class CreateJvmCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final CreateJvmCommand that = (CreateJvmCommand) o;
-
-        if (hostName != null ? !hostName.equals(that.hostName) : that.hostName != null) {
-            return false;
-        }
-        if (jvmName != null ? !jvmName.equals(that.jvmName) : that.jvmName != null) {
-            return false;
-        }
-        if (httpPort != null ? !httpPort.equals(that.httpPort) : that.httpPort != null) {
-            return false;
-        }
-        if (httpsPort != null ? !httpsPort.equals(that.httpsPort) : that.httpsPort != null) {
-            return false;
-        }
-        if (redirectPort != null ? !redirectPort.equals(that.redirectPort) : that.redirectPort != null) {
-            return false;
-        }
-        if (shutdownPort != null ? !shutdownPort.equals(that.shutdownPort) : that.shutdownPort != null) {
-            return false;
-        }
-        if (ajpPort != null ? !ajpPort.equals(that.ajpPort) : that.ajpPort != null) {
-            return false;
-        }
-
-        return true;
+        CreateJvmCommand rhs = (CreateJvmCommand) obj;
+        return new EqualsBuilder()
+                .append(this.jvmName, rhs.jvmName)
+                .append(this.hostName, rhs.hostName)
+                .append(this.httpPort, rhs.httpPort)
+                .append(this.httpsPort, rhs.httpsPort)
+                .append(this.redirectPort, rhs.redirectPort)
+                .append(this.shutdownPort, rhs.shutdownPort)
+                .append(this.ajpPort, rhs.ajpPort)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = jvmName != null ? jvmName.hashCode() : 0;
-        result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
-
-        result = 31 * result + (httpPort != null ? httpPort.hashCode() : 0);
-        result = 31 * result + (httpsPort != null ? httpsPort.hashCode() : 0);
-        result = 31 * result + (redirectPort != null ? redirectPort.hashCode() : 0);
-        result = 31 * result + (shutdownPort != null ? shutdownPort.hashCode() : 0);
-        result = 31 * result + (ajpPort != null ? ajpPort.hashCode() : 0);
-
-        return result;
+        return new HashCodeBuilder()
+                .append(jvmName)
+                .append(hostName)
+                .append(httpPort)
+                .append(httpsPort)
+                .append(redirectPort)
+                .append(shutdownPort)
+                .append(ajpPort)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "CreateJvmCommand{" +
-               "jvmName='" + jvmName + '\'' +
-               ", hostName='" + hostName + '\'' +
-               ", httpPort='" + httpPort + '\'' +
-               ", httpsPort='" + httpsPort + '\'' +
-               ", redirectPort='" + redirectPort + '\'' +
-               ", shutdownPort='" + shutdownPort + '\'' +
-               ", ajpPort='" + ajpPort + '\'' +
-               '}';
+        return new ToStringBuilder(this)
+                .append("jvmName", jvmName)
+                .append("hostName", hostName)
+                .append("httpPort", httpPort)
+                .append("httpsPort", httpsPort)
+                .append("redirectPort", redirectPort)
+                .append("shutdownPort", shutdownPort)
+                .append("ajpPort", ajpPort)
+                .toString();
     }
 }

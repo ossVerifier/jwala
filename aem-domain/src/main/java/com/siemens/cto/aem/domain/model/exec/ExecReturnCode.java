@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class ExecReturnCode implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -35,32 +39,33 @@ public class ExecReturnCode implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final ExecReturnCode that = (ExecReturnCode) o;
-
-        if (returnCode != null ? !returnCode.equals(that.returnCode) : that.returnCode != null) {
-            return false;
-        }
-
-        return true;
+        ExecReturnCode rhs = (ExecReturnCode) obj;
+        return new EqualsBuilder()
+                .append(this.returnCode, rhs.returnCode)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return returnCode != null ? returnCode.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(returnCode)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ExecReturnCode{" +
-               "returnCode=" + returnCode +
-               '}';
+        return new ToStringBuilder(this)
+                .append("returnCode", returnCode)
+                .toString();
     }
 }

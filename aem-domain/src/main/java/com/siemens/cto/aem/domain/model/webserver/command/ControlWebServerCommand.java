@@ -1,13 +1,17 @@
 package com.siemens.cto.aem.domain.model.webserver.command;
 
+import java.io.Serializable;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerIdRule;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-
-import java.io.Serializable;
 
 public class ControlWebServerCommand implements Serializable, Command {
 
@@ -36,38 +40,36 @@ public class ControlWebServerCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final ControlWebServerCommand that = (ControlWebServerCommand) o;
-
-        if (controlOperation != that.controlOperation) {
-            return false;
-        }
-        if (webServerId != null ? !webServerId.equals(that.webServerId) : that.webServerId != null) {
-            return false;
-        }
-
-        return true;
+        ControlWebServerCommand rhs = (ControlWebServerCommand) obj;
+        return new EqualsBuilder()
+                .append(this.webServerId, rhs.webServerId)
+                .append(this.controlOperation, rhs.controlOperation)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = webServerId != null ? webServerId.hashCode() : 0;
-        result = 31 * result + (controlOperation != null ? controlOperation.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(webServerId)
+                .append(controlOperation)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ControlWebServerCommand{" +
-               "webServerId=" + webServerId +
-               ", controlOperation=" + controlOperation +
-               '}';
+        return new ToStringBuilder(this)
+                .append("webServerId", webServerId)
+                .append("controlOperation", controlOperation)
+                .toString();
     }
 }

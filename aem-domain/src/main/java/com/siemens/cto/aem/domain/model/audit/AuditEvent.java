@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.audit;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.domain.model.temporary.User;
 
 public class AuditEvent implements Serializable {
@@ -31,35 +35,36 @@ public class AuditEvent implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final AuditEvent that = (AuditEvent) o;
-
-        if (dateTime != null ? !dateTime.equals(that.dateTime) : that.dateTime != null) {
-            return false;
-        }
-        if (user != null ? !user.equals(that.user) : that.user != null) {
-            return false;
-        }
-
-        return true;
+        AuditEvent rhs = (AuditEvent) obj;
+        return new EqualsBuilder()
+                .append(this.user, rhs.user)
+                .append(this.dateTime, rhs.dateTime)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = user != null ? user.hashCode() : 0;
-        result = 31 * result + (dateTime != null ? dateTime.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(user)
+                .append(dateTime)
+                .toHashCode();
     }
 
-	@Override
-	public String toString() {
-		return "AuditEvent {user=" + user + "}";
-	}
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("user", user)
+                .append("dateTime", dateTime)
+                .toString();
+    }
 }

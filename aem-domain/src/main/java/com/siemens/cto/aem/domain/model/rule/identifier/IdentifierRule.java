@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.domain.model.rule.identifier;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -30,5 +34,42 @@ public abstract class IdentifierRule<T> implements Rule {
             throw new BadRequestException(messageResponseStatus,
                                           message);
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        IdentifierRule rhs = (IdentifierRule) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.messageResponseStatus, rhs.messageResponseStatus)
+                .append(this.message, rhs.message)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(id)
+                .append(messageResponseStatus)
+                .append(message)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("messageResponseStatus", messageResponseStatus)
+                .append("message", message)
+                .toString();
     }
 }

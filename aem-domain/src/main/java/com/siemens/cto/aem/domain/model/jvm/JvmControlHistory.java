@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -49,53 +53,45 @@ public class JvmControlHistory implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final JvmControlHistory that = (JvmControlHistory) o;
-
-        if (controlOperation != that.controlOperation) {
-            return false;
-        }
-        if (execData != null ? !execData.equals(that.execData) : that.execData != null) {
-            return false;
-        }
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
-        if (jvmId != null ? !jvmId.equals(that.jvmId) : that.jvmId != null) {
-            return false;
-        }
-        if (whenRequested != null ? !whenRequested.equals(that.whenRequested) : that.whenRequested != null) {
-            return false;
-        }
-
-        return true;
+        JvmControlHistory rhs = (JvmControlHistory) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.jvmId, rhs.jvmId)
+                .append(this.controlOperation, rhs.controlOperation)
+                .append(this.whenRequested, rhs.whenRequested)
+                .append(this.execData, rhs.execData)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (jvmId != null ? jvmId.hashCode() : 0);
-        result = 31 * result + (controlOperation != null ? controlOperation.hashCode() : 0);
-        result = 31 * result + (whenRequested != null ? whenRequested.hashCode() : 0);
-        result = 31 * result + (execData != null ? execData.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(id)
+                .append(jvmId)
+                .append(controlOperation)
+                .append(whenRequested)
+                .append(execData)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "JvmControlHistory{" +
-               "id=" + id +
-               ", jvmId=" + jvmId +
-               ", controlOperation=" + controlOperation +
-               ", whenRequested=" + whenRequested +
-               ", execData=" + execData +
-               '}';
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("jvmId", jvmId)
+                .append("controlOperation", controlOperation)
+                .append("whenRequested", whenRequested)
+                .append("execData", execData)
+                .toString();
     }
 }

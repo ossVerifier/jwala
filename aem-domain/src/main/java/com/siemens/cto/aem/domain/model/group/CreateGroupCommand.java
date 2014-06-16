@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.group;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
@@ -26,32 +30,33 @@ public class CreateGroupCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final CreateGroupCommand that = (CreateGroupCommand) o;
-
-        if (groupName != null ? !groupName.equals(that.groupName) : that.groupName != null) {
-            return false;
-        }
-
-        return true;
+        CreateGroupCommand rhs = (CreateGroupCommand) obj;
+        return new EqualsBuilder()
+                .append(this.groupName, rhs.groupName)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return groupName != null ? groupName.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(groupName)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "CreateGroupCommand{" +
-               "groupName='" + groupName + '\'' +
-               '}';
+        return new ToStringBuilder(this)
+                .append("groupName", groupName)
+                .toString();
     }
 }

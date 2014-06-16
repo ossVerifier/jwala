@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.temporary;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class User implements Serializable {
 
     @Deprecated
@@ -27,25 +31,33 @@ public class User implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final User user = (User) o;
-
-        if (id != null ? !id.equals(user.id) : user.id != null) {
-            return false;
-        }
-
-        return true;
+        User rhs = (User) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(id)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .toString();
     }
 }

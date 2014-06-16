@@ -1,7 +1,9 @@
 package com.siemens.cto.toc.files;
 
 import java.nio.file.Path;
-import java.util.Arrays;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * A chain of file system operations
@@ -9,26 +11,26 @@ import java.util.Arrays;
  * @author horspe00
  */
 public class RepositoryAction {
-    
-    public enum Type { 
+
+    public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
         NONE,
         /** Either created or updated */
         STORED,
         /** Deleted from the file system */
-        DELETED;        
+        DELETED;
     }
-    
-    private Type type; 
+
+    private Type type;
     private Path path;
     private Long length;
     private RepositoryAction[] inResponseTo;
-    
+
     public RepositoryAction(Type type, Path path, Long length, RepositoryAction[] inResponseTo) {
-        this.path = path; 
+        this.path = path;
         this.length = length;
         this.type = type;
-        this.inResponseTo = inResponseTo;        
+        this.inResponseTo = inResponseTo;
     }
 
     public Type getType() {
@@ -43,8 +45,8 @@ public class RepositoryAction {
         return length;
     }
 
-    public RepositoryAction[] getCauses() { 
-        return inResponseTo; 
+    public RepositoryAction[] getCauses() {
+        return inResponseTo;
     }
 
     public static RepositoryAction deleted(Path resolvedPath, RepositoryAction... inResponseTo) {
@@ -58,13 +60,13 @@ public class RepositoryAction {
     public static RepositoryAction none(RepositoryAction... inResponseTo) {
         return new RepositoryAction(Type.NONE, null, null, inResponseTo);
     }
-    
+
     @Override
-    public String toString() { 
+    public String toString() {
         String msg = type.toString() + " " + path + ((length != null) ? ";" + length : "");
         String csep=" -> ";
-        
-        if(inResponseTo != null) { 
+
+        if(inResponseTo != null) {
             for(RepositoryAction action : inResponseTo) {
                 if(action != null && action.getType() != Type.NONE) {
                     msg = msg + csep + action.toString();
@@ -72,50 +74,37 @@ public class RepositoryAction {
                 }
             }
         }
-        
+
         return msg;
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((length == null) ? 0 : length.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        return result;
-    }
-
-    @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
             return false;
         }
-        RepositoryAction other = (RepositoryAction) obj;
-        if (length == null) {
-            if (other.length != null) {
-                return false;
-            }
-        } else if (!length.equals(other.length)) {
-            return false;
-        }
-        if (path == null) {
-            if (other.path != null) {
-                return false;
-            }
-        } else if (!path.equals(other.path)) {
-            return false;
-        }
-        if (type != other.type) {
-            return false;
-        }
-        return true;
+        RepositoryAction rhs = (RepositoryAction) obj;
+        return new EqualsBuilder()
+                .append(this.type, rhs.type)
+                .append(this.path, rhs.path)
+                .append(this.length, rhs.length)
+                .append(this.inResponseTo, rhs.inResponseTo)
+                .isEquals();
     }
 
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(type)
+                .append(path)
+                .append(length)
+                .append(inResponseTo)
+                .toHashCode();
+    }
 }

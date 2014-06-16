@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class AuditDateTime implements Serializable {
 
     public static AuditDateTime now() {
@@ -29,25 +33,33 @@ public class AuditDateTime implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final AuditDateTime that = (AuditDateTime) o;
-
-        if (date != null ? !date.equals(that.date) : that.date != null) {
-            return false;
-        }
-
-        return true;
+        AuditDateTime rhs = (AuditDateTime) obj;
+        return new EqualsBuilder()
+                .append(this.date, rhs.date)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return date != null ? date.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(date)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("date", date)
+                .toString();
     }
 }

@@ -2,6 +2,9 @@ package com.siemens.cto.aem.domain.model.jvm.message;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -71,53 +74,45 @@ public class JvmStateMessage implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final JvmStateMessage that = (JvmStateMessage) o;
-
-        if (asOf != null ? !asOf.equals(that.asOf) : that.asOf != null) {
-            return false;
-        }
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
-        if (instanceId != null ? !instanceId.equals(that.instanceId) : that.instanceId != null) {
-            return false;
-        }
-        if (state != null ? !state.equals(that.state) : that.state != null) {
-            return false;
-        }
-        if (type != null ? !type.equals(that.type) : that.type != null) {
-            return false;
-        }
-
-        return true;
+        JvmStateMessage rhs = (JvmStateMessage) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.instanceId, rhs.instanceId)
+                .append(this.type, rhs.type)
+                .append(this.state, rhs.state)
+                .append(this.asOf, rhs.asOf)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (instanceId != null ? instanceId.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (asOf != null ? asOf.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(id)
+                .append(instanceId)
+                .append(type)
+                .append(state)
+                .append(asOf)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "JvmStateMessage{" +
-               "id='" + id + '\'' +
-               ", instanceId='" + instanceId + '\'' +
-               ", type='" + type + '\'' +
-               ", state='" + state + '\'' +
-               ", asOf='" + asOf + '\'' +
-               '}';
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("instanceId", instanceId)
+                .append("type", type)
+                .append("state", state)
+                .append("asOf", asOf)
+                .toString();
     }
 }

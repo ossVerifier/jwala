@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class ExecData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -31,43 +35,39 @@ public class ExecData implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final ExecData execData = (ExecData) o;
-
-        if (returnCode != null ? !returnCode.equals(execData.returnCode) : execData.returnCode != null) {
-            return false;
-        }
-        if (standardError != null ? !standardError.equals(execData.standardError) : execData.standardError != null) {
-            return false;
-        }
-        if (standardOutput != null ? !standardOutput.equals(execData.standardOutput) : execData.standardOutput != null) {
-            return false;
-        }
-
-        return true;
+        ExecData rhs = (ExecData) obj;
+        return new EqualsBuilder()
+                .append(this.returnCode, rhs.returnCode)
+                .append(this.standardOutput, rhs.standardOutput)
+                .append(this.standardError, rhs.standardError)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = returnCode != null ? returnCode.hashCode() : 0;
-        result = 31 * result + (standardOutput != null ? standardOutput.hashCode() : 0);
-        result = 31 * result + (standardError != null ? standardError.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(returnCode)
+                .append(standardOutput)
+                .append(standardError)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ExecData{" +
-               "returnCode=" + returnCode +
-               ", standardOutput='" + standardOutput + '\'' +
-               ", standardError='" + standardError + '\'' +
-               '}';
+        return new ToStringBuilder(this)
+                .append("returnCode", returnCode)
+                .append("standardOutput", standardOutput)
+                .append("standardError", standardError)
+                .toString();
     }
 }

@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
@@ -35,38 +39,36 @@ public class CompleteControlJvmCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final CompleteControlJvmCommand that = (CompleteControlJvmCommand) o;
-
-        if (controlHistoryId != null ? !controlHistoryId.equals(that.controlHistoryId) : that.controlHistoryId != null) {
-            return false;
-        }
-        if (execData != null ? !execData.equals(that.execData) : that.execData != null) {
-            return false;
-        }
-
-        return true;
+        CompleteControlJvmCommand rhs = (CompleteControlJvmCommand) obj;
+        return new EqualsBuilder()
+                .append(this.controlHistoryId, rhs.controlHistoryId)
+                .append(this.execData, rhs.execData)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = controlHistoryId != null ? controlHistoryId.hashCode() : 0;
-        result = 31 * result + (execData != null ? execData.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(controlHistoryId)
+                .append(execData)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "CompleteControlJvmCommand{" +
-               "controlHistoryId=" + controlHistoryId +
-               ", execData=" + execData +
-               '}';
+        return new ToStringBuilder(this)
+                .append("controlHistoryId", controlHistoryId)
+                .append("execData", execData)
+                .toString();
     }
 }

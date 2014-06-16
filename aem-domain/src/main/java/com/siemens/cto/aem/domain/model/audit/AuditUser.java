@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.audit;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.domain.model.temporary.User;
 
 public class AuditUser implements Serializable {
@@ -23,30 +27,33 @@ public class AuditUser implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final AuditUser auditUser = (AuditUser) o;
-
-        if (userId != null ? !userId.equals(auditUser.userId) : auditUser.userId != null) {
-            return false;
-        }
-
-        return true;
+        AuditUser rhs = (AuditUser) obj;
+        return new EqualsBuilder()
+                .append(this.userId, rhs.userId)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return userId != null ? userId.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(userId)
+                .toHashCode();
     }
 
-	@Override
-	public String toString() {
-		return "AuditUser {userId=" + userId + "}";
-	}
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("userId", userId)
+                .toString();
+    }
 }

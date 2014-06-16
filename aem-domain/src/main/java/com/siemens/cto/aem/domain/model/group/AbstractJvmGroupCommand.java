@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.domain.model.group;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -31,5 +35,39 @@ public abstract class AbstractJvmGroupCommand implements Command {
     public void validateCommand() throws BadRequestException {
         new MultipleRules(new GroupIdRule(groupId),
                                 new JvmIdRule(jvmId)).validate();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        AbstractJvmGroupCommand rhs = (AbstractJvmGroupCommand) obj;
+        return new EqualsBuilder()
+                .append(this.groupId, rhs.groupId)
+                .append(this.jvmId, rhs.jvmId)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(groupId)
+                .append(jvmId)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("groupId", groupId)
+                .append("jvmId", jvmId)
+                .toString();
     }
 }

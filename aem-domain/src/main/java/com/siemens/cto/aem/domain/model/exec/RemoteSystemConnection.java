@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.exec;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 public class RemoteSystemConnection implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -28,5 +32,42 @@ public class RemoteSystemConnection implements Serializable {
 
     public Integer getPort() {
         return port;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        RemoteSystemConnection rhs = (RemoteSystemConnection) obj;
+        return new EqualsBuilder()
+                .append(this.user, rhs.user)
+                .append(this.host, rhs.host)
+                .append(this.port, rhs.port)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(user)
+                .append(host)
+                .append(port)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("user", user)
+                .append("host", host)
+                .append("port", port)
+                .toString();
     }
 }

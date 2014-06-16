@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -105,73 +109,57 @@ public class UpdateJvmCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final UpdateJvmCommand that = (UpdateJvmCommand) o;
-
-        if (groupIds != null ? !groupIds.equals(that.groupIds) : that.groupIds != null) {
-            return false;
-        }
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
-        if (newHostName != null ? !newHostName.equals(that.newHostName) : that.newHostName != null) {
-            return false;
-        }
-        if (newJvmName != null ? !newJvmName.equals(that.newJvmName) : that.newJvmName != null) {
-            return false;
-        }
-        if (newHttpPort != null ? !newHttpPort.equals(that.newHttpPort) : that.newHttpPort != null) {
-            return false;
-        }
-        if (newHttpsPort != null ? !newHttpsPort.equals(that.newHttpsPort) : that.newHttpsPort != null) {
-            return false;
-        }
-        if (newRedirectPort != null ? !newRedirectPort.equals(that.newRedirectPort) : that.newRedirectPort != null) {
-            return false;
-        }
-        if (newShutdownPort != null ? !newShutdownPort.equals(that.newShutdownPort) : that.newShutdownPort != null) {
-            return false;
-        }
-        if (newAjpPort != null ? !newAjpPort.equals(that.newAjpPort) : that.newAjpPort != null) {
-            return false;
-        }
-
-        return true;
+        UpdateJvmCommand rhs = (UpdateJvmCommand) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.newJvmName, rhs.newJvmName)
+                .append(this.newHostName, rhs.newHostName)
+                .append(this.newHttpPort, rhs.newHttpPort)
+                .append(this.newHttpsPort, rhs.newHttpsPort)
+                .append(this.newRedirectPort, rhs.newRedirectPort)
+                .append(this.newShutdownPort, rhs.newShutdownPort)
+                .append(this.newAjpPort, rhs.newAjpPort)
+                .append(this.groupIds, rhs.groupIds)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (newJvmName != null ? newJvmName.hashCode() : 0);
-        result = 31 * result + (newHostName != null ? newHostName.hashCode() : 0);
-        result = 31 * result + (groupIds != null ? groupIds.hashCode() : 0);
-        result = 31 * result + (newHttpPort != null ? newHttpPort.hashCode() : 0);
-        result = 31 * result + (newHttpsPort != null ? newHttpsPort.hashCode() : 0);
-        result = 31 * result + (newRedirectPort != null ? newRedirectPort.hashCode() : 0);
-        result = 31 * result + (newShutdownPort != null ? newShutdownPort.hashCode() : 0);
-        result = 31 * result + (newAjpPort != null ? newAjpPort.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(id)
+                .append(newJvmName)
+                .append(newHostName)
+                .append(newHttpPort)
+                .append(newHttpsPort)
+                .append(newRedirectPort)
+                .append(newShutdownPort)
+                .append(newAjpPort)
+                .append(groupIds)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "UpdateJvmCommand{" +
-               "id=" + id +
-               ", newJvmName='" + newJvmName + '\'' +
-               ", newHostName='" + newHostName + '\'' +
-               ", groupIds=" + groupIds +
-               ", newHttpPort=" + newHttpPort +
-               ", newHttpsPort=" + newHttpsPort +
-               ", newRedirectPort=" + newRedirectPort +
-               ", newShutdownPort=" + newShutdownPort +
-               ", newAjpPort=" + newAjpPort +
-               '}';
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("newJvmName", newJvmName)
+                .append("newHostName", newHostName)
+                .append("newHttpPort", newHttpPort)
+                .append("newHttpsPort", newHttpsPort)
+                .append("newRedirectPort", newRedirectPort)
+                .append("newShutdownPort", newShutdownPort)
+                .append("newAjpPort", newAjpPort)
+                .append("groupIds", groupIds)
+                .toString();
     }
 }

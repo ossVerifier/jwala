@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
@@ -31,32 +35,33 @@ public class SetJvmStateCommand implements Serializable, Command {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final SetJvmStateCommand that = (SetJvmStateCommand) o;
-
-        if (newJvmState != null ? !newJvmState.equals(that.newJvmState) : that.newJvmState != null) {
-            return false;
-        }
-
-        return true;
+        SetJvmStateCommand rhs = (SetJvmStateCommand) obj;
+        return new EqualsBuilder()
+                .append(this.newJvmState, rhs.newJvmState)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return newJvmState != null ? newJvmState.hashCode() : 0;
+        return new HashCodeBuilder()
+                .append(newJvmState)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "SetJvmStateCommand{" +
-               "newJvmState=" + newJvmState +
-               '}';
+        return new ToStringBuilder(this)
+                .append("newJvmState", newJvmState)
+                .toString();
     }
 }

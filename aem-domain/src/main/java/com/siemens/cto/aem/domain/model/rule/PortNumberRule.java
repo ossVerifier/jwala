@@ -1,18 +1,23 @@
 package com.siemens.cto.aem.domain.model.rule;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public class PortNumberRule implements Rule {
 
-    protected final Integer port;
-	private AemFaultType error = AemFaultType.INVALID_HOST_NAME;
-    protected boolean nullable;
+    private final Integer port;
+	private final AemFaultType error;
+    private final boolean nullable;
 
     public PortNumberRule(final Integer thePort, final AemFaultType errorCode) {
-        port = thePort;
-        error = errorCode;
+        this(thePort,
+             errorCode,
+             false);
     }
 
     public PortNumberRule(final Integer thePort, final AemFaultType errorCode, final boolean nullable) {
@@ -23,10 +28,10 @@ public class PortNumberRule implements Rule {
 
     @Override
     public boolean isValid() {
-        if (!nullable || port != null) {
-            return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
+        if (nullable && port == null) {
+            return true;
         }
-        return true;
+        return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
     }
 
     @Override
@@ -39,7 +44,44 @@ public class PortNumberRule implements Rule {
 
     protected MessageResponseStatus getMessageResponseStatus() { return error; }
 
-    protected String getMessage() { 
+    protected String getMessage() {
    		return "Port specified is invalid" + (port != null?(" ("+port+")."):".");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        PortNumberRule rhs = (PortNumberRule) obj;
+        return new EqualsBuilder()
+                .append(this.port, rhs.port)
+                .append(this.error, rhs.error)
+                .append(this.nullable, rhs.nullable)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(port)
+                .append(error)
+                .append(nullable)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("port", port)
+                .append("error", error)
+                .append("nullable", nullable)
+                .toString();
     }
 }

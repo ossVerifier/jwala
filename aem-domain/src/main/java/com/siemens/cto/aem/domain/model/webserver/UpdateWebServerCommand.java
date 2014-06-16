@@ -5,6 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -76,79 +80,48 @@ public class UpdateWebServerCommand implements Serializable, Command {
     }
 
     @Override
-    public String toString() {
-        return "UpdateWebServerCommand {id=" + id + ", groupIds=" + newGroupIds + ", newHost=" + newHost + ", newName="
-                + newName + ", newPort=" + newPort + ", newHttpsPort=" + newHttpsPort + "}";
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        UpdateWebServerCommand rhs = (UpdateWebServerCommand) obj;
+        return new EqualsBuilder()
+                .append(this.id, rhs.id)
+                .append(this.newGroupIds, rhs.newGroupIds)
+                .append(this.newHost, rhs.newHost)
+                .append(this.newName, rhs.newName)
+                .append(this.newPort, rhs.newPort)
+                .append(this.newHttpsPort, rhs.newHttpsPort)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (id == null ? 0 : id.hashCode());
-        result = prime * result + (newGroupIds == null ? 0 : newGroupIds.hashCode());
-        result = prime * result + (newHost == null ? 0 : newHost.hashCode());
-        result = prime * result + (newName == null ? 0 : newName.hashCode());
-        result = prime * result + (newPort == null ? 0 : newPort.hashCode());
-        result = prime * result + (newHttpsPort == null ? 0 : newHttpsPort.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .append(id)
+                .append(newGroupIds)
+                .append(newHost)
+                .append(newName)
+                .append(newPort)
+                .append(newHttpsPort)
+                .toHashCode();
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final UpdateWebServerCommand other = (UpdateWebServerCommand) obj;
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
-        }
-        if (newGroupIds == null) {
-            if (other.newGroupIds != null) {
-                return false;
-            }
-        } else if (!newGroupIds.equals(other.newGroupIds)) {
-            return false;
-        }
-        if (newHost == null) {
-            if (other.newHost != null) {
-                return false;
-            }
-        } else if (!newHost.equals(other.newHost)) {
-            return false;
-        }
-        if (newName == null) {
-            if (other.newName != null) {
-                return false;
-            }
-        } else if (!newName.equals(other.newName)) {
-            return false;
-        }
-        if (newPort == null) {
-            if (other.newPort != null) {
-                return false;
-            }
-        } else if (!newPort.equals(other.newPort)) {
-            return false;
-        }
-        if (newHttpsPort == null) {
-            if (other.newHttpsPort != null) {
-                return false;
-            }
-        } else if (!newHttpsPort.equals(other.newHttpsPort)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("newGroupIds", newGroupIds)
+                .append("newHost", newHost)
+                .append("newName", newName)
+                .append("newPort", newPort)
+                .append("newHttpsPort", newHttpsPort)
+                .toString();
     }
-
 }

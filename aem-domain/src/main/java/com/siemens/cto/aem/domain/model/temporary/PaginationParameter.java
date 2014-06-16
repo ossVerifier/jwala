@@ -2,6 +2,10 @@ package com.siemens.cto.aem.domain.model.temporary;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 //TODO Use common class from Health Check once a common repo is available
 public class PaginationParameter implements Serializable {
 
@@ -47,42 +51,6 @@ public class PaginationParameter implements Serializable {
         return !NO_LIMIT.equals(limit);
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        final PaginationParameter that = (PaginationParameter) o;
-
-        if (limit != null ? !limit.equals(that.limit) : that.limit != null) {
-            return false;
-        }
-        if (offset != null ? !offset.equals(that.offset) : that.offset != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = offset != null ? offset.hashCode() : 0;
-        result = 31 * result + (limit != null ? limit.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "PaginationParameter{" +
-               "offset=" + offset +
-               ", limit=" + limit +
-               '}';
-    }
-
     protected final void validate(final Integer anOffset,
                                   final Integer aLimit) {
         validateOffset(anOffset);
@@ -99,5 +67,39 @@ public class PaginationParameter implements Serializable {
         if ((aLimit == null) || (aLimit < 0)) {
             throw new IllegalArgumentException("Limit must be a non-negative Integer, was: " + aLimit);
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        PaginationParameter rhs = (PaginationParameter) obj;
+        return new EqualsBuilder()
+                .append(this.offset, rhs.offset)
+                .append(this.limit, rhs.limit)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(offset)
+                .append(limit)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("offset", offset)
+                .append("limit", limit)
+                .toString();
     }
 }

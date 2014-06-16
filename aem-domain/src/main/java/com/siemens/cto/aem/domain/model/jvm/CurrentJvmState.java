@@ -2,6 +2,9 @@ package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -35,43 +38,39 @@ public class CurrentJvmState implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj.getClass() != getClass()) {
             return false;
         }
-
-        final CurrentJvmState that = (CurrentJvmState) o;
-
-        if (asOf != null ? !asOf.equals(that.asOf) : that.asOf != null) {
-            return false;
-        }
-        if (jvmId != null ? !jvmId.equals(that.jvmId) : that.jvmId != null) {
-            return false;
-        }
-        if (jvmState != that.jvmState) {
-            return false;
-        }
-
-        return true;
+        CurrentJvmState rhs = (CurrentJvmState) obj;
+        return new EqualsBuilder()
+                .append(this.jvmId, rhs.jvmId)
+                .append(this.jvmState, rhs.jvmState)
+                .append(this.asOf, rhs.asOf)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = jvmId != null ? jvmId.hashCode() : 0;
-        result = 31 * result + (jvmState != null ? jvmState.hashCode() : 0);
-        result = 31 * result + (asOf != null ? asOf.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder()
+                .append(jvmId)
+                .append(jvmState)
+                .append(asOf)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "CurrentJvmState{" +
-               "jvmId=" + jvmId +
-               ", jvmState=" + jvmState +
-               ", asOf=" + asOf +
-               '}';
+        return new ToStringBuilder(this)
+                .append("jvmId", jvmId)
+                .append("jvmState", jvmState)
+                .append("asOf", asOf)
+                .toString();
     }
 }

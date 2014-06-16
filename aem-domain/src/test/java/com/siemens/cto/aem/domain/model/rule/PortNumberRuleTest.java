@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.domain.model.rule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class PortNumberRuleTest {
     AemFaultType error = AemFaultType.INVALID_WEBSERVER_PORT;
@@ -55,5 +55,13 @@ public class PortNumberRuleTest {
         assertTrue(nullValueValid.isValid());
         assertEquals("Port specified is invalid.", nullValueInvalid1.getMessage());
         assertEquals("Port specified is invalid.", nullValueInvalid2.getMessage());
+    }
+
+    @Test
+    public void testInvalidPortNumberWhileNullable() {
+        final PortNumberRule rule = new PortNumberRule(-12,
+                                                       AemFaultType.INVALID_WEBSERVER_PORT,
+                                                       true);
+        assertFalse(rule.isValid());
     }
 }

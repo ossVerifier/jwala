@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
@@ -54,5 +58,39 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
     public void validateCommand() throws BadRequestException {
         createCommand.validateCommand();
         new GroupIdsRule(groups).validate();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        CreateJvmAndAddToGroupsCommand rhs = (CreateJvmAndAddToGroupsCommand) obj;
+        return new EqualsBuilder()
+                .append(this.createCommand, rhs.createCommand)
+                .append(this.groups, rhs.groups)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(createCommand)
+                .append(groups)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("createCommand", createCommand)
+                .append("groups", groups)
+                .toString();
     }
 }
