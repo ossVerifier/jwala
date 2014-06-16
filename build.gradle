@@ -61,7 +61,6 @@ subprojects {
     }
 
     repositories {
-        mavenLocal()
 
         maven {
             url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/"
