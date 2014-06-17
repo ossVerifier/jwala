@@ -11,10 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(value=MockitoJUnitRunner.class)
 public class RepositoryActionTest {
 
     @Test
@@ -44,8 +41,13 @@ public class RepositoryActionTest {
         assertNotNull(deleted.toString());
         assertNotNull(stored.toString());
         assertNotNull(noneIR.toString());
-        assertTrue(deleted.hashCode() >0);
+        assertTrue(deleted.hashCode() != 0);
         assertTrue(noneIR.getCauses()[0].equals(noneIRnull));
+
+        // check consistency between construction mechanisms.
+        assertEquals(RepositoryAction.deleted(resolvedPath),new RepositoryAction(DELETED, resolvedPath, null, new RepositoryAction[0])); 
+        assertEquals(RepositoryAction.deleted(resolvedPath).hashCode(),new RepositoryAction(DELETED, resolvedPath, null, new RepositoryAction[0]).hashCode()); 
+
     }
 
 }
