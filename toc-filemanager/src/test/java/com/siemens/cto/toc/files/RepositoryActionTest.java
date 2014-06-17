@@ -29,7 +29,7 @@ public class RepositoryActionTest {
         RepositoryAction noneIRarrayNull = RepositoryAction.none((RepositoryAction[])null);
         assertEquals(NONE, noneIRarrayNull.getType());
 
-        RepositoryAction noneIRnull = RepositoryAction.none((RepositoryAction)null);
+        RepositoryAction noneIRnull = RepositoryAction.none();
         assertEquals(NONE, noneIRnull.getType());
 
         Path resolvedPath = Paths.get("\\");

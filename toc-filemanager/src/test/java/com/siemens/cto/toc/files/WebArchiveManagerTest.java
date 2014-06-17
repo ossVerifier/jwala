@@ -243,6 +243,6 @@ public class WebArchiveManagerTest {
         
         RepositoryAction result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
         
-        assertEquals(RepositoryAction.deleted(expectedPath), result);
+        assertEquals(RepositoryAction.deleted(expectedPath, RepositoryAction.none()), result);
     }
 }
