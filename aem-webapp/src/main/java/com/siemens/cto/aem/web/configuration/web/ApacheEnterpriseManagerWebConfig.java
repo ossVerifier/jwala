@@ -16,10 +16,11 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
 import com.siemens.cto.aem.web.controller.IndexController;
+import com.siemens.cto.aem.web.controller.SamlController;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackageClasses = {IndexController.class})
+@ComponentScan(basePackageClasses = {IndexController.class, SamlController.class})
 // This scans the package within which IndexController is located (type/compile-safe, as opposed to plain Strings)
 public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 

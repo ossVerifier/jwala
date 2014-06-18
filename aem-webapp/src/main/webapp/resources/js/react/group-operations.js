@@ -211,6 +211,8 @@ var GroupOperationsDataTable = React.createClass({
         return true; // TODO Once status can be retrieved, return true if JVM was successfully stopped
    },
    buildHRef: function(data) {
-        return "http://" + data.hostName + ":" + data.httpPort + "/manager";
+        return  "idp?saml_redirectUrl=" +
+                window.location.protocol + "//" +
+                data.hostName + ":" + data.httpPort + "/manager/";
    }
 });
