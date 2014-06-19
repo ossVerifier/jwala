@@ -60,7 +60,7 @@ public class RemoteWebServerCommandExecutorImplTest {
         final ControlWebServerCommand command = mock(ControlWebServerCommand.class);
         final WebServer webServer = mock(WebServer.class);
         when(command.getControlOperation()).thenReturn(WebServerControlOperation.START);
-        when(webServer.getName()).thenReturn("Apache2.4");
+        when(webServer.getName()).thenReturn("Apache2.4.9");
         when(webServer.getHost()).thenReturn("usmlvv1cto989");
 
         final ExecData exec = impl.controlWebServer(command, webServer);
