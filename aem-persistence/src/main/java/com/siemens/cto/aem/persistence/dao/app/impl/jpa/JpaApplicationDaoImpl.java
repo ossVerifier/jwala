@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
@@ -87,6 +88,17 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_JVM_ID);
         q.setParameter(JpaApplication.JVM_ID_PARAM, aJvmId.getId());
         if(somePagination.isLimited()) {
+            q.setFirstResult(somePagination.getOffset());
+            q.setMaxResults(somePagination.getLimit());
+        }
+        return buildApplications(q.getResultList());
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingToWebServer(Identifier<WebServer> aWebServerId, PaginationParameter somePagination) {
+        Query q = em.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_ID);
+        q.setParameter(JpaApplication.WEB_SERVER_ID_PARAM, aWebServerId.getId());
+        if (somePagination.isLimited()) {
             q.setFirstResult(somePagination.getOffset());
             q.setMaxResults(somePagination.getLimit());
         }

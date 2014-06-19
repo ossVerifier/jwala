@@ -8,6 +8,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 
 public interface ApplicationDao {
 
@@ -33,5 +34,9 @@ public interface ApplicationDao {
     List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId, PaginationParameter somePagination);
 
 //    void removeApplicationsBelongingTo(final Identifier<Group> aGroupId);
-//    
+//
+
+    List<Application> findApplicationsBelongingToWebServer(Identifier<WebServer> aWebServerId,
+                                                           PaginationParameter somePagination);
+
 }

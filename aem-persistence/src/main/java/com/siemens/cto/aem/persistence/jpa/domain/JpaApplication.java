@@ -43,7 +43,11 @@ import com.siemens.cto.aem.domain.model.app.Application;
     @NamedQuery(
         name=JpaApplication.QUERY_BY_GROUP_ID,
         query="SELECT a FROM JpaApplication a WHERE a.group.id= :groupId"
-    )})
+    ),
+    @NamedQuery(
+        name=JpaApplication.QUERY_BY_WEB_SERVER_ID,
+        query="SELECT a FROM JpaApplication a WHERE a.group in (SELECT ws.groups FROM JpaWebServer ws WHERE ws.id =:wsId)")
+    })
 public class JpaApplication extends AbstractEntity<JpaApplication, Application> {
 
     /**
@@ -54,9 +58,11 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     public static final String QUERY_BY_GROUP_ID = "findApplicationsByGroupId";
     public static final String QUERY_BY_GROUP_NAME = "findApplicationsByGroupName";
     public static final String QUERY_BY_JVM_ID = "findApplicationsByJvmId";
+    public static final String QUERY_BY_WEB_SERVER_ID = "findApplicationsByWebServerId";
     public static final String GROUP_ID_PARAM = "groupId";
     public static final String JVM_ID_PARAM = "jvmId";
     public static final String GROUP_NAME_PARAM = "groupName";
+    public static final String WEB_SERVER_ID_PARAM = "wsId";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
