@@ -38,6 +38,7 @@ import com.siemens.cto.aem.service.dispatch.impl.CommandExecutionMessageStore;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class DispatchCommandIntegrationTest implements ApplicationContextAware {
 
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DispatchCommandIntegrationTest.class);
 
     @Configuration
     static class CommonConfiguration {
@@ -54,8 +55,6 @@ public class DispatchCommandIntegrationTest implements ApplicationContextAware {
         }
 
     }   
-
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutorGatewayBean.class);
 
     @Test
     public void testContextLoading() {
@@ -78,7 +77,9 @@ public class DispatchCommandIntegrationTest implements ApplicationContextAware {
     public void testAccessCompletions() throws InterruptedException {
         
         assertNotNull(commandExecutionMessageStore);
+        commandExecutionMessageStore.expireMessageGroups(-1);
         
+        LOGGER.info("testAccessCompletions starting");
         CommandDispatchGateway gateway = context.getBean("commandDispatch", CommandDispatchGateway.class);
         gateway.asyncDispatchCommand(new SplittableDispatchCommand() {
 
@@ -94,19 +95,26 @@ public class DispatchCommandIntegrationTest implements ApplicationContextAware {
                 return jvms;
             }
         }/*, "deploy" */);
-        
-        
+
+        // First wait until we are sure the message is being processed
+
         // if splitter is blocking, we should be blocked and so the work should already be done
         // and we could use: long timeout = 0;
         // But it is NOT (hence the method name asyncDispatch), so we will have to wait.        
         long timeout = System.currentTimeMillis() + 2500;
-        while( (System.currentTimeMillis() < timeout) && 
-                0 == commandExecutionMessageStore.getMessageCountForAllMessageGroups()) {
+
+        while( System.currentTimeMillis() < timeout ) {
+            
+            if(commandExecutionMessageStore.getMessageGroupCount() > 0) break;
 
             Thread.sleep(20);
+        }
+
+        LOGGER.info("Group found in message store, or timed out");
         
-        
-            
+        timeout = System.currentTimeMillis() + 2500;
+        while( System.currentTimeMillis() < timeout ) {
+                    
             for(MessageGroup group : commandExecutionMessageStore) {
     
                 if(group.isComplete()) {
@@ -115,7 +123,8 @@ public class DispatchCommandIntegrationTest implements ApplicationContextAware {
                     return ;
                 }
             }
-            
+
+            Thread.sleep(20);            
         }
         
         fail("Should not complete without finding a group");
