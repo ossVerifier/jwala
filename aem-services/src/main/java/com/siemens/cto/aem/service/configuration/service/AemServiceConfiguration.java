@@ -1,10 +1,5 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
-
-import javax.naming.NamingException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +10,8 @@ import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfig
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
-import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
+import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
