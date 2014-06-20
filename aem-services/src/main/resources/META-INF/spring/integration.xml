@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Integration Common -->
+    <task:executor id="commonCommandExecutor" pool-size="10"/>
+ 
+    <!-- Integration Entry Point -->
+    <int:gateway id="commandDispatch" default-reply-channel="command-completion"
+        default-request-channel="command-accept" default-reply-timeout="420000"
+        service-interface="com.siemens.cto.aem.service.dispatch.CommandDispatchGateway">
+    </int:gateway>
+    
+    <!-- Integration Channels -->    
+    <int:channel id="command-accept" />
+    <int:channel id="single-in" />
+    <int:channel id="splitter-accept" />
+    <int:channel id="subcommand" /> <!--  could use a messaging chain around this, with one queue -->
+    <int:channel id="subcommand-deploy">
+            <int:queue capacity="3000"/> <!-- allow up to 3000 pending commands to dispatch --> 
+    </int:channel>
+    <int:channel id="subcommand-startstopjvm">
+            <int:queue capacity="3000"/> <!-- allow up to 3000 pending commands to dispatch --> 
+    </int:channel>
+    <int:channel id="subcommand-completion" />
+
+    <!-- Unused at the moment, since dispatch is async and there is no correlation to the original message --> 
+    <!-- Log results of commands -->
+    <int:logging-channel-adapter id="command-completion" level="INFO" />
+    <int:channel id="subcommand-error" />
+
+    <!-- Primary integration flow definition  -->
+    
+    <!-- 1. Subdivide requests -->
+    
+    <int:payload-type-router    input-channel="command-accept" 
+                                resolution-required="false" 
+                                default-output-channel="single-in">
+        <int:mapping
+            type="com.siemens.cto.aem.domain.model.dispatch.SplittableDispatchCommand"
+            channel="splitter-accept" />
+    </int:payload-type-router> 
+    
+    <!-- 1b. Or in the case of single requests, just add the correlation id -->
+    <int:header-enricher input-channel="single-in" output-channel="subcommand">
+        <int:header name="correlationId" value="individual" />
+    </int:header-enricher>
+
+    <int:splitter input-channel="splitter-accept" ref="commandDecomposerBean"
+        output-channel="subcommand" method="split">
+    </int:splitter>
+
+    <!-- 2. Dispatch sub-commands based on type (Deploy only for now) - ->
+    <int:header-value-router input-channel="subcommand" header-name="type">
+        <int:mapping
+            value="deploy"
+            channel="subcommand-deploy" />
+< ! - -        <int:mapping
+            value="startjvm"
+            channel="subcommand-startjvm" />
+        <int:mapping
+            value="stopjvm"
+            channel="subcommand-stopjvm" />  - - >
+    </int:header-value-router> 
+-->
+    <!-- 2. Dispatch sub-commands based on type (Deploy only for now) -->
+    <int:payload-type-router input-channel="subcommand">
+        <int:mapping
+            type="com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand"
+            channel="subcommand-startstopjvm" />
+        <int:mapping
+            type="com.siemens.cto.aem.domain.model.dispatch.DispatchCommand"
+            channel="subcommand-deploy" />
+    </int:payload-type-router> 
+
+    <!-- 3. Process deploy sub-commands -->
+    <int:service-activator input-channel="subcommand-startstopjvm"
+        method="deploy" output-channel="subcommand-completion" ref="jvmCommandExecutorBean">
+        <int:poller max-messages-per-poll="1" fixed-delay="10" 
+            receive-timeout="30000" task-executor="commonCommandExecutor" />            
+    </int:service-activator>
+    <int:service-activator input-channel="subcommand-deploy"
+        method="deploy" output-channel="subcommand-completion" ref="deployCommandExecutorBean">
+        <int:poller max-messages-per-poll="1" fixed-delay="10" 
+            receive-timeout="30000" task-executor="commonCommandExecutor" />            
+    </int:service-activator>
+
+    <!-- 4. Recombine sub-commands into a result -->
+    <int:aggregator input-channel="subcommand-completion" method="aggregate"
+        ref="commandAggregatorBean" 
+        message-store="commandExecutionMessageStore" 
+        send-partial-result-on-expiry="true"
+        output-channel="command-completion"
+        discard-channel="subcommand-error"
+        >
+    </int:aggregator>
+<!-- Unused attributes 
+        discard-channel="subcommand-error"
+        output-channel="command-completion" 
+ -->
+ 
+    <!-- Integration temporary store used for aggregation -->
+    <!-- Define a store for command results and (why not) set up a reaper that will
+        periodically expire those results. -->
+    <bean id="commandExecutionMessageStore" class="com.siemens.cto.aem.service.dispatch.impl.CommandExecutionMessageStore" />
+
+    <!--  Expire results for jobs that are complete, or stuck -->
+    <bean id="commandExecutionMessageStoreReaper" class="com.siemens.cto.aem.service.dispatch.impl.CommandExecutionMessageStoreReaper">
+        <property name="messageGroupStore" ref="commandExecutionMessageStore" />
+        <property name="timeout" value="360000" /> <!-- All commands in a group must end within 5 minutes or they will be reaped. ?? -->
+    </bean>
+
+    <!--  Do the expiration once every second -->
+    <task:scheduled-tasks>
+        <task:scheduled ref="commandExecutionMessageStoreReaper" method="run" fixed-rate="1000" />
+    </task:scheduled-tasks>
+
+    <!-- Application beans -->
+    <bean id="commandDecomposerBean"  class="com.siemens.cto.aem.service.dispatch.impl.CommandDecomposerBeanImpl" />
+    <bean id="deployCommandExecutorBean" class="com.siemens.cto.aem.service.dispatch.impl.DeployCommandExecutorBeanImpl" />
+    <bean id="jvmCommandExecutorBean" class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl" />
+    <bean id="commandAggregatorBean" class="com.siemens.cto.aem.service.dispatch.impl.CommandAggregatorBeanImpl" />
+
+</beans>

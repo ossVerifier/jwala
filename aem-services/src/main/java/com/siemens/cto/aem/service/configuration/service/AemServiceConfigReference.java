@@ -13,6 +13,8 @@ import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfi
          AemPersistenceConfigurationReference.class,
          AemDaoConfiguration.class,
          AemTransactionConfiguration.class,
-         AemControlConfigReference.class,})
+         AemControlConfigReference.class,
+         AemIntegrationConfig.class
+         })
 public class AemServiceConfigReference {
 }
