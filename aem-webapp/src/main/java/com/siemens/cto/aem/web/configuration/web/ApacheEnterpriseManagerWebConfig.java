@@ -17,6 +17,8 @@ import org.springframework.web.servlet.view.JstlView;
 
 import com.siemens.cto.aem.web.controller.IndexController;
 import com.siemens.cto.aem.web.controller.SamlController;
+import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
+import com.siemens.cto.security.saml.service.impl.SamlIdentityProviderServiceImpl;
 
 @Configuration
 @EnableWebMvc
@@ -24,6 +26,11 @@ import com.siemens.cto.aem.web.controller.SamlController;
 // This scans the package within which IndexController is located (type/compile-safe, as opposed to plain Strings)
 public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
+    @Bean(name = "samlIdentityProviderService")
+    public SamlIdentityProviderService samlIdentityProviderService() {
+        return new SamlIdentityProviderServiceImpl();
+    }
+    
     @Override
     public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false).favorParameter(true).ignoreAcceptHeader(false);

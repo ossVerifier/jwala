@@ -19,6 +19,7 @@ dependencies {
     providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: "javax", name: "jms", version: "$project.versions.jms"
     providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided"
+    providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-security", version: "$project.versions.infrastructureSecurity"
 
     compile project(":aem-common")
     compile project(":aem-persistence")
