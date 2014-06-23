@@ -20,6 +20,7 @@ ext {
                  jodaTime : "2.2",
                  jms : "1.1",
                  infrastructureProvided : "1.0-SNAPSHOT",
+                 infrastructureSecurity : "1.0-SNAPSHOT",
                  commons_lang : "3.3.2"
                 ]
 }
