@@ -5,7 +5,6 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -34,10 +33,10 @@ public abstract class AbstractApplicationDaoIntegrationTest {
 
     @Autowired
     private ApplicationDao applicationDao;
-    
+
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
-    
+
     /** Expected data */
     private JpaApplication jpaApplication;
 
@@ -238,7 +237,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         entityManager.flush();
 
         final List<Application> applications =
-                applicationDao.findApplicationsBelongingToWebServer(id(jpaWebServer.getId(), WebServer.class), limit10);
+                applicationDao.findApplicationsBelongingToWebServer(jpaWebServer.getName(), limit10);
 
         assertEquals(4, applications.size());
 

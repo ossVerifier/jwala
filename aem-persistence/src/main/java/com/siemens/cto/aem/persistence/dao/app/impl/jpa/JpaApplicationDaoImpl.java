@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.app.impl.jpa;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -14,11 +7,16 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JpaApplicationDaoImpl implements ApplicationDao {
     
@@ -95,9 +93,9 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     }
 
     @Override
-    public List<Application> findApplicationsBelongingToWebServer(Identifier<WebServer> aWebServerId, PaginationParameter somePagination) {
-        Query q = em.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_ID);
-        q.setParameter(JpaApplication.WEB_SERVER_ID_PARAM, aWebServerId.getId());
+    public List<Application> findApplicationsBelongingToWebServer(String aWebServerName, PaginationParameter somePagination) {
+        Query q = em.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_NAME);
+        q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
         if (somePagination.isLimited()) {
             q.setFirstResult(somePagination.getOffset());
             q.setMaxResults(somePagination.getLimit());
