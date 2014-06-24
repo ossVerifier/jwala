@@ -7,7 +7,7 @@ JkLogFile     logs/mod_jk.log
 JkLogLevel    info
 JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
 
-<% app.each() { %>
+<% apps.each() { %>
 JkMount ${it.mount} lb-${it.name}
 <% } %>
 

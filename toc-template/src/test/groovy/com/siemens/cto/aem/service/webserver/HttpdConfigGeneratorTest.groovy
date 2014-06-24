@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver
 
+import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException
 
 /**
@@ -9,33 +10,24 @@ import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFou
  */
 class HttpdConfigGeneratorTest extends GroovyTestCase {
 
-    def binding
+    def List<Application> apps
     def result
 
     void setUp() {
-        binding = [
-            app:[
-                    [
-                        name  : "hello-world-1",
-                        mount : "/hello-world-1/*"
-                    ],
-                    [
-                        name  : "hello-world-2",
-                        mount : "/hello-world-2/*"
-                    ]
-                ]
-        ]
+        apps = new ArrayList<>()
+        apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null))
+        apps.add(new Application(null, "hello-world-2", null, "/hello-world-2", null))
 
         result = this.getClass().getResource("/httpd.conf").text.replaceAll("\\s+","")
     }
 
     void testGetHttpdConf() {
-        assert result == HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", binding).replaceAll("\\s+","")
+        assert result == HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps).replaceAll("\\s+","")
     }
 
     void testGetHttpdConfMissingTemplate() {
         shouldFail(HttpdConfigTemplateNotFoundException) {
-            HttpdConfigGenerator.getHttpdConf("/httpd-conf-fictitious.tpl", binding)
+            HttpdConfigGenerator.getHttpdConf("/httpd-conf-fictitious.tpl", apps)
         }
     }
 

@@ -77,7 +77,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_WEBSERVER_HTTPS_PORT("AEM36", "InvalidWebServerHttpsPortNumber"),
     /**/
-    JVM_STATE_NOT_SPECIFIED("AEM37", "JvmStateNotSpecified")
+    JVM_STATE_NOT_SPECIFIED("AEM37", "JvmStateNotSpecified"),
+    /**/
+    WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound")
     ;
 
 	private final String faultCode;

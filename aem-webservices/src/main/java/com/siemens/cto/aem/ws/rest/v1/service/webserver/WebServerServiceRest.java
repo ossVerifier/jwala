@@ -47,4 +47,8 @@ public interface WebServerServiceRest {
     Response controlWebServer(@PathParam("webServerId") final Identifier<WebServer> aWebServerId,
                         final JsonControlWebServer aWebServerToControl);
 
+    @GET
+    @Path("/{webServerName}/httpd/conf")
+    Response generateHttpdConfig(@PathParam("webServerName") final String aWebServerName);
+
 }

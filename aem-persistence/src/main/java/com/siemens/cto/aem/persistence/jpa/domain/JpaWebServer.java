@@ -1,24 +1,18 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-
 @Entity
 @Table(name = "webserver", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+@NamedQueries(
+    @NamedQuery(name = JpaWebServer.FIND_APPLICATIONS_QUERY,
+                query = "SELECT a FROM JpaApplication a WHERE a.group in " +
+                        "(SELECT ws.groups FROM JpaWebServer ws WHERE ws.name =:wsName)")
+)
 public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     private static final long serialVersionUID = 1L;
@@ -34,6 +28,9 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     private Integer port;
 
     private Integer httpsPort;
+
+    public static final String FIND_APPLICATIONS_QUERY = "findApplicationsQuery";
+    public static final String WEB_SERVER_PARAM_NAME = "wsName";
 
     @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",

@@ -3,6 +3,7 @@ package com.siemens.cto.aem.persistence.dao.webserver;
 import java.util.List;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -33,5 +34,8 @@ public interface WebServerDao {
 			PaginationParameter aPaginationParam);
 
 	void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
+
+    List<Application> findApplications(String aWebServerName,
+                                       PaginationParameter somePagination);
 
 }

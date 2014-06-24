@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.service.webserver.HttpdConfigGenerator;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -95,4 +97,12 @@ public class WebServerServiceImpl implements WebServerService {
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
         dao.removeWebServersBelongingTo(aGroupId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String generateHttpdConfig(final String aWebServerName) {
+        List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
+        return HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps);
+    }
+
 }

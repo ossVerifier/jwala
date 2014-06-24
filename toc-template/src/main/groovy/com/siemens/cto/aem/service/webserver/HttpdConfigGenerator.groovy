@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.webserver
 
 import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException
 import groovy.text.GStringTemplateEngine
+import com.siemens.cto.aem.domain.model.app.Application
 
 /**
  * Wrapper that contains methods that generates configuration files for an Apache Web Server
@@ -20,8 +21,11 @@ public class HttpdConfigGenerator {
      */
     private HttpdConfigGenerator() {}
 
-    def static getHttpdConf(templateFileName, binding) {
-        def resource = this.getClass().getResource(templateFileName)
+    def public static String getHttpdConf(String templateFileName, List<Application> apps) {
+        def binding = [apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]}]
+
+        def resource = this.getResource(templateFileName)
+
         if (resource == null) {
             resource = new File(templateFileName)
         }

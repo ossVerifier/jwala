@@ -1,25 +1,24 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import java.util.List;
-
-import javax.ws.rs.core.Response;
-
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Response;
+import java.util.List;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
@@ -82,5 +81,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
                     execData.getStandardError());
         }
+    }
+
+    @Override
+    public Response generateHttpdConfig(String aWebServerName) {
+
+        try {
+            String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName);
+            return Response.ok(httpdConfStr).build();
+        } catch (HttpdConfigTemplateNotFoundException e) {
+            throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
+                    e.getMessage());
+        }
+
     }
 }

@@ -1,24 +1,8 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
-import static com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper.createCreateGroupEvent;
-import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createCreateWebServerEvent;
-import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createUpdateWebServerEvent;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -29,6 +13,22 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.*;
+
+import static com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper.createCreateGroupEvent;
+import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createCreateWebServerEvent;
+import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createUpdateWebServerEvent;
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractWebServerDaoIntegrationTest {
@@ -63,6 +63,9 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	private static final String UNIQUE_NEW_WS_NAME = "Web Server Name to turn into a duplicate";
 	private static final String SECOND_WS_GROUP_NAME = "test group 2";
 	private static final String SECOND_TEST_WS_NAME = "TOC Test 2";
+
+    @PersistenceContext(unitName = "aem-unit")
+    private EntityManager entityManager;
 
 	@Before
 	public void setUp() throws Exception {
@@ -334,4 +337,96 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
         assertEquals(newGroup.getName(), webServer.getGroups().iterator().next().getName());
 	}
+
+    @Test
+    public void testFindApplicationsBelongingToWebServer() {
+        final Integer testMethodHash = "testFindApplicationsBelongingToWebServer".hashCode();
+        final String GROUP_NAME_PREFIX = "group" + testMethodHash;
+        final String GROUP_A_NAME = GROUP_NAME_PREFIX + "A";
+        final String GROUP_B_NAME = GROUP_NAME_PREFIX + "B";
+        final String GROUP_C_NAME = GROUP_NAME_PREFIX + "C";
+
+        final String WEB_SERVER_NAME = "webServer" + testMethodHash;
+
+        final String APP_PREFIX = "app" + testMethodHash;
+        final String APP_1_NAME = APP_PREFIX + "1";
+        final String APP_2_NAME = APP_PREFIX + "2";
+        final String APP_3_NAME = APP_PREFIX + "3";
+        final String APP_4_NAME = APP_PREFIX + "4";
+        final String APP_5_NAME = APP_PREFIX + "5";
+
+        // Create groups A, B and C
+        final JpaGroup jpaGroupA = new JpaGroup();
+        jpaGroupA.setName(GROUP_A_NAME);
+        entityManager.persist(jpaGroupA);
+
+        final JpaGroup jpaGroupB = new JpaGroup();
+        jpaGroupB.setName(GROUP_B_NAME);
+        entityManager.persist(jpaGroupB);
+
+        final JpaGroup jpaGroupC = new JpaGroup();
+        jpaGroupC.setName(GROUP_C_NAME);
+        entityManager.persist(jpaGroupC);
+
+        final List<JpaGroup> groups = new ArrayList<>();
+        groups.add(jpaGroupA);
+        groups.add(jpaGroupB);
+
+        // Create the web server
+        final JpaWebServer jpaWebServer = new JpaWebServer();
+        jpaWebServer.setName(WEB_SERVER_NAME);
+        jpaWebServer.setGroups(groups);
+        jpaWebServer.setHost("the-host-name");
+        jpaWebServer.setPort(80);
+        entityManager.persist(jpaWebServer);
+
+        // Create the applications 1, 2, 3, 4 and 5
+        final JpaApplication jpaApp1 = new JpaApplication();
+        jpaApp1.setName(APP_1_NAME);
+        jpaApp1.setGroup(jpaGroupA);
+        jpaApp1.setWebAppContext("/app1");
+        entityManager.persist(jpaApp1);
+
+        final JpaApplication jpaApp2 = new JpaApplication();
+        jpaApp2.setName(APP_2_NAME);
+        jpaApp2.setGroup(jpaGroupA);
+        jpaApp2.setWebAppContext("/app2");
+        entityManager.persist(jpaApp2);
+
+        final JpaApplication jpaApp3 = new JpaApplication();
+        jpaApp3.setName(APP_3_NAME);
+        jpaApp3.setGroup(jpaGroupB);
+        jpaApp3.setWebAppContext("/app3");
+        entityManager.persist(jpaApp3);
+
+        final JpaApplication jpaApp4 = new JpaApplication();
+        jpaApp4.setName(APP_4_NAME);
+        jpaApp4.setGroup(jpaGroupC);
+        jpaApp4.setWebAppContext("/app4");
+        entityManager.persist(jpaApp4);
+
+        final JpaApplication jpaApp5 = new JpaApplication();
+        jpaApp5.setName(APP_5_NAME);
+        jpaApp5.setGroup(jpaGroupB);
+        jpaApp5.setWebAppContext("/app5");
+        entityManager.persist(jpaApp5);
+
+        entityManager.flush();
+
+        final List<Application> applications =
+                webServerDao.findApplications(jpaWebServer.getName(), PaginationParameter.all());
+
+        assertEquals(4, applications.size());
+
+        final List<String> contextList = Arrays.asList("/app1", "/app2", "/app3", "/app5");
+        final List<String> generatedContextList = new ArrayList<>();
+
+        for (final Application app : applications) {
+            generatedContextList.add(app.getWebAppContext());
+        }
+
+        Collections.sort(generatedContextList);
+        assertEquals(contextList.toString(), generatedContextList.toString());
+    }
+
 }

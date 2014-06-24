@@ -32,4 +32,6 @@ public interface WebServerService {
 	
 	void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
 
+    String generateHttpdConfig(final String aWebServerName);
+
 }

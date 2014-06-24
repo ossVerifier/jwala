@@ -6,6 +6,7 @@ dependencies {
     compile project(":aem-persistence")
     compile project(":aem-control")
     compile project(":toc-filemanager")
+    compile project(":toc-template")
 
     compile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"

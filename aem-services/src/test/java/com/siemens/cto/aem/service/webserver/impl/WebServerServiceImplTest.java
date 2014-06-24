@@ -198,4 +198,9 @@ public class WebServerServiceImplTest {
         wsService.removeWebServersBelongingTo(mockWebServer.getGroups().iterator().next().getId());
         verify(wsDao, atLeastOnce()).removeWebServersBelongingTo(group.getId());
     }
+
+    @Test
+    public void testGenerateHttpdConfig() {
+        // TODO: Write unit test
+    }
 }

@@ -16,6 +16,7 @@ import javax.persistence.criteria.Root;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -26,8 +27,10 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
@@ -251,4 +254,21 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
         return webservers;
     }
+
+    @Override
+    public List<Application> findApplications(String aWebServerName, PaginationParameter somePagination) {
+        Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
+        q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
+        if (somePagination.isLimited()) {
+            q.setFirstResult(somePagination.getOffset());
+            q.setMaxResults(somePagination.getLimit());
+        }
+
+        ArrayList<Application> apps = new ArrayList<>(q.getResultList().size());
+        for(JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
+            apps.add(JpaAppBuilder.appFrom(jpa));
+        }
+        return apps;
+    }
+
 }
