@@ -2,16 +2,20 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.app.Application;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -200,7 +204,28 @@ public class WebServerServiceImplTest {
     }
 
     @Test
-    public void testGenerateHttpdConfig() {
-        // TODO: Write unit test
+    public void testGenerateHttpdConfig() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
+
+        String generatedHttpdConf = wsService.generateHttpdConfig("/httpd-conf.tpl");
+
+        BufferedReader bufferedReader =
+                new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/httpd.conf")));
+        StringBuilder referenceHttpdConfBuilder = new StringBuilder();
+        String line;
+        do {
+            line = bufferedReader.readLine();
+            if (line != null) {
+                referenceHttpdConfBuilder.append(line);
+            }
+        } while (line != null);
+
+        assertEquals(referenceHttpdConfBuilder.toString().replaceAll("\\s+", ""),
+                     generatedHttpdConf.replaceAll("\\s+", ""));
     }
 }
