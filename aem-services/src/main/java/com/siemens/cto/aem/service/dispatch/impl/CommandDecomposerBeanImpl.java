@@ -13,35 +13,31 @@ import com.siemens.cto.aem.domain.model.dispatch.SplittableDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.SplitterTransformer;
 
 public class CommandDecomposerBeanImpl implements SplitterTransformer {
-    
+
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CommandDecomposerBeanImpl.class);
-    
+
     public Collection<Message<? extends DispatchCommand>> split(Message<SplittableDispatchCommand> command) {
-        
-        List<Message<? extends DispatchCommand>> newMessages = new ArrayList<Message<? extends DispatchCommand>>();        
-        UUID correlationId = UUID.randomUUID();
-        
-        LOGGER.info("Decomposition correlation id: {}", correlationId.toString());
-        
+        List<Message<? extends DispatchCommand>> newMessages = new ArrayList<Message<? extends DispatchCommand>>();
+
         SplittableDispatchCommand splittableDispatchCommand = command.getPayload();
-        
-        List<DispatchCommand> results = splittableDispatchCommand.getSubCommands(this);        
+
+        Long controlIdentity = splittableDispatchCommand.getIdentity();
+
+        UUID correlationId = command.getHeaders().getId();
+        LOGGER.info("Decomposition correlation id: {}", correlationId.toString());
+
+        List<DispatchCommand> results = splittableDispatchCommand.getSubCommands(this);
         int numMessages = results.size();
         int msgIndex = 0;
-        
-        for(DispatchCommand msg : results) {
-            Message<? extends DispatchCommand> newMessage = 
-                    MessageBuilder
-                        .withPayload(msg)
-                        .copyHeaders(command.getHeaders())
-                        .pushSequenceDetails(correlationId, msgIndex++, numMessages)
-                        .build();
+
+        for (DispatchCommand msg : results) {
+            Message<? extends DispatchCommand> newMessage = MessageBuilder.withPayload(msg)
+                    .setHeader("TocDispatchControlId", controlIdentity).copyHeaders(command.getHeaders())
+                    .pushSequenceDetails(correlationId, msgIndex++, numMessages).build();
             LOGGER.info("Decomposed into {}", newMessage);
             newMessages.add(newMessage);
         }
 
         return newMessages;
     }
-
-
 }

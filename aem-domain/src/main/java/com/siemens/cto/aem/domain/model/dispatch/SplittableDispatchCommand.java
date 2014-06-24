@@ -19,10 +19,16 @@ public abstract class SplittableDispatchCommand extends DispatchCommand {
         
     private static final long serialVersionUID = 1L;
 
+    private long correlationId;
+    
     public List<DispatchCommand> getSubCommands(SplitterTransformer splitter) { 
         // callback to SplitterTransformer to actually do the split work is recommended, 
         // dependency injection can be done there.
         return new ArrayList<DispatchCommand>();
+    }
+    
+    public long getIdentity() {
+        return correlationId;
     }
 
 }
