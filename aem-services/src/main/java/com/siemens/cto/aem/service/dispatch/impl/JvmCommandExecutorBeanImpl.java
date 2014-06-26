@@ -3,30 +3,36 @@ package com.siemens.cto.aem.service.dispatch.impl;
 import org.springframework.integration.Message;
 import org.springframework.integration.support.MessageBuilder;
 
-import com.siemens.cto.aem.domain.model.dispatch.DispatchCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
-import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 
 public class JvmCommandExecutorBeanImpl {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(JvmCommandExecutorBeanImpl.class);
 
-    public Message<CompleteControlJvmCommand> deploy(Message<? extends DispatchCommand> msg) {
+    private JvmControlService jvmControlService;
 
-        LOGGER.info("Would execute: " + msg.getPayload().toString() + " with correlationId = " + msg.getHeaders().getCorrelationId());
+    public JvmCommandExecutorBeanImpl(JvmControlService theJvmControlService) {
+        jvmControlService = theJvmControlService;
+    }
 
-        ExecData execData = new ExecData(new ExecReturnCode(0), "Job Complete", "");
-        Long correlationId = (Long) msg.getHeaders().get("TocDispatchControlId");
-        Identifier<JvmControlHistory> identifier = new Identifier<JvmControlHistory>(correlationId);
-        CompleteControlJvmCommand result = new CompleteControlJvmCommand(identifier, execData);
+    public Message<JvmDispatchCommandResult> deploy(Message<JvmDispatchCommand> msg) {
 
-        Message<CompleteControlJvmCommand> resultMessage = MessageBuilder
-                .withPayload((CompleteControlJvmCommand) result).copyHeaders(msg.getHeaders()).build();
+        JvmDispatchCommand jvmDispatchCommand = msg.getPayload();
+        Long controlId = (Long) msg.getHeaders().get("TocDispatchControlId");
 
-        LOGGER.info("Fake Return value : " + execData);
-        return resultMessage;
+        LOGGER.info("Execute command : " + jvmDispatchCommand.toString() + " with commandDispatchId = " + controlId);
+
+        JvmControlHistory jvmControlHistory = jvmControlService.controlJvm(jvmDispatchCommand.getCommand(),
+                jvmDispatchCommand.getUser());
+        // deal with Runtime exception thrown here...
+
+        // NPE??
+        Boolean wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
+        JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId());
+
+        return MessageBuilder.withPayload((JvmDispatchCommandResult) result).copyHeaders(msg.getHeaders()).build();
     }
 }

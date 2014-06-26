@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
 /**
  * A command that can be broken down into constituent commands
  * A helper method is defined that implements a double 
@@ -19,16 +15,10 @@ public abstract class SplittableDispatchCommand extends DispatchCommand {
         
     private static final long serialVersionUID = 1L;
 
-    private long correlationId;
-    
-    public List<DispatchCommand> getSubCommands(SplitterTransformer splitter) { 
-        // callback to SplitterTransformer to actually do the split work is recommended, 
-        // dependency injection can be done there.
-        return new ArrayList<DispatchCommand>();
-    }
+    private long identity;
     
     public long getIdentity() {
-        return correlationId;
+        return identity;
     }
 
 }

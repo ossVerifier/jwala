@@ -19,12 +19,12 @@
 	<int:channel id="command-accept" />
 	<int:channel id="single-in" />
 	<int:channel id="splitter-accept" />
-	<int:channel id="subcommand" /> 
+	<int:channel id="subcommand" />
 	<int:channel id="subcommand-deploy">
-		<int:queue capacity="3000" /> 
+		<int:queue capacity="3000" />
 	</int:channel>
 	<int:channel id="subcommand-startstopjvm">
-		<int:queue capacity="3000" /> 
+		<int:queue capacity="3000" />
 	</int:channel>
 	<int:channel id="subcommand-completion" />
 	<int:channel id="command-completion" />
@@ -61,7 +61,8 @@
 		discard-channel="subcommand-error">
 	</int:aggregator>
 
-	<bean id="commandExecutionMessageStore" class="org.springframework.integration.store.SimpleMessageStore" />
+	<bean id="commandExecutionMessageStore"
+		class="org.springframework.integration.store.SimpleMessageStore" />
 
 	<!-- Expire results for jobs that are complete, or stuck -->
 	<bean id="commandExecutionMessageStoreReaper"
@@ -81,7 +82,9 @@
 	<bean id="commandDecomposerBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.CommandDecomposerBeanImpl" />
 	<bean id="jvmCommandExecutorBean"
-		class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl" />
+		class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl">
+		  <constructor-arg ref="jvmControlService"/>
+	</bean>
 	<bean id="deployCommandExecutorBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.DeployCommandExecutorBeanImpl" />
 

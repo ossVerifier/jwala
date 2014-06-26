@@ -2,10 +2,13 @@ package com.siemens.cto.aem.service.dispatch.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.integration.Message;
@@ -25,18 +29,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.domain.model.dispatch.DispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.SplittableDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.SplitterTransformer;
+import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = { DispatchCommandIntegrationTest.CommonConfiguration.class })
@@ -44,8 +50,9 @@ public class DispatchCommandIntegrationTest {
 
     private static final Identifier<Jvm> JVM1_IDENTIFIER = new Identifier<>((long) 1);
     private static final Identifier<Jvm> JVM2_IDENTIFIER = new Identifier<>((long) 2);
+    private static final Identifier<Group> GROUP1_IDENTIFIER = new Identifier<>((long) 11);
     private BlockingQueue<Message<?>> blockingQueue;
-    
+
     @Autowired
     private CommandDispatchGateway gateway;
 
@@ -55,39 +62,54 @@ public class DispatchCommandIntegrationTest {
 
     private Jvm mockJvm1;
     private Jvm mockJvm2;
-    private TestMessageHandler handler;
-    
+    private Set<Jvm> jvmSet;
+    private Group theGroup;
+    private ControlGroupCommand startGroupCommand;
+    private GroupDispatchCommand groupDispatchCommand;
+
     @Before
+    @SuppressWarnings("deprecation")
     public void setup() {
+
         mockJvm1 = mock(Jvm.class);
+        when(mockJvm1.getId()).thenReturn(JVM1_IDENTIFIER);
         mockJvm2 = mock(Jvm.class);
+        when(mockJvm2.getId()).thenReturn(JVM2_IDENTIFIER);
+
+        jvmSet = new HashSet<Jvm>();
+        jvmSet.add(mockJvm1);
+        jvmSet.add(mockJvm2);
+
+        theGroup = new Group(GROUP1_IDENTIFIER, "group1", jvmSet);
+        startGroupCommand = new ControlGroupCommand(GROUP1_IDENTIFIER, GroupControlOperation.START);
+        groupDispatchCommand = new GroupDispatchCommand(theGroup, startGroupCommand,
+                User.getHardCodedUser());
+
         blockingQueue = new ArrayBlockingQueue<>(1);
-        handler = new TestMessageHandler();
-        commandCompletionChannel.subscribe(handler);
+        commandCompletionChannel.subscribe(new TestMessageHandler());
     }
 
     @Test
     public void splitGroupIntoTwoJvmControls() throws InterruptedException {
-        
-        gateway.asyncDispatchCommand(createSplittable());
-        
-        Message<?> aggregatorResponse = blockingQueue.poll(3, TimeUnit.SECONDS);  // added to queue from another thread.
-        
-        @SuppressWarnings("unchecked")
-        List<CompleteControlJvmCommand> aggregatedList = (List<CompleteControlJvmCommand>) aggregatorResponse.getPayload();
-        assertEquals(2, aggregatedList.size());
 
-        for (CompleteControlJvmCommand completeControlJvmCommand : aggregatedList) {
-            ExecData execData = completeControlJvmCommand.getExecData();
-            ExecReturnCode returnCode = execData.getReturnCode();
-            assertTrue(returnCode.wasCompleted());
-            assertTrue(returnCode.wasSuccessful());
-            
-            assertEquals(new Long(99), completeControlJvmCommand.getControlHistoryId().getId());
+        gateway.asyncDispatchCommand(groupDispatchCommand); // do it...
+
+        // wait for aggregator to respond...
+        Message<?> aggregatorResponse = blockingQueue.poll(5, TimeUnit.SECONDS);
+
+        @SuppressWarnings("unchecked")
+        List<JvmDispatchCommandResult> aggregatedDispatchCmdList = (List<JvmDispatchCommandResult>) aggregatorResponse
+                .getPayload();
+        assertEquals(2, aggregatedDispatchCmdList.size());
+
+        for (JvmDispatchCommandResult jvmDispatchCommandResult : aggregatedDispatchCmdList) {
+            assertTrue(jvmDispatchCommandResult.wasSuccessful());
+            // TODO : need to assert I got back the correct list of jvms. Right
+            // now the mock returns the same result (JVM1 id) for both calls to
+            // JvmControlService.  (but I am getting back the correct messages)
         }
-        System.out.println("Test Complete!");
     }
-    
+
     class TestMessageHandler implements MessageHandler {
         @Override
         public void handleMessage(Message<?> message) throws MessagingException {
@@ -95,27 +117,24 @@ public class DispatchCommandIntegrationTest {
         }
     }
 
-    protected SplittableDispatchCommand createSplittable() {
-        return new SplittableDispatchCommand() {
-            @Override
-            public long getIdentity() {
-                return new Long(99);
-            }
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public List<DispatchCommand> getSubCommands(SplitterTransformer splitter) {
-                List<DispatchCommand> subCmds = new ArrayList<DispatchCommand>();
-                subCmds.add(new JvmDispatchCommand(mockJvm1, new ControlJvmCommand(JVM1_IDENTIFIER, JvmControlOperation.START)));
-                subCmds.add(new JvmDispatchCommand(mockJvm2, new ControlJvmCommand(JVM2_IDENTIFIER, JvmControlOperation.START)));
-                return subCmds;
-            }
-        };
-    }
-
     @Configuration
     @ImportResource("classpath*:META-INF/spring/integration.xml")
     static class CommonConfiguration {
+
+        private JvmControlService mockJvmControlService;
+
+        @Bean
+        public JvmControlService jvmControlService() {
+            if (mockJvmControlService == null) {
+                Identifier<JvmControlHistory> jvm1ControlHistoryId = new Identifier<JvmControlHistory>(new Long(101));
+                ExecData execData = new ExecData(new ExecReturnCode(0), "Successful.", "");
+                JvmControlHistory mockJvmControlHistory = new JvmControlHistory(jvm1ControlHistoryId, JVM1_IDENTIFIER,
+                        null, null, execData);
+                mockJvmControlService = mock(JvmControlService.class);
+                when(mockJvmControlService.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(
+                        mockJvmControlHistory);
+            }
+            return mockJvmControlService;
+        }
     }
-  }
+}
