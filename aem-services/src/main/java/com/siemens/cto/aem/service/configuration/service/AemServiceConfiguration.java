@@ -68,7 +68,7 @@ public class AemServiceConfiguration {
         return new PrivateApplicationServiceImpl(/** Relying on autowire */);
     }
 
-    @Bean
+    @Bean(name="jvmControlService")
     public JvmControlService getJvmControlService() {
         return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService(),
                                          getJvmService(),
