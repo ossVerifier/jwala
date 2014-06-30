@@ -22,6 +22,7 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
@@ -29,8 +30,10 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
@@ -256,19 +259,44 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public List<Application> findApplications(String aWebServerName, PaginationParameter somePagination) {
-        Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
+    public List<Application> findApplications(final String aWebServerName, final PaginationParameter somePagination) {
+        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
         q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
         if (somePagination.isLimited()) {
             q.setFirstResult(somePagination.getOffset());
             q.setMaxResults(somePagination.getLimit());
         }
 
-        ArrayList<Application> apps = new ArrayList<>(q.getResultList().size());
-        for(JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
+        final ArrayList<Application> apps = new ArrayList<>(q.getResultList().size());
+        for(final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
             apps.add(JpaAppBuilder.appFrom(jpa));
         }
         return apps;
+    }
+
+    @Override
+    public WebServer findWebServerByName(final String aWebServerName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_QUERY);
+        q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
+
+        return webServerFrom((JpaWebServer) q.getSingleResult());
+    }
+
+    @Override
+    public List<Jvm> findJvms(final String aWebServerName, final PaginationParameter somePagination) {
+        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
+        q.setParameter("wsName", aWebServerName);
+
+        if (somePagination.isLimited()) {
+            q.setFirstResult(somePagination.getOffset());
+            q.setMaxResults(somePagination.getLimit());
+        }
+
+        final ArrayList<Jvm> jvms = new ArrayList<>(q.getResultList().size());
+        for(final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {
+            jvms.add((new JpaJvmBuilder(jpaJvm)).build());
+        }
+        return jvms;
     }
 
 }

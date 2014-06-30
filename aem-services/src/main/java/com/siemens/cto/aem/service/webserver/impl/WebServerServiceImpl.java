@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.service.webserver.HttpdConfigGenerator;
+import com.siemens.cto.aem.service.webserver.WorkersProperties;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -103,6 +105,33 @@ public class WebServerServiceImpl implements WebServerService {
     public String generateHttpdConfig(final String aWebServerName) {
         List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
         return HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String generateWorkerProperties(final String aWebServerName,
+                                           final String loadBalancerPortType,
+                                           final Integer stickySessionCount,
+                                           final String loadBalancerType,
+                                           final String workerStatusCssPath) {
+
+       WorkersProperties.Builder workPropertiesBuilder = new WorkersProperties.Builder();
+        WorkersProperties workersProperties =
+                workPropertiesBuilder.setJvms(dao.findJvms(aWebServerName, PaginationParameter.all()))
+                                     .setLoadBalancerPortType(StringUtils.isEmpty(loadBalancerPortType) ?
+                                                              "ajp13" :
+                                                              loadBalancerPortType)
+                                     .setApps(dao.findApplications(aWebServerName, PaginationParameter.all()))
+                                     .setStickySession(stickySessionCount == null ? 1 : stickySessionCount)
+                                     .setLoadBalancerType(StringUtils.isEmpty(loadBalancerType) ?
+                                                          "lb" :
+                                                          loadBalancerType)
+                                     .setStatusCssPath(StringUtils.isEmpty(workerStatusCssPath) ?
+                                                       "/loadbalancer/status/custom.css" :
+                                                       workerStatusCssPath)
+                                     .build();
+
+        return workersProperties.toString();
     }
 
 }

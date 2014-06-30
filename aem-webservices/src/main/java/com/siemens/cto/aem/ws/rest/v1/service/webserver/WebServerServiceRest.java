@@ -1,14 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -50,5 +42,13 @@ public interface WebServerServiceRest {
     @GET
     @Path("/{webServerName}/httpd/conf")
     Response generateHttpdConfig(@PathParam("webServerName") final String aWebServerName);
+
+    @GET
+    @Path("/{webServerName}/worker/properties")
+    Response generateWorkerProperties(@PathParam("webServerName") final String aWebServerName,
+                                      @QueryParam("loadBalancerPortType") final String loadBalancerPortType,
+                                      @QueryParam("stickySessionCount") final Integer stickySessionCount,
+                                      @QueryParam("loadBalancerType") final String loadBalancerType,
+                                      @QueryParam("workerStatusCssPath") final String workerStatusCssPath);
 
 }

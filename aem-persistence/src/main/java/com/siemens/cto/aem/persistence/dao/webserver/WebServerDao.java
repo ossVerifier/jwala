@@ -7,6 +7,7 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
@@ -35,7 +36,11 @@ public interface WebServerDao {
 
 	void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
 
-    List<Application> findApplications(String aWebServerName,
-                                       PaginationParameter somePagination);
+    List<Application> findApplications(final String aWebServerName,
+                                       final PaginationParameter somePagination);
+
+    WebServer findWebServerByName(final String aWebServerName);
+
+    List<Jvm> findJvms(final String aWebServerName, final PaginationParameter somePagination);
 
 }

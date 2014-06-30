@@ -84,7 +84,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateHttpdConfig(String aWebServerName) {
+    public Response generateHttpdConfig(final String aWebServerName) {
 
         try {
             String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName);
@@ -94,5 +94,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     e.getMessage());
         }
 
+    }
+
+    @Override
+    public Response generateWorkerProperties(final String aWebServerName,
+                                             final String loadBalancerPortType,
+                                             final Integer stickySessionCount,
+                                             final String loadBalancerType,
+                                             final String workerStatusCssPath) {
+        return Response.ok(webServerService.generateWorkerProperties(aWebServerName,
+                                                                     loadBalancerPortType,
+                                                                     stickySessionCount,
+                                                                     loadBalancerType,
+                                                                     workerStatusCssPath)).build();
     }
 }

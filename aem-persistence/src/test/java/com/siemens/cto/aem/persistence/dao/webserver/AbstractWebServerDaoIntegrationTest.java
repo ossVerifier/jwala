@@ -8,6 +8,7 @@ import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
@@ -15,6 +16,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.*;
 
 import static com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper.createCreateGroupEvent;
@@ -429,4 +432,183 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         assertEquals(contextList.toString(), generatedContextList.toString());
     }
 
+    @Test
+    public void testFindWebServerByName() {
+        final int methodHash = "testFindWebServerByName".hashCode();
+        final String WS_NAME = "webserver" + methodHash;
+
+        final JpaWebServer jpaWebServer = new JpaWebServer();
+        jpaWebServer.setName(WS_NAME);
+        jpaWebServer.setHost("the-host-name");
+        jpaWebServer.setPort(80);
+        entityManager.persist(jpaWebServer);
+        entityManager.flush();
+
+        final WebServer ws = webServerDao.findWebServerByName(WS_NAME);
+        assertEquals(WS_NAME, ws.getName());
+    }
+
+    /**
+     * Add JVM to group
+     * @param jpaJvm JVM to add
+     * @param jpaGroup group to add to
+     */
+    private void addJvmToGroup(JpaJvm jpaJvm, JpaGroup jpaGroup) {
+        Query q = entityManager.createNativeQuery("INSERT INTO GRP_JVM (GROUP_ID, JVM_ID) VALUES (?, ?)");
+        q.setParameter(1, jpaGroup.getId());
+        q.setParameter(2, jpaJvm.getId());
+        q.executeUpdate();
+    }
+
+    @Test
+    public void testFindJvms() {
+        final Integer testMethodHash = "testFindJvms".hashCode();
+        final String GROUP_NAME_PREFIX = "group" + testMethodHash;
+        final String GROUP_A_NAME = GROUP_NAME_PREFIX + "A";
+        final String GROUP_B_NAME = GROUP_NAME_PREFIX + "B";
+        final String GROUP_C_NAME = GROUP_NAME_PREFIX + "C";
+
+        final String WEB_SERVER_NAME = "webServer" + testMethodHash;
+
+        final String JVM_PREFIX = "jvm" + testMethodHash;
+        final String JVM_1_NAME = JVM_PREFIX + "1";
+        final String JVM_2_NAME = JVM_PREFIX + "2";
+        final String JVM_3_NAME = JVM_PREFIX + "3";
+        final String JVM_4_NAME = JVM_PREFIX + "4";
+        final String JVM_5_NAME = JVM_PREFIX + "5";
+
+        final String APP_PREFIX = "app" + testMethodHash;
+        final String APP_1_NAME = APP_PREFIX + "1";
+        final String APP_2_NAME = APP_PREFIX + "2";
+        final String APP_3_NAME = APP_PREFIX + "3";
+        final String APP_4_NAME = APP_PREFIX + "4";
+        final String APP_5_NAME = APP_PREFIX + "5";
+
+        // Create groups A, B and C
+        final JpaGroup jpaGroupA = new JpaGroup();
+        jpaGroupA.setName(GROUP_A_NAME);
+        entityManager.persist(jpaGroupA);
+
+        final JpaGroup jpaGroupB = new JpaGroup();
+        jpaGroupB.setName(GROUP_B_NAME);
+        entityManager.persist(jpaGroupB);
+
+        final JpaGroup jpaGroupC = new JpaGroup();
+        jpaGroupC.setName(GROUP_C_NAME);
+        entityManager.persist(jpaGroupC);
+
+        final List<JpaGroup> groups = new ArrayList<>();
+        groups.add(jpaGroupA);
+        groups.add(jpaGroupB);
+
+        // Create the web server
+        final JpaWebServer jpaWebServer = new JpaWebServer();
+        jpaWebServer.setName(WEB_SERVER_NAME);
+        jpaWebServer.setHost("the-host-name");
+        jpaWebServer.setPort(80);
+        jpaWebServer.setGroups(groups);
+        entityManager.persist(jpaWebServer);
+
+        // Create jvm 1, 2, 3, 4 and 5
+        final JpaJvm jpaJvm1 = new JpaJvm();
+        jpaJvm1.setName(JVM_1_NAME);
+        jpaJvm1.setHttpPort(8080);
+        jpaJvm1.setAjpPort(8009);
+        jpaJvm1.setRedirectPort(443);
+        jpaJvm1.setShutdownPort(8005);
+        entityManager.persist(jpaJvm1);
+
+        addJvmToGroup(jpaJvm1, jpaGroupA);
+        addJvmToGroup(jpaJvm1, jpaGroupB);
+
+        final JpaJvm jpaJvm2 = new JpaJvm();
+        jpaJvm2.setName(JVM_2_NAME);
+        jpaJvm2.setHttpPort(8080);
+        jpaJvm2.setAjpPort(8009);
+        jpaJvm2.setRedirectPort(443);
+        jpaJvm2.setShutdownPort(8005);
+        entityManager.persist(jpaJvm2);
+
+        addJvmToGroup(jpaJvm2, jpaGroupC);
+
+        final JpaJvm jpaJvm3 = new JpaJvm();
+        jpaJvm3.setName(JVM_3_NAME);
+        jpaJvm3.setHttpPort(8080);
+        jpaJvm3.setAjpPort(8009);
+        jpaJvm3.setRedirectPort(443);
+        jpaJvm3.setShutdownPort(8005);
+        entityManager.persist(jpaJvm3);
+
+        addJvmToGroup(jpaJvm3, jpaGroupB);
+        addJvmToGroup(jpaJvm3, jpaGroupC);
+
+        final JpaJvm jpaJvm4 = new JpaJvm();
+        jpaJvm4.setName(JVM_4_NAME);
+        jpaJvm4.setHttpPort(8080);
+        jpaJvm4.setAjpPort(8009);
+        jpaJvm4.setRedirectPort(443);
+        jpaJvm4.setShutdownPort(8005);
+        entityManager.persist(jpaJvm4);
+
+        addJvmToGroup(jpaJvm4, jpaGroupA);
+        addJvmToGroup(jpaJvm4, jpaGroupB);
+
+        final JpaJvm jpaJvm5 = new JpaJvm();
+        jpaJvm5.setName(JVM_5_NAME);
+        jpaJvm5.setHttpPort(8080);
+        jpaJvm5.setAjpPort(8009);
+        jpaJvm5.setRedirectPort(443);
+        jpaJvm5.setShutdownPort(8005);
+        entityManager.persist(jpaJvm5);
+
+        addJvmToGroup(jpaJvm5, jpaGroupC);
+
+        // Create the applications 1, 2, 3, 4 and 5
+        final JpaApplication jpaApp1 = new JpaApplication();
+        jpaApp1.setName(APP_1_NAME);
+        jpaApp1.setGroup(jpaGroupA);
+        jpaApp1.setWebAppContext("/app1");
+        entityManager.persist(jpaApp1);
+
+        final JpaApplication jpaApp2 = new JpaApplication();
+        jpaApp2.setName(APP_2_NAME);
+        jpaApp2.setGroup(jpaGroupA);
+        jpaApp2.setWebAppContext("/app2");
+        entityManager.persist(jpaApp2);
+
+        final JpaApplication jpaApp3 = new JpaApplication();
+        jpaApp3.setName(APP_3_NAME);
+        jpaApp3.setGroup(jpaGroupB);
+        jpaApp3.setWebAppContext("/app3");
+        entityManager.persist(jpaApp3);
+
+        final JpaApplication jpaApp4 = new JpaApplication();
+        jpaApp4.setName(APP_4_NAME);
+        jpaApp4.setGroup(jpaGroupC);
+        jpaApp4.setWebAppContext("/app4");
+        entityManager.persist(jpaApp4);
+
+        final JpaApplication jpaApp5 = new JpaApplication();
+        jpaApp5.setName(APP_5_NAME);
+        jpaApp5.setGroup(jpaGroupB);
+        jpaApp5.setWebAppContext("/app5");
+        entityManager.persist(jpaApp5);
+
+        entityManager.flush();
+
+        final List<Jvm> jvms =
+                webServerDao.findJvms(WEB_SERVER_NAME, PaginationParameter.all());
+
+        assertEquals(3, jvms.size());
+
+        final List<String> jvmNameList = Arrays.asList(JVM_1_NAME, JVM_3_NAME, JVM_4_NAME);
+        final List<String> generatedJvmNameList = new ArrayList<>();
+
+        for (final Jvm jvm : jvms) {
+            generatedJvmNameList.add(jvm.getJvmName());
+        }
+
+        Collections.sort(generatedJvmNameList);
+        assertEquals(jvmNameList.toString(), generatedJvmNameList.toString());
+    }
 }

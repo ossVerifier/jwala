@@ -31,6 +31,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -174,5 +176,20 @@ public class WebServerServiceRestImplTest {
 
         final WebServerControlHistory received = (WebServerControlHistory) content;
         assertEquals(webServerControlHistory, received);
+    }
+
+    @Test
+    public void testGenerateHttpdConfig() {
+        when(impl.generateHttpdConfig(anyString())).thenReturn("httpd configuration");
+        Response response = cut.generateHttpdConfig("any-server-name");
+        assertEquals("httpd configuration", response.getEntity());
+    }
+
+    @Test
+    public void testGenerateWorkerProperties() {
+        when(impl.generateWorkerProperties(anyString(), anyString(), anyInt(), anyString(), anyString()))
+                .thenReturn("worker properties");
+        Response response = cut.generateWorkerProperties("", "", 0, null, null);
+        assertEquals("worker properties", response.getEntity());
     }
 }

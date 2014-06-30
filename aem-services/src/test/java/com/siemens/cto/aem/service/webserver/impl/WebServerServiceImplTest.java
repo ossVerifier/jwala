@@ -4,10 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -203,19 +201,9 @@ public class WebServerServiceImplTest {
         verify(wsDao, atLeastOnce()).removeWebServersBelongingTo(group.getId());
     }
 
-    @Test
-    public void testGenerateHttpdConfig() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null);
-
-        Application [] appArray = {app1, app2};
-
-        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
-
-        String generatedHttpdConf = wsService.generateHttpdConfig("/httpd-conf.tpl");
-
+    private final String readReferenceFile(String file) throws IOException {
         BufferedReader bufferedReader =
-                new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/httpd.conf")));
+                new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(file)));
         StringBuilder referenceHttpdConfBuilder = new StringBuilder();
         String line;
         do {
@@ -225,7 +213,109 @@ public class WebServerServiceImplTest {
             }
         } while (line != null);
 
-        assertEquals(referenceHttpdConfBuilder.toString().replaceAll("\\s+", ""),
+        return referenceHttpdConfBuilder.toString();
+    }
+
+    @Test
+    public void testGenerateHttpdConfig() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
+
+        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name");
+
+        assertEquals(readReferenceFile("/httpd.conf").replaceAll("\\s+", ""),
                      generatedHttpdConf.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    public void testGenerateWorkerProperties() throws IOException {
+        final Jvm jvm1 = mock(Jvm.class);
+        when(jvm1.getJvmName()).thenReturn("tc1");
+        when(jvm1.getHostName()).thenReturn("host1");
+        when(jvm1.getAjpPort()).thenReturn(8009);
+
+        final Jvm jvm2 = mock(Jvm.class);
+        when(jvm2.getJvmName()).thenReturn("tc2");
+        when(jvm2.getHostName()).thenReturn("host2");
+        when(jvm2.getAjpPort()).thenReturn(8109);
+
+        final List<Jvm> jvms = new ArrayList<Jvm>();
+        jvms.add(jvm1);
+        jvms.add(jvm2);
+
+        when(wsDao.findJvms(anyString(), any(PaginationParameter.class))).thenReturn(jvms);
+
+        final Application app1 = mock(Application.class);
+            when(app1.getName()).thenReturn("hello-world-1");
+
+        final Application app2 = mock(Application.class);
+        when(app2.getName()).thenReturn("hello-world-2");
+
+        final Application app3 = mock(Application.class);
+        when(app3.getName()).thenReturn("hello-world-3");
+
+        final List<Application> apps = new ArrayList<Application>();
+        apps.add(app1);
+        apps.add(app2);
+        apps.add(app3);
+
+        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(apps);
+
+        String workerPropertiesStr = wsService.generateWorkerProperties("any-web-server-name",
+                                                                        "ajp11",
+                                                                         2,
+                                                                        "lbm",
+                                                                        "/loadbalancer/sts/custom.css");
+
+        assertEquals(readReferenceFile("/workers.properties").replaceAll("\\s+", ""),
+                                       workerPropertiesStr.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    public void testGenerateDefaultWorkerProperties() throws IOException {
+        final Jvm jvm1 = mock(Jvm.class);
+        when(jvm1.getJvmName()).thenReturn("tc1");
+        when(jvm1.getHostName()).thenReturn("host1");
+        when(jvm1.getAjpPort()).thenReturn(8009);
+
+        final Jvm jvm2 = mock(Jvm.class);
+        when(jvm2.getJvmName()).thenReturn("tc2");
+        when(jvm2.getHostName()).thenReturn("host2");
+        when(jvm2.getAjpPort()).thenReturn(8109);
+
+        final List<Jvm> jvms = new ArrayList<Jvm>();
+        jvms.add(jvm1);
+        jvms.add(jvm2);
+
+        when(wsDao.findJvms(anyString(), any(PaginationParameter.class))).thenReturn(jvms);
+
+        final Application app1 = mock(Application.class);
+        when(app1.getName()).thenReturn("hello-world-1");
+
+        final Application app2 = mock(Application.class);
+        when(app2.getName()).thenReturn("hello-world-2");
+
+        final Application app3 = mock(Application.class);
+        when(app3.getName()).thenReturn("hello-world-3");
+
+        final List<Application> apps = new ArrayList<Application>();
+        apps.add(app1);
+        apps.add(app2);
+        apps.add(app3);
+
+        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(apps);
+
+        String workerPropertiesStr = wsService.generateWorkerProperties("any-web-server-name",
+                                                                        null,
+                                                                        null,
+                                                                        "",
+                                                                        "");
+
+        assertEquals(readReferenceFile("/workers-default.properties").replaceAll("\\s+", ""),
+                workerPropertiesStr.replaceAll("\\s+", ""));
     }
 }
