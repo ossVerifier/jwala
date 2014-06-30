@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
+import java.util.List;
+
 
 /**
  * Interface for Spring 
@@ -8,5 +10,9 @@ package com.siemens.cto.aem.domain.model.dispatch;
  *
  */
 public interface SplitterTransformer {
- 
+
+    List<DispatchCommand> splitGroupToJvmCommands(GroupDispatchCommand groupDispatchCommand);
+
+    List<DispatchCommand> splitGroupToDeployCommands(GroupDispatchCommand groupDispatchCommand);
+
 }

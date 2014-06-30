@@ -1,7 +1,9 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 
 public class GroupDispatchCommand extends SplittableDispatchCommand {
@@ -10,11 +12,13 @@ public class GroupDispatchCommand extends SplittableDispatchCommand {
     private final Group group;
     private final ControlGroupCommand command;
     private final User user;
+    private final Identifier<GroupControlHistory> groupControlHistoryId;
 
-    public GroupDispatchCommand(Group theGroup, ControlGroupCommand theCommand, User theUser) {
+    public GroupDispatchCommand(Group theGroup, ControlGroupCommand theCommand, User theUser, Identifier<GroupControlHistory> theHistoryId) {
         group = theGroup;
         command = theCommand;
         user = theUser;
+        groupControlHistoryId = theHistoryId;
     }
     
     public Group getGroup() {
@@ -31,6 +35,10 @@ public class GroupDispatchCommand extends SplittableDispatchCommand {
 
     public User getUser() {
         return user;
+    }
+
+    public Identifier<GroupControlHistory> getGroupControlHistoryId() {
+        return groupControlHistoryId;
     }
     
 }

@@ -31,15 +31,14 @@ public class CommandDecomposerBeanImpl implements SplitterTransformer {
         if (GroupDispatchCommand.class.isAssignableFrom(payload.getClass())) {
 
             GroupDispatchCommand groupDispatchCommand = (GroupDispatchCommand) payload;
-            Long controlIdentity = groupDispatchCommand.getIdentity();
 
-            List<DispatchCommand> results = splitGroup(groupDispatchCommand);
+            List<DispatchCommand> results = splitGroupToJvmCommands(groupDispatchCommand);
             int numMessages = results.size();
             int msgIndex = 0;
 
             for (DispatchCommand msg : results) {
                 Message<? extends DispatchCommand> newMessage = MessageBuilder.withPayload(msg)
-                        .setHeader("TocDispatchControlId", controlIdentity).copyHeaders(command.getHeaders())
+                        .setHeader("GroupDispatchCommand", groupDispatchCommand).copyHeaders(command.getHeaders())
                         .pushSequenceDetails(correlationId, msgIndex++, numMessages).build();
                 LOGGER.info("Decomposed into {}", newMessage);
                 newMessages.add(newMessage);
@@ -53,9 +52,7 @@ public class CommandDecomposerBeanImpl implements SplitterTransformer {
         return newMessages;
     }
 
-    // later this will get more complex and splitting groups will depend on the
-    // command and should be done elsewhere.
-    protected List<DispatchCommand> splitGroup(GroupDispatchCommand groupDispatchCommand) {
+    public List<DispatchCommand> splitGroupToJvmCommands(GroupDispatchCommand groupDispatchCommand) {
         List<DispatchCommand> jvmCommands = new ArrayList<DispatchCommand>();
 
         Group group = groupDispatchCommand.getGroup();
@@ -66,5 +63,10 @@ public class CommandDecomposerBeanImpl implements SplitterTransformer {
         }
 
         return jvmCommands;
+    }
+
+    @Override
+    public List<DispatchCommand> splitGroupToDeployCommands(GroupDispatchCommand groupDispatchCommand) {
+        return null;
     }
 }

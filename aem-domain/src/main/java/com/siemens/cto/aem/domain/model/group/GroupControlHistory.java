@@ -2,12 +2,7 @@ package com.siemens.cto.aem.domain.model.group;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
 public class GroupControlHistory implements Serializable {
@@ -18,18 +13,15 @@ public class GroupControlHistory implements Serializable {
     private final Identifier<Group> groupId;
     private final GroupControlOperation controlOperation;
     private final AuditEvent whenRequested;
-    private final ExecData execData;  // don't think I need this for group...
 
     public GroupControlHistory(final Identifier<GroupControlHistory> theId,
                              final Identifier<Group> theGroupId,
                              final GroupControlOperation theControlOperation,
-                             final AuditEvent theWhenRequested,
-                             final ExecData theExecData) {
+                             final AuditEvent theWhenRequested) {
         id = theId;
         groupId = theGroupId;
         controlOperation = theControlOperation;
         whenRequested = theWhenRequested;
-        execData = theExecData;
     }
 
     public Identifier<GroupControlHistory> getId() {
@@ -48,50 +40,49 @@ public class GroupControlHistory implements Serializable {
         return whenRequested;
     }
 
-    public ExecData getExecData() {
-        return execData;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((controlOperation == null) ? 0 : controlOperation.hashCode());
+        result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((whenRequested == null) ? 0 : whenRequested.hashCode());
+        return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
+        if (this == obj)
             return true;
-        }
-        if (obj.getClass() != getClass()) {
+        if (obj == null)
             return false;
-        }
-        GroupControlHistory rhs = (GroupControlHistory) obj;
-        return new EqualsBuilder()
-                .append(this.id, rhs.id)
-                .append(this.groupId, rhs.groupId)
-                .append(this.controlOperation, rhs.controlOperation)
-                .append(this.whenRequested, rhs.whenRequested)
-                .append(this.execData, rhs.execData)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(groupId)
-                .append(controlOperation)
-                .append(whenRequested)
-                .append(execData)
-                .toHashCode();
+        if (getClass() != obj.getClass())
+            return false;
+        GroupControlHistory other = (GroupControlHistory) obj;
+        if (controlOperation != other.controlOperation)
+            return false;
+        if (groupId == null) {
+            if (other.groupId != null)
+                return false;
+        } else if (!groupId.equals(other.groupId))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (whenRequested == null) {
+            if (other.whenRequested != null)
+                return false;
+        } else if (!whenRequested.equals(other.whenRequested))
+            return false;
+        return true;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("jvmId", groupId)
-                .append("controlOperation", controlOperation)
-                .append("whenRequested", whenRequested)
-                .append("execData", execData)
-                .toString();
+        return "GroupControlHistory [id=" + id + ", groupId=" + groupId + ", controlOperation=" + controlOperation
+                + ", whenRequested=" + whenRequested + "]";
     }
 }

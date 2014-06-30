@@ -77,15 +77,24 @@
 		<task:scheduled ref="commandExecutionMessageStoreReaper"
 			method="run" fixed-rate="1000" />
 	</task:scheduled-tasks>
-
+<!-- 
+	<int:service-activator id="jvmGroupCompleteServiceActivator" input-channel="command-completion"
+		method="commandComplete" ref="jvmGroupCommandCompletionBean">
+	</int:service-activator>
+-->
 	<!-- Application beans -->
 	<bean id="commandDecomposerBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.CommandDecomposerBeanImpl" />
 	<bean id="jvmCommandExecutorBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl">
-		  <constructor-arg ref="jvmControlService"/>
+		<constructor-arg ref="jvmControlService" />
 	</bean>
 	<bean id="deployCommandExecutorBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.DeployCommandExecutorBeanImpl" />
+	<bean id="jvmGroupCommandCompletionBean"
+		class="com.siemens.cto.aem.service.dispatch.impl.GroupCommandCompletionMessageHandler" >
+		<constructor-arg ref="command-completion"/>
+		<constructor-arg ref="groupControlService"/>
+	</bean>
 
 </beans>

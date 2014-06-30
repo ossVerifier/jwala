@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.dispatch.impl;
 import org.springframework.integration.Message;
 import org.springframework.integration.support.MessageBuilder;
 
+import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
@@ -21,9 +22,9 @@ public class JvmCommandExecutorBeanImpl {
     public Message<JvmDispatchCommandResult> deploy(Message<JvmDispatchCommand> msg) {
 
         JvmDispatchCommand jvmDispatchCommand = msg.getPayload();
-        Long controlId = (Long) msg.getHeaders().get("TocDispatchControlId");
+        GroupDispatchCommand groupDispatchCommand = (GroupDispatchCommand) msg.getHeaders().get("GroupDispatchCommand");
 
-        LOGGER.info("Execute command : " + jvmDispatchCommand.toString() + " with commandDispatchId = " + controlId);
+        LOGGER.info("Execute command : " + jvmDispatchCommand.toString() + " with commandDispatchId = " + groupDispatchCommand.getIdentity());
 
         JvmControlHistory jvmControlHistory = jvmControlService.controlJvm(jvmDispatchCommand.getCommand(),
                 jvmDispatchCommand.getUser());
