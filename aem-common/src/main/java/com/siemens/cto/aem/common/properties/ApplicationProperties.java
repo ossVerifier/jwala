@@ -14,11 +14,19 @@ public class ApplicationProperties {
 
     private Properties properties;
 
+    private static volatile ApplicationProperties self = null;
+
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationProperties.class);
 
-    private static ApplicationProperties self = new ApplicationProperties();
-
     public static ApplicationProperties getInstance() {
+        if (self == null) {
+            synchronized (ApplicationProperties.class) {
+                if (self == null) {
+                    self = new ApplicationProperties();
+                }
+            }
+        }
+
         return self;
     }
 
@@ -61,5 +69,4 @@ public class ApplicationProperties {
         }
         LOG.info("Properties loaded from path " + propertiesFile);
     }
-
 }

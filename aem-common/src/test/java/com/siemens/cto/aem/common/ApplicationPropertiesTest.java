@@ -20,9 +20,12 @@ public class ApplicationPropertiesTest extends TestCase {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/blah");
         try {
             ApplicationProperties.get("doesn't matter");
-        } catch (ExceptionInInitializerError e) {
+        } catch (ApplicationException e) {
             assertTrue(true);
+            return;
         }
+
+        assertFalse(false);
     }
 
     public void testLoadProperties() {
