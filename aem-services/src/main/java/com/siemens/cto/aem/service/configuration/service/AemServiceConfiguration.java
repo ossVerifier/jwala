@@ -12,7 +12,10 @@ import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
+import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
+import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -73,6 +76,16 @@ public class AemServiceConfiguration {
         return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService(),
                                          getJvmService(),
                                          aemCommandExecutorConfig.getJvmCommandExecutor());
+    }
+
+    @Autowired
+    CommandDispatchGateway commandDispatchGateway;
+    
+    @Bean(name="groupControlService")
+    public GroupControlService getGroupControlService() {
+        return new GroupControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
+                                         getGroupService(),
+                                         commandDispatchGateway);
     }
 
     @Bean
