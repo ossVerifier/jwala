@@ -10,7 +10,6 @@ JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
 <% apps.each() { %>
 JkMount ${it.mount} lb-${it.name}
 <% } %>
-
 JkMount  /jkmanager/* status
 
 <IfModule !mpm_netware_module>

@@ -32,7 +32,7 @@ public interface WebServerService {
 	
 	void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
 
-    String generateHttpdConfig(final String aWebServerName);
+    String generateHttpdConfig(final String aWebServerName, final Boolean withSsl);
 
     String generateWorkerProperties(final String aWebServerName,
                                     final String loadBalancerPortType,

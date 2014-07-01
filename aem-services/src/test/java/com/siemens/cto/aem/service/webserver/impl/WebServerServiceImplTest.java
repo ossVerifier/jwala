@@ -225,10 +225,25 @@ public class WebServerServiceImplTest {
 
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name");
+        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name", null);
 
         assertEquals(readReferenceFile("/httpd.conf").replaceAll("\\s+", ""),
                      generatedHttpdConf.replaceAll("\\s+", ""));
+    }
+
+    @Test
+    public void testGenerateHttpdConfigWithSsl() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
+
+        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name", true);
+
+        assertEquals(readReferenceFile("/httpd-ssl.conf").replaceAll("\\s+", ""),
+                generatedHttpdConf.replaceAll("\\s+", ""));
     }
 
     @Test

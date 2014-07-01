@@ -30,9 +30,7 @@ import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -180,8 +178,8 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateHttpdConfig() {
-        when(impl.generateHttpdConfig(anyString())).thenReturn("httpd configuration");
-        Response response = cut.generateHttpdConfig("any-server-name");
+        when(impl.generateHttpdConfig(anyString(), anyBoolean())).thenReturn("httpd configuration");
+        Response response = cut.generateHttpdConfig("any-server-name", null);
         assertEquals("httpd configuration", response.getEntity());
     }
 

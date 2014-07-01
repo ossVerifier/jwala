@@ -41,7 +41,8 @@ public interface WebServerServiceRest {
 
     @GET
     @Path("/{webServerName}/httpd/conf")
-    Response generateHttpdConfig(@PathParam("webServerName") final String aWebServerName);
+    Response generateHttpdConfig(@PathParam("webServerName") final String aWebServerName,
+                                 @QueryParam("ssl") final Boolean withSsl);
 
     @GET
     @Path("/{webServerName}/worker/properties")

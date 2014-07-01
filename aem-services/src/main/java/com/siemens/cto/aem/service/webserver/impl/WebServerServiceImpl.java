@@ -23,6 +23,8 @@ import com.siemens.cto.aem.service.webserver.WebServerService;
 public class WebServerServiceImpl implements WebServerService {
 
     private WebServerDao dao;
+    private final String HTTPD_CONF_TEMPLATE = "/httpd-conf.tpl";
+    private final String HTTPD_SSL_CONF_TEMPLATE = "/httpd-ssl-conf.tpl";
 
     public WebServerServiceImpl(final WebServerDao theDao) {
         dao = theDao;
@@ -102,9 +104,13 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateHttpdConfig(final String aWebServerName) {
+    public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
         List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
-        return HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps);
+        if (withSsl != null && withSsl) {
+            return HttpdConfigGenerator.getHttpdConf(HTTPD_SSL_CONF_TEMPLATE, apps);
+
+        }
+        return HttpdConfigGenerator.getHttpdConf(HTTPD_CONF_TEMPLATE, apps);
     }
 
     @Override

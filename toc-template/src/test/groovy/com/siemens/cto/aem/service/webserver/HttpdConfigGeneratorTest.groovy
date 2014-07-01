@@ -11,18 +11,21 @@ import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFou
 class HttpdConfigGeneratorTest extends GroovyTestCase {
 
     def List<Application> apps
-    def result
 
     void setUp() {
         apps = new ArrayList<>()
         apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null))
         apps.add(new Application(null, "hello-world-2", null, "/hello-world-2", null))
-
-        result = this.getClass().getResource("/httpd.conf").text.replaceAll("\\s+","")
     }
 
     void testGetHttpdConf() {
-        assert result == HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps).replaceAll("\\s+","")
+        def refFile = this.getClass().getResource("/httpd.conf").text.replaceAll("\\s+","")
+        assert refFile == HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps).replaceAll("\\s+","")
+    }
+
+    void testGetHttpdConfWithSsl() {
+        def refFile = this.getClass().getResource("/httpd-ssl.conf").text.replaceAll("\\s+","")
+        assert refFile == HttpdConfigGenerator.getHttpdConf("/httpd-ssl-conf.tpl", apps).replaceAll("\\s+","")
     }
 
     void testGetHttpdConfMissingTemplate() {

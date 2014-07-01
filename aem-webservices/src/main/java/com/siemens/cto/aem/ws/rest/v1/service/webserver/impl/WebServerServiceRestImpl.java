@@ -84,10 +84,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateHttpdConfig(final String aWebServerName) {
+    public Response generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
 
         try {
-            String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName);
+            String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName, withSsl);
             return Response.ok(httpdConfStr).build();
         } catch (HttpdConfigTemplateNotFoundException e) {
             throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
