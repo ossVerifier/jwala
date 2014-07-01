@@ -44,6 +44,9 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemJmsConfig aemJmsConfig;
+    
+    @Autowired 
+    private CommandDispatchGateway commandDispatchGateway;
 
     @Bean
     public GroupService getGroupService() {
@@ -78,9 +81,6 @@ public class AemServiceConfiguration {
                                          aemCommandExecutorConfig.getJvmCommandExecutor());
     }
 
-    @Autowired
-    CommandDispatchGateway commandDispatchGateway;
-    
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
         return new GroupControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),

@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service.group.impl;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
@@ -30,6 +32,7 @@ public class GroupControlServiceImpl implements GroupControlService {
         commandDispatchGateway = theCommandDispatchGateway;
     }
 
+    @Transactional
     @Override
     public GroupControlHistory controlGroup(ControlGroupCommand aCommand, User aUser) {
 
@@ -46,6 +49,7 @@ public class GroupControlServiceImpl implements GroupControlService {
         return controlHistoryEvent;
     }
 
+    @Transactional
     public GroupControlHistory dispatchCommandComplete(GroupDispatchCommand aCommand, List<JvmDispatchCommandResult> results) {
 
         for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
