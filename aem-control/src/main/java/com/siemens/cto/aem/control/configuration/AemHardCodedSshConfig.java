@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.control.configuration;
 
+import com.siemens.cto.aem.common.AemConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,7 +22,7 @@ public class AemHardCodedSshConfig extends AemSshConfig {
     }
 
     protected String getSshFolderRoot() {
-        return System.getProperty("PROPERTIES_ROOT_PATH");
+        return System.getProperty(AemConstants.PROPERTIES_ROOT_PATH);
     }
 
     protected String getPrivateKeyFile() {

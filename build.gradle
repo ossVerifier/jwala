@@ -63,7 +63,6 @@ subprojects {
     }
 
     repositories {
-
         maven {
             url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/"
         }
@@ -161,5 +160,4 @@ subprojects {
         property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
       }
     }
-
 }
