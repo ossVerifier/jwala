@@ -9,7 +9,7 @@ import com.siemens.cto.aem.domain.model.app.Application
  *
  * Created by Z003BPEJ on 6/20/14.
  */
-public class HttpdConfigGenerator {
+public class ApacheWebServerConfigFileGenerator {
 
     /**
      * This private constructor was meant to prevent
@@ -19,7 +19,7 @@ public class HttpdConfigGenerator {
      *
      * http://jira.codehaus.org/browse/GROOVY-3010
      */
-    private HttpdConfigGenerator() {}
+    private ApacheWebServerConfigFileGenerator() {}
 
     def public static String getHttpdConf(String templateFileName, List<Application> apps) {
         def binding = [apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]}]

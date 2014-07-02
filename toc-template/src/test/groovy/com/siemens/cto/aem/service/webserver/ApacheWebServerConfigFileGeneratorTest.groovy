@@ -4,11 +4,11 @@ import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException
 
 /**
- * Unit test for {@link HttpdConfigGenerator}
+ * Unit test for {@link ApacheWebServerConfigFileGenerator}
  *
  * Created by Z003BPEJ on 6/23/14.
  */
-class HttpdConfigGeneratorTest extends GroovyTestCase {
+class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
 
     def List<Application> apps
 
@@ -20,17 +20,17 @@ class HttpdConfigGeneratorTest extends GroovyTestCase {
 
     void testGetHttpdConf() {
         def refFile = this.getClass().getResource("/httpd.conf").text.replaceAll("\\s+","")
-        assert refFile == HttpdConfigGenerator.getHttpdConf("/httpd-conf.tpl", apps).replaceAll("\\s+","")
+        assert refFile == ApacheWebServerConfigFileGenerator.getHttpdConf("/httpd-conf.tpl", apps).replaceAll("\\s+","")
     }
 
     void testGetHttpdConfWithSsl() {
         def refFile = this.getClass().getResource("/httpd-ssl.conf").text.replaceAll("\\s+","")
-        assert refFile == HttpdConfigGenerator.getHttpdConf("/httpd-ssl-conf.tpl", apps).replaceAll("\\s+","")
+        assert refFile == ApacheWebServerConfigFileGenerator.getHttpdConf("/httpd-ssl-conf.tpl", apps).replaceAll("\\s+","")
     }
 
     void testGetHttpdConfMissingTemplate() {
         shouldFail(HttpdConfigTemplateNotFoundException) {
-            HttpdConfigGenerator.getHttpdConf("/httpd-conf-fictitious.tpl", apps)
+            ApacheWebServerConfigFileGenerator.getHttpdConf("/httpd-conf-fictitious.tpl", apps)
         }
     }
 

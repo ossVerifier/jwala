@@ -3,7 +3,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.service.webserver.HttpdConfigGenerator;
+import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.aem.service.webserver.WorkersProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -107,10 +107,10 @@ public class WebServerServiceImpl implements WebServerService {
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
         List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
         if (withSsl != null && withSsl) {
-            return HttpdConfigGenerator.getHttpdConf(HTTPD_SSL_CONF_TEMPLATE, apps);
+            return ApacheWebServerConfigFileGenerator.getHttpdConf(HTTPD_SSL_CONF_TEMPLATE, apps);
 
         }
-        return HttpdConfigGenerator.getHttpdConf(HTTPD_CONF_TEMPLATE, apps);
+        return ApacheWebServerConfigFileGenerator.getHttpdConf(HTTPD_CONF_TEMPLATE, apps);
     }
 
     @Override
