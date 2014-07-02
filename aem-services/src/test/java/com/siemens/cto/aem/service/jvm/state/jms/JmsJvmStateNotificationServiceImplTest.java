@@ -33,6 +33,7 @@ public class JmsJvmStateNotificationServiceImplTest {
     private JmsTemplate template;
     private Destination destination;
     private TimeDuration inactiveTime;
+    private TimeDuration defaultPollTime;
 
     @Before
     public void setUp() throws Exception {
@@ -41,91 +42,14 @@ public class JmsJvmStateNotificationServiceImplTest {
         setupJmsTemplate();
         setupDestination();
         setupInactiveTime();
+        setupDefaultPollTime();
 
-        impl = spy(new JmsJvmStateNotificationServiceImpl(
-                builder,
+        impl = spy(new JmsJvmStateNotificationServiceImpl(builder,
                                                           template,
                                                           destination,
-                                                          inactiveTime));
+                                                          inactiveTime,
+                                                          defaultPollTime));
     }
-
-//    @Test
-//    public void testPruneWhenNotifyingJvmStateUpdated() throws Exception {
-//        inactiveTime = new TimeDuration(10L, TimeUnit.MILLISECONDS);
-//        impl = new JmsJvmStateNotificationServiceImpl(stateService,
-//                                                      builder,
-//                                                      template,
-//                                                      destination,
-//                                                      inactiveTime);
-//        final int numberOfConsumers = 10;
-//
-//        for (int i = 0; i < numberOfConsumers; i++) {
-//            impl.register();
-//        }
-//
-//        final Collection<JvmStateNotificationConsumer> originalConsumers = impl.getCurrentConsumers();
-//        for (final JvmStateNotificationConsumer consumer : originalConsumers) {
-//            assertFalse(consumer.isClosed());
-//        }
-//
-//        Thread.sleep(new TimeDuration(1L, TimeUnit.SECONDS).valueOf(TimeUnit.MILLISECONDS));
-//
-//        impl.notifyJvmStateUpdated(new Identifier<Jvm>(123456L));
-//
-//        assertTrue(impl.getCurrentConsumers().isEmpty());
-//
-//        for (final JvmStateNotificationConsumer consumer : originalConsumers) {
-//            assertTrue(consumer.isClosed());
-//        }
-//    }
-
-//    @Test
-//    public void testRegister() throws Exception {
-//        final ArgumentCaptor<JvmStateNotificationConsumer> consumerCaptor = ArgumentCaptor.forClass(JvmStateNotificationConsumer.class);
-//        final int numberOfConsumers = 10;
-//
-//        for (int i = 0; i < numberOfConsumers; i++) {
-//            final JvmStateNotificationConsumerId consumerId = impl.register();
-//            assertNotNull(consumerId);
-//        }
-//
-//        verify(impl, times(numberOfConsumers)).registerConsumer(consumerCaptor.capture());
-//        verify(builder, times(numberOfConsumers)).build();
-//
-//        assertEquals(numberOfConsumers,
-//                     impl.getCurrentConsumers().size());
-//
-//        for (final JvmStateNotificationConsumer consumer : impl.getCurrentConsumers()) {
-//            assertTrue(consumerCaptor.getAllValues().contains(consumer));
-//        }
-//    }
-
-//    @Test
-//    public void testDeregister() throws Exception {
-//        final int numberOfConsumers = 10;
-//        final Set<JvmStateNotificationConsumerId> consumerIds = new HashSet<>(numberOfConsumers);
-//
-//        for (int i = 0; i < numberOfConsumers; i++) {
-//            final JvmStateNotificationConsumerId consumerId = impl.register();
-//            consumerIds.add(consumerId);
-//        }
-//
-//        final Collection<JvmStateNotificationConsumer> originalConsumers = impl.getCurrentConsumers();
-//
-//        for (JvmStateNotificationConsumer consumer : originalConsumers) {
-//            assertFalse(consumer.isClosed());
-//        }
-//
-//        for (final JvmStateNotificationConsumerId consumerId : consumerIds) {
-//            impl.deregister(consumerId);
-//        }
-//
-//        for (JvmStateNotificationConsumer consumer : originalConsumers) {
-//            assertTrue(consumer.isClosed());
-//        }
-//
-//        assertTrue(impl.getCurrentConsumers().isEmpty());
-//    }
 
     @Test
     public void testGetStateUpdates() throws Exception {
@@ -165,6 +89,10 @@ public class JmsJvmStateNotificationServiceImplTest {
     }
 
     private void setupInactiveTime() {
+        inactiveTime = new TimeDuration(5L, TimeUnit.MINUTES);
+    }
+
+    private void setupDefaultPollTime() {
         inactiveTime = new TimeDuration(5L, TimeUnit.MINUTES);
     }
 }

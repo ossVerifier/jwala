@@ -41,8 +41,10 @@ public class InMemoryJvmStateNotificationServiceImplTest {
     @Before
     public void setUp() throws Exception {
         setupStateServiceMock();
-        service = new InMemoryJvmStateNotificationServiceImpl(stateService,
-                                                              new TimeDuration(5L, TimeUnit.MINUTES));
+        service = new InMemoryJvmStateNotificationServiceImpl(new TimeDuration(5L,
+                                                                               TimeUnit.MINUTES),
+                                                              new TimeDuration(30L,
+                                                                               TimeUnit.SECONDS));
     }
 
     @Test
@@ -55,7 +57,8 @@ public class InMemoryJvmStateNotificationServiceImplTest {
 
         for (final JvmStateNotificationConsumerId consumerId : consumerIds) {
             final Set<Identifier<Jvm>> currentJvmStates = service.pollUpdatedStates(consumerId,
-                                                                                    new TimeRemainingCalculator(new TimeDuration(1L, TimeUnit.SECONDS)));
+                                                                                    new TimeRemainingCalculator(new TimeDuration(1L,
+                                                                                                                                 TimeUnit.SECONDS)));
             assertEquals(numberOfNotifications,
                          currentJvmStates.size());
             for (final Identifier<Jvm> jvmId : currentJvmStates) {
@@ -75,7 +78,8 @@ public class InMemoryJvmStateNotificationServiceImplTest {
         for (final JvmStateNotificationConsumerId consumerId : consumerIds) {
             service.deregister(consumerId);
             final Set<Identifier<Jvm>> currentJvmStates = service.pollUpdatedStates(consumerId,
-                                                                                    new TimeRemainingCalculator(new TimeDuration(500L, TimeUnit.MILLISECONDS)));
+                                                                                    new TimeRemainingCalculator(new TimeDuration(500L,
+                                                                                                                                 TimeUnit.MILLISECONDS)));
             assertTrue(currentJvmStates.isEmpty());
             assertFalse(service.isValid(consumerId));
         }
@@ -84,15 +88,18 @@ public class InMemoryJvmStateNotificationServiceImplTest {
     @Test
     public void testStaleConsumers() throws Exception {
         final int numberOfConsumers = 5;
-        final TimeDuration shortDuration = new TimeDuration(5L, TimeUnit.SECONDS);
-        service = new InMemoryJvmStateNotificationServiceImpl(stateService,
-                                                              shortDuration);
+        final TimeDuration shortDuration = new TimeDuration(5L,
+                                                            TimeUnit.SECONDS);
+        service = new InMemoryJvmStateNotificationServiceImpl(shortDuration,
+                                                              new TimeDuration(1L,
+                                                                               TimeUnit.SECONDS));
         final Queue<JvmStateNotificationConsumerId> consumerIds = new LinkedBlockingQueue<>(trackAndRegisterConsumers(numberOfConsumers));
         final AtomicBoolean stopFlag = new AtomicBoolean(false);
 
         final Future<Set<Identifier<Jvm>>> resultsFromActiveConsumer = Executors.newFixedThreadPool(1).submit(createCallable(consumerIds.poll(),
                                                                                                                              service,
-                                                                                                                             new TimeDuration(1L, TimeUnit.SECONDS),
+                                                                                                                             new TimeDuration(1L,
+                                                                                                                                              TimeUnit.SECONDS),
                                                                                                                              stopFlag));
 
         Thread.sleep(shortDuration.valueOf(TimeUnit.MILLISECONDS));
@@ -104,7 +111,8 @@ public class InMemoryJvmStateNotificationServiceImplTest {
 
         for (final JvmStateNotificationConsumerId consumerId : consumerIds) {
             assertTrue(service.pollUpdatedStates(consumerId,
-                                                 new TimeRemainingCalculator(new TimeDuration(200L, TimeUnit.MILLISECONDS))).isEmpty());
+                                                 new TimeRemainingCalculator(new TimeDuration(200L,
+                                                                                              TimeUnit.MILLISECONDS))).isEmpty());
         }
 
         final Set<Identifier<Jvm>> activeResults = resultsFromActiveConsumer.get();

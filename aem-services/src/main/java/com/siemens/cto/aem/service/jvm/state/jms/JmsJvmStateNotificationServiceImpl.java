@@ -19,13 +19,14 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
 
     private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(3L,
                                                                                TimeUnit.MINUTES);
-    private static final TimeDuration DEFAULT_POLL_DURATION_TIME = new TimeDuration(30L,
-                                                                                    TimeUnit.SECONDS);
+    private static final TimeDuration DEFAULT_POLL_TIME = new TimeDuration(30L,
+                                                                           TimeUnit.SECONDS);
 
     private final JmsPackageBuilder builder;
     private final JmsTemplate template;
     private final Destination destination;
     private final Stale stale;
+    private final TimeDuration defaultPollTime;
 
     public JmsJvmStateNotificationServiceImpl(final JmsPackageBuilder theBuilder,
                                               final JmsTemplate theTemplate,
@@ -33,18 +34,21 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
         this(theBuilder,
              theTemplate,
              theDestination,
-             DEFAULT_INACTIVE_TIME);
+             DEFAULT_INACTIVE_TIME,
+             DEFAULT_POLL_TIME);
     }
 
     public JmsJvmStateNotificationServiceImpl(final JmsPackageBuilder theBuilder,
                                               final JmsTemplate theTemplate,
                                               final Destination theDestination,
-                                              final TimeDuration theInactiveTime) {
+                                              final TimeDuration theInactiveTime,
+                                              final TimeDuration theDefaultPollTime) {
         super();
         builder = theBuilder;
         template = theTemplate;
         destination = theDestination;
         stale = new Stale(theInactiveTime);
+        defaultPollTime = theDefaultPollTime;
     }
 
     @Override
@@ -58,7 +62,7 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
     protected JvmStateNotificationConsumer createConsumer() {
         final JvmStateNotificationConsumer consumer = new JmsJvmStateNotificationConsumerImpl(builder.build(),
                                                                                               stale,
-                                                                                              DEFAULT_POLL_DURATION_TIME);
+                                                                                              defaultPollTime);
         return consumer;
     }
 }

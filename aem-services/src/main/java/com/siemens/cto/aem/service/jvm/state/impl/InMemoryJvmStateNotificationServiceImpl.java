@@ -9,25 +9,26 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.service.jvm.state.AbstractStateNotificationService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationConsumer;
 import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 
 public class InMemoryJvmStateNotificationServiceImpl extends AbstractStateNotificationService implements JvmStateNotificationService {
 
     private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(5L,
                                                                                TimeUnit.MINUTES);
-    private static final TimeDuration DEFAULT_POLL_DURATION_TIME = new TimeDuration(30L,
-                                                                                    TimeUnit.SECONDS);
+    private static final TimeDuration DEFAULT_POLL_TIME = new TimeDuration(30L,
+                                                                           TimeUnit.SECONDS);
     private final Stale stale;
+    private final TimeDuration defaultPollTime;
 
-    public InMemoryJvmStateNotificationServiceImpl(final JvmStateService theStateService) {
-        this(theStateService,
-             DEFAULT_INACTIVE_TIME);
+    public InMemoryJvmStateNotificationServiceImpl() {
+        this(DEFAULT_INACTIVE_TIME,
+             DEFAULT_POLL_TIME);
     }
 
-    InMemoryJvmStateNotificationServiceImpl(final JvmStateService theStateService,
-                                            final TimeDuration theInactiveTime) {
+    InMemoryJvmStateNotificationServiceImpl(final TimeDuration theInactiveTime,
+                                            final TimeDuration theDefaultPollTime) {
         super();
         stale = new Stale(theInactiveTime);
+        defaultPollTime = theDefaultPollTime;
     }
 
     @Override
@@ -38,7 +39,7 @@ public class InMemoryJvmStateNotificationServiceImpl extends AbstractStateNotifi
     @Override
     protected JvmStateNotificationConsumer createConsumer() {
         final JvmStateNotificationConsumer consumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
-                                                                                                   DEFAULT_POLL_DURATION_TIME);
+                                                                                                   defaultPollTime);
         return consumer;
     }
 }
