@@ -7,8 +7,8 @@ var GroupOperations = React.createClass({
         return {
 //            Rationalize/unify all the groups/jvms/webapps/groupTableData/etc. stuff so it's coherent
             groupFormData: {},
-            groupTableData: [{"name":"","id":{"id":0}, jvms:[]}],
-            groups: [{"name":"","id":{"id":0}, jvms:[]}],
+            groupTableData: [],
+            groups: [],
             jvms: [],
             jvmStates: []
         };
@@ -89,11 +89,13 @@ var GroupOperations = React.createClass({
 var GroupOperationsDataTable = React.createClass({
    shouldComponentUpdate: function(nextProps, nextState) {
        this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
+       this.hasNoData = (this.props.data.length === 0);
        if (!this.hasDrawn) {
            this.hasDrawn = true;
            return true;
        }
-       return false;
+
+       return this.hasNoData;
     },
     render: function() {
         var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control"},

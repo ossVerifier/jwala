@@ -18,16 +18,24 @@ import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationConsumer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class InMemoryJvmStateNotificationConsumerImplTest {
 
     private InMemoryJvmStateNotificationConsumerImpl consumer;
     private Stale stale;
+    private TimeDuration pollDuration;
 
     @Before
     public void setUp() throws Exception {
-        stale = new Stale(new TimeDuration(5L, TimeUnit.MINUTES));
-        consumer = new InMemoryJvmStateNotificationConsumerImpl(stale);
+        stale = new Stale(new TimeDuration(5L,
+                                           TimeUnit.MINUTES));
+        pollDuration = new TimeDuration(1L,
+                                        TimeUnit.SECONDS);
+        consumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
+                                                                pollDuration);
     }
 
     @Test
@@ -46,14 +54,17 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
 
     @Test
     public void testNoNotificationsAdded() {
-        final Set<Identifier<Jvm>> notifications = consumer.getNotifications(getShortAmountOfTime());
+        final TimeRemainingCalculator shortTimeRemaining = spy(getShortAmountOfTime());
+        final Set<Identifier<Jvm>> notifications = consumer.getNotifications(shortTimeRemaining);
         assertTrue(notifications.isEmpty());
+        verify(shortTimeRemaining, never()).getTimeRemaining();
     }
 
     @Test
     public void testAddTooManyNotifications() {
         final int maxCapacity = 7;
         final JvmStateNotificationConsumer smallConsumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
+                                                                                                        pollDuration,
                                                                                                         maxCapacity,
                                                                                                         System.currentTimeMillis());
         addNotifications(smallConsumer,

@@ -18,13 +18,16 @@ public abstract class AbstractStateNotificationConsumerImpl implements JvmStateN
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStateNotificationConsumerImpl.class);
 
     private final Stale stale;
+    private final TimeDuration defaultPollDuration;
 
     private volatile long lastAccessTime;
     private volatile boolean isClosed;
 
     protected AbstractStateNotificationConsumerImpl(final Stale theStale,
+                                                    final TimeDuration theDefaultPollDuration,
                                                     final long theLastAccessTime) {
         stale = theStale;
+        defaultPollDuration = theDefaultPollDuration;
         lastAccessTime = theLastAccessTime;
     }
 
@@ -47,19 +50,18 @@ public abstract class AbstractStateNotificationConsumerImpl implements JvmStateN
     }
 
     @Override
-    public Set<Identifier<Jvm>> getNotifications(final TimeRemainingCalculator someTimeRemaining) {
+    public Set<Identifier<Jvm>> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
         updateLastAccessTime();
 
         final Set<Identifier<Jvm>> jvms = new HashSet<>();
 
+        TimeRemainingCalculator calculator = new TimeRemainingCalculator(defaultPollDuration);
         TimeRemaining timeRemaining;
-        while ( (timeRemaining = someTimeRemaining.getTimeRemaining()).isTimeRemaining()) {
+        while ( (timeRemaining = calculator.getTimeRemaining()).isTimeRemaining()) {
             final Identifier<Jvm> jvm = getNotificationsHelper(timeRemaining.getDuration());
             if (jvm != null) {
                 jvms.add(jvm);
-            } else {
-                LOGGER.info("Null Jvm Identifier returned. Leaving getNotifications() loop early {}", timeRemaining);
-                break;
+                calculator = aRequestedTimeoutCalculator;
             }
         }
 

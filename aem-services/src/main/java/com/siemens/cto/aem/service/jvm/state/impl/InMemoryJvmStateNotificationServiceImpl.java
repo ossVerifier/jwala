@@ -13,7 +13,10 @@ import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 
 public class InMemoryJvmStateNotificationServiceImpl extends AbstractStateNotificationService implements JvmStateNotificationService {
 
-    private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(5L, TimeUnit.MINUTES);
+    private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(5L,
+                                                                               TimeUnit.MINUTES);
+    private static final TimeDuration DEFAULT_POLL_DURATION_TIME = new TimeDuration(30L,
+                                                                                    TimeUnit.SECONDS);
     private final Stale stale;
 
     public InMemoryJvmStateNotificationServiceImpl(final JvmStateService theStateService) {
@@ -34,7 +37,8 @@ public class InMemoryJvmStateNotificationServiceImpl extends AbstractStateNotifi
 
     @Override
     protected JvmStateNotificationConsumer createConsumer() {
-        final JvmStateNotificationConsumer consumer = new InMemoryJvmStateNotificationConsumerImpl(stale);
+        final JvmStateNotificationConsumer consumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
+                                                                                                   DEFAULT_POLL_DURATION_TIME);
         return consumer;
     }
 }

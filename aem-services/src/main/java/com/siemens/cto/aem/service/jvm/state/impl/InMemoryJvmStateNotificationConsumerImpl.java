@@ -21,16 +21,20 @@ public class InMemoryJvmStateNotificationConsumerImpl extends AbstractStateNotif
 
     private final BlockingQueue<Identifier<Jvm>> jvmStates;
 
-    public InMemoryJvmStateNotificationConsumerImpl(final Stale theStale) {
+    public InMemoryJvmStateNotificationConsumerImpl(final Stale theStale,
+                                                    final TimeDuration theDefaultPollDuration) {
         this(theStale,
+             theDefaultPollDuration,
              DEFAULT_CAPACITY,
              System.currentTimeMillis());
     }
 
     public InMemoryJvmStateNotificationConsumerImpl(final Stale theStale,
+                                                    final TimeDuration theDefaultPollDuration,
                                                     final int theCapacity,
                                                     final long theLastAccessTime) {
         super(theStale,
+              theDefaultPollDuration,
               theLastAccessTime);
         jvmStates = new LinkedBlockingQueue<>(theCapacity);
     }

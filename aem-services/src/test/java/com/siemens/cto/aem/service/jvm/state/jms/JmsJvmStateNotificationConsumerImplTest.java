@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,7 @@ public class JmsJvmStateNotificationConsumerImplTest {
     private MessageConsumer consumer;
     private Long staleTimePeriod;
     private TimeUnit staleTimeUnit;
+    private TimeDuration pollDuration;
 
     @Before
     public void setup() {
@@ -45,10 +47,13 @@ public class JmsJvmStateNotificationConsumerImplTest {
         staleTimeUnit = TimeUnit.MINUTES;
         stale = new Stale(new TimeDuration(staleTimePeriod,
                                            staleTimeUnit));
+        pollDuration = new TimeDuration(1L,
+                                        TimeUnit.SECONDS);
         consumer = mock(MessageConsumer.class);
         when(jmsPackage.getConsumer()).thenReturn(consumer);
         impl = new JmsJvmStateNotificationConsumerImpl(jmsPackage,
-                                                       stale);
+                                                       stale,
+                                                       pollDuration);
     }
 
     @Test
@@ -92,6 +97,7 @@ public class JmsJvmStateNotificationConsumerImplTest {
         final Set<Identifier<Jvm>> actualIds = impl.getNotifications(timeRemainingCalculator);
 
         assertTrue(actualIds.isEmpty());
+        verify(timeRemainingCalculator, never()).getTimeRemaining();
     }
 
     protected void configureMessageConsumerForMessages(final int aNumberOfMessages) throws JMSException {

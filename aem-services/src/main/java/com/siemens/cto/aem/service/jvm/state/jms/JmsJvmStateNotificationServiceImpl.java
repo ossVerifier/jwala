@@ -19,6 +19,8 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
 
     private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(3L,
                                                                                TimeUnit.MINUTES);
+    private static final TimeDuration DEFAULT_POLL_DURATION_TIME = new TimeDuration(30L,
+                                                                                    TimeUnit.SECONDS);
 
     private final JmsPackageBuilder builder;
     private final JmsTemplate template;
@@ -55,7 +57,8 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
     @Override
     protected JvmStateNotificationConsumer createConsumer() {
         final JvmStateNotificationConsumer consumer = new JmsJvmStateNotificationConsumerImpl(builder.build(),
-                                                                                              stale);
+                                                                                              stale,
+                                                                                              DEFAULT_POLL_DURATION_TIME);
         return consumer;
     }
 }

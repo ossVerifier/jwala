@@ -24,16 +24,20 @@ public class JmsJvmStateNotificationConsumerImpl extends AbstractStateNotificati
     private final JmsPackage jmsPackage;
 
     public JmsJvmStateNotificationConsumerImpl(final JmsPackage theJmsPackage,
-                                               final Stale theStale) {
+                                               final Stale theStale,
+                                               final TimeDuration theDefaultPollDuration) {
         this(theJmsPackage,
              theStale,
+             theDefaultPollDuration,
              System.currentTimeMillis());
     }
 
     JmsJvmStateNotificationConsumerImpl(final JmsPackage theJmsPackage,
                                         final Stale theStale,
+                                        final TimeDuration theDefaultPollDuration,
                                         final long theLastAccessTime) {
         super(theStale,
+              theDefaultPollDuration,
               theLastAccessTime);
         jmsPackage = theJmsPackage;
     }
