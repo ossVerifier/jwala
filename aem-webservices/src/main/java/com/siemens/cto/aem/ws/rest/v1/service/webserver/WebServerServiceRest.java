@@ -45,7 +45,7 @@ public interface WebServerServiceRest {
                                  @QueryParam("ssl") final Boolean withSsl);
 
     @GET
-    @Path("/{webServerName}/worker/properties")
+    @Path("/{webServerName}/workers/properties")
     Response generateWorkerProperties(@PathParam("webServerName") final String aWebServerName,
                                       @QueryParam("loadBalancerPortType") final String loadBalancerPortType,
                                       @QueryParam("stickySessionCount") final Integer stickySessionCount,
