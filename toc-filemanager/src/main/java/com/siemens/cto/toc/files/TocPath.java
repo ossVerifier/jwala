@@ -5,7 +5,8 @@ import java.nio.file.Path;
 
 public enum TocPath {
 
-    WEB_ARCHIVE("paths.web-archive", "D:/apache/tomcat/webapps")
+    WEB_ARCHIVE("paths.web-archive", "D:/apache/tomcat/webapps"), 
+    TEMPLATES("paths.web-archive")
     ;
     
     
@@ -14,6 +15,10 @@ public enum TocPath {
     TocPath(final String property, final String defaultPath) {
         this.property = property;
         this.defaultPath = FileSystems.getDefault().getPath(defaultPath).toAbsolutePath();
+    }
+    TocPath(final String property) {
+        this.property = property;
+        this.defaultPath = null;
     }
     
     public String getProperty() { return property; }

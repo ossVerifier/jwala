@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.Repository;
 import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.RepositoryAction.Type;
 import com.siemens.cto.toc.files.TocPath;
 
 public class LocalFileSystemRepositoryImpl implements Repository {
@@ -48,10 +50,21 @@ public class LocalFileSystemRepositoryImpl implements Repository {
 
     @Override
     public RepositoryAction deleteIfExisting(TocPath refPlace, Path file, RepositoryAction... inResponseTo) throws IOException {
+        RepositoryAction res1 = find(refPlace, file, inResponseTo);
+        if(res1.getType() == Type.FOUND) {
+            Files.delete(res1.getPath());
+            return RepositoryAction.deleted(res1.getPath(), res1);
+        } else {
+            return res1;
+        }
+    }
+
+    @Override
+    public RepositoryAction find(TocPath refPlace, Path filename, RepositoryAction... inResponseTo) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
-        Path resolvedPath = place.resolve(file);
-        if(java.nio.file.Files.deleteIfExists(resolvedPath)) {
-            return RepositoryAction.deleted(resolvedPath, inResponseTo);
+        Path resolvedPath = place.resolve(filename);
+        if(Files.exists(resolvedPath)) {
+            return RepositoryAction.found(resolvedPath, inResponseTo);
         }
         return RepositoryAction.none();
     }

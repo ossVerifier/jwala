@@ -216,7 +216,9 @@ public class WebArchiveManagerTest {
         assertEquals(1, result2.getCauses().length);
         assertEquals(Type.DELETED, result2.getCauses()[0].getType());
         assertEquals(1, result2.getCauses()[0].getCauses().length);
-        assertEquals(Type.STORED, result2.getCauses()[0].getCauses()[0].getType());
+        assertEquals(Type.FOUND, result2.getCauses()[0].getCauses()[0].getType());
+        assertEquals(1, result2.getCauses()[0].getCauses()[0].getCauses().length);
+        assertEquals(Type.STORED, result2.getCauses()[0].getCauses()[0].getCauses()[0].getType());
 
         testResults(
                 1*1024*1024L,
@@ -243,6 +245,6 @@ public class WebArchiveManagerTest {
         
         RepositoryAction result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
         
-        assertEquals(RepositoryAction.deleted(expectedPath, RepositoryAction.none()), result);
+        assertEquals(RepositoryAction.deleted(expectedPath, RepositoryAction.found(expectedPath, RepositoryAction.none())), result);
     }
 }

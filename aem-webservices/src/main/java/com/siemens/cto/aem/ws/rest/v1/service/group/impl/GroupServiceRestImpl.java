@@ -33,9 +33,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     private final Logger logger;
     private final GroupService groupService;
-    
-    @Autowired
-    private LoggedOnUser loggedOnUser;
    
     @Autowired
     private GroupControlService groupControlService;

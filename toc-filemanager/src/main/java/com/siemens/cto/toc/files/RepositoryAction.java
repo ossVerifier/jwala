@@ -15,6 +15,8 @@ public class RepositoryAction {
     public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
         NONE,
+        /** Verified Exists */
+        FOUND, 
         /** Either created or updated */
         STORED,
         /** Deleted from the file system */
@@ -55,6 +57,10 @@ public class RepositoryAction {
 
     public static RepositoryAction stored(Path resolvedPath, Long copied, RepositoryAction... inResponseTo) {
         return new RepositoryAction(Type.STORED, resolvedPath, copied, inResponseTo);
+    }
+
+    public static RepositoryAction found(Path resolvedPath, RepositoryAction... inResponseTo) {
+        return new RepositoryAction(Type.FOUND, resolvedPath, null, inResponseTo);
     }
 
     public static RepositoryAction none(RepositoryAction... inResponseTo) {
