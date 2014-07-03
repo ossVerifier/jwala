@@ -179,15 +179,15 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testGenerateHttpdConfig() {
         when(impl.generateHttpdConfig(anyString(), anyBoolean())).thenReturn("httpd configuration");
-        Response response = cut.generateHttpdConfig("any-server-name", null);
+        Response response = cut.generateConfig("any-server-name", null);
         assertEquals("httpd configuration", response.getEntity());
     }
 
     @Test
     public void testGenerateWorkerProperties() {
-        when(impl.generateWorkerProperties(anyString(), anyString(), anyInt(), anyString(), anyString()))
+        when(impl.generateWorkerProperties(anyString()))
                 .thenReturn("worker properties");
-        Response response = cut.generateWorkerProperties("", "", 0, null, null);
+        Response response = cut.generateLoadBalancerConfig("");
         assertEquals("worker properties", response.getEntity());
     }
 }

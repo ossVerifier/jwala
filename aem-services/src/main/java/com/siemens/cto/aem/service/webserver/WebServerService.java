@@ -34,10 +34,6 @@ public interface WebServerService {
 
     String generateHttpdConfig(final String aWebServerName, final Boolean withSsl);
 
-    String generateWorkerProperties(final String aWebServerName,
-                                    final String loadBalancerPortType,
-                                    final Integer stickySessionCount,
-                                    final String loadBalancerType,
-                                    final String workerStatusCssPath);
+    String generateWorkerProperties(final String aWebServerName);
 
 }

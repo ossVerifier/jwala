@@ -225,10 +225,10 @@ public class WebServerServiceImplTest {
 
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name", null);
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", null);
 
-        assertEquals(readReferenceFile("/httpd.conf").replaceAll("\\s+", ""),
-                     generatedHttpdConf.replaceAll("\\s+", ""));
+        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd.conf")),
+                     removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test
@@ -240,10 +240,10 @@ public class WebServerServiceImplTest {
 
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("any-web-server-name", true);
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
 
-        assertEquals(readReferenceFile("/httpd-ssl.conf").replaceAll("\\s+", ""),
-                generatedHttpdConf.replaceAll("\\s+", ""));
+        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
+                     removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test
@@ -258,7 +258,7 @@ public class WebServerServiceImplTest {
         when(jvm2.getHostName()).thenReturn("host2");
         when(jvm2.getAjpPort()).thenReturn(8109);
 
-        final List<Jvm> jvms = new ArrayList<Jvm>();
+        final List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm1);
         jvms.add(jvm2);
 
@@ -273,64 +273,20 @@ public class WebServerServiceImplTest {
         final Application app3 = mock(Application.class);
         when(app3.getName()).thenReturn("hello-world-3");
 
-        final List<Application> apps = new ArrayList<Application>();
+        final List<Application> apps = new ArrayList<>();
         apps.add(app1);
         apps.add(app2);
         apps.add(app3);
 
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(apps);
 
-        String workerPropertiesStr = wsService.generateWorkerProperties("any-web-server-name",
-                                                                        "ajp11",
-                                                                         2,
-                                                                        "lbm",
-                                                                        "/loadbalancer/sts/custom.css");
+        String workerPropertiesStr = wsService.generateWorkerProperties("Apache2.4");
 
-        assertEquals(readReferenceFile("/workers.properties").replaceAll("\\s+", ""),
-                                       workerPropertiesStr.replaceAll("\\s+", ""));
+        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/workers.properties")),
+                     removeCarriageReturnsAndNewLines(workerPropertiesStr));
     }
 
-    @Test
-    public void testGenerateDefaultWorkerProperties() throws IOException {
-        final Jvm jvm1 = mock(Jvm.class);
-        when(jvm1.getJvmName()).thenReturn("tc1");
-        when(jvm1.getHostName()).thenReturn("host1");
-        when(jvm1.getAjpPort()).thenReturn(8009);
-
-        final Jvm jvm2 = mock(Jvm.class);
-        when(jvm2.getJvmName()).thenReturn("tc2");
-        when(jvm2.getHostName()).thenReturn("host2");
-        when(jvm2.getAjpPort()).thenReturn(8109);
-
-        final List<Jvm> jvms = new ArrayList<Jvm>();
-        jvms.add(jvm1);
-        jvms.add(jvm2);
-
-        when(wsDao.findJvms(anyString(), any(PaginationParameter.class))).thenReturn(jvms);
-
-        final Application app1 = mock(Application.class);
-        when(app1.getName()).thenReturn("hello-world-1");
-
-        final Application app2 = mock(Application.class);
-        when(app2.getName()).thenReturn("hello-world-2");
-
-        final Application app3 = mock(Application.class);
-        when(app3.getName()).thenReturn("hello-world-3");
-
-        final List<Application> apps = new ArrayList<Application>();
-        apps.add(app1);
-        apps.add(app2);
-        apps.add(app3);
-
-        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(apps);
-
-        String workerPropertiesStr = wsService.generateWorkerProperties("any-web-server-name",
-                                                                        null,
-                                                                        null,
-                                                                        "",
-                                                                        "");
-
-        assertEquals(readReferenceFile("/workers-default.properties").replaceAll("\\s+", ""),
-                workerPropertiesStr.replaceAll("\\s+", ""));
+    private String removeCarriageReturnsAndNewLines(String s) {
+        return s.replaceAll("\\r", "").replaceAll("\\n", "");
     }
 }

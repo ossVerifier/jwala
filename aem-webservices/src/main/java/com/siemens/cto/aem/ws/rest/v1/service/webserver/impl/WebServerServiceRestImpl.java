@@ -84,7 +84,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
+    public Response generateConfig(final String aWebServerName, final Boolean withSsl) {
 
         try {
             String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName, withSsl);
@@ -97,15 +97,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateWorkerProperties(final String aWebServerName,
-                                             final String loadBalancerPortType,
-                                             final Integer stickySessionCount,
-                                             final String loadBalancerType,
-                                             final String workerStatusCssPath) {
-        return Response.ok(webServerService.generateWorkerProperties(aWebServerName,
-                                                                     loadBalancerPortType,
-                                                                     stickySessionCount,
-                                                                     loadBalancerType,
-                                                                     workerStatusCssPath)).build();
+    public Response generateLoadBalancerConfig(final String aWebServerName) {
+        return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
     }
 }

@@ -40,16 +40,12 @@ public interface WebServerServiceRest {
                         final JsonControlWebServer aWebServerToControl);
 
     @GET
-    @Path("/{webServerName}/httpd/conf")
-    Response generateHttpdConfig(@PathParam("webServerName") final String aWebServerName,
-                                 @QueryParam("ssl") final Boolean withSsl);
+    @Path("/{webServerName}/conf")
+    Response generateConfig(@PathParam("webServerName") final String aWebServerName,
+                            @QueryParam("ssl") final Boolean withSsl);
 
     @GET
-    @Path("/{webServerName}/workers/properties")
-    Response generateWorkerProperties(@PathParam("webServerName") final String aWebServerName,
-                                      @QueryParam("loadBalancerPortType") final String loadBalancerPortType,
-                                      @QueryParam("stickySessionCount") final Integer stickySessionCount,
-                                      @QueryParam("loadBalancerType") final String loadBalancerType,
-                                      @QueryParam("workerStatusCssPath") final String workerStatusCssPath);
+    @Path("/{webServerName}/loadbalancer/conf")
+    Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
 
 }

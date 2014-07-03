@@ -3,9 +3,8 @@ package com.siemens.cto.aem.service.webserver.impl;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
-import com.siemens.cto.aem.service.webserver.WorkersProperties;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -25,6 +24,7 @@ public class WebServerServiceImpl implements WebServerService {
     private WebServerDao dao;
     private final String HTTPD_CONF_TEMPLATE = "/httpd-conf.tpl";
     private final String HTTPD_SSL_CONF_TEMPLATE = "/httpd-ssl-conf.tpl";
+    private final String WORKERS_PROPS_TEMPLATE = "/workers-properties.tpl";
 
     public WebServerServiceImpl(final WebServerDao theDao) {
         dao = theDao;
@@ -105,39 +105,20 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
-        List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
+        final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
         if (withSsl != null && withSsl) {
-            return ApacheWebServerConfigFileGenerator.getHttpdConf(HTTPD_SSL_CONF_TEMPLATE, apps);
+            return ApacheWebServerConfigFileGenerator.getHttpdConf(aWebServerName, HTTPD_SSL_CONF_TEMPLATE, apps);
 
         }
-        return ApacheWebServerConfigFileGenerator.getHttpdConf(HTTPD_CONF_TEMPLATE, apps);
+        return ApacheWebServerConfigFileGenerator.getHttpdConf(aWebServerName, HTTPD_CONF_TEMPLATE, apps);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public String generateWorkerProperties(final String aWebServerName,
-                                           final String loadBalancerPortType,
-                                           final Integer stickySessionCount,
-                                           final String loadBalancerType,
-                                           final String workerStatusCssPath) {
-
-       WorkersProperties.Builder workPropertiesBuilder = new WorkersProperties.Builder();
-        WorkersProperties workersProperties =
-                workPropertiesBuilder.setJvms(dao.findJvms(aWebServerName, PaginationParameter.all()))
-                                     .setLoadBalancerPortType(StringUtils.isEmpty(loadBalancerPortType) ?
-                                                              "ajp13" :
-                                                              loadBalancerPortType)
-                                     .setApps(dao.findApplications(aWebServerName, PaginationParameter.all()))
-                                     .setStickySession(stickySessionCount == null ? 1 : stickySessionCount)
-                                     .setLoadBalancerType(StringUtils.isEmpty(loadBalancerType) ?
-                                                          "lb" :
-                                                          loadBalancerType)
-                                     .setStatusCssPath(StringUtils.isEmpty(workerStatusCssPath) ?
-                                                       "/loadbalancer/status/custom.css" :
-                                                       workerStatusCssPath)
-                                     .build();
-
-        return workersProperties.toString();
+    public String generateWorkerProperties(final String aWebServerName) {
+        final List<Jvm> jvms = dao.findJvms(aWebServerName, PaginationParameter.all());
+        final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
+        return ApacheWebServerConfigFileGenerator.getWorkersProperties(aWebServerName, WORKERS_PROPS_TEMPLATE, jvms, apps);
     }
 
 }
