@@ -32,7 +32,7 @@
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
           type="com.tibco.tibjms.TibjmsConnectionFactory"
-          serverUrl="tcp://usmlvv1cto924.usmlvv1d0a.smshsc.net:7222"
+          serverUrl="tcp://localhost:7222"
           userName="admin"
           userPassword="Passw0rd"/>
 
