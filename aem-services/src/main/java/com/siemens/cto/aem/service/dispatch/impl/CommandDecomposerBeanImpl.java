@@ -54,11 +54,12 @@ public class CommandDecomposerBeanImpl implements SplitterTransformer {
 
     public List<DispatchCommand> splitGroupToJvmCommands(GroupDispatchCommand groupDispatchCommand) {
         List<DispatchCommand> jvmCommands = new ArrayList<DispatchCommand>();
+        JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(groupDispatchCommand.getCommand().getControlOperation().getExternalValue());
 
         Group group = groupDispatchCommand.getGroup();
 
         for (Jvm jvm : group.getJvms()) {
-            ControlJvmCommand controlCommand = new ControlJvmCommand(jvm.getId(), JvmControlOperation.START);
+            ControlJvmCommand controlCommand = new ControlJvmCommand(jvm.getId(), jvmControlOperation);
             jvmCommands.add(new JvmDispatchCommand(jvm, controlCommand, groupDispatchCommand.getUser()));
         }
 
