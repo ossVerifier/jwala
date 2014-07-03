@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.webserver
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm
-import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException
+import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
 import groovy.text.GStringTemplateEngine
 import com.siemens.cto.aem.domain.model.app.Application
 
@@ -59,7 +59,7 @@ public class ApacheWebServerConfigFileGenerator {
         try {
             return engine.createTemplate(resource.text).make(binding)
         } catch (FileNotFoundException e) {
-            throw new HttpdConfigTemplateNotFoundException(templateFileName, e)
+            throw new TemplateNotFoundException(templateFileName, e)
         }
     }
 

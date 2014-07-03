@@ -3,7 +3,7 @@ package com.siemens.cto.aem.service.webserver
 import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.domain.model.group.LiteGroup
 import com.siemens.cto.aem.domain.model.jvm.Jvm
-import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException
+import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
 
 /**
  * Unit test for {@link ApacheWebServerConfigFileGenerator}
@@ -39,7 +39,7 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
     }
 
     void testGetHttpdConfMissingTemplate() {
-        shouldFail(HttpdConfigTemplateNotFoundException) {
+        shouldFail(TemplateNotFoundException) {
             ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-conf-fictitious.tpl", apps)
         }
     }
@@ -55,7 +55,7 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
     }
 
     void testGetWorkerPropertiesMissingTemplate() {
-        shouldFail(HttpdConfigTemplateNotFoundException) {
+        shouldFail(TemplateNotFoundException) {
             ApacheWebServerConfigFileGenerator
                     .getWorkersProperties("Apache2.4", "/workers-properties-fictitious.tpl", jvms, apps)
         }

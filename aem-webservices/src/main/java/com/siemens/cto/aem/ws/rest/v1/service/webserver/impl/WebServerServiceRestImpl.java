@@ -10,7 +10,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.service.webserver.exception.HttpdConfigTemplateNotFoundException;
+import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -89,7 +89,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName, withSsl);
             return Response.ok(httpdConfStr).build();
-        } catch (HttpdConfigTemplateNotFoundException e) {
+        } catch (TemplateNotFoundException e) {
             throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
                     e.getMessage());
         }
