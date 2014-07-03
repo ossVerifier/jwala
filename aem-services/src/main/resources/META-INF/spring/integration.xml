@@ -8,8 +8,11 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<!-- Integration Common -->
-	<task:executor id="commonCommandExecutor" pool-size="10" />
+	<!-- Integration Common 
+	Configured to have a limited number of queued tasks, primarily PollingConsumers
+	-->
+	
+	<task:executor id="commonCommandExecutor" pool-size="10" queue-capacity="20" keep-alive="5" rejection-policy="CALLER_RUNS"  />
 
 	<int:gateway id="commandDispatch" default-request-channel="command-accept"
 		service-interface="com.siemens.cto.aem.service.dispatch.CommandDispatchGateway">
@@ -45,13 +48,13 @@
 
 	<int:service-activator input-channel="subcommand-startstopjvm"
 		method="deploy" output-channel="subcommand-completion" ref="jvmCommandExecutorBean">
-		<int:poller max-messages-per-poll="1" fixed-delay="10"
+		<int:poller max-messages-per-poll="1" fixed-delay="10" error-channel="nullChannel"
 			receive-timeout="30000" task-executor="commonCommandExecutor" />
 	</int:service-activator>
 
 	<int:service-activator input-channel="subcommand-deploy"
 		method="deploy" output-channel="subcommand-completion" ref="deployCommandExecutorBean">
-		<int:poller max-messages-per-poll="1" fixed-delay="10"
+		<int:poller max-messages-per-poll="1" fixed-delay="10" error-channel="nullChannel"
 			receive-timeout="30000" task-executor="commonCommandExecutor" />
 	</int:service-activator>
 
