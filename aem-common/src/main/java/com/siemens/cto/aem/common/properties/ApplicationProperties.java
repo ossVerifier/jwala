@@ -14,24 +14,25 @@ public class ApplicationProperties {
 
     private Properties properties;
 
-    private static volatile ApplicationProperties self = null;
+    private static volatile ApplicationProperties SELF;
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationProperties.class);
 
     public static ApplicationProperties getInstance() {
-        if (self == null) {
+        if (SELF == null) {
             synchronized (ApplicationProperties.class) {
-                if (self == null) {
-                    self = new ApplicationProperties();
+                if (SELF == null) {
+                    SELF = new ApplicationProperties();
                 }
             }
         }
 
-        return self;
+        return SELF;
     }
 
     public static Properties getProperties() {
-        return getInstance().properties;
+        Properties properties = (Properties) getInstance().properties.clone();
+        return properties;
     }
 
     public static void reload() {
@@ -61,12 +62,13 @@ public class ApplicationProperties {
 
     private void init() {
         String propertiesFile = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH) + "/" + AemConstants.PROPERTIES_FILE_NAME;
-        properties = new Properties();
+        Properties tempProperties = new Properties();
         try {
-            properties.load(new FileReader(new File(propertiesFile)));
+            tempProperties.load(new FileReader(new File(propertiesFile)));
         } catch (IOException e) {
             throw new ApplicationException("Failed to load properties file " + propertiesFile, e);
         }
+        properties = tempProperties;
         LOG.info("Properties loaded from path " + propertiesFile);
     }
 }
