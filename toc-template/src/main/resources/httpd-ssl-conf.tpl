@@ -174,7 +174,7 @@ AddType application/x-pkcs7-crl .crl
 SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
 
 <% apps.each() { %>
-JkMount ${it.mount} lb-${it.name}
+JkMount ${it.mount.replaceAll(" ", "")} lb-${it.name.replaceAll(" ", "")}
 <% } %>
 JkMount  /jkmanager/* status
 
