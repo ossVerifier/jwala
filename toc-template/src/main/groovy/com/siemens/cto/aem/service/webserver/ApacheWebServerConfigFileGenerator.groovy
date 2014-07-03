@@ -24,7 +24,8 @@ public class ApacheWebServerConfigFileGenerator {
                                       final String templateFileName,
                                       final List<Application> apps) {
         final binding = [webServerName:webServerName,
-                         apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]}]
+                         apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]},
+                         comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 
@@ -40,7 +41,8 @@ public class ApacheWebServerConfigFileGenerator {
                                               final List<Application> apps) {
         final binding = [webServerName: webServerName,
                          jvms:jvms.collect {jvm:[jvmName: it.jvmName, hostName: it.hostName, ajpPort: it.ajpPort]},
-                         apps:apps.collect {app:[name: it.name]}]
+                         apps:apps.collect {app:[name: it.name]},
+                         comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 
@@ -48,6 +50,7 @@ public class ApacheWebServerConfigFileGenerator {
         final resource = this.getResource(templateFileName)
 
         if (resource == null) {
+            binding.comments = "Template used: " + templateFileName
             resource = new File(templateFileName)
         }
 
