@@ -328,12 +328,18 @@ var WebServerConfigForm = React.createClass({
     },
     componentDidUpdate: function() {
         if (this.props.show === true) {
-            var okCallback = this.props.data === undefined ? this.insertNewWebServer : this.updateWebServer;
-            decorateNodeAsModalFormDialog(this.getDOMNode(),
-                                          this.props.title,
-                                          okCallback,
-                                          this.destroy,
-                                          this.props.destroyCallback);
+
+            // Check first if this component has been decorated already.
+            // Decorate only once!
+            if (!$(this.getDOMNode()).hasClass("ui-dialog-content")) {
+                var okCallback = this.props.data === undefined ? this.insertNewWebServer : this.updateWebServer;
+                decorateNodeAsModalFormDialog(this.getDOMNode(),
+                                              this.props.title,
+                                              okCallback,
+                                              this.destroy,
+                                              this.destroy);
+            }
+
         }
     },
     destroy: function() {
