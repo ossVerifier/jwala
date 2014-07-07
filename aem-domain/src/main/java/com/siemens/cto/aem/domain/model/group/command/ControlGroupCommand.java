@@ -9,18 +9,18 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 
 public class ControlGroupCommand implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
-    private final GroupControlOperation controlOperation;
+    private final JvmControlOperation controlOperation;
 
     public ControlGroupCommand(final Identifier<Group> theId,
-                             final GroupControlOperation theControlOperation) {
+                             final JvmControlOperation theControlOperation) {
         groupId = theId;
         controlOperation = theControlOperation;
     }
@@ -29,7 +29,7 @@ public class ControlGroupCommand implements Serializable, Command {
         return groupId;
     }
 
-    public GroupControlOperation getControlOperation() {
+    public JvmControlOperation getControlOperation() {
         return controlOperation;
     }
 

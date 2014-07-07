@@ -9,9 +9,12 @@ public class JvmDispatchCommandResult {
     
     private final Identifier<JvmControlHistory> controlId;
 
-    public JvmDispatchCommandResult(Boolean wasSuccessful, Identifier<JvmControlHistory> controlId) {
+    private final GroupJvmDispatchCommand groupJvmDispatchCommand;
+
+    public JvmDispatchCommandResult(Boolean wasSuccessful, Identifier<JvmControlHistory> controlId, GroupJvmDispatchCommand groupJvmDispatchCommand) {
         this.wasSuccessful = wasSuccessful;
         this.controlId = controlId;
+        this.groupJvmDispatchCommand = groupJvmDispatchCommand;
     }
 
     public Boolean wasSuccessful() {
@@ -56,5 +59,13 @@ public class JvmDispatchCommandResult {
     @Override
     public String toString() {
         return "JvmDispatchCommandResult [wasSuccessful=" + wasSuccessful + ", controlId=" + controlId + "]";
+    }
+
+    public Boolean getWasSuccessful() {
+        return wasSuccessful;
+    }
+
+    public GroupJvmDispatchCommand getGroupJvmDispatchCommand() {
+        return groupJvmDispatchCommand;
     }
 }

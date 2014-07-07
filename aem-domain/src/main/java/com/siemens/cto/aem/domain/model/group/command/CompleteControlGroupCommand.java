@@ -12,9 +12,15 @@ public class CompleteControlGroupCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<GroupControlHistory> controlHistoryId;
+    
+    private final long groupSize;
+    
+    private final long successfulCommands;
 
-    public CompleteControlGroupCommand(final Identifier<GroupControlHistory> theControlHistoryId) {
+    public CompleteControlGroupCommand(final Identifier<GroupControlHistory> theControlHistoryId, long theGroupSize, long theSuccessfulCommands) {
         controlHistoryId = theControlHistoryId;
+        groupSize = theGroupSize;
+        successfulCommands = theSuccessfulCommands;
     }
 
     public Identifier<GroupControlHistory> getControlHistoryId() {
@@ -54,6 +60,14 @@ public class CompleteControlGroupCommand implements Serializable, Command {
     @Override
     public String toString() {
         return "CompleteControlGroupCommand [controlHistoryId=" + controlHistoryId + "]";
+    }
+
+    public long getGroupSize() {
+        return groupSize;
+    }
+
+    public long getSuccessfulCommands() {
+        return successfulCommands;
     }
 
 }

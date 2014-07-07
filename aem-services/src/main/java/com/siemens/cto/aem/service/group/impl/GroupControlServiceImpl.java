@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -43,24 +43,37 @@ public class GroupControlServiceImpl implements GroupControlService {
 
         Group group = groupService.getGroup(aCommand.getGroupId());
 
-        GroupDispatchCommand dispatchCommand = new GroupDispatchCommand(group, aCommand, aUser, controlHistoryEvent.getId());
+        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser,
+                controlHistoryEvent.getId());
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
 
         return controlHistoryEvent;
     }
 
     @Transactional
-    public GroupControlHistory dispatchCommandComplete(GroupDispatchCommand aCommand, List<JvmDispatchCommandResult> results) {
+    public GroupControlHistory dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
 
-        for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
+        GroupControlHistory completeHistory = null;
+
+        if (results.size() != 0) {
+
+            GroupJvmDispatchCommand aCommand = results.get(0).getGroupJvmDispatchCommand();
+
+            long successCount = 0;
             
-        }
-        
-        final GroupControlHistory completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
-                new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId()), AuditEvent.now(aCommand.getUser())));
+            for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
+                if (jvmDispatchCommandResult.wasSuccessful()) {
+                    successCount++;
+                }
+            }
+            
+            completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
+                    new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId(), results.size(), successCount), AuditEvent.now(aCommand
+                            .getUser())));
 
-        // notify that the command is complete
-        
+            // notify that the command is complete
+
+        }
         return completeHistory;
     }
 

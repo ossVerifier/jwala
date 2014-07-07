@@ -29,17 +29,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
@@ -59,19 +59,15 @@ public class DispatchCommandIntegrationTest {
     private CommandDispatchGateway gateway;
 
     @Autowired
-    @Qualifier("command-completion")
+    @Qualifier("jvmAggregated")
     private DirectChannel commandCompletionChannel;
-
-    @Autowired
-    @Qualifier("jvmGroupCommandCompletionBean")
-    private GroupCommandCompletionMessageHandler jvmGroupCommandComplete;
 
     private Jvm mockJvm1;
     private Jvm mockJvm2;
     private Set<Jvm> jvmSet;
     private Group theGroup;
     private ControlGroupCommand startGroupCommand;
-    private GroupDispatchCommand groupDispatchCommand;
+    private GroupJvmDispatchCommand groupDispatchCommand;
     private Identifier<GroupControlHistory> theHistoryId;
 
     @Before
@@ -88,14 +84,12 @@ public class DispatchCommandIntegrationTest {
         jvmSet.add(mockJvm2);
 
         theGroup = new Group(GROUP1_IDENTIFIER, "group1", jvmSet);
-        startGroupCommand = new ControlGroupCommand(GROUP1_IDENTIFIER, GroupControlOperation.START);
+        startGroupCommand = new ControlGroupCommand(GROUP1_IDENTIFIER, JvmControlOperation.START);
         theHistoryId = new Identifier<GroupControlHistory>(new Long(101));
-        groupDispatchCommand = new GroupDispatchCommand(theGroup, startGroupCommand, User.getHardCodedUser(),
+        groupDispatchCommand = new GroupJvmDispatchCommand(theGroup, startGroupCommand, User.getHardCodedUser(),
                 theHistoryId);
 
         blockingQueue = new ArrayBlockingQueue<>(1);
-
-        commandCompletionChannel.unsubscribe(jvmGroupCommandComplete);
         commandCompletionChannel.subscribe(new TestMessageHandler());
     }
 
@@ -113,12 +107,9 @@ public class DispatchCommandIntegrationTest {
 
         assertEquals(2, aggregatedDispatchCmdList.size());
 
-        GroupDispatchCommand returnedGroupDispatchCommand = (GroupDispatchCommand) aggregatorResponse.getHeaders().get(
-                "GroupDispatchCommand");
-        assertEquals(groupDispatchCommand.getIdentity(), returnedGroupDispatchCommand.getIdentity());
-
         for (JvmDispatchCommandResult jvmDispatchCommandResult : aggregatedDispatchCmdList) {
             assertTrue(jvmDispatchCommandResult.wasSuccessful());
+            assertEquals(groupDispatchCommand, jvmDispatchCommandResult.getGroupJvmDispatchCommand());
             // TODO : need to assert I got back the correct list of jvms. Right
             // now the mock returns the same result (JVM1 id) for both calls to
             // JvmControlService. (but I am getting back the correct messages)

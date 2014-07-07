@@ -115,7 +115,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, aJvmControlOperation);
         final JvmControlOperation command = aJvmControlOperation.toControlOperation();
         final ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, 
-                GroupControlOperation.convertFrom(command.getExternalValue()) );
+                JvmControlOperation.convertFrom(command.getExternalValue()) );
         return ResponseBuilder.ok(
                 groupControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
                );

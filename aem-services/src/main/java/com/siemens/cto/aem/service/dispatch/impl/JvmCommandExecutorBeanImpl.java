@@ -1,12 +1,10 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import org.springframework.integration.Message;
-import org.springframework.integration.support.MessageBuilder;
-
-import com.siemens.cto.aem.domain.model.dispatch.GroupDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 
 public class JvmCommandExecutorBeanImpl {
@@ -19,21 +17,28 @@ public class JvmCommandExecutorBeanImpl {
         jvmControlService = theJvmControlService;
     }
 
-    public Message<JvmDispatchCommandResult> deploy(Message<JvmDispatchCommand> msg) {
+    public JvmDispatchCommandResult startStop(JvmDispatchCommand jvmDispatchCommand) {
 
-        JvmDispatchCommand jvmDispatchCommand = msg.getPayload();
-        GroupDispatchCommand groupDispatchCommand = (GroupDispatchCommand) msg.getHeaders().get("GroupDispatchCommand");
+        GroupJvmDispatchCommand groupDispatchCommand = jvmDispatchCommand.getGroupJvmDispatchCommand();
 
-        LOGGER.info("Execute command : " + jvmDispatchCommand.toString() + " with commandDispatchId = " + groupDispatchCommand.getIdentity());
+        LOGGER.debug("Execute command : " + jvmDispatchCommand.toString() + " with commandDispatchId = "
+                + groupDispatchCommand.getIdentity());
 
-        JvmControlHistory jvmControlHistory = jvmControlService.controlJvm(jvmDispatchCommand.getCommand(),
-                jvmDispatchCommand.getUser());
-        // deal with Runtime exception thrown here...
+        JvmControlHistory jvmControlHistory = null;
+        Boolean wasSuccessful = false;
 
-        // NPE??
-        Boolean wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
-        JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId());
+        try {
+            ControlJvmCommand controlJvmCommand = new ControlJvmCommand(jvmDispatchCommand.getJvm().getId(),
+                    groupDispatchCommand.getCommand().getControlOperation());
+            jvmControlHistory = jvmControlService.controlJvm(controlJvmCommand, groupDispatchCommand.getUser());
+            wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
+        } catch (RuntimeException e) {
+            wasSuccessful = false;
+        }
 
-        return MessageBuilder.withPayload((JvmDispatchCommandResult) result).copyHeaders(msg.getHeaders()).build();
+        JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId(),
+                groupDispatchCommand);
+
+        return result;
     }
 }
