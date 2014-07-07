@@ -109,12 +109,12 @@ var GroupOperationsDataTable = React.createClass({
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
-                               btnLabel:"Start JVMs",
+                               btnLabel:"Start Group",
                                btnCallback:this.startGroupJvms},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
-                               btnLabel:"Stop JVMs",
+                               btnLabel:"Stop Group",
                                btnCallback:this.stopGroupJvms}];
 
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
