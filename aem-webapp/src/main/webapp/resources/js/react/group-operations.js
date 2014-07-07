@@ -106,14 +106,16 @@ var GroupOperationsDataTable = React.createClass({
                               tocType:"button",
                               btnLabel:"Deploy",
                               btnCallback:this.deploy},
-                             {sTitle:"",
-                              mData:null,
-                              tocType:"button",
-                              btnLabel:"Start",
-                              btnCallback:this.start,
-                              isToggleBtn:true,
-                              label2:"Stop",
-                              callback2:this.stop}];
+                              {sTitle:"",
+                               mData:null,
+                               tocType:"button",
+                               btnLabel:"Start JVMs",
+                               btnCallback:this.startGroupJvms},
+                              {sTitle:"",
+                               mData:null,
+                               tocType:"button",
+                               btnLabel:"Stop JVMs",
+                               btnCallback:this.stopGroupJvms}];
 
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                             className:"simple-data-table",
@@ -247,11 +249,11 @@ var GroupOperationsDataTable = React.createClass({
    undeploy: function(id) {
         alert("Undeploy applications for group_" + id + "...");
    },
-   start: function(id) {
-        alert("Start applications for group_" + id + "...");
+   startGroupJvms: function(id) {
+        groupControlService.startGroupJvms(id);
    },
-   stop: function(id) {
-        alert("Stop applications for group_" + id + "...");
+   stopGroupJvms: function(id) {
+        groupControlService.stopGroupJvms(id);
    },
    jvmManager: function(id) {
         alert("JVM show manager for jvm_" + id + "...");
