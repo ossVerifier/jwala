@@ -13,7 +13,7 @@ worker.list=${workerList}
         def jvmName = it.jvmName.replaceAll(" ", "")
         jvmNames = jvmNames + (jvmNames != "" ? "," + jvmName : jvmName)
 %>
-worker.${jvmName}.type=ajp11
+worker.${jvmName}.type=ajp13
 worker.${jvmName}.host=${it.hostName.replaceAll(" ", "")}
 worker.${jvmName}.port=${it.ajpPort}
 <%  } %>
