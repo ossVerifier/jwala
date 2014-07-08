@@ -36,7 +36,7 @@ public interface ApplicationServiceRest {
 
     @GET
     @Path("/jvm/{jvmId}") //TODO The @PathParam and the Path variables don't align
-    Response findApplicationsByJvmId(@PathParam("applicationId") Identifier<Jvm> aJvmId,
+    Response findApplicationsByJvmId(@PathParam("jvmId") Identifier<Jvm> aJvmId,
                                      @BeanParam PaginationParamProvider paginationParamProvider);
 
     @POST
