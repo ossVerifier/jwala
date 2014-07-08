@@ -28,7 +28,6 @@ echo Configure hct.xml - replace jvm name with right name
 start /wait "CONFIGURE WITH JVM NAME %1" "notepad" %1\conf\Catalina\localhost\hct.xml
 echo Ready to run install
 pause
-
 start /wait /D "%CATALINA_BASE%" "INSTALLING" bin\service.bat
 if errorlevel 1 (
 	echo Problem encountered installing service. Retry configuration or ctrl-c
