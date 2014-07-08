@@ -12,24 +12,29 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
     private final JvmControlPersistenceService persistenceService;
     private final JvmService jvmService;
     private final JvmCommandExecutor jvmCommandExecutor;
+    private final JvmStateService jvmStateService;
 
     public JvmControlServiceImpl(final JvmControlPersistenceService thePersistenceService,
                                  final JvmService theJvmService,
-                                 final JvmCommandExecutor theExecutor) {
+                                 final JvmCommandExecutor theExecutor,
+                                 final JvmStateService theJvmStateService) {
         persistenceService = thePersistenceService;
         jvmService = theJvmService;
         jvmCommandExecutor = theExecutor;
+        jvmStateService = theJvmStateService;
     }
 
     @Override
@@ -44,6 +49,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                                                                                                                         AuditEvent.now(aUser)));
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
+            jvmStateService.setCurrentJvmState(createNewSetJvmStateCommand(aCommand),
+                                                                           aUser);
+
             final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
                                                                     jvm);
 
@@ -57,5 +65,10 @@ public class JvmControlServiceImpl implements JvmControlService {
                                              "CommandFailureException when attempting to control a JVM: " + aCommand,
                                              cfe);
         }
+    }
+
+    protected SetJvmStateCommand createNewSetJvmStateCommand(final ControlJvmCommand aControlCommand) {
+        return new SetJvmStateCommandBuilder().setControlCommand(aControlCommand)
+                                              .build();
     }
 }

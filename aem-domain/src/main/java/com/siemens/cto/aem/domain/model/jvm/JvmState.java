@@ -9,7 +9,9 @@ public enum JvmState {
     FAILED("FAILED"),
     STARTED("STARTED"),
     STOPPED("STOPPED"),
-    UNKNOWN("UNKNOWN");
+    UNKNOWN("UNKNOWN"),
+    START_REQUESTED("START REQUESTED"),
+    STOP_REQUESTED("STOP REQUESTED");
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
 

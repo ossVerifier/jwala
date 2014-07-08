@@ -8,8 +8,6 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 
 import static org.junit.Assert.assertEquals;

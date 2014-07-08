@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.Destination;
 
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
@@ -52,6 +53,7 @@ public class JmsJvmStateNotificationServiceImpl extends AbstractStateNotificatio
     }
 
     @Override
+    @Transactional
     public void notifyJvmStateUpdated(final Identifier<Jvm> aJvmId) {
         prune();
         template.send(destination,

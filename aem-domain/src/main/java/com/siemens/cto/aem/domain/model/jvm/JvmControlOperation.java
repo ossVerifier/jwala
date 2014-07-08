@@ -8,8 +8,8 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public enum JvmControlOperation {
 
-    START("start"),
-    STOP("stop");
+    START("start", JvmState.START_REQUESTED),
+    STOP("stop", JvmState.STOP_REQUESTED);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
@@ -20,9 +20,12 @@ public enum JvmControlOperation {
     }
 
     private final String operationValue;
+    private final JvmState operationState;
 
-    private JvmControlOperation(final String theValue) {
+    private JvmControlOperation(final String theValue,
+                                final JvmState theOperationJvmState) {
         operationValue = theValue;
+        operationState = theOperationJvmState;
     }
 
     public static JvmControlOperation convertFrom(final String aValue) throws BadRequestException {
@@ -37,5 +40,9 @@ public enum JvmControlOperation {
 
     public String getExternalValue() {
         return operationValue;
+    }
+
+    public JvmState getOperationState() {
+        return operationState;
     }
 }

@@ -32,7 +32,7 @@ public class JvmStateCrudServiceImpl implements JvmStateCrudService {
 
         final JpaCurrentJvmState currentState = new JpaCurrentJvmState();
         currentState.setId(anEvent.getCommand().getNewJvmState().getJvmId().getId());
-        currentState.setState(anEvent.getCommand().getNewJvmState().getJvmState().name());
+        currentState.setState(anEvent.getCommand().getNewJvmState().getJvmState().getStateName());
         currentState.setAsOf(anEvent.getCommand().getNewJvmState().getAsOf().toCalendar(Locale.US));
 
         return entityManager.merge(currentState);

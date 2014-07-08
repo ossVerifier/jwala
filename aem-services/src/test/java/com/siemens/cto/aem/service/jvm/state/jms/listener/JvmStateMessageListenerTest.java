@@ -10,11 +10,10 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
+import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.state.JvmStateService;
-import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
