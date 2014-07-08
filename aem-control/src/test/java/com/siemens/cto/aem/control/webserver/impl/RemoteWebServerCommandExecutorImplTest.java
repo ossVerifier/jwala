@@ -60,16 +60,11 @@ public class RemoteWebServerCommandExecutorImplTest {
         final ControlWebServerCommand command = mock(ControlWebServerCommand.class);
         final WebServer webServer = mock(WebServer.class);
         when(command.getControlOperation()).thenReturn(WebServerControlOperation.START);
-        when(webServer.getName()).thenReturn("Apache2.4.9");
+        when(webServer.getName()).thenReturn("USMLVV1CTOWEB05");
         when(webServer.getHost()).thenReturn("usmlvv1cto989");
-
         final ExecData exec = impl.controlWebServer(command, webServer);
-        final String output = exec.getStandardOutput();
         final String error = exec.getStandardError();
         assumeFalse(error.contains("The requested service has already been started"));
-
-        System.out.println(">>> " + exec.getReturnCode());
-
         assertTrue(exec.getReturnCode().wasSuccessful());
     }
 }
