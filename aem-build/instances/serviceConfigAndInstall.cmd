@@ -24,6 +24,8 @@ echo Redirect= BASE+1, like 8081
 echo Shutdown= BASE+3, like 8083
 echo AJP= BASE+4, like 8084
 start /wait "CONFIGURE WITH BASE NAME %1" "notepad" %1\conf\server.xml
+echo Configure hct.xml - replace jvm name with right name
+start /wait "CONFIGURE WITH JVM NAME %1" "notepad" %1\conf\Catalina\localhost\hct.xml
 echo Ready to run install
 pause
 
