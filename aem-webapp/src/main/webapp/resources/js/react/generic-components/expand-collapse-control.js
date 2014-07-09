@@ -40,7 +40,7 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.parentItemId,
                                         this.props.rootId);
     },
-    drawDataTable: function(dataTable, data, defaultSorting) {
+    drawDataTable: function(dataTable, data, defaultSorting, isCollapsible) {
         dataTable.fnClearTable(data);
         dataTable.fnAddData(data);
         dataTable.fnDraw();
@@ -56,6 +56,17 @@ var ExpandCollapseControl = React.createClass({
 
         if (defaultSorting !== undefined) {
             dataTable.fnSort([[defaultSorting.col, defaultSorting.sort]]);
+        }
+
+        if (isCollapsible) {
+            // Make the table collapsible by applying an accordion ui
+            // on its top level container (the parent of the parent)
+            if (!dataTable.parent().parent().hasClass("ui-accordion")) {
+                dataTable.parent().parent().accordion({
+                    collapsible: true,
+                    heightStyle: "content"
+                });
+            }
         }
 
     },
@@ -77,12 +88,16 @@ var ExpandCollapseControl = React.createClass({
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
                 var data = dataSources[i].jsonData;
                 if (data !== undefined && data !== null) {
-                    this.drawDataTable(subDataTable, data, childTableDetailsArray[i].defaultSortting);
+                    this.drawDataTable(subDataTable,
+                                       data,
+                                       childTableDetailsArray[i].defaultSorting,
+                                       childTableDetailsArray[i].isCollapsible);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
                             dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
                                                         self.retrieveDataAndRenderTableCallback(subDataTable,
-                                                        childTableDetailsArray[i].defaultSorting));
+                                                        childTableDetailsArray[i].defaultSorting,
+                                                        childTableDetailsArray[i].isCollapsible));
                     }
 
                 }
@@ -115,12 +130,12 @@ var ExpandCollapseControl = React.createClass({
         }
 
     },
-    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting) {
+    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting, isCollapsible) {
         var self = this;
         return function(resp) {
             var data = resp.applicationResponseContent;
             if (data !== undefined) {
-                self.drawDataTable(subDataTable, data, defaultSorting);
+                self.drawDataTable(subDataTable, data, defaultSorting, isCollapsible);
             }
         }
     }

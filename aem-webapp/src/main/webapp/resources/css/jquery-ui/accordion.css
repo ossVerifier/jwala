@@ -1,0 +1,25 @@
+/**
+ * Override default accordion theme properties here.
+ */
+
+.ui-accordion .ui-accordion-content {
+  padding: 0em 0em;
+}
+
+.ui-corner-all, .ui-corner-top, .ui-corner-right {
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+}
+
+.ui-corner-all, .ui-corner-bottom, .ui-corner-left {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.ui-state-active {
+    color: #2e6e9e;
+}
+
+.ui-state-active .ui-icon {
+    background-image: url(../themes/redmond/images/ui-icons_469bdd_256x240.png);
+}

@@ -16,6 +16,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/group-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/webserver-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-multi-select-box.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/accordion.css">
 
 <jsp:include page="/page-constants"/>
 <jsp:include page="/index-page-scripts?devMode=${devMode}"/>

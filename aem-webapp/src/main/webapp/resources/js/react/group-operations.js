@@ -119,7 +119,9 @@ var GroupOperationsDataTable = React.createClass({
 
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                             className:"simple-data-table",
-                                            dataCallback:this.getApplicationsOfGrp};
+                                            dataCallback:this.getApplicationsOfGrp,
+                                            title:"Web Application",
+                                            isCollapsible:true};
 
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Web App in Group", mData:"name"},
@@ -154,7 +156,9 @@ var GroupOperationsDataTable = React.createClass({
 
         var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                     className:"simple-data-table",
-                                    childTableDetails:webAppOfJvmChildTableDetails};
+                                    childTableDetails:webAppOfJvmChildTableDetails,
+                                    title:"JVMs",
+                                    isCollapsible:true};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},

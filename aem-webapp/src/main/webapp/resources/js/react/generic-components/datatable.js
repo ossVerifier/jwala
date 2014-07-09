@@ -8,9 +8,8 @@ var TocDataTable = React.createClass({
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
         return <div>
-                    <table id={this.props.tableId}>
-                        <caption>{this.props.title !== undefined ? this.props.title : ""}</caption>
-                    </table>
+                    <h3 style={this.props.title !== undefined  ? {} : {display:'none'}}>{this.props.title}</h3>
+                    <table id={this.props.tableId}/>
                </div>
     },
     componentDidUpdate: function() {
