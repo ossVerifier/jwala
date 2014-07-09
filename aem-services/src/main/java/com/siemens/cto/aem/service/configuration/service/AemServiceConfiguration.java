@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.configuration.service;
 
+import com.siemens.cto.toc.files.TemplateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +49,9 @@ public class AemServiceConfiguration {
     @Autowired
     private CommandDispatchGateway commandDispatchGateway;
 
+    @Autowired
+    private TemplateManager templateManager;
+
     @Bean
     public GroupService getGroupService() {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService());
@@ -61,7 +65,7 @@ public class AemServiceConfiguration {
 
     @Bean
     public WebServerService getWebServerService() {
-        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao());
+        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), templateManager);
     }
 
     @Bean

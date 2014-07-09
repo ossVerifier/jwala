@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +28,7 @@ import com.siemens.cto.aem.service.webserver.WebServerService;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
 		WebServerServiceImplIntegrationTest.CommonConfiguration.class,
-		TestJpaConfiguration.class })
+		TestJpaConfiguration.class, TocFileManagerConfigReference.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
@@ -45,16 +47,19 @@ public class WebServerServiceImplIntegrationTest {
 		public GroupDao getGroupDao() {
 			return new JpaGroupDaoImpl();
 		}
-	}	
+	}
 	
 	@Autowired
 	private WebServerDao           webServerDao;
 	
 	private WebServerService   cut;
 
+    @Autowired
+    private TemplateManager templateManager;
+
     @Before
     public void setup() { 
-        cut = new WebServerServiceImpl(webServerDao);
+        cut = new WebServerServiceImpl(webServerDao, templateManager);
     }
 
 	@Test(expected = NotFoundException.class)

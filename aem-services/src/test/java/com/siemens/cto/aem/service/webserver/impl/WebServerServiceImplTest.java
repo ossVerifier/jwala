@@ -14,6 +14,8 @@ import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.TemplateManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +46,13 @@ public class WebServerServiceImplTest {
     @Mock
     private WebServer mockWebServer; 
     @Mock
-    private WebServer mockWebServer2; 
+    private WebServer mockWebServer2;
+
+    @Mock
+    private TemplateManager templateManager;
+
+    @Mock
+    private RepositoryAction repositoryAction;
     
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
@@ -62,7 +70,7 @@ public class WebServerServiceImplTest {
     private User testUser = new User("testUser");
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException{
         
         groupId = new Identifier<Group>(1L);
         groupId2 = new Identifier<Group>(2L);
@@ -98,7 +106,10 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(wsDao);
+        wsService = new WebServerServiceImpl(wsDao, templateManager);
+
+        when(repositoryAction.getType()).thenReturn(RepositoryAction.Type.NONE);
+        when(templateManager.locateTemplate(anyString())).thenReturn(repositoryAction);
     }
 
     @SuppressWarnings("unchecked")

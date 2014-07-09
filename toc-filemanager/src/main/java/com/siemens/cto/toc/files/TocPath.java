@@ -6,7 +6,7 @@ import java.nio.file.Path;
 public enum TocPath {
 
     WEB_ARCHIVE("paths.web-archive", "D:/apache/tomcat/webapps"), 
-    TEMPLATES("paths.web-archive")
+    TEMPLATES("paths.templates")
     ;
     
     

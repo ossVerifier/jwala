@@ -1,10 +1,13 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
+import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.TemplateManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -22,12 +25,14 @@ import com.siemens.cto.aem.service.webserver.WebServerService;
 public class WebServerServiceImpl implements WebServerService {
 
     private WebServerDao dao;
-    private final String HTTPD_CONF_TEMPLATE = "/httpd-conf.tpl";
-    private final String HTTPD_SSL_CONF_TEMPLATE = "/httpd-ssl-conf.tpl";
-    private final String WORKERS_PROPS_TEMPLATE = "/workers-properties.tpl";
+    private final String HTTPD_CONF_TEMPLATE = "httpd-conf.tpl";
+    private final String HTTPD_SSL_CONF_TEMPLATE = "httpd-ssl-conf.tpl";
+    private final String WORKERS_PROPS_TEMPLATE = "workers-properties.tpl";
+    private TemplateManager templateManager;
 
-    public WebServerServiceImpl(final WebServerDao theDao) {
+    public WebServerServiceImpl(final WebServerDao theDao, final TemplateManager theTemplateManager) {
         dao = theDao;
+        templateManager = theTemplateManager;
     }
 
     @Override
@@ -107,10 +112,11 @@ public class WebServerServiceImpl implements WebServerService {
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
         final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
         if (withSsl != null && withSsl) {
-            return ApacheWebServerConfigFileGenerator.getHttpdConf(aWebServerName, HTTPD_SSL_CONF_TEMPLATE, apps);
-
+            return ApacheWebServerConfigFileGenerator
+                        .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_SSL_CONF_TEMPLATE), apps);
         }
-        return ApacheWebServerConfigFileGenerator.getHttpdConf(aWebServerName, HTTPD_CONF_TEMPLATE, apps);
+        return ApacheWebServerConfigFileGenerator
+                    .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_CONF_TEMPLATE), apps);
     }
 
     @Override
@@ -118,7 +124,25 @@ public class WebServerServiceImpl implements WebServerService {
     public String generateWorkerProperties(final String aWebServerName) {
         final List<Jvm> jvms = dao.findJvms(aWebServerName, PaginationParameter.all());
         final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
-        return ApacheWebServerConfigFileGenerator.getWorkersProperties(aWebServerName, WORKERS_PROPS_TEMPLATE, jvms, apps);
+        return ApacheWebServerConfigFileGenerator
+                    .getWorkersProperties(aWebServerName, getTemplatePath(WORKERS_PROPS_TEMPLATE), jvms, apps);
+    }
+
+    /**
+     * Loos for the template and returns the full path with the template name
+     * @param templateName the template name
+     * @return full path and the template name
+     */
+    private String getTemplatePath(String templateName) {
+        try {
+            final RepositoryAction result = templateManager.locateTemplate(templateName);
+            if (result.getType() == RepositoryAction.Type.FOUND ) {
+                return result.getPath().toString();
+            }
+            return "/" + templateName;
+        } catch (IOException ioe) {
+            return "/" + templateName;
+        }
     }
 
 }

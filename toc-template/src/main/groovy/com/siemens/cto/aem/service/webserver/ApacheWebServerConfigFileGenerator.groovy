@@ -47,20 +47,20 @@ public class ApacheWebServerConfigFileGenerator {
     }
 
     private static bindDataToTemplate(final binding, final String templateFileName) {
-        final resource = this.getResource(templateFileName)
-
-        if (resource == null) {
-            binding.comments = "Template used: " + templateFileName
-            resource = new File(templateFileName)
+        def resource = new File(templateFileName)
+        binding.comments = "Generated from " + templateFileName
+        if (!resource.exists()) {
+            resource = this.getResource(templateFileName)
+            binding.comments += " classpath resource template"
         }
 
         final engine = new GStringTemplateEngine()
 
-        try {
-            return engine.createTemplate(resource.text).make(binding)
-        } catch (FileNotFoundException e) {
-            throw new TemplateNotFoundException(templateFileName, e)
+        if (resource == null) {
+            throw new TemplateNotFoundException(templateFileName, null)
         }
+
+        return engine.createTemplate(resource.text).make(binding)
     }
 
 }
