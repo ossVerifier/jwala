@@ -48,7 +48,6 @@
 <script type="text/jsx" src="public-resources/js/react/group-operations.js"></script>
 <script type="text/jsx" src="public-resources/js/react/jvm-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
-<script type="text/jsx" src="public-resources/js/react/webserver-operations.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webapp-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/main-area.js"></script>

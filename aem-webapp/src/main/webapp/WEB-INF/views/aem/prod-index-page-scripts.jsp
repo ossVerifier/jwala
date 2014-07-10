@@ -46,7 +46,6 @@
 <script src="gen-public-resources/js/react/generic-components/generic-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/datatable-button.js"></script>
 <script src="gen-public-resources/js/react/group-operations.js"></script>
-<script src="gen-public-resources/js/react/webserver-operations.js"></script>
 <script src="gen-public-resources/js/react/jvm-config.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
 <script src="gen-public-resources/js/react/webserver-config.js"></script>

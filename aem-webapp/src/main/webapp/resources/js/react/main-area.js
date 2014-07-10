@@ -40,8 +40,6 @@ var MainTabs = React.createClass({
                                            service={ServiceFactory.getGroupService()}
                                            jvmStateService={ServiceFactory.getJvmStateService()}
                                            jvmStateTimeout="1"/>},
-                 {title:"Web Servers", content:<WebServerOperations className="webserver-config"
-                                                service={ServiceFactory.getWebServerService()}/>},
                  {title: "Configure", content:<ConfigureTabs/>}];
         return null;
     },
