@@ -4,6 +4,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
@@ -47,5 +48,10 @@ public interface WebServerServiceRest {
     @GET
     @Path("/{webServerName}/loadbalancer/conf")
     Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
+
+    @GET
+    @Path("/group/{groupId}")
+    Response getWebServers(@PathParam("groupId") final Identifier<Group> aGroupId,
+                           @BeanParam final PaginationParamProvider paginationParamProvider);
 
 }

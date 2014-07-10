@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -16,7 +17,6 @@ import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -99,5 +99,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateLoadBalancerConfig(final String aWebServerName) {
         return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
+    }
+
+    @Override
+    public Response getWebServers(final Identifier<Group> aGroupId,
+                                  final PaginationParamProvider paginationParamProvider) {
+        final List<WebServer> webServers =
+                webServerService.findWebServers(aGroupId,
+                                                paginationParamProvider.getPaginationParameter());
+        return ResponseBuilder.ok(webServers);
     }
 }

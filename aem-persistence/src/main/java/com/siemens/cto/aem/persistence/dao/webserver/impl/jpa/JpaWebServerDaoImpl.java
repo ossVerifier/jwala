@@ -232,7 +232,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             final PaginationParameter somePagination) {
 
         final Query query =
-                entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId ORDER BY j.name");
+            entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY);
 
         query.setParameter("groupId", aGroup.getId());
         paginator.paginate(query, somePagination);

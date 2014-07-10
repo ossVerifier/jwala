@@ -67,5 +67,12 @@ var webServerService = {
 	 */
 	getWebServers : function(responseCallback) {
 		return serviceFoundation.get("v1.0/webservers?all", "json", responseCallback);
-	}
+	},
+
+    /**
+     * Get a list of web servers of a group
+     */
+    getWebServerByGroupId : function(groupId, responseCallback) {
+        return serviceFoundation.get("v1.0/webservers/group/" + groupId, "json", responseCallback);
+    }
 };

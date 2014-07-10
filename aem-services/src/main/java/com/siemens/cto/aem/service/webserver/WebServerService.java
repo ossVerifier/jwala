@@ -22,8 +22,8 @@ public interface WebServerService {
 	List<WebServer> findWebServers(final String aWebServerNameFragment,
 	                 final PaginationParameter aPaginationParam);
 	
-	List<WebServer> findWebServers(final Identifier<Group> aWebServerId,
-	                 final PaginationParameter aPaginationParam);
+	List<WebServer> findWebServers(final Identifier<Group> aGroupId,
+	                               final PaginationParameter aPaginationParam);
 	
 	WebServer updateWebServer(final UpdateWebServerCommand anUpdateWebServerCommand,
 	            final User anUpdatingUser);

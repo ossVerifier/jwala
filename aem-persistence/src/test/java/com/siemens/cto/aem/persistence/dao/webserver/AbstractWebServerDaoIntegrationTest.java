@@ -611,4 +611,11 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         Collections.sort(generatedJvmNameList);
         assertEquals(jvmNameList.toString(), generatedJvmNameList.toString());
     }
+
+    @Test
+    public void testFindWebServersBelongingToGroup() {
+        final List<WebServer> webServers =
+            webServerDao.findWebServersBelongingTo(preCreatedGroup.getId(), PaginationParameter.all());
+        assertTrue(webServers.size() > 0);
+    }
 }

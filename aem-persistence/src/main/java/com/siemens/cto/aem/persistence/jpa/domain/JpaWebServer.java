@@ -17,7 +17,9 @@ import java.util.List;
     @NamedQuery(name = JpaWebServer.FIND_JVMS_QUERY,
                 query = "SELECT DISTINCT jvm FROM JpaJvm jvm JOIN jvm.groups g " +
                         "WHERE g.id IN (SELECT a.group FROM JpaApplication a " +
-                        "WHERE a.group IN (SELECT w.groups FROM JpaWebServer w WHERE w.name = :wsName))")
+                        "WHERE a.group IN (SELECT w.groups FROM JpaWebServer w WHERE w.name = :wsName))"),
+    @NamedQuery(name=JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY,
+                query="SELECT ws FROM JpaWebServer ws WHERE :groupId MEMBER OF ws.groups.id ORDER BY ws.name")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
@@ -39,6 +41,7 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
     public static final String FIND_JVMS_QUERY = "findJvmsQuery";
+    public static final String FIND_WEB_SERVER_BY_GROUP_QUERY = "findWebServerByGroupQuery";
 
     @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",

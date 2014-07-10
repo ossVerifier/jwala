@@ -13,6 +13,7 @@ import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -189,5 +190,21 @@ public class WebServerServiceRestImplTest {
                 .thenReturn("worker properties");
         Response response = cut.generateLoadBalancerConfig("");
         assertEquals("worker properties", response.getEntity());
+    }
+
+    @Test
+    public void testGetWebServersByGroup() {
+        final List<WebServer> webServers = new ArrayList<>();
+        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null));
+
+        final Identifier<Group> groupId = new Identifier<>("1");
+        final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");
+
+        when(impl.findWebServers(Matchers.eq(groupId), Matchers.eq(PaginationParameter.all()))).thenReturn(webServers);
+        final Response response = cut.getWebServers(groupId, paginationParamProvider);
+
+        final List<WebServer> result =
+                (List<WebServer>) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent();
+        assertEquals("test", result.get(0).getName());
     }
 }

@@ -117,6 +117,42 @@ var GroupOperationsDataTable = React.createClass({
                                btnLabel:"Stop Group",
                                btnCallback:this.stopGroupJvms}];
 
+        var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
+                                           {sTitle:"Name", mData:"name"},
+                                           {sTitle:"Host", mData:"host"},
+                                           {sTitle:"HTTP Port", mData:"port"},
+                                           {sTitle:"HTTPS Port", mData:"httpsPort"},
+                                           {sTitle:"Group Assignment",
+                                            mData:"groups",
+                                            tocType:"array",
+                                            displayProperty:"name"},
+                                            {sTitle:"",
+                                             mData:null,
+                                             tocType:"link",
+                                             linkLabel:"Load Balancer",
+                                             hRefCallback:this.buildHRefLoadBalancerConfig},
+                                            {sTitle:"",
+                                             mData:null,
+                                             tocType:"button",
+                                             btnLabel:"Load Balancer",
+                                             btnCallback:this.showLoadBalancer},
+                                            {sTitle:"",
+                                             mData:null,
+                                             tocType:"button",
+                                             btnLabel:"Start",
+                                             btnCallback:this.start,
+                                             isToggleBtn:true,
+                                             label2:"Stop",
+                                             callback2:this.stop}];
+
+        var webServerOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-server-child-table",
+                                               className:"simple-data-table",
+                                               dataCallback:this.getWebServersOfGrp,
+                                               title:"Web Server",
+                                               isCollapsible:true};
+
+        webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
+
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                             className:"simple-data-table",
                                             dataCallback:this.getApplicationsOfGrp,
@@ -200,7 +236,9 @@ var GroupOperationsDataTable = React.createClass({
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
-        var childTableDetailsArray = [webAppOfGrpChildTableDetails, jvmChildTableDetails];
+        var childTableDetailsArray = [webServerOfGrpChildTableDetails,
+                                      jvmChildTableDetails,
+                                      webAppOfGrpChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
                              tableDef={groupTableDef}
@@ -223,6 +261,9 @@ var GroupOperationsDataTable = React.createClass({
                       <WARUpload war={data} readOnly={true} full={full} row={0} />
                     );
                 }.bind(this);
+   },
+   getWebServersOfGrp: function(idObj, responseCallback) {
+        webServerService.getWebServerByGroupId(idObj.parentId, responseCallback);
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
         webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
