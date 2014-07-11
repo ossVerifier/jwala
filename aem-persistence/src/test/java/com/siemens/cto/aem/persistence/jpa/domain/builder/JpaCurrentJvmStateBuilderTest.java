@@ -35,7 +35,7 @@ public class JpaCurrentJvmStateBuilderTest {
                                                                          DateTime.now());
 
         when(jpaState.getId()).thenReturn(expectedCurrentState.getJvmId().getId());
-        when(jpaState.getState()).thenReturn(expectedCurrentState.getJvmState().getStateName());
+        when(jpaState.getState()).thenReturn(expectedCurrentState.getJvmState().toStateString());
         when(jpaState.getAsOf()).thenReturn(expectedCurrentState.getAsOf().toCalendar(Locale.getDefault()));
 
         final CurrentJvmState actualCurrentState = builder.build();

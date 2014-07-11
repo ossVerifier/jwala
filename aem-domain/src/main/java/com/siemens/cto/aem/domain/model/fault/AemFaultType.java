@@ -79,11 +79,13 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     JVM_STATE_NOT_SPECIFIED("AEM37", "JvmStateNotSpecified"),
     /**/
-    WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound"), 
+    WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound"),
     /**/
     GROUP_CONTROL_HISTORY_NOT_FOUND("AEM39", "GroupControlHistoryNotFound"),
     /**/
-    GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified")
+    GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified"),
+    /**/
+    WEB_SERVER_REACHABLE_STATE_NOT_SPECIFIED("AEM41", "WebServerReachableStateNotSpecified")
     ;
 
 	private final String faultCode;

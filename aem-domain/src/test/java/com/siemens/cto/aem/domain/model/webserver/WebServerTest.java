@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -114,5 +116,25 @@ public class WebServerTest {
         // assertFalse(wsSixteen.equals(wsFifteen));
         // assertTrue(wsSixteen.equals(wsSeventeen));
         // assertFalse(wsSeventeen.equals(wsEighteen));
+    }
+
+    @Test
+    public void testStatusUri() throws Exception {
+        final URI expectedUri = new URI("http",
+                                null,
+                                "my.expected.host.example.com",
+                                12345,
+                                "/jk/status",
+                                null,
+                                null);
+        final WebServer webServer = new WebServer(new Identifier<WebServer>(123456L),
+                                                  Collections.<Group>emptySet(),
+                                                  "name",
+                                                  expectedUri.getHost(),
+                                                  expectedUri.getPort(),
+                                                  99);
+        final URI actualUri = webServer.getStatusUri();
+        assertEquals(expectedUri,
+                     actualUri);
     }
 }

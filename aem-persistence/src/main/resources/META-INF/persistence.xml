@@ -19,6 +19,8 @@
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerControlHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroupControlHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentJvmState</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!-- required to generate foreign key constraints

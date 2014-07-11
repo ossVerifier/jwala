@@ -8,6 +8,8 @@ import org.springframework.context.annotation.ImportResource;
     "classpath:META-INF/spring/integration.xml",
     "classpath:META-INF/spring/integration-state.xml"
 })
+//                 "classpath:META-INF/spring/webserver-heartbeat-integration.xml",
+//                 "classpath:META-INF/spring/webserver-heartbeat-dependencies.xml"})
 public class AemIntegrationConfig {
 
 }

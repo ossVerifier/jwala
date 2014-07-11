@@ -1,0 +1,92 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd
+                           http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+                           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+                           http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream.xsd">
+
+    <int:channel id="webServerStateRequest"/>
+    <int:channel id="failedWebServerStateRequest"/>
+    <int:channel id="successfulWebServerStateRequest"/>
+    <int:channel id="unsplitWebServerStateRequests"/>
+    <int:channel id="completedWebServerStateRequest">
+        <int:interceptors>
+            <int:wire-tap channel="stdOut"/>
+        </int:interceptors>
+    </int:channel>
+    <int:publish-subscribe-channel id="webServerStateRequests"
+                                   task-executor="webServerStateExecutor">
+        <int:interceptors>
+            <int:wire-tap channel="stdOut"/>
+        </int:interceptors>
+    </int:publish-subscribe-channel>
+
+    <int-stream:stdout-channel-adapter id="stdOut" append-newline="true"/>
+
+    <int:inbound-channel-adapter id="webServerStateInitiator"
+                                 ref="webServerProvider"
+                                 method="getAllWebServers"
+                                 channel="unsplitWebServerStateRequests" phase="1000">
+        <int:poller fixed-delay="30" time-unit="SECONDS" />
+    </int:inbound-channel-adapter>
+
+    <int:chain input-channel="unsplitWebServerStateRequests" output-channel="webServerStateRequests">
+        <int:splitter>
+        </int:splitter>
+        <int:header-enricher>
+            <int:header name="webServerId" expression="payload.id"/>
+        </int:header-enricher>
+        <int:transformer expression="payload.getStatusUri().toString()"/>
+    </int:chain>
+
+    <int:service-activator input-channel="webServerStateRequests"
+                           ref="webServerStateRequestHandler"/>
+
+    <int:gateway id="webServerStateRequestHandler"
+                 default-request-channel="webServerStateRequest"
+                 error-channel="failedWebServerStateRequest"/>
+
+    <int-http:outbound-gateway request-channel="webServerStateRequest"
+                               reply-channel="successfulWebServerStateRequest"
+                               request-factory="httpRequestFactory"
+                               http-method="GET"
+                               url-expression="payload"/>
+
+    <int:chain input-channel="failedWebServerStateRequest" output-channel="completedWebServerStateRequest">
+        <int:header-enricher id="failedHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
+        </int:header-enricher>
+        <int:transformer expression="payload.getFailedMessage().headers['webServerId']" id="webServerIdHeaderExtractor"/>
+    </int:chain>
+
+    <int:chain input-channel="successfulWebServerStateRequest" output-channel="completedWebServerStateRequest">
+        <int:header-enricher>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).REACHABLE}"/>
+        </int:header-enricher>
+        <int:transformer expression="headers['webServerId']"/>
+    </int:chain>
+
+    <int:chain input-channel="completedWebServerStateRequest">
+        <int:service-activator expression="@webServerStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
+    </int:chain>
+
+    <task:executor id="webServerStateExecutor"
+                   pool-size="5"
+                   queue-capacity="200"
+                   keep-alive="5"
+                   rejection-policy="CALLER_RUNS" />
+
+    <bean id="webServerProvider" class="com.siemens.cto.aem.service.webserver.impl.WebServerServiceFacade">
+        <constructor-arg ref="getWebServerService"/>
+    </bean>
+
+    <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.state.WebServerStateServiceFacade">
+        <constructor-arg ref="webServerStateService"/>
+    </bean>
+
+</beans>

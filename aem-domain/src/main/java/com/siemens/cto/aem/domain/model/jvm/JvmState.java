@@ -3,7 +3,9 @@ package com.siemens.cto.aem.domain.model.jvm;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum JvmState {
+import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+
+public enum JvmState implements ExternalizableState {
 
     INITIALIZED("INITIALIZED"),
     FAILED("FAILED"),
@@ -17,7 +19,7 @@ public enum JvmState {
 
     static {
         for (final JvmState state : values()) {
-            LOOKUP_MAP.put(state.getStateName(), state);
+            LOOKUP_MAP.put(state.toStateString(), state);
         }
     }
 
@@ -27,7 +29,8 @@ public enum JvmState {
         stateName = theStateName;
     }
 
-    public String getStateName() {
+    @Override
+    public String toStateString() {
         return stateName;
     }
 

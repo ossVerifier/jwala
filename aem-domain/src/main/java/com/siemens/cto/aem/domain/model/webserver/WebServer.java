@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +17,9 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 public class WebServer implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    public static final String NO_USER_INFO = null;
+    public static final String NO_QUERY = null;
+    public static final String NO_FRAGMENT = null;
 
     private final Identifier<WebServer> id;
     private final Map<Identifier<Group>, Group> groups = new ConcurrentHashMap<>();
@@ -61,6 +66,26 @@ public class WebServer implements Serializable {
 
     public Collection<Identifier<Group>> getGroupIds() {
         return groups.keySet();
+    }
+
+    public String getStatusPath() {
+        //TODO This should eventually be user-configurable
+        return "/jk/status";
+    }
+
+    public URI getStatusUri() {
+        try {
+            final URI uri = new URI("http",
+                                    NO_USER_INFO,
+                                    getHost(),
+                                    getPort(),
+                                    getStatusPath(),
+                                    NO_QUERY,
+                                    NO_FRAGMENT);
+            return uri;
+        } catch (final URISyntaxException urise) {
+            throw new RuntimeException("Unable to construct the URI for WebServer Status", urise);
+        }
     }
 
     @Override

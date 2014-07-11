@@ -13,7 +13,9 @@ dependencies {
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-jms", version: "$project.versions.spring"
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
-    
+    compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
+
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
     compile group: 'javax', name: 'jms', version: "$project.versions.jms"
 

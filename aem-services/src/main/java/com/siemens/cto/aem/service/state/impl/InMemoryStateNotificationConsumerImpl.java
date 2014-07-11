@@ -1,0 +1,61 @@
+package com.siemens.cto.aem.service.state.impl;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.siemens.cto.aem.common.time.Stale;
+import com.siemens.cto.aem.common.time.TimeDuration;
+import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+
+public class InMemoryStateNotificationConsumerImpl<T> extends AbstractStateNotificationConsumerImpl<T> implements StateNotificationConsumer<T> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryStateNotificationConsumerImpl.class);
+
+    private static final int DEFAULT_CAPACITY = 1000;
+
+    private final BlockingQueue<T> notifications;
+
+    public InMemoryStateNotificationConsumerImpl(final Stale theStale,
+                                                 final TimeDuration theDefaultPollDuration) {
+        this(theStale,
+             theDefaultPollDuration,
+             DEFAULT_CAPACITY,
+             System.currentTimeMillis());
+    }
+
+    public InMemoryStateNotificationConsumerImpl(final Stale theStale,
+                                                 final TimeDuration theDefaultPollDuration,
+                                                 final int theCapacity,
+                                                 final long theLastAccessTime) {
+        super(theStale,
+              theDefaultPollDuration,
+              theLastAccessTime);
+        notifications = new LinkedBlockingQueue<>(theCapacity);
+    }
+
+    @Override
+    public void addNotification(final T aNotification) {
+        if (!notifications.offer(aNotification)) {
+            LOGGER.warn("Notification queue is full");
+        }
+    }
+
+    @Override
+    protected void closeHelper() {
+        notifications.clear();
+    }
+
+    @Override
+    protected T getNotificationsHelper(final TimeDuration someTimeLeft) {
+        try {
+            return notifications.poll(someTimeLeft.valueOf(), someTimeLeft.getUnit());
+        } catch (final InterruptedException ie) {
+            LOGGER.info("Interrupted while retrieving notifications", ie);
+            Thread.currentThread().interrupt();
+        }
+        return null;
+    }
+}
