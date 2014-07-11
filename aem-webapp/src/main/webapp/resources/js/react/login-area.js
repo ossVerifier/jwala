@@ -24,6 +24,6 @@ var LoginArea = React.createClass({
 });
 
 $(document).ready(function(){
-    var errorMessage = loginStatus === "error" ? "Your user name or password is incorrect.": "";
+    var errorMessage = tocVars.loginStatus === "error" ? "Your user name or password is incorrect.": "";
     React.renderComponent(<LoginArea className="login-area" error={errorMessage}/>, document.body);
 });

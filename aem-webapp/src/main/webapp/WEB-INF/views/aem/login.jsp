@@ -6,8 +6,9 @@
         <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/textbox.css">
         <link rel="stylesheet" type="text/css" href="public-resources/css/react/login-area.css">
 
-        <jsp:include page="/common-login-page-scripts"/>
-        <jsp:include page="/page-constants"/>
+        <script type="text/javascript">
+            <jsp:include page="/login-page-constants"/>
+        </script>
         <jsp:include page="/login-page-scripts?devMode=${devMode}"/>
     </head>
     <body>

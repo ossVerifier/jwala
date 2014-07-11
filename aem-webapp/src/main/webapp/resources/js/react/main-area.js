@@ -39,7 +39,7 @@ var MainTabs = React.createClass({
         items = [{title:"Operations", content:<GroupOperations className="group-config"
                                            service={ServiceFactory.getGroupService()}
                                            jvmStateService={ServiceFactory.getJvmStateService()}
-                                           jvmStateTimeout="1"/>},
+                                           jvmStateTimeout={tocVars.jvmStatePollTimeout}/>},
                  {title: "Configuration", content:<ConfigureTabs/>}];
         return null;
     },

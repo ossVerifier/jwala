@@ -16,17 +16,23 @@ public class JvmStateConsumerManager {
         notificationService = theJvmNotificationService;
     }
 
-    public JvmStateNotificationConsumerId getConsumerId(final HttpServletRequest aRequest) {
+    public JvmStateNotificationConsumerId getConsumerId(final HttpServletRequest aRequest,
+                                                        final String aClientId) {
         final HttpSession session = aRequest.getSession();
-        final JvmStateNotificationConsumerId consumerId = getOrConstructConsumerId(session);
+        final JvmStateNotificationConsumerId consumerId = getOrConstructConsumerId(session,
+                                                                                   aClientId);
         return consumerId;
     }
 
-    private JvmStateNotificationConsumerId getOrConstructConsumerId(final HttpSession aSession) {
-        JvmStateNotificationConsumerId consumerId = getConsumerFromSession(aSession);
+    private JvmStateNotificationConsumerId getOrConstructConsumerId(final HttpSession aSession,
+                                                                    final String aClientId) {
+        final String sessionKey = createSessionKey(aClientId);
+        JvmStateNotificationConsumerId consumerId = getConsumerFromSession(aSession,
+                                                                           sessionKey);
         if (isInvalid(consumerId)) {
             consumerId = constructNewConsumerId();
             setConsumerIntoSession(aSession,
+                                   sessionKey,
                                    consumerId);
         }
 
@@ -37,17 +43,23 @@ public class JvmStateConsumerManager {
         return notificationService.register();
     }
 
-    private JvmStateNotificationConsumerId getConsumerFromSession(final HttpSession aSession) {
-        final JvmStateNotificationConsumerId consumerId = (JvmStateNotificationConsumerId)aSession.getAttribute(STATE_NOTIFICATION_CONSUMER_SESSION_KEY);
+    private JvmStateNotificationConsumerId getConsumerFromSession(final HttpSession aSession,
+                                                                  final String aSessionKey) {
+        final JvmStateNotificationConsumerId consumerId = (JvmStateNotificationConsumerId)aSession.getAttribute(aSessionKey);
         return consumerId;
     }
 
     private void setConsumerIntoSession(final HttpSession aSession,
+                                        final String aSessionKey,
                                         final JvmStateNotificationConsumerId aConsumerId) {
-        aSession.setAttribute(STATE_NOTIFICATION_CONSUMER_SESSION_KEY, aConsumerId);
+        aSession.setAttribute(aSessionKey, aConsumerId);
     }
 
     private boolean isInvalid(final JvmStateNotificationConsumerId aConsumerId) {
         return (aConsumerId == null) || (!notificationService.isValid(aConsumerId));
+    }
+
+    String createSessionKey(final String aClientId) {
+        return STATE_NOTIFICATION_CONSUMER_SESSION_KEY + "." + aClientId;
     }
 }

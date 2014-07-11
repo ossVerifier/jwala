@@ -19,7 +19,6 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/accordion.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/button.css">
 
-<jsp:include page="/page-constants"/>
 <jsp:include page="/index-page-scripts?devMode=${devMode}"/>
 
 <!-- Non React Components -->

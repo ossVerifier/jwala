@@ -1,4 +1,7 @@
 <!-- Dev Scripts -->
+<!-- Constants -->
+<script src="page-constants" type="text/javascript"></script>
+
 <!-- JQuery, React, ES5, JSON2 -->
 <script src="public-resources/ext/js/es5-shim/es5-shim.js"></script>
 <script src="public-resources/ext/js/es5-shim/es5-sham.js"></script>

@@ -115,9 +115,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response pollJvmStates(final HttpServletRequest aRequest,
-                                  final TimeoutParameterProvider aTimeoutParamProvider) {
+                                  final TimeoutParameterProvider aTimeoutParamProvider,
+                                  final String aClientId) {
         logger.debug("Poll JVM states requested with timeout : {}", aTimeoutParamProvider);
-        final JvmStateNotificationConsumerId consumerId = jvmStateConsumerManager.getConsumerId(aRequest);
+        final JvmStateNotificationConsumerId consumerId = jvmStateConsumerManager.getConsumerId(aRequest,
+                                                                                                aClientId);
         final Set<Identifier<Jvm>> updatedJvmIds = jvmStateNotificationService.pollUpdatedStates(consumerId,
                                                                                                  new TimeRemainingCalculator(aTimeoutParamProvider.valueOf()));
         final Set<CurrentJvmState> currentJvmStates = jvmStateService.getCurrentJvmStates(updatedJvmIds);

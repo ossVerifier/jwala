@@ -1,16 +1,37 @@
 package com.siemens.cto.aem.web.controller;
 
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import java.util.Set;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 
 @Controller
 public class IndexController {
 
     private final static String DEV_MODE_COOKIE_NAME = "devMode";
+
+    @Autowired
+    @Qualifier("variableSource")
+    private JavaScriptVariableSource variableSource;
+
+    @Autowired
+    @Qualifier("loginVariableSource")
+    private JavaScriptVariableSource loginVariableSource;
 
     @RequestMapping(value = "/about")
     public String about() {
@@ -89,12 +110,22 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/page-constants")
-    public String pageConstants() {
-        return "aem/page-constants";
+    public String pageConstants(final Model aModel) {
+        final Set<JavaScriptVariable> variables = variableSource.createVariables();
+        return addJavaScriptVariablesToModel(aModel,
+                                             variables);
     }
 
-    @RequestMapping(value = "/common-login-page-scripts")
-    public String commonLogin() {
-        return "aem/common-login-page-scripts";
+    @RequestMapping(value = "/login-page-constants")
+    public String commonLogin(final Model aModel) {
+        final Set<JavaScriptVariable> variables = loginVariableSource.createVariables();
+        return addJavaScriptVariablesToModel(aModel,
+                                             variables);
+    }
+
+    String addJavaScriptVariablesToModel(final Model aModel,
+                                       Set<JavaScriptVariable> someVariables) {
+        aModel.addAttribute("javaScriptVariables", someVariables);
+        return "aem/page-constants";
     }
 }

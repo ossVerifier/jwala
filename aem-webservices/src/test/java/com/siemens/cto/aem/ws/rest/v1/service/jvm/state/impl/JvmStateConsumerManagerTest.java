@@ -24,6 +24,8 @@ public class JvmStateConsumerManagerTest {
     private HttpServletRequest request;
     private HttpSession session;
     private JvmStateNotificationConsumerId expectedId;
+    private String clientId;
+    private String sessionKey;
 
     @Before
     public void setUp() throws Exception {
@@ -33,13 +35,16 @@ public class JvmStateConsumerManagerTest {
         expectedId = mock(JvmStateNotificationConsumerId.class);
         when(request.getSession()).thenReturn(session);
         manager = new JvmStateConsumerManager(stateNotificationService);
+        clientId = "123456";
+        sessionKey = manager.createSessionKey(clientId);
     }
 
     @Test
     public void testGetConsumerIdFromScratch() throws Exception {
         when(stateNotificationService.register()).thenReturn(expectedId);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request);
+        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                              clientId);
 
         assertEquals(expectedId,
                      actualId);
@@ -48,10 +53,11 @@ public class JvmStateConsumerManagerTest {
 
     @Test
     public void testGetExistingValidConsumerId() throws Exception {
-        when(session.getAttribute(eq(JvmStateConsumerManager.STATE_NOTIFICATION_CONSUMER_SESSION_KEY))).thenReturn(expectedId);
+        when(session.getAttribute(eq(sessionKey))).thenReturn(expectedId);
         when(stateNotificationService.isValid(eq(expectedId))).thenReturn(true);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request);
+        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                              clientId);
 
         assertEquals(expectedId,
                      actualId);
@@ -61,11 +67,12 @@ public class JvmStateConsumerManagerTest {
     @Test
     public void testGetExistingInvalidConsumerId() throws Exception {
         final JvmStateNotificationConsumerId newExpectedId = mock(JvmStateNotificationConsumerId.class);
-        when(session.getAttribute(eq(JvmStateConsumerManager.STATE_NOTIFICATION_CONSUMER_SESSION_KEY))).thenReturn(expectedId);
+        when(session.getAttribute(eq(sessionKey))).thenReturn(expectedId);
         when(stateNotificationService.isValid(eq(expectedId))).thenReturn(false);
         when(stateNotificationService.register()).thenReturn(newExpectedId);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request);
+        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                              clientId);
 
         assertEquals(newExpectedId,
                      actualId);

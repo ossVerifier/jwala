@@ -1,23 +1,23 @@
 var jvmStateService = function() {
 
-    var constructJvmIdParameter = function(jvmId) {
-        return "jvmId=" + jvmId;
-    };
+    var clientId = Date.now();
 
     var constructJvmIdParameters = function(ids) {
         if (ids === undefined) {
             return "";
         } else {
-            return "?" + $.map(ids, constructJvmIdParameter).join("&");
+            return "?" + $.param({ jvmId : ids});
         }
     };
 
-    var constructTimeoutParameter = function(timeout) {
-        if (timeout === undefined) {
-            return "";
-        } else {
-            return "?timeout=" + timeout;
+    var addTimeoutParameter = function(timeout, params) {
+        if (timeout !== undefined) {
+            params.timeout = timeout;
         }
+    };
+
+    var addClientIdParameter = function(clientId, params) {
+        params.clientId = clientId;
     };
 
     var sendToDataSinkThunk = function(dataSink) {
@@ -33,10 +33,17 @@ var jvmStateService = function() {
         }
     };
 
+    var createPollingParameters = function(timeout, clientId) {
+        var params = {};
+        addTimeoutParameter(timeout, params);
+        addClientIdParameter(clientId, params);
+        return "?" + $.param(params);
+    };
+
     return {
         pollForUpdates : function(timeout, dataSink) {
             if (dataSink.shouldContinue()) {
-                return serviceFoundation.promisedGet("v1.0/jvms/states" + constructTimeoutParameter(timeout),"json")
+                return serviceFoundation.promisedGet("v1.0/jvms/states" + createPollingParameters(timeout, clientId),"json")
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
                                         .caught(function(e) { console.log("State error occurred"); return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
