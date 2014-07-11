@@ -1,0 +1,12 @@
+/* Override default theme button css */
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    font-weight: normal;
+}
+
+input.ui-button {
+    padding-top: 0.2em;
+    padding-right: 0.5em;
+    padding-bottom: 0.2em;
+    padding-left: 0.5em;
+}

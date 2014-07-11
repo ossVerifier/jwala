@@ -29,6 +29,8 @@ var TocDataTable = React.createClass({
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
+
+            $( "input[type=button]" ).button();
         }
     },
     rowSelectCallback: function() {
