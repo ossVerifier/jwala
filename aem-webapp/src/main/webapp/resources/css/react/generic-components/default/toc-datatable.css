@@ -46,3 +46,16 @@ tr.highlight {
     font-weight: bold;
     color: orange
 }
+
+.position-divs-horizontally .container {
+    overflow:hidden;
+    width:auto;
+}
+
+.position-divs-horizontally .left {
+    float:left;
+}
+
+.position-divs-horizontally .right {
+    float:right;
+}

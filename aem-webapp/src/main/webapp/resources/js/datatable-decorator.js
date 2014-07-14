@@ -36,106 +36,72 @@ var decorateTableAsDataTable = function(tableId,
     var aaSorting = [];
 
     $(tableDef).each(function(itemIndex, item, itemArray) {
-            aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
-                                       "mData": item.mData,
-                                       "aTargets": [itemIndex]};
-            if (item.mRender !== undefined) {
+            if (!isArray(item)) {
+                aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
+                                           "mData": item.mData,
+                                           "aTargets": [itemIndex]};
+            } else {
+                aoColumnDefs[itemIndex] = {"sTitle": null,
+                                           "mData": null,
+                                           "aTargets": [itemIndex]};
+            }
+
+            if (!isArray(item)) {
+                if(item.bVisible !== undefined) {
+                    aoColumnDefs[itemIndex].bVisible = item.bVisible;
+                }
+
+                if (item.tocType === "control") {
+                    self.expandCollapseEnabled = true;
+                    aoColumnDefs[itemIndex].mDataProp = null;
+                    aoColumnDefs[itemIndex].sClass = "control center";
+                    aoColumnDefs[itemIndex].sWidth = "20px";
+                    aoColumnDefs[itemIndex].bSortable = false;
+                }
+            }
+
+            if (!isArray(item) && item.mRender !== undefined) {
+                // If mRender is set to a function
                 aoColumnDefs[itemIndex].mRender = item.mRender;
-            }
-
-            if(item.bVisible !== undefined) {
-                aoColumnDefs[itemIndex].bVisible = item.bVisible;
-            }
-
-            if(item.tocType === "link") {
-
+            } else if (!isArray(item) && item.tocType === "custom") {
+                if(item.tocRenderer == 'undefined') {
+                    alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
+                } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
+            } else {
+                aoColumnDefs[itemIndex].bSortable = false;
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
-
-                    if (item.hRefCallback === undefined) {
-                        return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
-                                                                                "link",
-                                                                                full.id.id]),
-                                                                                valueId:full.id.id,
-                                                                                value:item.linkLabel !== undefined ?
-                                                                                                         item.linkLabel :
-                                                                                                         data,
-                                                                                callback:editCallback}));
-                    } else {
-                        return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
-                    }
-
-                };
-
-            } else if (item.tocType === "custom") {
-              if(item.tocRenderer == 'undefined') {
-                 alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
-              }
-
-              return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
-
-            } else if (item.tocType === "control") {
-
-                self.expandCollapseEnabled = true;
-                aoColumnDefs[itemIndex].mDataProp = null;
-                aoColumnDefs[itemIndex].sClass = "control center";
-                aoColumnDefs[itemIndex].sWidth = "20px";
-                aoColumnDefs[itemIndex].bSortable = false;
-
-                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-
-                        var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
-
-                        if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
-                            for (var i = 0; i < childTableDetails.length; i++) {
-                                childTableDetails[i]["data"] = data;
-                            }
-                        } else {
-                            childTableDetails["data"] = data;
+                   var renderStr = "";
+                   if (isArray(item)) {
+                        for (var i = 0; i < item.length; i++) {
+                            renderStr += renderComponents(tableId,
+                                                          parentItemId,
+                                                          rootId,
+                                                          childTableDetails,
+                                                          item[i],
+                                                          data,
+                                                          type,
+                                                          full,
+                                                          expandIcon,
+                                                          collapseIcon,
+                                                          editCallback);
                         }
-
-                        var theRootId = (rootId === undefined ? full.id.id : rootId);
-                        return React.renderComponentToStaticMarkup(
-                                    new ExpandCollapseControl({id:createDashDelimitedId([tableId,
-                                                                                         "ctrl-expand-collapse",
-                                                                                         full.id.id]),
-                                                               expandIcon:expandIcon,
-                                                               collapseIcon:collapseIcon,
-                                                               childTableDetails:childTableDetails,
-                                                               rowSubComponentContainerClassName:"row-sub-component-container",
-                                                               parentItemId:full.id.id,
-                                                               dataTable:$("#" + tableId).dataTable(),
-                                                               rootId:theRootId}));
-
-                }
-
-            } else if (item.tocType === "array") {
-                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                    var str = "";
-                    /* would be better with _Underscore.js : */
-                    for (var idx = 0; idx < data.length; idx=idx+1) {
-                        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+                    } else {
+                        renderStr = renderComponents(tableId,
+                                                     parentItemId,
+                                                     rootId,
+                                                     childTableDetails,
+                                                     item,
+                                                     data,
+                                                     type,
+                                                     full,
+                                                     expandIcon,
+                                                     collapseIcon,
+                                                     editCallback);
+                        return renderStr;
                     }
-                return str;
-                }
-            } else if (item.tocType === "button") {
-
-                aoColumnDefs[itemIndex].sClass = aoColumnDefs[itemIndex].sClass + " control center";
-                aoColumnDefs[itemIndex].sWidth = "auto";
-                aoColumnDefs[itemIndex].bSortable = false;
-
-                aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-                    var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
-                    return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
-                                                                                    className:item.className,
-                                                                                    itemId:full.id.id,
-                                                                                    label:item.btnLabel,
-                                                                                    callback:item.btnCallback,
-                                                                                    isToggleBtn:item.isToggleBtn,
-                                                                                    label2:item.label2,
-                                                                                    callback2:item.callback2}));
+                    return "<div class='position-divs-horizontally container'>" + renderStr + "</div>"
                 }
             }
-
         });
 
         var dataTableProperties = {"aaSorting": [],
@@ -153,4 +119,106 @@ var decorateTableAsDataTable = function(tableId,
         }
 
         return $("#" + tableId).dataTable(dataTableProperties);
+}
+
+var renderComponents = function(tableId,
+                                parentItemId,
+                                rootId,
+                                childTableDetails,
+                                item,
+                                data,
+                                type,
+                                full,
+                                expandIcon,
+                                collapseIcon,
+                                editCallback) {
+    var renderedComponent;
+
+    if (item.tocType === "link") {
+        renderedComponent = renderLink(item, tableId, data, type, full, editCallback);
+    } else if (item.tocType === "control") {
+        renderedComponent = renderExpandCollapseControl(tableId,
+                                                        parentItemId,
+                                                        rootId,
+                                                        childTableDetails,
+                                                        data,
+                                                        type,
+                                                        full,
+                                                        expandIcon,
+                                                        collapseIcon);
+    } else if (item.tocType === "array") {
+        renderedComponent = renderArray(item, data);
+    } else if (item.tocType === "button") {
+        renderedComponent = renderButton(tableId, item, data, type, full);
+    } else {
+        renderedComponent = data;
+    }
+    return renderedComponent;
+}
+
+var isArray = function(val) {
+    return (val instanceof Array)
+}
+
+var renderButton = function(tableId, item, data, type, full) {
+    var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
+    return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
+                                                   className:item.className,
+                                                   customBtnClassName:item.customBtnClassName,
+                                                   itemId:full.id.id,
+                                                   label:item.btnLabel,
+                                                   callback:item.btnCallback,
+                                                   isToggleBtn:item.isToggleBtn,
+                                                   label2:item.label2,
+                                                   callback2:item.callback2}));
+}
+
+var renderLink = function(item, tableId, data, type, full, editCallback) {
+    if (item.hRefCallback === undefined) {
+        return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
+                                                               "link",
+                                                               full.id.id]),
+                                                               valueId:full.id.id,
+                                                               value:item.linkLabel !== undefined ?
+                                                                     item.linkLabel :
+                                                                     data,
+                                                               callback:editCallback}));
+    } else {
+        return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
+    }
+}
+
+var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childTableDetails, data, type, full, expandIcon, collapseIcon) {
+    var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
+
+    if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
+        for (var i = 0; i < childTableDetails.length; i++) {
+            childTableDetails[i]["data"] = data;
+        }
+    } else {
+        childTableDetails["data"] = data;
+    }
+
+    var theRootId = (rootId === undefined ? full.id.id : rootId);
+    return React.renderComponentToStaticMarkup(
+                    new ExpandCollapseControl({id:createDashDelimitedId([tableId,
+                                                                         "ctrl-expand-collapse",
+                                                                         full.id.id]),
+                                               expandIcon:expandIcon,
+                                               collapseIcon:collapseIcon,
+                                               childTableDetails:childTableDetails,
+                                               rowSubComponentContainerClassName:"row-sub-component-container",
+                                               parentItemId:full.id.id,
+                                               dataTable:$("#" + tableId).dataTable(),
+                                               rootId:theRootId}));
+}
+
+var renderArray = function(item, data) {
+
+    var str = "";
+    /* would be better with _Underscore.js : */
+    for (var idx = 0; idx < data.length; idx=idx+1) {
+        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+    }
+    return str;
 }

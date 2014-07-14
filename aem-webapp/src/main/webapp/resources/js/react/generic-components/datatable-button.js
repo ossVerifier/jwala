@@ -24,10 +24,11 @@ var DataTableButton = React.createClass({
     render: function() {
         $("#" + this.props.id).off("click");
         $("#" + this.props.id).on("click", this.handleClick.bind(this, this.props.itemId));
-        return React.DOM.div({}, React.DOM.input({id:this.props.id,
-                                                  className: this.props.className,
-                                                  type:"button",
-                                                  value:this.toggleStatus === 0 ? this.props.label: this.props.label2}));
+        return React.DOM.div({className: this.props.className},
+                             React.DOM.input({id:this.props.id,
+                                              type:"button",
+                                              value:this.toggleStatus === 0 ? this.props.label: this.props.label2,
+                                              className:this.props.customBtnClassName}));
     },
     handleClick: function(id) {
         if (this.props.isToggleBtn) {
