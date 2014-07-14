@@ -76,3 +76,80 @@ body {
   50% { padding-top: 2.5em; }
   100% { padding-top: 2em; }
 }
+
+/**
+ * CSS used specifically by AEM buttons
+ * This button was generated using CSSButtonGenerator.com
+ * Button image by z003bpej
+ */
+.start-button {
+    background-image: url(../img/icons/start.png);
+    background-repeat:no-repeat;
+    background-position:center;
+    -moz-box-shadow:inset 0px 1px 0px 0px #d9fbbe;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #d9fbbe;
+    box-shadow:inset 0px 1px 0px 0px #d9fbbe;
+    background-color:#b8e356;
+    -webkit-border-top-left-radius:0px;
+    -moz-border-radius-topleft:0px;
+    border-top-left-radius:0px;
+    -webkit-border-top-right-radius:0px;
+    -moz-border-radius-topright:0px;
+    border-top-right-radius:0px;
+    -webkit-border-bottom-right-radius:0px;
+    -moz-border-radius-bottomright:0px;
+    border-bottom-right-radius:0px;
+    -webkit-border-bottom-left-radius:0px;
+    -moz-border-radius-bottomleft:0px;
+    border-bottom-left-radius:0px;
+    border:1px solid #83c41a;
+    display:inline-block;
+    color:#ffffff;
+    height:24px;
+    line-height:24px;
+    width:34px;
+}.start-button:hover {
+    background-image: url(../img/icons/start.png);
+    background-repeat:no-repeat;
+    background-position:center;
+    background-color:#a5cc52;
+}.start-button:active {
+    position:relative;
+    top:1px;
+}
+
+.stop-button {
+    background-image: url(../img/icons/stop.png);
+    background-repeat:no-repeat;
+    background-position:center;
+    -moz-box-shadow:inset 0px 1px 0px 0px #f29c93;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #f29c93;
+    box-shadow:inset 0px 1px 0px 0px #f29c93;
+    background-color:#fe1a00;
+    -webkit-border-top-left-radius:0px;
+    -moz-border-radius-topleft:0px;
+    border-top-left-radius:0px;
+    -webkit-border-top-right-radius:0px;
+    -moz-border-radius-topright:0px;
+    border-top-right-radius:0px;
+    -webkit-border-bottom-right-radius:0px;
+    -moz-border-radius-bottomright:0px;
+    border-bottom-right-radius:0px;
+    -webkit-border-bottom-left-radius:0px;
+    -moz-border-radius-bottomleft:0px;
+    border-bottom-left-radius:0px;
+    border:1px solid #d83526;
+    display:inline-block;
+    color:#ffffff;
+    height:24px;
+    line-height:24px;
+    width:34px;
+}.stop-button:hover {
+    background-image: url(../img/icons/stop.png);
+    background-repeat:no-repeat;
+    background-position:center;
+    background-color:#ce0100;
+}.stop-button:active {
+    position:relative;
+    top:1px;
+}

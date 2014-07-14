@@ -1,6 +1,6 @@
 table.simple-data-table {
     float: right;
-    width: 96%;
+    width: 100%;
     border: 1px solid #d3d3d3;
     border-collapse:collapse;
     border-spacing:0px 0px;
@@ -11,7 +11,7 @@ table.simple-data-table thead > tr > th {
 }
 
 table.simple-data-table tbody > tr > td {
-    border: 1px solid #d3d3d3;
+    border-bottom: 1px solid #d3d3d3;
     background-color: white
 }
 

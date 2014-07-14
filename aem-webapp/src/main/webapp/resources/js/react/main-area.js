@@ -36,11 +36,11 @@ var Banner = React.createClass({
 
 var MainTabs = React.createClass({
     getInitialState:function() {
-        items = [{title:"Groups", content:<GroupOperations className="group-config"
+        items = [{title:"Operations", content:<GroupOperations className="group-config"
                                            service={ServiceFactory.getGroupService()}
                                            jvmStateService={ServiceFactory.getJvmStateService()}
                                            jvmStateTimeout="1"/>},
-                 {title: "Configure", content:<ConfigureTabs/>}];
+                 {title: "Configuration", content:<ConfigureTabs/>}];
         return null;
     },
     render: function() {

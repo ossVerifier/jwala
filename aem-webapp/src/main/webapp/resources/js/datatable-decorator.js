@@ -56,7 +56,7 @@ var decorateTableAsDataTable = function(tableId,
                                                                                 "link",
                                                                                 full.id.id]),
                                                                                 valueId:full.id.id,
-                                                                                value:data,
+                                                                                value:item.linkLabel,
                                                                                 callback:editCallback}));
                     } else {
                         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
@@ -118,12 +118,13 @@ var decorateTableAsDataTable = function(tableId,
             } else if (item.tocType === "button") {
 
                 aoColumnDefs[itemIndex].sClass = aoColumnDefs[itemIndex].sClass + " control center";
-                aoColumnDefs[itemIndex].sWidth = "90px";
+                aoColumnDefs[itemIndex].sWidth = "auto";
                 aoColumnDefs[itemIndex].bSortable = false;
 
                 aoColumnDefs[itemIndex].mRender = function (data, type, full) {
                     var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
                     return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
+                                                                                    className:item.className,
                                                                                     itemId:full.id.id,
                                                                                     label:item.btnLabel,
                                                                                     callback:item.btnCallback,

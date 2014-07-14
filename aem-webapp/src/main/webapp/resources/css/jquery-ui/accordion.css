@@ -23,3 +23,7 @@
 .ui-state-active .ui-icon {
     background-image: url(../themes/redmond/images/ui-icons_469bdd_256x240.png);
 }
+
+.ui-accordion .ui-accordion-header {
+    margin-top: 0px;
+}
