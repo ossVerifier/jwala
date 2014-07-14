@@ -56,7 +56,9 @@ var decorateTableAsDataTable = function(tableId,
                                                                                 "link",
                                                                                 full.id.id]),
                                                                                 valueId:full.id.id,
-                                                                                value:item.linkLabel,
+                                                                                value:item.linkLabel !== undefined ?
+                                                                                                         item.linkLabel :
+                                                                                                         data,
                                                                                 callback:editCallback}));
                     } else {
                         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
