@@ -17,7 +17,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonUpdateWebServer
 public interface WebServerServiceRest {
 
     @GET
-    Response getWebServers(@BeanParam final PaginationParamProvider paginationParamProvider);
+    Response getWebServers(@QueryParam("groupId") final Identifier<Group> aGroupId,
+                           @BeanParam final PaginationParamProvider paginationParamProvider);
 
     @GET
     @Path("/{webserverId}")
@@ -48,10 +49,5 @@ public interface WebServerServiceRest {
     @GET
     @Path("/{webServerName}/loadbalancer/conf")
     Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
-
-    @GET
-    @Path("/group/{groupId}")
-    Response getWebServers(@PathParam("groupId") final Identifier<Group> aGroupId,
-                           @BeanParam final PaginationParamProvider paginationParamProvider);
 
 }

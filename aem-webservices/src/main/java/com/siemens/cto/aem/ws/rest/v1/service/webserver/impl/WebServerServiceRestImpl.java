@@ -35,9 +35,15 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response getWebServers(final PaginationParamProvider paginationParamProvider) {
-        logger.debug("Get WS requested with pagination: {}", paginationParamProvider);
-        final List<WebServer> webServers = webServerService.getWebServers(paginationParamProvider.getPaginationParameter());
+    public Response getWebServers(final Identifier<Group> aGroupId,
+                                  final PaginationParamProvider paginationParamProvider) {
+        final List<WebServer> webServers;
+        if (aGroupId == null) {
+            webServers = webServerService.getWebServers(paginationParamProvider.getPaginationParameter());
+            return ResponseBuilder.ok(webServers);
+        }
+        webServers = webServerService.findWebServers(aGroupId,
+                paginationParamProvider.getPaginationParameter());
         return ResponseBuilder.ok(webServers);
     }
 
@@ -101,12 +107,4 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
     }
 
-    @Override
-    public Response getWebServers(final Identifier<Group> aGroupId,
-                                  final PaginationParamProvider paginationParamProvider) {
-        final List<WebServer> webServers =
-                webServerService.findWebServers(aGroupId,
-                                                paginationParamProvider.getPaginationParameter());
-        return ResponseBuilder.ok(webServers);
-    }
 }

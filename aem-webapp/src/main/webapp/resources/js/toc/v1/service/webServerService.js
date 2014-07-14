@@ -73,6 +73,6 @@ var webServerService = {
      * Get a list of web servers of a group
      */
     getWebServerByGroupId : function(groupId, responseCallback) {
-        return serviceFoundation.get("v1.0/webservers/group/" + groupId, "json", responseCallback);
+        return serviceFoundation.get("v1.0/webservers?groupId=" + groupId, "json", responseCallback);
     }
 };

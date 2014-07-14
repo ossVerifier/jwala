@@ -85,7 +85,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServers(any(PaginationParameter.class))).thenReturn(webServerList);
 
         final PaginationParamProvider paginationProvider = new PaginationParamProvider();
-        final Response response = cut.getWebServers(paginationProvider);
+        final Response response = cut.getWebServers(null, paginationProvider);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
