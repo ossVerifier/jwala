@@ -15,10 +15,13 @@ import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
+import com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 
 public class GroupControlServiceImpl implements GroupControlService {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupControlServiceImpl.class);
 
     private final GroupControlPersistenceService persistenceService;
     private final GroupService groupService;
@@ -55,24 +58,32 @@ public class GroupControlServiceImpl implements GroupControlService {
 
         GroupControlHistory completeHistory = null;
 
-        if (results.size() != 0) {
+        if (results != null && !results.isEmpty()) {
 
-            GroupJvmDispatchCommand aCommand = results.get(0).getGroupJvmDispatchCommand();
-
+            GroupJvmDispatchCommand aCommand = null;
             long successCount = 0;
+            long totalCount = 0;
             
             for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
+                aCommand = jvmDispatchCommandResult.getGroupJvmDispatchCommand();
                 if (jvmDispatchCommandResult.wasSuccessful()) {
                     successCount++;
                 }
+                ++totalCount;
             }
             
             completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
-                    new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId(), results.size(), successCount), AuditEvent.now(aCommand
+                    new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId(), totalCount, successCount), AuditEvent.now(aCommand
                             .getUser())));
 
-            // notify that the command is complete
-
+            String logMsg = "Group Dispatch: Command Complete: " + successCount + " of " + totalCount + " succeeded.";
+            if(successCount == results.size()) {
+                LOGGER.info(logMsg);
+            } else {
+                LOGGER.warn(logMsg);
+            }
+            
+            // notifications of state change will be sent as the remote servers send life-cycle updates.
         }
         return completeHistory;
     }
