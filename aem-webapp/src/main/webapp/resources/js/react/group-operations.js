@@ -106,13 +106,13 @@ var GroupOperationsDataTable = React.createClass({
                                tocType:"button",
                                btnLabel:"Stop Group", // Note: Stop goes first since float is set to the right
                                btnCallback:this.stopGroupJvms,
-                               className:"position-divs-horizontally right"},
+                               className:"inline-block"},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
                                btnLabel:"Start Group",
                                btnCallback:this.startGroupJvms,
-                               className:"position-divs-horizontally right"}]];
+                               className:"inline-block"}]];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {sTitle:"Name", mData:"name"},
@@ -133,13 +133,13 @@ var GroupOperationsDataTable = React.createClass({
                                              tocType:"button",
                                              btnLabel:"Stop", // Note: Stop goes first since float is set to the right
                                              btnCallback:this.webServerStop,
-                                             className:"position-divs-horizontally right"},
+                                             className:"inline-block"},
                                             {sTitle:"",
                                              mData:null,
                                              tocType:"button",
                                              btnLabel:"Start",
                                              btnCallback:this.webServerStart,
-                                             className:"position-divs-horizontally right"}],
+                                             className:"inline-block"}],
                                            {sTitle:"State",
                                             mData:null,
                                             mRender: this.getStateForWebServer}];
@@ -224,14 +224,14 @@ var GroupOperationsDataTable = React.createClass({
                                   btnLabel:"",
                                   btnCallback:this.jvmStart,
                                   customBtnClassName:"start-button",
-                                  className:"position-divs-horizontally left"},
+                                  className:"inline-block"},
                                  {sTitle:"",
                                   mData:null,
                                   tocType:"button",
                                   btnLabel:"",
                                   btnCallback:this.jvmStop,
                                   customBtnClassName:"stop-button",
-                                  className:"position-divs-horizontally left"}],
+                                  className:"inline-block"}],
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm}];

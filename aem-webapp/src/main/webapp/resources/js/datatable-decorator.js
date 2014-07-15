@@ -40,13 +40,7 @@ var decorateTableAsDataTable = function(tableId,
                 aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
                                            "mData": item.mData,
                                            "aTargets": [itemIndex]};
-            } else {
-                aoColumnDefs[itemIndex] = {"sTitle": null,
-                                           "mData": null,
-                                           "aTargets": [itemIndex]};
-            }
 
-            if (!isArray(item)) {
                 if(item.bVisible !== undefined) {
                     aoColumnDefs[itemIndex].bVisible = item.bVisible;
                 }
@@ -57,7 +51,31 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].sClass = "control center";
                     aoColumnDefs[itemIndex].sWidth = "20px";
                     aoColumnDefs[itemIndex].bSortable = false;
+                } else if (item.tocType === "button") {
+                        aoColumnDefs[itemIndex].bSortable = false;
                 }
+            } else {
+
+                /**
+                 * Only 1 field related to data can be merged to one cell!
+                 * And that includes the ExpandCollapseControl which has an mData!
+                 * This is because every cell can only have one mData.
+                 */
+                var theItem = {"sTitle": null, "mData": null};
+                // look for the item with the mData
+                for (var i = 0; i < item.length; i++) {
+                    if (item[i].mData !== undefined && item[i].tocType === undefined) {
+                        theItem = item[i];
+                        break;
+                    }
+                }
+
+                aoColumnDefs[itemIndex] = {"sTitle": theItem.sTitle,
+                                           "mData": theItem.mData,
+                                           "aTargets": [itemIndex]};
+
+                aoColumnDefs[itemIndex].sClass = "nowrap";
+                aoColumnDefs[itemIndex].bSortable = false;
             }
 
             if (!isArray(item) && item.mRender !== undefined) {
@@ -68,7 +86,6 @@ var decorateTableAsDataTable = function(tableId,
                     alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
                 } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
             } else {
-                aoColumnDefs[itemIndex].bSortable = false;
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
                    var renderStr = "";
                    if (isArray(item)) {
@@ -99,7 +116,7 @@ var decorateTableAsDataTable = function(tableId,
                                                      editCallback);
                         return renderStr;
                     }
-                    return "<div class='position-divs-horizontally container'>" + renderStr + "</div>"
+                    return "<div style='overflow:hidden;text-align:right'>" + renderStr + "</div>"
                 }
             }
         });

@@ -1,3 +1,9 @@
+/**
+ *  TODO: Check what is using this css props, remove if there's nothing using it. If there is
+ *        something using it, document what and why. If this is being used by the data table
+ *        jquery.Datable.css and this css has to be unified.
+ */
+
 /** Custom TOC */
 tr.row_selected > td {
     background:#8BC6FF !important;
@@ -45,17 +51,4 @@ tr {
 tr.highlight {
     font-weight: bold;
     color: orange
-}
-
-.position-divs-horizontally .container {
-    overflow:hidden;
-    width:auto;
-}
-
-.position-divs-horizontally .left {
-    float:left;
-}
-
-.position-divs-horizontally .right {
-    float:right;
 }
