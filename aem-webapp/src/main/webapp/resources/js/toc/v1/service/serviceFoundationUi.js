@@ -13,6 +13,7 @@ var serviceFoundationUi = function(theActualLoadingFunc, theActualHidingFunc) {
     var clearLoadingTimeout = function() {
         if (loadingTimeout !== undefined) {
             clearTimeout(loadingTimeout);
+            loadingTimeout = undefined;
         }
     };
 
