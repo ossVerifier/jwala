@@ -10,7 +10,7 @@ var MainArea = React.createClass({
                             <td>
                                 <div id="loading" style={{display:"none"}}>
                                     <br/>
-                                    <img src="public-resources/img/gears-3d.gif"/>
+                                    <img src="public-resources/img/gears-2d.gif"/>
                                 </div>
                                 <MainTabs/>
                             </td>
