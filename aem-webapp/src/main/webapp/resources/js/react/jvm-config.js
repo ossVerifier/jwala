@@ -457,7 +457,7 @@ var JvmDataTable = React.createClass({
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                         {sTitle:"Name", mData:"jvmName", tocType:"link"},
                         {sTitle:"Host", mData:"hostName"},
-                        {sTitle:"Group Assignment",
+                        {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name"},

@@ -358,7 +358,7 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Host", mData:"host"},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
-                        {sTitle:"Group Assignment",
+                        {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name"}];
