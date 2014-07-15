@@ -34,6 +34,7 @@ public class JvmCommandExecutorBeanImpl {
             wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
         } catch (RuntimeException e) {
             wasSuccessful = false;
+            LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmCommand (" + jvmDispatchCommand.toString() + ") failed: ", e);
         }
 
         JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId(),
