@@ -7,13 +7,13 @@
 }
 
 .ui-corner-all, .ui-corner-top, .ui-corner-right {
-    border-top-right-radius: 0px;
-    border-top-left-radius: 0px;
+    border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
 }
 
 .ui-corner-all, .ui-corner-bottom, .ui-corner-left {
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
 }
 
 .ui-state-active {

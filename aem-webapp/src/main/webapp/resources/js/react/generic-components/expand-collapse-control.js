@@ -45,8 +45,6 @@ var ExpandCollapseControl = React.createClass({
         dataTable.fnAddData(data);
         dataTable.fnDraw();
 
-        $("input[type=button]:not([class])").button();
-
         // If className is defined, add it to the row node's class
         var data = dataTable.fnGetData();
         var nodes = dataTable.fnGetNodes();

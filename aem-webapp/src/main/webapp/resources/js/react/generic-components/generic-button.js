@@ -1,5 +1,5 @@
 /**
- * A very basic button.
+ * A basic button that uses jquery UI themes
  *
  * Properties:
  *
@@ -10,9 +10,13 @@
  */
 var GenericButton = React.createClass({
     render: function() {
-        return React.DOM.input({type:"button",
-                                onClick:this.handleClick,
-                                value:this.props.label});
+
+        return React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover",
+                                 type:"button",
+                                 role:"button",
+                                 ariaDisabled:false,
+                                 onClick:this.handleClick},
+                                 React.DOM.span({className: "ui-button-text"}, this.props.label));
     },
     handleClick: function() {
         this.props.callback();

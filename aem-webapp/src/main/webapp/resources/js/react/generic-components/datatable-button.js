@@ -29,11 +29,23 @@ var DataTableButton = React.createClass({
     render: function() {
         $("#" + this.props.id).off("click");
         $("#" + this.props.id).on("click", this.handleClick.bind(this, this.props.itemId));
+
+        var btnClassName = this.props.customBtnClassName;
+        var spanClassName = "";
+        if (this.props.customBtnClassName === undefined) {
+            btnClassName = "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover";
+            spanClassName = "ui-button-text";
+        }
+
         return React.DOM.div({className: this.props.className},
-                             React.DOM.input({id:this.props.id,
-                                              type:"button",
-                                              value:this.toggleStatus === 0 ? this.props.label: this.props.label2,
-                                              className:this.props.customBtnClassName}));
+                             React.DOM.button({id:this.props.id,
+                                               type:"button",
+                                               role:"button",
+                                               ariaDisabled:false,
+                                               className:btnClassName},
+                                               React.DOM.span({className:spanClassName}, this.toggleStatus === 0 ?
+                                                                                         this.props.label:
+                                                                                         this.props.label2)));
     },
     handleClick: function(id) {
 
