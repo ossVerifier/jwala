@@ -217,7 +217,7 @@ var GroupOperationsDataTable = React.createClass({
                                  mData:null,
                                  tocType:"link",
                                  linkLabel:"Thread Dump",
-                                 linkClick:this.jvmThreadDump},
+                                 hRefCallback:this.buildThreadDumpHRef},
                                 [{sTitle:"",
                                   mData:null,
                                   tocType:"button",
@@ -308,9 +308,6 @@ var GroupOperationsDataTable = React.createClass({
    jvmHeapDump: function(id) {
         alert("JVM show heap dump for jvm_" + id + "...");
    },
-   jvmThreadDump: function(id) {
-        alert("JVM show thread dump for jvm_" + id + "...");
-   },
    jvmStart: function(id) {
         jvmControlService.startJvm(id);
         return true; // TODO Once status can be retrieved, return true if JVM was successfully started
@@ -324,6 +321,12 @@ var GroupOperationsDataTable = React.createClass({
                 window.location.protocol + "//" +
                 data.hostName + ":" + data.httpPort + "/manager/";
    },
+    buildThreadDumpHRef: function(data) {
+        return  "idp?saml_redirectUrl=" +
+                window.location.protocol + "//" +
+                data.hostName + ":" + data.httpPort +
+                "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
+    },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
         $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.jvmState);
