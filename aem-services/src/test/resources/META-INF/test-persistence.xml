@@ -19,7 +19,7 @@
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!--<property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />-->
-            <property name="openjpa.Log" value="DefaultLevel=TRACE, Tool=TRACE, SQL=TRACE" />
+            <property name="openjpa.Log" value="DefaultLevel=WARN, Tool=WARN, SQL=WARN" />
             <property name="openjpa.RuntimeUnenhancedClasses" value="unsupported"/>
             <!-- Use this to view SQL prepared statements -->
             <!--<property name="openjpa.Log" value="File=c:/temp/aem.db.trace.log, DefaultLevel=WARN, Tool=INFO, SQL=TRACE, RUNTIME=TRACE"/> -->

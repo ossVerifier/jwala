@@ -12,8 +12,6 @@ import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CANNOT_STOP;
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CAN_STOP;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -39,15 +37,14 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 
-// Supports reflection or Spring Expression Language
+/**
+ * FSM built using spEL for handlers (Spring Expression Language)
+ */
 public class GroupStateManagerTableImpl {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
     // Define what 'null' means for StateEntries
-    public static final String DEFAULT_STATE_IN_TRANSITION_HANDLER = "defaultStateInTransitionHandler";
-    public static final String DEFAULT_STATE_OUT_TRANSITION_HANDLER = "defaultStateOutTransitionHandler";
-    public static final String DEFAULT_STATE_HANDLER = "defaultStateHandler";
     public static final String DEFAULT_STATE_IN_TRANSITION_EXPRESSION = "defaultStateInTransitionHandler(#enteringState)";
     public static final String DEFAULT_STATE_OUT_TRANSITION_EXPRESSION = "defaultStateOutTransitionHandler(#exitingState)";
     public static final String DEFAULT_STATE_EXPRESSION = "defaultStateHandler(#state)";
@@ -80,17 +77,6 @@ public class GroupStateManagerTableImpl {
         gse.put(STARTED,        new StateEntry(parser, CANNOT_START,CAN_STOP,   null,       null, "onStarted()",    null));
         gse.put(STOPPING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStopping()",   null));
         gse.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, null,      null, "onStopped()",    null));
-
-        // reflection based calls rather than spEL: can be removed if all goes well.
-        /*
-        gse.put(ERROR, new StateEntry(CANNOT_START,CANNOT_STOP,INITIALIZED, null, null, null));
-        gse.put(INITIALIZED, new StateEntry(CAN_START,CAN_STOP, null, method("onInitializeIn"), null, null));
-        gse.put(PARTIAL, new StateEntry(CAN_START,CAN_STOP, null, null, method("onPartial"), null));
-        gse.put(STARTING, new StateEntry(CANNOT_START,CANNOT_STOP, null, null, method("onStarting"), null));
-        gse.put(STARTED, new StateEntry(CANNOT_START,CAN_STOP, null, null, method("onStarted"), null));
-        gse.put(STOPPING, new StateEntry(CANNOT_START,CANNOT_STOP, null, null, method("onStopping"), null));
-        gse.put(STOPPED, new StateEntry(CAN_START,CANNOT_STOP, null, null, method("onStopped"), null));
-         */
         
     }
     
@@ -352,9 +338,6 @@ public class GroupStateManagerTableImpl {
         public StartCondition canStart;
         public StopCondition canStop;
         public GroupState   resetState;
-        public Method       stateInHandler;
-        public Method       stateHandler;        
-        public Method       stateOutHandler;
         public Expression   stateInExpression;
         public Expression   stateExpression;        
         public Expression   stateOutExpression;
@@ -363,12 +346,6 @@ public class GroupStateManagerTableImpl {
             this.canStop = canStop;
             this.resetState = resetState;
         }
-        StateEntry(StartCondition canStart, StopCondition canStop, GroupState resetState, Method in, Method stateHandler, Method out) {
-            this(canStart, canStop, resetState);
-            this.stateInHandler = in != null ? in : method(DEFAULT_STATE_IN_TRANSITION_HANDLER);
-            this.stateOutHandler = out != null ? out : method(DEFAULT_STATE_OUT_TRANSITION_HANDLER);
-            this.stateHandler = stateHandler != null ? stateHandler: method(DEFAULT_STATE_HANDLER);
-        }
         StateEntry(ExpressionParser parser, StartCondition canStart, StopCondition canStop, GroupState resetState, String in, String stateHandler, String out) {
             this(canStart, canStop, resetState);
             this.stateInExpression = parser.parseExpression(in != null ? in : DEFAULT_STATE_IN_TRANSITION_EXPRESSION);
@@ -376,74 +353,37 @@ public class GroupStateManagerTableImpl {
             this.stateExpression = parser.parseExpression(stateHandler != null ? stateHandler : DEFAULT_STATE_EXPRESSION);
         }
         
-        GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState enteringState) { 
-            if(stateInExpression != null) {
-                try {
-                    context.setVariable("enteringState", enteringState);
-                    return this.stateInExpression.getValue(context, fsm, GroupState.class);
-                } finally {                    
-                    context.setVariable("enteringState", null);
-                }
-            } else if(stateInHandler != null) {
-                return invoke(this.stateInHandler,fsm);
-            } else {
-                return fsm.currentState;
+        static void debug(GroupStateManagerTableImpl fsm, String op, GroupState state) {
+            if(state != null) { 
+                LOGGER.debug("Group FSM for id={}: {} {}", fsm.getCurrentGroup().getId().getId(), op, state);
             }
         }
-        GroupState invoke(Method m, GroupStateManagerTableImpl fsm) {
+        
+        GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState enteringState) {            
             try {
-                GroupState result = (GroupState) m.invoke(fsm);
-                return result;
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                LOGGER.error("Failed to transition Group states for Group " + fsm.currentGroup, e);
-                return ERROR;
+                debug(fsm, "ENTER", enteringState);
+                context.setVariable("enteringState", enteringState);
+                return this.stateInExpression.getValue(context, fsm, GroupState.class);
+            } finally {                    
+                context.setVariable("enteringState", null);
             }
         }
         GroupState out(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState exitingState) { 
-            if(stateOutExpression != null) {
-                try {
-                    context.setVariable("exitingState", exitingState);
-                    return this.stateOutExpression.getValue(context, fsm, GroupState.class);
-                } finally {                    
-                    context.setVariable("exitingState", null);
-                }
-            } else if(stateOutHandler != null) {
-                return invoke(this.stateOutHandler,fsm);
-            } else {
-                return fsm.currentState;
+            try {
+                debug(fsm, "EXIT", exitingState);
+                context.setVariable("exitingState", exitingState);
+                return this.stateOutExpression.getValue(context, fsm, GroupState.class);
+            } finally {                    
+                context.setVariable("exitingState", null);
             }
         }
         GroupState state(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState state) { 
-            if(stateExpression != null) {
-                try {
-                    context.setVariable("state", state);
-                    return this.stateExpression.getValue(context, fsm, GroupState.class);
-                } finally {
-                    context.setVariable("state", null);
-                }
-            } else if(stateHandler != null) {
-                return invoke(this.stateHandler,fsm);
-            } else {
-                return fsm.currentState;
-            }            
+            try {
+                context.setVariable("state", state);
+                return this.stateExpression.getValue(context, fsm, GroupState.class);
+            } finally {
+                context.setVariable("state", null);
+            }
         }
-
     }
-    
-    // ========== CONFIG HELPERS ================
-    
-    /**
-     * Get a Method through reflection in order to invoke state handlers.
-     * @param stateHandlerMethodName method on this class.
-     * @return
-     */
-    private static Method method(String stateHandlerMethodName) { 
-        try {
-            return GroupStateManagerTableImpl.class.getMethod(stateHandlerMethodName);
-        } catch (NoSuchMethodException | SecurityException e) {
-            LOGGER.error("Programming error: failed to set up group state machine.");
-        }
-        return null;
-    }
-
 }

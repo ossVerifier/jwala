@@ -53,16 +53,6 @@ public class GroupStateManagerTableImplTest {
 
     @Configuration
     static class CommonConfiguration {
-    
-        @Bean
-        public ApplicationDao getApplicationDao() {
-            return new JpaApplicationDaoImpl();
-        }
-
-        @Bean
-        public GroupDao getGroupDao() {
-            return new JpaGroupDaoImpl();
-        }
         
         @Bean 
         public GroupStateManagerTableImpl getClassUnderTest() {
