@@ -19,6 +19,7 @@ import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 
 public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
 
+    private static final long serialVersionUID = 1L;
     private final CreateJvmCommand createCommand;
     private final Set<Identifier<Group>> groups;
 

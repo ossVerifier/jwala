@@ -10,6 +10,7 @@ import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -97,6 +98,11 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
             groups.add(groupFrom(jpaGroup));
         }
         return groups;
+    }
+
+    @Override
+    public Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
+        return groupFrom(groupCrudService.updateGroupStatus(aGroupToUpdate));
     }
 
 }

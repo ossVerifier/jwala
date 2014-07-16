@@ -20,6 +20,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -52,6 +53,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
             jpaGroup.setCreateDate(updateDate);
             jpaGroup.setUpdateBy(userId);
             jpaGroup.setLastUpdateDate(updateDate);
+            jpaGroup.setState(null);
+            jpaGroup.setStateUpdated(null);
 
             entityManager.persist(jpaGroup);
             entityManager.flush();
@@ -136,5 +139,28 @@ public class GroupCrudServiceImpl implements GroupCrudService {
         final JpaGroup group = getGroup(aGroupId);
         entityManager.remove(group);
     }
+
+    @Override
+    public JpaGroup updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
+
+        final SetGroupStateCommand updateGroupCommand = aGroupToUpdate.getCommand();
+        final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
+        final Identifier<Group> groupId = updateGroupCommand.getId();
+        final JpaGroup jpaGroup = getGroup(groupId);
+        
+        if (jpaGroup == null) {
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
+                                        "Group not found: " + groupId);
+        }
+
+        jpaGroup.setState(updateGroupCommand.getNewGroupState());
+        jpaGroup.setUpdateBy(auditEvent.getUser().getUserId());
+        jpaGroup.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
+
+        entityManager.flush();
+        
+        return jpaGroup;
+    }
+
 }
 
