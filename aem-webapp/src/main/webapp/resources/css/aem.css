@@ -100,6 +100,19 @@ body {
     top:1px;
 }
 
+.start-button-busy {
+    background-image: url(../img/busy-circular.gif);
+    background-repeat:no-repeat;
+    background-position:center;
+    box-shadow:inset 0px 1px 0px 0px white;
+    background-color:white;
+    border:1px solid white;
+    display:inline-block;
+    color:white;
+    height:16px;
+    width:16px;
+}
+
 .stop-button {
     background-image: url(../img/icons/stop.png);
     background-repeat:no-repeat;
@@ -119,6 +132,20 @@ body {
     position:relative;
     top:1px;
 }
+
+.stop-button-busy {
+    background-image: url(../img/busy-circular.gif);
+    background-repeat:no-repeat;
+    background-position:center;
+    box-shadow:inset 0px 1px 0px 0px white;
+    background-color:white;
+    border:1px solid white;
+    display:inline-block;
+    color:white;
+    height:16px;
+    width:16px;
+}
+
 
 .inline-block {
     display: inline-block;

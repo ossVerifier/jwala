@@ -178,10 +178,13 @@ var isArray = function(val) {
 }
 
 var renderButton = function(tableId, item, data, type, full) {
-    var id = tableId + "btn" + item.btnLabel.replace(/\s+/g, '') +  full.id.id;
+
+    var btnClassifier = item.customBtnClassName !== undefined ? item.customBtnClassName : item.btnLabel;
+    var id = tableId + "btn" + btnClassifier.replace(/\s+/g, '') +  full.id.id;
     return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
                                                    className:item.className,
                                                    customBtnClassName:item.customBtnClassName,
+                                                   clickedStateClassName:item.clickedStateClassName,
                                                    itemId:full.id.id,
                                                    label:item.btnLabel,
                                                    callback:item.btnCallback,

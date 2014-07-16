@@ -5,12 +5,17 @@
  *
  * Properties:
  *
- * 1. id - the button's id
- * 2. callback - method that gets called to do a specific action when the button is clicked
- * 3. label - the button's label i.e. Ok, Cancel, Save etc...
- * 4. isToggleBtn - if the button is a on/off or a switch button
- * 5. label2 - the label to display for the 2nd toggle state
- * 6. callback2 - the callback to execute for the 2nd toggle state
+ *  1. id - the button's id
+ *  2. callback - method that gets called to do a specific action when the button is clicked
+ *  3. label - the button's label i.e. Ok, Cancel, Save etc...
+ *  4. isToggleBtn - if the button is a on/off or a switch button
+ *  5. label2 - the label to display for the 2nd toggle state
+ *  6. callback2 - the callback to execute for the 2nd toggle state
+ *  7. className - container div css style
+ *  8. customBtnClassName - for custom button look and feel
+ *  9. clickedStateClassName - css style when button is in a "clicked" state
+ * 10. clickedStateTimeout - duration in which to show the button clicked state style,
+ *                           default is 10 seconds if this is not set
  *
  */
 var DataTableButton = React.createClass({
@@ -31,6 +36,14 @@ var DataTableButton = React.createClass({
                                               className:this.props.customBtnClassName}));
     },
     handleClick: function(id) {
+
+        if (this.props.clickedStateClassName !== undefined) {
+            $("#" + this.props.id).attr("class", this.props.clickedStateClassName);
+            var self = this;
+            var timeout = (this.props.clickedStateTimeout === undefined ? 10000 : this.props.clickedStateTimeout);
+            setTimeout(function(){$("#" + self.props.id).attr("class", self.props.customBtnClassName)}, timeout);
+        }
+
         if (this.props.isToggleBtn) {
             if (this.toggleStatus === 0) {
                 if (this.props.callback(id)) {
