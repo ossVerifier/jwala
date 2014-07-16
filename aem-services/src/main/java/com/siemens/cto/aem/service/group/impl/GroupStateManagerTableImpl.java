@@ -24,13 +24,18 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 
@@ -43,19 +48,27 @@ public class GroupStateManagerTableImpl {
     public static final String DEFAULT_STATE_IN_TRANSITION_HANDLER = "defaultStateInTransitionHandler";
     public static final String DEFAULT_STATE_OUT_TRANSITION_HANDLER = "defaultStateOutTransitionHandler";
     public static final String DEFAULT_STATE_HANDLER = "defaultStateHandler";
-    public static final String DEFAULT_STATE_IN_TRANSITION_EXPRESSION = "defaultStateInTransitionHandler()";
-    public static final String DEFAULT_STATE_OUT_TRANSITION_EXPRESSION = "defaultStateOutTransitionHandler()";
-    public static final String DEFAULT_STATE_EXPRESSION = "defaultStateHandler()";
+    public static final String DEFAULT_STATE_IN_TRANSITION_EXPRESSION = "defaultStateInTransitionHandler(#enteringState)";
+    public static final String DEFAULT_STATE_OUT_TRANSITION_EXPRESSION = "defaultStateOutTransitionHandler(#exitingState)";
+    public static final String DEFAULT_STATE_EXPRESSION = "defaultStateHandler(#state)";
     public static final String NO_OP="currentState";
+    
+    // Define what 'null' means for a return value from a state transition handler
+    public static final GroupState CONTINUE = null;
 
     private EvaluationContext context;
     private Group       currentGroup;
     private GroupState  currentState;
-    private Triggers triggers = new Triggers();
+    private GroupState  nextState; // only set during a state transition
+    private Triggers    triggers = new Triggers();
+    private User        currentUser;
 
+    private static final User systemUser;
     private static final Map<GroupState, StateEntry> gse;
 
     static { 
+        systemUser = User.getSystemUser();
+        
         gse = new HashMap<>();
         ExpressionParser parser = new SpelExpressionParser();
         
@@ -109,25 +122,28 @@ public class GroupStateManagerTableImpl {
      * This is the DEFAULT_STATE_IN_TRANSITION_HANDLER
      * @return
      */
-    public GroupState defaultStateInTransitionHandler() { 
+    @Transactional
+    public GroupState defaultStateInTransitionHandler(GroupState enteringState) { 
         // use this to persist the transition to the Group table.
-        return null;
+        currentGroup = groupPersistenceService.updateGroupStatus(
+                Event.create(new SetGroupStateCommand(currentGroup.getId(), enteringState), AuditEvent.now(currentUser)));
+        return CONTINUE;
     }
 
     /**
      * This is the DEFAULT_STATE_OUT_TRANSITION_HANDLER
      * @return
      */
-    public GroupState defaultStateOutTransitionHandler() {
-        return null;
+    public GroupState defaultStateOutTransitionHandler(GroupState exitingState) {
+        return CONTINUE;
     }
 
     /**
      * This is the DEFAULT_STATE_HANDLER
      * @return
      */
-    public GroupState defaultStateHandler() { 
-        return null;
+    public GroupState defaultStateHandler(GroupState state) { 
+        return CONTINUE;
     }
     
     /**
@@ -146,7 +162,11 @@ public class GroupStateManagerTableImpl {
      * @return
      */
     public GroupState onStarting() {
-        return GroupState.STARTED;
+        GroupState state = getPerceivedState();
+        if(state == GroupState.STARTED) return GroupState.STARTED; 
+        
+     // only a timeout/error/reset will help us leave starting
+        return GroupState.STARTING; 
     }
 
 
@@ -155,7 +175,11 @@ public class GroupStateManagerTableImpl {
      * @return
      */
     public GroupState onStopping() {
-        return GroupState.STOPPED;
+        GroupState state = getPerceivedState();
+        if(state == GroupState.STOPPED) return GroupState.STOPPED; 
+        
+     // only a timeout/error/reset will help us leave stopping
+        return GroupState.STOPPING; 
     }
 
 
@@ -201,7 +225,7 @@ public class GroupStateManagerTableImpl {
             return GroupState.INITIALIZED;
         } else if(started == 0) {
             return GroupState.STOPPED;
-        } else if(started > 0){ 
+        } else if(started > 0 && unstarted > 0){ 
             return GroupState.PARTIAL;
         } else { 
             return GroupState.STARTED;
@@ -214,52 +238,59 @@ public class GroupStateManagerTableImpl {
      * Changes state. After a state is entered, it is 'IN'
      * @param proposedState
      */
-    private synchronized void handleState(GroupState proposedState) {
-        if(proposedState == null) { 
-            // do nothing
-            return; 
-        }
-
-        GroupState nextState = proposedState;
-
-        if(proposedState == currentState) {
-            // staying in same state
-            nextState = (GroupState) gse.get(currentState).state(context, this);
-            if(nextState == currentState) { 
-                return; // no change.
-            }
-        } 
-
-        // Temporary variables
-        if(nextState == null) {
-            nextState = proposedState;
-        }
-        GroupState interimState = currentState;
-        GroupState nextState2 = nextState;
-
-        // while state changes required.  
-        while(nextState != interimState) {
-            // Exit current state.
-            nextState2 = gse.get(interimState).out(context,this);
-            // New state change proposed?
-            if(nextState2 != null) {
-                nextState = nextState2;
+    private synchronized void handleState(GroupState proposedState, User user) {
+        try {
+            
+            this.currentUser = user;
+            
+            if(proposedState == null) { 
+                // do nothing
+                return; 
             }
             
-            // If we have somewhere to go ( on the first transition we do ), 
-            if(nextState != null) {
-                // Enter new state, record proposition
-                nextState2 = gse.get(nextState).in(context, this);
-                // track current 'interim' state
-                interimState = nextState;
-                // new state change proposed ?
-                if(nextState2 != null && nextState2 != nextState) { 
-                    // Otherwise, yet another state transition?
-                    nextState = nextState2;
-                } // else null or nextState = ok, enter. 
+            nextState = proposedState;
+    
+            if(proposedState == currentState) {
+                // staying in same state
+                nextState = (GroupState) gse.get(currentState).state(context, this, currentState);
+                if(nextState == currentState) { 
+                    return; // no change.
+                }
+            } 
+    
+            // Temporary variables
+            if(nextState == null) {
+                nextState = proposedState;
             }
-        }        
-        currentState = interimState;
+            GroupState interimState = currentState;
+            GroupState nextState2 = nextState;
+    
+            // while state changes required.  
+            while(nextState != interimState) {
+                // Exit current state.
+                nextState2 = gse.get(interimState).out(context,this, interimState);
+                // New state change proposed?
+                if(nextState2 != null) {
+                    nextState = nextState2;
+                }
+                
+                // If we have somewhere to go ( on the first transition we do ), 
+                if(nextState != null) {
+                    // Enter new state, record proposition
+                    nextState2 = gse.get(nextState).in(context, this, nextState);
+                    // track current 'interim' state
+                    interimState = nextState;
+                    // new state change proposed ?
+                    if(nextState2 != null && nextState2 != nextState) { 
+                        // Otherwise, yet another state transition?
+                        nextState = nextState2;
+                    } // else null or nextState = ok, enter. 
+                }
+            }        
+            currentState = interimState;
+        } finally {
+            this.currentUser = null;
+        }
     }
     
     // ========== API to this state machine ================
@@ -268,16 +299,16 @@ public class GroupStateManagerTableImpl {
         context = new StandardEvaluationContext(this);
     }
     
-    public void initializeGroup(Group group) { 
+    public void initializeGroup(Group group, User user) { 
         currentState = null;
         currentGroup = group;
         
         // invoke FSM for the first time. Should change currentState. 
-        handleState(group.getState());
+        handleState(group.getState(), user);
     }
     
-    public void signalReset() { 
-        handleState(gse.get(currentState).resetState);
+    public void signalReset(User user) { 
+        handleState(gse.get(currentState).resetState, user);
     }
     
     public boolean canStart() {
@@ -290,7 +321,20 @@ public class GroupStateManagerTableImpl {
     
     public void jvmStarted(Identifier<Jvm> jvmId) {        
         triggers.jvms.add(jvmId);
-        handleState(currentState);
+        handleState(currentState, systemUser);
+    }
+    
+    public void jvmStopped(Identifier<Jvm> jvmId) {
+        triggers.jvms.add(jvmId);
+        handleState(currentState, systemUser);
+    }
+
+    public void signalStartRequested(User user) {
+        handleState(GroupState.STARTING, user);
+    }
+
+    public void signalStopRequested(User user) {
+        handleState(GroupState.STOPPING, user);
     }
 
     public GroupState getCurrentState() {
@@ -328,13 +372,18 @@ public class GroupStateManagerTableImpl {
         StateEntry(ExpressionParser parser, StartCondition canStart, StopCondition canStop, GroupState resetState, String in, String stateHandler, String out) {
             this(canStart, canStop, resetState);
             this.stateInExpression = parser.parseExpression(in != null ? in : DEFAULT_STATE_IN_TRANSITION_EXPRESSION);
-            this.stateOutExpression = parser.parseExpression(out != null ? in : DEFAULT_STATE_OUT_TRANSITION_EXPRESSION);
-            this.stateExpression = parser.parseExpression(stateHandler != null ? in : DEFAULT_STATE_EXPRESSION);
+            this.stateOutExpression = parser.parseExpression(out != null ? out : DEFAULT_STATE_OUT_TRANSITION_EXPRESSION);
+            this.stateExpression = parser.parseExpression(stateHandler != null ? stateHandler : DEFAULT_STATE_EXPRESSION);
         }
         
-        GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm) { 
+        GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState enteringState) { 
             if(stateInExpression != null) {
-                return this.stateInExpression.getValue(context, fsm, GroupState.class);
+                try {
+                    context.setVariable("enteringState", enteringState);
+                    return this.stateInExpression.getValue(context, fsm, GroupState.class);
+                } finally {                    
+                    context.setVariable("enteringState", null);
+                }
             } else if(stateInHandler != null) {
                 return invoke(this.stateInHandler,fsm);
             } else {
@@ -350,18 +399,28 @@ public class GroupStateManagerTableImpl {
                 return ERROR;
             }
         }
-        GroupState out(EvaluationContext context, GroupStateManagerTableImpl fsm) { 
+        GroupState out(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState exitingState) { 
             if(stateOutExpression != null) {
-                return this.stateOutExpression.getValue(context, fsm, GroupState.class);
+                try {
+                    context.setVariable("exitingState", exitingState);
+                    return this.stateOutExpression.getValue(context, fsm, GroupState.class);
+                } finally {                    
+                    context.setVariable("exitingState", null);
+                }
             } else if(stateOutHandler != null) {
                 return invoke(this.stateOutHandler,fsm);
             } else {
                 return fsm.currentState;
             }
         }
-        GroupState state(EvaluationContext context, GroupStateManagerTableImpl fsm) { 
+        GroupState state(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState state) { 
             if(stateExpression != null) {
-                return this.stateExpression.getValue(context, fsm, GroupState.class);
+                try {
+                    context.setVariable("state", state);
+                    return this.stateExpression.getValue(context, fsm, GroupState.class);
+                } finally {
+                    context.setVariable("state", null);
+                }
             } else if(stateHandler != null) {
                 return invoke(this.stateHandler,fsm);
             } else {
