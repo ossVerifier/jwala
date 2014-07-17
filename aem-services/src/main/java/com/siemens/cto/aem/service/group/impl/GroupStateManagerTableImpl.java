@@ -315,6 +315,11 @@ public class GroupStateManagerTableImpl {
         handleState(currentState, systemUser);
     }
 
+    public void jvmError(Identifier<Jvm> jvmId) {
+        triggers.jvms.add(jvmId);
+        handleState(GroupState.ERROR, systemUser);        
+    }
+    
     public void signalStartRequested(User user) {
         handleState(GroupState.STARTING, user);
     }
@@ -386,4 +391,5 @@ public class GroupStateManagerTableImpl {
             }
         }
     }
+
 }

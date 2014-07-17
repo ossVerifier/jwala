@@ -10,7 +10,7 @@
     <int:gateway id="stateNotification" default-request-channel="stateUpdates"
         service-interface="com.siemens.cto.aem.service.state.StateNotificationGateway"></int:gateway>
 
-    <task:executor id="notificationExecutor" pool-size="2-20"
+    <task:executor id="notificationExecutor" pool-size="5-20"
         queue-capacity="100" keep-alive="5" rejection-policy="CALLER_RUNS" />
 
     <!--  
@@ -18,11 +18,10 @@
         Note that if we are busy sending commands, we might not be able to process state!
         So we better use our own executor, or remove the dispatcher entirely DirectChannel
     -->
-    <int:publish-subscribe-channel id="stateUpdates">
-        <int:dispatcher task-executor="notificationExecutor" failover="false" load-balancer="none"/>
-    </int:publish-subscribe-channel>
-    
-    <int:service-activator 
+    <int:publish-subscribe-channel id="stateUpdates"  task-executor="notificationExecutor" />
+        
+    <int:service-activator id="groupStateServiceActivator"
+            input-channel="stateUpdates"
             method="stateUpdate" 
 			ref="groupStateServiceBean" />
 
