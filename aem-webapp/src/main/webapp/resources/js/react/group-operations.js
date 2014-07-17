@@ -327,10 +327,10 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" + data.httpPort + "/manager/";
    },
     buildThreadDumpHRef: function(data) {
-        return  "idp?saml_redirectUrl=" +
-                window.location.protocol + "//" +
-                data.hostName + ":" + data.httpPort +
-                "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
+        var redirectUrl = window.location.protocol + "//" +
+                          data.hostName + ":" + data.httpPort +
+                          "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
+        return "idp?saml_redirectUrlGet=" + encodeURIComponent(redirectUrl);
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
