@@ -4,7 +4,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
-@ImportResource("classpath:META-INF/spring/integration.xml")
+@ImportResource({
+    "classpath:META-INF/spring/integration.xml",
+    "classpath:META-INF/spring/integration-state.xml"
+})
 public class AemIntegrationConfig {
 
 }

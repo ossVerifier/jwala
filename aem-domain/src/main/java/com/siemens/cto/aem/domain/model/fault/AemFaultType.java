@@ -81,7 +81,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound"), 
     /**/
-    GROUP_CONTROL_HISTORY_NOT_FOUND("AEM##", "GroupControlHistoryNotFound")
+    GROUP_CONTROL_HISTORY_NOT_FOUND("AEM39", "GroupControlHistoryNotFound"),
+    /**/
+    GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified")
     ;
 
 	private final String faultCode;
@@ -91,6 +93,7 @@ public enum AemFaultType implements MessageResponseStatus {
                          final String theFaultMessage) {
 		faultCode = theFaultCode;
 		faultMessage = theFaultMessage;
+		org.apache.commons.lang3.text.WordUtils.capitalize(toString(), '_').replace("_","");
 	}
 
 	@Override

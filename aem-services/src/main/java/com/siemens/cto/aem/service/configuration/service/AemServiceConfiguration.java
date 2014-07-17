@@ -1,9 +1,12 @@
 package com.siemens.cto.aem.service.configuration.service;
 
 import com.siemens.cto.toc.files.TemplateManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
@@ -18,6 +21,7 @@ import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
@@ -26,6 +30,7 @@ import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.JmsJvmStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
@@ -51,6 +56,15 @@ public class AemServiceConfiguration {
 
     @Autowired
     private TemplateManager templateManager;
+    
+    @Autowired
+    private StateNotificationGateway stateNotificationGateway;
+
+    @Bean
+    @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
+    public GroupStateManagerTableImpl getGroupStateManagerTableImpl() {
+        return new GroupStateManagerTableImpl();
+    }
 
     @Bean
     public GroupService getGroupService() {
@@ -103,7 +117,8 @@ public class AemServiceConfiguration {
     @Bean
     public JvmStateService getJvmStateService() {
         return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
-                                       getJvmStateNotificationService());
+                                       getJvmStateNotificationService(),
+                                       stateNotificationGateway);
     }
 
     @Bean

@@ -18,6 +18,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 
 public class JvmStateServiceImpl implements JvmStateService {
 
@@ -25,11 +26,14 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     private final JvmStatePersistenceService persistenceService;
     private final JvmStateNotificationService notificationService;
+    private final StateNotificationGateway stateNotificationGateway;
 
     public JvmStateServiceImpl(final JvmStatePersistenceService theService,
-                               final JvmStateNotificationService theNotificationService) {
+                               final JvmStateNotificationService theNotificationService, 
+                               final StateNotificationGateway theStateNotificationGateway) {
         persistenceService = theService;
         notificationService = theNotificationService;
+        stateNotificationGateway = theStateNotificationGateway;
     }
 
     @Override
@@ -39,9 +43,17 @@ public class JvmStateServiceImpl implements JvmStateService {
         LOGGER.info("Attempting to set state for Jvm {} ", aCommand);
         aCommand.validateCommand();
 
+        // send to direct listeners
         notificationService.notifyJvmStateUpdated(aCommand.getNewJvmState().getJvmId());
-        return persistenceService.updateJvmState(new Event<>(aCommand,
+        
+        // persist
+        CurrentJvmState jvmState = persistenceService.updateJvmState(new Event<>(aCommand,
                                                              AuditEvent.now(aUser)));
+
+        // send to bus
+        stateNotificationGateway.jvmStateChanged(jvmState);
+        
+        return jvmState;
     }
 
     @Override

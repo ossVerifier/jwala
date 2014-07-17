@@ -13,7 +13,6 @@ public class User implements Serializable {
         return new User("hardCodedUser");
     }
 
-    @Deprecated
     public static User getSystemUser() {
         return new User("systemUser");
     }

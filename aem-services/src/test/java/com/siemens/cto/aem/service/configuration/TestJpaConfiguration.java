@@ -12,6 +12,7 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -61,5 +62,12 @@ public class TestJpaConfiguration {
     public PlatformTransactionManager getTransactionManager() {
         final PlatformTransactionManager manager = new JpaTransactionManager(getEntityManagerFactory());
         return manager;
+    }
+    
+    @Bean
+    public SharedEntityManagerBean getSharedEntityManager() {
+        final SharedEntityManagerBean shared = new SharedEntityManagerBean();
+        shared.setEntityManagerFactory(getEntityManagerFactory());
+        return shared;
     }
 }

@@ -1,5 +1,13 @@
 package com.siemens.cto.aem.service.jvm.state.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -21,19 +30,16 @@ import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JvmStateServiceImplVerificationTest {
 
     private JvmStateServiceImpl impl;
+    
+    @Mock
+    private StateNotificationGateway stateNotificationGateway;
+    
     private JvmStatePersistenceService persistenceService;
     private JvmStateNotificationService notificationService;
     private SetJvmStateCommand command;
@@ -60,7 +66,8 @@ public class JvmStateServiceImplVerificationTest {
         when(jvmState.getJvmId()).thenReturn(jvmId);
 
         impl = new JvmStateServiceImpl(persistenceService,
-                                       notificationService);
+                                       notificationService,
+                                       stateNotificationGateway);
     }
 
     @Test

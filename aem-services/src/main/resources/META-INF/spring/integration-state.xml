@@ -1,0 +1,31 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- AemIntegrationConfig.java has @ImportResource statements that 
+         will have loaded any required common beans from integration.xml first -->
+
+    <int:gateway id="stateNotification" default-request-channel="stateUpdates"
+        service-interface="com.siemens.cto.aem.service.state.StateNotificationGateway"></int:gateway>
+
+    <task:executor id="notificationExecutor" pool-size="5-20"
+        queue-capacity="100" keep-alive="5" rejection-policy="CALLER_RUNS" />
+
+    <!--  
+        multiple thread dispatch of state notifications 
+        Note that if we are busy sending commands, we might not be able to process state!
+        So we better use our own executor, or remove the dispatcher entirely DirectChannel
+    -->
+    <int:publish-subscribe-channel id="stateUpdates"  task-executor="notificationExecutor" />
+        
+    <int:service-activator id="groupStateServiceActivator"
+            input-channel="stateUpdates"
+            method="stateUpdate" 
+			ref="groupStateServiceBean" />
+
+	<bean id="groupStateServiceBean"
+		class="com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl">
+	</bean>
+</beans>
