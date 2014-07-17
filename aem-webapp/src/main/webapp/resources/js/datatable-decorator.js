@@ -151,7 +151,9 @@ var renderComponents = function(tableId,
                                 editCallback) {
     var renderedComponent;
 
-    if (item.tocType === "link") {
+    if (item.tocType === "space") {
+        renderedComponent = "&nbsp;";
+    } else if (item.tocType === "link") {
         renderedComponent = renderLink(item, tableId, data, type, full, editCallback);
     } else if (item.tocType === "control") {
         renderedComponent = renderExpandCollapseControl(tableId,

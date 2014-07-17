@@ -89,7 +89,7 @@ body {
     border:1px solid white;
     display:inline-block;
     color:white;
-    height:16px;
+    height:19px;
     width:16px;
 }.start-button:hover {
     background-image: url(../img/icons/start-hover.png);
@@ -109,7 +109,7 @@ body {
     border:1px solid white;
     display:inline-block;
     color:white;
-    height:16px;
+    height:19px;
     width:16px;
 }
 
@@ -122,7 +122,7 @@ body {
     border:1px solid white;
     display:inline-block;
     color:white;
-    height:16px;
+    height:19px;
     width:16px;
 }.stop-button:hover {
     background-image: url(../img/icons/stop-hover.png);
@@ -142,7 +142,7 @@ body {
     border:1px solid white;
     display:inline-block;
     color:white;
-    height:16px;
+    height:19px;
     width:16px;
 }
 
