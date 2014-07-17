@@ -28,7 +28,7 @@ public class Group implements Serializable {
     }
 
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms) {
-        this(theId, theName, Collections.<Jvm> emptySet(), GroupState.INITIALIZED, DateTime.now());
+        this(theId, theName, theJvms, GroupState.INITIALIZED, DateTime.now());
     }
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms, GroupState theState, DateTime theAsOf) {
         id = theId;
