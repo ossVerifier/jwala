@@ -8,7 +8,7 @@
          will have loaded any required common beans from integration.xml first -->
 
     <int:gateway id="stateNotification" default-request-channel="stateUpdates"
-        service-interface="com.siemens.cto.aem.service.dispatch.StateNotificationGateway"></int:gateway>
+        service-interface="com.siemens.cto.aem.service.state.StateNotificationGateway"></int:gateway>
 
     <task:executor id="notificationExecutor" pool-size="2-20"
         queue-capacity="100" keep-alive="5" rejection-policy="CALLER_RUNS" />
@@ -27,6 +27,6 @@
 			ref="groupStateServiceBean" />
 
 	<bean id="groupStateServiceBean"
-		class="com.siemens.cto.aem.service.group.impl.GroupStateServiceImpl">
+		class="com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl">
 	</bean>
 </beans>

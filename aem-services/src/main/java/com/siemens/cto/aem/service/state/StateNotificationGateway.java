@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.dispatch;
+package com.siemens.cto.aem.service.state;
 
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 
