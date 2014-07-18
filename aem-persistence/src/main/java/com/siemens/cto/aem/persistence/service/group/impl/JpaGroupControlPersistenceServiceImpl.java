@@ -3,7 +3,7 @@ package com.siemens.cto.aem.persistence.service.group.impl;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.CompleteControlGroupCommand;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.GroupCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupControlHistory;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupControlHistoryBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupControlCrudService;
@@ -18,7 +18,7 @@ public class JpaGroupControlPersistenceServiceImpl implements GroupControlPersis
     }
 
     @Override
-    public GroupControlHistory addIncompleteControlHistoryEvent(final Event<ControlGroupCommand> anEvent) {
+    public GroupControlHistory addIncompleteControlHistoryEvent(final Event<GroupCommand> anEvent) {
         final JpaGroupControlHistory history = crudService.addIncompleteControlHistoryEvent(anEvent);
         return new JpaGroupControlHistoryBuilder(history).build();
     }

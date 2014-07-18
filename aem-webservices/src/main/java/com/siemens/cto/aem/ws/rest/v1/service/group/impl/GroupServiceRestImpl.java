@@ -12,22 +12,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 import com.siemens.cto.aem.ws.rest.v1.provider.LoggedOnUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
+import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
@@ -36,6 +41,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
    
     @Autowired
     private GroupControlService groupControlService;
+    
+    @Autowired
+    private GroupJvmControlService groupJvmControlService;
+
+    @Autowired
+    private GroupWebServerControlService groupWebServerControlService;
 
     public GroupServiceRestImpl(final GroupService theGroupService) {
         groupService = theGroupService;
@@ -110,14 +121,37 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
-                                   final JsonControlJvm aJvmControlOperation,
+                                   final JsonControlJvm jsonControlJvm,
                                    final SecurityContext jaxrsSecurityContext) {
-        logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, aJvmControlOperation);
-        final JvmControlOperation command = aJvmControlOperation.toControlOperation();
-        final ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, 
+        logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
+        final JvmControlOperation command = jsonControlJvm.toControlOperation();
+        final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId, 
                 JvmControlOperation.convertFrom(command.getExternalValue()) );
         return ResponseBuilder.ok(
-                groupControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
+                groupJvmControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
+               );
+    }
+
+    @Override
+    public Response controlGroupWebservers(final Identifier<Group> aGroupId,
+                                   final JsonControlWebServer jsonControlWebServer,
+                                   final SecurityContext jaxrsSecurityContext) {
+        logger.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
+        final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
+        final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId, 
+                WebServerControlOperation.convertFrom(command.getExternalValue()) );
+        return ResponseBuilder.ok(
+                groupWebServerControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
+               );
+    }
+
+    @Override
+    public Response controlGroup(Identifier<Group> aGroupId, JsonControlJvm jvmControlOperation,
+            SecurityContext jaxrsSecurityContext) {
+        
+        ControlGroupCommand grpCommand = null;
+        return ResponseBuilder.ok(
+                groupControlService.controlGroup(grpCommand , LoggedOnUser.fromContext(jaxrsSecurityContext))
                );
     }
 

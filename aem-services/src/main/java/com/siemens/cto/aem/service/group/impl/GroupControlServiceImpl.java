@@ -1,91 +1,37 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.List;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
-import com.siemens.cto.aem.domain.model.group.command.CompleteControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
-import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
-import com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBeanImpl;
 import com.siemens.cto.aem.service.group.GroupControlService;
-import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
 
 public class GroupControlServiceImpl implements GroupControlService {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupControlServiceImpl.class);
 
-    private final GroupControlPersistenceService persistenceService;
-    private final GroupService groupService;
-    private final CommandDispatchGateway commandDispatchGateway;
+    private final GroupJvmControlService groupJvmControlService;
 
-    public GroupControlServiceImpl(final GroupControlPersistenceService thePersistenceService,
-            final GroupService theGroupService, final CommandDispatchGateway theCommandDispatchGateway) {
+    public GroupControlServiceImpl(final GroupJvmControlService theGroupJvmControlService) {
 
-        persistenceService = thePersistenceService;
-        groupService = theGroupService;
-        commandDispatchGateway = theCommandDispatchGateway;
+        groupJvmControlService = theGroupJvmControlService;
     }
 
     @Transactional
     @Override
     public GroupControlHistory controlGroup(ControlGroupCommand aCommand, User aUser) {
 
+        LOGGER.debug("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(), aCommand.getGroupId());
         aCommand.validateCommand();
-
-        GroupControlHistory controlHistoryEvent = persistenceService.addIncompleteControlHistoryEvent(new Event<>(
-                aCommand, AuditEvent.now(aUser)));
-
-        Group group = groupService.getGroup(aCommand.getGroupId());
-
-        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser,
-                controlHistoryEvent.getId());
-        commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
-
-        return controlHistoryEvent;
-    }
-
-    @Transactional
-    public GroupControlHistory dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
-
-        GroupControlHistory completeHistory = null;
-
-        if (results != null && !results.isEmpty()) {
-
-            GroupJvmDispatchCommand aCommand = null;
-            long successCount = 0;
-            long totalCount = 0;
-            
-            for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
-                aCommand = jvmDispatchCommandResult.getGroupJvmDispatchCommand();
-                if (jvmDispatchCommandResult.wasSuccessful()) {
-                    successCount++;
-                }
-                ++totalCount;
-            }
-            
-            completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
-                    new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId(), totalCount, successCount), AuditEvent.now(aCommand
-                            .getUser())));
-
-            String logMsg = "Group Dispatch: Command Complete: " + successCount + " of " + totalCount + " succeeded.";
-            if(successCount == results.size()) {
-                LOGGER.info(logMsg);
-            } else {
-                LOGGER.warn(logMsg);
-            }
-            
-            // notifications of state change will be sent as the remote servers send life-cycle updates.
-        }
-        return completeHistory;
+        
+        JvmControlOperation jvmControlOperation = aCommand.getControlOperation();  // eventually convert from Group Operation to JvmOperation
+        ControlGroupJvmCommand controlGroupJvmCommand = new ControlGroupJvmCommand(aCommand.getGroupId(), jvmControlOperation);
+        
+        return groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);
     }
 
 }

@@ -35,11 +35,13 @@ import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
@@ -64,6 +66,9 @@ public class GroupServiceRestImplTest {
 
     @Mock
     private GroupControlServiceImpl controlImpl;
+    
+    @Mock
+    private GroupJvmControlServiceImpl controlJvmImpl;
     
     @Mock
     private SecurityContext jaxrsSecurityContext;
@@ -219,7 +224,7 @@ public class GroupServiceRestImplTest {
     
     @Test
     public void testControlJvmsInGroup() { 
-        when(controlImpl.controlGroup(isA(ControlGroupCommand.class), isA(User.class))).thenReturn(groupControlHistory);
+        when(controlJvmImpl.controlGroup(isA(ControlGroupJvmCommand.class), isA(User.class))).thenReturn(groupControlHistory);
         when(jaxrsSecurityContext.getUserPrincipal()).thenReturn(new Principal() {
 
             @Override

@@ -1,33 +1,33 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 
-public class JvmDispatchCommandResult {
+public class WebServerDispatchCommandResult {
 
     private final Boolean wasSuccessful;
 
-    private final Identifier<JvmControlHistory> controlId;
+    private final Identifier<WebServerControlHistory> controlId;
 
-    private final GroupJvmDispatchCommand groupJvmDispatchCommand;
+    private final GroupWebServerDispatchCommand groupWebServerDispatchCommand;
 
-    public JvmDispatchCommandResult(Boolean wasSuccessful, Identifier<JvmControlHistory> controlId,
-            GroupJvmDispatchCommand groupJvmDispatchCommand) {
+    public WebServerDispatchCommandResult(Boolean wasSuccessful, Identifier<WebServerControlHistory> controlId,
+            GroupWebServerDispatchCommand groupJvmDispatchCommand) {
         this.wasSuccessful = wasSuccessful;
         this.controlId = controlId;
-        this.groupJvmDispatchCommand = groupJvmDispatchCommand;
+        this.groupWebServerDispatchCommand = groupJvmDispatchCommand;
     }
 
     public Boolean wasSuccessful() {
         return wasSuccessful;
     }
 
-    public Identifier<JvmControlHistory> getControlId() {
+    public Identifier<WebServerControlHistory> getControlId() {
         return controlId;
     }
 
-    public GroupJvmDispatchCommand getGroupJvmDispatchCommand() {
-        return groupJvmDispatchCommand;
+    public GroupWebServerDispatchCommand getGroupWebServerDispatchCommand() {
+        return groupWebServerDispatchCommand;
     }
 
     @Override
@@ -35,6 +35,8 @@ public class JvmDispatchCommandResult {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((controlId == null) ? 0 : controlId.hashCode());
+        result = prime * result
+                + ((groupWebServerDispatchCommand == null) ? 0 : groupWebServerDispatchCommand.hashCode());
         result = prime * result + ((wasSuccessful == null) ? 0 : wasSuccessful.hashCode());
         return result;
     }
@@ -50,12 +52,19 @@ public class JvmDispatchCommandResult {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        JvmDispatchCommandResult other = (JvmDispatchCommandResult) obj;
+        WebServerDispatchCommandResult other = (WebServerDispatchCommandResult) obj;
         if (controlId == null) {
             if (other.controlId != null) {
                 return false;
             }
         } else if (!controlId.equals(other.controlId)) {
+            return false;
+        }
+        if (groupWebServerDispatchCommand == null) {
+            if (other.groupWebServerDispatchCommand != null) {
+                return false;
+            }
+        } else if (!groupWebServerDispatchCommand.equals(other.groupWebServerDispatchCommand)) {
             return false;
         }
         if (wasSuccessful == null) {
@@ -70,7 +79,8 @@ public class JvmDispatchCommandResult {
 
     @Override
     public String toString() {
-        return "JvmDispatchCommandResult [wasSuccessful=" + wasSuccessful + ", controlId=" + controlId + "]";
+        return "WebServerDispatchCommandResult [wasSuccessful=" + wasSuccessful + ", controlId=" + controlId
+                + ", groupWebServerDispatchCommand=" + groupWebServerDispatchCommand + "]";
     }
 
 }

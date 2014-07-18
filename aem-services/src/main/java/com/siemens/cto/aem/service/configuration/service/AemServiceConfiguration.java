@@ -18,8 +18,10 @@ import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupControlService;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -31,8 +33,10 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.JmsJvmStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 
@@ -77,7 +81,7 @@ public class AemServiceConfiguration {
                                   getGroupService());
     }
 
-    @Bean
+    @Bean(name="webServerService")
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), templateManager);
     }
@@ -102,12 +106,24 @@ public class AemServiceConfiguration {
 
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
-        return new GroupControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
+        return new GroupControlServiceImpl(getGroupJvmControlService());
+    }
+
+    @Bean(name="groupJvmControlService")
+    public GroupJvmControlService getGroupJvmControlService() {
+        return new GroupJvmControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
                                          getGroupService(),
                                          commandDispatchGateway);
     }
 
-    @Bean
+    @Bean(name="groupWebServerControlService")
+    public GroupWebServerControlService getGroupWebServerControlService() {
+        return new GroupWebServerControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
+                                         getGroupService(),
+                                         commandDispatchGateway);
+    }
+
+    @Bean(name="webServerControlService")
     public WebServerControlService getWebServerControlService() {
         return new WebServerControlServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService(),
                                                getWebServerService(),

@@ -12,14 +12,13 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 
-public class ControlGroupCommand implements Serializable, GroupCommand {
-
+public class ControlGroupJvmCommand implements Serializable, GroupCommand {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
     private final JvmControlOperation controlOperation;
 
-    public ControlGroupCommand(final Identifier<Group> theId,
+    public ControlGroupJvmCommand(final Identifier<Group> theId,
                              final JvmControlOperation theControlOperation) {
         groupId = theId;
         controlOperation = theControlOperation;
@@ -35,7 +34,7 @@ public class ControlGroupCommand implements Serializable, GroupCommand {
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new GroupIdRule(groupId).validate();  
+        new GroupIdRule(groupId).validate();
     }
 
     @Override
@@ -45,12 +44,7 @@ public class ControlGroupCommand implements Serializable, GroupCommand {
 
     @Override
     public String getType() {
-        return "Group";
-    }
-    
-    @Override
-    public Long getId() {
-        return groupId.getId();
+        return "GroupJvm";
     }
 
     @Override
@@ -64,7 +58,7 @@ public class ControlGroupCommand implements Serializable, GroupCommand {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        ControlGroupCommand rhs = (ControlGroupCommand) obj;
+        ControlGroupJvmCommand rhs = (ControlGroupJvmCommand) obj;
         return new EqualsBuilder()
                 .append(this.groupId, rhs.groupId)
                 .append(this.controlOperation, rhs.controlOperation)
@@ -85,6 +79,12 @@ public class ControlGroupCommand implements Serializable, GroupCommand {
                 .append("groupId", groupId)
                 .append("controlOperation", controlOperation)
                 .toString();
+    }
+
+    @Override
+    public Long getId() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
