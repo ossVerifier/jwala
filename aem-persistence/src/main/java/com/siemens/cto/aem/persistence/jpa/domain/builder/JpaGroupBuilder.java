@@ -34,8 +34,16 @@ public class JpaGroupBuilder {
                          group.getName(),
                          getJvms(),
                          group.getState(),
-                         new DateTime(group.getStateUpdated(), 
-                                 USE_DEFAULT_CHRONOLOGY));
+                         getAsOf());
+    }
+
+    private DateTime getAsOf() {
+        if (group.getStateUpdated() != null) {
+            return new DateTime(group.getStateUpdated(),
+                                USE_DEFAULT_CHRONOLOGY);
+        }
+
+        return null;
     }
 
     protected Set<Jvm> getJvms() {
