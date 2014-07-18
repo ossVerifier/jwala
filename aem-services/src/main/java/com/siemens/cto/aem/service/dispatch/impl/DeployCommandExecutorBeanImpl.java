@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
 
 public class DeployCommandExecutorBeanImpl {
     
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(JvmCommandExecutorBeanImpl.class);
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DeployCommandExecutorBeanImpl.class);
 
     public Message<JvmDispatchCommand>  deploy(Message<JvmDispatchCommand> msg) { 
         
