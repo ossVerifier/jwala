@@ -111,7 +111,7 @@ public class AemServiceConfiguration {
 
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
-        return new GroupControlServiceImpl(getGroupJvmControlService());
+        return new GroupControlServiceImpl(getGroupWebServerControlService(), getGroupJvmControlService());
     }
 
     @Bean(name="groupJvmControlService")

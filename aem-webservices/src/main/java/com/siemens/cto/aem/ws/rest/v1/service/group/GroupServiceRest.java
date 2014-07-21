@@ -19,6 +19,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonControlGroup;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonJvms;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
@@ -67,7 +68,7 @@ public interface GroupServiceRest {
     @POST
     @Path("/{groupId}/commands")
     Response controlGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
-                            final JsonControlJvm jvmControlOperation,
+                            final JsonControlGroup groupControlOperation,
                             @Context SecurityContext jaxrsSecurityContext);
 
     @POST

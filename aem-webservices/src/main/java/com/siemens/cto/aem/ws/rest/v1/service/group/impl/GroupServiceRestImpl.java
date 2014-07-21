@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
@@ -146,10 +147,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response controlGroup(Identifier<Group> aGroupId, JsonControlJvm jvmControlOperation,
+    public Response controlGroup(Identifier<Group> aGroupId, JsonControlGroup jsonControlGroup,
             SecurityContext jaxrsSecurityContext) {
         
-        ControlGroupCommand grpCommand = null;
+        GroupControlOperation groupControOperation = jsonControlGroup.toControlOperation();
+        ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControOperation );
         return ResponseBuilder.ok(
                 groupControlService.controlGroup(grpCommand , LoggedOnUser.fromContext(jaxrsSecurityContext))
                );
