@@ -339,7 +339,7 @@ var GroupOperationsDataTable = React.createClass({
     },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
-        return "http://" + data.host + ":" + data.port + loadBalancerStatusMount;
+        return "http://" + data.host + ":" + data.port + tocVars.loadBalancerStatusMount;
     },
     webServerStart: function(id) {
         webServerControlService.startWebServer(id);
