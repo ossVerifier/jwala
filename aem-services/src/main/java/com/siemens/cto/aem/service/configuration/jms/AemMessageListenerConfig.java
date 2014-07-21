@@ -6,8 +6,11 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.Phased;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
@@ -28,6 +31,7 @@ public class AemMessageListenerConfig {
     private AemServiceConfiguration serviceConfig;
 
     @Bean
+    @DependsOn("messageListenerContainerPhase")
     public DefaultMessageListenerContainer getJvmStateListenerContainer() {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
 
@@ -46,5 +50,40 @@ public class AemMessageListenerConfig {
     public MessageListener getJvmStateMessageListener() {
         return new JvmStateMessageListener(serviceConfig.getJvmStateService(),
                                            new JvmStateMapMessageConverterImpl());
+    }
+
+    @Bean(name = "messageListenerContainerPhase")
+    public SmartLifecycle getMessageListenerContainerPhase() {
+        return new SmartLifecycle() {
+            @Override
+            public boolean isAutoStartup() {
+                return true;
+            }
+
+            @Override
+            public void stop(final Runnable callback) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void start() {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void stop() {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public boolean isRunning() {
+                return true;
+            }
+
+            @Override
+            public int getPhase() {
+                return 1000;
+            }
+        };
     }
 }

@@ -95,7 +95,7 @@ public class WebServerStateIntegrationTest {
 
         private StateService<WebServer, WebServerReachableState> mockService;
 
-        @Bean
+        @Bean(name = "webServerService")
         public WebServerService getWebServerService() {
             final List<WebServer> webServers = createWebServers(3);
             final WebServerService service = mock(WebServerService.class);
@@ -118,6 +118,14 @@ public class WebServerStateIntegrationTest {
             return factory;
         }
 
+        @Bean(name = "webServerStateService")
+        public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
+            //Not sure if this will work...
+            final StateService<WebServer, WebServerReachableState> service = mock(StateService.class);
+            mockService = service;
+            return service;
+        }
+
         private ClientHttpRequest mockRequest(final ClientHttpResponse aResponse) throws IOException {
             final MockClientHttpRequest request = new MockClientHttpRequest();
             request.setResponse(aResponse);
@@ -134,14 +142,6 @@ public class WebServerStateIntegrationTest {
             final MockClientHttpResponse response = new MockClientHttpResponse(new byte[0],
                                                                                status);
             return response;
-        }
-
-        @Bean(name = "webServerStateService")
-        public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
-            //Not sure if this will work...
-            final StateService<WebServer, WebServerReachableState> service = mock(StateService.class);
-            mockService = service;
-            return service;
         }
 
         public StateService<WebServer, WebServerReachableState> getActualMockService() {
