@@ -1,7 +1,7 @@
 var groupControlService = function() {
 
     var control = function(groupId, operation) {
-        return serviceFoundation.post("v1.0/groups/" + groupId + "/jvms/commands",
+        return serviceFoundation.post("v1.0/groups/" + groupId + "/commands",
                                       "json",
                                       JSON.stringify({ controlOperation : operation}));
     };
