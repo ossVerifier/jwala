@@ -32,10 +32,6 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
-import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.app.impl.jpa.JpaApplicationDaoImpl;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
@@ -138,7 +134,7 @@ public class GroupStateManagerTableImplTest {
         
         Group group = classUnderTest.getCurrentGroup();
         
-        assertEquals(GroupState.STOPPED, group.getState());
+        assertEquals(GroupState.STOPPED, group.getCurrentState().getState());
     }
 
     @Test

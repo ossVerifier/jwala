@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import static com.siemens.cto.aem.domain.model.group.GroupState.ERROR;
+import static com.siemens.cto.aem.domain.model.group.GroupState.UNKNOWN;
 import static com.siemens.cto.aem.domain.model.group.GroupState.INITIALIZED;
 import static com.siemens.cto.aem.domain.model.group.GroupState.PARTIAL;
 import static com.siemens.cto.aem.domain.model.group.GroupState.STARTED;
@@ -36,11 +37,12 @@ import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
+import com.siemens.cto.aem.service.group.GroupStateMachine;
 
 /**
  * FSM built using spEL for handlers (Spring Expression Language)
  */
-public class GroupStateManagerTableImpl {
+public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
@@ -70,6 +72,7 @@ public class GroupStateManagerTableImpl {
         ExpressionParser parser = new SpelExpressionParser();
         
         gse.put(null,           new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
+        gse.put(UNKNOWN,        new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
         gse.put(ERROR,          new StateEntry(parser, CANNOT_START,CANNOT_STOP,INITIALIZED, null,      null,       null));
         gse.put(INITIALIZED,    new StateEntry(parser, CAN_START,   CAN_STOP,   null,       "onInitializeIn()", null, null));
         gse.put(PARTIAL,        new StateEntry(parser, CAN_START,   CAN_STOP,   null,       null, "onPartial()",    null));
@@ -201,10 +204,10 @@ public class GroupStateManagerTableImpl {
         int started = 0, unstarted = 0;
         for(Jvm jvm : group.getJvms()) {
             CurrentJvmState jvmState = jvmStatePersistenceService.getJvmState(jvm.getId());
-            if(jvmState.getJvmState() == JvmState.STARTED) { 
-                ++started;
-            } else { 
+            if(jvmState == null || jvmState.getJvmState() != JvmState.STARTED) { 
                 ++unstarted;
+            } else { 
+                ++started;
             }
         }
         if(started == 0 && unstarted == 0) { 
@@ -279,59 +282,70 @@ public class GroupStateManagerTableImpl {
         }
     }
     
-    // ========== API to this state machine ================
+    // ========== See Interface com.siemens.cto.aem.service.group.GroupStateMachine ================
 
     public GroupStateManagerTableImpl() {
         context = new StandardEvaluationContext(this);
     }
-    
+
+    @Override
     public void initializeGroup(Group group, User user) { 
         currentState = null;
         currentGroup = group;
         
         // invoke FSM for the first time. Should change currentState. 
-        handleState(group.getState(), user);
+        handleState(group.getCurrentState().getState() == null ? INITIALIZED : group.getCurrentState().getState(), user);
     }
     
+    @Override
     public void signalReset(User user) { 
         handleState(gse.get(currentState).resetState, user);
     }
     
+    @Override
     public boolean canStart() {
         return gse.get(currentState).canStart == CAN_START;
     }
     
+    @Override
     public boolean canStop() {
         return gse.get(currentState).canStop == CAN_STOP;
     }
     
+    @Override
     public void jvmStarted(Identifier<Jvm> jvmId) {        
         triggers.jvms.add(jvmId);
         handleState(currentState, systemUser);
     }
     
+    @Override
     public void jvmStopped(Identifier<Jvm> jvmId) {
         triggers.jvms.add(jvmId);
         handleState(currentState, systemUser);
     }
 
+    @Override
     public void jvmError(Identifier<Jvm> jvmId) {
         triggers.jvms.add(jvmId);
         handleState(GroupState.ERROR, systemUser);        
     }
     
+    @Override
     public void signalStartRequested(User user) {
         handleState(GroupState.STARTING, user);
     }
 
+    @Override
     public void signalStopRequested(User user) {
         handleState(GroupState.STOPPING, user);
     }
 
+    @Override
     public GroupState getCurrentState() {
         return currentState;
     }
 
+    @Override
     public Group getCurrentGroup() {
         return currentGroup;
     }

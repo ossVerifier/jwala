@@ -11,6 +11,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
+import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 
 public class GroupControlServiceImpl implements GroupControlService {
@@ -19,12 +20,17 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     private final GroupJvmControlService groupJvmControlService;
 
+    private final GroupStateService.API groupStateService; 
+    
     private final GroupWebServerControlService groupWebServerControlService;
 
-    public GroupControlServiceImpl(final GroupWebServerControlService theGroupWebServerControlService,
-            final GroupJvmControlService theGroupJvmControlService) {
+    public GroupControlServiceImpl(
+            final GroupWebServerControlService theGroupWebServerControlService,
+            final GroupJvmControlService theGroupJvmControlService,
+            final GroupStateService.API theGroupStateService) {
         groupWebServerControlService = theGroupWebServerControlService;
         groupJvmControlService = theGroupJvmControlService;
+        groupStateService = theGroupStateService;
     }
 
     @Transactional
@@ -37,6 +43,15 @@ public class GroupControlServiceImpl implements GroupControlService {
         // TODO: incomplete controlHistory 
         
         aCommand.validateCommand();
+        
+        boolean canStart = groupStateService.canStart(aCommand.getGroupId(), aUser);
+        
+        if(!canStart) { 
+            LOGGER.error("Group State Machine disallows this start operation");
+            return null;
+        }
+        
+        groupStateService.signalStartRequested(aCommand.getGroupId(), aUser);
         controlWebServers(aCommand, aUser);
         controlJvms(aCommand, aUser);
 

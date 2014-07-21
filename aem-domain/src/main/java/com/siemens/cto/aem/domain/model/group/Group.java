@@ -20,22 +20,20 @@ public class Group implements Serializable {
     private final Identifier<Group> id;
     private final String name;
     private final Set<Jvm> jvms;
-    private final GroupState state; 
-    private final DateTime asOf;
+    private final CurrentGroupState currentState;
 
     public Group(final Identifier<Group> theId, final String theName) {
-        this(theId, theName, Collections.<Jvm> emptySet(), GroupState.INITIALIZED, DateTime.now());
+        this(theId, theName, Collections.<Jvm> emptySet(), GroupState.UNKNOWN, DateTime.now());
     }
 
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms) {
-        this(theId, theName, theJvms, GroupState.INITIALIZED, DateTime.now());
+        this(theId, theName, theJvms, GroupState.UNKNOWN, DateTime.now());
     }
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms, GroupState theState, DateTime theAsOf) {
         id = theId;
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
-        asOf = theAsOf;
-        state = theState;
+        currentState = new CurrentGroupState(theId, theState, theAsOf);
     }
 
     public Identifier<Group> getId() {
@@ -50,14 +48,10 @@ public class Group implements Serializable {
         return jvms;
     }
 
-    public GroupState getState() {
-        return state;
+    public CurrentGroupState getCurrentState() {
+        return currentState;
     }
 
-    public DateTime getAsOf() {
-        return asOf;
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -74,8 +68,7 @@ public class Group implements Serializable {
                 .append(this.id, rhs.id)
                 .append(this.name, rhs.name)
                 .append(this.jvms, rhs.jvms)
-                .append(this.state,rhs.state)
-                .append(this.asOf, rhs.asOf)
+                .append(this.currentState,rhs.currentState)
                 .isEquals();
     }
 
@@ -85,8 +78,7 @@ public class Group implements Serializable {
                 .append(id)
                 .append(name)
                 .append(jvms)
-                .append(state)
-                .append(asOf)
+                .append(currentState)
                 .toHashCode();
     }
 
@@ -96,8 +88,7 @@ public class Group implements Serializable {
                 .append("id", id)
                 .append("name", name)
                 .append("jvms", jvms)
-                .append("state", state)
-                .append("asOf", asOf)
+                .append("currentState", currentState)
                 .toString();
     }
 

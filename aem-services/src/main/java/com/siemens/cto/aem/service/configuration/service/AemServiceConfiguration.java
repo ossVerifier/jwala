@@ -20,6 +20,7 @@ import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
@@ -32,9 +33,11 @@ import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateService;
 import com.siemens.cto.aem.service.jvm.state.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.JmsJvmStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -71,8 +74,13 @@ public class AemServiceConfiguration {
 
     @Bean
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
-    public GroupStateManagerTableImpl getGroupStateManagerTableImpl() {
+    public GroupStateMachine getGroupStateMachine() {
         return new GroupStateManagerTableImpl();
+    }
+    
+    @Bean
+    public GroupStateService.API getGroupStateService() {
+        return new GroupStateServiceImpl();
     }
 
     @Bean
@@ -111,7 +119,10 @@ public class AemServiceConfiguration {
 
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
-        return new GroupControlServiceImpl(getGroupWebServerControlService(), getGroupJvmControlService());
+        return new GroupControlServiceImpl(
+                getGroupWebServerControlService(), 
+                getGroupJvmControlService(),
+                getGroupStateService());
     }
 
     @Bean(name="groupJvmControlService")

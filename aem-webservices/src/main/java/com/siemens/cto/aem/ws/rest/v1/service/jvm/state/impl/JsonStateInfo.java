@@ -12,6 +12,7 @@ import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 /**
  * Intended for serialization of state notifications
  */
+@Deprecated
 public class JsonStateInfo {
 
     public class JsonGroupState {
@@ -22,8 +23,8 @@ public class JsonStateInfo {
         
         public JsonGroupState(Group group) {
             id = group.getId();
-            state = group.getState();
-            asOf = group.getAsOf();
+            state = group.getCurrentState().getState();
+            asOf = group.getCurrentState().getAsOf();
         }
     }
     

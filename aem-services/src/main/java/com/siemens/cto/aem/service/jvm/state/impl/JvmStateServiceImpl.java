@@ -50,7 +50,7 @@ public class JvmStateServiceImpl implements JvmStateService {
         CurrentJvmState jvmState = persistenceService.updateJvmState(new Event<>(aCommand,
                                                              AuditEvent.now(aUser)));
 
-        // send to bus
+        // send to bus - TODO limit to transitions only.
         stateNotificationGateway.jvmStateChanged(jvmState);
         
         return jvmState;

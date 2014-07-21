@@ -1,7 +1,9 @@
 package com.siemens.cto.aem.domain.model.group;
 
+import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 
-public enum GroupState {
+
+public enum GroupState implements ExternalizableState {
 
     INITIALIZED("INITIALIZED"),
     PARTIAL("PARTIAL"),
@@ -9,7 +11,8 @@ public enum GroupState {
     STARTED("STARTED"),
     STOPPED("STOPPED"),
     STARTING("STARTING"),
-    STOPPING("STOPPING");
+    STOPPING("STOPPING"),
+    UNKNOWN("UNKNOWN");
 
     private final String stateName;
 
@@ -18,6 +21,11 @@ public enum GroupState {
     }
 
     public String getStateName() {
+        return stateName;
+    }
+
+    @Override
+    public String toStateString() {
         return stateName;
     }
 }
