@@ -195,7 +195,7 @@ var renderButton = function(tableId, item, data, type, full) {
                                                    callback2:item.callback2}));
 }
 
-var renderLink = function(item, tableId, data, type, full, clickCallback) {
+var renderLink = function(item, tableId, data, type, full, editCallback) {
     if (item.hRefCallback === undefined) {
         return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
                                                                "link",
@@ -204,8 +204,10 @@ var renderLink = function(item, tableId, data, type, full, clickCallback) {
                                                                value:item.linkLabel !== undefined ?
                                                                      item.linkLabel :
                                                                      data,
-                                                               callback:clickCallback}));
-    } else {
+                                                               callback: item.onClickCallback !== undefined ?
+                                                                         item.onClickCallback :
+                                                                         editCallback}));
+    }  else {
         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }
 }
