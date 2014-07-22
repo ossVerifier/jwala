@@ -2,6 +2,22 @@ configurations {
     javaAgentOpenJpa
 }
 
+publishing {
+  publications {
+    maven(MavenPublication) {
+      artifact("drop.sql") {
+        classifier "drop"
+        extension "sql"
+      }
+      artifact("create.sql") {
+        classifier "create"
+        extension "sql"
+      }
+    }
+  }
+}
+
+
 dependencies {
     compile project(":aem-common")
     compile project(":aem-domain")
@@ -98,3 +114,4 @@ task mappingToolHelp (type:JavaExec) {
     args = ["-help"]
 }
 
+publish.dependsOn << createDdl << dropDdl
