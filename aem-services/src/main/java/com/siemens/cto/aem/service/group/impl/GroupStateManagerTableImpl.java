@@ -14,9 +14,13 @@ import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CAN_STOP;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -27,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState.StateDetail;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
@@ -34,10 +40,16 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
+import com.siemens.cto.aem.service.state.StateService;
 
 /**
  * FSM built using spEL for handlers (Spring Expression Language)
@@ -55,12 +67,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     // Define what 'null' means for a return value from a state transition handler
     public static final GroupState CONTINUE = null;
 
-    private EvaluationContext context;
-    private Group       currentGroup;
-    private GroupState  currentState;
-    private GroupState  nextState; // only set during a state transition
-    private Triggers    triggers = new Triggers();
-    private User        currentUser;
+    private EvaluationContext   context;
+    private CurrentGroupState.StateDetail   jvmsDetail;           // used to report state and progress
+    private CurrentGroupState.StateDetail   webServersDetail;     // used to report state and progress
+    private DateTime            lastChange;
+    private Group               currentGroup;
+    private GroupState          currentState;
+    private GroupState          nextState;      // only set during a state transition
+    private Triggers            triggers = new Triggers();
+    private User                currentUser;
 
     private static final User systemUser;
     private static final Map<GroupState, StateEntry> gse;
@@ -103,6 +118,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Autowired
     JvmStatePersistenceService jvmStatePersistenceService;
     
+    @Autowired 
+    WebServerDao        webServerDao;
+
+    @Autowired 
+    StateService<WebServer, WebServerReachableState>    webServerStateService;
+
     // =========== STATE HANDLERS ===========================
     // Note: all state handler methods must be public
     // But should not be invoked directly.
@@ -148,7 +169,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         // check with injected persistence service for number of active jvms to decide which state this 
         // should really be in.
         // then call         defaultStateInTransitionHandler(); or persist.
-        return getPerceivedState();
+        return readPerceivedState();
     }
 
     /**
@@ -156,7 +177,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @return
      */
     public GroupState onStarting() {
-        GroupState state = getPerceivedState();
+        GroupState state = readPerceivedState();
         if(state == GroupState.STARTED) return GroupState.STARTED; 
         
      // only a timeout/error/reset will help us leave starting
@@ -169,7 +190,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @return
      */
     public GroupState onStopping() {
-        GroupState state = getPerceivedState();
+        GroupState state = readPerceivedState();
         if(state == GroupState.STOPPED) return GroupState.STOPPED; 
         
      // only a timeout/error/reset will help us leave stopping
@@ -182,7 +203,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @return
      */
     public GroupState onStarted() {
-        return getPerceivedState();
+        return readPerceivedState();
     }
 
     /**
@@ -190,7 +211,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @return
      */
     public GroupState onStopped() {
-        return getPerceivedState();
+        return readPerceivedState();
     }
 
     /**
@@ -198,18 +219,18 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @return
      */
     public GroupState onPartial() {
-        return getPerceivedState();
+        return readPerceivedState();
     }
 
     // =========== STATE HELPERS ============================
     
-    private GroupState getPerceivedState() { 
+    private GroupState readPerceivedState() { 
         
         // Consider that we might be a long lived instance, so reload.
         Group group = groupPersistenceService.getGroup(getCurrentGroup().getId());
         
-        GroupState jvmState = getPerceivedStateJvms(group);
-        GroupState webState = getPerceivedStateWebServers(group);
+        GroupState jvmState = readPerceivedStateJvms(group);
+        GroupState webState = readPerceivedStateWebServers(group);
         
         if(webState == GroupState.INITIALIZED) { 
             return jvmState; 
@@ -229,7 +250,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         return jvmState; // both are the same at this point.        
     }
 
-    private GroupState getPerceivedStateJvms(Group group) { 
+    private GroupState readPerceivedStateJvms(Group group) { 
         
         int started = 0, unstarted = 0;
         for(Jvm jvm : group.getJvms()) {
@@ -240,6 +261,10 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                 ++started;
             }
         }
+
+        jvmsDetail.setStarted(started);
+        jvmsDetail.setTotal(unstarted + started);
+        
         if(started == 0 && unstarted == 0) { 
             return GroupState.INITIALIZED;
         } else if(started == 0) {
@@ -251,17 +276,32 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         }
     }
 
-    private GroupState getPerceivedStateWebServers(Group group) { 
-        
+    private GroupState readPerceivedStateWebServers(Group group) { 
+
         int started = 0, unstarted = 0;
-        for(Jvm jvm : group.getJvms()) {
-            CurrentJvmState jvmState = jvmStatePersistenceService.getJvmState(jvm.getId());
-            if(jvmState == null || jvmState.getJvmState() != JvmState.STARTED) { 
-                ++unstarted;
-            } else { 
-                ++started;
+        
+        List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId(), PaginationParameter.all());
+        
+        if(!webServers.isEmpty()) {
+        
+            Set<Identifier<WebServer>> webServerSet = new HashSet<>();
+            for(WebServer webServer : webServers) { 
+                webServerSet.add(webServer.getId());            
+            }
+            Set<CurrentState<WebServer,WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
+            
+            for(CurrentState<WebServer, WebServerReachableState> wsState : results) {
+                if(wsState.getState() == WebServerReachableState.REACHABLE) {
+                    ++started;
+                } else {
+                    ++unstarted;
+                }
             }
         }
+        
+        webServersDetail.setStarted(started);
+        webServersDetail.setTotal(unstarted + started);
+
         if(started == 0 && unstarted == 0) { 
             return GroupState.INITIALIZED;
         } else if(started == 0) {
@@ -338,12 +378,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     public GroupStateManagerTableImpl() {
         context = new StandardEvaluationContext(this);
+        jvmsDetail = new StateDetail(0, 0);
+        webServersDetail = new StateDetail(0, 0);
     }
 
     @Override
     public void initializeGroup(Group group, User user) { 
         currentState = null;
         currentGroup = group;
+        lastChange = group.getCurrentState().getAsOf();
         
         // invoke FSM for the first time. Should change currentState. 
         handleState(group.getCurrentState().getState() == null ? INITIALIZED : group.getCurrentState().getState(), user);
@@ -395,6 +438,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     public GroupState getCurrentState() {
         return currentState;
+    }
+
+    @Override
+    public CurrentGroupState getCurrentStateDetail() {
+        return new CurrentGroupState(currentGroup.getId(), currentState, lastChange, jvmsDetail, webServersDetail);
     }
 
     @Override

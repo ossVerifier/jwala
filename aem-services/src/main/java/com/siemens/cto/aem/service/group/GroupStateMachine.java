@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.group;
 
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -29,5 +30,7 @@ public interface GroupStateMachine {
     GroupState getCurrentState();
 
     Group getCurrentGroup();
+
+    CurrentGroupState getCurrentStateDetail();
 
 }

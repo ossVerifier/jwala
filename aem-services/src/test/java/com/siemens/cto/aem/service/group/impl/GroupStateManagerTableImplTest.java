@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,11 +32,16 @@ import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.service.group.GroupStateMachine;
+import com.siemens.cto.aem.service.state.StateService;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
     GroupStateManagerTableImplTest.CommonConfiguration.class,
@@ -51,16 +57,27 @@ public class GroupStateManagerTableImplTest {
     static class CommonConfiguration {
         
         @Bean 
-        public GroupStateManagerTableImpl getClassUnderTest() {
+        public GroupStateMachine getClassUnderTest() {
             return new GroupStateManagerTableImpl();
         }
+        
+        @Bean
+        public WebServerDao getWebServerDao() {
+            return Mockito.mock(WebServerDao.class);
+        }
+        @SuppressWarnings("unchecked")
+        @Bean 
+        public StateService<WebServer, WebServerReachableState>    getWebServerStateService() {
+            return Mockito.mock(StateService.class);
+        }
+        
     }   
     
     @Autowired
     GroupPersistenceService groupPersistenceService;
 
     @Autowired
-    GroupStateManagerTableImpl classUnderTest;
+    GroupStateMachine classUnderTest;
     
     @Autowired
     JvmPersistenceService jvmPersistenceService;

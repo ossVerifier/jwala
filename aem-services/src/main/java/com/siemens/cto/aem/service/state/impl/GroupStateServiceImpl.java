@@ -93,6 +93,9 @@ public class GroupStateServiceImpl implements GroupStateService.API {
             if(gsm.getCurrentState() != groupState) {
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
                 groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+                
+                CurrentGroupState groupStateDetail = gsm.getCurrentStateDetail();
+                LOGGER.info("Group State Service: " + groupStateDetail.toString());
             }
         }
     }
@@ -127,9 +130,9 @@ public class GroupStateServiceImpl implements GroupStateService.API {
         gsm.initializeGroup(group, user);
         return gsm;
     }
-@Override
+    @Override
     public void signalReset(Identifier<Group> groupId, User user) {
-    getGsmById(groupId, user).signalReset(user);
+        getGsmById(groupId, user).signalReset(user);
     }
 
     @Override

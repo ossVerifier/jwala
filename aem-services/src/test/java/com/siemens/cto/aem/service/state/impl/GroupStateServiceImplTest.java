@@ -28,11 +28,15 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.state.StateService;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -134,5 +138,15 @@ public class GroupStateServiceImplTest {
         public GroupPersistenceService getGroupPersistenceService() {
             return Mockito.mock(GroupPersistenceService.class);
         }
+        @Bean
+        public WebServerDao getWebServerDao() {
+            return Mockito.mock(WebServerDao.class);
+        }
+        @SuppressWarnings("unchecked")
+        @Bean 
+        public StateService<WebServer, WebServerReachableState>    getWebServerStateService() {
+            return Mockito.mock(StateService.class);
+        }
+
     }
 }

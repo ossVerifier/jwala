@@ -12,6 +12,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import org.joda.time.DateTime;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -154,6 +156,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
         }
 
         jpaGroup.setState(updateGroupCommand.getNewGroupState());
+        jpaGroup.setStateUpdated(DateTime.now().toCalendar(null));
         jpaGroup.setUpdateBy(auditEvent.getUser().getUserId());
         jpaGroup.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
 

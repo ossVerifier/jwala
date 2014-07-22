@@ -7,8 +7,55 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 
 public class CurrentGroupState extends CurrentState<Group, GroupState> {
 
-    public CurrentGroupState(Identifier<Group> theId, GroupState theState, DateTime theAsOf) {
+    public static class StateDetail {
+        
+        private int started;
+        private int total;
+        
+        public StateDetail(final int started, final int total) { 
+            this.started = started;
+            this.total = total;
+        }
+        public void setStarted(int started) {
+            this.started = started;
+        }
+        public int getStarted() {
+            return this.started;
+        }
+        public void setTotal(int total) {
+            this.total = total;
+        }
+        public int getTotal() {
+            return this.total;
+        }
+        public float getPercentStarted() {
+            return this.total == 0 ? 1.0f : (((float)started) / total);
+        }
+    }
+    
+    private final StateDetail webServers;
+    private final StateDetail jvms;
+    
+    public CurrentGroupState(Identifier<Group> theId, GroupState theState, DateTime theAsOf, StateDetail jvmsDetail, StateDetail webServersDetail ) {
         super(theId, theState, theAsOf);
+        this.jvms = jvmsDetail;
+        this.webServers = webServersDetail;
     }
 
+    public CurrentGroupState(Identifier<Group> theId, GroupState theState, DateTime theAsOf) {
+        this(theId, theState, theAsOf,new StateDetail(0,0),new StateDetail(0,0));
+    }
+
+    public StateDetail getWebServersDetail() {
+        return this.webServers;
+    }
+    
+    public StateDetail getJvmsDetail() {
+        return this.jvms;
+    }
+
+    @Override
+    public String toString() { 
+        return super.toString() + ", 'detail': {'jvmsPercent':"+jvms.getPercentStarted() * 100 +", 'wsPercent':"+webServers.getPercentStarted()*100+"}";
+    }
 }
