@@ -212,12 +212,12 @@ var GroupOperationsDataTable = React.createClass({
                                  mData:null,
                                  tocType:"link",
                                  linkLabel:"Heap Dump",
-                                 linkClick:this.jvmHeapDump},
+                                 onClickCallback:this.jvmHeapDump},
                                 {sTitle:"",
                                  mData:null,
                                  tocType:"link",
                                  linkLabel:"Thread Dump",
-                                 hRefCallback:this.buildThreadDumpHRef},
+                                 onClickCallback:this.onClickThreadDump},
                                 [{sTitle:"",
                                   mData:null,
                                   tocType:"button",
@@ -326,11 +326,12 @@ var GroupOperationsDataTable = React.createClass({
                 window.location.protocol + "//" +
                 data.hostName + ":" + data.httpPort + "/manager/";
    },
-    buildThreadDumpHRef: function(data) {
+    onClickThreadDump: function(data) {
         var redirectUrl = window.location.protocol + "//" +
                           data.hostName + ":" + data.httpPort +
                           "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
-        return "idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl);
+        // TODO: Call via ajax/promises to be able to parse the thread dump response first
+        window.open("idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl));
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;

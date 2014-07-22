@@ -114,9 +114,9 @@ var WebAppConfig = React.createClass({
     selectItemCallback: function(item) {
         selectedWebApp = item;
     },
-    editCallback: function(id) {
+    editCallback: function(data) {
         var thisComponent = this;
-        this.props.service.getWebApp(id,
+        this.props.service.getWebApp(data.id.id,
             function(response){
                 thisComponent.setState({WebAppFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})

@@ -12,7 +12,7 @@ var Anchor = React.createClass({
         return <a id={this.props.id} href="">{this.props.value}</a>
     },
     linkClick: function() {
-        this.props.callback(this.props.valueId);
+        this.props.callback(this.props.data);
         return false;
     }
 });

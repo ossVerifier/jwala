@@ -112,9 +112,9 @@ var WebServerConfig = React.createClass({
     selectItemCallback: function(item) {
         selectedWebServer = item;
     },
-    editCallback: function(id) {
+    editCallback: function(data) {
         var thisComponent = this;
-        this.props.service.getWebServer(id,
+        this.props.service.getWebServer(data.id.id,
             function(response){
                 thisComponent.setState({webServerFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})

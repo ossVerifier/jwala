@@ -106,9 +106,9 @@ var GroupConfig = React.createClass({
     selectItemCallback: function(item) {
         selectedGroup = item;
     },
-    editCallback: function(id) {
+    editCallback: function(data) {
         var thisComponent = this;
-        this.props.service.getGroup(id,
+        this.props.service.getGroup(data.id.id,
             function(response){
                 thisComponent.setState({groupFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})

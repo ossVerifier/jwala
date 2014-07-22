@@ -112,9 +112,9 @@ var JvmConfig = React.createClass({
     selectItemCallback: function(item) {
         selectedJvm = item;
     },
-    editCallback: function(id) {
+    editCallback: function(data) {
         var thisComponent = this;
-        this.props.service.getJvm(id,
+        this.props.service.getJvm(data.id.id,
             function(response){
                 thisComponent.setState({jvmFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})

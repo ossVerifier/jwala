@@ -1,14 +1,14 @@
 /**
- * Creates an id delimited by dash "-"
+ * Creates an id delimited by dash delimeter
  * e.g. ["btn", "1"] returns btn-1
  */
-var createDashDelimitedId = function(idFragments) {
+var createDelimitedId = function(idFragments, delimiter) {
     var tmpId;
     for (var i = 0; i < idFragments.length; i++) {
         if (tmpId === undefined) {
             tmpId = idFragments[i];
         } else {
-            tmpId = tmpId + "-" + idFragments[i]
+            tmpId = tmpId + delimiter + idFragments[i]
         }
     }
     return tmpId;
@@ -182,7 +182,7 @@ var isArray = function(val) {
 var renderButton = function(tableId, item, data, type, full) {
 
     var btnClassifier = item.customBtnClassName !== undefined ? item.customBtnClassName : item.btnLabel;
-    var id = tableId + "btn" + btnClassifier.replace(/\s+/g, '') +  full.id.id;
+    var id = tableId + "btn" + btnClassifier.replace(/[\. ,:-]+/g, '') +  full.id.id;
     return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
                                                    className:item.className,
                                                    customBtnClassName:item.customBtnClassName,
@@ -197,16 +197,17 @@ var renderButton = function(tableId, item, data, type, full) {
 
 var renderLink = function(item, tableId, data, type, full, editCallback) {
     if (item.hRefCallback === undefined) {
-        return React.renderComponentToStaticMarkup(new Anchor({id:createDashDelimitedId([tableId,
-                                                               "link",
-                                                               full.id.id]),
-                                                               valueId:full.id.id,
+        var linkLabelPartId = item.linkLabel !== undefined ? item.linkLabel.replace(/[\. ,:-]+/g, '')
+                                                           : data.replace(/[\. ,:-]+/g, '')
+        var id = createDelimitedId([tableId, "link",  linkLabelPartId, full.id.id], "_");
+        return React.renderComponentToStaticMarkup(new Anchor({id:id,
+                                                               data:full,
                                                                value:item.linkLabel !== undefined ?
                                                                      item.linkLabel :
                                                                      data,
-                                                               callback: item.onClickCallback !== undefined ?
-                                                                         item.onClickCallback :
-                                                                         editCallback}));
+                                                               callback:item.onClickCallback !== undefined ?
+                                                                        item.onClickCallback :
+                                                                        editCallback}));
     }  else {
         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }
@@ -225,9 +226,9 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
 
     var theRootId = (rootId === undefined ? full.id.id : rootId);
     return React.renderComponentToStaticMarkup(
-                    new ExpandCollapseControl({id:createDashDelimitedId([tableId,
-                                                                         "ctrl-expand-collapse",
-                                                                         full.id.id]),
+                    new ExpandCollapseControl({id:createDelimitedId([tableId,
+                                                                     "ctrl-expand-collapse",
+                                                                     full.id.id], "_"),
                                                expandIcon:expandIcon,
                                                collapseIcon:collapseIcon,
                                                childTableDetails:childTableDetails,
