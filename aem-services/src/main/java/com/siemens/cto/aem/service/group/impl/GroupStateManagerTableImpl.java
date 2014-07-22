@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import static com.siemens.cto.aem.domain.model.group.GroupState.ERROR;
-import static com.siemens.cto.aem.domain.model.group.GroupState.UNKNOWN;
 import static com.siemens.cto.aem.domain.model.group.GroupState.INITIALIZED;
 import static com.siemens.cto.aem.domain.model.group.GroupState.PARTIAL;
 import static com.siemens.cto.aem.domain.model.group.GroupState.STARTED;
 import static com.siemens.cto.aem.domain.model.group.GroupState.STARTING;
 import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPED;
 import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPING;
+import static com.siemens.cto.aem.domain.model.group.GroupState.UNKNOWN;
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CANNOT_START;
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CAN_START;
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CANNOT_STOP;
@@ -114,8 +114,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Transactional
     public GroupState defaultStateInTransitionHandler(GroupState enteringState) { 
         // use this to persist the transition to the Group table.
-        currentGroup = groupPersistenceService.updateGroupStatus(
-                Event.create(new SetGroupStateCommand(currentGroup.getId(), enteringState), AuditEvent.now(currentUser)));
+        if(currentGroup.getCurrentState().getState() != enteringState) {
+            
+            debug(this, "PERSIST", enteringState);
+            
+            currentGroup = groupPersistenceService.updateGroupStatus(
+                    Event.create(new SetGroupStateCommand(currentGroup.getId(), enteringState), AuditEvent.now(currentUser)));
+        }
         return CONTINUE;
     }
 
@@ -200,7 +205,32 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     
     private GroupState getPerceivedState() { 
         
+        // Consider that we might be a long lived instance, so reload.
         Group group = groupPersistenceService.getGroup(getCurrentGroup().getId());
+        
+        GroupState jvmState = getPerceivedStateJvms(group);
+        GroupState webState = getPerceivedStateWebServers(group);
+        
+        if(webState == GroupState.INITIALIZED) { 
+            return jvmState; 
+        }
+        if(jvmState == GroupState.INITIALIZED) { 
+            return webState; 
+        }
+        
+        if(jvmState == GroupState.ERROR || webState == GroupState.ERROR) { 
+            return GroupState.ERROR;
+        }
+        
+        if(jvmState != webState) { 
+            return GroupState.PARTIAL;
+        }
+        
+        return jvmState; // both are the same at this point.        
+    }
+
+    private GroupState getPerceivedStateJvms(Group group) { 
+        
         int started = 0, unstarted = 0;
         for(Jvm jvm : group.getJvms()) {
             CurrentJvmState jvmState = jvmStatePersistenceService.getJvmState(jvm.getId());
@@ -220,7 +250,29 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             return GroupState.STARTED;
         }
     }
-    
+
+    private GroupState getPerceivedStateWebServers(Group group) { 
+        
+        int started = 0, unstarted = 0;
+        for(Jvm jvm : group.getJvms()) {
+            CurrentJvmState jvmState = jvmStatePersistenceService.getJvmState(jvm.getId());
+            if(jvmState == null || jvmState.getJvmState() != JvmState.STARTED) { 
+                ++unstarted;
+            } else { 
+                ++started;
+            }
+        }
+        if(started == 0 && unstarted == 0) { 
+            return GroupState.INITIALIZED;
+        } else if(started == 0) {
+            return GroupState.STOPPED;
+        } else if(started > 0 && unstarted > 0){ 
+            return GroupState.PARTIAL;
+        } else { 
+            return GroupState.STARTED;
+        }
+    }
+
     // =========== STATE ENGINE =============================
     
     /**
@@ -372,12 +424,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             this.stateExpression = parser.parseExpression(stateHandler != null ? stateHandler : DEFAULT_STATE_EXPRESSION);
         }
         
-        static void debug(GroupStateManagerTableImpl fsm, String op, GroupState state) {
-            if(state != null) { 
-                LOGGER.debug("Group FSM for id={}: {} {}", fsm.getCurrentGroup().getId().getId(), op, state);
-            }
-        }
-        
         GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState enteringState) {            
             try {
                 debug(fsm, "ENTER", enteringState);
@@ -403,6 +449,14 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             } finally {
                 context.setVariable("state", null);
             }
+        }
+    }
+    
+    // ==== Log Helper ====
+
+    static void debug(GroupStateManagerTableImpl fsm, String op, GroupState state) {
+        if(state != null) { 
+            LOGGER.debug("Group FSM for id={}: {} {}", fsm.getCurrentGroup().getId().getId(), op, state);
         }
     }
 

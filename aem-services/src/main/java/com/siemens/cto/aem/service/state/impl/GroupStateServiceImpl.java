@@ -49,7 +49,7 @@ public class GroupStateServiceImpl implements GroupStateService.API {
     @Override
     public void stateUpdate(CurrentJvmState cjs) {
         
-        LOGGER.info("State Update Received");
+        LOGGER.debug("State Update Received");
         
         // alias
         GroupStateMachine gsm = groupStateMachine;
