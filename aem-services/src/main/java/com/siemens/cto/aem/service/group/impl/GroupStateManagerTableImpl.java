@@ -1,5 +1,19 @@
 package com.siemens.cto.aem.service.group.impl;
 
+
+import static com.siemens.cto.aem.domain.model.group.GroupState.ERROR;
+import static com.siemens.cto.aem.domain.model.group.GroupState.INITIALIZED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.PARTIAL;
+import static com.siemens.cto.aem.domain.model.group.GroupState.STARTED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.STARTING;
+import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPING;
+import static com.siemens.cto.aem.domain.model.group.GroupState.UNKNOWN;
+import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CANNOT_START;
+import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CAN_START;
+import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CANNOT_STOP;
+import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CAN_STOP;
+
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +40,6 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -39,19 +52,6 @@ import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.StateService;
-
-import static com.siemens.cto.aem.domain.model.group.GroupState.ERROR;
-import static com.siemens.cto.aem.domain.model.group.GroupState.INITIALIZED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.PARTIAL;
-import static com.siemens.cto.aem.domain.model.group.GroupState.STARTED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.STARTING;
-import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.STOPPING;
-import static com.siemens.cto.aem.domain.model.group.GroupState.UNKNOWN;
-import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CANNOT_START;
-import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StartCondition.CAN_START;
-import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CANNOT_STOP;
-import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CAN_STOP;
 
 /**
  * FSM built using spEL for handlers (Spring Expression Language)
@@ -69,7 +69,24 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     // Define what 'null' means for a return value from a state transition handler
     public static final GroupState CONTINUE = null;
 
-    // For reporting state detail
+    // Conditions - properties of being in a state
+    enum StartCondition { 
+        CAN_START,
+        CANNOT_START
+    }
+    
+    enum StopCondition { 
+        CAN_STOP,
+        CANNOT_STOP
+    }
+    
+    // Keep a list of JVMs that triggered state updates
+    private class Triggers { 
+        private Deque<Identifier<Jvm>> jvms = new ConcurrentLinkedDeque<>();
+        private Deque<Identifier<WebServer>> webServers = new ConcurrentLinkedDeque<>();
+    }
+    
+    // Variables For reporting state detail
     private CurrentGroupState.StateDetail   jvmsDetail;
     private CurrentGroupState.StateDetail   webServersDetail;
     private DateTime                        lastChange;
@@ -77,7 +94,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     // Tracking state changes internally during a state transition
     private Group               currentGroup;
     private GroupState          currentState;
-    private GroupState          nextState;
     private User                currentUser;
 
     // Internal implementation
@@ -85,8 +101,24 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     private EvaluationContext   context;
     private static final User   SYSTEM_USER;
     private static final Map<GroupState, StateEntry> STATES;
+    
+    // =========== HANDLER INJECTED BEANS ===================
+    @Autowired
+    GroupPersistenceService groupPersistenceService;
 
-    static {
+    @Autowired
+    @Qualifier("jvmStatePersistenceService")
+    StatePersistenceService<Jvm, JvmState> jvmStatePersistenceService;
+
+    @Autowired
+    WebServerDao        webServerDao;
+
+    @Autowired
+    StateService<WebServer, WebServerReachableState>    webServerStateService;
+
+    
+    // =========== INITIALIZERS =============================
+    static { 
         SYSTEM_USER = User.getSystemUser();
 
         STATES = new HashMap<>();
@@ -103,20 +135,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         STATES.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, null,      null, "onStopped()",    null));
 
     }
-
-    private class Triggers {
-        private Deque<Identifier<Jvm>> jvms = new ConcurrentLinkedDeque<>();
-    }
-
-    enum StartCondition {
-        CAN_START,
-        CANNOT_START
-    }
-    enum StopCondition {
-        CAN_STOP,
-        CANNOT_STOP
-    }
-
     // =========== CONSTRUCTOR ===================
 
     public GroupStateManagerTableImpl() {
@@ -124,21 +142,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         jvmsDetail = new StateDetail(0, 0);
         webServersDetail = new StateDetail(0, 0);
     }
-
-
-    // =========== HANDLER INJECTED BEANS ===================
-    @Autowired
-    GroupPersistenceService groupPersistenceService;
-
-    @Autowired
-    @Qualifier("jvmStatePersistenceService")
-    StatePersistenceService<Jvm, JvmState> jvmStatePersistenceService;
-
-    @Autowired
-    WebServerDao        webServerDao;
-
-    @Autowired
-    StateService<WebServer, WebServerReachableState>    webServerStateService;
 
     // =========== STATE HANDLERS ===========================
     // Note: all state handler methods must be public
@@ -262,34 +265,38 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         if(jvmState == GroupState.ERROR || webState == GroupState.ERROR) {
             return GroupState.ERROR;
         }
-
-        if(jvmState != webState) {
+        
+        if(!(jvmState.equals(webState))) { 
             return GroupState.PARTIAL;
         }
 
         return jvmState; // both are the same at this point.
     }
 
-    private GroupState readPerceivedStateJvms(Group group) {
-
-        int started = 0, unstarted = 0;
+    private GroupState readPerceivedStateJvms(Group group) { 
+        
+        int started = 0, unstarted = 0, errors = 0;
         for(Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
             if(jvmState == null || jvmState.getState() != JvmState.STARTED) {
                 ++unstarted;
-            } else {
+            } else if(jvmState.getState() != JvmState.FAILED) { 
                 ++started;
+            } else { 
+                ++errors;
             }
         }
 
         jvmsDetail.setStarted(started);
         jvmsDetail.setTotal(unstarted + started);
-
-        return progressToState(started, unstarted);
+        
+        return progressToState(started, unstarted, errors); 
     }
-
-    private GroupState progressToState(int started, int unstarted) {
-        if(started == 0 && unstarted == 0) {
+    
+    private GroupState progressToState(int started, int unstarted, int errors) {
+        if(errors > 0) return GroupState.ERROR;
+        
+        if(started == 0 && unstarted == 0) { 
             return GroupState.INITIALIZED;
         } else if(started == 0) {
             return GroupState.STOPPED;
@@ -302,7 +309,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private GroupState readPerceivedStateWebServers(Group group) {
 
-        int started = 0, unstarted = 0;
+        int started = 0, unstarted = 0, errors = 0 /*unsupported for web servers*/;
 
         List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId(), PaginationParameter.all());
 
@@ -319,14 +326,14 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                     ++started;
                 } else {
                     ++unstarted;
-                }
+                } 
             }
         }
 
         webServersDetail.setStarted(started);
         webServersDetail.setTotal(unstarted + started);
-
-        return progressToState(started, unstarted);
+        
+        return progressToState(started, unstarted, errors); 
     }
 
     // =========== STATE ENGINE =============================
@@ -336,6 +343,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      * @param proposedState
      */
     private synchronized void handleState(GroupState proposedState, User user) {
+        GroupState nextState;
+
         try {
 
             this.currentUser = user;
@@ -520,6 +529,24 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         if(state != null) {
             LOGGER.debug("Group FSM for id={}: {} {}", fsm.getCurrentGroup().getId().getId(), op, state);
         }
+    }
+
+    @Override
+    public void wsError(Identifier<WebServer> wsId) {
+        triggers.webServers.add(wsId);
+        handleState(GroupState.ERROR, SYSTEM_USER);        
+    }
+
+    @Override
+    public void wsReachable(Identifier<WebServer> wsId) {
+        triggers.webServers.add(wsId);
+        handleState(currentState, SYSTEM_USER);        
+    }
+
+    @Override
+    public void wsUnreachable(Identifier<WebServer> wsId) {
+        triggers.webServers.add(wsId);
+        handleState(currentState, SYSTEM_USER);        
     }
 
 }

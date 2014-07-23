@@ -118,7 +118,7 @@ public class GroupStateServiceImpl implements GroupStateService.API {
     }
 
     /**
-     * @param group group to get a state machine for.
+     * @param groupId group to get a state machine for.
      * @return the state machine
      */
     private GroupStateMachine getGsmById(Identifier<Group> groupId, User user) {

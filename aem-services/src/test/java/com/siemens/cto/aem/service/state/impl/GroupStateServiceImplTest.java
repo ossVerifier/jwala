@@ -1,5 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +27,6 @@ import org.springframework.integration.Message;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.SubscribableChannel;
-import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,18 +50,11 @@ import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
+import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateService;
-
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -271,9 +271,11 @@ public class GroupStateServiceImplTest {
         public JvmPersistenceService getJvmPersistenceService() {
             return Mockito.mock(JvmPersistenceService.class);
         }
+        @SuppressWarnings("unchecked")
         @Bean
-        public JvmStatePersistenceService getJvmStatePersistenceService() {
-            return Mockito.mock(JvmStatePersistenceService.class);
+        @Qualifier("jvmStatePersistenceService")
+        public StatePersistenceService<Jvm, JvmState> getJvmStatePersistenceService() {
+            return (StatePersistenceService<Jvm, JvmState>)Mockito.mock(StatePersistenceService.class);
         }
         @Bean
         public GroupPersistenceService getGroupPersistenceService() {
