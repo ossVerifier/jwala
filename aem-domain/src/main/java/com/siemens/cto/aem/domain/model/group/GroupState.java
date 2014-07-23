@@ -28,4 +28,9 @@ public enum GroupState implements ExternalizableState {
     public String toStateString() {
         return stateName;
     }
+    
+    @Override 
+    public String toString() {
+        return toStateString();
+    }
 }

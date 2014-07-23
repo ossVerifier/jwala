@@ -57,6 +57,10 @@ public class GroupStateServiceImpl implements GroupStateService.API {
         // lookup children
         Identifier<Jvm> jvmId = cjs.getJvmId();
         Jvm jvm = jvmPersistenceService.getJvm(jvmId);
+        
+        if(jvm == null) {
+            return;
+        }
         Set<LiteGroup> groups = jvm.getGroups();
         
         for(LiteGroup group : groups) {
@@ -103,20 +107,6 @@ public class GroupStateServiceImpl implements GroupStateService.API {
     @Override
     public void stateUpdate(WebServerState wsState) {
         LOGGER.error("** State Update For WebServerState Received - not implemented **");        
-    }
-
-    /**
-     * TODO - this operation is currently unused since it is easier
-     * to call with an ID and go to the database to get state.
-     * TODO - could cache. Right now we use a prototype scoped bean
-     * @param group group to get a state machine for.
-     * @return the state machine
-     */    
-    @SuppressWarnings("unused")
-    private GroupStateMachine getGsm(Group group, User user) { 
-        GroupStateMachine gsm = groupStateMachine;
-        gsm.initializeGroup(group, user);
-        return gsm;
     }
 
     /**
