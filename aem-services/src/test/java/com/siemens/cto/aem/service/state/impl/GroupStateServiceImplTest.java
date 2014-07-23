@@ -79,9 +79,6 @@ public class GroupStateServiceImplTest {
     TaskExecutor notificationExecutor;
 
     @Autowired
-    ServiceActivatingHandler  groupStateServiceActivator;
-
-    @Autowired
     GroupStateService.API   groupStateService;
 
     @Autowired
@@ -91,7 +88,6 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testSubscribeAndReceive() throws InterruptedException {
-        stateUpdates.unsubscribe(groupStateServiceActivator);
         stateUpdates.subscribe(new MessageHandler() {
 
             @Override
@@ -113,7 +109,6 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testSubscribeAndReceiveIsParallel() throws InterruptedException {
-        stateUpdates.unsubscribe(groupStateServiceActivator);
         stateUpdates.subscribe(new MessageHandler() {
 
             @Override
