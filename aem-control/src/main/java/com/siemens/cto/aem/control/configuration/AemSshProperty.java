@@ -2,10 +2,10 @@ package com.siemens.cto.aem.control.configuration;
 
 public enum AemSshProperty {
 
-    USER_NAME("userName"),
-    PORT("port"),
-    PRIVATE_KEY_FILE("privateKeyFile"),
-    KNOWN_HOSTS_FILE("knownHostsFile");
+    USER_NAME("AemSsh.userName"),
+    PORT("AemSsh.port"),
+    PRIVATE_KEY_FILE("AemSsh.privateKeyFile"),
+    KNOWN_HOSTS_FILE("AemSsh.knownHostsFile");
 
     private final String propertyName;
 

@@ -8,18 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.med.hs.soarian.config.PropertiesStore;
 
 @Configuration
 public class AemSshConfig {
 
-    private static final String AEM_SSH_PROPERTY_SET = "AemSsh";
-
     @Bean
     public SshConfiguration getSshConfiguration() {
 
-        final Properties sshProperties = PropertiesStore.getProperties(AEM_SSH_PROPERTY_SET);
+        final Properties sshProperties = ApplicationProperties.getProperties();
 
         final SshConfiguration configuration = new SshConfiguration(getStringPropertyFrom(sshProperties,
                                                                                           AemSshProperty.USER_NAME),

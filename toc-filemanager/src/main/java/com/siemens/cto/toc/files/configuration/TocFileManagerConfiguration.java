@@ -4,21 +4,26 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 
-import com.siemens.cto.toc.files.*;
-import com.siemens.cto.toc.files.impl.*;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.context.event.ContextClosedEvent;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.med.hs.soarian.config.PropertiesStore;
+import com.siemens.cto.toc.files.FilesConfiguration;
+import com.siemens.cto.toc.files.NameSynthesizer;
+import com.siemens.cto.toc.files.Repository;
+import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.WebArchiveManager;
+import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
+import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
+import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
+import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
 
 @Configuration
-public class TocFileManagerConfiguration implements ApplicationListener<ContextClosedEvent> {
+public class TocFileManagerConfiguration {
     
     /**
      * Look up path properties from the application properties
@@ -46,14 +51,8 @@ public class TocFileManagerConfiguration implements ApplicationListener<ContextC
         return new LocalFileSystemRepositoryImpl();
     }
 
-    @Override
-    public void onApplicationEvent(ContextClosedEvent event) {
-        PropertiesStore.startPropertiesMonitor();        
-    }
-
     @Bean
     public TemplateManager getTemplateManager() {
         return new TemplateManagerImpl();
-    }
-    
+    }   
 }
