@@ -26,6 +26,11 @@ public class AemJmsConfig {
         return lookup("jms/toc-status", Destination.class);
     }
 
+    @Bean
+    public Destination getStateNotificationDestination() {
+        return lookup("jms/toc-state-notification", Destination.class);
+    }
+
     @Bean(name = "jvmStateNotificationDestination")
     public Destination getJvmStateNotificationDestination() {
         return lookup("jms/toc-jvm-state-notification", Destination.class);
@@ -39,7 +44,7 @@ public class AemJmsConfig {
     @Bean
     public JmsPackageBuilder getJmsPackageBuilder() {
         return new JmsPackageBuilder().setConnectionFactory(getConnectionFactory())
-                                      .setDestination(getJvmStateNotificationDestination());
+                                      .setDestination(getStateNotificationDestination());
     }
 
     @Bean(name = "webServerStateNotificationDestination")

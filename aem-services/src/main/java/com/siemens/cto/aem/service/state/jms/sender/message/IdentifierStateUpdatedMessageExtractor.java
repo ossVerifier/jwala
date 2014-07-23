@@ -4,7 +4,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.message.StateMessageKey;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
 public class IdentifierStateUpdatedMessageExtractor<T> extends StateUpdatedMessageExtractor<Identifier<T>> {
 
@@ -14,6 +14,6 @@ public class IdentifierStateUpdatedMessageExtractor<T> extends StateUpdatedMessa
 
     @Override
     public Identifier<T> extract() throws JMSException {
-        return new Identifier<>(source.getString(StateMessageKey.ID.getKey()));
+        return new Identifier<>(source.getString(CommonStateKey.ID.getKey()));
     }
 }

@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
@@ -14,14 +15,15 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
+import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.state.StateService;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
@@ -37,18 +39,19 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private JvmControlPersistenceService persistenceService;
     private JvmService jvmService;
     private JvmCommandExecutor commandExecutor;
-    private JvmStateService jvmStateService;
     private User user;
 
     @Captor
-    private ArgumentCaptor<SetJvmStateCommand> setJvmStateCommand;
+    private ArgumentCaptor<JvmSetStateCommand> setJvmStateCommand;
+
+    @Mock
+    private StateService<Jvm, JvmState> jvmStateService;
 
     @Before
     public void setup() {
         persistenceService = mock(JvmControlPersistenceService.class);
         jvmService = mock(JvmService.class);
         commandExecutor = mock(JvmCommandExecutor.class);
-        jvmStateService = mock(JvmStateService.class);
         impl = new JvmControlServiceImpl(persistenceService,
                                          jvmService,
                                          commandExecutor,
@@ -82,12 +85,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         verify(jvmService, times(1)).getJvm(eq(jvmId));
         verify(commandExecutor, times(1)).controlJvm(eq(controlCommand),
                                                      eq(jvm));
-        verify(jvmStateService, times(1)).setCurrentJvmState(setJvmStateCommand.capture(),
-                                                             eq(user));
+        verify(jvmStateService, times(1)).setCurrentState(setJvmStateCommand.capture(),
+                                                          eq(user));
 
         assertEquals(jvmId,
-                     setJvmStateCommand.getValue().getNewJvmState().getJvmId());
+                     setJvmStateCommand.getValue().getNewState().getId());
         assertEquals(controlOperation.getOperationState(),
-                     setJvmStateCommand.getValue().getNewJvmState().getJvmState());
+                     setJvmStateCommand.getValue().getNewState().getState());
     }
 }

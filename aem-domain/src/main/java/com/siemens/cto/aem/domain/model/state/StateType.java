@@ -4,5 +4,5 @@ public enum StateType {
 
     GROUP,
     JVM,
-    WEBSERVER;
+    WEB_SERVER;
 }

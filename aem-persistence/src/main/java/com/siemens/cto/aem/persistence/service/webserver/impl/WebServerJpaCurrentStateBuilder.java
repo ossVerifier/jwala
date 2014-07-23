@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.service.webserver.impl;
 
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
@@ -19,9 +20,14 @@ public class WebServerJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuil
 
     @Override
     public CurrentState<WebServer, WebServerReachableState> build() {
-        return new CurrentState<>(createId(),
-                                  createState(),
-                                  createAsOf());
+        if (currentState != null) {
+            return new CurrentState<>(createId(),
+                                      createState(),
+                                      createAsOf(),
+                                      StateType.WEB_SERVER);
+        }
+
+        return null;
     }
 
     private WebServerReachableState createState() {

@@ -8,19 +8,21 @@ import javax.jms.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.state.StateService;
 
 public class JvmStateMessageListener implements MessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
 
-    private final JvmStateService jvmStateService;
+    private final StateService<Jvm, JvmState> jvmStateService;
     private final JvmStateMapMessageConverter converter;
 
-    public JvmStateMessageListener(final JvmStateService theService,
+    public JvmStateMessageListener(final StateService<Jvm, JvmState> theService,
                                    final JvmStateMapMessageConverter theConverter) {
         jvmStateService = theService;
         converter = theConverter;
@@ -46,7 +48,7 @@ public class JvmStateMessageListener implements MessageListener {
     protected void processMessage(final MapMessage aMapMessage) throws JMSException {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.info("Processing message: {}", message);
-        jvmStateService.setCurrentJvmState(message.toCommand(),
-                                           User.getSystemUser());
+        jvmStateService.setCurrentState(message.toCommand(),
+                                        User.getSystemUser());
     }
 }

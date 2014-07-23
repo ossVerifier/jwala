@@ -13,10 +13,12 @@ import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
@@ -31,67 +33,67 @@ public class GroupStateServiceImpl implements GroupStateService.API {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateServiceImpl.class);
 
-    @Autowired 
+    @Autowired
     private GroupPersistenceService groupPersistenceService;
 
-    @Autowired 
+    @Autowired
     private JvmPersistenceService jvmPersistenceService;
-    
-    @Autowired 
+
+    @Autowired
     private GroupStateMachine groupStateMachine;
-    
+
     private User systemUser;
-    
+
     public GroupStateServiceImpl() {
         systemUser = User.getSystemUser();
     }
 
     @Transactional
     @Override
-    public void stateUpdate(CurrentJvmState cjs) {
-        
+    public void stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) {
+
         LOGGER.debug("State Update Received");
-        
+
         // alias
         GroupStateMachine gsm = groupStateMachine;
 
         // lookup children
-        Identifier<Jvm> jvmId = cjs.getJvmId();
+        Identifier<Jvm> jvmId = cjs.getId();
         Jvm jvm = jvmPersistenceService.getJvm(jvmId);
-        
+
         if(jvm == null) {
             return;
         }
         Set<LiteGroup> groups = jvm.getGroups();
-        
+
         for(LiteGroup group : groups) {
-            
+
             Group fullGroup = groupPersistenceService.getGroup(group.getId());
-            CurrentGroupState currentGroupState = 
-                    fullGroup.getCurrentState() == null 
+            CurrentGroupState currentGroupState =
+                    fullGroup.getCurrentState() == null
                     ? null : fullGroup.getCurrentState();
-            GroupState  groupState = 
-                    currentGroupState == null 
+            GroupState  groupState =
+                    currentGroupState == null
                     ? null : currentGroupState.getState();
-            
+
             gsm.initializeGroup(fullGroup, systemUser);
-            
-            internalHandleJvmStateUpdate(gsm, jvmId, cjs.getJvmState());            
-           
+
+            internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
+
             if(gsm.getCurrentState() != groupState) {
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
                 groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-                
+
                 CurrentGroupState groupStateDetail = gsm.getCurrentStateDetail();
                 LOGGER.info("Group State Service: " + groupStateDetail.toString());
             }
         }
     }
-    
+
     private void internalHandleJvmStateUpdate(GroupStateMachine gsm, Identifier<Jvm> jvmId, JvmState jvmState) {
 
-        switch(jvmState) { 
-        case STARTED: 
+        switch(jvmState) {
+        case STARTED:
             gsm.jvmStarted(jvmId);
             break;
         case STOPPED:
@@ -111,15 +113,15 @@ public class GroupStateServiceImpl implements GroupStateService.API {
     }
 
     @Override
-    public void stateUpdate(WebServerState wsState) {
-        LOGGER.error("** State Update For WebServerState Received - not implemented **");        
+    public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
+        LOGGER.error("** State Update For WebServerState Received - not implemented **");
     }
 
     /**
      * @param group group to get a state machine for.
      * @return the state machine
      */
-    private GroupStateMachine getGsmById(Identifier<Group> groupId, User user) { 
+    private GroupStateMachine getGsmById(Identifier<Group> groupId, User user) {
         GroupStateMachine gsm = groupStateMachine;
         Group group = groupPersistenceService.getGroup(groupId);
         gsm.initializeGroup(group, user);

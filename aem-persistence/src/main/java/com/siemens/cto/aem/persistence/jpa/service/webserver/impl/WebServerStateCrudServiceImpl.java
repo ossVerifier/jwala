@@ -9,6 +9,6 @@ import com.siemens.cto.aem.persistence.jpa.service.state.impl.StateCrudServiceIm
 public class WebServerStateCrudServiceImpl extends StateCrudServiceImpl<WebServer, WebServerReachableState> implements StateCrudService<WebServer, WebServerReachableState> {
 
     public WebServerStateCrudServiceImpl() {
-        super(StateType.WEBSERVER);
+        super(StateType.WEB_SERVER);
     }
 }

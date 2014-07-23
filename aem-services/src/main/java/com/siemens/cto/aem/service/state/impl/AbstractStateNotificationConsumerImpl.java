@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +49,10 @@ public abstract class AbstractStateNotificationConsumerImpl<T> implements StateN
     }
 
     @Override
-    public Set<T> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
+    public List<T> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
         updateLastAccessTime();
 
-        final Set<T> notifications = new HashSet<>();
+        final List<T> notifications = new ArrayList<>();
 
         TimeRemainingCalculator calculator = new TimeRemainingCalculator(defaultPollDuration);
         TimeRemaining timeRemaining;

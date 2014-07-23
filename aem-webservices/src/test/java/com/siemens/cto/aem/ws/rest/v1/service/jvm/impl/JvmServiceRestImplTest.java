@@ -19,6 +19,7 @@ import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
@@ -27,8 +28,7 @@ import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl.JvmStateConsumerManager;
@@ -69,11 +69,9 @@ public class JvmServiceRestImplTest {
     @Mock
     private JvmControlHistory jvmControlHistory;
     @Mock
-    private JvmStateService jvmStateService;
-    @Mock
-    private JvmStateNotificationService jvmStateNotificationService;
-    @Mock
     private JvmStateConsumerManager jvmStateConsumerManager;
+    @Mock
+    private StateService<Jvm, JvmState> jvmStateService;
 
     private JvmServiceRestImpl cut;
 
@@ -88,14 +86,14 @@ public class JvmServiceRestImplTest {
                                Integer.valueOf(redirectPort),
                                Integer.valueOf(shutdownPort),
                                Integer.valueOf(ajpPort));
-        final List<Jvm> result = new ArrayList<Jvm>();
+        final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
     }
 
     @Before
     public void setUp() {
-        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, jvmStateNotificationService, jvmStateConsumerManager);
+        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService);
     }
 
     @Test

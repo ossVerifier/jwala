@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.state;
 
-import java.util.Set;
+import java.util.List;
 
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 
@@ -14,5 +14,5 @@ public interface StateNotificationConsumer<T> {
 
     boolean isStale();
 
-    Set<T> getNotifications(final TimeRemainingCalculator someTime);
+    List<T> getNotifications(final TimeRemainingCalculator someTime);
 }

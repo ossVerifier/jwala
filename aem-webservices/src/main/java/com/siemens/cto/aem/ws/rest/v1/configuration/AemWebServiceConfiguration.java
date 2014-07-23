@@ -9,15 +9,19 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
@@ -34,7 +38,9 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl.JvmStateConsumerManager;
+import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.state.impl.StateConsumerManager;
+import com.siemens.cto.aem.ws.rest.v1.service.state.impl.StateServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -62,10 +68,12 @@ public class AemWebServiceConfiguration {
     private WebServerControlService webServerControlService;
 
     @Autowired
-    private JvmStateService jvmStateService;
+    @Qualifier("jvmStateService")
+    private StateService<Jvm, JvmState> jvmStateService;
 
     @Autowired
-    private JvmStateNotificationService jvmStateNotificationService;
+    @Qualifier("stateNotificationService")
+    private StateNotificationService<CurrentState<?,?>> stateNotificationService;
 
     @Bean
     public Server getV1JaxResServer() {
@@ -90,6 +98,7 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1ApplicationServiceRest());
         serviceBeans.add(getV1UserServiceRest());
         serviceBeans.add(getV1AdminServiceRest());
+        serviceBeans.add(getV1StateServiceRest());
 
         return serviceBeans;
     }
@@ -113,20 +122,24 @@ public class AemWebServiceConfiguration {
     public JvmServiceRest getV1JvmServiceRest() {
         return new JvmServiceRestImpl(jvmService,
                                       jvmControlService,
-                                      jvmStateService,
-                                      jvmStateNotificationService,
-                                      getJvmStateConsumerManager());
+                                      jvmStateService);
     }
 
     @Bean
-    public JvmStateConsumerManager getJvmStateConsumerManager() {
-        return new JvmStateConsumerManager(jvmStateNotificationService);
+    public StateConsumerManager getStateConsumerManager() {
+        return new StateConsumerManager(stateNotificationService);
     }
 
     @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService,
                                             webServerControlService);
+    }
+
+    @Bean
+    public StateServiceRest getV1StateServiceRest() {
+        return new StateServiceRestImpl(stateNotificationService,
+                                        getStateConsumerManager());
     }
 
     @Bean

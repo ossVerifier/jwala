@@ -1,6 +1,10 @@
 package com.siemens.cto.aem.service.state;
 
-import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 
 /**
  * Gateway into the integration engine for state updates
@@ -8,6 +12,6 @@ import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
  */
 public interface StateNotificationGateway {
 
-    public void jvmStateChanged(CurrentJvmState jvmState);
-    public void webServerStateChanged(Object webServerState);
+    public void jvmStateChanged(CurrentState<Jvm, JvmState> jvmState);
+    public void webServerStateChanged(CurrentState<WebServer, WebServerReachableState> webServerState);
 }

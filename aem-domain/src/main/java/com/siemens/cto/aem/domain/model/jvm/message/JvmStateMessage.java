@@ -10,10 +10,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 
 public class JvmStateMessage implements Serializable {
 
@@ -59,14 +61,15 @@ public class JvmStateMessage implements Serializable {
         return asOf;
     }
 
-    public SetJvmStateCommand toCommand() {
-        return new SetJvmStateCommand(getCurrentJvmState());
+    public SetStateCommand<Jvm, JvmState> toCommand() {
+        return new JvmSetStateCommand(getCurrentJvmState());
     }
 
-    protected CurrentJvmState getCurrentJvmState() {
-        return new CurrentJvmState(new Identifier<Jvm>(id),
-                                   JvmState.convertFrom(state),
-                                   createAsOf());
+    protected CurrentState<Jvm, JvmState> getCurrentJvmState() {
+        return new CurrentState<>(new Identifier<Jvm>(id),
+                                  JvmState.convertFrom(state),
+                                  createAsOf(),
+                                  StateType.JVM);
     }
 
     protected DateTime createAsOf() {

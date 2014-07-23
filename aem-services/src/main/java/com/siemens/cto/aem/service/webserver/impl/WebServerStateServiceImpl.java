@@ -8,6 +8,7 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
@@ -15,16 +16,24 @@ import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebServerReachableState> implements StateService<WebServer, WebServerReachableState> {
 
     public WebServerStateServiceImpl(final StatePersistenceService<WebServer, WebServerReachableState> thePersistenceService,
-                                     final StateNotificationService<WebServer> theNotificationService) {
+                                     final StateNotificationService<CurrentState<?,?>> theNotificationService,
+                                     final StateNotificationGateway theStateNotificationGateway) {
         super(thePersistenceService,
               theNotificationService,
-              StateType.WEBSERVER);
+              StateType.WEB_SERVER,
+              theStateNotificationGateway);
     }
 
     @Override
     protected CurrentState<WebServer, WebServerReachableState> createUnknown(final Identifier<WebServer> anId) {
         return new CurrentState<>(anId,
                                   WebServerReachableState.UNKNOWN,
-                                  DateTime.now());
+                                  DateTime.now(),
+                                  StateType.WEB_SERVER);
+    }
+
+    @Override
+    protected void sendNotification(final CurrentState<WebServer, WebServerReachableState> anUpdatedState) {
+        stateNotificationGateway.webServerStateChanged(anUpdatedState);
     }
 }

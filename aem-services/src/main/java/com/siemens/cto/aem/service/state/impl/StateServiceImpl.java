@@ -17,6 +17,7 @@ import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 
@@ -25,15 +26,19 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
 
     private final StatePersistenceService<S, T> persistenceService;
-    private final StateNotificationService<S> notificationService;
+    private final StateNotificationService<CurrentState<?,?>> notificationService;
     private final StateType stateType;
 
+    protected final StateNotificationGateway stateNotificationGateway;
+
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
-                            final StateNotificationService<S> theNotificationService,
-                            final StateType theStateType) {
+                            final StateNotificationService<CurrentState<?,?>> theNotificationService,
+                            final StateType theStateType,
+                            final StateNotificationGateway theStateNotificationGateway) {
         persistenceService = thePersistenceService;
         notificationService = theNotificationService;
         stateType = theStateType;
+        stateNotificationGateway = theStateNotificationGateway;
     }
 
     @Override
@@ -43,9 +48,11 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
         LOGGER.info("Attempting to set state for {} {} ", stateType, aCommand);
         aCommand.validateCommand();
 
-        notificationService.notifyStateUpdated(aCommand.getNewState().getId());
-        return persistenceService.updateState(new Event<>(aCommand,
-                                                          AuditEvent.now(aUser)));
+        final CurrentState<S, T> currentState = persistenceService.updateState(new Event<>(aCommand,
+                                                                                           AuditEvent.now(aUser)));
+        notificationService.notifyStateUpdated(currentState);
+        sendNotification(currentState);
+        return currentState;
     }
 
     @Override
@@ -79,4 +86,6 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     }
 
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);
+
+    protected abstract void sendNotification(CurrentState<S, T> anUpdatedState);
 }

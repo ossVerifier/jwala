@@ -12,7 +12,7 @@
         <constructor-arg ref="webServerService"/>
     </bean>
 
-    <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.state.WebServerStateServiceFacade" depends-on="messageListenerContainerPhase">
+    <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceFacade">
         <constructor-arg ref="webServerStateService"/>
     </bean>
 
@@ -75,4 +75,10 @@
     <int:chain id="completedWebServerStateRequestChain" input-channel="completedWebServerStateRequest">
         <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
     </int:chain>
+
+    <int:gateway id="explicitWebServerStateGateway" service-interface="com.siemens.cto.aem.service.webserver.WebServerStateGateway">
+        <int:method name="setExplicitState" request-channel="completedWebServerStateRequest"/>
+        <int:method name="initiateWebServerStateRequest" request-channel="unsplitWebServerStateRequests"/>
+    </int:gateway>
+
 </beans>

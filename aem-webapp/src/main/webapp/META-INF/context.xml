@@ -39,6 +39,12 @@
               type="com.tibco.tibjms.TibjmsTopic"
               address="tocWebServerStateNotification"/>
 
+    <Resource name="jms/toc-state-notification"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocStateNotification"/>
+
     <!--<Resource name="jms/toc-cf"-->
               <!--auth="Container"-->
               <!--type="com.atomikos.jms.AtomikosConnectionFactoryBean"-->

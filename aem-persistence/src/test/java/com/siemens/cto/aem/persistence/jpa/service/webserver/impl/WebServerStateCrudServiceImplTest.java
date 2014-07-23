@@ -68,7 +68,7 @@ public class WebServerStateCrudServiceImplTest {
 
         assertEquals(expectedId.getId(),
                      state.getId().getId());
-        assertEquals(StateType.WEBSERVER,
+        assertEquals(StateType.WEB_SERVER,
                      state.getId().getStateType());
         assertEquals(expectedState.toStateString(),
                      state.getState());
@@ -88,7 +88,7 @@ public class WebServerStateCrudServiceImplTest {
 
         assertEquals(expectedId.getId(),
                      actualState.getId().getId());
-        assertEquals(StateType.WEBSERVER,
+        assertEquals(StateType.WEB_SERVER,
                      actualState.getId().getStateType());
         assertEquals(expectedState.toStateString(),
                      actualState.getState());
@@ -130,7 +130,8 @@ public class WebServerStateCrudServiceImplTest {
                                         final DateTime anAsOf) {
         return impl.updateState(new Event<SetStateCommand<WebServer, WebServerReachableState>>(new WebServerSetStateCommand(new CurrentState<>(anId,
                                                                                                                                                aState,
-                                                                                                                                               anAsOf)),
+                                                                                                                                               anAsOf,
+                                                                                                                                               StateType.WEB_SERVER)),
                                                                                                AuditEvent.now(user)));
     }
 

@@ -6,7 +6,6 @@ import org.joda.time.DateTime;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 
 public abstract class AbstractJpaCurrentStateBuilder<S, T extends ExternalizableState> {
@@ -21,7 +20,7 @@ public abstract class AbstractJpaCurrentStateBuilder<S, T extends Externalizable
 
     public abstract CurrentState<S, T> build();
 
-    protected Identifier<WebServer> createId() {
+    protected Identifier<S> createId() {
         return new Identifier<>(currentState.getId().getId());
     }
 

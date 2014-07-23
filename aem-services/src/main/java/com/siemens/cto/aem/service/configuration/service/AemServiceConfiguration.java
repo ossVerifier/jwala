@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
@@ -27,25 +30,25 @@ import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateService;
-import com.siemens.cto.aem.service.jvm.state.impl.JvmStateServiceImpl;
-import com.siemens.cto.aem.service.jvm.state.jms.JmsJvmStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.state.GroupStateService;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
+import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.state.jms.StateTypeJmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
 import com.siemens.cto.aem.service.webserver.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
-import com.siemens.cto.aem.service.webserver.state.jms.WebServerJmsStateNotificationServiceImpl;
 import com.siemens.cto.toc.files.TemplateManager;
 
 @Configuration
@@ -72,12 +75,15 @@ public class AemServiceConfiguration {
     @Autowired
     private StateNotificationGateway stateNotificationGateway;
 
+    @Autowired
+    private WebServerStateGateway webServerStateGateway;
+
     @Bean
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
     public GroupStateMachine getGroupStateMachine() {
         return new GroupStateManagerTableImpl();
     }
-    
+
     @Bean
     public GroupStateService.API getGroupStateService() {
         return new GroupStateServiceImpl();
@@ -120,7 +126,7 @@ public class AemServiceConfiguration {
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
         return new GroupControlServiceImpl(
-                getGroupWebServerControlService(), 
+                getGroupWebServerControlService(),
                 getGroupJvmControlService(),
                 getGroupStateService());
     }
@@ -143,33 +149,33 @@ public class AemServiceConfiguration {
     public WebServerControlService getWebServerControlService() {
         return new WebServerControlServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService(),
                                                getWebServerService(),
-                                               aemCommandExecutorConfig.getWebServerCommandExecutor());
+                                               aemCommandExecutorConfig.getWebServerCommandExecutor(),
+                                               webServerStateGateway);
     }
 
-    @Bean
-    public JvmStateService getJvmStateService() {
-        return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
-                                       getJvmStateNotificationService(),
-                                       stateNotificationGateway);
+    @Bean(name = "stateNotificationService")
+    public StateNotificationService<CurrentState<?,?>> getStateNotificationService() {
+        return new JmsStateNotificationServiceImpl<>(aemJmsConfig.getJmsTemplate(),
+                                                     aemJmsConfig.getStateNotificationDestination(),
+                                                     getStateNotificationConsumerBuilder());
     }
 
-    @Bean
-    public JvmStateNotificationService getJvmStateNotificationService() {
-        return new JmsJvmStateNotificationServiceImpl(aemJmsConfig.getJmsPackageBuilder(),
-                                                      aemJmsConfig.getJmsTemplate(),
-                                                      aemJmsConfig.getJvmStateNotificationDestination());
-    }
-
-    @Bean(name = "webServerStateNotificationService")
-    public StateNotificationService<WebServer> getWebServerStateNotificationService() {
-        return new WebServerJmsStateNotificationServiceImpl(aemJmsConfig.getJmsPackageBuilder(),
-                                                            aemJmsConfig.getJmsTemplate(),
-                                                            aemJmsConfig.getWebServerStateNotificationDestination());
+    @Bean(name = "jvmStateService")
+    public StateService<Jvm, JvmState> getJvmStateService() {
+        return new AlternateJvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
+                                                getStateNotificationService(),
+                                                stateNotificationGateway);
     }
 
     @Bean(name = "webServerStateService")
     public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
         return new WebServerStateServiceImpl(persistenceServiceConfiguration.getWebServerStatePersistenceService(),
-                                             getWebServerStateNotificationService());
+                                             getStateNotificationService(),
+                                             stateNotificationGateway);
+    }
+
+    @Bean
+    public StateNotificationConsumerBuilder<CurrentState<?,?>> getStateNotificationConsumerBuilder() {
+        return new StateTypeJmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
     }
 }

@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 
 public class WebServerState extends CurrentState<WebServer, WebServerReachableState> {
 
@@ -12,6 +13,7 @@ public class WebServerState extends CurrentState<WebServer, WebServerReachableSt
                           final DateTime theAsOf) {
         super(theId,
               theState,
-              theAsOf);
+              theAsOf,
+              StateType.WEB_SERVER);
     }
 }
