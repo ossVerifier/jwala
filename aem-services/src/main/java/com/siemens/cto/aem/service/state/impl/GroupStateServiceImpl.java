@@ -15,6 +15,7 @@ import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.CurrentJvmState;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
@@ -75,24 +76,7 @@ public class GroupStateServiceImpl implements GroupStateService.API {
             
             gsm.initializeGroup(fullGroup, systemUser);
             
-            switch(cjs.getJvmState()) { 
-            case STARTED: 
-                gsm.jvmStarted(jvmId);
-                break;
-            case STOPPED:
-                gsm.jvmStopped(jvmId);
-                break;
-            case FAILED:
-                gsm.jvmError(jvmId);
-                break;
-            case INITIALIZED:
-            case START_REQUESTED:
-            case STOP_REQUESTED:
-            case UNKNOWN:
-            default:
-                // no action needed for these states
-                break;
-            }
+            internalHandleJvmStateUpdate(gsm, jvmId, cjs.getJvmState());            
            
             if(gsm.getCurrentState() != groupState) {
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
@@ -104,13 +88,34 @@ public class GroupStateServiceImpl implements GroupStateService.API {
         }
     }
     
+    private void internalHandleJvmStateUpdate(GroupStateMachine gsm, Identifier<Jvm> jvmId, JvmState jvmState) {
+
+        switch(jvmState) { 
+        case STARTED: 
+            gsm.jvmStarted(jvmId);
+            break;
+        case STOPPED:
+            gsm.jvmStopped(jvmId);
+            break;
+        case FAILED:
+            gsm.jvmError(jvmId);
+            break;
+        case INITIALIZED:
+        case START_REQUESTED:
+        case STOP_REQUESTED:
+        case UNKNOWN:
+        default:
+            // no action needed for these states
+            break;
+        }
+    }
+
     @Override
     public void stateUpdate(WebServerState wsState) {
         LOGGER.error("** State Update For WebServerState Received - not implemented **");        
     }
 
     /**
-     * TODO - could cache. Right now we use a prototype scoped bean
      * @param group group to get a state machine for.
      * @return the state machine
      */

@@ -149,25 +149,6 @@ public class JpaJvmDaoImpl implements JvmDao {
         entityManager.remove(jvm);
     }
 
-//    @Override
-//    /**
-//     * This implementation requires the EntityManager to be synchronized with the underlying database changes made by
-//     * the bulk operation, because the EntityManager is not aware that any of its managed entities have been deleted by
-//     * this bulk operation.
-//     */
-//    public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {
-//
-//        final Query query = entityManager.createQuery("DELETE FROM JpaJvm j WHERE j.group.id = :groupId");
-//
-//        query.setParameter("groupId", aGroupId.getId());
-//
-//        final int numberDeleted = query.executeUpdate();
-//
-//        logger.debug("Jvms belonging to Group {} deleted: {}",
-//                     aGroupId,
-//                     numberDeleted);
-//    }
-
     @Override
     @SuppressWarnings("unchecked")
     public void removeJvmsBelongingTo(final Identifier<Group> aGroupId) {

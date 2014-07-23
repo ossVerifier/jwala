@@ -13,6 +13,7 @@ import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CANNOT_STOP;
 import static com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl.StopCondition.CAN_STOP;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,40 +67,44 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     
     // Define what 'null' means for a return value from a state transition handler
     public static final GroupState CONTINUE = null;
-
-    private EvaluationContext   context;
-    private CurrentGroupState.StateDetail   jvmsDetail;           // used to report state and progress
-    private CurrentGroupState.StateDetail   webServersDetail;     // used to report state and progress
-    private DateTime            lastChange;
+    
+    // For reporting state detail
+    private CurrentGroupState.StateDetail   jvmsDetail;
+    private CurrentGroupState.StateDetail   webServersDetail;
+    private DateTime                        lastChange;
+    
+    // Tracking state changes internally during a state transition
     private Group               currentGroup;
     private GroupState          currentState;
-    private GroupState          nextState;      // only set during a state transition
-    private Triggers            triggers = new Triggers();
+    private GroupState          nextState;
     private User                currentUser;
 
-    private static final User systemUser;
-    private static final Map<GroupState, StateEntry> gse;
+    // Internal implementation
+    private Triggers            triggers = new Triggers();
+    private EvaluationContext   context;
+    private static final User   SYSTEM_USER;
+    private static final Map<GroupState, StateEntry> STATES;
 
     static { 
-        systemUser = User.getSystemUser();
+        SYSTEM_USER = User.getSystemUser();
         
-        gse = new HashMap<>();
+        STATES = new HashMap<>();
         ExpressionParser parser = new SpelExpressionParser();
         
-        gse.put(null,           new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
-        gse.put(UNKNOWN,        new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
-        gse.put(ERROR,          new StateEntry(parser, CANNOT_START,CANNOT_STOP,INITIALIZED, null,      null,       null));
-        gse.put(INITIALIZED,    new StateEntry(parser, CAN_START,   CAN_STOP,   null,       "onInitializeIn()", null, null));
-        gse.put(PARTIAL,        new StateEntry(parser, CAN_START,   CAN_STOP,   null,       null, "onPartial()",    null));
-        gse.put(STARTING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStarting()",   null));
-        gse.put(STARTED,        new StateEntry(parser, CANNOT_START,CAN_STOP,   null,       null, "onStarted()",    null));
-        gse.put(STOPPING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStopping()",   null));
-        gse.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, null,      null, "onStopped()",    null));
+        STATES.put(null,           new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
+        STATES.put(UNKNOWN,        new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
+        STATES.put(ERROR,          new StateEntry(parser, CANNOT_START,CANNOT_STOP,INITIALIZED, null,      null,       null));
+        STATES.put(INITIALIZED,    new StateEntry(parser, CAN_START,   CAN_STOP,   null,       "onInitializeIn()", null, null));
+        STATES.put(PARTIAL,        new StateEntry(parser, CAN_START,   CAN_STOP,   null,       null, "onPartial()",    null));
+        STATES.put(STARTING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStarting()",   null));
+        STATES.put(STARTED,        new StateEntry(parser, CANNOT_START,CAN_STOP,   null,       null, "onStarted()",    null));
+        STATES.put(STOPPING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStopping()",   null));
+        STATES.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, null,      null, "onStopped()",    null));
         
     }
     
     private class Triggers { 
-        public ConcurrentLinkedDeque<Identifier<Jvm>> jvms = new ConcurrentLinkedDeque<>();
+        private Deque<Identifier<Jvm>> jvms = new ConcurrentLinkedDeque<>();
     }
     
     enum StartCondition { 
@@ -110,6 +115,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         CAN_STOP,
         CANNOT_STOP
     }
+    
+    // =========== CONSTRUCTOR ===================
+
+    public GroupStateManagerTableImpl() {
+        context = new StandardEvaluationContext(this);
+        jvmsDetail = new StateDetail(0, 0);
+        webServersDetail = new StateDetail(0, 0);
+    }
+
     
     // =========== HANDLER INJECTED BEANS ===================
     @Autowired 
@@ -178,7 +192,9 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      */
     public GroupState onStarting() {
         GroupState state = readPerceivedState();
-        if(state == GroupState.STARTED) return GroupState.STARTED; 
+        if(state == GroupState.STARTED) {
+            return GroupState.STARTED; 
+        }
         
      // only a timeout/error/reset will help us leave starting
         return GroupState.STARTING; 
@@ -191,7 +207,9 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      */
     public GroupState onStopping() {
         GroupState state = readPerceivedState();
-        if(state == GroupState.STOPPED) return GroupState.STOPPED; 
+        if(state == GroupState.STOPPED) {
+            return GroupState.STOPPED; 
+        }
         
      // only a timeout/error/reset will help us leave stopping
         return GroupState.STOPPING; 
@@ -265,11 +283,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         jvmsDetail.setStarted(started);
         jvmsDetail.setTotal(unstarted + started);
         
+        return progressToState(started, unstarted); 
+    }
+    
+    private GroupState progressToState(int started, int unstarted) {
         if(started == 0 && unstarted == 0) { 
             return GroupState.INITIALIZED;
         } else if(started == 0) {
             return GroupState.STOPPED;
-        } else if(started > 0 && unstarted > 0){ 
+        } else if(started > 0 && unstarted > 0) { 
             return GroupState.PARTIAL;
         } else { 
             return GroupState.STARTED;
@@ -301,16 +323,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         
         webServersDetail.setStarted(started);
         webServersDetail.setTotal(unstarted + started);
-
-        if(started == 0 && unstarted == 0) { 
-            return GroupState.INITIALIZED;
-        } else if(started == 0) {
-            return GroupState.STOPPED;
-        } else if(started > 0 && unstarted > 0){ 
-            return GroupState.PARTIAL;
-        } else { 
-            return GroupState.STARTED;
-        }
+        
+        return progressToState(started, unstarted); 
     }
 
     // =========== STATE ENGINE =============================
@@ -333,7 +347,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     
             if(proposedState == currentState) {
                 // staying in same state
-                nextState = (GroupState) gse.get(currentState).state(context, this, currentState);
+                nextState = (GroupState) STATES.get(currentState).state(context, this, currentState);
                 if(nextState == currentState) { 
                     return; // no change.
                 }
@@ -349,7 +363,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             // while state changes required.  
             while(nextState != interimState) {
                 // Exit current state.
-                nextState2 = gse.get(interimState).out(context,this, interimState);
+                nextState2 = STATES.get(interimState).out(context,this, interimState);
                 // New state change proposed?
                 if(nextState2 != null) {
                     nextState = nextState2;
@@ -358,14 +372,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                 // If we have somewhere to go ( on the first transition we do ), 
                 if(nextState != null) {
                     // Enter new state, record proposition
-                    nextState2 = gse.get(nextState).in(context, this, nextState);
+                    nextState2 = STATES.get(nextState).in(context, this, nextState);
                     // track current 'interim' state
                     interimState = nextState;
                     // new state change proposed ?
                     if(nextState2 != null && nextState2 != nextState) { 
                         // Otherwise, yet another state transition?
                         nextState = nextState2;
-                    } // else null or nextState = ok, enter. 
+                    } 
+                    // else null or nextState = ok, so enter. 
                 }
             }        
             currentState = interimState;
@@ -375,12 +390,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     }
     
     // ========== See Interface com.siemens.cto.aem.service.group.GroupStateMachine ================
-
-    public GroupStateManagerTableImpl() {
-        context = new StandardEvaluationContext(this);
-        jvmsDetail = new StateDetail(0, 0);
-        webServersDetail = new StateDetail(0, 0);
-    }
 
     @Override
     public void initializeGroup(Group group, User user) { 
@@ -394,35 +403,35 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     
     @Override
     public void signalReset(User user) { 
-        handleState(gse.get(currentState).resetState, user);
+        handleState(STATES.get(currentState).resetState, user);
     }
     
     @Override
     public boolean canStart() {
-        return gse.get(currentState).canStart == CAN_START;
+        return STATES.get(currentState).canStart == CAN_START;
     }
     
     @Override
     public boolean canStop() {
-        return gse.get(currentState).canStop == CAN_STOP;
+        return STATES.get(currentState).canStop == CAN_STOP;
     }
     
     @Override
     public void jvmStarted(Identifier<Jvm> jvmId) {        
         triggers.jvms.add(jvmId);
-        handleState(currentState, systemUser);
+        handleState(currentState, SYSTEM_USER);
     }
     
     @Override
     public void jvmStopped(Identifier<Jvm> jvmId) {
         triggers.jvms.add(jvmId);
-        handleState(currentState, systemUser);
+        handleState(currentState, SYSTEM_USER);
     }
 
     @Override
     public void jvmError(Identifier<Jvm> jvmId) {
         triggers.jvms.add(jvmId);
-        handleState(GroupState.ERROR, systemUser);        
+        handleState(GroupState.ERROR, SYSTEM_USER);        
     }
     
     @Override
@@ -454,12 +463,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     
 
     private static class StateEntry {
-        public StartCondition canStart;
-        public StopCondition canStop;
-        public GroupState   resetState;
-        public Expression   stateInExpression;
-        public Expression   stateExpression;        
-        public Expression   stateOutExpression;
+        private static final String SPELVAR_CURRENT_STATE = "state";
+        private static final String SPELVAR_EXITING_STATE = "exitingState";
+        private static final String SPELVAR_ENTERING_STATE = "enteringState";
+        private StartCondition canStart;
+        private StopCondition canStop;
+        private GroupState   resetState;
+        private Expression   stateInExpression;
+        private Expression   stateExpression;        
+        private Expression   stateOutExpression;
         StateEntry(StartCondition canStart, StopCondition canStop, GroupState resetState) {
             this.canStart = canStart;
             this.canStop = canStop;
@@ -475,27 +487,27 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         GroupState in(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState enteringState) {            
             try {
                 debug(fsm, "ENTER", enteringState);
-                context.setVariable("enteringState", enteringState);
+                context.setVariable(SPELVAR_ENTERING_STATE, enteringState);
                 return this.stateInExpression.getValue(context, fsm, GroupState.class);
             } finally {                    
-                context.setVariable("enteringState", null);
+                context.setVariable(SPELVAR_ENTERING_STATE, null);
             }
         }
         GroupState out(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState exitingState) { 
             try {
                 debug(fsm, "EXIT", exitingState);
-                context.setVariable("exitingState", exitingState);
+                context.setVariable(SPELVAR_EXITING_STATE, exitingState);
                 return this.stateOutExpression.getValue(context, fsm, GroupState.class);
             } finally {                    
-                context.setVariable("exitingState", null);
+                context.setVariable(SPELVAR_EXITING_STATE, null);
             }
         }
         GroupState state(EvaluationContext context, GroupStateManagerTableImpl fsm, GroupState state) { 
             try {
-                context.setVariable("state", state);
+                context.setVariable(SPELVAR_CURRENT_STATE, state);
                 return this.stateExpression.getValue(context, fsm, GroupState.class);
             } finally {
-                context.setVariable("state", null);
+                context.setVariable(SPELVAR_CURRENT_STATE, null);
             }
         }
     }

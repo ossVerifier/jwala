@@ -8,13 +8,13 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerState;
 
 public interface GroupStateService {
 
-    public interface Events {
+    interface Events {
         void stateUpdate(CurrentJvmState cjs);
     
         void stateUpdate(WebServerState state);
     }    
     
-    public interface Triggers {
+    interface Triggers {
         void signalReset(Identifier<Group> groupId, User user);
 
         void signalStopRequested(Identifier<Group> groupId, User user);
@@ -22,14 +22,14 @@ public interface GroupStateService {
         void signalStartRequested(Identifier<Group> groupId, User user);
     }
     
-    public interface Query { 
+    interface Query { 
 
         boolean canStart(Identifier<Group> groupId, User user); 
 
         boolean canStop(Identifier<Group> groupId, User user);        
     }
     
-    public interface API extends Events, Triggers, Query {
+    interface API extends Events, Triggers, Query {
         
     }
 }
