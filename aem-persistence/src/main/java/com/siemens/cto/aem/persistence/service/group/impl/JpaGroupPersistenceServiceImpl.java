@@ -1,17 +1,22 @@
 package com.siemens.cto.aem.persistence.service.group.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
@@ -92,6 +97,10 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return new JpaGroupBuilder(aJpaGroup).build();
     }
 
+    protected CurrentState<Group, GroupState> groupStateFrom(final JpaGroup aJpaGroup) {
+        return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
+    }
+
     protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups) {
         final List<Group> groups = new ArrayList<>();
         for (final JpaGroup jpaGroup : someJpaGroups) {
@@ -100,9 +109,33 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return groups;
     }
 
+    protected Set<CurrentState<Group, GroupState>> groupStatesFrom(final List<JpaGroup> someJpaGroups) {
+        final Set<CurrentState<Group, GroupState>> groupStates = new HashSet<>();
+        for (final JpaGroup jpaGroup : someJpaGroups) {
+            groupStates.add(groupStateFrom(jpaGroup));
+        }
+        return groupStates;
+    }
+
+    @Override
+    public CurrentState<Group, GroupState> updateState(Event<SetStateCommand<Group, GroupState>> aNewState) {
+        return groupStateFrom(groupCrudService.updateGroupStatus(aNewState));
+    }
+
+    @Override
+    public CurrentState<Group, GroupState> getState(Identifier<Group> anId) {
+        return groupStateFrom(groupCrudService.getGroup(anId));
+    }
+
+    @Override
+    public Set<CurrentState<Group, GroupState>> getAllKnownStates(PaginationParameter somePagination) {
+        final List<JpaGroup> groups = groupCrudService.getGroups(somePagination);
+        return groupStatesFrom(groups);
+    }
+
     @Override
     public Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
-        return groupFrom(groupCrudService.updateGroupStatus(aGroupToUpdate));
+        return groupFrom(groupCrudService.updateGroupStatus(Event.<SetStateCommand<Group, GroupState>>create(aGroupToUpdate.getCommand(), aGroupToUpdate.getAuditEvent())));
     }
 
 }

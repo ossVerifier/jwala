@@ -10,6 +10,7 @@
     <int:gateway id="stateNotification" service-interface="com.siemens.cto.aem.service.state.StateNotificationGateway">
         <int:method name="jvmStateChanged" request-channel="jvmStateUpdates"/>
         <int:method name="webServerStateChanged" request-channel="webServerStateUpdates"/>
+        <int:method name="groupStateChanged" request-channel="groupStateUpdates"/>
     </int:gateway>
 
     <task:executor id="notificationExecutor" pool-size="5-20"
@@ -25,16 +26,30 @@
     <int:service-activator id="groupJvmStateServiceActivator"
             input-channel="jvmStateUpdates"
             method="stateUpdateJvm"
-			ref="groupStateServiceBean" />
+			ref="groupStateService" />
 
     <int:publish-subscribe-channel id="webServerStateUpdates"  task-executor="notificationExecutor" />
 
     <int:service-activator id="groupWebServerStateServiceActivator"
                            input-channel="webServerStateUpdates"
                            method="stateUpdateWebServer"
-                           ref="groupStateServiceBean" />
+                           ref="groupStateService" />
 
-	<bean id="groupStateServiceBean"
+	<bean id="groupStateService"
 		class="com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl">
-	</bean>
+        <constructor-arg ref="groupPersistenceService"/>
+        <constructor-arg ref="stateNotificationService"/>
+        <constructor-arg value="GROUP" />
+        <constructor-arg ref="stateNotification" />
+    </bean>
+        
+    <int:channel id="groupStateUpdates" />
+	
+    <int:logging-channel-adapter 
+        id="stateUpdateLogging"
+        channel="groupStateUpdates"
+        level="INFO" 
+        logger-name="com.siemens.cto.aem.bus"
+        expression="#root">
+    </int:logging-channel-adapter>
 </beans>

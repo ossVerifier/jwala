@@ -1,7 +1,9 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import java.util.Collection;
 import java.util.Set;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,20 +18,33 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.model.webserver.WebServerState;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.GroupStateService;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.StateService;
 
 
 /**
  * Invoked in response to incoming state changes - jvm or web server
  */
-public class GroupStateServiceImpl implements GroupStateService.API {
+public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API {
+
+    public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
+            StateNotificationService<CurrentState<?, ?>> theNotificationService, StateType theStateType,
+            StateNotificationGateway theStateNotificationGateway) {
+        super(thePersistenceService, theNotificationService, theStateType, theStateNotificationGateway);
+
+        systemUser = User.getSystemUser();
+    }
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateServiceImpl.class);
 
@@ -38,15 +53,14 @@ public class GroupStateServiceImpl implements GroupStateService.API {
 
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
+    
+    @Autowired
+    private WebServerDao webServerDao;
 
     @Autowired
     private GroupStateMachine groupStateMachine;
 
     private User systemUser;
-
-    public GroupStateServiceImpl() {
-        systemUser = User.getSystemUser();
-    }
 
     @Transactional
     @Override
@@ -82,10 +96,9 @@ public class GroupStateServiceImpl implements GroupStateService.API {
 
             if(gsm.getCurrentState() != groupState) {
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
+                
                 groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-
-                CurrentGroupState groupStateDetail = gsm.getCurrentStateDetail();
-                LOGGER.info("Group State Service: " + groupStateDetail.toString());
+                super.setCurrentState(sgsc, systemUser);
             }
         }
     }
@@ -114,7 +127,63 @@ public class GroupStateServiceImpl implements GroupStateService.API {
 
     @Override
     public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
-        LOGGER.error("** State Update For WebServerState Received - not implemented **");
+        LOGGER.debug("State Update Received");
+
+        // alias
+        GroupStateMachine gsm = groupStateMachine;
+
+        // lookup children
+        Identifier<WebServer> wsId = wsState.getId();
+        WebServer ws = webServerDao.getWebServer(wsId);
+
+        if(ws == null) {
+            return;
+        }
+        
+        Collection<Group> groups = ws.getGroups();
+
+        for(Group group : groups) {
+
+            Group fullGroup = groupPersistenceService.getGroup(group.getId());
+            CurrentGroupState currentGroupState =
+                    fullGroup.getCurrentState() == null
+                    ? null : fullGroup.getCurrentState();
+            GroupState  groupState =
+                    currentGroupState == null
+                    ? null : currentGroupState.getState();
+
+            gsm.initializeGroup(fullGroup, systemUser);
+
+            internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
+
+            if(gsm.getCurrentState() != groupState) {
+                SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
+                groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+
+                CurrentGroupState groupStateDetail = gsm.getCurrentStateDetail();
+                LOGGER.info("Group State Service: " + groupStateDetail.toString());
+            }
+        }
+    }
+    
+    private void internalHandleWebServerStateUpdate(GroupStateMachine gsm, Identifier<WebServer> wsId, WebServerReachableState webServerReachableState) {
+
+        switch(webServerReachableState) {
+        case REACHABLE:
+            gsm.wsReachable(wsId);
+            break;
+        case UNREACHABLE:
+            gsm.wsUnreachable(wsId);
+            break;
+        case START_REQUESTED:
+        case STOP_REQUESTED:
+        case UNKNOWN:
+        default:
+            // no action needed for these states
+            break;
+        }
+        
+        // note - error is not supported.
     }
 
     /**
@@ -150,5 +219,15 @@ public class GroupStateServiceImpl implements GroupStateService.API {
     @Override
     public boolean canStop(Identifier<Group> groupId, User user) {
         return getGsmById(groupId, user).canStop();
+    }
+
+    @Override
+    protected CurrentState<Group, GroupState> createUnknown(Identifier<Group> anId) {
+        return new CurrentGroupState(anId, GroupState.UNKNOWN, DateTime.now());
+    }
+
+    @Override
+    protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
+        stateNotificationGateway.groupStateChanged(anUpdatedState);
     }
 }

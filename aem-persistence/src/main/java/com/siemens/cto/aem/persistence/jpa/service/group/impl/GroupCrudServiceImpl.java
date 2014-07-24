@@ -21,9 +21,11 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
@@ -143,11 +145,12 @@ public class GroupCrudServiceImpl implements GroupCrudService {
     }
 
     @Override
-    public JpaGroup updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
+    public JpaGroup updateGroupStatus(Event<SetStateCommand<Group, GroupState>> aGroupToUpdate) {
 
-        final SetGroupStateCommand updateGroupCommand = aGroupToUpdate.getCommand();
+        final SetStateCommand<Group, GroupState> updateGroupCommand = aGroupToUpdate.getCommand();
         final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
-        final Identifier<Group> groupId = updateGroupCommand.getId();
+        final CurrentState<Group, GroupState> newState = updateGroupCommand.getNewState();
+        final Identifier<Group> groupId = newState.getId();
         final JpaGroup jpaGroup = getGroup(groupId);
         
         if (jpaGroup == null) {
@@ -155,7 +158,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
                                         "Group not found: " + groupId);
         }
 
-        jpaGroup.setState(updateGroupCommand.getNewGroupState());
+        jpaGroup.setState(newState.getState());
         jpaGroup.setStateUpdated(DateTime.now().toCalendar(null));
         jpaGroup.setUpdateBy(auditEvent.getUser().getUserId());
         jpaGroup.setLastUpdateDate(auditEvent.getDateTime().getCalendar());

@@ -17,6 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -43,17 +45,18 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.jvm.JvmStatePersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 
 
@@ -153,6 +156,7 @@ public class GroupStateServiceImplTest {
     Jvm jvm;
     Set<Jvm> jvms= new HashSet<>();
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setupEntities() {
 
@@ -165,6 +169,18 @@ public class GroupStateServiceImplTest {
 
         when(jvmPersistenceService.getJvm(eq(jvm.getId()))).thenReturn(jvm);
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
+
+        when(groupPersistenceService.updateState(Mockito.any(Event.class))).thenAnswer(new Answer<CurrentState<Group, GroupState>>() {
+
+            @Override
+            public CurrentState<Group, GroupState> answer(InvocationOnMock invocation) throws Throwable {
+                
+                Event<SetStateCommand<Group, GroupState>> event = (Event<SetStateCommand<Group, GroupState>>) invocation.getArguments()[0];
+                group = new Group(group.getId(), group.getName(), group.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
+                return group.getCurrentState();
+            }
+            
+        });
 
     }
 
@@ -179,18 +195,18 @@ public class GroupStateServiceImplTest {
         ArgumentCaptor<Event> command = ArgumentCaptor.forClass(Event.class);
         verify(groupPersistenceService).updateGroupStatus(command.capture());
         SetGroupStateCommand sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewGroupState() );
+        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
         groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.INITIALIZED, DateTime.now(), StateType.JVM));
 
         verify(groupPersistenceService, times(2)).updateGroupStatus(command.capture());
         sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewGroupState() );
+        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
 
         updateJvmState(JvmState.START_REQUESTED);
 
         verify(groupPersistenceService, times(3)).updateGroupStatus(command.capture());
         sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewGroupState() );
+        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
 
         when(groupStateManagerTableImpl.getCurrentState()).thenReturn(GroupState.STARTED);
         when(groupStateManagerTableImpl.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STARTED, DateTime.now()));
@@ -199,7 +215,7 @@ public class GroupStateServiceImplTest {
 
         verify(groupPersistenceService, times(4)).updateGroupStatus(command.capture());
         sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
-        assertEquals(GroupState.STARTED, sgsc.getNewGroupState() );
+        assertEquals(GroupState.STARTED, sgsc.getNewState().getState() );
 
         verify(groupStateManagerTableImpl, times(1)).jvmStarted(eq(jvm.getId()));
 
@@ -219,7 +235,7 @@ public class GroupStateServiceImplTest {
 
         verify(groupPersistenceService, times(5)).updateGroupStatus(command.capture());
         sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
-        assertEquals(GroupState.STOPPED, sgsc.getNewGroupState() );
+        assertEquals(GroupState.STOPPED, sgsc.getNewState().getState() );
 
         group = new Group(group.getId(), group.getName(), jvms, GroupState.STOPPED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
@@ -263,6 +279,9 @@ public class GroupStateServiceImplTest {
     @ImportResource("classpath*:META-INF/spring/integration-state.xml")
     static class CommonConfiguration {
 
+        @Autowired        
+        StateNotificationGateway stateNotification;
+        
         @Bean
         public GroupStateMachine getGroupStateManagerTableImpl() {
             return Mockito.mock(GroupStateMachine.class);
@@ -277,7 +296,8 @@ public class GroupStateServiceImplTest {
         public StatePersistenceService<Jvm, JvmState> getJvmStatePersistenceService() {
             return (StatePersistenceService<Jvm, JvmState>)Mockito.mock(StatePersistenceService.class);
         }
-        @Bean
+
+        @Bean(name = "groupPersistenceService")
         public GroupPersistenceService getGroupPersistenceService() {
             return Mockito.mock(GroupPersistenceService.class);
         }
@@ -290,6 +310,22 @@ public class GroupStateServiceImplTest {
         @Bean
         public StateService<WebServer, WebServerReachableState>    getWebServerStateService() {
             return Mockito.mock(StateService.class);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Bean(name = "stateNotificationService")
+        public StateNotificationService<CurrentState<?,?>> getStateNotificationService() {
+            return Mockito.mock(StateNotificationService.class);
+        }        
+        
+        @Bean
+        public GroupStateService.API getGroupStateService() {
+            return new GroupStateServiceImpl(
+                    getGroupPersistenceService(), 
+                    getStateNotificationService(),
+                    StateType.GROUP,
+                    stateNotification
+                    );
         }
     }
 }

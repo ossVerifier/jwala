@@ -189,7 +189,7 @@ public class MoreGroupStateMachineTest {
             public Group answer(InvocationOnMock invocation) throws Throwable {
                 
                 Event<SetGroupStateCommand> event = (Event<SetGroupStateCommand>) invocation.getArguments()[0];
-                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), event.getCommand().getNewGroupState(), DateTime.now());
+                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
                 return mockGroup;
             }
             

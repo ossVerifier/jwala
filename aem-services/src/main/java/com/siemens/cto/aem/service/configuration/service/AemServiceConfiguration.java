@@ -10,6 +10,7 @@ import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
@@ -86,9 +87,14 @@ public class AemServiceConfiguration {
 
     @Bean
     public GroupStateService.API getGroupStateService() {
-        return new GroupStateServiceImpl();
+        return new GroupStateServiceImpl(
+                persistenceServiceConfiguration.getGroupPersistenceService(), 
+                getStateNotificationService(),
+                StateType.GROUP,
+                stateNotificationGateway
+                );
     }
-
+    
     @Bean
     public GroupService getGroupService() {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService());

@@ -6,9 +6,10 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
@@ -27,5 +28,5 @@ public interface GroupCrudService {
 
     void removeGroup(final Identifier<Group> aGroupId);
     
-    JpaGroup updateGroupStatus(final Event<SetGroupStateCommand> aGroupToUpdate);
+    JpaGroup updateGroupStatus(Event<SetStateCommand<Group, GroupState>> aGroupToUpdate);
 }
