@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,48 +7,25 @@ import javax.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
-public class JvmIdsParameterProvider {
+public class JvmIdsParameterProvider extends AbstractIdsParameterProvider<Jvm> {
 
     @QueryParam("jvmId")
     private Set<String> jvmIds;
 
-    public JvmIdsParameterProvider() {
-    }
-
     public JvmIdsParameterProvider(final Set<String> someJmIds) {
+        this();
         jvmIds = new HashSet<>(someJmIds);
     }
 
-    public Set<Identifier<Jvm>> valueOf() {
-
-        if (isParameterPresent()) {
-            return parseParameters();
-        }
-
-        return Collections.emptySet();
+    public JvmIdsParameterProvider() {
+        super("Invalid JVM Identifier specified");
     }
 
-    private boolean isParameterPresent() {
-        return jvmIds != null;
-    }
-
-    private Set<Identifier<Jvm>> parseParameters() {
-        try {
-            final Set<Identifier<Jvm>> ids = new HashSet<>();
-            for (final String jvmId : jvmIds) {
-                ids.add(new Identifier<Jvm>(Long.valueOf(jvmId)));
-            }
-            return ids;
-        } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
-                                          "Invalid JVM Identifier specified",
-                                          nfe);
-        }
+    @Override
+    protected Set<String> getIds() {
+        return jvmIds;
     }
 
     @Override

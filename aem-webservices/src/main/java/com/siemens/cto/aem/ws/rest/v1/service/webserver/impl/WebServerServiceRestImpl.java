@@ -1,24 +1,33 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.ws.rs.core.Response;
-import java.util.List;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
@@ -26,12 +35,15 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
+    private final StateService<WebServer, WebServerReachableState> webServerStateService;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
-                                    final WebServerControlService theWebServerControlService) {
+                                    final WebServerControlService theWebServerControlService,
+                                    final StateService<WebServer, WebServerReachableState> theWebServerStateService) {
         logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
+        webServerStateService = theWebServerStateService;
     }
 
     @Override
@@ -107,4 +119,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
     }
 
+    @Override
+    public Response getCurrentWebServerStates(final WebServerIdsParameterProvider webServerIdsParameterProvider) {
+        logger.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
+        final Set<Identifier<WebServer>> webServerIds = webServerIdsParameterProvider.valueOf();
+        final Set<CurrentState<WebServer, WebServerReachableState>> currentWebServerStates;
+
+        if (webServerIds.isEmpty()) {
+            currentWebServerStates = webServerStateService.getCurrentStates(PaginationParameter.all());
+        } else {
+            currentWebServerStates = webServerStateService.getCurrentStates(webServerIds);
+        }
+
+        return ResponseBuilder.ok(currentWebServerStates);
+    }
 }

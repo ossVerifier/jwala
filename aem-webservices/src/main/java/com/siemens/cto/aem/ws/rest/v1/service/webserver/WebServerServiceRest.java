@@ -17,6 +17,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
+import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonCreateWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonUpdateWebServer;
@@ -59,8 +60,8 @@ public interface WebServerServiceRest {
     @Path("/{webServerName}/loadbalancer/conf")
     Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
 
-//    @GET
-//    @Path("/states/current")
-//    Response getCurrentWebServerStates(@BeanParam final WebIdsParameterProvider jvmIdsParameterProvider);
+    @GET
+    @Path("/states/current")
+    Response getCurrentWebServerStates(@BeanParam final WebServerIdsParameterProvider webServerIdsParameterProvider);
 
 }

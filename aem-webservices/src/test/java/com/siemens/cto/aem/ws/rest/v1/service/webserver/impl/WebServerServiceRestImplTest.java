@@ -5,11 +5,6 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +12,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -24,6 +21,11 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
@@ -31,16 +33,18 @@ import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * 
+ *
  * @author horspe00
- * 
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
@@ -58,6 +62,9 @@ public class WebServerServiceRestImplTest {
 
     @Mock
     private WebServerControlHistory webServerControlHistory;
+
+    @Mock
+    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     private WebServerServiceRestImpl cut;
 
@@ -77,7 +84,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new WebServerServiceRestImpl(impl, controlImpl);
+        cut = new WebServerServiceRestImpl(impl, controlImpl, webServerStateService);
     }
 
     @Test

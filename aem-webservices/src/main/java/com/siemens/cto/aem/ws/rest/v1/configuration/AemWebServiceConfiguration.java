@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -70,6 +72,10 @@ public class AemWebServiceConfiguration {
     @Autowired
     @Qualifier("jvmStateService")
     private StateService<Jvm, JvmState> jvmStateService;
+
+    @Autowired
+    @Qualifier("webServerStateService")
+    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     @Autowired
     @Qualifier("stateNotificationService")
@@ -133,7 +139,8 @@ public class AemWebServiceConfiguration {
     @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService,
-                                            webServerControlService);
+                                            webServerControlService,
+                                            webServerStateService);
     }
 
     @Bean
