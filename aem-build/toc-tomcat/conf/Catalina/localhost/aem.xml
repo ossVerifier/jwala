@@ -18,6 +18,11 @@
 <!-- The contents of this file will be loaded for each web application -->
 <Context docBase="../../../webapps/aem-webapp-1.0-SNAPSHOT.war">
 
+    <Environment name="securityProperties"
+        value="../../../properties/tocSecurity.properties"
+        type="java.lang.String"
+        override="false" />
+        
     <Resource name="jdbc/toc-xa"
           auth="Container"
           type="com.atomikos.jdbc.AtomikosDataSourceBean"
@@ -36,11 +41,24 @@
           userName="admin"
           userPassword="Passw0rd"/>
 
+      <Resource name="jms/toc-state-notification"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocWebServerStateNotification"/>
+
+
+      <Resource name="jms/toc-web-server-state-notification"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocWebServerStateNotification"/>
+
       <Resource name="jms/toc-jvm-state-notification"
-          auth="Container"
-          factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsTopic"
-          address="tocJvmStateNotification"/>
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocJvmStateNotification"/>
 
       <Resource name="jms/toc-status"
           auth="Container"
