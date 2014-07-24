@@ -82,8 +82,6 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
             } else {
                 LOGGER.warn(logMsg);
             }
-            
-            // notifications of state change will be sent as the remote servers send life-cycle updates.
         }
         return completeHistory;
     }

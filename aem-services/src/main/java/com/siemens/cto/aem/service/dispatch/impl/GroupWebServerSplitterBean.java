@@ -29,20 +29,13 @@ public class GroupWebServerSplitterBean {
         List<WebServerDispatchCommand> webServerCommands = new ArrayList<WebServerDispatchCommand>();
 
         List<WebServer> webServers = webServerService.findWebServers(group.getId(), PaginationParameter.all());
-//        if (webServers == null) {
-//            // temporary hack for testing.  My mock isn't working
-//            webServers = new ArrayList<WebServer>();
-//            Identifier<WebServer> identifier = new Identifier<WebServer>(new Long(555));
-//            Collection<Group> groups = new ArrayList<Group>();
-//            groups.add(group);
-//            WebServer ws = new WebServer(identifier, groups, "someGroup", "localhost", 8080, 8443);
-//            webServers.add(ws);
-//        }
+
         for (WebServer webServer : webServers) {
             webServerCommands.add(new WebServerDispatchCommand(webServer, groupDispatchCommand));
             LOGGER.debug("Created dispatch command for WebServer {}", webServer.getName());
         }
 
+        LOGGER.debug("end splitting GroupJvmDispatchCommand for group {}", group.getName());
         return webServerCommands;
     }
 }

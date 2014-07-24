@@ -86,7 +86,7 @@ public class DispatchCommandIntegrationTest {
     private WebServer mockWs1;
     private WebServer mockWs2;
     private Set<Jvm> jvmSet;
-    private static List<WebServer> wsList;
+    private static List<WebServer> wsList = new ArrayList<>();
     private Group theGroup;
     private Identifier<GroupControlHistory> theHistoryId;
 
@@ -107,7 +107,6 @@ public class DispatchCommandIntegrationTest {
         mockWs2 = mock(WebServer.class);
         when(mockWs2.getId()).thenReturn(WS2_IDENTIFIER);
 
-        wsList = new ArrayList<WebServer>();
         wsList.add(mockWs1);
         wsList.add(mockWs2);
 
@@ -149,7 +148,7 @@ public class DispatchCommandIntegrationTest {
         }
     }
 
-//    @Test
+    @Test
     public void splitGroupIntoTwoWebServerControls() throws InterruptedException {
 
         ControlGroupWebServerCommand startGroupCommand = new ControlGroupWebServerCommand(GROUP1_IDENTIFIER, WebServerControlOperation.START);
