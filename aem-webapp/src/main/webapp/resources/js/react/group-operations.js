@@ -2,13 +2,17 @@
 var GroupOperations = React.createClass({
     getInitialState: function() {
         selectedGroup = null;
+
+        // What does the code below do ?
         this.allJvmData = { jvms: [],
                             jvmStates: []};
         return {
-//            Rationalize/unify all the groups/jvms/webapps/groupTableData/etc. stuff so it's coherent
+            // Rationalize/unify all the groups/jvms/webapps/groupTableData/etc. stuff so it's coherent
             groupFormData: {},
             groupTableData: [],
             groups: [],
+            webServers: [],
+            webServerStates: [],
             jvms: [],
             jvmStates: []
         };
@@ -23,15 +27,15 @@ var GroupOperations = React.createClass({
                                     <GroupOperationsDataTable data={this.state.groupTableData}
                                                               selectItemCallback={this.selectItemCallback}
                                                               groups={this.state.groups}
+                                                              webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
-                                                              jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}/>
+                                                              jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}
+                                                              updateWebServerDataCallback={this.updateWebServerDataCallback}/>
                                 </div>
                             </td>
                         </tr>
                    </table>
                </div>
-    },
-    selectItemCallback: function(item) {
     },
     retrieveData: function() {
         var self = this;
@@ -47,6 +51,41 @@ var GroupOperations = React.createClass({
                                                            this.state.jvmStates,
                                                            []));
     },
+
+    updateStateData: function(newStates) {
+        // TODO: Extract Group, Web Server and Jvm States here
+
+        var groups = [];
+        var webServers = [];
+        var jvms = [];
+
+        for (var i = 0; i < newStates.length; i++) {
+            if (newStates[i].type === "JVM") {
+                jvms.push(newStates[i]);
+            } else if (newStates[i].type === "WEB_SERVER") {
+                webServers.push(newStates[i]);
+            }
+        }
+
+        this.updateWebServerStateData(webServers);
+        this.updateJvmStateData(jvms);
+
+    },
+
+    updateWebServerStateData: function(newWebServerStates) {
+        this.setState(groupOperationsHelper.processWebServerData(this.state.webServers,
+                                                                 [],
+                                                                 this.state.webServerStates,
+                                                                 newWebServerStates));
+
+        var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
+        webServersToUpdate.forEach(
+            function(webServer) {
+                groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
+            });
+    },
+
+
     updateJvmStateData: function(newJvmStates) {
         this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
                                                            [],
@@ -54,13 +93,18 @@ var GroupOperations = React.createClass({
                                                            newJvmStates));
 
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-        jvmsToUpdate.forEach(function(jvm) { groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state);});
+        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state);});
     },
-    pollJvmStates: function() {
+
+    pollStates: function() {
         var self = this;
-        this.dataSink = this.props.jvmStateService.createDataSink(function(data) { self.updateJvmStateData(data);});
-        this.props.jvmStateService.pollForUpdates(this.props.jvmStateTimeout, this.dataSink);
+        this.dataSink = this.props.stateService.createDataSink(function(data) {
+                                                                                    self.updateStateData(data);
+                                                                              });
+        // TODO: Change this.props.jvmStateTimeout to this.props.stateTimeout
+        this.props.stateService.pollForUpdates(this.props.jvmStateTimeout, this.dataSink);
     },
+
     fetchCurrentJvmStates: function() {
         var self = this;
         this.props.jvmStateService.getCurrentStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
@@ -78,16 +122,22 @@ var GroupOperations = React.createClass({
     },
     componentDidMount: function() {
         this.retrieveData();
-        this.pollJvmStates();
+        this.pollStates();
         this.fetchCurrentJvmStates();
     },
     componentWillUnmount: function() {
         this.dataSink.stop();
+    },
+    updateWebServerDataCallback: function(webServerData) {
+        this.setState({webServers: webServerData});
     }
 });
 
 var GroupOperationsDataTable = React.createClass({
    shouldComponentUpdate: function(nextProps, nextState) {
+
+       // TODO: Set status here
+       this.webServersById = groupOperationsHelper.keyWebServersById(nextProps.webServers);
        this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
        this.hasNoData = (this.props.data.length === 0);
        if (!this.hasDrawn) {
@@ -112,7 +162,10 @@ var GroupOperationsDataTable = React.createClass({
                                tocType:"button",
                                btnLabel:"Stop Group",
                                btnCallback:this.stopGroupJvms,
-                               className:"inline-block"}]];
+                               className:"inline-block"}],
+                              {sTitle:"State",
+                               mData:null,
+                               mRender: this.getStateForGroup}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {sTitle:"Name", mData:"name"},
@@ -270,7 +323,17 @@ var GroupOperationsDataTable = React.createClass({
                 }.bind(this);
    },
    getWebServersOfGrp: function(idObj, responseCallback) {
-        webServerService.getWebServerByGroupId(idObj.parentId, responseCallback);
+        var self = this;
+        webServerService.getWebServerByGroupId(idObj.parentId, function(response) {
+            // This is when the row is initially opened.
+            // Unlike JVMs, web server data is retrieved when the row is opened.
+            self.webServersById = groupOperationsHelper.keyWebServersById(response.applicationResponseContent);
+
+            responseCallback(response);
+
+            // This will set the state and which triggers DOM rendering thus the state will be updated
+            self.props.updateWebServerDataCallback(response.applicationResponseContent);
+        });
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
         webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
@@ -335,7 +398,15 @@ var GroupOperationsDataTable = React.createClass({
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
-        $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.jvmState);
+
+        // The code is currently in transition (from a jvm specific state data to a generic once hence the if...)
+        // TODO: When the backend is finished, we need to update this also!
+        if (this.jvmsById[jvmId].state.jvmState !== undefined) {
+            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.jvmState);
+        } else {
+            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.state);
+        }
+
         return "<span class='jvm-state-" + jvmId + "'/>"
     },
     /* web server callbacks */
@@ -350,7 +421,27 @@ var GroupOperationsDataTable = React.createClass({
         webServerControlService.stopWebServer(id);
         return true;
     },
+
+    /**
+     * This method is responsible for displaying the state in the grid
+     *
+     */
     getStateForWebServer: function(mData, type, fullData) {
+        var webServerId = fullData.id.id;
+
+        if (this.webServersById !== undefined && this.webServersById[webServerId] !== undefined) {
+            if (this.webServersById[webServerId].state !== undefined) {
+                $(".ws-state-" + webServerId).html(this.webServersById[webServerId].state.state);
+            } else {
+                // ideally we should get the current state here instead of waiting for the next poll
+                $(".ws-state-" + webServerId).html("UNKNOWN");
+            }
+        }
+
+        return "<span class='ws-state-" + webServerId + "'/>"
+    },
+
+    getStateForGroup: function(mData, type, fullData) {
         return "(UNDER_CONSTRUCTION)";
     },
 });

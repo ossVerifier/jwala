@@ -16,5 +16,8 @@ var ServiceFactory = {
     },
     getJvmStateService: function() {
         return jvmStateService;
+    },
+    getStateService: function() {
+        return stateService;
     }
 };
