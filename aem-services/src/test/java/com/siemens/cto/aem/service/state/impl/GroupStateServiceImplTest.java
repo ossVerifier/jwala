@@ -223,8 +223,7 @@ public class GroupStateServiceImplTest {
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
         updateJvmState(JvmState.STOP_REQUESTED);
 
-        // stop requested while started does not change state, so times(4) still
-        verify(groupPersistenceService, times(4)).updateGroupStatus(command.capture());
+        verify(groupPersistenceService, times(5)).updateGroupStatus(command.capture());
 
         when(groupStateManagerTableImpl.getCurrentState()).thenReturn(GroupState.STOPPED);
         when(groupStateManagerTableImpl.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STOPPED, DateTime
@@ -233,7 +232,7 @@ public class GroupStateServiceImplTest {
 
         verify(groupStateManagerTableImpl, times(1)).jvmStopped(eq(jvm.getId()));
 
-        verify(groupPersistenceService, times(5)).updateGroupStatus(command.capture());
+        verify(groupPersistenceService, times(6)).updateGroupStatus(command.capture());
         sgsc = (SetGroupStateCommand)(command.getValue().getCommand());
         assertEquals(GroupState.STOPPED, sgsc.getNewState().getState() );
 
