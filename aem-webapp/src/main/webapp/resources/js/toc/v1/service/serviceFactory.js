@@ -14,9 +14,6 @@ var ServiceFactory = {
     getUserService: function () {
         return userService;
     },
-    getJvmStateService: function() {
-        return jvmStateService;
-    },
     getStateService: function() {
         return stateService;
     }
