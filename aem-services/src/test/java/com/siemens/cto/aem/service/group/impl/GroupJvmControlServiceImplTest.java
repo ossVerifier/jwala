@@ -6,16 +6,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
+import com.siemens.cto.aem.domain.model.group.command.CompleteControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
@@ -32,8 +38,9 @@ public class GroupJvmControlServiceImplTest {
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
     private GroupControlHistory mockGroupControlHistory;
-    private Identifier<GroupControlHistory> groupControlHistoryId;
+    private Identifier<GroupControlHistory> groupControlId;
     private User testUser = new User("testUser");
+    private ControlGroupJvmCommand aCommand;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -46,12 +53,13 @@ public class GroupJvmControlServiceImplTest {
 
         mockGroup = mock(Group.class);
         mockGroupControlHistory = mock(GroupControlHistory.class);
-        groupControlHistoryId = new Identifier<>((long) 10);
+        groupControlId = new Identifier<>((long) 10);
+        aCommand = new ControlGroupJvmCommand(groupId, JvmControlOperation.START);
 
         when(mockGroupService.getGroup(groupId)).thenReturn(mockGroup);
         when(mockPersistenceService.addIncompleteControlHistoryEvent(any(Event.class))).thenReturn(
                 mockGroupControlHistory);
-        when(mockGroupControlHistory.getId()).thenReturn(groupControlHistoryId);
+        when(mockGroupControlHistory.getId()).thenReturn(groupControlId);
     }
 
     @Test(expected = BadRequestException.class)
@@ -62,12 +70,25 @@ public class GroupJvmControlServiceImplTest {
 
     @Test
     public void testControlGroup() {
-        ControlGroupJvmCommand aCommand = new ControlGroupJvmCommand(groupId, JvmControlOperation.START);
         GroupControlHistory groupControlHistory = cut.controlGroup(aCommand, testUser);
         assertNotNull(groupControlHistory);
-        
+
         GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(mockGroup, aCommand, testUser,
-                groupControlHistoryId);
+                groupControlId);
         verify(mockCommandDispatchGateway).asyncDispatchCommand(dispatchCommand);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDispatchCommandComplete() {
+        List<JvmDispatchCommandResult> results = new ArrayList<>();
+        Identifier<JvmControlHistory> jvmControlId = new Identifier<>((long) 3);
+        GroupJvmDispatchCommand groupJvmDispatchCommand = new GroupJvmDispatchCommand(mockGroup, aCommand, testUser, groupControlId);
+        JvmDispatchCommandResult commandResult = new JvmDispatchCommandResult(true, jvmControlId, groupJvmDispatchCommand);
+        results.add(commandResult);
+        
+        cut.dispatchCommandComplete(results);
+        
+        verify(mockPersistenceService).completeControlHistoryEvent(any(Event.class));
     }
 }
