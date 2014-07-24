@@ -83,23 +83,16 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         for(LiteGroup group : groups) {
 
             Group fullGroup = groupPersistenceService.getGroup(group.getId());
-            CurrentGroupState currentGroupState =
-                    fullGroup.getCurrentState() == null
-                    ? null : fullGroup.getCurrentState();
-            GroupState  groupState =
-                    currentGroupState == null
-                    ? null : currentGroupState.getState();
 
             gsm.initializeGroup(fullGroup, systemUser);
 
             internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
 
-            if(gsm.getCurrentState() != groupState) {
-                SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
-                
-                groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-                super.setCurrentState(sgsc, systemUser);
-            }
+            // could check for changes and only persist/notify on changes
+            SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
+            
+            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+            super.setCurrentState(sgsc, systemUser);
         }
     }
 
@@ -125,6 +118,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
     }
 
+    @Transactional
     @Override
     public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
         LOGGER.debug("Recalculating group state due to web server update: " + wsState.toString());
@@ -145,24 +139,16 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         for(Group group : groups) {
 
             Group fullGroup = groupPersistenceService.getGroup(group.getId());
-            CurrentGroupState currentGroupState =
-                    fullGroup.getCurrentState() == null
-                    ? null : fullGroup.getCurrentState();
-            GroupState  groupState =
-                    currentGroupState == null
-                    ? null : currentGroupState.getState();
 
             gsm.initializeGroup(fullGroup, systemUser);
 
             internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
 
-            if(gsm.getCurrentState() != groupState) {
-                SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
-                groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-
-                CurrentGroupState groupStateDetail = gsm.getCurrentStateDetail();
-                LOGGER.info("Group State Service: " + groupStateDetail.toString());
-            }
+            // could check for changes and only persist/notify on changes
+            SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
+            
+            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+            super.setCurrentState(sgsc, systemUser);
         }
     }
     

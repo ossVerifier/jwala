@@ -45,7 +45,7 @@
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsTopic"
-              address="tocWebServerStateNotification"/>
+              address="tocStateNotification"/>
 
 
       <Resource name="jms/toc-web-server-state-notification"
