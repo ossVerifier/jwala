@@ -85,7 +85,7 @@ public class AemServiceConfiguration {
         return new GroupStateManagerTableImpl();
     }
 
-    @Bean
+    @Bean(name="groupStateService")
     public GroupStateService.API getGroupStateService() {
         return new GroupStateServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(), 

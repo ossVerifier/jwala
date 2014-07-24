@@ -318,7 +318,7 @@ public class GroupStateServiceImplTest {
             return Mockito.mock(StateNotificationService.class);
         }        
         
-        @Bean
+        @Bean(name = "groupStateService")
         public GroupStateService.API getGroupStateService() {
             return new GroupStateServiceImpl(
                     getGroupPersistenceService(), 

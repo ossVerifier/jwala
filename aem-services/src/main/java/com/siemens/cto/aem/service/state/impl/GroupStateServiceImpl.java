@@ -66,7 +66,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     public void stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) {
 
-        LOGGER.debug("State Update Received");
+        LOGGER.debug("Recalculating group state due to jvm update: " + cjs.toString());
 
         // alias
         GroupStateMachine gsm = groupStateMachine;
@@ -127,7 +127,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Override
     public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
-        LOGGER.debug("State Update Received");
+        LOGGER.debug("Recalculating group state due to web server update: " + wsState.toString());
 
         // alias
         GroupStateMachine gsm = groupStateMachine;

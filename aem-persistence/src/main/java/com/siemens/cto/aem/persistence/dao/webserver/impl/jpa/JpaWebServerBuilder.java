@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -22,9 +23,15 @@ public class JpaWebServerBuilder {
 	}
 
 	public WebServer build() {
-	    List<Group> groups = new ArrayList<>( webServer.getGroups().size());
-	    for(JpaGroup gid : webServer.getGroups()) {
-	        groups.add(new JpaGroupBuilder(gid).build());
+	    List<JpaGroup> jpaGroups = webServer.getGroups();
+	    List<Group> groups;
+	    if(jpaGroups != null) {
+	        groups = new ArrayList<>( webServer.getGroups().size());
+    	    for(JpaGroup gid : webServer.getGroups()) {
+    	        groups.add(new JpaGroupBuilder(gid).build());
+    	    }
+	    } else {
+	        groups = Collections.<Group>emptyList();
 	    }
         return new WebServer(
         				new Identifier<WebServer>(webServer.getId()),

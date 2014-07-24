@@ -35,14 +35,6 @@
                            method="stateUpdateWebServer"
                            ref="groupStateService" />
 
-	<bean id="groupStateService"
-		class="com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl">
-        <constructor-arg ref="groupPersistenceService"/>
-        <constructor-arg ref="stateNotificationService"/>
-        <constructor-arg value="GROUP" />
-        <constructor-arg ref="stateNotification" />
-    </bean>
-        
     <int:channel id="groupStateUpdates" />
 	
     <int:logging-channel-adapter 

@@ -54,7 +54,7 @@ public class AemPersistenceServiceConfiguration {
                                                 getGroupJvmRelationshipService());
     }
 
-    @Bean
+    @Bean(name="groupPersistenceService")
     public GroupPersistenceService getGroupPersistenceService() {
         return new JpaGroupPersistenceServiceImpl(getGroupCrudService(),
                                                   getGroupJvmRelationshipService());
