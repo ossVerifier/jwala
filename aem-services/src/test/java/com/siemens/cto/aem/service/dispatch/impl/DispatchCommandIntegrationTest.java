@@ -54,8 +54,8 @@ import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerC
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
-import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 

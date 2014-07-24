@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.webserver;
+package com.siemens.cto.aem.service.group;
 
 import java.util.List;
 

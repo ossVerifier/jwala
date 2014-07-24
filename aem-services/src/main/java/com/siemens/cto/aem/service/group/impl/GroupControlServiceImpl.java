@@ -11,8 +11,8 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
 
 public class GroupControlServiceImpl implements GroupControlService {
 

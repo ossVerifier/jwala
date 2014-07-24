@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.webserver.impl;
+package com.siemens.cto.aem.service.group.impl;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerC
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.webserver.GroupWebServerControlService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 
 public class GroupWebServerControlServiceImpl implements GroupWebServerControlService {
 
