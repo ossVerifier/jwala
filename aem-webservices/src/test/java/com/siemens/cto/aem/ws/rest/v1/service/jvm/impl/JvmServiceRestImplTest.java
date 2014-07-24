@@ -31,7 +31,6 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl.JvmStateConsumerManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -68,8 +67,6 @@ public class JvmServiceRestImplTest {
     private JvmControlService controlImpl;
     @Mock
     private JvmControlHistory jvmControlHistory;
-    @Mock
-    private JvmStateConsumerManager jvmStateConsumerManager;
     @Mock
     private StateService<Jvm, JvmState> jvmStateService;
 

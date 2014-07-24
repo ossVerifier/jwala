@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -79,7 +78,7 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     @Qualifier("stateNotificationService")
-    private StateNotificationService<CurrentState<?,?>> stateNotificationService;
+    private StateNotificationService stateNotificationService;
 
     @Bean
     public Server getV1JaxResServer() {

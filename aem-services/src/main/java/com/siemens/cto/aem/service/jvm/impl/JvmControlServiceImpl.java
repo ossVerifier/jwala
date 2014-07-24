@@ -69,7 +69,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     protected JvmSetStateCommand createNewSetJvmStateCommand(final ControlJvmCommand aControlCommand) {
-        return new SetJvmStateCommandBuilder().setControlCommand(aControlCommand)
+        return new JvmSetStateCommandBuilder().setControlCommand(aControlCommand)
                                               .build();
     }
 }

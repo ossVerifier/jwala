@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Scope;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -88,13 +87,13 @@ public class AemServiceConfiguration {
     @Bean(name="groupStateService")
     public GroupStateService.API getGroupStateService() {
         return new GroupStateServiceImpl(
-                persistenceServiceConfiguration.getGroupPersistenceService(), 
+                persistenceServiceConfiguration.getGroupPersistenceService(),
                 getStateNotificationService(),
                 StateType.GROUP,
                 stateNotificationGateway
                 );
     }
-    
+
     @Bean
     public GroupService getGroupService() {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService());
@@ -160,10 +159,10 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "stateNotificationService")
-    public StateNotificationService<CurrentState<?,?>> getStateNotificationService() {
-        return new JmsStateNotificationServiceImpl<>(aemJmsConfig.getJmsTemplate(),
-                                                     aemJmsConfig.getStateNotificationDestination(),
-                                                     getStateNotificationConsumerBuilder());
+    public StateNotificationService getStateNotificationService() {
+        return new JmsStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
+                                                   aemJmsConfig.getStateNotificationDestination(),
+                                                   getStateNotificationConsumerBuilder());
     }
 
     @Bean(name = "jvmStateService")
@@ -181,7 +180,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public StateNotificationConsumerBuilder<CurrentState<?,?>> getStateNotificationConsumerBuilder() {
+    public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
         return new StateTypeJmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
     }
 }

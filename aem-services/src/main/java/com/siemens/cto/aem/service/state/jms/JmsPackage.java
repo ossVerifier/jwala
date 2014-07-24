@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.jvm.state.jms;
+package com.siemens.cto.aem.service.state.jms;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;

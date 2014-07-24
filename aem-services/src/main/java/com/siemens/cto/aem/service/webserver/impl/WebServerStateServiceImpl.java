@@ -16,7 +16,7 @@ import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebServerReachableState> implements StateService<WebServer, WebServerReachableState> {
 
     public WebServerStateServiceImpl(final StatePersistenceService<WebServer, WebServerReachableState> thePersistenceService,
-                                     final StateNotificationService<CurrentState<?,?>> theNotificationService,
+                                     final StateNotificationService theNotificationService,
                                      final StateNotificationGateway theStateNotificationGateway) {
         super(thePersistenceService,
               theNotificationService,

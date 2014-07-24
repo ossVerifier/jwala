@@ -3,18 +3,18 @@ package com.siemens.cto.aem.service.state;
 import java.util.List;
 
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.KeyValueStateProvider;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 
-public interface StateNotificationService<S extends KeyValueStateProvider> {
+public interface StateNotificationService {
 
-    StateNotificationConsumerId<S> register();
+    StateNotificationConsumerId register();
 
-    void deregister(final StateNotificationConsumerId<S> aConsumerId);
+    void deregister(final StateNotificationConsumerId aConsumerId);
 
-    boolean isValid(final StateNotificationConsumerId<S> aConsumerId);
+    boolean isValid(final StateNotificationConsumerId aConsumerId);
 
-    void notifyStateUpdated(final S aNotification);
+    void notifyStateUpdated(final CurrentState aNotification);
 
-    List<S> pollUpdatedStates(final StateNotificationConsumerId<S> aConsumerId,
-                              final TimeRemainingCalculator aTimeRemaining);
+    List<CurrentState> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
+                                         final TimeRemainingCalculator aTimeRemaining);
 }

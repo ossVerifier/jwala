@@ -14,11 +14,11 @@ import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 
-public class WebServerCurrentStateMessageExtractor implements CurrentStateMessageExtractor<CurrentState<?,?>> {
+public class WebServerCurrentStateMessageExtractor implements CurrentStateMessageExtractor {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
 
-    public CurrentState<WebServer, WebServerReachableState> extract(final MapMessage aMessage) throws JMSException {
+    public CurrentState extract(final MapMessage aMessage) throws JMSException {
         return new CurrentState<>(getId(aMessage),
                                   getState(aMessage),
                                   getAsOf(aMessage),

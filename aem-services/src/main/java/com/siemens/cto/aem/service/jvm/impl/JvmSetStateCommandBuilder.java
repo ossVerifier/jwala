@@ -9,21 +9,21 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 
-class SetJvmStateCommandBuilder {
+class JvmSetStateCommandBuilder {
 
     private ControlJvmCommand controlCommand;
     private DateTime asOf;
 
-    SetJvmStateCommandBuilder() {
+    JvmSetStateCommandBuilder() {
         asOf = DateTime.now();
     }
 
-    SetJvmStateCommandBuilder setControlCommand(final ControlJvmCommand aControlCommand) {
+    JvmSetStateCommandBuilder setControlCommand(final ControlJvmCommand aControlCommand) {
         controlCommand = aControlCommand;
         return this;
     }
 
-    SetJvmStateCommandBuilder setAsOf(final DateTime anAsOf) {
+    JvmSetStateCommandBuilder setAsOf(final DateTime anAsOf) {
         asOf = anAsOf;
         return this;
     }

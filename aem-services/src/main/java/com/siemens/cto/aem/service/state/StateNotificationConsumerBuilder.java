@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.state;
 
-public interface StateNotificationConsumerBuilder<S> {
+public interface StateNotificationConsumerBuilder {
 
-    StateNotificationConsumer<S> build();
+    StateNotificationConsumer build();
 }

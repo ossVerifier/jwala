@@ -26,13 +26,13 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
 
     private final StatePersistenceService<S, T> persistenceService;
-    private final StateNotificationService<CurrentState<?,?>> notificationService;
+    private final StateNotificationService notificationService;
     private final StateType stateType;
 
     protected final StateNotificationGateway stateNotificationGateway;
 
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
-                            final StateNotificationService<CurrentState<?,?>> theNotificationService,
+                            final StateNotificationService theNotificationService,
                             final StateType theStateType,
                             final StateNotificationGateway theStateNotificationGateway) {
         persistenceService = thePersistenceService;

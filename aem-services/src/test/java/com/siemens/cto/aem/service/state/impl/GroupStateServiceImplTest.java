@@ -174,12 +174,12 @@ public class GroupStateServiceImplTest {
 
             @Override
             public CurrentState<Group, GroupState> answer(InvocationOnMock invocation) throws Throwable {
-                
+
                 Event<SetStateCommand<Group, GroupState>> event = (Event<SetStateCommand<Group, GroupState>>) invocation.getArguments()[0];
                 group = new Group(group.getId(), group.getName(), group.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
                 return group.getCurrentState();
             }
-            
+
         });
 
     }
@@ -279,9 +279,9 @@ public class GroupStateServiceImplTest {
     @ImportResource("classpath*:META-INF/spring/integration-state.xml")
     static class CommonConfiguration {
 
-        @Autowired        
+        @Autowired
         StateNotificationGateway stateNotification;
-        
+
         @Bean
         public GroupStateMachine getGroupStateManagerTableImpl() {
             return Mockito.mock(GroupStateMachine.class);
@@ -314,14 +314,14 @@ public class GroupStateServiceImplTest {
 
         @SuppressWarnings("unchecked")
         @Bean(name = "stateNotificationService")
-        public StateNotificationService<CurrentState<?,?>> getStateNotificationService() {
+        public StateNotificationService getStateNotificationService() {
             return Mockito.mock(StateNotificationService.class);
-        }        
-        
+        }
+
         @Bean(name = "groupStateService")
         public GroupStateService.API getGroupStateService() {
             return new GroupStateServiceImpl(
-                    getGroupPersistenceService(), 
+                    getGroupPersistenceService(),
                     getStateNotificationService(),
                     StateType.GROUP,
                     stateNotification

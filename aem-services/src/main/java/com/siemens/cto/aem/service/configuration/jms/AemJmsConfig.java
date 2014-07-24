@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jndi.JndiLocatorDelegate;
 
-import com.siemens.cto.aem.service.jvm.state.jms.JmsPackageBuilder;
+import com.siemens.cto.aem.service.state.jms.JmsPackageBuilder;
 
 @Configuration
 public class AemJmsConfig {
@@ -31,11 +31,6 @@ public class AemJmsConfig {
         return lookup("jms/toc-state-notification", Destination.class);
     }
 
-    @Bean(name = "jvmStateNotificationDestination")
-    public Destination getJvmStateNotificationDestination() {
-        return lookup("jms/toc-jvm-state-notification", Destination.class);
-    }
-
     @Bean
     public JmsTemplate getJmsTemplate() {
         return new JmsTemplate(getConnectionFactory());
@@ -45,11 +40,6 @@ public class AemJmsConfig {
     public JmsPackageBuilder getJmsPackageBuilder() {
         return new JmsPackageBuilder().setConnectionFactory(getConnectionFactory())
                                       .setDestination(getStateNotificationDestination());
-    }
-
-    @Bean(name = "webServerStateNotificationDestination")
-    public Destination getWebServerStateNotificationDestination() {
-        return lookup("jms/toc-web-server-state-notification", Destination.class);
     }
 
     protected <T> T lookup(final String aJndiReference,

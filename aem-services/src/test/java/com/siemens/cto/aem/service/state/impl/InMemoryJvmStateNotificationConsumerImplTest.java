@@ -1,10 +1,11 @@
-package com.siemens.cto.aem.service.jvm.state.impl;
+package com.siemens.cto.aem.service.state.impl;
 
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +14,10 @@ import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationConsumer;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -24,18 +28,16 @@ import static org.mockito.Mockito.verify;
 
 public class InMemoryJvmStateNotificationConsumerImplTest {
 
-    private InMemoryJvmStateNotificationConsumerImpl consumer;
+    private InMemoryStateNotificationConsumerImpl consumer;
     private Stale stale;
     private TimeDuration pollDuration;
 
     @Before
     public void setUp() throws Exception {
-        stale = new Stale(new TimeDuration(5L,
-                                           TimeUnit.MINUTES));
-        pollDuration = new TimeDuration(1L,
-                                        TimeUnit.SECONDS);
-        consumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
-                                                                pollDuration);
+        stale = new Stale(new TimeDuration(5L, TimeUnit.MINUTES));
+        pollDuration = new TimeDuration(1L, TimeUnit.SECONDS);
+        consumer = new InMemoryStateNotificationConsumerImpl(stale,
+                                                             pollDuration);
     }
 
     @Test
@@ -44,18 +46,18 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
 
         addNotifications(numberOfNotifications);
 
-        final Set<Identifier<Jvm>> notifications = consumer.getNotifications(getLongAmountOfTime());
+        final List<CurrentState> notifications = consumer.getNotifications(getLongAmountOfTime());
         assertEquals(numberOfNotifications,
                      notifications.size());
 
-        final Set<Identifier<Jvm>> additionalNotifications = consumer.getNotifications(getShortAmountOfTime());
+        final List<CurrentState> additionalNotifications = consumer.getNotifications(getShortAmountOfTime());
         assertTrue(additionalNotifications.isEmpty());
     }
 
     @Test
     public void testNoNotificationsAdded() {
         final TimeRemainingCalculator shortTimeRemaining = spy(getShortAmountOfTime());
-        final Set<Identifier<Jvm>> notifications = consumer.getNotifications(shortTimeRemaining);
+        final List<CurrentState> notifications = consumer.getNotifications(shortTimeRemaining);
         assertTrue(notifications.isEmpty());
         verify(shortTimeRemaining, never()).getTimeRemaining();
     }
@@ -63,13 +65,13 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
     @Test
     public void testAddTooManyNotifications() {
         final int maxCapacity = 7;
-        final JvmStateNotificationConsumer smallConsumer = new InMemoryJvmStateNotificationConsumerImpl(stale,
-                                                                                                        pollDuration,
-                                                                                                        maxCapacity,
-                                                                                                        System.currentTimeMillis());
+        final StateNotificationConsumer smallConsumer = new InMemoryStateNotificationConsumerImpl(stale,
+                                                                                                  pollDuration,
+                                                                                                  maxCapacity,
+                                                                                                  System.currentTimeMillis());
         addNotifications(smallConsumer,
                          maxCapacity + 1);
-        final Set<Identifier<Jvm>> notifications = smallConsumer.getNotifications(getShortAmountOfTime());
+        final List<CurrentState> notifications = smallConsumer.getNotifications(getShortAmountOfTime());
 
         assertEquals(maxCapacity,
                      notifications.size());
@@ -89,7 +91,10 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
 
     @Test
     public void testInterrupted() throws Exception {
-        final AtomicReference<Identifier<Jvm>> result = new AtomicReference<>(new Identifier<Jvm>(123456L));
+        final AtomicReference<CurrentState<?,?>> result = new AtomicReference<CurrentState<?,?>>(new CurrentState<>(new Identifier<Jvm>(123456L),
+                                                                                                                    JvmState.STOPPED,
+                                                                                                                    DateTime.now(),
+                                                                                                                    StateType.JVM));
         final CountDownLatch start = new CountDownLatch(1);
         final CountDownLatch end = new CountDownLatch(1);
         final TimeDuration waitPeriod = new TimeDuration(10L, TimeUnit.SECONDS);
@@ -98,7 +103,7 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
             @Override
             public void run() {
                 start.countDown();
-                final Identifier<Jvm> jvm = consumer.getNotificationsHelper(waitPeriod);
+                final CurrentState jvm = consumer.getNotificationsHelper(waitPeriod);
                 result.set(jvm);
                 end.countDown();
             }
@@ -118,10 +123,13 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
                          aNumberOfNotifications);
     }
 
-    private void addNotifications(final JvmStateNotificationConsumer aConsumer,
+    private void addNotifications(final StateNotificationConsumer aConsumer,
                                   final int aNumberOfNotifications) {
         for (int i = 0; i < aNumberOfNotifications; i++) {
-            aConsumer.addNotification(new Identifier<Jvm>((long)i));
+            aConsumer.addNotification(new CurrentState<>(new Identifier<Jvm>((long)i),
+                                                         JvmState.STARTED,
+                                                         DateTime.now(),
+                                                         StateType.JVM));
         }
     }
 

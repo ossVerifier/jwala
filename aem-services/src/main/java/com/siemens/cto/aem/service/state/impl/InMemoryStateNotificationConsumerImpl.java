@@ -8,15 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 
-public class InMemoryStateNotificationConsumerImpl<T> extends AbstractStateNotificationConsumerImpl<T> implements StateNotificationConsumer<T> {
+public class InMemoryStateNotificationConsumerImpl extends AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryStateNotificationConsumerImpl.class);
 
     private static final int DEFAULT_CAPACITY = 1000;
 
-    private final BlockingQueue<T> notifications;
+    private final BlockingQueue<CurrentState> notifications;
 
     public InMemoryStateNotificationConsumerImpl(final Stale theStale,
                                                  final TimeDuration theDefaultPollDuration) {
@@ -37,7 +38,7 @@ public class InMemoryStateNotificationConsumerImpl<T> extends AbstractStateNotif
     }
 
     @Override
-    public void addNotification(final T aNotification) {
+    public void addNotification(final CurrentState aNotification) {
         if (!notifications.offer(aNotification)) {
             LOGGER.warn("Notification queue is full");
         }
@@ -49,7 +50,7 @@ public class InMemoryStateNotificationConsumerImpl<T> extends AbstractStateNotif
     }
 
     @Override
-    protected T getNotificationsHelper(final TimeDuration someTimeLeft) {
+    protected CurrentState getNotificationsHelper(final TimeDuration someTimeLeft) {
         try {
             return notifications.poll(someTimeLeft.valueOf(), someTimeLeft.getUnit());
         } catch (final InterruptedException ie) {

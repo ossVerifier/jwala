@@ -3,18 +3,14 @@ package com.siemens.cto.aem.service.state.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemaining;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 
-public abstract class AbstractStateNotificationConsumerImpl<T> implements StateNotificationConsumer<T> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStateNotificationConsumerImpl.class);
+public abstract class AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 
     private final Stale stale;
     private final TimeDuration defaultPollDuration;
@@ -49,15 +45,15 @@ public abstract class AbstractStateNotificationConsumerImpl<T> implements StateN
     }
 
     @Override
-    public List<T> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
+    public List<CurrentState> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
         updateLastAccessTime();
 
-        final List<T> notifications = new ArrayList<>();
+        final List<CurrentState> notifications = new ArrayList<>();
 
         TimeRemainingCalculator calculator = new TimeRemainingCalculator(defaultPollDuration);
         TimeRemaining timeRemaining;
         while ( (timeRemaining = calculator.getTimeRemaining()).isTimeRemaining()) {
-            final T notification = getNotificationsHelper(timeRemaining.getDuration());
+            final CurrentState notification = getNotificationsHelper(timeRemaining.getDuration());
             if (notification != null) {
                 notifications.add(notification);
                 calculator = aRequestedTimeoutCalculator;
@@ -77,5 +73,5 @@ public abstract class AbstractStateNotificationConsumerImpl<T> implements StateN
 
     protected abstract void closeHelper();
 
-    protected abstract T getNotificationsHelper(final TimeDuration someTimeLeft);
+    protected abstract CurrentState getNotificationsHelper(final TimeDuration someTimeLeft);
 }

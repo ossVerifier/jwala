@@ -4,12 +4,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.service.jvm.state.jms.JmsPackageBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 
-public class StateTypeJmsStateNotificationConsumerBuilderImpl implements StateNotificationConsumerBuilder<CurrentState<?,?>> {
+public class StateTypeJmsStateNotificationConsumerBuilderImpl implements StateNotificationConsumerBuilder {
 
     private static final TimeDuration DEFAULT_INACTIVE_TIME = new TimeDuration(3L,
                                                                                TimeUnit.MINUTES);
@@ -36,8 +34,8 @@ public class StateTypeJmsStateNotificationConsumerBuilderImpl implements StateNo
 
     @Override
     public StateNotificationConsumer build() {
-        return new StateTypeJmsStateNotificationConsumerImpl(jmsPackageBuilder.build(),
-                                                             stale,
-                                                             defaultPollTime);
+        return new JmsStateNotificationConsumerImpl(jmsPackageBuilder.build(),
+                                                    stale,
+                                                    defaultPollTime);
     }
 }

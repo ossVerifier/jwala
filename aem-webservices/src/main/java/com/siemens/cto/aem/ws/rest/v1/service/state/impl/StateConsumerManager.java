@@ -10,9 +10,9 @@ public class StateConsumerManager {
 
     protected static final String STATE_NOTIFICATION_CONSUMER_SESSION_KEY = "stateConsumer";
 
-    private final StateNotificationService<?> notificationService;
+    private final StateNotificationService notificationService;
 
-    public StateConsumerManager(final StateNotificationService<?> theNotificationService) {
+    public StateConsumerManager(final StateNotificationService theNotificationService) {
         notificationService = theNotificationService;
     }
 

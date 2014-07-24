@@ -39,7 +39,7 @@ import com.siemens.cto.aem.service.state.StateService;
 public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API {
 
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
-            StateNotificationService<CurrentState<?, ?>> theNotificationService, StateType theStateType,
+            StateNotificationService theNotificationService, StateType theStateType,
             StateNotificationGateway theStateNotificationGateway) {
         super(thePersistenceService, theNotificationService, theStateType, theStateNotificationGateway);
 
@@ -53,7 +53,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
-    
+
     @Autowired
     private WebServerDao webServerDao;
 
@@ -96,7 +96,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
             if(gsm.getCurrentState() != groupState) {
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
-                
+
                 groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
                 super.setCurrentState(sgsc, systemUser);
             }
@@ -125,6 +125,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
     }
 
+    @Transactional
     @Override
     public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
         LOGGER.debug("Recalculating group state due to web server update: " + wsState.toString());
@@ -139,7 +140,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         if(ws == null) {
             return;
         }
-        
+
         Collection<Group> groups = ws.getGroups();
 
         for(Group group : groups) {
@@ -165,7 +166,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             }
         }
     }
-    
+
     private void internalHandleWebServerStateUpdate(GroupStateMachine gsm, Identifier<WebServer> wsId, WebServerReachableState webServerReachableState) {
 
         switch(webServerReachableState) {
@@ -182,7 +183,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             // no action needed for these states
             break;
         }
-        
+
         // note - error is not supported.
     }
 

@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class CurrentStateProcessorTest {
 
     private CurrentStateProcessor processor;
-    private List<CurrentState<?,?>> states;
+    private List<CurrentState> states;
 
     @Before
     public void setUp() throws Exception {
@@ -36,8 +36,8 @@ public class CurrentStateProcessorTest {
                                totalOfEach);
         processor = new CurrentStateProcessor(states,
                                               Collections.reverseOrder(CurrentStateChronologicalComparator.CHRONOLOGICAL));
-        final Collection<CurrentState<?,?>> uniqueStates = processor.getUniqueStates();
-        for (final CurrentState<?,?> state : uniqueStates) {
+        final Collection<CurrentState> uniqueStates = processor.getUniqueStates();
+        for (final CurrentState state : uniqueStates) {
             assertEquals(MarkerState.RIGHT,
                          state.getState());
         }

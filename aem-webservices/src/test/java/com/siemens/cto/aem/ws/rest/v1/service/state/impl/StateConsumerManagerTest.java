@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest.v1.service.jvm.state.impl;
+package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -6,8 +6,8 @@ import javax.servlet.http.HttpSession;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationConsumerId;
-import com.siemens.cto.aem.service.jvm.state.JvmStateNotificationService;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
@@ -17,24 +17,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JvmStateConsumerManagerTest {
+public class StateConsumerManagerTest {
 
-    private JvmStateConsumerManager manager;
-    private JvmStateNotificationService stateNotificationService;
+    private StateConsumerManager manager;
+    private StateNotificationService stateNotificationService;
     private HttpServletRequest request;
     private HttpSession session;
-    private JvmStateNotificationConsumerId expectedId;
+    private StateNotificationConsumerId expectedId;
     private String clientId;
     private String sessionKey;
 
     @Before
     public void setUp() throws Exception {
-        stateNotificationService = mock(JvmStateNotificationService.class);
+        stateNotificationService = mock(StateNotificationService.class);
         session = mock(HttpSession.class);
         request = mock(HttpServletRequest.class);
-        expectedId = mock(JvmStateNotificationConsumerId.class);
+        expectedId = mock(StateNotificationConsumerId.class);
         when(request.getSession()).thenReturn(session);
-        manager = new JvmStateConsumerManager(stateNotificationService);
+        manager = new StateConsumerManager(stateNotificationService);
         clientId = "123456";
         sessionKey = manager.createSessionKey(clientId);
     }
@@ -43,8 +43,8 @@ public class JvmStateConsumerManagerTest {
     public void testGetConsumerIdFromScratch() throws Exception {
         when(stateNotificationService.register()).thenReturn(expectedId);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
-                                                                              clientId);
+        final StateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                           clientId);
 
         assertEquals(expectedId,
                      actualId);
@@ -56,8 +56,8 @@ public class JvmStateConsumerManagerTest {
         when(session.getAttribute(eq(sessionKey))).thenReturn(expectedId);
         when(stateNotificationService.isValid(eq(expectedId))).thenReturn(true);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
-                                                                              clientId);
+        final StateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                           clientId);
 
         assertEquals(expectedId,
                      actualId);
@@ -66,17 +66,16 @@ public class JvmStateConsumerManagerTest {
 
     @Test
     public void testGetExistingInvalidConsumerId() throws Exception {
-        final JvmStateNotificationConsumerId newExpectedId = mock(JvmStateNotificationConsumerId.class);
+        final StateNotificationConsumerId newExpectedId = mock(StateNotificationConsumerId.class);
         when(session.getAttribute(eq(sessionKey))).thenReturn(expectedId);
         when(stateNotificationService.isValid(eq(expectedId))).thenReturn(false);
         when(stateNotificationService.register()).thenReturn(newExpectedId);
 
-        final JvmStateNotificationConsumerId actualId = manager.getConsumerId(request,
-                                                                              clientId);
+        final StateNotificationConsumerId actualId = manager.getConsumerId(request,
+                                                                           clientId);
 
         assertEquals(newExpectedId,
                      actualId);
         verify(stateNotificationService, times(1)).register();
     }
-
 }

@@ -14,11 +14,11 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
-public class JvmCurrentStateMessageExtractor implements CurrentStateMessageExtractor<CurrentState<?,?>> {
+public class JvmCurrentStateMessageExtractor implements CurrentStateMessageExtractor {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
 
-    public CurrentState<Jvm, JvmState> extract(final MapMessage aMessage) throws JMSException {
+    public CurrentState extract(final MapMessage aMessage) throws JMSException {
         return new CurrentState<>(getId(aMessage),
                                   getState(aMessage),
                                   getAsOf(aMessage),

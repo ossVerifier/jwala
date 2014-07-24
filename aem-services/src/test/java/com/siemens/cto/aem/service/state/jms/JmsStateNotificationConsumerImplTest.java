@@ -1,6 +1,8 @@
-package com.siemens.cto.aem.service.jvm.state.jms;
+package com.siemens.cto.aem.service.state.jms;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -9,6 +11,8 @@ import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,9 +20,10 @@ import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemaining;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessageKey;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,9 +35,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JmsJvmStateNotificationConsumerImplTest {
+public class JmsStateNotificationConsumerImplTest {
 
-    private JmsJvmStateNotificationConsumerImpl impl;
+    private JmsStateNotificationConsumerImpl impl;
     private JmsPackage jmsPackage;
     private Stale stale;
     private MessageConsumer consumer;
@@ -47,13 +52,12 @@ public class JmsJvmStateNotificationConsumerImplTest {
         staleTimeUnit = TimeUnit.MINUTES;
         stale = new Stale(new TimeDuration(staleTimePeriod,
                                            staleTimeUnit));
-        pollDuration = new TimeDuration(1L,
-                                        TimeUnit.SECONDS);
+        pollDuration = new TimeDuration(1L, TimeUnit.SECONDS);
         consumer = mock(MessageConsumer.class);
         when(jmsPackage.getConsumer()).thenReturn(consumer);
-        impl = new JmsJvmStateNotificationConsumerImpl(jmsPackage,
-                                                       stale,
-                                                       pollDuration);
+        impl = new JmsStateNotificationConsumerImpl(jmsPackage,
+                                                    stale,
+                                                    pollDuration);
     }
 
     @Test
@@ -64,7 +68,8 @@ public class JmsJvmStateNotificationConsumerImplTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testAddNotification() {
-        impl.addNotification(new Identifier<Jvm>(123456L));
+        final CurrentState unused = mock(CurrentState.class);
+        impl.addNotification(unused);
     }
 
     @Test
@@ -72,12 +77,17 @@ public class JmsJvmStateNotificationConsumerImplTest {
         final int numberOfMessages = 5;
         configureMessageConsumerForMessages(numberOfMessages);
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(numberOfMessages);
-        final Set<Identifier<Jvm>> actualIds = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState> states = impl.getNotifications(timeRemainingCalculator);
 
         assertEquals(numberOfMessages,
-                     actualIds.size());
+                     states.size());
+
+        final Set<Long> expectedIds = new HashSet<>();
         for (int i = 0; i < numberOfMessages; i++) {
-            assertTrue(actualIds.contains(new Identifier<Jvm>((long)(i + 1))));
+            expectedIds.add((long)(i+1));
+        }
+        for (final CurrentState state : states) {
+            assertTrue(expectedIds.contains(state.getId().getId()));
         }
     }
 
@@ -85,7 +95,7 @@ public class JmsJvmStateNotificationConsumerImplTest {
     public void testGetNotificationsWithJmsException() throws Exception {
         configureMessageConsumerForException();
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(1);
-        final Set<Identifier<Jvm>> actualIds = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState> actualIds = impl.getNotifications(timeRemainingCalculator);
 
         assertTrue(actualIds.isEmpty());
     }
@@ -94,7 +104,7 @@ public class JmsJvmStateNotificationConsumerImplTest {
     public void testReceiveReturnsNoMessage() throws Exception {
         when(consumer.receive(anyLong())).thenReturn(null);
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(1);
-        final Set<Identifier<Jvm>> actualIds = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState> actualIds = impl.getNotifications(timeRemainingCalculator);
 
         assertTrue(actualIds.isEmpty());
         verify(timeRemainingCalculator, never()).getTimeRemaining();
@@ -120,13 +130,16 @@ public class JmsJvmStateNotificationConsumerImplTest {
 
     protected MapMessage createMapMessageMock(final long anId) throws JMSException {
         final MapMessage message = mock(MapMessage.class);
-        when(message.getString(eq(JvmStateMessageKey.JVM_ID.getKey()))).thenReturn(String.valueOf(anId));
+        when(message.getString(eq(CommonStateKey.ID.getKey()))).thenReturn(String.valueOf(anId));
+        when(message.getString(eq(CommonStateKey.TYPE.getKey()))).thenReturn(String.valueOf(StateType.JVM));
+        when(message.getString(eq(CommonStateKey.AS_OF.getKey()))).thenReturn(ISODateTimeFormat.dateTime().print(DateTime.now()));
+        when(message.getString(eq(CommonStateKey.STATE.getKey()))).thenReturn(JvmState.STARTED.toStateString());
         return message;
     }
 
     protected TimeRemainingCalculator createEnoughTimeForMessages(final int aNumberOfMessages) {
         final TimeRemainingCalculator calculator = mock(TimeRemainingCalculator.class);
-        final int aNumberOfTimesRemaining = aNumberOfMessages + 1;
+        final int aNumberOfTimesRemaining = aNumberOfMessages;
         final TimeRemaining[] allTimeRemaining = createTimeRemaining(aNumberOfTimesRemaining);
         final TimeRemaining[] restOfTimeRemaining = Arrays.copyOfRange(allTimeRemaining, 1, aNumberOfTimesRemaining);
         when(calculator.getTimeRemaining()).thenReturn(allTimeRemaining[0],

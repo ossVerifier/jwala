@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.jvm.state.jms;
+package com.siemens.cto.aem.service.state.jms;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -7,6 +7,8 @@ import javax.jms.Session;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.siemens.cto.aem.service.state.jms.JmsPackage;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;

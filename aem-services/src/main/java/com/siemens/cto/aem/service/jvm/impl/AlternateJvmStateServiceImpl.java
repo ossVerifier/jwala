@@ -16,7 +16,7 @@ import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 public class AlternateJvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> implements StateService<Jvm, JvmState> {
 
     public AlternateJvmStateServiceImpl(final StatePersistenceService<Jvm, JvmState> thePersistenceService,
-                                        final StateNotificationService<CurrentState<?,?>> theNotificationService,
+                                        final StateNotificationService theNotificationService,
                                         final StateNotificationGateway theStateNotificationGateway) {
         super(thePersistenceService,
               theNotificationService,
