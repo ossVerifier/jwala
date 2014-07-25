@@ -40,7 +40,7 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.parentItemId,
                                         this.props.rootId);
     },
-    drawDataTable: function(dataTable, data, defaultSorting, isCollapsible) {
+    drawDataTable: function(dataTable, data, defaultSorting, isCollapsible, headerComponents) {
         dataTable.fnClearTable(data);
         dataTable.fnAddData(data);
         dataTable.fnDraw();
@@ -63,10 +63,27 @@ var ExpandCollapseControl = React.createClass({
             // on its top level container (the parent of the parent)
             if (!dataTable.parent().parent().hasClass("ui-accordion")) {
                 dataTable.parent().parent().accordion({
-                    header: "div.accordion-title",
+                    header: headerComponents === undefined ? "h3" : "div.accordion-title",
                     collapsible: true,
-                    heightStyle: "content"
+                    heightStyle: "content",
+                    beforeActivate:function(event, ui){
+                        var fromIcon = $(event.originalEvent.target).is('.ui-accordion-header > .ui-icon');
+                        return fromIcon;
+                    }
                 });
+
+                var self = this;
+                if (headerComponents !== undefined) {
+                    // attach handlers to the buttons
+                    for (var i = 0; i < headerComponents.length; i++) {
+                        var component = headerComponents[i];
+                        $(dataTable.selector + "_" +  component.id).off("click");
+                        $(dataTable.selector + "_" +  component.id).on("click",
+                                                                       {id:self.props.parentItemId},
+                                                                       component.btnCallback);
+                    }
+                }
+
             }
         }
 
@@ -92,13 +109,15 @@ var ExpandCollapseControl = React.createClass({
                     this.drawDataTable(subDataTable,
                                        data,
                                        childTableDetailsArray[i].defaultSorting,
-                                       childTableDetailsArray[i].isCollapsible);
+                                       childTableDetailsArray[i].isCollapsible,
+                                       childTableDetailsArray[i].headerComponent);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
                             dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
                                                         self.retrieveDataAndRenderTableCallback(subDataTable,
                                                         childTableDetailsArray[i].defaultSorting,
-                                                        childTableDetailsArray[i].isCollapsible));
+                                                        childTableDetailsArray[i].isCollapsible,
+                                                        childTableDetailsArray[i].headerComponents));
                     }
 
                 }
@@ -119,7 +138,8 @@ var ExpandCollapseControl = React.createClass({
                 tocDataTables[i] = new TocDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
                                                      tableDef:this.props.childTableDetails[i].tableDef,
                                                      className:this.props.childTableDetails[i].className,
-                                                     title:this.props.childTableDetails[i].title
+                                                     title:this.props.childTableDetails[i].title,
+                                                     headerComponents: this.props.childTableDetails[i].headerComponents
                                                     });
             }
             return React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
@@ -131,12 +151,12 @@ var ExpandCollapseControl = React.createClass({
         }
 
     },
-    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting, isCollapsible) {
+    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting, isCollapsible, headerComponents) {
         var self = this;
         return function(resp) {
             var data = resp.applicationResponseContent;
             if (data !== undefined) {
-                self.drawDataTable(subDataTable, data, defaultSorting, isCollapsible);
+                self.drawDataTable(subDataTable, data, defaultSorting, isCollapsible, headerComponents);
             }
         }
     }

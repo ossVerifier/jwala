@@ -7,11 +7,29 @@ var TocDataTable = React.createClass({
                                              sSortAsc:$.fn.dataTableExt.oStdClasses.sSortAsc,
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
+
+        var headerComponents = [];
+        var header;
+        if (this.props.headerComponents !== undefined) {
+            for (var i = 0; i < this.props.headerComponents.length; i++) {
+                var obj = this.props.headerComponents[i];
+                if (obj.tocType === "button") {
+                    headerComponents.push(new DataTableButton({id:this.props.tableId + "_" + obj.id,
+                                                               itemId:"whatever",
+                                                               label:obj.btnLabel,
+                                                               className:"inline-block",
+                                                               callback:obj.btnCallback}));
+                }
+            }
+            headerComponents.push(React.DOM.span({className:"accordion-tittle"}, this.props.title));
+            header = React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
+                                                                  headerComponents)
+        } else {
+            header = React.DOM.h3(null, this.props.title);
+        }
+
         return React.DOM.div(null,
-                             React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
-                                            React.DOM.span({className:"accordion-tittle"}, this.props.title),
-                                            DataTableButton({label:"Start", className:"inline-block"}),
-                                            DataTableButton({label:"Stop", className:"inline-block"})),
+                             header,
                              React.DOM.table({id: this.props.tableId}))
     },
     componentDidUpdate: function() {

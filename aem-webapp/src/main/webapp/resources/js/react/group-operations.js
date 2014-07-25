@@ -201,7 +201,11 @@ var GroupOperationsDataTable = React.createClass({
                                                className:"simple-data-table",
                                                dataCallback:this.getWebServersOfGrp,
                                                title:"Web Servers",
-                                               isCollapsible:true};
+                                               isCollapsible:true,
+                                               headerComponents:[
+                                                    {id:"start", tocType:"button", btnLabel:"Start", btnCallback: this.webServersStart},
+                                                    {id:"stop", tocType:"button", btnLabel:"Stop", btnCallback: this.webServersStop}
+                                               ]};
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
 
@@ -309,6 +313,17 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}/>
    },
+
+   webServersStart: function(event) {
+        // TODO: Start web server here
+        alert("Start web server in group Id = " + event.data.id);
+   },
+
+   webServersStop: function(event) {
+        // TODO: Stop web server here
+        alert("Stop web server in group Id =" + event.data.id);
+   },
+
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
           aoColumnDefs[itemIndex].mDataProp = null;
