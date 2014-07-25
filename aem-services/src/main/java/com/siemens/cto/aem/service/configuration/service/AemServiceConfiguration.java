@@ -41,8 +41,8 @@ import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
+import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
-import com.siemens.cto.aem.service.state.jms.StateTypeJmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
@@ -181,6 +181,6 @@ public class AemServiceConfiguration {
 
     @Bean
     public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
-        return new StateTypeJmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
+        return new JmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
     }
 }
