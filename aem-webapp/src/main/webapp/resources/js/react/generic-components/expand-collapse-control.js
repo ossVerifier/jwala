@@ -63,6 +63,7 @@ var ExpandCollapseControl = React.createClass({
             // on its top level container (the parent of the parent)
             if (!dataTable.parent().parent().hasClass("ui-accordion")) {
                 dataTable.parent().parent().accordion({
+                    header: "div.accordion-title",
                     collapsible: true,
                     heightStyle: "content"
                 });

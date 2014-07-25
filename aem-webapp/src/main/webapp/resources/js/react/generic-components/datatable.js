@@ -7,10 +7,12 @@ var TocDataTable = React.createClass({
                                              sSortAsc:$.fn.dataTableExt.oStdClasses.sSortAsc,
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
-        return <div>
-                    <h3 style={this.props.title !== undefined  ? {} : {display:'none'}}>{this.props.title}</h3>
-                    <table id={this.props.tableId}/>
-               </div>
+        return React.DOM.div(null,
+                             React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
+                                            React.DOM.span({className:"accordion-tittle"}, this.props.title),
+                                            DataTableButton({label:"Start", className:"inline-block"}),
+                                            DataTableButton({label:"Stop", className:"inline-block"})),
+                             React.DOM.table({id: this.props.tableId}))
     },
     componentDidUpdate: function() {
         if (this.dataTable === null) {
