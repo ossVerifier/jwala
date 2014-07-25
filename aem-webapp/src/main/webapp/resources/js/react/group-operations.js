@@ -93,7 +93,7 @@ var GroupOperations = React.createClass({
                                                            newJvmStates));
 
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state);});
+        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.jvmState);});
     },
 
     pollStates: function() {
@@ -107,7 +107,7 @@ var GroupOperations = React.createClass({
 
     fetchCurrentJvmStates: function() {
         var self = this;
-        this.props.jvmStateService.getCurrentStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
+        this.props.stateService.getCurrentJvmStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
                                                      .caught(function(e) {});
     },
     markGroupExpanded: function(groupId, isExpanded) {

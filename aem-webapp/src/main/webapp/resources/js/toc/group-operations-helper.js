@@ -8,7 +8,7 @@ var groupOperationsHelper = function(){
     };
 
     var mergeJvmStateData = function(jvmStateById, jvms) {
-        return jvms.map(function(jvm) { return mergeSingleJvmState(jvmStateById[jvm.id.id], jvm);});
+        return jvms.map(function(jvm) {return mergeSingleJvmState(jvmStateById[jvm.id.id], jvm);});
     };
 
     // TODO: Check when this gets called
@@ -183,7 +183,7 @@ var groupOperationsHelper = function(){
             jvms.forEach(function(jvm) {
                 jvm.groups.forEach(function(group) { result.push( { groupId: group.id,
                                                                     jvmId: jvm.id,
-                                                                    state: jvm.state
+                                                                    jvmState: jvm.state
                                                                   })});
             });
             return result;
