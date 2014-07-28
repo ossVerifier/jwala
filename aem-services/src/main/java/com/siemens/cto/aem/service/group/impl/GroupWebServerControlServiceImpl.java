@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service.group.impl;
 
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
@@ -30,6 +32,7 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
         commandDispatchGateway = theCommandDispatchGateway;
     }
     
+    @Transactional
     @Override
     public GroupControlHistory controlGroup(ControlGroupWebServerCommand aCommand, User aUser) {
 
@@ -48,6 +51,7 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
         return controlHistoryEvent;
     }
 
+    @Transactional
     @Override
     public GroupControlHistory dispatchCommandComplete(List<WebServerDispatchCommandResult> results) {
         return null;
