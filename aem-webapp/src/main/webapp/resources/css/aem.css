@@ -159,7 +159,10 @@ body {
     text-align: right;
 }
 
-.accordion-title span {
-    float: left;
-    padding-top: 5px;
+.accordion-title-text-position {
+    position: absolute;
+    left: 2.5em;
+    margin-top: -8px;
+    position: absolute;
+    top: 50%;
 }

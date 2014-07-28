@@ -21,7 +21,7 @@ var TocDataTable = React.createClass({
                                                                callback:obj.btnCallback}));
                 }
             }
-            headerComponents.push(React.DOM.span({className:"accordion-tittle"}, this.props.title));
+            headerComponents.push(React.DOM.span({className:"accordion-title-text-position"}, this.props.title));
             header = React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
                                                                   headerComponents)
         } else {
