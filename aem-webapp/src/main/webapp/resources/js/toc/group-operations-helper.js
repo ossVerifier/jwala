@@ -266,7 +266,6 @@ var groupOperationsHelper = function(){
             //                                              .each(function(index, elem) { $(elem).dataTable().fnDraw();});
 
             groups.forEach(function(group) {
-                console.log(group);
                 $(".group-state-" + group.id.id).html(group.state.state);
             });
         },
