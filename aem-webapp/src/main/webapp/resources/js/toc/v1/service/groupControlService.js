@@ -3,19 +3,28 @@ var groupControlService = function() {
     var control = function(groupId, operation) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/commands",
                                       "json",
-                                      JSON.stringify({ controlOperation : operation}));
+                                      JSON.stringify({ controlOperation : operation}),
+                                      undefined,
+                                      undefined,
+                                      false);
     };
     
     var controlJvms = function(groupId, operation) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/jvms/commands",
                                       "json",
-                                      JSON.stringify({ controlOperation : operation}));
+                                      JSON.stringify({ controlOperation : operation}),
+                                      undefined,
+                                      undefined,
+                                      false);
     };
     
     var controlWebServers = function(groupId, operation) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/webservers/commands",
                                       "json",
-                                      JSON.stringify({ controlOperation : operation}));
+                                      JSON.stringify({ controlOperation : operation}),
+                                      undefined,
+                                      undefined,
+                                      false);
     };
 
     return {

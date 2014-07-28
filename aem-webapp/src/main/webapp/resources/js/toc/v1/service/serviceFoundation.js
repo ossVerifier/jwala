@@ -30,18 +30,21 @@ var serviceFoundation = {
                                        complete: loadingUiBehavior.hideLoading
                                    }));
     },
-    post : function(url, dataType, content, thenCallback, caughtCallback) {
-        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
-        return Promise.cast($.ajax({
-                                       url: url,
-                                       dataType: dataType,
-                                       type: 'POST',
-                                       data: content,
-                                       contentType: 'application/json',
-                                       cache: false,
-                                       beforeSend: loadingUiBehavior.showLoading,
-                                       complete: loadingUiBehavior.hideLoading
-                                   })).then(function(){
+    post : function(url, dataType, content, thenCallback, caughtCallback, showDefaultAjaxProcessingAnimation) {
+        var ajaxParams = {url: url,
+                          dataType: dataType,
+                          type: 'POST',
+                          data: content,
+                          contentType: 'application/json',
+                          cache: false}
+
+        if (showDefaultAjaxProcessingAnimation !== false) {
+            var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
+            ajaxParams["beforeSend"] = loadingUiBehavior.showLoading;
+            ajaxParams["complete"] = loadingUiBehavior.hideLoading;
+        }
+
+        return Promise.cast($.ajax(ajaxParams)).then(function(){
                                         if ($.isFunction(thenCallback)) {
                                             thenCallback();
                                         }
