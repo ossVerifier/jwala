@@ -110,7 +110,7 @@ var ExpandCollapseControl = React.createClass({
                                        data,
                                        childTableDetailsArray[i].defaultSorting,
                                        childTableDetailsArray[i].isCollapsible,
-                                       childTableDetailsArray[i].headerComponent);
+                                       childTableDetailsArray[i].headerComponents);
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
                             dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
