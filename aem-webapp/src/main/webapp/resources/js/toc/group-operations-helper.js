@@ -256,10 +256,19 @@ var groupOperationsHelper = function(){
             return result;
         },
 
-        updateGroupsInDataTables: function() {
-            $("table[id*='group-operations-table']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
-                                                          .each(function(index, elem) { $(elem).dataTable().fnDraw();});
+        updateGroupsInDataTables: function(groups) {
 
+            // NOTE: We can't redraw the table just to update the status since it would
+            //       bring the user to the 1st page if a table redraw is initiated.
+            //       The solution for now since we're using Datatable is to use JQuery
+            //       to update the group status.
+            // $("table[id*='group-operations-table']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
+            //                                              .each(function(index, elem) { $(elem).dataTable().fnDraw();});
+
+            groups.forEach(function(group) {
+                console.log(group);
+                $(".group-state-" + group.id.id).html(group.state.state);
+            });
         },
 
         updateWebServersInDataTables: function(groupId, webServerId, state) {

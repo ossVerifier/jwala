@@ -81,7 +81,7 @@ var GroupOperations = React.createClass({
                                                              this.state.groupStates,
                                                              newGroupStates));
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
-        groupOperationsHelper.updateGroupsInDataTables();
+        groupOperationsHelper.updateGroupsInDataTables(this.state.groups);
     },
 
     updateWebServerStateData: function(newWebServerStates) {
@@ -152,7 +152,12 @@ var GroupOperationsDataTable = React.createClass({
        this.groupsById = groupOperationsHelper.keyGroupsById(nextProps.groups);
        this.webServersById = groupOperationsHelper.keyWebServersById(nextProps.webServers);
        this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
+
        this.hasNoData = (this.props.data.length === 0);
+
+       // NOTE: This prevents the grid from re rendering every time there's a state change.
+       // We need to prevent re rendering for now since we are using Datatable to
+       // update the DOM instead of REACT.
        if (!this.hasDrawn) {
            this.hasDrawn = true;
            return true;
