@@ -76,4 +76,10 @@ public interface GroupServiceRest {
     Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId, 
                             final JsonControlWebServer jsonControlWebServer,
                             @Context SecurityContext jaxrsSecurityContext);
+
+    @DELETE
+    @Path("/{groupId}/state")
+    Response resetState(@PathParam("groupId") final Identifier<Group> aGroupId,
+                        @Context SecurityContext jaxrsSecurityContext);
+
 }

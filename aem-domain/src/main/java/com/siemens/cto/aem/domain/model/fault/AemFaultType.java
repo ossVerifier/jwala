@@ -85,7 +85,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified"),
     /**/
-    WEB_SERVER_REACHABLE_STATE_NOT_SPECIFIED("AEM41", "WebServerReachableStateNotSpecified")
+    WEB_SERVER_REACHABLE_STATE_NOT_SPECIFIED("AEM41", "WebServerReachableStateNotSpecified"), 
+    /**/
+    INVALID_GROUP_OPERATION("AEM42", "InvalidGroupOperation")
     ;
 
 	private final String faultCode;

@@ -7,9 +7,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.group.GroupControlOperationRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 
 public class ControlGroupCommand implements Serializable, GroupCommand {
@@ -33,9 +35,20 @@ public class ControlGroupCommand implements Serializable, GroupCommand {
         return controlOperation;
     }
 
+    
     @Override
-    public void validateCommand() throws BadRequestException {
-        new GroupIdRule(groupId).validate();  
+    public void validateCommand() {
+        // can only partially validate without state
+        new GroupIdRule(groupId).validate();
+    }
+
+    public void validateCommand(
+            final boolean canStart,
+            final boolean canStop) throws BadRequestException {
+        new MultipleRuleCommand(
+                new GroupIdRule(groupId),
+                new GroupControlOperationRule(controlOperation, canStart, canStop)
+        ).validateCommand();
     }
 
     @Override

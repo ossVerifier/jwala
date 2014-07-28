@@ -1,9 +1,11 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -18,6 +20,7 @@ import java.util.Set;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,12 +32,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -244,5 +248,28 @@ public class GroupServiceRestImplTest {
         assertTrue(content instanceof GroupControlHistory);
 
         // act of calling the service has been verified because it was stubbed with when. 
+    }
+    
+    @Test
+    public void testSignalReset() {
+        when(this.controlImpl.resetState(eq(Identifier.id(1L, Group.class)), isA(User.class))).thenReturn(new CurrentGroupState(id(1L, Group.class), GroupState.PARTIAL, DateTime.now() ));
+        when(jaxrsSecurityContext.getUserPrincipal()).thenReturn(new Principal() {
+
+            @Override
+            public String getName() {
+                return GROUP_CONTROL_TEST_USERNAME;
+            }
+        
+        });
+        final Response response =
+                cut.resetState(Identifier.id(1L, Group.class),
+                        jaxrsSecurityContext);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        final Object content = applicationResponse.getApplicationResponseContent();
+        assertTrue(content instanceof CurrentGroupState);
+
+        // act of calling the service has been verified because it was stubbed with when.         
     }
 }

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.joda.time.DateTime;
@@ -79,11 +80,44 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         CAN_STOP,
         CANNOT_STOP
     }
+
+    enum Signal { 
+        REACH_WS_SIGNAL, 
+        UNREACH_WS_SIGNAL, 
+        ERROR_WS_SIGNAL,
+        START_JVM_SIGNAL, 
+        STOP_JVM_SIGNAL, 
+        ERROR_JVM_SIGNAL 
+    };
     
-    // Keep a list of JVMs that triggered state updates
-    private class Triggers { 
-        private Deque<Identifier<Jvm>> jvms = new ConcurrentLinkedDeque<>();
-        private Deque<Identifier<WebServer>> webServers = new ConcurrentLinkedDeque<>();
+    // Keep a list of JVMs that triggered state updates - used for cached periodic FSM handling
+    private class Triggers {
+        private Map<Signal, Deque<Identifier<?>>> signals = new ConcurrentHashMap<>();
+
+        public boolean anySignalled(Signal... sigList) {
+            for(Signal s : sigList) { 
+                Deque<Identifier<?>> result = signals.get(s);
+                if(result != null && result.size() > 0) return true;
+            }
+            return false;
+        }
+
+        public void addSignal(Signal s, Identifier<?> id) {
+            Deque<Identifier<?>> result = signals.get(s);
+            if(result == null) { 
+                result = new ConcurrentLinkedDeque<>();
+                result.add(id);
+                signals.put(s, result);
+            } else { 
+                result.add(id);
+            }
+        }        
+        
+        public void drain() {
+            for(Deque<Identifier<?>> sigqueue: signals.values()) {
+                sigqueue.clear();
+            }
+        }
     }
     
     // Variables For reporting state detail
@@ -124,15 +158,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         STATES = new HashMap<>();
         ExpressionParser parser = new SpelExpressionParser();
 
-        STATES.put(null,           new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
-        STATES.put(UNKNOWN,        new StateEntry(parser, CANNOT_START,CANNOT_STOP,null,       NO_OP,      NO_OP,      NO_OP));
-        STATES.put(ERROR,          new StateEntry(parser, CANNOT_START,CANNOT_STOP,INITIALIZED, null,      null,       null));
-        STATES.put(INITIALIZED,    new StateEntry(parser, CAN_START,   CAN_STOP,   null,       "onInitializeIn()", null, null));
-        STATES.put(PARTIAL,        new StateEntry(parser, CAN_START,   CAN_STOP,   null,       null, "onPartial()",    null));
-        STATES.put(STARTING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStarting()",   null));
-        STATES.put(STARTED,        new StateEntry(parser, CANNOT_START,CAN_STOP,   null,       null, "onStarted()",    null));
-        STATES.put(STOPPING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,      null, "onStopping()",   null));
-        STATES.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, null,      null, "onStopped()",    null));
+        STATES.put(null,           new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,        NO_OP,      NO_OP,      NO_OP));
+        STATES.put(UNKNOWN,        new StateEntry(parser, CANNOT_START,CANNOT_STOP, null,        NO_OP,      NO_OP,      NO_OP));
+        STATES.put(ERROR,          new StateEntry(parser, CANNOT_START,CANNOT_STOP, INITIALIZED, null,      null,       null));
+        STATES.put(INITIALIZED,    new StateEntry(parser, CAN_START,   CAN_STOP,    INITIALIZED, "onInitializeIn()", "onInitializeIn()", null));
+        STATES.put(PARTIAL,        new StateEntry(parser, CAN_START,   CAN_STOP,    INITIALIZED, null, "onPartial()",    null));
+        STATES.put(STARTING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, INITIALIZED, null, "onStarting()",   null));
+        STATES.put(STARTED,        new StateEntry(parser, CANNOT_START,CAN_STOP,    INITIALIZED, null, "onStarted()",    null));
+        STATES.put(STOPPING,       new StateEntry(parser, CANNOT_START,CANNOT_STOP, INITIALIZED, null, "onStopping()",   null));
+        STATES.put(STOPPED,        new StateEntry(parser, CAN_START,   CANNOT_STOP, INITIALIZED, null, "onStopped()",    null));
 
     }
     // =========== CONSTRUCTOR ===================
@@ -201,6 +235,14 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             return GroupState.STARTED;
         }
 
+        if(state == GroupState.PARTIAL) {
+            if(triggers.anySignalled(Signal.START_JVM_SIGNAL, Signal.STOP_JVM_SIGNAL, Signal.REACH_WS_SIGNAL, Signal.UNREACH_WS_SIGNAL)) {
+                return GroupState.PARTIAL;
+            } else if(triggers.anySignalled(Signal.ERROR_JVM_SIGNAL, Signal.ERROR_WS_SIGNAL)) {
+                return GroupState.ERROR;
+            }
+        }
+        
      // only a timeout/error/reset will help us leave starting
         return GroupState.STARTING;
     }
@@ -215,7 +257,16 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         if(state == GroupState.STOPPED) {
             return GroupState.STOPPED;
         }
+        
 
+        if(state == GroupState.PARTIAL) {
+            if(triggers.anySignalled(Signal.START_JVM_SIGNAL, Signal.STOP_JVM_SIGNAL, Signal.REACH_WS_SIGNAL, Signal.UNREACH_WS_SIGNAL)) {
+                return GroupState.PARTIAL;
+            } else if(triggers.anySignalled(Signal.ERROR_JVM_SIGNAL, Signal.ERROR_WS_SIGNAL)) {
+                return GroupState.ERROR;
+            }
+        }
+        
      // only a timeout/error/reset will help us leave stopping
         return GroupState.STOPPING;
     }
@@ -397,6 +448,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             currentState = interimState;
         } finally {
             this.currentUser = null;
+            this.triggers.drain();
         }
     }
 
@@ -413,8 +465,9 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     }
 
     @Override
-    public void signalReset(User user) {
+    public CurrentGroupState signalReset(User user) {
         handleState(STATES.get(currentState).resetState, user);
+        return getCurrentStateDetail();
     }
 
     @Override
@@ -429,30 +482,32 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     @Override
     public void jvmStarted(Identifier<Jvm> jvmId) {
-        triggers.jvms.add(jvmId);
+        triggers.addSignal(Signal.START_JVM_SIGNAL, jvmId);
         handleState(currentState, SYSTEM_USER);
     }
 
     @Override
     public void jvmStopped(Identifier<Jvm> jvmId) {
-        triggers.jvms.add(jvmId);
+        triggers.addSignal(Signal.STOP_JVM_SIGNAL, jvmId);
         handleState(currentState, SYSTEM_USER);
     }
 
     @Override
     public void jvmError(Identifier<Jvm> jvmId) {
-        triggers.jvms.add(jvmId);
+        triggers.addSignal(Signal.ERROR_JVM_SIGNAL, jvmId);
         handleState(GroupState.ERROR, SYSTEM_USER);
     }
 
     @Override
-    public void signalStartRequested(User user) {
+    public CurrentGroupState signalStartRequested(User user) {
         handleState(GroupState.STARTING, user);
+        return getCurrentStateDetail();
     }
 
     @Override
-    public void signalStopRequested(User user) {
+    public CurrentGroupState signalStopRequested(User user) {
         handleState(GroupState.STOPPING, user);
+        return getCurrentStateDetail();
     }
 
     @Override
@@ -533,19 +588,19 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     @Override
     public void wsError(Identifier<WebServer> wsId) {
-        triggers.webServers.add(wsId);
+        triggers.addSignal(Signal.ERROR_WS_SIGNAL, wsId);
         handleState(GroupState.ERROR, SYSTEM_USER);        
     }
 
     @Override
     public void wsReachable(Identifier<WebServer> wsId) {
-        triggers.webServers.add(wsId);
+        triggers.addSignal(Signal.REACH_WS_SIGNAL, wsId);
         handleState(currentState, SYSTEM_USER);        
     }
 
     @Override
     public void wsUnreachable(Identifier<WebServer> wsId) {
-        triggers.webServers.add(wsId);
+        triggers.addSignal(Signal.UNREACH_WS_SIGNAL, wsId);
         handleState(currentState, SYSTEM_USER);        
     }
 
