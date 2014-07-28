@@ -9,7 +9,7 @@ import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
 public enum ApplicationPropertySourceDefinition {
 
     LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/jk/status", VariableStyle.STRING),
-    JVM_STATE_POLL_TIMEOUT("jvmStatePollTimeout", "jvm.state.poll.timeout", "1", VariableStyle.STRING);
+    STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;

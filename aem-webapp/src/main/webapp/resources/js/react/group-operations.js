@@ -122,6 +122,11 @@ var GroupOperations = React.createClass({
         this.props.stateService.getCurrentJvmStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
                                                      .caught(function(e) {});
     },
+    fetchCurrentWebServerStates: function() {
+        var self = this;
+        this.props.stateService.getCurrentWebServerStates().then(function(data) { self.updateWebServerStateData(data.applicationResponseContent);})
+                                                           .caught(function(e) {});
+    },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
                                                               groupId,
@@ -136,12 +141,17 @@ var GroupOperations = React.createClass({
         this.retrieveData();
         this.pollStates();
         this.fetchCurrentJvmStates();
+        this.fetchCurrentWebServerStates();
     },
     componentWillUnmount: function() {
         this.dataSink.stop();
     },
     updateWebServerDataCallback: function(webServerData) {
-        this.setState({webServers: webServerData});
+//        this.setState({webServers: webServerData});
+        this.setState(groupOperationsHelper.processWebServerData([],
+                                                                 webServerData,
+                                                                 this.state.webServerStates,
+                                                                 []));
     }
 });
 
@@ -474,10 +484,11 @@ var GroupOperationsDataTable = React.createClass({
      */
     getStateForWebServer: function(mData, type, fullData) {
         var webServerId = fullData.id.id;
+        var webServerToRender = this.webServersById[webServerId];
 
-        if (this.webServersById !== undefined && this.webServersById[webServerId] !== undefined) {
-            if (this.webServersById[webServerId].state !== undefined) {
-                $(".ws-state-" + webServerId).html(this.webServersById[webServerId].state.state);
+        if (this.webServersById !== undefined && webServerToRender !== undefined) {
+            if (webServerToRender.state !== undefined) {
+                $(".ws-state-" + webServerId).html(webServerToRender.state.state);
             } else {
                 // ideally we should get the current state here instead of waiting for the next poll
                 $(".ws-state-" + webServerId).html("UNKNOWN");
