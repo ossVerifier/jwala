@@ -1,3 +1,4 @@
+
 /** @jsx React.DOM */
 var GroupOperations = React.createClass({
     getInitialState: function() {
@@ -11,6 +12,7 @@ var GroupOperations = React.createClass({
             groupFormData: {},
             groupTableData: [],
             groups: [],
+            groupStates: [],
             webServers: [],
             webServerStates: [],
             jvms: [],
@@ -27,6 +29,7 @@ var GroupOperations = React.createClass({
                                     <GroupOperationsDataTable data={this.state.groupTableData}
                                                               selectItemCallback={this.selectItemCallback}
                                                               groups={this.state.groups}
+                                                              groupsById={groupOperationsHelper.keyGroupsById(this.state.groups)}
                                                               webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
                                                               jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}
@@ -53,8 +56,6 @@ var GroupOperations = React.createClass({
     },
 
     updateStateData: function(newStates) {
-        // TODO: Extract Group, Web Server and Jvm States here
-
         var groups = [];
         var webServers = [];
         var jvms = [];
@@ -64,12 +65,23 @@ var GroupOperations = React.createClass({
                 jvms.push(newStates[i]);
             } else if (newStates[i].type === "WEB_SERVER") {
                 webServers.push(newStates[i]);
+            } else if (newStates[i].type === "GROUP") {
+                groups.push(newStates[i]);
             }
         }
 
+        this.updateGroupsStateData(groups);
         this.updateWebServerStateData(webServers);
         this.updateJvmStateData(jvms);
+    },
 
+    updateGroupsStateData: function(newGroupStates) {
+        this.setState(groupOperationsHelper.processGroupData(this.state.groups,
+                                                             [],
+                                                             this.state.groupStates,
+                                                             newGroupStates));
+        var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
+        groupOperationsHelper.updateGroupsInDataTables();
     },
 
     updateWebServerStateData: function(newWebServerStates) {
@@ -137,6 +149,7 @@ var GroupOperationsDataTable = React.createClass({
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
+       this.groupsById = groupOperationsHelper.keyGroupsById(nextProps.groups);
        this.webServersById = groupOperationsHelper.keyWebServersById(nextProps.webServers);
        this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
        this.hasNoData = (this.props.data.length === 0);
@@ -457,6 +470,17 @@ var GroupOperationsDataTable = React.createClass({
     },
 
     getStateForGroup: function(mData, type, fullData) {
-        return "(UNDER_CONSTRUCTION)";
-    },
+        var groupId = fullData.id.id;
+
+        if (this.groupsById !== undefined && this.groupsById[groupId] !== undefined) {
+            if (this.groupsById[groupId].state !== undefined) {
+                $(".group-state-" + groupId).html(this.groupsById[groupId].state.state);
+            } else  {
+                // ideally we should get the current state here instead of waiting for the next poll
+                $(".group-state-" + groupId).html("UNKNOWN");
+            }
+        }
+
+        return "<span class='group-state-" + groupId + "'/>"
+    }
 });

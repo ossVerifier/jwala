@@ -48,7 +48,8 @@ var stateService = function() {
                 return serviceFoundation.promisedGet("v1.0/states" + createPollingParameters(timeout, clientId),"json")
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
-                                        .caught(function(e) { console.log("State error occurred"); return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
+                                        .caught(
+                                            function(e) {console.log("State error occurred"); return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
 
             }
         },

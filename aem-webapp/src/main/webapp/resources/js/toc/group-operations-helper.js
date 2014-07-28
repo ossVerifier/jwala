@@ -1,5 +1,11 @@
 var groupOperationsHelper = function(){
 
+    var mergeGroupStateData = function(groupStateById, groups) {
+        return groups.map(function(group) {
+                                return mergeSingleGroupState(groupStateById[group.id.id], group);
+                          });
+    };
+
     // TODO: Check when this gets called
     var mergeWebServerStateData = function(webServerStateById, webServers) {
         return webServers.map(function(webServer) {
@@ -9,6 +15,18 @@ var groupOperationsHelper = function(){
 
     var mergeJvmStateData = function(jvmStateById, jvms) {
         return jvms.map(function(jvm) {return mergeSingleJvmState(jvmStateById[jvm.id.id], jvm);});
+    };
+
+    var mergeSingleGroupState = function(groupState, group) {
+        if (groupState !== undefined) {
+            group.state = groupState;
+        } else {
+            // TODO: decide if maybe the rendering component should render missing web server state data as UNKNOWN instead
+            group.state = {state: "UNKNOWN",
+                           asOf: Date.now(),
+                           id: { id: group.id}};
+        }
+        return group;
     };
 
     // TODO: Check when this gets called
@@ -40,6 +58,16 @@ var groupOperationsHelper = function(){
         data.forEach(function(d) { result[d[idKey].id] = d;});
     };
 
+    var combineGroupStatesById = function(existingGroupStates, newGroupStates) {
+        var result = {};
+        var idKey = "id";
+
+        keyById(result, existingGroupStates, idKey);
+        keyById(result, newGroupStates, idKey);
+
+        return result;
+    };
+
     var combineWebServerStatesById = function(existingWebServerStates, newWebServerStates) {
         var result = {};
         var idKey = "id";
@@ -58,6 +86,18 @@ var groupOperationsHelper = function(){
         keyById(result, newJvmStates, idKey);
 
         return result;
+    };
+
+    var processGroups = function(existingGroups, newGroups, groupStatesById) {
+        var combinedResult = {};
+        var idKey = "id";
+
+        keyById(combinedResult, existingGroups, idKey);
+        keyById(combinedResult, newGroups, idKey);
+
+        var result = extractValuesOnly(combinedResult);
+
+        return mergeGroupStateData(groupStatesById, result);
     };
 
     var processWebServers = function(existingWebServers, newWebServers, webServerStatesById) {
@@ -115,6 +155,22 @@ var groupOperationsHelper = function(){
 
     return {
 
+        processGroupData: function(existingGroups, newGroups, existingGroupStates, newGroupStates) {
+            var combinedGroupStatesById = combineGroupStatesById(existingGroupStates,
+                                                                 newGroupStates);
+
+            var processedGroups = processGroups(existingGroups,
+                                                newGroups,
+                                                combinedGroupStatesById);
+
+            var processedGroupStates = extractValuesOnly(combinedGroupStatesById);
+
+            return {
+                groups: processedGroups,
+                groupStates: processedGroupStates
+            };
+        },
+
         processWebServerData: function(existingWebServers, newWebServers, existingWebServerStates, newWebServerStates) {
             var combinedWebServerStatesById = combineWebServerStatesById(existingWebServerStates,
                                                                          newWebServerStates);
@@ -164,6 +220,17 @@ var groupOperationsHelper = function(){
             return { jvms: extractValuesOnly(jvmsById)};
         },
 
+        getGroupStatesById: function(groups) {
+            var result = [];
+            groups.forEach(function(group) {
+                groups.forEach(
+                    function(group) {
+                        result.push({groupId: group.id, state: group.state})
+                    });
+            });
+            return result;
+        },
+
         getWebServerStatesByGroupIdAndWebServerId: function(webServers) {
             var result = [];
             webServers.forEach(function(webServer) {
@@ -189,6 +256,12 @@ var groupOperationsHelper = function(){
             return result;
         },
 
+        updateGroupsInDataTables: function() {
+            $("table[id*='group-operations-table']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
+                                                          .each(function(index, elem) { $(elem).dataTable().fnDraw();});
+
+        },
+
         updateWebServersInDataTables: function(groupId, webServerId, state) {
             $("table[id*='web-server'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
                                                         .each(function(index, elem) { $(elem).dataTable().fnDraw();});
@@ -199,6 +272,13 @@ var groupOperationsHelper = function(){
             $("table[id*='jvm'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
                                                         .each(function(index, elem) { $(elem).dataTable().fnDraw();});
 
+        },
+
+        // TODO: Make keyGroupsById, keyWebServersById and keyJvmsById into one method
+        keyGroupsById: function(groups) {
+            var result = {};
+            keyById(result, groups, "id");
+            return result;
         },
 
         keyWebServersById: function(webServers) {
