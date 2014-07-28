@@ -12,11 +12,11 @@ public interface GroupStateMachine {
 
     void initializeGroup(Group group, User user);
 
-    void signalReset(User user);
+    CurrentGroupState signalReset(User user);
 
-    void signalStopRequested(User user);
+    CurrentGroupState signalStopRequested(User user);
 
-    void signalStartRequested(User user);
+    CurrentGroupState signalStartRequested(User user);
 
     void jvmError(Identifier<Jvm> jvmId);
 

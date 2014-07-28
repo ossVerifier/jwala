@@ -1,10 +1,14 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
@@ -23,6 +27,9 @@ public class GroupControlServiceImpl implements GroupControlService {
     private final GroupStateService.API groupStateService; 
     
     private final GroupWebServerControlService groupWebServerControlService;
+    
+    @Value("true")
+    private boolean validationRequired;
 
     public GroupControlServiceImpl(
             final GroupWebServerControlService theGroupWebServerControlService,
@@ -42,16 +49,13 @@ public class GroupControlServiceImpl implements GroupControlService {
 
         // TODO: incomplete controlHistory 
         
-        aCommand.validateCommand();
+        aCommand.validateCommand(
+                groupStateService.canStart(aCommand.getGroupId(), aUser), 
+                groupStateService.canStop(aCommand.getGroupId(), aUser));
         
-        boolean canStart = groupStateService.canStart(aCommand.getGroupId(), aUser);
-        
-        if(!canStart) { 
-            LOGGER.error("Group State Machine disallows this start operation");
-            return null;
-        }
-        
+        validationRequired = false;
         groupStateService.signalStartRequested(aCommand.getGroupId(), aUser);
+
         controlWebServers(aCommand, aUser);
         controlJvms(aCommand, aUser);
 
@@ -62,6 +66,12 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     protected void controlWebServers(ControlGroupCommand aCommand, User aUser) {
 
+        if(validationRequired) {
+            aCommand.validateCommand(
+                    groupStateService.canStart(aCommand.getGroupId(), aUser), 
+                    groupStateService.canStop(aCommand.getGroupId(), aUser));
+        }
+        
         WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(aCommand
                 .getControlOperation().getExternalValue());
 
@@ -73,6 +83,12 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     protected void controlJvms(ControlGroupCommand aCommand, User aUser) {
   
+        if(validationRequired) { 
+            aCommand.validateCommand(
+                    groupStateService.canStart(aCommand.getGroupId(), aUser), 
+                    groupStateService.canStop(aCommand.getGroupId(), aUser));
+        }
+        
         JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(aCommand.getControlOperation()
                 .getExternalValue()); // TODO address this mapping between
                                       // operations
@@ -81,5 +97,11 @@ public class GroupControlServiceImpl implements GroupControlService {
                 jvmControlOperation);
 
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);
+    }
+
+    @Transactional
+    @Override
+    public CurrentGroupState resetState(Identifier<Group> aGroupId, User aUser) {
+        return groupStateService.signalReset(aGroupId, aUser);
     }
 }

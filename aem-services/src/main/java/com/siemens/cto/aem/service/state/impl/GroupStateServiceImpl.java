@@ -183,18 +183,18 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         return gsm;
     }
     @Override
-    public void signalReset(Identifier<Group> groupId, User user) {
-        getGsmById(groupId, user).signalReset(user);
+    public CurrentGroupState signalReset(Identifier<Group> groupId, User user) {
+        return getGsmById(groupId, user).signalReset(user);
     }
 
     @Override
-    public void signalStopRequested(Identifier<Group> groupId, User user) {
-        getGsmById(groupId, user).signalStopRequested(user);
+    public CurrentGroupState signalStopRequested(Identifier<Group> groupId, User user) {
+        return getGsmById(groupId, user).signalStopRequested(user);
     }
 
     @Override
-    public void signalStartRequested(Identifier<Group> groupId, User user) {
-        getGsmById(groupId, user).signalStartRequested(user);
+    public CurrentGroupState signalStartRequested(Identifier<Group> groupId, User user) {
+        return getGsmById(groupId, user).signalStartRequested(user);
     }
 
     @Override

@@ -157,4 +157,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                );
     }
 
+    @Override
+    public Response resetState(Identifier<Group> aGroupId, SecurityContext jaxrsSecurityContext) {
+        return ResponseBuilder.ok(groupControlService.resetState(aGroupId, LoggedOnUser.fromContext(jaxrsSecurityContext)));
+    }
+
 }

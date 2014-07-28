@@ -116,7 +116,7 @@
 	<!-- Do the expiration once every second -->
 	<task:scheduled-tasks>
 		<task:scheduled ref="commandExecutionMessageStoreReaper"
-			method="run" fixed-rate="1000" />
+			method="run" fixed-rate="60000" />
 	</task:scheduled-tasks>
 
 </beans>

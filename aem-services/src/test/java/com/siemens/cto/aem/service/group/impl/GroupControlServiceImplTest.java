@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
@@ -59,15 +60,12 @@ public class GroupControlServiceImplTest {
         
     }
 
-    @Test
+    @Test(expected = BadRequestException.class)
     public void testControlGroupWhenBadState() {
         ControlGroupCommand aCommand = new ControlGroupCommand(testGroupId, GroupControlOperation.START);
         when(mockGroupStateService.canStart(testGroupId, systemUser)).thenReturn(false);
         
-        cut.controlGroup(aCommand, systemUser);
-        
-        verify(mockGroupWebServerControlService, times(0)).controlGroup(any(ControlGroupWebServerCommand.class), any(User.class));
-        verify(mockGroupJvmControlService, times(0)).controlGroup(any(ControlGroupJvmCommand.class), any(User.class));
+        cut.controlGroup(aCommand, systemUser);        
     }
 
 }
