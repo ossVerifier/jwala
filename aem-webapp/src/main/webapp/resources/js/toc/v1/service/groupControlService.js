@@ -5,13 +5,37 @@ var groupControlService = function() {
                                       "json",
                                       JSON.stringify({ controlOperation : operation}));
     };
+    
+    var controlJvms = function(groupId, operation) {
+        return serviceFoundation.post("v1.0/groups/" + groupId + "/jvms/commands",
+                                      "json",
+                                      JSON.stringify({ controlOperation : operation}));
+    };
+    
+    var controlWebServers = function(groupId, operation) {
+        return serviceFoundation.post("v1.0/groups/" + groupId + "/webservers/commands",
+                                      "json",
+                                      JSON.stringify({ controlOperation : operation}));
+    };
 
     return {
-        startGroupJvms : function(groupId) {
+        startGroup : function(groupId) {
             return control(groupId, "start");
         },
-        stopGroupJvms : function(groupId) {
+        stopGroup : function(groupId) {
             return control(groupId, "stop");
+        },
+        startJvms : function(groupId) {
+            return controlJvms(groupId, "start");
+        },
+        stopJvms : function(groupId) {
+            return controlJvms(groupId, "stop");
+        },
+        startWebServers : function(groupId) {
+            return controlWebServers(groupId, "start");
+        },
+        stopWebServers : function(groupId) {
+            return controlWebServers(groupId, "stop");
         }
     };
 

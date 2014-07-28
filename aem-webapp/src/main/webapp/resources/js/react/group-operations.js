@@ -168,13 +168,13 @@ var GroupOperationsDataTable = React.createClass({
                                mData:null,
                                tocType:"button",
                                btnLabel:"Start Group",
-                               btnCallback:this.startGroupJvms,
+                               btnCallback:this.startGroup,
                                className:"inline-block"},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
                                btnLabel:"Stop Group",
-                               btnCallback:this.stopGroupJvms,
+                               btnCallback:this.stopGroup,
                                className:"inline-block"}],
                               {sTitle:"State",
                                mData:null,
@@ -216,8 +216,8 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
-                                                    {id:"start", tocType:"button", btnLabel:"Start", btnCallback: this.webServersStart},
-                                                    {id:"stop", tocType:"button", btnLabel:"Stop", btnCallback: this.webServersStop}
+                                                    {id:"startWebServers", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupWebServers},
+                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupWebServers}
                                                ]};
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
@@ -263,7 +263,11 @@ var GroupOperationsDataTable = React.createClass({
                                     className:"simple-data-table",
                                     childTableDetails:webAppOfJvmChildTableDetails,
                                     title:"JVMs",
-                                    isCollapsible:true};
+                                    isCollapsible:true,
+                                    headerComponents:[
+                                         {id:"startJvms", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupJvms},
+                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupJvms}
+                                    ]};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
@@ -327,16 +331,6 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}/>
    },
 
-   webServersStart: function(event) {
-        // TODO: Start web server here
-        alert("Start web server in group Id = " + event.data.id);
-   },
-
-   webServersStop: function(event) {
-        // TODO: Stop web server here
-        alert("Stop web server in group Id =" + event.data.id);
-   },
-
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
           aoColumnDefs[itemIndex].mDataProp = null;
@@ -392,12 +386,24 @@ var GroupOperationsDataTable = React.createClass({
    undeploy: function(id) {
         alert("Undeploy applications for group_" + id + "...");
    },
-   startGroupJvms: function(id) {
-        groupControlService.startGroupJvms(id);
+   startGroup: function(id) {
+        groupControlService.startGroup(id);
    },
-   stopGroupJvms: function(id) {
-        groupControlService.stopGroupJvms(id);
+   stopGroup: function(id) {
+        groupControlService.stopGroup(id);
    },
+   startGroupJvms: function(event) {
+       groupControlService.startJvms(event.data.id);
+  },
+  stopGroupJvms: function(event) {
+       groupControlService.stopJvms(event.data.id);
+  },
+  startGroupWebServers: function(event) {
+      groupControlService.startWebServers(event.data.id);
+ },
+ stopGroupWebServers: function(event) {
+      groupControlService.stopWebServers(event.data.id);
+ },
    jvmManager: function(id) {
         alert("JVM show manager for jvm_" + id + "...");
    },
