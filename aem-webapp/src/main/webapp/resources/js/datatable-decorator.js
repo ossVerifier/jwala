@@ -129,14 +129,51 @@ var decorateTableAsDataTable = function(tableId,
                                    "aLengthMenu": [[25, 50, 100, 200, -1],
                                                    [25, 50, 100, 200, "All"]],
                                    "iDisplayLength": 25,
-                                   "fnDrawCallback": rowSelectCallback};
+                                   "fnDrawCallback": rowSelectCallback,
+                                   "sPaginationType": "toc"};
 
         if (hideHeaderAndFooter === false) {
             dataTableProperties["sDom"] = "t";
         }
 
-        return $("#" + tableId).dataTable(dataTableProperties);
+        var decorated = $("#" + tableId).dataTable(dataTableProperties);
+        return decorated;
 }
+
+var TocPager = {
+	
+	init: function() {
+		$.fn.dataTableExt.oPagination.toc = this;
+		
+	},
+	"fnInit": function ( oSettings, nPaging, fnCallbackDraw )
+	{
+	$.fn.dataTableExt.oPagination.two_button.fnInit(oSettings, nPaging, fnCallbackDraw);
+	},
+
+   "fnUpdate": function ( oSettings, fnCallbackDraw )
+	{
+	   $.fn.dataTableExt.oPagination.two_button.fnUpdate(oSettings, fnCallbackDraw);
+	   // Need to bind onclick to expand collapse options in this method
+
+	   var decorated = oSettings.nTable;
+
+	   if(decorated !== null) {
+		   var self = this;
+		   $('img', decorated).each(
+				   function(idx,obj) {
+						var expander = self.allExpanders[obj.id];
+						if(expander !== undefined) {
+							$("#" + obj.id).off("click");
+							$("#" + obj.id).on("click", expander.component.onClick.bind(expander.component, expander.dataSources, expander.childTableDetailsArray));
+						}
+				   });
+	   }   
+	},
+	allExpanders : {}
+};
+
+TocPager.init();
 
 var renderComponents = function(tableId,
                                 parentItemId,
@@ -225,17 +262,41 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
     }
 
     var theRootId = (rootId === undefined ? full.id.id : rootId);
-    return React.renderComponentToStaticMarkup(
-                    new ExpandCollapseControl({id:createDelimitedId([tableId,
-                                                                     "ctrl-expand-collapse",
-                                                                     full.id.id], "_"),
+    var delimitedId = createDelimitedId([tableId,
+                                         "ctrl-expand-collapse",
+                                         full.id.id], "_");
+
+    var dataSources = [];
+    var childTableDetailsArray = [];
+
+    if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
+        for (var i = 0; i < childTableDetails.length; i++) {
+            dataSources[i] = childTableDetails[i].dataCallback === undefined ?
+                                {jsonData:childTableDetails[i].data} :
+                                {dataCallback:childTableDetails[i].dataCallback};
+            childTableDetailsArray[i] = childTableDetails[i];
+        }
+    } else {
+            dataSources[0] = childTableDetails.dataCallback === undefined ?
+                                {jsonData:childTableDetails.data} :
+                                {dataCallback:childTableDetails.dataCallback};
+            childTableDetailsArray[0] = childTableDetails;
+    }
+    
+    var expander = new ExpandCollapseControl({id:delimitedId,
                                                expandIcon:expandIcon,
                                                collapseIcon:collapseIcon,
                                                childTableDetails:childTableDetails,
                                                rowSubComponentContainerClassName:"row-sub-component-container",
                                                parentItemId:full.id.id,
                                                dataTable:$("#" + tableId).dataTable(),
-                                               rootId:theRootId}));
+                                               rootId:theRootId});
+    
+    var renderedComponent = React.renderComponentToStaticMarkup(expander);
+
+    TocPager.allExpanders[delimitedId] = { "component": expander, "dataSources": dataSources, "childTableDetailsArray": childTableDetailsArray };
+
+    return renderedComponent;
 }
 
 var renderArray = function(item, data) {
