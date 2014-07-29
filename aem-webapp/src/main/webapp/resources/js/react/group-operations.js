@@ -436,13 +436,11 @@ var GroupOperationsDataTable = React.createClass({
    jvmHeapDump: function(id) {
         alert("JVM show heap dump for jvm_" + id + "...");
    },
-   jvmStart: function(id) {
-        jvmControlService.startJvm(id);
-        return true; // TODO Once status can be retrieved, return true if JVM was successfully started
+   jvmStart: function(id, requestReturnCallback) {
+        jvmControlService.startJvm(id, requestReturnCallback, requestReturnCallback);
    },
-   jvmStop: function(id) {
-        jvmControlService.stopJvm(id);
-        return true; // TODO Once status can be retrieved, return true if JVM was successfully stopped
+   jvmStop: function(id, requestReturnCallback) {
+        jvmControlService.stopJvm(id, requestReturnCallback, requestReturnCallback);
    },
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
@@ -473,13 +471,11 @@ var GroupOperationsDataTable = React.createClass({
     buildHRefLoadBalancerConfig: function(data) {
         return "http://" + data.host + ":" + data.port + tocVars.loadBalancerStatusMount;
     },
-    webServerStart: function(id) {
-        webServerControlService.startWebServer(id);
-        return true; // TODO Once status can be retrieved, return true if Web Server was successfully started
+    webServerStart: function(id, requestReturnCallback) {
+        webServerControlService.startWebServer(id, requestReturnCallback, requestReturnCallback);
     },
-    webServerStop: function(id) {
-        webServerControlService.stopWebServer(id);
-        return true;
+    webServerStop: function(id, requestReturnCallback) {
+        webServerControlService.stopWebServer(id, requestReturnCallback, requestReturnCallback);
     },
 
     /**

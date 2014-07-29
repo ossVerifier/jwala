@@ -52,7 +52,7 @@ var DataTableButton = React.createClass({
         if (this.props.clickedStateClassName !== undefined) {
             $("#" + this.props.id).attr("class", this.props.clickedStateClassName);
             var self = this;
-            var timeout = (this.props.clickedStateTimeout === undefined ? 10000 : this.props.clickedStateTimeout);
+            var timeout = (this.props.clickedStateTimeout === undefined ? 60000 : this.props.clickedStateTimeout);
             setTimeout(function(){$("#" + self.props.id).attr("class", self.props.customBtnClassName)}, timeout);
         }
 
@@ -71,7 +71,12 @@ var DataTableButton = React.createClass({
                                        this.props.label2 :
                                        this.props.label);
         } else {
-            this.props.callback(id);
+            this.props.callback(id, this.requestReturnCallback);
+        }
+    },
+    requestReturnCallback: function() {
+        if (this.props.clickedStateClassName !== undefined) {
+            $("#" + this.props.id).attr("class", this.props.customBtnClassName);
         }
     }
 });

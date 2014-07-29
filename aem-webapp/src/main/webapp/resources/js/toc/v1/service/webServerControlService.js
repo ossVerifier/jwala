@@ -1,20 +1,20 @@
 var webServerControlService = function() {
 
-    var control = function(webServerId, operation) {
+    var control = function(webServerId, operation, thenCallback, caughtCallback) {
         return serviceFoundation.post("v1.0/webservers/" + webServerId + "/commands",
                                       "json",
                                       JSON.stringify({ controlOperation : operation}),
-                                      undefined,
-                                      undefined,
+                                      thenCallback,
+                                      caughtCallback,
                                       false);
     };
 
     return {
-        startWebServer : function(webServerId) {
-            return control(webServerId, "start");
+        startWebServer : function(webServerId, thenCallback, caughtCallback) {
+            return control(webServerId, "start", thenCallback, caughtCallback);
         },
-        stopWebServer : function(webServerId) {
-            return control(webServerId, "stop");
+        stopWebServer : function(webServerId, thenCallback, caughtCallback) {
+            return control(webServerId, "stop", thenCallback, caughtCallback);
         }
     };
 
