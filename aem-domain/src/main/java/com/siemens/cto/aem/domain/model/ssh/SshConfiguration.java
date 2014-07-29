@@ -5,10 +5,16 @@ import java.io.Serializable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public class SshConfiguration implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER  = LoggerFactory.getLogger(SshConfiguration.class);
 
     private final String userName;
     private final Integer port;
@@ -19,6 +25,16 @@ public class SshConfiguration implements Serializable {
                             final Integer thePort,
                             final String thePrivateKeyFile,
                             final String theKnownHostsFile) {
+        
+        
+        if(theUserName == null
+                || thePort == null
+                || thePrivateKeyFile == null
+                || theKnownHostsFile == null ) {
+            String message = "Startup Aborted: Aem SSH Properties Not Set in Application Properties file";
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.SSH_CONFIG_MISSING, message);
+        }
         userName = theUserName;
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
