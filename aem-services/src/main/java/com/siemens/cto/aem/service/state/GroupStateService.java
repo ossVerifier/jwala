@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.state;
 
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -24,6 +25,9 @@ public interface GroupStateService {
         CurrentGroupState signalStopRequested(Identifier<Group> groupId, User user);
 
         CurrentGroupState signalStartRequested(Identifier<Group> groupId, User user);
+
+        CurrentGroupState signal(ControlGroupCommand aCommand, User aUser);
+
     }
 
     interface Query {
@@ -34,6 +38,5 @@ public interface GroupStateService {
     }
 
     interface API extends Events, Triggers, Query {
-
     }
 }

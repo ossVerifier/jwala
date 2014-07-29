@@ -54,7 +54,8 @@ public class GroupControlServiceImpl implements GroupControlService {
                 groupStateService.canStop(aCommand.getGroupId(), aUser));
         
         validationRequired = false;
-        groupStateService.signalStartRequested(aCommand.getGroupId(), aUser);
+        
+        groupStateService.signal(aCommand, aUser);
 
         controlWebServers(aCommand, aUser);
         controlJvms(aCommand, aUser);
@@ -70,6 +71,8 @@ public class GroupControlServiceImpl implements GroupControlService {
             aCommand.validateCommand(
                     groupStateService.canStart(aCommand.getGroupId(), aUser), 
                     groupStateService.canStop(aCommand.getGroupId(), aUser));
+
+            groupStateService.signal(aCommand, aUser);
         }
         
         WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(aCommand
@@ -87,6 +90,8 @@ public class GroupControlServiceImpl implements GroupControlService {
             aCommand.validateCommand(
                     groupStateService.canStart(aCommand.getGroupId(), aUser), 
                     groupStateService.canStop(aCommand.getGroupId(), aUser));
+
+            groupStateService.signal(aCommand, aUser);
         }
         
         JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(aCommand.getControlOperation()

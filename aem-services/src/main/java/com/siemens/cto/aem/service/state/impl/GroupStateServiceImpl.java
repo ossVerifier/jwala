@@ -11,8 +11,10 @@ import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -215,5 +217,17 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
         stateNotificationGateway.groupStateChanged(anUpdatedState);
+    }
+
+    @Override
+    public CurrentGroupState signal(ControlGroupCommand aCommand, User aUser) {
+        switch(aCommand.getControlOperation()) {
+        case START:
+            return signalStartRequested(aCommand.getGroupId(), aUser);
+        case STOP:
+            return signalStopRequested(aCommand.getGroupId(), aUser);
+        default:
+            return null;
+        }
     }
 }
