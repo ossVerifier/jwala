@@ -12,8 +12,8 @@ public enum JvmState implements ExternalizableState {
     STARTED("STARTED"),
     STOPPED("STOPPED"),
     UNKNOWN("UNKNOWN"),
-    START_REQUESTED("START REQUESTED"),
-    STOP_REQUESTED("STOP REQUESTED");
+    START_REQUESTED("STARTING"),
+    STOP_REQUESTED("STOPPING");
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
 
