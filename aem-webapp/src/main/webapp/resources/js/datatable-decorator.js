@@ -54,9 +54,13 @@ var decorateTableAsDataTable = function(tableId,
                 } else if (item.tocType === "button") {
                     aoColumnDefs[itemIndex].bSortable = false;
                 } else if (item.tocType === "emptyColumn") {
-                    aoColumnDefs[itemIndex].sWidth = item.colWidth;
                     aoColumnDefs[itemIndex].bSortable = false;;
                 }
+
+                if (item.colWidth !== undefined) {
+                    aoColumnDefs[itemIndex].sWidth = item.colWidth;
+                }
+
             } else {
 
                 /**
