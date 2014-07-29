@@ -17,6 +17,7 @@ import javax.ws.rs.core.SecurityContext;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonControlGroup;
@@ -73,7 +74,7 @@ public interface GroupServiceRest {
 
     @POST
     @Path("/{groupId}/webservers/commands")
-    Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId, 
+    Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
                             final JsonControlWebServer jsonControlWebServer,
                             @Context SecurityContext jaxrsSecurityContext);
 
@@ -82,4 +83,8 @@ public interface GroupServiceRest {
     Response resetState(@PathParam("groupId") final Identifier<Group> aGroupId,
                         @Context SecurityContext jaxrsSecurityContext);
 
+    @GET
+    @Path("/states/current")
+//    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
+    Response getCurrentJvmStates(@BeanParam final GroupIdsParameterProvider aGroupIdsParameterProvider);
 }

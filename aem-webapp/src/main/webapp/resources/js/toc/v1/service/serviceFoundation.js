@@ -36,7 +36,7 @@ var serviceFoundation = {
                           type: 'POST',
                           data: content,
                           contentType: 'application/json',
-                          cache: false}
+                          cache: false};
 
         if (showDefaultAjaxProcessingAnimation !== false) {
             var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
@@ -57,8 +57,20 @@ var serviceFoundation = {
                                             }
                                         }
                                    });
-            },
+    },
+    promisedPost : function(url, dataType, content) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(false);
+        var ajaxParams = {url: url,
+                          dataType: dataType,
+                          type: 'POST',
+                          data: content,
+                          contentType: 'application/json',
+                          cache: false,
+                          beforeSend: loadingUiBehavior.showLoading,
+                          complete: loadingUiBehavior.hideLoading};
 
+        return Promise.cast($.ajax(ajaxParams));
+    },
     del : function(url, dataType, caughtCallback) {
         var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
         return Promise.cast($.ajax({

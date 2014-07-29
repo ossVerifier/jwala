@@ -138,13 +138,13 @@ var decorateTableAsDataTable = function(tableId,
 
         var decorated = $("#" + tableId).dataTable(dataTableProperties);
         return decorated;
-}
+};
 
 var TocPager = {
-	
+
 	init: function() {
 		$.fn.dataTableExt.oPagination.toc = this;
-		
+
 	},
 	"fnInit": function ( oSettings, nPaging, fnCallbackDraw )
 	{
@@ -168,7 +168,7 @@ var TocPager = {
 							$("#" + obj.id).on("click", expander.component.onClick.bind(expander.component, expander.dataSources, expander.childTableDetailsArray));
 						}
 				   });
-	   }   
+	   }
 	},
 	allExpanders : {}
 };
@@ -282,7 +282,7 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
                                 {dataCallback:childTableDetails.dataCallback};
             childTableDetailsArray[0] = childTableDetails;
     }
-    
+
     var expander = new ExpandCollapseControl({id:delimitedId,
                                                expandIcon:expandIcon,
                                                collapseIcon:collapseIcon,
@@ -291,7 +291,7 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
                                                parentItemId:full.id.id,
                                                dataTable:$("#" + tableId).dataTable(),
                                                rootId:theRootId});
-    
+
     var renderedComponent = React.renderComponentToStaticMarkup(expander);
 
     TocPager.allExpanders[delimitedId] = { "component": expander, "dataSources": dataSources, "childTableDetailsArray": childTableDetailsArray };

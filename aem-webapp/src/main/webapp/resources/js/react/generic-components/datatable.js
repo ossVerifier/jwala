@@ -50,6 +50,7 @@ var TocDataTable = React.createClass({
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
         }
+        $(".ui-button").button();
     },
     rowSelectCallback: function() {
 

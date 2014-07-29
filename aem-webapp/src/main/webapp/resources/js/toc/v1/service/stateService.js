@@ -68,6 +68,10 @@ var stateService = function() {
         getCurrentWebServerStates : function(ids) {
             return serviceFoundation.promisedGet("v1.0/webservers/states/current" + constructIdParameters("webServerId", ids),
                                                  "json");
+        },
+        getCurrentGroupStates : function(ids) {
+            return serviceFoundation.promisedGet("v1.0/groups/states/current" + constructIdParameters("groupId", ids),
+                                                 "json");
         }
     };
 }();

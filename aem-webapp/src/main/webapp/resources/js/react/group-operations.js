@@ -127,6 +127,11 @@ var GroupOperations = React.createClass({
         this.props.stateService.getCurrentWebServerStates().then(function(data) { self.updateWebServerStateData(data.applicationResponseContent);})
                                                            .caught(function(e) {});
     },
+    fetchCurrentGroupStates: function() {
+        var self = this;
+        this.props.stateService.getCurrentGroupStates().then(function(data) { self.updateGroupsStateData(data.applicationResponseContent);})
+                                                       .caught(function(e) {});
+    },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
                                                               groupId,
@@ -140,6 +145,7 @@ var GroupOperations = React.createClass({
     componentDidMount: function() {
         this.retrieveData();
         this.pollStates();
+        this.fetchCurrentGroupStates();
         this.fetchCurrentJvmStates();
         this.fetchCurrentWebServerStates();
     },
@@ -151,11 +157,7 @@ var GroupOperations = React.createClass({
                                                                  webServerData,
                                                                  this.state.webServerStates,
                                                                  []));
-        var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
-        webServersToUpdate.forEach(
-        function(webServer) {
-            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
-        });
+        this.updateWebServerStateData([]);
     }
 });
 
@@ -399,11 +401,31 @@ var GroupOperationsDataTable = React.createClass({
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
    },
+   getGroupButtonSelector: function(id, buttonSubType) {
+       return "#group-operations-tablebtn" + buttonSubType + id;
+   },
+   enableGroupButtonThunk: function(id, buttonSubType) {
+       var self = this;
+       return function() {
+           $(self.getGroupButtonSelector(id, buttonSubType)).button("enable");
+       };
+   },
+   disableGroupButtonThunk: function(id, buttonSubType) {
+       var self = this;
+       return function() {
+           $(self.getGroupButtonSelector(id, buttonSubType)).button("disable");
+       };
+   },
+   disableEnable: function(id, buttonSubType, func) {
+       var disable = this.disableGroupButtonThunk(id, buttonSubType);
+       var enable = this.enableGroupButtonThunk(id, buttonSubType);
+       Promise.method(disable)().then(func).lastly(enable);
+   },
    startGroup: function(id) {
-        groupControlService.startGroup(id);
+       this.disableEnable(id, "StartGroup", function() {return groupControlService.startGroup(id)});
    },
    stopGroup: function(id) {
-        groupControlService.stopGroup(id);
+       this.disableEnable(id, "StopGroup", function() {return groupControlService.stopGroup(id)});
    },
    startGroupJvms: function(event) {
        groupControlService.startJvms(event.data.id);

@@ -7,8 +7,8 @@ import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 
 public enum WebServerReachableState implements ExternalizableState {
 
-    REACHABLE("REACHABLE"),
-    UNREACHABLE("UNREACHABLE"),
+    REACHABLE("STARTED"),
+    UNREACHABLE("STOPPED"),
     UNKNOWN("UNKNOWN"),
     START_REQUESTED("STARTING"),
     STOP_REQUESTED("STOPPING");

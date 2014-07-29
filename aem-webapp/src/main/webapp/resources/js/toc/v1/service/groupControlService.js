@@ -1,14 +1,11 @@
 var groupControlService = function() {
 
     var control = function(groupId, operation) {
-        return serviceFoundation.post("v1.0/groups/" + groupId + "/commands",
-                                      "json",
-                                      JSON.stringify({ controlOperation : operation}),
-                                      undefined,
-                                      undefined,
-                                      false);
+        return serviceFoundation.promisedPost("v1.0/groups/" + groupId + "/commands",
+                                              "json",
+                                              JSON.stringify({ controlOperation : operation}));
     };
-    
+
     var controlJvms = function(groupId, operation) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/jvms/commands",
                                       "json",
@@ -17,7 +14,7 @@ var groupControlService = function() {
                                       undefined,
                                       false);
     };
-    
+
     var controlWebServers = function(groupId, operation) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/webservers/commands",
                                       "json",

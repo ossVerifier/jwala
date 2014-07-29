@@ -7,6 +7,7 @@ import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -33,7 +34,7 @@ public class JpaGroupBuilder {
         return new Group(new Identifier<Group>(group.getId()),
                          group.getName(),
                          getJvms(),
-                         group.getState(),
+                         getState(),
                          getAsOf());
     }
 
@@ -43,7 +44,16 @@ public class JpaGroupBuilder {
                                 USE_DEFAULT_CHRONOLOGY);
         }
 
-        return null;
+        return DateTime.now();
+    }
+
+    private GroupState getState() {
+
+        if (group.getState() != null) {
+            return group.getState();
+        }
+
+        return GroupState.UNKNOWN;
     }
 
     protected Set<Jvm> getJvms() {

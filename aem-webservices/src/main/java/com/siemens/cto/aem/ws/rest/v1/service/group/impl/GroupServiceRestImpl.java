@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -8,17 +9,20 @@ import javax.ws.rs.core.SecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
+import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
@@ -27,6 +31,8 @@ import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.LoggedOnUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
@@ -39,15 +45,19 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     private final Logger logger;
     private final GroupService groupService;
-   
+
     @Autowired
     private GroupControlService groupControlService;
-    
+
     @Autowired
     private GroupJvmControlService groupJvmControlService;
 
     @Autowired
     private GroupWebServerControlService groupWebServerControlService;
+
+    @Autowired
+    @Qualifier("groupStateService")
+    private StateService<Group, GroupState> groupStateService;
 
     public GroupServiceRestImpl(final GroupService theGroupService) {
         groupService = theGroupService;
@@ -108,7 +118,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                                                                                 aJvmId),
                                                                   User.getHardCodedUser()));
     }
-    
+
     @Override
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
                                    final JsonJvms someJvmsToAdd) {
@@ -117,8 +127,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
                                                               User.getHardCodedUser()));
     }
-    
-    
+
+
 
     @Override
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
@@ -126,7 +136,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                    final SecurityContext jaxrsSecurityContext) {
         logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
-        final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId, 
+        final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()) );
         return ResponseBuilder.ok(
                 groupJvmControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
@@ -139,7 +149,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                    final SecurityContext jaxrsSecurityContext) {
         logger.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
-        final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId, 
+        final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()) );
         return ResponseBuilder.ok(
                 groupWebServerControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
@@ -149,7 +159,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response controlGroup(Identifier<Group> aGroupId, JsonControlGroup jsonControlGroup,
             SecurityContext jaxrsSecurityContext) {
-        
+
         GroupControlOperation groupControOperation = jsonControlGroup.toControlOperation();
         ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControOperation );
         return ResponseBuilder.ok(
@@ -162,4 +172,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupControlService.resetState(aGroupId, LoggedOnUser.fromContext(jaxrsSecurityContext)));
     }
 
+    @Override
+    public Response getCurrentJvmStates(final GroupIdsParameterProvider aGroupIdsParameterProvider) {
+        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
+        final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
+        final Set<CurrentState<Group, GroupState>> currentGroupStates;
+
+        if (groupIds.isEmpty()) {
+            currentGroupStates = groupStateService.getCurrentStates(PaginationParameter.all());
+        } else {
+            currentGroupStates = groupStateService.getCurrentStates(groupIds);
+        }
+
+        return ResponseBuilder.ok(currentGroupStates);
+    }
 }
