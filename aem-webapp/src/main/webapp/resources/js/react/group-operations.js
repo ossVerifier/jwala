@@ -430,11 +430,8 @@ var GroupOperationsDataTable = React.createClass({
  stopGroupWebServers: function(event) {
       groupControlService.stopWebServers(event.data.id);
  },
-   jvmManager: function(id) {
-        alert("JVM show manager for jvm_" + id + "...");
-   },
    jvmHeapDump: function(id) {
-        alert("JVM show heap dump for jvm_" + id + "...");
+        alert("Not yet implemented");
    },
    jvmStart: function(id, requestReturnCallback) {
         jvmControlService.startJvm(id, requestReturnCallback, requestReturnCallback);
