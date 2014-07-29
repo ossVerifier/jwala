@@ -204,6 +204,11 @@ var renderComponents = function(tableId,
                                                         collapseIcon);
     } else if (item.tocType === "array") {
         renderedComponent = renderArray(item, data);
+        if (renderedComponent.length > item.maxDisplayTextLen) {
+            renderedComponent = "<span title=" + renderedComponent.replace(/ /gi, "&nbsp;").replace(/,/gi, "&#10;") + ">"  +
+                                renderedComponent.substring(0, item.maxDisplayTextLen) + "..." +
+                                "</span>";
+        }
     } else if (item.tocType === "button") {
         renderedComponent = renderButton(tableId, item, data, type, full);
     } else {
@@ -304,7 +309,7 @@ var renderArray = function(item, data) {
     var str = "";
     /* would be better with _Underscore.js : */
     for (var idx = 0; idx < data.length; idx=idx+1) {
-        str = str + (str === "" ? "" : ", ") + data[idx][item.displayProperty];
+        str = str + (str === "" ? "" : ",") + data[idx][item.displayProperty];
     }
     return str;
 }
