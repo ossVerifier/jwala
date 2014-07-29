@@ -199,7 +199,8 @@ var GroupOperationsDataTable = React.createClass({
                                className:"inline-block"}],
                               {sTitle:"State",
                                mData:null,
-                               mRender: this.getStateForGroup}];
+                               mRender: this.getStateForGroup,
+                               colWidth:"75px"}];
 
         var webServerOfGrpChildTableDef = [{tocType:"emptyColumn", colWidth:"20px",mData:null},
                                            {sTitle:"Web Server ID", mData:"id.id", bVisible:false},
@@ -238,7 +239,8 @@ var GroupOperationsDataTable = React.createClass({
                                              clickedStateClassName:"stop-button-busy"}],
                                            {sTitle:"State",
                                             mData:null,
-                                            mRender: this.getStateForWebServer}];
+                                            mRender: this.getStateForWebServer,
+                                            colWidth:"75px"}];
 
         var webServerOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-server-child-table",
                                                className:"simple-data-table",
@@ -335,7 +337,8 @@ var GroupOperationsDataTable = React.createClass({
                                   clickedStateClassName:"stop-button-busy"}],
                                 {sTitle:"State",
                                  mData:null,
-                                 mRender: this.getStateForJvm}];
+                                 mRender: this.getStateForJvm,
+                                 colWidth:"75px"}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
