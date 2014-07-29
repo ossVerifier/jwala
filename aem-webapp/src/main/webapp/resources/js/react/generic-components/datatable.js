@@ -42,13 +42,15 @@ var TocDataTable = React.createClass({
                                                       this.rowSelectCallback,
                                                       this.props.expandIcon,
                                                       this.props.collapseIcon,
-                                                      this.props.childTableDetails);
+                                                      this.props.childTableDetails,
+                                                      this.props.initialSortColumn);
         }
 
         if (this.dataTable !== null) {
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
+            this.dataTable.fnSort(this.props.initialSortColumn);
         }
         $(".ui-button").button();
     },

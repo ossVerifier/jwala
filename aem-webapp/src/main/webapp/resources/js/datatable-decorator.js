@@ -27,13 +27,19 @@ var decorateTableAsDataTable = function(tableId,
                                         collapseIcon,
                                         childTableDetails,
                                         parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */,
-                                        rootId /* This is the first element id in a hierarchy */ ){
+                                        rootId /* This is the first element id in a hierarchy */,
+                                        initialSortColumn){
 
     var self = this;
 
     // build column definitions based on props
     var aoColumnDefs = [];
-    var aaSorting = [];
+    var aaSorting;
+    if (initialSortColumn !== undefined) {
+        aaSorting = initialSortColumn;
+    } else {
+        aaSorting = [];
+    }
 
     $(tableDef).each(function(itemIndex, item, itemArray) {
             if (!isArray(item)) {
@@ -128,7 +134,7 @@ var decorateTableAsDataTable = function(tableId,
             }
         });
 
-        var dataTableProperties = {"aaSorting": [],
+        var dataTableProperties = {"aaSorting": aaSorting,
                                    "aoColumnDefs": aoColumnDefs,
                                    "bJQueryUI": applyThemeRoller === undefined ? true : applyThemeRoller,
                                    "bAutoWidth": false,

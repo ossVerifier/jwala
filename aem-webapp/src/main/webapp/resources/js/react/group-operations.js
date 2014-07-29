@@ -250,7 +250,8 @@ var GroupOperationsDataTable = React.createClass({
                                                headerComponents:[
                                                     {id:"startWebServers", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupWebServers},
                                                     {id:"stopWebServers", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupWebServers}
-                                               ]};
+                                               ],
+                                               initialSortColumn: [[2, "asc"]]};
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
 
@@ -258,7 +259,8 @@ var GroupOperationsDataTable = React.createClass({
                                             className:"simple-data-table",
                                             dataCallback:this.getApplicationsOfGrp,
                                             title:"Web Applications",
-                                            isCollapsible:true};
+                                            isCollapsible:true,
+                                            initialSortColumn: [[1, "asc"]]};
 
         var webAppOfGrpChildTableDef = [{tocType:"emptyColumn", colWidth:"20px",mData:null},
                                         {sTitle:"Web App ID", mData:"id.id", bVisible:false},
@@ -269,9 +271,10 @@ var GroupOperationsDataTable = React.createClass({
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
         var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-of-jvm-child-table",
-                                                    className:"simple-data-table",
-                                                    dataCallback:this.getApplicationsOfJvm,
-                                                    defaultSorting: {col:5, sort:"asc"}};
+                                            className:"simple-data-table",
+                                            dataCallback:this.getApplicationsOfJvm,
+                                            defaultSorting: {col:5, sort:"asc"},
+                                            initialSortColumn: [[1, "asc"]]};
 
         var webAppOfJvmChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Web App in JVM", mData:"name"},
@@ -290,7 +293,8 @@ var GroupOperationsDataTable = React.createClass({
                                     headerComponents:[
                                          {id:"startJvms", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupJvms},
                                          {id:"stopJvms", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupJvms}
-                                    ]};
+                                    ],
+                                    initialSortColumn: [[2, "asc"]]};
 
         var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
@@ -353,7 +357,8 @@ var GroupOperationsDataTable = React.createClass({
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"
                              childTableDetails={childTableDetailsArray}
-                             selectItemCallback={this.props.selectItemCallback}/>
+                             selectItemCallback={this.props.selectItemCallback}
+                             initialSortColumn={[[2, "asc"]]}/>
    },
 
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
