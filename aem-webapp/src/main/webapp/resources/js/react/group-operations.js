@@ -257,12 +257,7 @@ var GroupOperationsDataTable = React.createClass({
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderWebAppRowData},
-                                        {sTitle:"Context", mData:"webAppContext"},
-                                        {sTitle:"",
-                                         mData:null,
-                                         tocType:"button",
-                                         btnLabel:"Undeploy",
-                                         btnCallback:this.undeploy}];
+                                        {sTitle:"Context", mData:"webAppContext"}];
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
@@ -276,12 +271,7 @@ var GroupOperationsDataTable = React.createClass({
                                         {sTitle:"War Path", mData:"warPath"},
                                         {sTitle:"Context", mData:"webAppContext"},
                                         {sTitle:"Group", mData:"group.name"},
-                                        {sTitle:"Class Name", mData:"className", bVisible:false},
-                                        {sTitle:"",
-                                         mData:null,
-                                         tocType:"button",
-                                         btnLabel:"Undeploy",
-                                         btnCallback:this.undeploy}];
+                                        {sTitle:"Class Name", mData:"className", bVisible:false}];
 
         webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
 
@@ -408,9 +398,6 @@ var GroupOperationsDataTable = React.createClass({
    },
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
-   },
-   undeploy: function(id) {
-        alert("Undeploy applications for group_" + id + "...");
    },
    startGroup: function(id) {
         groupControlService.startGroup(id);
