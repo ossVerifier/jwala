@@ -92,9 +92,9 @@ var GroupOperations = React.createClass({
 
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         webServersToUpdate.forEach(
-            function(webServer) {
-                groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
-            });
+        function(webServer) {
+            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
+        });
     },
 
 
@@ -147,11 +147,15 @@ var GroupOperations = React.createClass({
         this.dataSink.stop();
     },
     updateWebServerDataCallback: function(webServerData) {
-//        this.setState({webServers: webServerData});
         this.setState(groupOperationsHelper.processWebServerData([],
                                                                  webServerData,
                                                                  this.state.webServerStates,
                                                                  []));
+        var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
+        webServersToUpdate.forEach(
+        function(webServer) {
+            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
+        });
     }
 });
 
