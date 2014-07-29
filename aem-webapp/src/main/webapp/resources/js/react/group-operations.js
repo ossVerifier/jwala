@@ -201,7 +201,8 @@ var GroupOperationsDataTable = React.createClass({
                                mData:null,
                                mRender: this.getStateForGroup}];
 
-        var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
+        var webServerOfGrpChildTableDef = [{tocType:"emptyColumn", colWidth:"20px",mData:null},
+                                           {sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {sTitle:"Name", mData:"name"},
                                            {sTitle:"Host", mData:"host"},
                                            {sTitle:"HTTP", mData:"port"},
@@ -257,7 +258,8 @@ var GroupOperationsDataTable = React.createClass({
                                             title:"Web Applications",
                                             isCollapsible:true};
 
-        var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
+        var webAppOfGrpChildTableDef = [{tocType:"emptyColumn", colWidth:"20px",mData:null},
+                                        {sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {sTitle:"Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderWebAppRowData},
                                         {sTitle:"Context", mData:"webAppContext"}];

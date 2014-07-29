@@ -52,7 +52,10 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].sWidth = "20px";
                     aoColumnDefs[itemIndex].bSortable = false;
                 } else if (item.tocType === "button") {
-                        aoColumnDefs[itemIndex].bSortable = false;
+                    aoColumnDefs[itemIndex].bSortable = false;
+                } else if (item.tocType === "emptyColumn") {
+                    aoColumnDefs[itemIndex].sWidth = item.colWidth;
+                    aoColumnDefs[itemIndex].bSortable = false;;
                 }
             } else {
 
@@ -211,6 +214,8 @@ var renderComponents = function(tableId,
         }
     } else if (item.tocType === "button") {
         renderedComponent = renderButton(tableId, item, data, type, full);
+    } else if (item.tocType === "emptyColumn") {
+        renderedComponent = "";
     } else {
         renderedComponent = data;
     }
