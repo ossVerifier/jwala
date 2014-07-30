@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -43,7 +42,7 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand,
                                               final User aUser) {
         LOGGER.info("Attempting to set state for {} {} ", stateType, aCommand);
