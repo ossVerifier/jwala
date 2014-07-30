@@ -57,11 +57,13 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].mDataProp = null;
                     aoColumnDefs[itemIndex].sClass = "control center";
                     aoColumnDefs[itemIndex].sWidth = "20px";
-                    aoColumnDefs[itemIndex].bSortable = false;
-                } else if (item.tocType === "button") {
-                    aoColumnDefs[itemIndex].bSortable = false;
-                } else if (item.tocType === "emptyColumn") {
-                    aoColumnDefs[itemIndex].bSortable = false;;
+                }
+
+                if (item.mRender !== undefined ||
+                    item.tocType === "button"  ||
+                    item.tocType === "control" ||
+                    item.tocType === "emptyColumn") {
+                        aoColumnDefs[itemIndex].bSortable = false;
                 }
 
                 if (item.colWidth !== undefined) {
