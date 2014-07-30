@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.siemens.cto.aem.web.javascript.variable.AbstractSingleVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
+import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
 
 public class LoginStatusSource extends AbstractSingleVariableSource implements JavaScriptVariableSource {
 
@@ -16,7 +17,7 @@ public class LoginStatusSource extends AbstractSingleVariableSource implements J
 
     @Override
     protected JavaScriptVariable createSingleVariable() {
-        return new JavaScriptVariable("loginStatus",
-                                      String.valueOf(request.getParameter("status")));
+        return new StringJavaScriptVariable("loginStatus",
+                                            String.valueOf(request.getParameter("status")));
     }
 }
