@@ -1,3 +1,4 @@
+//TODO The functions in here need to be name-spaced
 /**
  * Creates an id delimited by dash delimeter
  * e.g. ["btn", "1"] returns btn-1
