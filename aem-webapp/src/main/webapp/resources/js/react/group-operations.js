@@ -93,7 +93,7 @@ var GroupOperations = React.createClass({
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         webServersToUpdate.forEach(
         function(webServer) {
-            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state);
+            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.stateString);
         });
     },
 
@@ -105,7 +105,7 @@ var GroupOperations = React.createClass({
                                                            newJvmStates));
 
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.jvmState);});
+        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.stateString);});
     },
 
     pollStates: function() {
@@ -113,8 +113,7 @@ var GroupOperations = React.createClass({
         this.dataSink = this.props.stateService.createDataSink(function(data) {
                                                                                     self.updateStateData(data);
                                                                               });
-        // TODO: Change this.props.jvmStateTimeout to this.props.stateTimeout
-        this.props.stateService.pollForUpdates(this.props.jvmStateTimeout, this.dataSink);
+        this.props.stateService.pollForUpdates(this.props.statePollTimeout, this.dataSink);
     },
 
     fetchCurrentJvmStates: function() {
@@ -475,12 +474,10 @@ var GroupOperationsDataTable = React.createClass({
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
 
-        // The code is currently in transition (from a jvm specific state data to a generic once hence the if...)
-        // TODO: When the backend is finished, we need to update this also!
-        if (this.jvmsById[jvmId].state.jvmState !== undefined) {
-            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.jvmState);
+        if (this.jvmsById[jvmId].state !== undefined) {
+            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.stateString);
         } else {
-            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.state);
+            $(".jvm-state-" + jvmId).html("UNKNOWN");
         }
 
         return "<span class='jvm-state-" + jvmId + "'/>"
@@ -506,9 +503,8 @@ var GroupOperationsDataTable = React.createClass({
 
         if (this.webServersById !== undefined && webServerToRender !== undefined) {
             if (webServerToRender.state !== undefined) {
-                $(".ws-state-" + webServerId).html(webServerToRender.state.state);
+                $(".ws-state-" + webServerId).html(webServerToRender.state.stateString);
             } else {
-                // ideally we should get the current state here instead of waiting for the next poll
                 $(".ws-state-" + webServerId).html("UNKNOWN");
             }
         }
@@ -521,9 +517,8 @@ var GroupOperationsDataTable = React.createClass({
 
         if (this.groupsById !== undefined && this.groupsById[groupId] !== undefined) {
             if (this.groupsById[groupId].state !== undefined) {
-                $(".group-state-" + groupId).html(this.groupsById[groupId].state.state);
+                $(".group-state-" + groupId).html(this.groupsById[groupId].state.stateString);
             } else  {
-                // ideally we should get the current state here instead of waiting for the next poll
                 $(".group-state-" + groupId).html("UNKNOWN");
             }
         }

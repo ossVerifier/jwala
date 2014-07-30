@@ -37,6 +37,10 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
         return state;
     }
 
+    public String getStateString() {
+        return state.toStateString();
+    }
+
     public DateTime getAsOf() {
         return asOf;
     }

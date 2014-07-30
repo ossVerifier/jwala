@@ -23,6 +23,7 @@ var groupOperationsHelper = function(){
         } else {
             // TODO: decide if maybe the rendering component should render missing web server state data as UNKNOWN instead
             group.state = {state: "UNKNOWN",
+                           stateString: "UNKNOWN",
                            asOf: Date.now(),
                            id: { id: group.id}};
         }
@@ -36,6 +37,7 @@ var groupOperationsHelper = function(){
         } else {
             // TODO: decide if maybe the rendering component should render missing web server state data as UNKNOWN instead
             webServer.state = {state: "UNKNOWN",
+                               stateString: "UNKNOWN",
                                asOf: Date.now(),
                                id: { id: webServer.id}};
         }
@@ -47,9 +49,10 @@ var groupOperationsHelper = function(){
             jvm.state = jvmState;
         } else {
             // TODO: decide if maybe the rendering component should render missing jvm state data as UNKNOWN instead
-            jvm.state = { jvmState: "UNKNOWN",
+            jvm.state = { state: "UNKNOWN",
+                          stateString: "UNKNOWN",
                           asOf: Date.now(),
-                          jvmId: { id: jvm.id}};
+                          id: { id: jvm.id}};
         }
         return jvm;
     };
@@ -250,7 +253,7 @@ var groupOperationsHelper = function(){
             jvms.forEach(function(jvm) {
                 jvm.groups.forEach(function(group) { result.push( { groupId: group.id,
                                                                     jvmId: jvm.id,
-                                                                    jvmState: jvm.state
+                                                                    state: jvm.state
                                                                   })});
             });
             return result;
@@ -266,7 +269,7 @@ var groupOperationsHelper = function(){
             //                                              .each(function(index, elem) { $(elem).dataTable().fnDraw();});
 
             groups.forEach(function(group) {
-                $(".group-state-" + group.id.id).html(group.state.state);
+                $(".group-state-" + group.id.id).html(group.state.stateString);
             });
         },
 
