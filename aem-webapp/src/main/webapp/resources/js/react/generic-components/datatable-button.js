@@ -27,15 +27,16 @@ var DataTableButton = React.createClass({
      */
     toggleStatus: 0,
     render: function() {
-        $("#" + this.props.id).off("click");
-        $("#" + this.props.id).on("click", this.handleClick.bind(this, this.props.itemId));
+        DataTableButton.bindEvents(this);
 
         var btnClassName = this.props.customBtnClassName;
         var spanClassName = "";
         if (this.props.customBtnClassName === undefined) {
-            btnClassName = "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover";
+            btnClassName = "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only";
             spanClassName = "ui-button-text";
         }
+
+        var theLabel = this.toggleStatus === 0 ? this.props.label: this.props.label2;
 
         return React.DOM.div({className: this.props.className},
                              React.DOM.button({id:this.props.id,
@@ -43,40 +44,59 @@ var DataTableButton = React.createClass({
                                                role:"button",
                                                ariaDisabled:false,
                                                className:btnClassName},
-                                               React.DOM.span({className:spanClassName}, this.toggleStatus === 0 ?
-                                                                                         this.props.label:
-                                                                                         this.props.label2)));
-    },
-    handleClick: function(id) {
-
-        if (this.props.clickedStateClassName !== undefined) {
-            $("#" + this.props.id).attr("class", this.props.clickedStateClassName);
-            var self = this;
-            var timeout = (this.props.clickedStateTimeout === undefined ? 60000 : this.props.clickedStateTimeout);
-            setTimeout(function(){$("#" + self.props.id).attr("class", self.props.customBtnClassName)}, timeout);
-        }
-
-        if (this.props.isToggleBtn) {
-            if (this.toggleStatus === 0) {
-                if (this.props.callback(id)) {
-                    this.toggleStatus = 1;
-                }
-            } else {
-                if (this.props.callback2(id)) {
-                    this.toggleStatus = 0;
-                }
-            }
-
-            $("#" + this.props.id).val(this.toggleStatus === 1 ?
-                                       this.props.label2 :
-                                       this.props.label);
-        } else {
-            this.props.callback(id, this.requestReturnCallback);
-        }
+                                               React.DOM.span({className:spanClassName}, theLabel)));
     },
     requestReturnCallback: function() {
         if (this.props.clickedStateClassName !== undefined) {
             $("#" + this.props.id).attr("class", this.props.customBtnClassName);
         }
+    },
+
+    statics: {
+        handleClick: function(self) {
+            if (self.props.clickedStateClassName !== undefined) {
+                $("#" + self.props.id).attr("class", self.props.clickedStateClassName);
+
+                var timeout = (self.props.clickedStateTimeout === undefined ? 60000 : self.props.clickedStateTimeout);
+                setTimeout(function(){$("#" + self.props.id).attr("class", self.props.customBtnClassName)}, timeout);
+            }
+
+            if (self.props.isToggleBtn) {
+                if (self.toggleStatus === 0) {
+                    if (self.props.callback(self.props.itemId)) {
+                        self.toggleStatus = 1;
+                    }
+                } else {
+                    if (self.props.callback2(self.props.itemId)) {
+                        self.toggleStatus = 0;
+                    }
+                }
+
+                $("#" + self.props.id).val(self.toggleStatus === 1 ?
+                                           self.props.label2 :
+                                           self.props.label);
+            } else {
+                self.props.callback(self.props.itemId, self.requestReturnCallback);
+            }
+        },
+        hoverCallback: function(id, label) {
+            var MARKER = "jquery-button-applied";
+            var theBtn = $("#" + id);
+            if (label !== "" && !theBtn.hasClass(MARKER)) {
+                theBtn.html(label);
+                theBtn.button();
+                theBtn.addClass(MARKER);
+            }
+        },
+        bindEvents: function(self) {
+            $("#" + self.props.id).off("click");
+            $("#" + self.props.id).on("click", DataTableButton.handleClick.bind(self, self));
+
+            var theLabel = self.toggleStatus === 0 ? self.props.label: self.props.label2;
+
+            $("#" + self.props.id).off("mouseover");
+            $("#" + self.props.id).on("mouseover", DataTableButton.hoverCallback.bind(self, self.props.id, theLabel));
+        }
     }
+
 });

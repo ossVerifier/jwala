@@ -156,35 +156,49 @@ var decorateTableAsDataTable = function(tableId,
 
 var TocPager = {
 
-	init: function() {
-		$.fn.dataTableExt.oPagination.toc = this;
+    init: function() {
+        $.fn.dataTableExt.oPagination.toc = this;
 
-	},
-	"fnInit": function ( oSettings, nPaging, fnCallbackDraw )
-	{
-	$.fn.dataTableExt.oPagination.two_button.fnInit(oSettings, nPaging, fnCallbackDraw);
-	},
+    },
+    "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
+    {
+    $.fn.dataTableExt.oPagination.two_button.fnInit(oSettings, nPaging, fnCallbackDraw);
+    },
+
+    attachExpanderClickEvent: function(idx, obj) {
+        var expander = this.allExpanders[obj.id];
+        if(expander !== undefined) {
+            $("#" + obj.id).off("click");
+            $("#" + obj.id).on("click",
+                expander.component.onClick.bind(expander.component,
+                                                expander.dataSources,
+                                                expander.childTableDetailsArray));
+        }
+    },
+
+    attachButtonMouseOverAndClickEvents: function(idx, obj) {
+        var reactBtn = this.allButtons[obj.id];
+        var btn = $("#" + obj.id);
+        if(reactBtn !== undefined) {
+            DataTableButton.bindEvents(reactBtn);
+        }
+    },
 
    "fnUpdate": function ( oSettings, fnCallbackDraw )
-	{
-	   $.fn.dataTableExt.oPagination.two_button.fnUpdate(oSettings, fnCallbackDraw);
-	   // Need to bind onclick to expand collapse options in this method
+    {
+       $.fn.dataTableExt.oPagination.two_button.fnUpdate(oSettings, fnCallbackDraw);
+       // Need to bind onclick to expand collapse options in this method
 
-	   var decorated = oSettings.nTable;
+       var decorated = oSettings.nTable;
 
-	   if(decorated !== null) {
-		   var self = this;
-		   $('img', decorated).each(
-				   function(idx,obj) {
-						var expander = self.allExpanders[obj.id];
-						if(expander !== undefined) {
-							$("#" + obj.id).off("click");
-							$("#" + obj.id).on("click", expander.component.onClick.bind(expander.component, expander.dataSources, expander.childTableDetailsArray));
-						}
-				   });
-	   }
-	},
-	allExpanders : {}
+       if(decorated !== null) {
+           var self = this;
+           $('img', decorated).each(function(idx,obj) {self.attachExpanderClickEvent(idx, obj)});
+           $('.ui-button').each(function(idx,obj) {self.attachButtonMouseOverAndClickEvents(idx, obj)});
+       }
+    },
+    allExpanders : {},
+    allButtons : {}
 };
 
 TocPager.init();
@@ -241,16 +255,22 @@ var renderButton = function(tableId, item, data, type, full) {
 
     var btnClassifier = item.customBtnClassName !== undefined ? item.customBtnClassName : item.btnLabel;
     var id = tableId + "btn" + btnClassifier.replace(/[\. ,:-]+/g, '') +  full.id.id;
-    return React.renderComponentToStaticMarkup(new DataTableButton({id:id,
-                                                   className:item.className,
-                                                   customBtnClassName:item.customBtnClassName,
-                                                   clickedStateClassName:item.clickedStateClassName,
-                                                   itemId:full.id.id,
-                                                   label:item.btnLabel,
-                                                   callback:item.btnCallback,
-                                                   isToggleBtn:item.isToggleBtn,
-                                                   label2:item.label2,
-                                                   callback2:item.callback2}));
+
+    var reactBtn = new DataTableButton({id:id,
+                                        className:item.className,
+                                        customBtnClassName:item.customBtnClassName,
+                                        clickedStateClassName:item.clickedStateClassName,
+                                        itemId:full.id.id,
+                                        label:item.btnLabel,
+                                        callback:item.btnCallback,
+                                        isToggleBtn:item.isToggleBtn,
+                                        label2:item.label2,
+                                        callback2:item.callback2})
+
+    TocPager.allButtons[id] = reactBtn;
+
+    return React.renderComponentToStaticMarkup(reactBtn);
+
 }
 
 var renderLink = function(item, tableId, data, type, full, editCallback) {

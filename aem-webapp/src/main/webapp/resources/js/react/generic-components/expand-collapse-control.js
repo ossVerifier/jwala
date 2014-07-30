@@ -87,8 +87,6 @@ var ExpandCollapseControl = React.createClass({
 
             }
         }
-        $(".ui-button").button();
-
     },
     onClick: function(dataSources, childTableDetailsArray) {
 

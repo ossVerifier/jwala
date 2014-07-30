@@ -52,7 +52,6 @@ var TocDataTable = React.createClass({
             this.dataTable.fnDraw();
             this.dataTable.fnSort(this.props.initialSortColumn);
         }
-        $(".ui-button").button();
     },
     rowSelectCallback: function() {
 
