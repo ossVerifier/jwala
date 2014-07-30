@@ -14,9 +14,9 @@ var JvmConfig = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
         if(
           (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog) 
+        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
         ){
-          return false; 
+          return false;
         }
         return true;
     },
@@ -460,7 +460,8 @@ var JvmDataTable = React.createClass({
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
-                         displayProperty:"name"},
+                         displayProperty:"name",
+                        sWidth: "40%"},
                         {sTitle:"Http", mData:"httpPort"},
                         {sTitle:"Https", mData:"httpsPort"},
                         {sTitle:"Redirect", mData:"redirectPort"},

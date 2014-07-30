@@ -14,12 +14,12 @@ var WebServerConfig = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
         if(
           (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog) 
+        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
         ){
-          return false; 
+          return false;
         }
         return true;
-    },    
+    },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
@@ -39,9 +39,9 @@ var WebServerConfig = React.createClass({
                                                     selectItemCallback={this.selectItemCallback}
                                                     editCallback={this.editCallback}
                                                     noUpdateWhen={
-                                                      this.state.showModalFormAddDialog || 
+                                                      this.state.showModalFormAddDialog ||
                                                       this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog 
+                                                      this.state.showModalFormEditDialog
                                                       }/>
                                 </div>
                             </td>
@@ -361,7 +361,8 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
-                         displayProperty:"name"}];
+                         displayProperty:"name",
+                         sWidth: "40%"}];
         return <TocDataTable tableId="webserver-config-datatable"
                              tableDef={tableDef}
                              colHeaders={["JVM Name", "Host Name"]}
