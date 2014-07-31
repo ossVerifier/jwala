@@ -46,7 +46,7 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand,
                                               final User aUser) {
-        LOGGER.info("Attempting to set state for {} {} ", stateType, aCommand);
+        LOGGER.trace("Attempting to set state for {} {} ", stateType, aCommand);
         aCommand.validateCommand();
 
         final CurrentState<S, T> currentState = persistenceService.updateState(new Event<>(aCommand,
@@ -59,7 +59,7 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     @Override
     @Transactional(readOnly = true)
     public CurrentState<S, T> getCurrentState(final Identifier<S> anId) {
-        LOGGER.info("Getting state for {} {}", stateType, anId);
+        LOGGER.trace("Getting state for {} {}", stateType, anId);
         CurrentState<S, T> state = persistenceService.getState(anId);
         if (state == null) {
             state = createUnknown(anId);
@@ -70,7 +70,7 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     @Override
     @Transactional(readOnly = true)
     public Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds) {
-        LOGGER.info("Getting states for {} {}", stateType, someIds);
+        LOGGER.trace("Getting states for {} {}", stateType, someIds);
         final Set<CurrentState<S, T>> results = new HashSet<>();
         for (final Identifier<S> id : someIds) {
             final CurrentState<S, T> currentState = getCurrentState(id);
@@ -82,7 +82,7 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
     @Override
     @Transactional(readOnly = true)
     public Set<CurrentState<S, T>> getCurrentStates(final PaginationParameter somePagination) {
-        LOGGER.info("Getting all states for {}", stateType);
+        LOGGER.trace("Getting all states for {}", stateType);
         return persistenceService.getAllKnownStates(somePagination);
     }
 

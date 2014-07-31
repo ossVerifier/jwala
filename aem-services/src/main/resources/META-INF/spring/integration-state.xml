@@ -40,7 +40,7 @@
     <int:logging-channel-adapter 
         id="stateUpdateLogging"
         channel="groupStateUpdates"
-        level="INFO" 
+        level="DEBUG" 
         logger-name="com.siemens.cto.aem.bus"
         expression="#root">
     </int:logging-channel-adapter>
