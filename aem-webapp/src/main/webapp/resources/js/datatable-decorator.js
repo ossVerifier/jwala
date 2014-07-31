@@ -13,7 +13,7 @@ var createDelimitedId = function(idFragments, delimiter) {
         }
     }
     return tmpId;
-}
+};
 
 /**
  * This method transforms a table to a JQuery DataTable.
@@ -247,11 +247,11 @@ var renderComponents = function(tableId,
         renderedComponent = data;
     }
     return renderedComponent;
-}
+};
 
 var isArray = function(val) {
     return (val instanceof Array)
-}
+};
 
 var renderButton = function(tableId, item, data, type, full) {
 
@@ -267,18 +267,18 @@ var renderButton = function(tableId, item, data, type, full) {
                                         callback:item.btnCallback,
                                         isToggleBtn:item.isToggleBtn,
                                         label2:item.label2,
-                                        callback2:item.callback2})
+                                        callback2:item.callback2});
 
     TocPager.allButtons[id] = reactBtn;
 
     return React.renderComponentToStaticMarkup(reactBtn);
 
-}
+};
 
 var renderLink = function(item, tableId, data, type, full, editCallback) {
     if (item.hRefCallback === undefined) {
         var linkLabelPartId = item.linkLabel !== undefined ? item.linkLabel.replace(/[\. ,:-]+/g, '')
-                                                           : data.replace(/[\. ,:-]+/g, '')
+                                                           : data.replace(/[\. ,:-]+/g, '');
         var id = createDelimitedId([tableId, "link",  linkLabelPartId, full.id.id], "_");
         return React.renderComponentToStaticMarkup(new Anchor({id:id,
                                                                data:full,
@@ -291,7 +291,7 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
     }  else {
         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }
-}
+};
 
 var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childTableDetails, data, type, full, expandIcon, collapseIcon) {
     var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
@@ -340,7 +340,7 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
     TocPager.allExpanders[delimitedId] = { "component": expander, "dataSources": dataSources, "childTableDetailsArray": childTableDetailsArray };
 
     return renderedComponent;
-}
+};
 
 var renderArray = function(item, data) {
 
@@ -350,4 +350,4 @@ var renderArray = function(item, data) {
         str = str + (str === "" ? "" : ",") + data[idx][item.displayProperty];
     }
     return str;
-}
+};

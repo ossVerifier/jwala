@@ -84,10 +84,13 @@ var ExpandCollapseControl = React.createClass({
                     // attach handlers to the buttons
                     for (var i = 0; i < headerComponents.length; i++) {
                         var component = headerComponents[i];
-                        $(dataTable.selector + "_" +  component.id).off("click");
-                        $(dataTable.selector + "_" +  component.id).on("click",
-                                                                       {id:self.props.parentItemId},
-                                                                       component.btnCallback);
+                        var buttonSelector = dataTable.selector + "_" + component.id;
+                        $(buttonSelector).button();
+                        $(buttonSelector).off("click");
+                        $(buttonSelector).on("click",
+                                       {id:self.props.parentItemId,
+                                        buttonSelector: buttonSelector},
+                                       component.btnCallback);
                     }
                 }
 

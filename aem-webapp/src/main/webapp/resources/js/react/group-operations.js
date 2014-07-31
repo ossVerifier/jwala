@@ -412,44 +412,39 @@ var GroupOperationsDataTable = React.createClass({
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
    },
-   getGroupButtonSelector: function(id, buttonSubType) {
-       return "#group-operations-tablebtn" + buttonSubType + id;
-   },
-   enableGroupButtonThunk: function(id, buttonSubType) {
-       var self = this;
+   enableButtonThunk: function(buttonSelector) {
        return function() {
-           $(self.getGroupButtonSelector(id, buttonSubType)).button("enable");
+           $(buttonSelector).button("enable");
        };
    },
-   disableGroupButtonThunk: function(id, buttonSubType) {
-       var self = this;
+   disableButtonThunk: function(buttonSelector) {
        return function() {
-           $(self.getGroupButtonSelector(id, buttonSubType)).button("disable");
+           $(buttonSelector).button("disable");
        };
    },
-   disableEnable: function(id, buttonSubType, func) {
-       var disable = this.disableGroupButtonThunk(id, buttonSubType);
-       var enable = this.enableGroupButtonThunk(id, buttonSubType);
+   disableEnable: function(buttonSelector, func) {
+       var disable = this.disableButtonThunk(buttonSelector);
+       var enable = this.enableButtonThunk(buttonSelector);
        Promise.method(disable)().then(func).lastly(enable);
    },
-   startGroup: function(id) {
-       this.disableEnable(id, "StartGroup", function() {return groupControlService.startGroup(id)});
+   startGroup: function(id, unused, buttonSelector) {
+       this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id);});
    },
-   stopGroup: function(id) {
-       this.disableEnable(id, "StopGroup", function() {return groupControlService.stopGroup(id)});
+   stopGroup: function(id, unused, buttonSelector) {
+       this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id);});
    },
    startGroupJvms: function(event) {
-       groupControlService.startJvms(event.data.id);
-  },
-  stopGroupJvms: function(event) {
-       groupControlService.stopJvms(event.data.id);
-  },
-  startGroupWebServers: function(event) {
-      groupControlService.startWebServers(event.data.id);
- },
- stopGroupWebServers: function(event) {
-      groupControlService.stopWebServers(event.data.id);
- },
+       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.startJvms(event.data.id);});
+   },
+   stopGroupJvms: function(event) {
+       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopJvms(event.data.id);});
+   },
+   startGroupWebServers: function(event) {
+       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.startWebServers(event.data.id);});
+   },
+   stopGroupWebServers: function(event) {
+       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
+   },
    jvmHeapDump: function(id) {
         alert("Not yet implemented");
    },

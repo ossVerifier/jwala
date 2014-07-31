@@ -76,7 +76,7 @@ var DataTableButton = React.createClass({
                                            self.props.label2 :
                                            self.props.label);
             } else {
-                self.props.callback(self.props.itemId, self.requestReturnCallback);
+                self.props.callback(self.props.itemId, self.requestReturnCallback, "#" + self.props.id);
             }
         },
         hoverCallback: function(id, label) {
