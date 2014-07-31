@@ -46,6 +46,12 @@ var ExpandCollapseControl = React.createClass({
         dataTable.fnAddData(data);
         dataTable.fnDraw();
 
+        // indiscriminately show the table.
+        // I didn't feel the need to check if the Datatable is hidden to avoid additional logic
+        // without significant performance gains.
+        // The table's parent's parent is the div that holds the header and the table container.
+        dataTable.parent().parent().show();
+
         // If className is defined, add it to the row node's class
         var data = dataTable.fnGetData();
         var nodes = dataTable.fnGetNodes();
@@ -139,7 +145,8 @@ var ExpandCollapseControl = React.createClass({
                                                      tableDef:this.props.childTableDetails[i].tableDef,
                                                      className:this.props.childTableDetails[i].className,
                                                      title:this.props.childTableDetails[i].title,
-                                                     headerComponents: this.props.childTableDetails[i].headerComponents
+                                                     headerComponents: this.props.childTableDetails[i].headerComponents,
+                                                     hide:true // hide (show later) to prevent from screwing up the display when data is not yet available because of the header components
                                                     });
             }
             return React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
