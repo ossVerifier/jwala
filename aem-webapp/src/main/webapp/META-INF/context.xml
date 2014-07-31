@@ -10,7 +10,7 @@
               xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
               xaProperties.user="sa"
               xaProperties.password=""
-              xaProperties.URL="jdbc:h2:tcp://localhost/~/aem"/>
+              xaProperties.URL="jdbc:h2:tcp://localhost/~/aem;LOCK_MODE=0"/>
 
     <!--<Resource name="jdbc/toc-xa"-->
               <!--auth="Container"-->
