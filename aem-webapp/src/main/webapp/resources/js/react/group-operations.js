@@ -248,7 +248,8 @@ var GroupOperationsDataTable = React.createClass({
                                                isCollapsible:true,
                                                headerComponents:[
                                                     {id:"startWebServers", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupWebServers},
-                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupWebServers}
+                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupWebServers},
+                                                    {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]]};
 
@@ -291,7 +292,8 @@ var GroupOperationsDataTable = React.createClass({
                                     isCollapsible:true,
                                     headerComponents:[
                                          {id:"startJvms", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupJvms},
-                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupJvms}
+                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupJvms},
+                                         {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]]};
 

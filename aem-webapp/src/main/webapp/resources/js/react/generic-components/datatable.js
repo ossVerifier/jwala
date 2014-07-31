@@ -19,6 +19,9 @@ var TocDataTable = React.createClass({
                                                                label:obj.btnLabel,
                                                                className:"inline-block",
                                                                callback:obj.btnCallback}));
+                } else if (obj.tocType === "label") {
+                    // TODO: Modify so it can display changing status. For now it would act as a shim to align the buttons
+                    headerComponents.push(React.DOM.div({className:obj.className}, obj.text));
                 }
             }
             headerComponents.push(React.DOM.span({className:"accordion-title-text-position"}, this.props.title));
