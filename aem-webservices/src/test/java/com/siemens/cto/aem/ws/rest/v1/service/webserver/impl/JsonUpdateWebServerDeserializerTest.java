@@ -42,12 +42,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String httpsPort = "8009";
         final String firstGroupId = "1";
         final String secondGroupId = "2";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyValue("groupIds", array(object(keyTextValue("groupId",
                                                                                         firstGroupId)),
                                                                     object(keyTextValue("groupId",
@@ -61,6 +63,7 @@ public class JsonUpdateWebServerDeserializerTest {
                          hostName,
                          portNumber,
                          httpsPort,
+                         statusPath,
                          firstGroupId,
                          secondGroupId);
     }
@@ -74,12 +77,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "8080";
         final String httpsPort = "8009";
         final String firstGroupId = "1";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyValue("groupIds", array(object(keyTextValue("groupId",
                                                                                         firstGroupId))))));
         final JsonUpdateWebServer update = readValue(json);
@@ -90,6 +95,7 @@ public class JsonUpdateWebServerDeserializerTest {
                          hostName,
                          portNumber,
                          httpsPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -102,12 +108,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "8080";
         final String httpsPort = "8009";
         final String firstGroupId = "1";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
@@ -118,6 +126,7 @@ public class JsonUpdateWebServerDeserializerTest {
                          hostName,
                          portNumber,
                          httpsPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -138,12 +147,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "this port number is not a number";
         final String httpsPort = "2";
         final String firstGroupId = "1";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
@@ -159,13 +170,15 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "1";
         final String httpsPort = "this port number is not a number";
         final String firstGroupId = "1";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
-                keyTextValue("webserverName", webServerName),
-                keyTextValue("hostName", hostName),
-                keyTextValue("portNumber", portNumber),
-                keyTextValue("httpsPort", httpsPort),
-                keyTextValue("groupId", firstGroupId)));
+                                         keyTextValue("webserverName", webServerName),
+                                         keyTextValue("hostName", hostName),
+                                         keyTextValue("portNumber", portNumber),
+                                         keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
+                                         keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
         final UpdateWebServerCommand updateCommand = update.toUpdateWebServerCommand();
@@ -180,12 +193,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "80";
         final String httpsPort = "89";
         final String firstGroupId = "this is not a valid identifier";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
@@ -201,12 +216,14 @@ public class JsonUpdateWebServerDeserializerTest {
         final String portNumber = "80";
         final String httpsPort = "90";
         final String firstGroupId = "1";
+        final String statusPath = "/statusPath";
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
                                          keyTextValue("hostName", hostName),
                                          keyTextValue("portNumber", portNumber),
                                          keyTextValue("httpsPort", httpsPort),
+                                         keyTextValue("statusPath", statusPath),
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
@@ -219,6 +236,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                     final String aHostName,
                                     final String aPortNumber,
                                     final String aHttpsPort,
+                                    final String aStatusPath,
                                     final String... groupIds) {
 
         final UpdateWebServerCommand updateCommand = anUpdate.toUpdateWebServerCommand();
@@ -232,7 +250,9 @@ public class JsonUpdateWebServerDeserializerTest {
         assertEquals(Integer.valueOf(aPortNumber),
                      updateCommand.getNewPort());
         assertEquals(Integer.valueOf(aHttpsPort),
-                updateCommand.getNewHttpsPort());
+                     updateCommand.getNewHttpsPort());
+        assertEquals(aStatusPath,
+                     updateCommand.getNewStatusPath());
         assertCollectionEquals(new IdentifierSetBuilder(Arrays.asList(groupIds)).<Group>build(),
                                updateCommand.getNewGroupIds());
 

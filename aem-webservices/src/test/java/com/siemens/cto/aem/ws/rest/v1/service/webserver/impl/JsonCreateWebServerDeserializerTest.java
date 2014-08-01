@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyValue;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.object;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -19,6 +12,13 @@ import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 
+import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
+import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
+import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyValue;
+import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.object;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class JsonCreateWebServerDeserializerTest {
 
     private static final String webserverName = "webserverName";
@@ -27,6 +27,7 @@ public class JsonCreateWebServerDeserializerTest {
     private static final String httpsPort = "20000";
     private static final String groupIdOne = "1";
     private static final String groupIdTwo = "2";
+    private static final String statusPath = "/statusPath";
 
     private ObjectMapper mapper;
 
@@ -43,6 +44,7 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("hostName", hostName),
                                    keyTextValue("portNumber", portNumber),
                                    keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("statusPath", statusPath),
                                    keyValue("groupIds",
                                             array(object(keyTextValue("groupId", groupIdOne)),
                                                   object(keyTextValue("groupId", groupIdTwo))))));
@@ -56,6 +58,7 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("hostName", hostName),
                                    keyTextValue("portNumber", portNumber),
                                    keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("statusPath", statusPath),
                                    keyValue("groupIds", array(object(keyTextValue("groupId", groupIdOne))))));
         final JsonCreateWebServer create = readValue(json);
         verifyAssertions(create, webserverName, hostName, groupIdOne);
@@ -66,7 +69,8 @@ public class JsonCreateWebServerDeserializerTest {
         String json = array(object(keyTextValue("webserverName", webserverName),
                                    keyTextValue("hostName", hostName),
                                    keyTextValue("portNumber", portNumber),
-                                   keyTextValue("httpsPort", httpsPort)));
+                                   keyTextValue("httpsPort", httpsPort),
+                                   keyTextValue("statusPath", statusPath)));
         final JsonCreateWebServer create = readValue(json);
         verifyAssertions(create, webserverName, hostName);
     }
@@ -76,7 +80,8 @@ public class JsonCreateWebServerDeserializerTest {
         String json = array(object(keyTextValue("webserverName", webserverName),
                                    keyTextValue("hostName", hostName),
                                    keyTextValue("portNumber", "abcd"),
-                                   keyTextValue("httpsPort", "312")));
+                                   keyTextValue("httpsPort", "312"),
+                                   keyTextValue("statusPath", statusPath)));
         final JsonCreateWebServer create = readValue(json);
         create.toCreateWebServerCommand();
     }
@@ -84,9 +89,10 @@ public class JsonCreateWebServerDeserializerTest {
     @Test(expected = BadRequestException.class)
     public void testInvalidHttpsPort() throws Exception {
         String json = array(object(keyTextValue("webserverName", webserverName),
-                keyTextValue("hostName", hostName),
-                keyTextValue("portNumber", "321"),
-                keyTextValue("httpsPort", "sxxs")));
+                                   keyTextValue("hostName", hostName),
+                                   keyTextValue("portNumber", "321"),
+                                   keyTextValue("httpsPort", "sxxs"),
+                                   keyTextValue("statusPath", statusPath)));
         final JsonCreateWebServer create = readValue(json);
         create.toCreateWebServerCommand();
     }

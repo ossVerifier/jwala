@@ -85,14 +85,15 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified"),
     /**/
-    WEB_SERVER_REACHABLE_STATE_NOT_SPECIFIED("AEM41", "WebServerReachableStateNotSpecified"), 
+    WEB_SERVER_REACHABLE_STATE_NOT_SPECIFIED("AEM41", "WebServerReachableStateNotSpecified"),
     /**/
-    INVALID_GROUP_OPERATION("AEM42", "InvalidGroupOperation"), 
+    INVALID_GROUP_OPERATION("AEM42", "InvalidGroupOperation"),
     /**/
     SSH_CONFIG_MISSING("AEM43", "SshConfigMissing"),
-
     /**/
-    USER_AUTHENTICATION_FAILED("AEM44", "UserAuthenticationFailed")
+    USER_AUTHENTICATION_FAILED("AEM44", "UserAuthenticationFailed"),
+    /**/
+    INVALID_WEBSERVER_STATUS_PATH("AEM45", "InvalidWebServerStatusPath")
     ;
 
 	private final String faultCode;

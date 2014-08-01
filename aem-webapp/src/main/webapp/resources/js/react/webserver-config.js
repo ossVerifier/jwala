@@ -147,11 +147,15 @@ var WebServerConfigForm = React.createClass({
             host: "",
             port: "",
             httpsPort: "",
+            statusPath: "",
             groupIds: undefined
         }
     },
-    getPropVal: function(props, name) {
+    getPropVal: function(props, name, defaultVal) {
         var val = "";
+        if (defaultVal !== undefined) {
+            val = defaultVal;
+        }
         if (props.data !== undefined) {
             if (name === "id" && props.data[name] !== undefined) {
                 val = props.data[name].id;
@@ -167,6 +171,7 @@ var WebServerConfigForm = React.createClass({
                        host:this.getPropVal(nextProps, "host"),
                        port:this.getPropVal(nextProps, "port"),
                        httpsPort:this.getPropVal(nextProps, "httpsPort"),
+                       statusPath:this.getPropVal(nextProps, "statusPath", "/jk/status"),
                        groupIds:this.getPropVal(nextProps, "groupIds")});
     },
     mixins: [
@@ -222,6 +227,17 @@ var WebServerConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td><input name="httpsPort" type="text" valueLink={this.linkState("httpsPort")} maxLength="5"/></td>
+                            </tr>
+                            <tr>
+                                <td>Status Path</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="statusPath" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} maxLength="64"/></td>
                             </tr>
                             <tr>
                                 <td>
@@ -283,6 +299,9 @@ var WebServerConfigForm = React.createClass({
                 },
                 "hostName": {
                     regex: true
+                },
+                "statusPath": {
+                    pathCheck: true
                 }
             },
             messages: {
@@ -291,6 +310,11 @@ var WebServerConfigForm = React.createClass({
                 }
             }
         });
+
+        $.validator.addMethod("pathCheck", function(value, element) {
+            var exp = /\/.*/;
+            return exp.test(value);
+        }, "The field must be a valid, absolute path.");
 
         $.validator.addMethod("regex", function(value, element) {
             // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
@@ -311,6 +335,7 @@ var WebServerConfigForm = React.createClass({
                                                   this.state.host,
                                                   this.state.port,
                                                   this.state.httpsPort,
+                                                  this.state.statusPath,
                                                   this.success,
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
@@ -358,6 +383,7 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Host", mData:"host"},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
+                        {sTitle:"Status Path", mData:"statusPath"},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",

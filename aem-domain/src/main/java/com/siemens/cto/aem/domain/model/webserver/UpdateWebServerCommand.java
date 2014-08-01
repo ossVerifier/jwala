@@ -17,6 +17,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerIdRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
@@ -31,16 +32,22 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private final String newName;
     private final Integer newPort;
     private final Integer newHttpsPort;
+    private final String newStatusPath;
 
     public UpdateWebServerCommand(final Identifier<WebServer> theId,
-            final Collection<Identifier<Group>> theNewGroupIds, final String theNewName, final String theNewHost,
-            final Integer theNewPort, final Integer theNewHttpsPort) {
+                                  final Collection<Identifier<Group>> theNewGroupIds,
+                                  final String theNewName,
+                                  final String theNewHost,
+                                  final Integer theNewPort,
+                                  final Integer theNewHttpsPort,
+                                  final String theNewStatusPath) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
         newHttpsPort = theNewHttpsPort;
         newName = theNewName;
         newGroupIds = Collections.unmodifiableCollection(new HashSet<>(theNewGroupIds));
+        newStatusPath = theNewStatusPath;
     }
 
     public Identifier<WebServer> getId() {
@@ -67,14 +74,20 @@ public class UpdateWebServerCommand implements Serializable, Command {
         return newGroupIds;
     }
 
+    public String getNewStatusPath() {
+        return newStatusPath;
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         final MultipleRules mr =
-                new MultipleRules(new WebServerNameRule(newName), new WebServerHostNameRule(newHost),
-                        new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
-                        new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
-                        new WebServerIdRule(id),
-                        new GroupIdsRule(newGroupIds));
+                new MultipleRules(new WebServerNameRule(newName),
+                                  new WebServerHostNameRule(newHost),
+                                  new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
+                                  new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
+                                  new WebServerIdRule(id),
+                                  new GroupIdsRule(newGroupIds),
+                                  new StatusPathRule(newStatusPath));
 
         mr.validate();
     }
@@ -98,6 +111,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append(this.newName, rhs.newName)
                 .append(this.newPort, rhs.newPort)
                 .append(this.newHttpsPort, rhs.newHttpsPort)
+                .append(this.newStatusPath, rhs.newStatusPath)
                 .isEquals();
     }
 
@@ -110,6 +124,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append(newName)
                 .append(newPort)
                 .append(newHttpsPort)
+                .append(newStatusPath)
                 .toHashCode();
     }
 
@@ -122,6 +137,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append("newName", newName)
                 .append("newPort", newPort)
                 .append("newHttpsPort", newHttpsPort)
+                .append("newStatusPath", newStatusPath)
                 .toString();
     }
 }

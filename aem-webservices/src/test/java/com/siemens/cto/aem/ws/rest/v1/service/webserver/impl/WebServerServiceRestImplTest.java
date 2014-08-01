@@ -51,6 +51,7 @@ public class WebServerServiceRestImplTest {
 
     private static final String name = "webserverName";
     private static final String host = "localhost";
+    private static final String statusPath = "/theStatusPath";
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
 
@@ -72,12 +73,12 @@ public class WebServerServiceRestImplTest {
         final Group groupOne = new Group(Identifier.id(1L, Group.class), "ws-groupOne");
         final Group groupTwo = new Group(Identifier.id(2L, Group.class), "ws-groupTwo");
 
-        final List<Group> groupsList = new ArrayList<Group>();
+        final List<Group> groupsList = new ArrayList<>();
         groupsList.add(groupOne);
         groupsList.add(groupTwo);
 
-        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009);
-        final List<WebServer> result = new ArrayList<WebServer>();
+        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009, statusPath);
+        final List<WebServer> result = new ArrayList<>();
         result.add(ws);
         return result;
     }
@@ -108,7 +109,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServer() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
 
-        final Response response = cut.getWebServer(Identifier.id(Long.valueOf(1l), WebServer.class));
+        final Response response = cut.getWebServer(Identifier.id(1l, WebServer.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -154,7 +155,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testRemoveWebServer() {
-        final Response response = cut.removeWebServer(Identifier.id(Long.valueOf(1l), WebServer.class));
+        final Response response = cut.removeWebServer(Identifier.id(1l, WebServer.class));
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -173,7 +174,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
-        final Response response = cut.controlWebServer(Identifier.id(Long.valueOf(1l), WebServer.class), jsonControlWebServer);
+        final Response response = cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -202,7 +203,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
-        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null));
+        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null,"/statusPath"));
 
         final Identifier<Group> groupId = new Identifier<>("1");
         final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");

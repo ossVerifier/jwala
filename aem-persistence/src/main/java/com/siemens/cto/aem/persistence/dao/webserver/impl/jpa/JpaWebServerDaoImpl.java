@@ -72,6 +72,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             jpaWebServer.setPort(createWebServerCommand.getPort());
             jpaWebServer.setHttpsPort(createWebServerCommand.getHttpsPort());
             jpaWebServer.setGroups(groups);
+            jpaWebServer.setStatusPath(createWebServerCommand.getStatusPath());
             jpaWebServer.setCreateBy(userId);
             jpaWebServer.setCreateDate(updateDate);
             jpaWebServer.setUpdateBy(userId);
@@ -111,6 +112,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             jpaWebServer.setHttpsPort(updateWebServerCommand.getNewHttpsPort());
             jpaWebServer.setHost(updateWebServerCommand.getNewHost());
             jpaWebServer.setGroups(groups);
+            jpaWebServer.setStatusPath(updateWebServerCommand.getNewStatusPath());
             jpaWebServer.setUpdateBy(auditEvent.getUser().getUserId());
             jpaWebServer.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
 
@@ -191,7 +193,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     /**
      * TODO: DUPLICATED FROM JpaGroupDaoImpl - need some wiring internal to the Dao to reuse.
-     * 
+     *
      * @param aGroupId
      * @return
      */

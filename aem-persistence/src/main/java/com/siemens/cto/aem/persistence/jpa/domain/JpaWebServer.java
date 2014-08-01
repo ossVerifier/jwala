@@ -37,6 +37,9 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     private Integer httpsPort;
 
+    @Column(nullable = false)
+    private String statusPath;
+
     public static final String FIND_APPLICATIONS_QUERY = "findApplicationsQuery";
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
@@ -85,5 +88,13 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     public void setHttpsPort(Integer httpsPort) {
         this.httpsPort = httpsPort;
+    }
+
+    public String getStatusPath() {
+        return statusPath;
+    }
+
+    public void setStatusPath(final String statusPath) {
+        this.statusPath = statusPath;
     }
 }

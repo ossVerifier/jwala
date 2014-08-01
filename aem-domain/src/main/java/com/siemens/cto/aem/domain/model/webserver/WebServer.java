@@ -27,14 +27,21 @@ public class WebServer implements Serializable {
     private final String name;
     private final Integer port;
     private final Integer httpsPort;
+    private final String statusPath;
 
-    public WebServer(final Identifier<WebServer> theId, final Collection<Group> theGroups, final String theName,
-            final String theHost, final Integer thePort, final Integer theHttpsPort) {
+    public WebServer(final Identifier<WebServer> theId,
+                     final Collection<Group> theGroups,
+                     final String theName,
+                     final String theHost,
+                     final Integer thePort,
+                     final Integer theHttpsPort,
+                     final String theStatusPath) {
         id = theId;
         host = theHost;
         port = thePort;
         name = theName;
         httpsPort = theHttpsPort;
+        statusPath = theStatusPath;
         for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
@@ -69,8 +76,7 @@ public class WebServer implements Serializable {
     }
 
     public String getStatusPath() {
-        //TODO This should eventually be user-configurable
-        return "/jk/status";
+        return statusPath;
     }
 
     public URI getStatusUri() {
@@ -107,6 +113,7 @@ public class WebServer implements Serializable {
                 .append(this.name, rhs.name)
                 .append(this.port, rhs.port)
                 .append(this.httpsPort, rhs.httpsPort)
+                .append(this.statusPath, rhs.statusPath)
                 .isEquals();
     }
 
@@ -119,6 +126,7 @@ public class WebServer implements Serializable {
                 .append(name)
                 .append(port)
                 .append(httpsPort)
+                .append(statusPath)
                 .toHashCode();
     }
 
@@ -128,6 +136,7 @@ public class WebServer implements Serializable {
                 .append("id", id)
                 .append("host", host)
                 .append("port", port)
+                .append("statusPath", statusPath)
                 .toString();
     }
 }

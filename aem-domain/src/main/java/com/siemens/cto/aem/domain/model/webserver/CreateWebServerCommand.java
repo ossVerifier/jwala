@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
@@ -26,14 +27,20 @@ public class CreateWebServerCommand implements Serializable, Command {
     private final String name;
     private final Integer port;
     private final Integer httpsPort;
+    private final String statusPath;
 
-    public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds, final String theName,
-            final String theHost, final Integer thePort, final Integer theHttpsPort) {
+    public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds,
+                                  final String theName,
+                                  final String theHost,
+                                  final Integer thePort,
+                                  final Integer theHttpsPort,
+                                  final String theStatusPath) {
         host = theHost;
         port = thePort;
         httpsPort = theHttpsPort;
         name = theName;
         groupIds = theGroupIds;
+        statusPath = theStatusPath;
     }
 
     public Collection<Identifier<Group>> getGroups() {
@@ -56,12 +63,18 @@ public class CreateWebServerCommand implements Serializable, Command {
         return httpsPort;
     }
 
+    public String getStatusPath() {
+        return statusPath;
+    }
+
     @Override
     public void validateCommand() {
-        new MultipleRules(new WebServerNameRule(name), new WebServerHostNameRule(host),
+        new MultipleRules(new WebServerNameRule(name),
+                          new WebServerHostNameRule(host),
                           new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
-                          new GroupIdsRule(groupIds)).validate();
+                          new GroupIdsRule(groupIds),
+                          new StatusPathRule(statusPath)).validate();
     }
 
     @Override
@@ -82,6 +95,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(this.name, rhs.name)
                 .append(this.port, rhs.port)
                 .append(this.httpsPort, rhs.httpsPort)
+                .append(this.statusPath, rhs.statusPath)
                 .isEquals();
     }
 
@@ -93,6 +107,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(name)
                 .append(port)
                 .append(httpsPort)
+                .append(statusPath)
                 .toHashCode();
     }
 
@@ -104,6 +119,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append("name", name)
                 .append("port", port)
                 .append("httpsPort", httpsPort)
+                .append("statusPath", statusPath)
                 .toString();
     }
 }

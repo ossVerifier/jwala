@@ -6,46 +6,26 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class CreateWebServerCommandTest {
+
     private static final String HOST = "host";
-
     private static final String NAME = "name";
+    private static final String STATUS_PATH = "/statusPath";
+    private static final Integer portNumber = 10000;
+    private static final Integer httpsPort = 20000;
 
-    private static final Integer portNumber = Integer.valueOf(10000);
-    private static final Integer httpsPort = Integer.valueOf(20000);
+    final List<Identifier<Group>> groupIds = new ArrayList<>();
 
-    List<Identifier<Group>> groupIds = new ArrayList<Identifier<Group>>();
+    final Collection<Identifier<Group>> groupIdsFour = new ArrayList<>();
 
-    final Collection<Identifier<Group>> groupIdsOne = null;
-    final Collection<Identifier<Group>> groupIdsTwo = new ArrayList<Identifier<Group>>();
-    final Collection<Identifier<Group>> groupIdsThree = null;
-    final Collection<Identifier<Group>> groupIdsFour = new ArrayList<Identifier<Group>>();
-
-    final CreateWebServerCommand webServer = new CreateWebServerCommand(groupIds, NAME, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerOne = new CreateWebServerCommand(groupIdsOne, NAME, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerTwo = new CreateWebServerCommand(groupIdsTwo, NAME, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerThree = new CreateWebServerCommand(groupIdsThree, NAME, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerFour = new CreateWebServerCommand(groupIdsFour, NAME, HOST, portNumber, httpsPort);
-
-    final CreateWebServerCommand webServerFive = new CreateWebServerCommand(groupIdsFour, NAME, null, portNumber, httpsPort);
-    final CreateWebServerCommand webServerSix = new CreateWebServerCommand(groupIdsFour, NAME, null, portNumber, httpsPort);
-
-    final CreateWebServerCommand webServerSeven = new CreateWebServerCommand(groupIdsFour, null, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerEight = new CreateWebServerCommand(groupIdsFour, NAME, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerNine = new CreateWebServerCommand(groupIdsFour, null, HOST, portNumber, httpsPort);
-    final CreateWebServerCommand webServerTen = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, portNumber, httpsPort);
-
-    final CreateWebServerCommand webServerEleven = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, null, null);
-    final CreateWebServerCommand webServerTwelve = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, null, null);
-    final CreateWebServerCommand webServerThirteen = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0);
-    final CreateWebServerCommand webServerNulls = new CreateWebServerCommand(null, null, null, null, null);
+    final CreateWebServerCommand webServer = new CreateWebServerCommand(groupIds, NAME, HOST, portNumber, httpsPort, STATUS_PATH);
+    final CreateWebServerCommand webServerTen = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, portNumber, httpsPort, STATUS_PATH);
 
     @Test
     public void testGetGroups() {
@@ -68,32 +48,18 @@ public class CreateWebServerCommandTest {
     }
 
     @Test
+    public void testGetStatusPath() {
+        assertEquals(STATUS_PATH, webServer.getStatusPath());
+    }
+
+    @Test
     public void testValidateCommand() {
         webServerTen.validateCommand();
     }
 
-    @Test
-    public void testEqualsObject() {
-        assertTrue(webServerOne.equals(webServerOne));
-        assertFalse(webServerOne.equals(null));
-        assertFalse(webServerOne.equals(""));
-        assertFalse(webServerOne.equals(webServerTwo));
-        assertTrue(webServerOne.equals(webServerThree));
-        assertFalse(webServerTwo.equals(webServerThree));
-        assertFalse(webServerTwo.equals(webServerOne));
-        assertTrue(webServerTwo.equals(webServerFour));
-        assertFalse(webServerFive.equals(webServerFour));
-        assertTrue(webServerFive.equals(webServerSix));
-        assertFalse(webServerOne.equals(webServerFive));
-        assertFalse(webServerTwo.equals(webServerSix));
-
-        assertFalse(webServerSeven.equals(webServerSix));
-        assertFalse(webServerSeven.equals(webServerEight));
-        assertTrue(webServerSeven.equals(webServerNine));
-        assertFalse(webServerEight.equals(webServerTen));
-
-        assertFalse(webServerEleven.equals(webServerTen));
-        assertTrue(webServerEleven.equals(webServerTwelve));
-        assertFalse(webServerTen.equals(webServerThirteen));
+    @Test(expected = BadRequestException.class)
+    public void testInvalidPath() {
+        final CreateWebServerCommand invalidPath = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0, "abc");
+        invalidPath.validateCommand();
     }
 }

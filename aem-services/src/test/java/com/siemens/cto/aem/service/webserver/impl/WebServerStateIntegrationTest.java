@@ -163,7 +163,8 @@ public class WebServerStateIntegrationTest {
                                                        "unused",
                                                        "hostname" + i + ".example.com",
                                                        port,
-                                                       null);
+                                                       null,
+                                                       "/the status path");
                 servers.add(server);
             }
             return servers;

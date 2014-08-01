@@ -31,13 +31,14 @@ public class JpaWebServerBuilder {
     	        groups.add(new JpaGroupBuilder(gid).build());
     	    }
 	    } else {
-	        groups = Collections.<Group>emptyList();
+	        groups = Collections.emptyList();
 	    }
-        return new WebServer(
-        				new Identifier<WebServer>(webServer.getId()),
-        				groups,
-                        webServer.getName(),
-                        webServer.getHost(),
-                        webServer.getPort(), webServer.getHttpsPort());
+        return new WebServer(new Identifier<WebServer>(webServer.getId()),
+                             groups,
+                             webServer.getName(),
+                             webServer.getHost(),
+                             webServer.getPort(),
+                             webServer.getHttpsPort(),
+                             webServer.getStatusPath());
     }
 }

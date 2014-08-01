@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
@@ -24,38 +23,63 @@ import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 public class JsonCreateWebServer {
 
     private final Set<String> groupIds;
-    private String webserverName;
-    private String portNumber;
-    private String hostName;
-    private String httpsPort;
+    private final String webserverName;
+    private final String portNumber;
+    private final String hostName;
+    private final String httpsPort;
+    private final String statusPath;
 
     public JsonCreateWebServer(final String theName,
                                final String theHostName,
                                final String thePortNumber,
                                final String theHttpsPort,
-                               Set<String> theGroupIds) {
+                               final Set<String> theGroupIds,
+                               final String theStatusPath) {
         webserverName = theName;
         hostName = theHostName;
         portNumber = thePortNumber;
         httpsPort = theHttpsPort;
         groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
+        statusPath = theStatusPath;
     }
 
     public CreateWebServerCommand toCreateWebServerCommand() throws BadRequestException {
         final Set<Identifier<Group>> ids = new IdentifierSetBuilder(groupIds).build();
 
-        Integer port = null;
-        Integer httpsPort = null;
-        try {
-            port = Integer.valueOf(portNumber);
+        final Integer port = convertFrom(portNumber,
+                                         AemFaultType.INVALID_WEBSERVER_PORT);
+        final Integer securePort = convertIfPresentFrom(httpsPort,
+                                                        AemFaultType.INVALID_WEBSERVER_HTTPS_PORT,
+                                                        null);
 
-            if (this.httpsPort != null && this.httpsPort.trim() != "") {
-                httpsPort = Integer.valueOf(this.httpsPort);
-            }
+        return new CreateWebServerCommand(ids,
+                                          webserverName,
+                                          hostName,
+                                          port,
+                                          securePort,
+                                          statusPath);
+    }
+
+    private Integer convertFrom(final String aValue,
+                                AemFaultType aFaultType) {
+        try {
+            return Integer.valueOf(aValue);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_PORT, nfe.getMessage(), nfe);
+            throw new BadRequestException(aFaultType,
+                                          nfe.getMessage(),
+                                          nfe);
         }
-        return new CreateWebServerCommand(ids, webserverName, hostName, port, httpsPort);
+    }
+
+    private Integer convertIfPresentFrom(final String aValue,
+                                         final AemFaultType aFaultType,
+                                         final Integer aDefault) {
+        if (aValue != null && !"".equals(aValue.trim())) {
+            return convertFrom(aValue,
+                               aFaultType);
+        }
+
+        return aDefault;
     }
 
     static class JsonCreateWebServerDeserializer extends AbstractJsonDeserializer<JsonCreateWebServer> {
@@ -64,7 +88,7 @@ public class JsonCreateWebServer {
 
         @Override
         public JsonCreateWebServer deserialize(final JsonParser jp, final DeserializationContext ctxt)
-                throws IOException, JsonProcessingException {
+                throws IOException {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp).get(0);
@@ -73,7 +97,8 @@ public class JsonCreateWebServer {
                                                                      node.get("hostName").getTextValue(),
                                                                      node.get("portNumber").getValueAsText(),
                                                                      node.get("httpsPort").getValueAsText(),
-                                                                     deserializeGroupIdentifiers(node));
+                                                                     deserializeGroupIdentifiers(node),
+                                                                     node.get("statusPath").getTextValue());
             return jcws;
         }
     }

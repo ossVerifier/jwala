@@ -25,14 +25,15 @@ var webServerService = {
         json["groupIds"] = groupIdArray;
         return "[" + JSON.stringify(json) + "]";
     },
-	insertNewWebServer : function(webserverName, groupIds, hostName, portNumber, httpsPort, successCallback, errorCallback) {
+	insertNewWebServer : function(webserverName, groupIds, hostName, portNumber, statusPath, httpsPort, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/webservers",
 		                              "json",
 		                              JSON.stringify([{ webserverName: webserverName,
 		                                                groupIds: groupIds,
 		                                                hostName:hostName,
 		                                                portNumber:portNumber,
-		                                                httpsPort:httpsPort}]),
+		                                                httpsPort:httpsPort,
+                                                        statusPath:statusPath}]),
 		                                                successCallback,
 		                                                errorCallback);
 	},
@@ -62,7 +63,7 @@ var webServerService = {
 	 * Get list of defined web servers - no parameters needed Console test code:
 	 * jQuery.getScript('/aem/public-resources/js/toc/v1/service/webServerService.js');
 	 * var svc = webServerService; svc.getWebServers().then(function(e) {
-	 * 
+	 *
 	 * if(e.readyState > 1) { alert(e.applicationResponseContent); } },null);
 	 */
 	getWebServers : function(responseCallback) {

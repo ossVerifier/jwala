@@ -27,9 +27,15 @@ public class JsonUpdateWebServer {
     private final String portNumber;
     private final String httpsPort;
     private final String hostName;
+    private final String statusPath;
 
-    public JsonUpdateWebServer(final String aWebServerId, final String aWebServerName, final String aHostName,
-            final String aPortNumber, final String aHttpsPort, final Set<String> someGroupIds) {
+    public JsonUpdateWebServer(final String aWebServerId,
+                               final String aWebServerName,
+                               final String aHostName,
+                               final String aPortNumber,
+                               final String aHttpsPort,
+                               final Set<String> someGroupIds,
+                               final String aStatusPath) {
 
         webServerName = aWebServerName;
         hostName = aHostName;
@@ -37,6 +43,7 @@ public class JsonUpdateWebServer {
         httpsPort = aHttpsPort;
         webServerId = aWebServerId;
         groupIds = someGroupIds;
+        statusPath = aStatusPath;
     }
 
     public UpdateWebServerCommand toUpdateWebServerCommand() throws BadRequestException {
@@ -45,7 +52,7 @@ public class JsonUpdateWebServer {
         final Identifier<WebServer> webServerId = convertWebServerId();
         final Integer port = convertPortNumber();
         final Integer httpsPort = convertHttpsPortNumber();
-        return new UpdateWebServerCommand(webServerId, groups, webServerName, hostName, port, httpsPort);
+        return new UpdateWebServerCommand(webServerId, groups, webServerName, hostName, port, httpsPort, statusPath);
     }
 
     protected Identifier<WebServer> convertWebServerId() {
@@ -66,7 +73,7 @@ public class JsonUpdateWebServer {
 
     protected Integer convertHttpsPortNumber() {
         try {
-            if (httpsPort != null && httpsPort.trim() != "") {
+            if (httpsPort != null && !"".equals(httpsPort.trim())) {
                 return Integer.valueOf(httpsPort);
             }
             return null;
@@ -93,7 +100,8 @@ public class JsonUpdateWebServer {
                                             node.get("hostName").getTextValue(),
                                             node.get("portNumber").getValueAsText(),
                                             node.get("httpsPort").getValueAsText(),
-                                            groupIds);
+                                            groupIds,
+                                            node.get("statusPath").getTextValue());
             return juws;
         }
     }

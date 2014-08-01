@@ -1,36 +1,42 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.toc.files.RepositoryAction;
-import com.siemens.cto.toc.files.TemplateManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.TemplateManager;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by z0031wps on 4/2/2014.
@@ -44,7 +50,7 @@ public class WebServerServiceImplTest {
     private WebServerServiceImpl wsService;
 
     @Mock
-    private WebServer mockWebServer; 
+    private WebServer mockWebServer;
     @Mock
     private WebServer mockWebServer2;
 
@@ -53,11 +59,11 @@ public class WebServerServiceImplTest {
 
     @Mock
     private RepositoryAction repositoryAction;
-    
+
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers12 = new ArrayList<>();
-    
+
     private Group group;
     private Group group2;
     private Identifier<Group> groupId;
@@ -66,14 +72,14 @@ public class WebServerServiceImplTest {
     private Collection<Identifier<Group>> groupIds2;
     private Collection<Group> groups;
     private Collection<Group> groups2;
-    
+
     private User testUser = new User("testUser");
 
     @Before
     public void setUp() throws IOException{
-        
-        groupId = new Identifier<Group>(1L);
-        groupId2 = new Identifier<Group>(2L);
+
+        groupId = new Identifier<>(1L);
+        groupId2 = new Identifier<>(2L);
         groupIds = new ArrayList<>(1);
         groupIds2 = new ArrayList<>(1);
         groupIds.add(groupId);
@@ -89,17 +95,19 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getName()).thenReturn("the-ws-name");
         when(mockWebServer.getHost()).thenReturn("the-ws-hostname");
         when(mockWebServer.getGroups()).thenReturn(groups);
-        when(mockWebServer.getPort()).thenReturn(new Integer(51000));
-        when(mockWebServer.getHttpsPort()).thenReturn(new Integer(52000));
-        
+        when(mockWebServer.getPort()).thenReturn(51000);
+        when(mockWebServer.getHttpsPort()).thenReturn(52000);
+        when(mockWebServer.getStatusPath()).thenReturn("/statusPath");
+
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
         when(mockWebServer2.getName()).thenReturn("the-ws-name-2");
         when(mockWebServer2.getHost()).thenReturn("the-ws-hostname");
         when(mockWebServer2.getGroups()).thenReturn(groups2);
-        when(mockWebServer2.getPort()).thenReturn(new Integer(51000));
-        when(mockWebServer2.getHttpsPort()).thenReturn(new Integer(52000));
-        
+        when(mockWebServer2.getPort()).thenReturn(51000);
+        when(mockWebServer2.getHttpsPort()).thenReturn(52000);
+        when(mockWebServer2.getStatusPath()).thenReturn("/statusPath");
+
         mockWebServersAll.add(mockWebServer);
         mockWebServersAll.add(mockWebServer2);
 
@@ -135,10 +143,10 @@ public class WebServerServiceImplTest {
     public void testFindWebServersBelongingTo() {
         when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(1L)), any(PaginationParameter.class))).thenReturn(mockWebServers11);
         when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(2L)), any(PaginationParameter.class))).thenReturn(mockWebServers12);
-      
+
         final List<WebServer> webServers= wsService.findWebServers(group.getId(), PaginationParameter.all());
         final List<WebServer> webServers2 = wsService.findWebServers(group2.getId(), PaginationParameter.all());
-        
+
         assertEquals(1, webServers.size());
         assertEquals(1, webServers2.size());
 
@@ -154,7 +162,8 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer.getName(),
                                                                 mockWebServer.getHost(),
                                                                 mockWebServer.getPort(),
-                                                                mockWebServer.getHttpsPort());
+                                                                mockWebServer.getHttpsPort(),
+                                                                mockWebServer.getStatusPath());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
@@ -163,14 +172,14 @@ public class WebServerServiceImplTest {
         assertEquals("the-ws-group-name", webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
     }
-    
+
     @Test
     public void testDeleteWebServers() {
         when(wsDao.getWebServers(any(PaginationParameter.class))).thenReturn(mockWebServersAll);
         wsService.removeWebServer(mockWebServer.getId());
         verify(wsDao, atLeastOnce()).removeWebServer(mockWebServer.getId());
     }
-    
+
 
     @SuppressWarnings("unchecked")
     @Test
@@ -181,7 +190,8 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer2.getName(),
                                                                 mockWebServer2.getHost(),
                                                                 mockWebServer2.getPort(),
-                                                                mockWebServer2.getHttpsPort());
+                                                                mockWebServer2.getHttpsPort(),
+                                                                mockWebServer2.getStatusPath());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());
@@ -195,10 +205,10 @@ public class WebServerServiceImplTest {
     public void testFindWebServersNameFragment() {
         when(wsDao.findWebServers(eq("the-ws-name-2"), any(PaginationParameter.class))).thenReturn(mockWebServers12);
         when(wsDao.findWebServers(eq("the-ws-name"), any(PaginationParameter.class))).thenReturn(mockWebServersAll);
-      
+
         final List<WebServer> webServers= wsService.findWebServers("the-ws-name-2", PaginationParameter.all());
         final List<WebServer> webServers2 = wsService.findWebServers("the-ws-name", PaginationParameter.all());
-        
+
         assertEquals(1, webServers.size());
         assertEquals(2, webServers2.size());
 
