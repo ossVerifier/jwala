@@ -29,10 +29,8 @@ var DataTableButton = React.createClass({
     render: function() {
         DataTableButton.bindEvents(this);
 
-        var btnClassName = this.props.customBtnClassName;
-        var spanClassName = "";
-        if (this.props.customBtnClassName === undefined) {
-            btnClassName = "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only";
+        var spanClassName = this.props.customSpanClassName;
+        if (this.props.customSpanClassName === undefined) {
             spanClassName = "ui-button-text";
         }
 
@@ -43,12 +41,13 @@ var DataTableButton = React.createClass({
                                                type:"button",
                                                role:"button",
                                                ariaDisabled:false,
-                                               className:btnClassName},
-                                               React.DOM.span({className:spanClassName}, theLabel)));
+                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"},
+                                               React.DOM.span({className:spanClassName, title:this.props.sTitle}, theLabel)));
     },
     requestReturnCallback: function() {
         if (this.props.clickedStateClassName !== undefined) {
-            $("#" + this.props.id).attr("class", this.props.customBtnClassName);
+            $("#" + this.props.id).attr("class",  "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+            $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
         }
     },
 
@@ -56,9 +55,9 @@ var DataTableButton = React.createClass({
         handleClick: function(self) {
             if (self.props.clickedStateClassName !== undefined) {
                 $("#" + self.props.id).attr("class", self.props.clickedStateClassName);
-
+                $("#" + self.props.id).find("span").removeClass();
                 var timeout = (self.props.clickedStateTimeout === undefined ? 60000 : self.props.clickedStateTimeout);
-                setTimeout(function(){$("#" + self.props.id).attr("class", self.props.customBtnClassName)}, timeout);
+                setTimeout(function(){self.requestReturnCallback()}, timeout);
             }
 
             if (self.props.isToggleBtn) {
@@ -93,9 +92,26 @@ var DataTableButton = React.createClass({
             $("#" + self.props.id).on("click", DataTableButton.handleClick.bind(self, self));
 
             var theLabel = self.toggleStatus === 0 ? self.props.label: self.props.label2;
-
-            $("#" + self.props.id).off("mouseover");
-            $("#" + self.props.id).on("mouseover", DataTableButton.hoverCallback.bind(self, self.props.id, theLabel));
+            if (theLabel === "") { // This means that this button is graphical e.g. play, stop button
+                // We have to handle button highlight on hover ourselves since we don't want
+                // the default button handler to convert this button back to a regular text
+                // button when the user finishes hovering over it!
+                $("#" + self.props.id).off("mouseenter");
+                $("#" + self.props.id).off("mouseleave");
+                $("#" + self.props.id).on({
+                    mouseenter: function () {
+                        $("#" + self.props.id).addClass("ui-state-hover");
+                    },
+                    mouseleave: function () {
+                        $("#" + self.props.id).removeClass("ui-state-hover")
+                    }
+                });
+            } else {
+                $("#" + self.props.id).off("mouseover");
+                $("#" + self.props.id).on("mouseover", DataTableButton.hoverCallback.bind(self,
+                                                                                          self.props.id,
+                                                                                          theLabel));
+            }
         }
     }
 

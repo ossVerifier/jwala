@@ -80,72 +80,21 @@ body {
 /**
  * CSS used specifically by AEM buttons
  */
-.start-button {
-    background-image: url(../img/icons/start.png);
-    background-repeat:no-repeat;
-    background-position:center;
-    box-shadow:inset 0px 1px 0px 0px white;
-    background-color:white;
-    border:1px solid white;
-    display:inline-block;
-    color:white;
-    height:19px;
-    width:16px;
-}.start-button:hover {
-    background-image: url(../img/icons/start-hover.png);
-    background-repeat:no-repeat;
-    background-position:center;
-}.start-button:active {
-    position:relative;
-    top:1px;
-}
-
-.start-button-busy {
+.busy-button {
     background-image: url(../img/busy-circular.gif);
     background-repeat:no-repeat;
     background-position:center;
-    box-shadow:inset 0px 1px 0px 0px white;
     background-color:white;
     border:1px solid white;
-    display:inline-block;
-    color:white;
-    height:19px;
-    width:16px;
+    display: inline-block;
+    padding: 0;
+    margin-right: .1em;
+    cursor: pointer;
+    overflow: visible;
+    height:20px;
+    width:20px;
+    vertical-align:middle;
 }
-
-.stop-button {
-    background-image: url(../img/icons/stop.png);
-    background-repeat:no-repeat;
-    background-position:center;
-    box-shadow:inset 0px 1px 0px 0px white;
-    background-color:white;
-    border:1px solid white;
-    display:inline-block;
-    color:white;
-    height:19px;
-    width:16px;
-}.stop-button:hover {
-    background-image: url(../img/icons/stop-hover.png);
-    background-repeat:no-repeat;
-    background-position:center;
-}.stop-button:active {
-    position:relative;
-    top:1px;
-}
-
-.stop-button-busy {
-    background-image: url(../img/busy-circular.gif);
-    background-repeat:no-repeat;
-    background-position:center;
-    box-shadow:inset 0px 1px 0px 0px white;
-    background-color:white;
-    border:1px solid white;
-    display:inline-block;
-    color:white;
-    height:19px;
-    width:16px;
-}
-
 
 .inline-block {
     display: inline-block;

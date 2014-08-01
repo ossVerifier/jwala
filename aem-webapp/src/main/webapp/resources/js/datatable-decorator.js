@@ -255,12 +255,14 @@ var isArray = function(val) {
 
 var renderButton = function(tableId, item, data, type, full) {
 
-    var btnClassifier = item.customBtnClassName !== undefined ? item.customBtnClassName : item.btnLabel;
+    var btnClassifier = item.id !== undefined ? item.id : item.btnLabel;
     var id = tableId + "btn" + btnClassifier.replace(/[\. ,:-]+/g, '') +  full.id.id;
 
     var reactBtn = new DataTableButton({id:id,
+                                        sTitle:item.sTitle,
                                         className:item.className,
                                         customBtnClassName:item.customBtnClassName,
+                                        customSpanClassName:item.customSpanClassName,
                                         clickedStateClassName:item.clickedStateClassName,
                                         itemId:full.id.id,
                                         label:item.btnLabel,
