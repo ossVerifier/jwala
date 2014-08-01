@@ -100,7 +100,9 @@ var DataTableButton = React.createClass({
                 $("#" + self.props.id).off("mouseleave");
                 $("#" + self.props.id).on({
                     mouseenter: function () {
-                        $("#" + self.props.id).addClass("ui-state-hover");
+                        if (!$("#" + self.props.id).hasClass(self.props.clickedStateClassName)) {
+                            $("#" + self.props.id).addClass("ui-state-hover");
+                        }
                     },
                     mouseleave: function () {
                         $("#" + self.props.id).removeClass("ui-state-hover")
