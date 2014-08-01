@@ -13,35 +13,70 @@
         <int:method name="groupStateChanged" request-channel="groupStateUpdates"/>
     </int:gateway>
 
-    <task:executor id="notificationExecutor" pool-size="5-20"
-        queue-capacity="100" keep-alive="5" rejection-policy="CALLER_RUNS" />
+    <!-- Database queries are processed by these queues, so keep it manageable
+    3-5 for real, 1 for testing. -->
+    <task:executor id="statePubSubBusExecutor" pool-size="3-5"
+        queue-capacity="1000" keep-alive="3" rejection-policy="CALLER_RUNS" />
+   
+    <!-- Significant database updates are processed by these queues, so keep it manageable
+    2 database connections -->
+    <task:executor id="databaseUpdateExecutor" pool-size="2"
+        queue-capacity="1000" keep-alive="2" rejection-policy="CALLER_RUNS" />
 
-    <!--
+       <!--
         multiple thread dispatch of state notifications
         Note that if we are busy sending commands, we might not be able to process state!
         So we better use our own executor, or remove the dispatcher entirely DirectChannel
     -->
-    <int:publish-subscribe-channel id="jvmStateUpdates"  task-executor="notificationExecutor" />
+    <int:publish-subscribe-channel id="jvmStateUpdates"  task-executor="statePubSubBusExecutor" />
 
     <int:service-activator id="groupJvmStateServiceActivator"
             input-channel="jvmStateUpdates"
+            output-channel="groupStateChanged"
             method="stateUpdateJvm"
 			ref="groupStateService" />
 
-    <int:publish-subscribe-channel id="webServerStateUpdates"  task-executor="notificationExecutor" />
+    <int:publish-subscribe-channel id="webServerStateUpdates"  task-executor="statePubSubBusExecutor" />
 
     <int:service-activator id="groupWebServerStateServiceActivator"
                            input-channel="webServerStateUpdates"
+                           output-channel="groupStateChanged"
                            method="stateUpdateWebServer"
                            ref="groupStateService" />
 
-    <int:channel id="groupStateUpdates" />
-	
+    <!-- This one doesn't do much, just routes a CurrentState<> to a SetGroupStateCommand, 
+         but must be careful that it is not cyclically called -->
+    <int:publish-subscribe-channel id="groupStateUpdates" task-executor="statePubSubBusExecutor"/>
+
+    <int:bridge input-channel="groupStateUpdates" output-channel="groupStateChanged" />
+
+<!-- We could persist group state changes like this. -->
+     <int:transformer    input-channel="groupStateUpdates" 
+                        output-channel="groupStateChanged" 
+                        expression="new com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand(payload.id, payload.state)" />
+
+    <!-- 
+        Group state changed is just a way for us to scope the transaction to the persist call alone
+        It is called with individual SetGroupStateCommands -->
+    <int:publish-subscribe-channel id="groupStateChanged" task-executor="databaseUpdateExecutor"/>
+
+	<int:chain input-channel="groupStateChanged" output-channel="nullChannel">
+         <int:service-activator 
+                method="groupStatePersist"
+                ref="groupStateService" />
+         <!-- Notification to listeners from the UI -->
+         <int:service-activator 
+                method="groupStateNotify"
+                ref="groupStateService" />
+    </int:chain>
+    
+    <!-- Currently we do not group state changes on the bus.
     <int:logging-channel-adapter 
         id="stateUpdateLogging"
         channel="groupStateUpdates"
         level="DEBUG" 
         logger-name="com.siemens.cto.aem.bus"
-        expression="#root">
+        expression="'DISCARD ' + #root">
     </int:logging-channel-adapter>
+     -->
 </beans>

@@ -31,15 +31,11 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState.StateDetail;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -62,7 +58,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
     // Define what 'null' means for StateEntries
-    public static final String DEFAULT_STATE_IN_TRANSITION_EXPRESSION = "defaultStateInTransitionHandler(#enteringState)";
+    public static final String DEFAULT_STATE_IN_TRANSITION_EXPRESSION = "#enteringState";
     public static final String DEFAULT_STATE_OUT_TRANSITION_EXPRESSION = "defaultStateOutTransitionHandler(#exitingState)";
     public static final String DEFAULT_STATE_EXPRESSION = "defaultStateHandler(#state)";
     public static final String NO_OP="currentState";
@@ -128,7 +124,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     // Tracking state changes internally during a state transition
     private Group               currentGroup;
     private GroupState          currentState;
-    private User                currentUser;
 
     // Internal implementation
     private Triggers            triggers = new Triggers();
@@ -183,8 +178,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     /**
      * This is the DEFAULT_STATE_IN_TRANSITION_HANDLER
-     * @return
-     */
+     * Currently unused for testing
     @Transactional
     public GroupState defaultStateInTransitionHandler(GroupState enteringState) {
         // use this to persist the transition to the Group table.
@@ -197,6 +191,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         }
         return CONTINUE;
     }
+     * @return
+     */
 
     /**
      * This is the DEFAULT_STATE_OUT_TRANSITION_HANDLER
@@ -243,7 +239,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             }
         }
         
-     // only a timeout/error/reset will help us leave starting
         return GroupState.STARTING;
     }
 
@@ -267,7 +262,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             }
         }
         
-     // only a timeout/error/reset will help us leave stopping
         return GroupState.STOPPING;
     }
 
@@ -398,8 +392,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         try {
 
-            this.currentUser = user;
-
             if(proposedState == null) {
                 // do nothing
                 return;
@@ -447,7 +439,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             }
             currentState = interimState;
         } finally {
-            this.currentUser = null;
             this.triggers.drain();
         }
     }

@@ -29,7 +29,7 @@ public abstract class JpaStatePersistenceServiceImpl<S, T extends Externalizable
 
     public CurrentState<S, T> updateState(final Event<SetStateCommand<S, T>> aNewState) {
         final SetStateCommand<S, T> command = aNewState.getCommand();
-        LOGGER.info("Persisting new state {}", command);
+        LOGGER.debug("Persisting new state {}", command);
         final JpaCurrentState currentState = stateCrudService.updateState(aNewState);
         return build(currentState);
     }

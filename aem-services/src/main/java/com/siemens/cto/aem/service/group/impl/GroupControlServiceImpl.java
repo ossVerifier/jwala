@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
@@ -28,9 +27,6 @@ public class GroupControlServiceImpl implements GroupControlService {
     
     private final GroupWebServerControlService groupWebServerControlService;
     
-    @Value("true")
-    private boolean validationRequired;
-
     public GroupControlServiceImpl(
             final GroupWebServerControlService theGroupWebServerControlService,
             final GroupJvmControlService theGroupJvmControlService,
@@ -53,8 +49,6 @@ public class GroupControlServiceImpl implements GroupControlService {
                 groupStateService.canStart(aCommand.getGroupId(), aUser), 
                 groupStateService.canStop(aCommand.getGroupId(), aUser));
         
-        validationRequired = false;
-        
         groupStateService.signal(aCommand, aUser);
 
         controlWebServers(aCommand, aUser);
@@ -65,16 +59,8 @@ public class GroupControlServiceImpl implements GroupControlService {
         return null;
     }
 
-    protected void controlWebServers(ControlGroupCommand aCommand, User aUser) {
+    private void controlWebServers(ControlGroupCommand aCommand, User aUser) {
 
-        if(validationRequired) {
-            aCommand.validateCommand(
-                    groupStateService.canStart(aCommand.getGroupId(), aUser), 
-                    groupStateService.canStop(aCommand.getGroupId(), aUser));
-
-            groupStateService.signal(aCommand, aUser);
-        }
-        
         WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(aCommand
                 .getControlOperation().getExternalValue());
 
@@ -84,16 +70,8 @@ public class GroupControlServiceImpl implements GroupControlService {
         groupWebServerControlService.controlGroup(controlGroupWebServerCommand, aUser);
     }
 
-    protected void controlJvms(ControlGroupCommand aCommand, User aUser) {
+    private void controlJvms(ControlGroupCommand aCommand, User aUser) {
   
-        if(validationRequired) { 
-            aCommand.validateCommand(
-                    groupStateService.canStart(aCommand.getGroupId(), aUser), 
-                    groupStateService.canStop(aCommand.getGroupId(), aUser));
-
-            groupStateService.signal(aCommand, aUser);
-        }
-        
         JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(aCommand.getControlOperation()
                 .getExternalValue()); // TODO address this mapping between
                                       // operations

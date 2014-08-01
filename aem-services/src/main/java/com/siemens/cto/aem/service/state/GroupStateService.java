@@ -1,8 +1,11 @@
 package com.siemens.cto.aem.service.state;
 
+import java.util.List;
+
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -14,9 +17,9 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 public interface GroupStateService {
 
     interface Events {
-        void stateUpdateJvm(CurrentState<Jvm, JvmState> cjs);
+        List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs);
 
-        void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> state);
+        List<SetGroupStateCommand> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> state);
     }
 
     interface Triggers {
@@ -38,5 +41,9 @@ public interface GroupStateService {
     }
 
     interface API extends Events, Triggers, Query {
+
+        SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc);
+
+        SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc);
     }
 }

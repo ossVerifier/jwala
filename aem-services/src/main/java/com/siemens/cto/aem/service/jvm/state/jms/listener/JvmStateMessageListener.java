@@ -30,7 +30,7 @@ public class JvmStateMessageListener implements MessageListener {
 
     public void onMessage(final Message message) {
         try {
-            LOGGER.info("Received message : {}", message.getJMSMessageID());
+            LOGGER.debug("Received message : {}", message.getJMSMessageID());
             handleMessage(message);
         } catch (final JMSException | RuntimeException e) {
             LOGGER.warn("Failure while handling a message; ignoring the message", e);
@@ -47,7 +47,7 @@ public class JvmStateMessageListener implements MessageListener {
 
     protected void processMessage(final MapMessage aMapMessage) throws JMSException {
         final JvmStateMessage message = converter.convert(aMapMessage);
-        LOGGER.info("Processing message: {}", message);
+        LOGGER.debug("Processing message: {}", message);
         jvmStateService.setCurrentState(message.toCommand(),
                                         User.getSystemUser());
     }

@@ -1,17 +1,20 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.annotation.Splitter;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
@@ -61,12 +64,13 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Autowired
     private GroupStateMachine groupStateMachine;
-
+   
     private User systemUser;
 
     @Transactional
     @Override
-    public void stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) {
+    @Splitter
+    public List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) {
 
         LOGGER.debug("Recalculating group state due to jvm update: " + cjs.toString());
 
@@ -78,9 +82,17 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         Jvm jvm = jvmPersistenceService.getJvm(jvmId);
 
         if(jvm == null) {
-            return;
+            return Collections.<SetGroupStateCommand>emptyList();
         }
+
         Set<LiteGroup> groups = jvm.getGroups();
+        
+        if(groups == null || groups.isEmpty()) {
+            return Collections.<SetGroupStateCommand>emptyList();
+        }
+        
+        List<SetGroupStateCommand> result = null;
+        result = new ArrayList<>(groups.size());
 
         for(LiteGroup group : groups) {
 
@@ -93,9 +105,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             // could check for changes and only persist/notify on changes
             SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
             
-            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-            super.setCurrentState(sgsc, systemUser);
+            result.add(sgsc);
         }
+        
+        return result;
     }
 
     private void internalHandleJvmStateUpdate(GroupStateMachine gsm, Identifier<Jvm> jvmId, JvmState jvmState) {
@@ -122,7 +135,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional
     @Override
-    public void stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
+    @Splitter
+    public List<SetGroupStateCommand>  stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) {
         LOGGER.debug("Recalculating group state due to web server update: " + wsState.toString());
 
         // alias
@@ -133,10 +147,16 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         WebServer ws = webServerDao.getWebServer(wsId);
 
         if(ws == null) {
-            return;
+            return Collections.<SetGroupStateCommand>emptyList();
         }
 
         Collection<Group> groups = ws.getGroups();
+        
+        if(groups == null || groups.isEmpty()) {
+            return Collections.<SetGroupStateCommand>emptyList();
+        }
+        
+        List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
 
         for(Group group : groups) {
 
@@ -149,9 +169,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             // could check for changes and only persist/notify on changes
             SetGroupStateCommand sgsc= new SetGroupStateCommand(group.getId(), gsm.getCurrentState());
             
-            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
-            super.setCurrentState(sgsc, systemUser);
+            result.add(sgsc);
         }
+        
+        return result;
     }
 
     private void internalHandleWebServerStateUpdate(GroupStateMachine gsm, Identifier<WebServer> wsId, WebServerReachableState webServerReachableState) {
@@ -215,11 +236,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
-    protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
-        stateNotificationGateway.groupStateChanged(anUpdatedState);
-    }
-
-    @Override
     public CurrentGroupState signal(ControlGroupCommand aCommand, User aUser) {
         switch(aCommand.getControlOperation()) {
         case START:
@@ -229,5 +245,30 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         default:
             return null;
         }
+    }
+    
+    @Override
+    @Transactional
+    public SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc) {
+        // If an empty list is returned by the splitter, it will be treated as single null item, so check
+        if(sgsc != null) {
+            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+        }
+        return sgsc;
+    }
+
+    @Override
+    public SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc) {
+        // If an empty list is returned by the splitter, it will be treated as single null item, so check
+        if(sgsc != null) {
+            getNotificationService().notifyStateUpdated(sgsc.getNewState());
+        }
+        return sgsc;
+    }
+
+    @Override
+    protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
+        // Do NOT forward the notification on, since we are the ones who created it, it would come right back in.
+        // stateNotificationGateway.groupStateChanged(anUpdatedState);
     }
 }

@@ -86,6 +86,13 @@ public abstract class StateServiceImpl<S, T extends ExternalizableState> impleme
         return persistenceService.getAllKnownStates(somePagination);
     }
 
+    /** 
+     * Accessor for derived class. 
+     */
+    protected StateNotificationService getNotificationService() {
+        return notificationService;
+    }
+    
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);
 
     protected abstract void sendNotification(CurrentState<S, T> anUpdatedState);

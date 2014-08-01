@@ -10,6 +10,8 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 
 public class JvmSetStateCommand extends SetStateCommand<Jvm, JvmState> {
 
+    private static final long serialVersionUID = 1L;
+
     public JvmSetStateCommand(final CurrentState<Jvm, JvmState> theNewState) {
         super(theNewState);
     }

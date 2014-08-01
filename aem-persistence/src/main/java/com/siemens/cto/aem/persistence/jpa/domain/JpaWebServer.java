@@ -43,7 +43,7 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     public static final String FIND_JVMS_QUERY = "findJvmsQuery";
     public static final String FIND_WEB_SERVER_BY_GROUP_QUERY = "findWebServerByGroupQuery";
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",
                joinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
                inverseJoinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
