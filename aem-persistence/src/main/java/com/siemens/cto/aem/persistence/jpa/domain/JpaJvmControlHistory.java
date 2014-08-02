@@ -14,7 +14,7 @@ import javax.persistence.TemporalType;
 @Entity(name = "jvm_control_history")
 public class JpaJvmControlHistory implements Serializable {
 
-    public static final int MAX_OUTPUT_LENGTH = 2048;
+    public static final int MAX_OUTPUT_LENGTH = 1048576;
 
     private static final long serialVersionUID = 1L;
 

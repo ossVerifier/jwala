@@ -466,7 +466,10 @@ var GroupOperationsDataTable = React.createClass({
                           data.hostName + ":" + data.httpPort +
                           "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
         // TODO: Call via ajax/promises to be able to parse the thread dump response first
-        window.open("idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl));
+        // window.open("idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl));
+        var jvmId = data.id.id;
+        var url = "jvmCommand?jvmId=" + jvmId + "&operation=threadDump";
+        window.open(url)
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;

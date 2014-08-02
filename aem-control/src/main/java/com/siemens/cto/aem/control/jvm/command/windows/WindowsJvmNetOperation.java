@@ -20,6 +20,13 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(final String aServiceName) {
             return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
         }
+    },
+    THREAD_DUMP(JvmControlOperation.THREAD_DUMP) {
+        @Override
+        public ExecCommand buildCommandForService(final String aServiceName) {
+//            return new ExecCommand("c:/cygwin/threaddump.sh");
+            return new ExecCommand("D:/apache/java/jdk1.7.0_45/bin/jstack", "-F `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
+        }
     };
 
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(JvmControlOperation.class);

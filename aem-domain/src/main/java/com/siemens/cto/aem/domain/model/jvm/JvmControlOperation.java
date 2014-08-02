@@ -9,7 +9,8 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 public enum JvmControlOperation {
 
     START("start", JvmState.START_REQUESTED),
-    STOP("stop", JvmState.STOP_REQUESTED);
+    STOP("stop", JvmState.STOP_REQUESTED),
+    THREAD_DUMP("threadDump", JvmState.STARTED);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
