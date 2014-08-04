@@ -23,42 +23,35 @@ import com.siemens.cto.aem.service.state.StateService;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
-    private final JvmControlPersistenceService persistenceService;
     private final JvmService jvmService;
     private final JvmCommandExecutor jvmCommandExecutor;
-    private final StateService<Jvm, JvmState> jvmStateService;
+    private final JvmControlServiceLifecycle jvmControlServiceLifecycle;
 
-    public JvmControlServiceImpl(final JvmControlPersistenceService thePersistenceService,
-                                 final JvmService theJvmService,
+    public JvmControlServiceImpl(final JvmService theJvmService,
                                  final JvmCommandExecutor theExecutor,
-                                 final StateService<Jvm, JvmState> theJvmStateService) {
-        persistenceService = thePersistenceService;
+                                 final JvmControlServiceLifecycle theLifecycle) {
         jvmService = theJvmService;
         jvmCommandExecutor = theExecutor;
-        jvmStateService = theJvmStateService;
+        jvmControlServiceLifecycle = theLifecycle;
     }
 
     @Override
-    @Transactional
     public JvmControlHistory controlJvm(final ControlJvmCommand aCommand,
                                         final User aUser) {
 
         try {
             aCommand.validateCommand();
-
-            final JvmControlHistory incompleteHistory = persistenceService.addIncompleteControlHistoryEvent(new Event<>(aCommand,
-                                                                                                                        AuditEvent.now(aUser)));
+            
+            final JvmControlHistory incompleteHistory = jvmControlServiceLifecycle.startHistory(aCommand, aUser);
+            
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
-            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
-                                            aUser);
+            jvmControlServiceLifecycle.startState(aCommand, aUser);
 
             final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
                                                                     jvm);
 
-            final JvmControlHistory completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(new CompleteControlJvmCommand(incompleteHistory.getId(),
-                                                                                                                                               execData),
-                                                                                                                 AuditEvent.now(aUser)));
+            final JvmControlHistory completeHistory = jvmControlServiceLifecycle.completeHistory(incompleteHistory, aCommand, execData, aUser);
 
             return completeHistory;
         } catch (final CommandFailureException cfe) {
@@ -68,8 +61,44 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
     }
 
-    protected JvmSetStateCommand createNewSetJvmStateCommand(final ControlJvmCommand aControlCommand) {
-        return new JvmSetStateCommandBuilder().setControlCommand(aControlCommand)
-                                              .build();
+    
+    public static class LifecycleImpl implements JvmControlService.JvmControlServiceLifecycle {
+
+        private final JvmControlPersistenceService persistenceService;
+        private final StateService<Jvm, JvmState> jvmStateService;
+
+        public LifecycleImpl(JvmControlPersistenceService thePersistenceService,
+                StateService<Jvm, JvmState> theJvmStateService) {
+            jvmStateService = theJvmStateService;
+            persistenceService = thePersistenceService;
+        }
+
+        @Override
+        @Transactional
+        public JvmControlHistory startHistory(final ControlJvmCommand aCommand, final User aUser) {
+            return persistenceService.addIncompleteControlHistoryEvent(new Event<>(aCommand,
+                                                                           AuditEvent.now(aUser)));
+        }
+
+        @Transactional
+        @Override
+        public void startState(final ControlJvmCommand aCommand, final User aUser) {
+            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
+                    aUser);  
+        }
+
+        @Transactional
+        @Override
+        public JvmControlHistory completeHistory(JvmControlHistory incompleteHistory, ControlJvmCommand aCommand, ExecData execData, final User aUser) {
+            return persistenceService.completeControlHistoryEvent(new Event<>(new CompleteControlJvmCommand(incompleteHistory.getId(),
+                    execData), AuditEvent.now(aUser)));
+        }
+        
+
+        protected JvmSetStateCommand createNewSetJvmStateCommand(final ControlJvmCommand aControlCommand) {
+            return new JvmSetStateCommandBuilder().setControlCommand(aControlCommand)
+                                                  .build();
+        }
+        
     }
 }

@@ -11,5 +11,5 @@ public interface GroupJvmControlService {
 
     GroupControlHistory controlGroup(final ControlGroupJvmCommand aCommand, final User aUser);
     
-    GroupControlHistory dispatchCommandComplete(List<JvmDispatchCommandResult> results);
+    void dispatchCommandComplete(List<JvmDispatchCommandResult> results);
 }

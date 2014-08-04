@@ -53,8 +53,7 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
 
     @Transactional
     @Override
-    public GroupControlHistory dispatchCommandComplete(List<WebServerDispatchCommandResult> results) {
-        return null;
+    public void dispatchCommandComplete(List<WebServerDispatchCommandResult> results) {
     }
 
 }

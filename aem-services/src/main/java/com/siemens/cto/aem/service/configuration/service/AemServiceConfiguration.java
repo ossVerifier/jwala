@@ -122,12 +122,18 @@ public class AemServiceConfiguration {
 
     @Bean(name="jvmControlService")
     public JvmControlService getJvmControlService() {
-        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmControlPersistenceService(),
-                                         getJvmService(),
+        return new JvmControlServiceImpl(getJvmService(),
                                          aemCommandExecutorConfig.getJvmCommandExecutor(),
-                                         getJvmStateService());
+                                         getJvmControlServiceLifecycle());
     }
 
+    @Bean(name="jvmControlServiceLifecycle") 
+    public JvmControlService.JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
+        return new JvmControlServiceImpl.LifecycleImpl(
+                persistenceServiceConfiguration.getJvmControlPersistenceService(),
+                getJvmStateService());
+    }
+    
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
         return new GroupControlServiceImpl(

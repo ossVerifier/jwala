@@ -54,7 +54,7 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
     }
 
     @Transactional
-    public GroupControlHistory dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
+    public void dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
 
         GroupControlHistory completeHistory = null;
 
@@ -83,7 +83,6 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
                 LOGGER.warn(logMsg);
             }
         }
-        return completeHistory;
     }
 
 }

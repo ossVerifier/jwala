@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmControlServiceImpl impl;
+    private JvmControlServiceImpl.LifecycleImpl lifecycleImpl;
     private JvmControlPersistenceService persistenceService;
     private JvmService jvmService;
     private JvmCommandExecutor commandExecutor;
@@ -52,10 +53,10 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         persistenceService = mock(JvmControlPersistenceService.class);
         jvmService = mock(JvmService.class);
         commandExecutor = mock(JvmCommandExecutor.class);
-        impl = new JvmControlServiceImpl(persistenceService,
-                                         jvmService,
+        lifecycleImpl = new JvmControlServiceImpl.LifecycleImpl(persistenceService, jvmStateService);
+        impl = new JvmControlServiceImpl(jvmService,
                                          commandExecutor,
-                                         jvmStateService);
+                                         lifecycleImpl);
         user = new User("unused");
     }
 

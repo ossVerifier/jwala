@@ -11,6 +11,6 @@ public interface GroupWebServerControlService {
 
     GroupControlHistory controlGroup(final ControlGroupWebServerCommand aCommand, final User aUser);
     
-    GroupControlHistory dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
+    void dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
 
 }
