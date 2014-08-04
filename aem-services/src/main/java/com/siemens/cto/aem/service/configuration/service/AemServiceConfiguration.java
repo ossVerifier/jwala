@@ -43,9 +43,11 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
+import com.siemens.cto.aem.service.webserver.impl.WebServerControlHistoryServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
@@ -158,10 +160,15 @@ public class AemServiceConfiguration {
 
     @Bean(name="webServerControlService")
     public WebServerControlService getWebServerControlService() {
-        return new WebServerControlServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService(),
-                                               getWebServerService(),
+        return new WebServerControlServiceImpl(getWebServerService(),
                                                aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                                               webServerStateGateway);
+                                               webServerStateGateway,
+                                               getWebServerControlHistoryService());
+    }
+
+    @Bean
+    public WebServerControlHistoryService getWebServerControlHistoryService() {
+        return new WebServerControlHistoryServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService());
     }
 
     @Bean(name = "stateNotificationService")

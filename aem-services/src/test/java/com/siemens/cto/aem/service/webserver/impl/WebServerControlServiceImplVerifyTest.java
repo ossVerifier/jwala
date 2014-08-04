@@ -14,8 +14,8 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.domain.model.webserver.command.CompleteControlWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import com.siemens.cto.aem.persistence.service.webserver.WebServerControlPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
 
@@ -28,23 +28,23 @@ import static org.mockito.Mockito.when;
 public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private WebServerControlServiceImpl impl;
-    private WebServerControlPersistenceService persistenceService;
     private WebServerService webServerService;
     private WebServerCommandExecutor commandExecutor;
     private WebServerStateGateway webServerStateGateway;
+    private WebServerControlHistoryService controlHistoryService;
     private User user;
 
     @Before
     public void setup() {
-        persistenceService = mock(WebServerControlPersistenceService.class);
         webServerService = mock(WebServerService.class);
         commandExecutor = mock(WebServerCommandExecutor.class);
         webServerStateGateway = mock(WebServerStateGateway.class);
+        controlHistoryService = mock(WebServerControlHistoryService.class);
 
-        impl = new WebServerControlServiceImpl(persistenceService,
-                                               webServerService,
+        impl = new WebServerControlServiceImpl(webServerService,
                                                commandExecutor,
-                                               webServerStateGateway);
+                                               webServerStateGateway,
+                                               controlHistoryService);
 
         user = new User("unused");
     }
@@ -63,17 +63,15 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(webServerService.getWebServer(eq(webServerId))).thenReturn(webServer);
         when(incompleteHistory.getId()).thenReturn(historyId);
 
-        when(persistenceService.addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand))).
-                thenReturn(incompleteHistory);
+        when(controlHistoryService.beginIncompleteControlHistory(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
 
         impl.controlWebServer(controlCommand,
                 user);
 
         verify(controlCommand, times(1)).validateCommand();
 
-        verify(persistenceService, times(1)).addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand));
-        verify(persistenceService, times(1)).
-                completeControlHistoryEvent(Matchers.<Event<CompleteControlWebServerCommand>>anyObject());
+        verify(controlHistoryService, times(1)).beginIncompleteControlHistory(matchCommandInEvent(controlCommand));
+        verify(controlHistoryService, times(1)).completeControlHistory(Matchers.<Event<CompleteControlWebServerCommand>>anyObject());
 
         verify(webServerService, times(1)).getWebServer(eq(webServerId));
         verify(commandExecutor, times(1)).controlWebServer(eq(controlCommand),

@@ -15,26 +15,26 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.command.CompleteControlWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.persistence.service.webserver.WebServerControlPersistenceService;
+import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
-    private final WebServerControlPersistenceService persistenceService;
     private final WebServerService webServerService;
     private final WebServerCommandExecutor webServerCommandExecutor;
     private final WebServerStateGateway webServerStateGateway;
+    private final WebServerControlHistoryService controlHistoryService;
 
-    public WebServerControlServiceImpl(final WebServerControlPersistenceService thePersistenceService,
-                                       final WebServerService theWebServerService,
+    public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final WebServerCommandExecutor theExecutor,
-                                       final WebServerStateGateway theWebServerStateGateway) {
-        persistenceService = thePersistenceService;
+                                       final WebServerStateGateway theWebServerStateGateway,
+                                       final WebServerControlHistoryService theControlHistoryService) {
         webServerService = theWebServerService;
         webServerCommandExecutor = theExecutor;
         webServerStateGateway = theWebServerStateGateway;
+        controlHistoryService = theControlHistoryService;
     }
 
     @Override
@@ -45,8 +45,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         try {
             aCommand.validateCommand();
 
-            final WebServerControlHistory incompleteHistory = persistenceService.addIncompleteControlHistoryEvent(
-                    new Event<>(aCommand, AuditEvent.now(aUser)));
+            final WebServerControlHistory incompleteHistory = controlHistoryService.beginIncompleteControlHistory(new Event<>(aCommand,
+                                                                                                                              AuditEvent.now(aUser)));
 
             final Identifier<WebServer> webServerId = aCommand.getWebServerId();
 
@@ -60,9 +60,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             webServerStateGateway.initiateWebServerStateRequest(webServer);
 
-            final WebServerControlHistory completeHistory = persistenceService.completeControlHistoryEvent
-                    (new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
-                            AuditEvent.now(aUser)));
+            final WebServerControlHistory completeHistory = controlHistoryService.completeControlHistory(new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
+                                                                                                                     AuditEvent.now(aUser)));
 
             return completeHistory;
 
