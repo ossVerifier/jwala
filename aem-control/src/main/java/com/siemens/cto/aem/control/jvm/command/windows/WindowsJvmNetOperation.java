@@ -25,7 +25,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
 //            return new ExecCommand("c:/cygwin/threaddump.sh");
-            return new ExecCommand("D:/apache/java/jdk1.7.0_45/bin/jstack", "-F `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
+            return new ExecCommand("D:/apache/java/jdk1.7.0_45/bin/jstack", "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
         }
     };
 
