@@ -149,16 +149,6 @@ public class GroupStateManagerTableImplTest {
     }
 
     @Test
-    public void testGSMIsModifyingGroupState() {
-
-        testOneStoppedJvmNewGroup();
-
-        Group group = classUnderTest.getCurrentGroup();
-
-        assertEquals(GroupState.STOPPED, group.getCurrentState().getState());
-    }
-
-    @Test
     public void testIncomingJvmStartMessage() {
 
         testOneStoppedJvmNewGroup();
