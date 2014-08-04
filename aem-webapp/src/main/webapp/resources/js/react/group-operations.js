@@ -287,7 +287,7 @@ var GroupOperationsDataTable = React.createClass({
 
         var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
                                     className:"simple-data-table",
-                                    childTableDetails:webAppOfJvmChildTableDetails,
+                                    /* childTableDetails:webAppOfJvmChildTableDetails, !!! Disable for the Aug 11, 2014 Demo */
                                     title:"JVMs",
                                     isCollapsible:true,
                                     headerComponents:[
@@ -297,7 +297,8 @@ var GroupOperationsDataTable = React.createClass({
                                     ],
                                     initialSortColumn: [[2, "asc"]]};
 
-        var jvmChildTableDef = [{sTitle:"", mData:null, tocType:"control"},
+        var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
+                                {tocType:"emptyColumn", colWidth:"20px",mData:null}, /* !!! empty column for the Aug 11, 2014 Demo */
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                 {sTitle:"Name", mData:"jvmName"},
                                 {sTitle:"Host", mData:"hostName"},
