@@ -14,7 +14,7 @@ public abstract class StateMessageListener implements MessageListener {
 
     public void onMessage(final Message message) {
         try {
-            LOGGER.info("Received message : {}", message.getJMSMessageID());
+            LOGGER.debug("Received message : {}", message.getJMSMessageID());
             handleMessage(message);
         } catch (final JMSException | RuntimeException e) {
             LOGGER.warn("Failure while handling a message; ignoring the message", e);
