@@ -317,6 +317,16 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             return GroupState.ERROR;
         }
         
+        if(jvmState.equals(GroupState.STARTING)
+                || jvmState.equals(GroupState.STOPPING)) {
+            return jvmState;
+        }
+
+        if(webState.equals(GroupState.STARTING)
+                || webState.equals(GroupState.STOPPING)) {
+            return webState;
+        }
+
         if(!(jvmState.equals(webState))) { 
             return GroupState.PARTIAL;
         }
