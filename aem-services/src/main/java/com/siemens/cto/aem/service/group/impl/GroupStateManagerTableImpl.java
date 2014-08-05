@@ -296,6 +296,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         // Consider that we might be a long lived instance, so reload.
         Group group = groupPersistenceService.getGroup(getCurrentGroup().getId());
+        
+        // Some of the servers in question may actually be in a STARTING or START REQUESTED state. 
+        // or stopping or stop requested state
+        // in these cases, this web server should return that specific state
+        // if that state is returned, then we should not transition to the state 
+        // identified by the other elements, but we should stay where we are.
 
         GroupState jvmState = readPerceivedStateJvms(group);
         GroupState webState = readPerceivedStateWebServers(group);
@@ -320,26 +326,53 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private GroupState readPerceivedStateJvms(Group group) { 
         
-        int started = 0, unstarted = 0, errors = 0;
+        int started = 0, unstarted = 0, errors = 0, starting = 0, stopping = 0;
         for(Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
-            if(jvmState == null || jvmState.getState() != JvmState.STARTED) {
+            if(jvmState == null) { 
                 ++unstarted;
-            } else if(jvmState.getState() != JvmState.FAILED) { 
-                ++started;
-            } else { 
-                ++errors;
+            } else {
+                switch(jvmState.getState()) {
+                case FAILED:
+                    break;
+                case INITIALIZED: 
+                case UNKNOWN:
+                    default: break;
+                    case START_REQUESTED:
+                        ++unstarted;
+                        ++starting;
+                        break;
+                    case STOP_REQUESTED:
+                        ++started;
+                        ++stopping;
+                        break;
+                    case STOPPED:
+                        ++unstarted;
+                        break;
+                    case STARTED:
+                        ++started;
+                        break;
+                
+                }
             }
         }
 
         jvmsDetail.setStarted(started);
         jvmsDetail.setTotal(unstarted + started);
         
-        return progressToState(started, unstarted, errors); 
+        return progressToState(starting, stopping, started, unstarted, errors); 
     }
     
-    private GroupState progressToState(int started, int unstarted, int errors) {
+    private GroupState progressToState(int starting, int stopping, int started, int unstarted, int errors) {
         if(errors > 0) return GroupState.ERROR;
+        
+        if(starting > 0 && stopping == 0 && currentState == GroupState.STARTING) {
+            return GroupState.STARTING;
+        }
+       
+        if(stopping > 0 && starting == 0 && currentState == GroupState.STOPPING) {
+            return GroupState.STOPPING;
+        }
         
         if(started == 0 && unstarted == 0) { 
             return GroupState.INITIALIZED;
@@ -354,7 +387,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private GroupState readPerceivedStateWebServers(Group group) {
 
-        int started = 0, unstarted = 0, errors = 0 /*unsupported for web servers*/;
+        int started = 0, unstarted = 0, errors = 0 /*unsupported for web servers*/, starting = 0, stopping = 0;
 
         List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId(), PaginationParameter.all());
 
@@ -367,18 +400,33 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             Set<CurrentState<WebServer,WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
 
             for(CurrentState<WebServer, WebServerReachableState> wsState : results) {
-                if(wsState.getState() == WebServerReachableState.REACHABLE) {
-                    ++started;
-                } else {
+                switch(wsState.getState()) {
+                case UNKNOWN:
+                    break;
+                default: 
+                    break;
+                case START_REQUESTED:
                     ++unstarted;
-                } 
+                    ++starting;
+                    break;
+                case STOP_REQUESTED:
+                    ++started;
+                    ++stopping;
+                    break;
+                case UNREACHABLE:
+                    ++unstarted;
+                    break;
+                case REACHABLE:
+                    ++started;
+                    break;                
+                }
             }
         }
 
         webServersDetail.setStarted(started);
         webServersDetail.setTotal(unstarted + started);
         
-        return progressToState(started, unstarted, errors); 
+        return progressToState(starting, stopping, started, unstarted, errors); 
     }
 
     // =========== STATE ENGINE =============================

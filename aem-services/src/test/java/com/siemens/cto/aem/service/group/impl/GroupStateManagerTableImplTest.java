@@ -216,9 +216,11 @@ public class GroupStateManagerTableImplTest {
         // received a request to Stop the group
         assertEquals(GroupState.STOPPING, classUnderTest.getCurrentState());
 
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STOP_REQUESTED), AuditEvent.now(testUser)));
+
         classUnderTest.jvmStopped(jvm.getId());
-        // receive a stop event for an already stopped jvm, stay in go to PARTIAL
-        assertEquals(GroupState.PARTIAL, classUnderTest.getCurrentState());
+        // receive a stop event for an already stopped jvm, stay in STOPPING because of jvm2
+        assertEquals(GroupState.STOPPING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STOPPED), AuditEvent.now(testUser)));
         classUnderTest.jvmStopped(jvm2.getId());
@@ -242,16 +244,16 @@ public class GroupStateManagerTableImplTest {
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm2.getId());
         // received a start 1/3
-        assertEquals(GroupState.PARTIAL, classUnderTest.getCurrentState());
+        assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm2.getId());
         // received a start 2/3
-        assertEquals(GroupState.PARTIAL, classUnderTest.getCurrentState());
+        assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         classUnderTest.jvmStarted(jvm2.getId());
         // received a start 2/3 - duplicate stay in STARTING
-        assertEquals(GroupState.PARTIAL, classUnderTest.getCurrentState());
+        assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm3.getId());
