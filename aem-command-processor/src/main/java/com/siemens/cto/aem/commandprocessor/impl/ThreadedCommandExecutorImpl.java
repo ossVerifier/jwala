@@ -6,17 +6,22 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.io.FullInputStreamReaderTask;
 
 public class ThreadedCommandExecutorImpl implements CommandExecutor {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThreadedCommandExecutorImpl.class);
+    
     private final ExecutorService executorService;
 
     public ThreadedCommandExecutorImpl(final ExecutorService theExecutorService) {
@@ -33,7 +38,8 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
             final ExecReturnCode returnCode = getReturnCodeWhenFinished(processor,
                                                                         standardOutput,
                                                                         standardError);
-
+            
+            LOGGER.debug("after consuming standard output and standard err");
             return new ExecData(returnCode,
                                 get(standardOutput),
                                 get(standardError));

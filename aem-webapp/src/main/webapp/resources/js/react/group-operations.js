@@ -448,8 +448,14 @@ var GroupOperationsDataTable = React.createClass({
    stopGroupWebServers: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
    },
-   jvmHeapDump: function(id) {
-        alert("Not yet implemented");
+   jvmHeapDump: function(data) {
+	   var dt = new Date().toISOString().replace(/:/g , "-")
+	   var heapDumpFile = 'heapDump-' + dt; 
+       var redirectUrl = window.location.protocol + "//" + data.hostName + ":" + data.httpPort +
+       "/manager/jmxproxy?invoke=com.sun.management:type=HotSpotDiagnostic&op=dumpHeap&ps=" + heapDumpFile + ",true";
+
+       var samlUrl="idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl);
+       window.open(samlUrl, 'heapDumpMessage', 'height=250,width=500, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, directories=no, status=no');
    },
    jvmStart: function(id, requestReturnCallback) {
         jvmControlService.startJvm(id, requestReturnCallback, requestReturnCallback);
@@ -463,11 +469,6 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" + data.httpPort + "/manager/";
    },
     onClickThreadDump: function(data) {
-        var redirectUrl = window.location.protocol + "//" +
-                          data.hostName + ":" + data.httpPort +
-                          "/manager/jmxproxy/?invoke=java.lang:type=Threading&op=dumpAllThreads&ps=true,true";
-        // TODO: Call via ajax/promises to be able to parse the thread dump response first
-        // window.open("idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl));
         var jvmId = data.id.id;
         var url = "jvmCommand?jvmId=" + jvmId + "&operation=threadDump";
         window.open(url)
