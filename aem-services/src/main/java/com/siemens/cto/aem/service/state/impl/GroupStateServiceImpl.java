@@ -251,7 +251,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Transactional
     public SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
-        if(sgsc != null) {
+        if(sgsc != null && sgsc.getNewState() == null) {
             groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
         }
         return sgsc;
@@ -260,7 +260,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     public SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
-        if(sgsc != null) {
+        if(sgsc != null && sgsc.getNewState() == null) {
             getNotificationService().notifyStateUpdated(sgsc.getNewState());
         }
         return sgsc;
