@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -23,6 +25,7 @@ import com.siemens.cto.aem.service.state.StateService;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private final JvmService jvmService;
     private final JvmCommandExecutor jvmCommandExecutor;
     private final JvmControlServiceLifecycle jvmControlServiceLifecycle;
@@ -39,6 +42,8 @@ public class JvmControlServiceImpl implements JvmControlService {
     public JvmControlHistory controlJvm(final ControlJvmCommand aCommand,
                                         final User aUser) {
 
+        LOGGER.debug("entering controlJvm for command {}", aCommand);
+        
         try {
             aCommand.validateCommand();
             
@@ -52,7 +57,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                                                                     jvm);
 
             final JvmControlHistory completeHistory = jvmControlServiceLifecycle.completeHistory(incompleteHistory, aCommand, execData, aUser);
-
+            
+            LOGGER.debug("exiting controlJvm for command {}", aCommand);
+            
             return completeHistory;
         } catch (final CommandFailureException cfe) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

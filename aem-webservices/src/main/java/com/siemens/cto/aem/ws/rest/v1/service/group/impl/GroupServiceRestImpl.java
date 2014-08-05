@@ -43,7 +43,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServe
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
-    private final Logger logger;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
+    
     private final GroupService groupService;
 
     @Autowired
@@ -61,14 +62,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     public GroupServiceRestImpl(final GroupService theGroupService) {
         groupService = theGroupService;
-        logger = LoggerFactory.getLogger(GroupServiceRestImpl.class);
     }
 
     @Override
     public Response getGroups(final PaginationParamProvider paginationParamProvider,
                               final NameSearchParameterProvider aGroupNameSearch) {
         final PaginationParameter pagination = paginationParamProvider.getPaginationParameter();
-        logger.debug("Get Groups requested with pagination: {} and search: {}", pagination, aGroupNameSearch.getName());
+        LOGGER.debug("Get Groups requested with pagination: {} and search: {}", pagination, aGroupNameSearch.getName());
 
         final List<Group> groups;
         if (aGroupNameSearch.isNamePresent()) {
@@ -83,13 +83,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getGroup(final Identifier<Group> aGroupId) {
-        logger.debug("Get Group requested: {}", aGroupId);
+        LOGGER.debug("Get Group requested: {}", aGroupId);
         return ResponseBuilder.ok(groupService.getGroup(aGroupId));
     }
 
     @Override
     public Response createGroup(final String aNewGroupName) {
-        logger.debug("Create Group requested: {}", aNewGroupName);
+        LOGGER.debug("Create Group requested: {}", aNewGroupName);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
                                                                 User.getHardCodedUser()));
@@ -97,7 +97,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup) {
-        logger.debug("Update Group requested: {}", anUpdatedGroup);
+        LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
                                                            User.getHardCodedUser()));
@@ -105,7 +105,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response removeGroup(final Identifier<Group> aGroupId) {
-        logger.debug("Delete Group requested: {}", aGroupId);
+        LOGGER.debug("Delete Group requested: {}", aGroupId);
         groupService.removeGroup(aGroupId);
         return ResponseBuilder.ok();
     }
@@ -113,7 +113,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId) {
-        logger.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
+        LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupCommand(aGroupId,
                                                                                                 aJvmId),
                                                                   User.getHardCodedUser()));
@@ -122,7 +122,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
                                    final JsonJvms someJvmsToAdd) {
-        logger.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
+        LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupCommand command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
                                                               User.getHardCodedUser()));
@@ -134,7 +134,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
                                    final JsonControlJvm jsonControlJvm,
                                    final SecurityContext jaxrsSecurityContext) {
-        logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
+        LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()) );
@@ -147,7 +147,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupWebservers(final Identifier<Group> aGroupId,
                                    final JsonControlWebServer jsonControlWebServer,
                                    final SecurityContext jaxrsSecurityContext) {
-        logger.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
+        LOGGER.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()) );
@@ -159,9 +159,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response controlGroup(Identifier<Group> aGroupId, JsonControlGroup jsonControlGroup,
             SecurityContext jaxrsSecurityContext) {
+        
+        GroupControlOperation groupControlOperation = jsonControlGroup.toControlOperation();
+        LOGGER.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
 
-        GroupControlOperation groupControOperation = jsonControlGroup.toControlOperation();
-        ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControOperation );
+        ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation );
         return ResponseBuilder.ok(
                 groupControlService.controlGroup(grpCommand , LoggedOnUser.fromContext(jaxrsSecurityContext))
                );
@@ -174,7 +176,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getCurrentJvmStates(final GroupIdsParameterProvider aGroupIdsParameterProvider) {
-        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
+        LOGGER.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
         final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
         final Set<CurrentState<Group, GroupState>> currentGroupStates;
 

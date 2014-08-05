@@ -13,6 +13,7 @@ import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.CompleteControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.group.command.GroupCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
@@ -56,6 +57,8 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
     @Transactional
     public void dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
 
+        LOGGER.debug("entering dispatchCommandComplete with results {}", results);
+        
         GroupControlHistory completeHistory = null;
 
         if (results != null && !results.isEmpty()) {
@@ -72,11 +75,12 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
                 ++totalCount;
             }
             
+            Identifier<GroupControlHistory> groupControlHistoryId = aCommand.getGroupControlHistoryId();
             completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
-                    new CompleteControlGroupCommand(aCommand.getGroupControlHistoryId(), totalCount, successCount), AuditEvent.now(aCommand
+                    new CompleteControlGroupCommand(groupControlHistoryId, totalCount, successCount), AuditEvent.now(aCommand
                             .getUser())));
 
-            String logMsg = "Group Dispatch: Command Complete: " + successCount + " of " + totalCount + " succeeded.";
+            String logMsg = "Group Dispatch " + groupControlHistoryId + ": Command Complete: " + successCount + " of " + totalCount + " succeeded.";
             if(successCount == results.size()) {
                 LOGGER.info(logMsg);
             } else {

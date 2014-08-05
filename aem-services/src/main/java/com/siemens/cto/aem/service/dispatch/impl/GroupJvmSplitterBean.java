@@ -23,6 +23,7 @@ public class GroupJvmSplitterBean {
             LOGGER.debug("Created dispatch command for JVM {}", jvm.getJvmName());
         }
 
+        LOGGER.debug("split complete for GroupJvmDispatchCommand for group {}", group.getName());
         return jvmCommands;
     }
 }

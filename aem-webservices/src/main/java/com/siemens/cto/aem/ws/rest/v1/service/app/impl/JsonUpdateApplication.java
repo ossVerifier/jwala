@@ -3,7 +3,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -16,16 +15,17 @@ public class JsonUpdateApplication {
     private Long   groupId;
     private String webappContext;
     
-    public JsonUpdateApplication() {  }
-
-    public JsonUpdateApplication(Long groupId2, String name2, String webappContext2, Long webappId2) {
-        setGroupId(groupId2);
-        setWebappId(webappId2);
-        setName(name2);
-        setWebappContext(webappContext2);
+    public JsonUpdateApplication() {  
     }
 
-    public UpdateApplicationCommand toUpdateCommand() throws BadRequestException {
+    public JsonUpdateApplication(Long groupId, String name, String webappContext, Long webappId) {
+        this.groupId = groupId;
+        this.webappId = webappId;
+        this.name = name;
+        this.webappContext = webappContext;
+    }
+
+    public UpdateApplicationCommand toUpdateCommand() {
         return  new UpdateApplicationCommand(
                     Identifier.id(webappId, Application.class),
                     Identifier.id(groupId, Group.class), webappContext, name);

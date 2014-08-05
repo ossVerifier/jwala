@@ -33,7 +33,8 @@ public class JvmCommandExecutorBean {
             jvmControlHistory = jvmControlService.controlJvm(controlJvmCommand, groupDispatchCommand.getUser());
             
             wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
-
+            LOGGER.debug("ControlJvmCommand complete.  Success = {}", wasSuccessful);
+            
         } catch (RuntimeException e) {
             wasSuccessful = false;
             LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmCommand (" + jvmDispatchCommand.toString() + ") failed: ", e);
