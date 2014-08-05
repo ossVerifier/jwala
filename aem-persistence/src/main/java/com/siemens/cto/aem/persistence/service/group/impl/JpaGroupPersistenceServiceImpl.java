@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
@@ -26,6 +29,7 @@ import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
 
@@ -135,6 +139,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     @Override
     public Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
+        LOGGER.debug("Persisting new state " + aGroupToUpdate.getCommand());
         return groupFrom(groupCrudService.updateGroupStatus(Event.<SetStateCommand<Group, GroupState>>create(aGroupToUpdate.getCommand(), aGroupToUpdate.getAuditEvent())));
     }
 
