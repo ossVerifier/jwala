@@ -24,7 +24,7 @@
 
     <!-- Session will not timeout for TOC -->
 	<session-config>
-	    <session-timeout>-1</session-timeout>
+	    <session-timeout>1440</session-timeout>
 	</session-config>
 
     <!-- Declare a Spring MVC DispatcherServlet as usual -->
