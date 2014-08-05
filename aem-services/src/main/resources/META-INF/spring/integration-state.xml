@@ -48,9 +48,7 @@
          but must be careful that it is not cyclically called -->
     <int:publish-subscribe-channel id="groupStateUpdates" task-executor="statePubSubBusExecutor"/>
 
-    <int:bridge input-channel="groupStateUpdates" output-channel="groupStateChanged" />
-
-<!-- We could persist group state changes like this. -->
+     <!-- We could persist group state changes like this. -->
      <int:transformer    input-channel="groupStateUpdates" 
                         output-channel="groupStateChanged" 
                         expression="new com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand(payload.id, payload.state)" />
