@@ -8,13 +8,12 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
@@ -43,10 +42,10 @@ public class RemoteJvmCommandExecutorImplTest {
                                                                 testConfiguration.getRemoteSystemConnection().getPort(),
                                                                 testConfiguration.getPrivateKey(),
                                                                 testConfiguration.getKnownHostsFile());
-        final JSch jsch = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
-                                           .setKnownHostsFileName(sshConfig.getKnownHostsFile()).build();
+        final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
+                                                         .setKnownHostsFileName(sshConfig.getKnownHostsFile());
         impl = new RemoteJvmCommandExecutorImpl(executor,
-                                                jsch,
+                                                jschBuilder,
                                                 sshConfig);
     }
 

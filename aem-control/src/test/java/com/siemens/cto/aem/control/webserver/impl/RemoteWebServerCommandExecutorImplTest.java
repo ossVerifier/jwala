@@ -1,6 +1,13 @@
 package com.siemens.cto.aem.control.webserver.impl;
 
-import com.jcraft.jsch.JSch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
@@ -11,13 +18,6 @@ import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
@@ -42,11 +42,11 @@ public class RemoteWebServerCommandExecutorImplTest {
                                                                 testConfiguration.getRemoteSystemConnection().getPort(),
                                                                 testConfiguration.getPrivateKey(),
                                                                 testConfiguration.getKnownHostsFile());
-        final JSch jsch = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
-                                           .setKnownHostsFileName(sshConfig.getKnownHostsFile()).build();
+        final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
+                                                         .setKnownHostsFileName(sshConfig.getKnownHostsFile());
         impl = new RemoteWebServerCommandExecutorImpl(executor,
-                                                jsch,
-                                                sshConfig);
+                                                      jschBuilder,
+                                                      sshConfig);
     }
 
     @After

@@ -5,8 +5,6 @@ import java.util.Properties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
@@ -32,16 +30,12 @@ public class AemSshConfig {
     }
 
     @Bean
-    public JSch getJsch() {
-        try {
-            final SshConfiguration sshConfig = getSshConfiguration();
-            final JschBuilder builder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
-                                                         .setKnownHostsFileName(sshConfig.getKnownHostsFile());
+    public JschBuilder getJschBuilder() {
+        final SshConfiguration sshConfig = getSshConfiguration();
+        final JschBuilder builder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
+                                                     .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-            return builder.build();
-        } catch (final JSchException jse) {
-            throw new RuntimeException(jse);
-        }
+        return builder;
     }
 
     protected String getStringPropertyFrom(final Properties someProperties,

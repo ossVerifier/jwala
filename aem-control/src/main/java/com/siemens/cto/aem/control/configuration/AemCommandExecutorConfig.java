@@ -23,7 +23,7 @@ public class AemCommandExecutorConfig {
     @Bean
     public JvmCommandExecutor getJvmCommandExecutor() {
         final JvmCommandExecutor jvmCommandExecutor = new RemoteJvmCommandExecutorImpl(getCommandExecutor(),
-                                                                                       sshConfig.getJsch(),
+                                                                                       sshConfig.getJschBuilder(),
                                                                                        sshConfig.getSshConfiguration());
         return jvmCommandExecutor;
     }
@@ -43,7 +43,7 @@ public class AemCommandExecutorConfig {
     public WebServerCommandExecutor getWebServerCommandExecutor() {
         final WebServerCommandExecutor webServerCommandExecutor =
                 new RemoteWebServerCommandExecutorImpl(getCommandExecutor(),
-                                                       sshConfig.getJsch(),
+                                                       sshConfig.getJschBuilder(),
                                                        sshConfig.getSshConfiguration());
         return webServerCommandExecutor;
     }
