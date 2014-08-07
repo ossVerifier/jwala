@@ -30,12 +30,12 @@ var serviceFoundation = {
                                        complete: loadingUiBehavior.hideLoading
                                    }));
     },
-    post : function(url, dataType, content, thenCallback, caughtCallback, showDefaultAjaxProcessingAnimation) {
+    post : function(url, dataType, content, thenCallback, caughtCallback, showDefaultAjaxProcessingAnimation, contentType) {
         var ajaxParams = {url: url,
                           dataType: dataType,
                           type: 'POST',
                           data: content,
-                          contentType: 'application/json',
+                          contentType: contentType !== undefined ? contentType : 'application/json',
                           cache: false};
 
         if (showDefaultAjaxProcessingAnimation !== false) {

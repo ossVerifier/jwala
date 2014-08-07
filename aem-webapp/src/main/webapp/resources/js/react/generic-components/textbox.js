@@ -24,7 +24,8 @@ var TextBox = React.createClass({
                            value={this.state.value}
                            onFocus={this.handleFocus}
                            onBlur={this.handleBlur}
-                           onChange={this.handleChange}/>
+                           onChange={this.handleChange}
+                           onKeyPress={this.props.onKeyPress}/>
                 </div>
     },
     /**

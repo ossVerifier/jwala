@@ -89,7 +89,10 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_GROUP_OPERATION("AEM42", "InvalidGroupOperation"), 
     /**/
-    SSH_CONFIG_MISSING("AEM43", "SshConfigMissing")
+    SSH_CONFIG_MISSING("AEM43", "SshConfigMissing"),
+
+    /**/
+    USER_AUTHENTICATION_FAILED("AEM44", "UserAuthenticationFailed")
     ;
 
 	private final String faultCode;
