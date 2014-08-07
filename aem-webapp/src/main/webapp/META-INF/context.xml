@@ -25,20 +25,8 @@
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
+              type="com.tibco.tibjms.TibjmsTopic"
               address="tocStatus"/>
-
-    <Resource name="jms/toc-jvm-state-notification"
-              auth="Container"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
-              address="tocJvmStateNotification"/>
-
-    <Resource name="jms/toc-web-server-state-notification"
-              auth="Container"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
-              address="tocWebServerStateNotification"/>
 
     <Resource name="jms/toc-state-notification"
               auth="Container"
