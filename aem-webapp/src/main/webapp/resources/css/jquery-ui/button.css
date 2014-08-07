@@ -12,3 +12,7 @@
     font-weight: bold;
     color: #C0C0C0;
 }
+
+.ui-button {
+    height: 22px;
+}

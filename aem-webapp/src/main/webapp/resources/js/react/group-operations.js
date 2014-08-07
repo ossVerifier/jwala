@@ -247,8 +247,8 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
-                                                    {id:"startWebServers", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupWebServers},
-                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupWebServers},
+                                                    {id:"startWebServers", tocType:"button", btnLabel:"Start Web Servers", btnCallback: this.startGroupWebServers},
+                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop Web Servers", btnCallback: this.stopGroupWebServers},
                                                     {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]]};
@@ -258,7 +258,7 @@ var GroupOperationsDataTable = React.createClass({
         var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
                                             className:"simple-data-table",
                                             dataCallback:this.getApplicationsOfGrp,
-                                            title:"Web Applications",
+                                            title:"Applications",
                                             isCollapsible:true,
                                             initialSortColumn: [[1, "asc"]]};
 
@@ -291,8 +291,8 @@ var GroupOperationsDataTable = React.createClass({
                                     title:"JVMs",
                                     isCollapsible:true,
                                     headerComponents:[
-                                         {id:"startJvms", tocType:"button", btnLabel:"Start", btnCallback: this.startGroupJvms},
-                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop", btnCallback: this.stopGroupJvms},
+                                         {id:"startJvms", tocType:"button", btnLabel:"Start JVMs", btnCallback: this.startGroupJvms},
+                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop JVMs", btnCallback: this.stopGroupJvms},
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]]};
