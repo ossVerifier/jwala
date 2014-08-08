@@ -81,10 +81,18 @@ var ExpandCollapseControl = React.createClass({
 
                 var self = this;
                 if (headerComponents !== undefined) {
+                    // Accordion button specific codes
                     // attach handlers to the buttons
                     for (var i = 0; i < headerComponents.length; i++) {
                         var component = headerComponents[i];
                         var buttonSelector = dataTable.selector + "_" + component.id;
+
+                        // Remove span to prevent span within a span due to the application of JQuery button.
+                        // This fixes bug in ie8 where the button label goes outside the button container.
+                        var label = $(buttonSelector).find("span").html();
+                        $(buttonSelector).find("span").remove();
+                        $(buttonSelector).html(label);
+
                         $(buttonSelector).button();
                         $(buttonSelector).off("click");
                         $(buttonSelector).on("click",
