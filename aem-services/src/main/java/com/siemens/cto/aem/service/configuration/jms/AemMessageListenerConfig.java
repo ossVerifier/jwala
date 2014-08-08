@@ -6,11 +6,8 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.Phased;
-import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
@@ -41,7 +38,10 @@ public class AemMessageListenerConfig {
         container.setDestination(jmsConfig.getJvmStateDestination());
         container.setSessionTransacted(true);
         container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
-
+        container.setPubSubDomain(true);
+        container.setSubscriptionDurable(true);
+        container.setDurableSubscriptionName("TocJvmStateDurableSubscriber");
+        container.setConcurrentConsumers(1);
         return container;
     }
 
