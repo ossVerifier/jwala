@@ -2,7 +2,7 @@
 var MainArea = React.createClass({
      render: function() {
         return <div className={this.props.className}>
-                    <table>
+                    <table className="main-area-table">
                         <tr>
                             <td><Banner/><br/><br/></td>
                         </tr>
@@ -22,11 +22,10 @@ var MainArea = React.createClass({
 
 var Banner = React.createClass({
     render: function() {
-        return <div>
-                    <div className="logout">
-                        <a href="#" onClick={this.handleLogoutClick}>Logout</a>
-                    </div>
-                    <img src="public-resources/img/toc-banner-960px.jpg"/>
+        return <div className="banner-container">
+                    <img src="public-resources/img/toc-logo.jpg"/>
+                    <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
+                    <span className="banner-title">TOMCAT OPERATIONS CENTER</span>
                </div>
     },
     handleLogoutClick: function() {

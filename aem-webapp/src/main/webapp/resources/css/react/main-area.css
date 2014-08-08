@@ -1,13 +1,30 @@
 div.main-area {
-    width: 960px; /* Standard web page size for 2014 (940 ~ 960+ px) */
-    height: auto%;
+    width: 1100px; /* Copy EPM header width which is 1100px */
+    height: auto;
     text-align: left;
     margin: 0 auto;
 }
 
-div.logout {
-    margin-top: 5px;
-    width: 960px;
-    text-align: right;
-    position: absolute
+.banner-logout {
+    float:right;
+    margin-right:5px
+}
+
+.main-area-table {
+    width:100%
+}
+
+.banner-container {
+    background-color:#70a399;
+    height:99px
+}
+
+.banner-title {
+    float:right;
+    font-size:45px;
+    margin-right:30px;
+    margin-top:25px;
+    color:#0d2b88;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight:bold;
 }
