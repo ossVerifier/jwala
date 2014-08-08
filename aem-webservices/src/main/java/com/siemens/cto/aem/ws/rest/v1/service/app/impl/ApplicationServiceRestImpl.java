@@ -28,6 +28,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
@@ -35,10 +36,10 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRes
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class); 
+    private final static Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
 
-    private ApplicationService service; 
-    
+    private ApplicationService service;
+
     public ApplicationServiceRestImpl(ApplicationService applicationService) {
         service = applicationService;
     }
@@ -53,14 +54,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response getApplications(Identifier<Group> aGroupId, PaginationParamProvider paginationParamProvider) {
         LOGGER.debug("Get Apps requested with pagination: {}, groupId: {}", paginationParamProvider, aGroupId != null ? aGroupId : "null");
-        final List<Application> apps; 
+        final List<Application> apps;
         PaginationParameter page = paginationParamProvider.getPaginationParameter();
         if(aGroupId != null) {
             apps = service.findApplications(aGroupId, page);
         } else {
             apps = service.getApplications(page);
         }
-        return ResponseBuilder.ok(apps); 
+        return ResponseBuilder.ok(apps);
     }
 
     @Override
@@ -77,59 +78,65 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response createApplication(JsonCreateApplication anAppToCreate) {
-        LOGGER.debug("Create Application requested: {}", anAppToCreate);            
+    public Response createApplication(final JsonCreateApplication anAppToCreate,
+                                      final AuthenticatedUser aUser) {
+        LOGGER.debug("Create Application requested: {}", anAppToCreate);
         Application created = service.createApplication(anAppToCreate.toCreateCommand(),
-                User.getHardCodedUser());
+                                                        aUser.getUser());
         return ResponseBuilder.created(created);
     }
 
     @Override
-    public Response updateApplication(final JsonUpdateApplication anAppToUpdate) {
+    public Response updateApplication(final JsonUpdateApplication anAppToUpdate,
+                                      final AuthenticatedUser aUser) {
         LOGGER.debug("Update Application requested: {}", anAppToUpdate);
         Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(),
-                User.getHardCodedUser());
+                                                        aUser.getUser());
         return ResponseBuilder.ok(updated);
     }
 
     @Override
-    public Response removeApplication(final Identifier<Application> anAppToRemove) {
+    public Response removeApplication(final Identifier<Application> anAppToRemove,
+                                      final AuthenticatedUser aUser) {
         LOGGER.debug("Delete JVM requested: {}", anAppToRemove);
-        service.removeApplication(anAppToRemove, User.getHardCodedUser());
+        service.removeApplication(anAppToRemove,
+                                  aUser.getUser());
         return ResponseBuilder.ok();
     }
 
-    @Context 
+    @Context
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(Identifier<Application> anAppToGet) {
+    public Response uploadWebArchive(final Identifier<Application> anAppToGet,
+                                     final AuthenticatedUser aUser) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
         // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
-        if(!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) { 
+        if(!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
             context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
         }
-        
+
         Application app = service.getApplication(anAppToGet);
-        
+
         ServletFileUpload sfu = new ServletFileUpload();
         InputStream data = null;
         try {
             FileItemIterator iter = sfu.getItemIterator( context.getHttpServletRequest() );
             FileItemStream file1;
-            
+
             while(iter.hasNext()) {
                 file1 =  iter.next();
-                try { 
+                try {
                     data = file1.openStream();
-                    
+
                     UploadWebArchiveCommand command = new UploadWebArchiveCommand(app,
                         file1.getName(),
                         -1L,
                         data);
-                    
-                    return ResponseBuilder.created(service.uploadWebArchive(command,User.getHardCodedUser())); // early out on first attachment
+
+                    return ResponseBuilder.created(service.uploadWebArchive(command,
+                                                                            aUser.getUser())); // early out on first attachment
                 } finally {
                     data.close();
                 }
@@ -141,11 +148,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response deleteWebArchive(Identifier<Application> appToRemoveWAR) {
+    public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR,
+                                     final AuthenticatedUser aUser) {
         LOGGER.debug("Delete Archive requested: {}", appToRemoveWAR);
-        
-        Application updated = service.deleteWebArchive(appToRemoveWAR, User.getHardCodedUser());
-        
+
+        Application updated = service.deleteWebArchive(appToRemoveWAR,
+                                                       aUser.getUser());
+
         return ResponseBuilder.ok(updated);
     }
 }

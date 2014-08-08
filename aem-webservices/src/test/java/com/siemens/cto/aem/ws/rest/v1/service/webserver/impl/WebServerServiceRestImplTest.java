@@ -27,6 +27,7 @@ import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerComman
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 
@@ -67,6 +68,9 @@ public class WebServerServiceRestImplTest {
     @Mock
     private StateService<WebServer, WebServerReachableState> webServerStateService;
 
+    @Mock
+    private AuthenticatedUser authenticatedUser;
+
     private WebServerServiceRestImpl cut;
 
     private static List<WebServer> createWebServerList() {
@@ -86,6 +90,7 @@ public class WebServerServiceRestImplTest {
     @Before
     public void setUp() {
         cut = new WebServerServiceRestImpl(impl, controlImpl, webServerStateService);
+        when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
     @Test
@@ -125,7 +130,7 @@ public class WebServerServiceRestImplTest {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
         when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
-        final Response response = cut.createWebServer(jsonCreateWebServer);
+        final Response response = cut.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -141,7 +146,7 @@ public class WebServerServiceRestImplTest {
         final JsonUpdateWebServer jsonUpdateWebServer = mock(JsonUpdateWebServer.class);
         when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
-        final Response response = cut.updateWebServer(jsonUpdateWebServer);
+        final Response response = cut.updateWebServer(jsonUpdateWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -174,7 +179,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
-        final Response response = cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer);
+        final Response response = cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();

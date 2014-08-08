@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
@@ -33,11 +34,13 @@ public interface JvmServiceRest {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createJvm(final JsonCreateJvm aJvmToCreate);
+    Response createJvm(final JsonCreateJvm aJvmToCreate,
+                       @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateJvm(final JsonUpdateJvm aJvmToUpdate);
+    Response updateJvm(final JsonUpdateJvm aJvmToUpdate,
+                       @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{jvmId}")
@@ -46,7 +49,8 @@ public interface JvmServiceRest {
     @POST
     @Path("/{jvmId}/commands")
     Response controlJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
-                        final JsonControlJvm aJvmToControl);
+                        final JsonControlJvm aJvmToControl,
+                        @BeanParam final AuthenticatedUser aUser);
 
 //    @GET
 //    @Path("/states")

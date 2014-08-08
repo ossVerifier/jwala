@@ -9,14 +9,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
@@ -40,11 +39,13 @@ public interface GroupServiceRest {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createGroup(final String aNewGroupName);
+    Response createGroup(final String aNewGroupName,
+                         @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateGroup(final JsonUpdateGroup anUpdatedGroup);
+    Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
+                         @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{groupId}")
@@ -53,35 +54,37 @@ public interface GroupServiceRest {
     @POST
     @Path("/{groupId}/jvms")
     Response addJvmsToGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
-                            final JsonJvms someJvmsToAdd);
+                            final JsonJvms someJvmsToAdd,
+                            @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{groupId}/jvms/{jvmId}")
     Response removeJvmFromGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                @PathParam("jvmId") final Identifier<Jvm> aJvmId);
+                                @PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                                @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{groupId}/jvms/commands")
     Response controlGroupJvms(@PathParam("groupId") final Identifier<Group> aGroupId,
-                            final JsonControlJvm jvmControlOperation,
-                            @Context SecurityContext jaxrsSecurityContext);
+                              final JsonControlJvm jvmControlOperation,
+                              @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{groupId}/commands")
     Response controlGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
-                            final JsonControlGroup groupControlOperation,
-                            @Context SecurityContext jaxrsSecurityContext);
+                          final JsonControlGroup groupControlOperation,
+                          @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{groupId}/webservers/commands")
     Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
-                            final JsonControlWebServer jsonControlWebServer,
-                            @Context SecurityContext jaxrsSecurityContext);
+                                    final JsonControlWebServer jsonControlWebServer,
+                                    @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{groupId}/state")
     Response resetState(@PathParam("groupId") final Identifier<Group> aGroupId,
-                        @Context SecurityContext jaxrsSecurityContext);
+                        @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/states/current")

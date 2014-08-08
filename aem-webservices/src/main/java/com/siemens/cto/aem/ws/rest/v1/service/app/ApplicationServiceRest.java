@@ -17,6 +17,7 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonUpdateApplication;
@@ -26,9 +27,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonUpdateApplication;
 public interface ApplicationServiceRest {
 
     @GET
-    Response getApplications(
-            @QueryParam("group.id") final Identifier<Group> aGroupId,
-            @BeanParam final PaginationParamProvider paginationParamProvider );
+    Response getApplications(@QueryParam("group.id") final Identifier<Group> aGroupId,
+                             @BeanParam final PaginationParamProvider paginationParamProvider );
 
     @GET
     @Path("/{applicationId}")
@@ -36,28 +36,33 @@ public interface ApplicationServiceRest {
 
     @GET
     @Path("/jvm/{jvmId}")
-    Response findApplicationsByJvmId(@PathParam("jvmId") Identifier<Jvm> aJvmId,
-                                     @BeanParam PaginationParamProvider paginationParamProvider);
+    Response findApplicationsByJvmId(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                                     @BeanParam final PaginationParamProvider paginationParamProvider);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createApplication(final JsonCreateApplication anAppToCreate);
+    Response createApplication(final JsonCreateApplication anAppToCreate,
+                               @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateApplication(final JsonUpdateApplication appsToUpdate);
+    Response updateApplication(final JsonUpdateApplication appsToUpdate,
+                               @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{applicationId}")
-    Response removeApplication(@PathParam("applicationId") Identifier<Application> anAppToRemove);
+    Response removeApplication(@PathParam("applicationId") final Identifier<Application> anAppToRemove,
+                               @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{applicationId}/war")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet);
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
+                              @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{applicationId}/war")
-    Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet);
+    Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
+                              @BeanParam final AuthenticatedUser aUser);
 
 }

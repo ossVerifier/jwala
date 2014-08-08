@@ -15,7 +15,6 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -24,6 +23,7 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -66,17 +66,19 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response createWebServer(final JsonCreateWebServer aWebServerToCreate) {
+    public Response createWebServer(final JsonCreateWebServer aWebServerToCreate,
+                                    final AuthenticatedUser aUser) {
         logger.debug("Create WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerCommand(),
-                User.getHardCodedUser()));
+                                                                        aUser.getUser()));
     }
 
     @Override
-    public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate) {
+    public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate,
+                                    final AuthenticatedUser aUser) {
         logger.debug("Update WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerCommand(),
-                User.getHardCodedUser()));
+                                                                   aUser.getUser()));
     }
 
     @Override
@@ -87,11 +89,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response controlWebServer(final Identifier<WebServer> aWebServerId, final JsonControlWebServer aWebServerToControl) {
+    public Response controlWebServer(final Identifier<WebServer> aWebServerId,
+                                     final JsonControlWebServer aWebServerToControl,
+                                     final AuthenticatedUser aUser) {
         logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
         final WebServerControlHistory controlHistory = webServerControlService.controlWebServer(
                 new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
-                User.getHardCodedUser());
+                aUser.getUser());
         final ExecData execData = controlHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(controlHistory);

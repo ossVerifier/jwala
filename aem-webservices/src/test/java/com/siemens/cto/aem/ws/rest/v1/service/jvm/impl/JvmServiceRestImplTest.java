@@ -29,6 +29,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 
@@ -69,6 +70,8 @@ public class JvmServiceRestImplTest {
     private JvmControlHistory jvmControlHistory;
     @Mock
     private StateService<Jvm, JvmState> jvmStateService;
+    @Mock
+    private AuthenticatedUser authenticatedUser;
 
     private JvmServiceRestImpl cut;
 
@@ -91,6 +94,7 @@ public class JvmServiceRestImplTest {
     @Before
     public void setUp() {
         cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService);
+        when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
     @Test
@@ -114,7 +118,7 @@ public class JvmServiceRestImplTest {
     public void testGetJvm() {
         when(impl.getJvm(any(Identifier.class))).thenReturn(jvm);
 
-        final Response response = cut.getJvm(Identifier.id(Long.valueOf(1l), Jvm.class));
+        final Response response = cut.getJvm(Identifier.id(1l, Jvm.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -130,7 +134,7 @@ public class JvmServiceRestImplTest {
         when(impl.createJvm(any(CreateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort);
-        final Response response = cut.createJvm(jsonCreateJvm);
+        final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -145,11 +149,11 @@ public class JvmServiceRestImplTest {
     public void testCreateJvmWithGroups() {
         when(impl.createAndAssignJvm(any(CreateJvmAndAddToGroupsCommand.class), any(User.class))).thenReturn(jvm);
 
-        final Set<String> groupIds = new HashSet<String>();
+        final Set<String> groupIds = new HashSet<>();
         groupIds.add("1");
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, groupIds, httpPort, httpsPort,
                                                               redirectPort, shutdownPort, ajpPort);
-        final Response response = cut.createJvm(jsonCreateJvm);
+        final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -162,11 +166,11 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testUpdateJvm() {
-        final Set<String> groupIds = new HashSet<String>();
+        final Set<String> groupIds = new HashSet<>();
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1");
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
-        final Response response = cut.updateJvm(jsonUpdateJvm);
+        final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -180,7 +184,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testRemoveJvm() {
-        final Response response = cut.removeJvm(Identifier.id(Long.valueOf(1l), Jvm.class));
+        final Response response = cut.removeJvm(Identifier.id(1l, Jvm.class));
         verify(impl, atLeastOnce()).removeJvm(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -200,7 +204,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlJvm jsonControlJvm = new JsonControlJvm("start");
-        final Response response = cut.controlJvm(Identifier.id(Long.valueOf(1l), Jvm.class), jsonControlJvm);
+        final Response response = cut.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();

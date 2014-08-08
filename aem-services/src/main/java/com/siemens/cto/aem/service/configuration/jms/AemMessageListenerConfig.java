@@ -42,6 +42,7 @@ public class AemMessageListenerConfig {
         container.setSubscriptionDurable(true);
         container.setDurableSubscriptionName("TocJvmStateDurableSubscriber");
         container.setConcurrentConsumers(1);
+
         return container;
     }
 

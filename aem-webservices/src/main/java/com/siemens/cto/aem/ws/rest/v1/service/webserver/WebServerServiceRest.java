@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
@@ -36,11 +37,13 @@ public interface WebServerServiceRest {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createWebServer(final JsonCreateWebServer aWebServerToCreate);
+    Response createWebServer(final JsonCreateWebServer aWebServerToCreate,
+                             @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateWebServer(final JsonUpdateWebServer aWebServerToUpdate);
+    Response updateWebServer(final JsonUpdateWebServer aWebServerToUpdate,
+                             @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{webserverId}")
@@ -49,7 +52,8 @@ public interface WebServerServiceRest {
     @POST
     @Path("/{webServerId}/commands")
     Response controlWebServer(@PathParam("webServerId") final Identifier<WebServer> aWebServerId,
-                        final JsonControlWebServer aWebServerToControl);
+                              final JsonControlWebServer aWebServerToControl,
+                              @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{webServerName}/conf")

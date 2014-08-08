@@ -51,72 +51,74 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceRestImplTest {
-    
+
     @Mock private MessageContext mockMc;
-    @Mock private HttpServletRequest mockHsr;    
+    @Mock private HttpServletRequest mockHsr;
     @Mock private HttpHeaders mockHh;
     /*NoMock*/ private ApplicationService service;
+    @Mock private AuthenticatedUser authenticatedUser;
     @InjectMocks @Spy
     private ApplicationServiceRestImpl cutImpl = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
-    
+
 
     private ApplicationServiceRest cut;
 
     Group group1 = new Group(Identifier.id(0L, Group.class), "");
     Application application = new Application(Identifier.id(1L, Application.class), "","","", group1);
-    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "","D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war","", group1); 
+    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "","D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war","", group1);
     Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "","","", group1);
-    
-    List<Application> applications = new ArrayList<Application>(1);
-    List<Application> applications2 = new ArrayList<Application>(2);
-    List<Application> emptyList = new ArrayList<Application>(0);
+
+    List<Application> applications = new ArrayList<>(1);
+    List<Application> applications2 = new ArrayList<>(2);
+    List<Application> emptyList = new ArrayList<>(0);
     PaginationParamProvider allProvider = new PaginationParamProvider(null,null, "true");
 
     @Before
     public void setUp() {
-        // cut = new ApplicationServiceRestImpl(service);
         cut = cutImpl;
         applications.add(application);
 
         applications2.add(application);
         applications2.add(newlyCreatedApp);
 
-        List<MediaType> mtOk =new ArrayList<MediaType>();
+        List<MediaType> mtOk =new ArrayList<>();
         mtOk.add(MediaType.APPLICATION_JSON_TYPE);
         when(mockHh.getAcceptableMediaTypes()).thenReturn(mtOk);
         when(mockMc.getHttpHeaders()).thenReturn(mockHh);
-        when(mockMc.getHttpServletRequest()).thenReturn(mockHsr);        
+        when(mockMc.getHttpServletRequest()).thenReturn(mockHsr);
+        when(authenticatedUser.getUser()).thenReturn(new User("unusedUser"));
     }
 
     @Test
-    public void testJsonSettersGetters() { 
-        JsonUpdateApplication testJua = new JsonUpdateApplication((Long)2L, "name", "/ctx", 1L);
-        JsonCreateApplication testJca = new JsonCreateApplication((Long)2L, "name", "/ctx");
+    public void testJsonSettersGetters() {
+        JsonUpdateApplication testJua = new JsonUpdateApplication(2L, "name", "/ctx", 1L);
+        JsonCreateApplication testJca = new JsonCreateApplication(2L, "name", "/ctx");
         assertEquals(testJca,testJca.clone());
         assertEquals(testJua,testJua.clone());
         assertEquals(testJca.hashCode(),testJca.clone().hashCode());
         assertEquals(testJua.hashCode(),testJua.clone().hashCode());
     }
-    
+
     private class MyIS extends ServletInputStream {
 
         private InputStream backingStream;
-        
-        public MyIS(InputStream backingStream) { 
+
+        public MyIS(InputStream backingStream) {
             this.backingStream = backingStream;
         }
-        
+
         @Override
         public int read() throws IOException {
             return backingStream.read();
-        } 
-        
+        }
+
     }
 
     private class IsValidUploadCommand extends ArgumentMatcher<UploadWebArchiveCommand> {
@@ -126,18 +128,18 @@ public class ApplicationServiceRestImplTest {
             UploadWebArchiveCommand uwac = (UploadWebArchiveCommand)arg;
             uwac.validateCommand();
             return true;
-        } 
-        
-    }    
-    
+        }
+
+    }
+
     @Test
     public void testUploadWebArchive() throws IOException {
-                
+
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
         String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-        
+
         @SuppressWarnings("unused")
         String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
                 "Cache-Control:no-cache"+ ls +
@@ -145,28 +147,26 @@ public class ApplicationServiceRestImplTest {
                 "Origin:null"+ ls +
                 "Pragma:no-cache"+ ls +
                 "Referer:"+ ls +
-                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;              
+                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 
         String dataText = "abcdef";
-        String contentText = "--" + boundary + ls + 
+        String contentText = "--" + boundary + ls +
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: text/plain" + ls + ls +
                 dataText + ls +
                 "--" + boundary+"--" + ls;
-       
+
         String charsetText = "UTF-8";
         ByteBuffer bbBuffer = Charset.forName(charsetText).encode(contentText);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetText);
-        // ByteBuffer bbBoundary = Charset.forName("ISO-8859-1").encode(boundary);
-        // when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
-        
-        
-        Response resp = cut.uploadWebArchive(application.getId());
-         
+
+
+        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+
         Application result = getApplicationFromResponse(resp);
-        
+
         assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
 
         Assert.hasText(result.getWarPath());
@@ -174,14 +174,14 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testUploadWebArchiveBinary() throws IOException {
-                
+
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
         String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-        
+
         ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short)0xc0de);        
+        file.asShortBuffer().put((short)0xc0de);
         String data = Base64Utility.encode(file.array());
 
         @SuppressWarnings("unused")
@@ -192,24 +192,24 @@ public class ApplicationServiceRestImplTest {
                 "Pragma:no-cache"+ ls +
                 "Referer:"+ ls +
                 "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-                
-        String content = "--" + boundary + ls + 
+
+        String content = "--" + boundary + ls +
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: application/octet-stream" + ls + ls +
                 data + ls +
                 "--" + boundary+"--" + ls;
-        
+
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
-        
-        
-        Response resp = cut.uploadWebArchive(application.getId());
-         
+
+
+        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+
         Application result = getApplicationFromResponse(resp);
-        
+
         assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
 
         Assert.hasText(result.getWarPath());
@@ -217,14 +217,14 @@ public class ApplicationServiceRestImplTest {
 
     @Test(expected = InternalErrorException.class)
     public void testUploadWebArchiveBadStream() throws IOException {
-                
+
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
         String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-        
+
         ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short)0xc0de);        
+        file.asShortBuffer().put((short)0xc0de);
         String data = Base64Utility.encode(file.array());
 
         @SuppressWarnings("unused")
@@ -235,41 +235,41 @@ public class ApplicationServiceRestImplTest {
                 "Pragma:no-cache"+ ls +
                 "Referer:"+ ls +
                 "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-                
-        String content = "--" + boundary + ls + 
+
+        String content = "--" + boundary + ls +
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: application/octet-stream" + ls + ls +
                 data + ls +
                 /*"--" + bad stream!*/ boundary+"--" + ls;
-        
+
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
 
-        cut.uploadWebArchive(application.getId());
+        cut.uploadWebArchive(application.getId(), authenticatedUser);
     }
 
     @Test
     public void testUploadWebArchiveNoContent() throws IOException {
-                
+
         verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
-        
+
         // ISO8859-1
         String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-                
+
         String content = "";
-        
+
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
-        
-        
-        Response resp = cut.uploadWebArchive(application.getId());  
-        
+
+
+        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+
         assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
     }
 
@@ -277,12 +277,12 @@ public class ApplicationServiceRestImplTest {
     public void testDeleteWebArchive() throws IOException {
         when(service.getApplication(Matchers.eq(id(1L, Application.class)))).thenReturn(applicationWithWar);
         when(service.deleteWebArchive(Matchers.eq(id(1L, Application.class)), any(User.class))).thenReturn(application);
-        
+
         Response currentResponse = cut.getApplication(id(1L, Application.class));
         Application current = getApplicationFromResponse(currentResponse);
         assertEquals(applicationWithWar, current);
-        
-        Response updatedResponse = cut.deleteWebArchive(id(1L, Application.class));
+
+        Response updatedResponse = cut.deleteWebArchive(id(1L, Application.class), authenticatedUser);
         Application updated = getApplicationFromResponse(updatedResponse);
         assertEquals(application, updated);
     }
@@ -290,20 +290,20 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testGetApplications() {
         when(service.getApplications(any(PaginationParameter.class))).thenReturn(applications);
-        
+
         Response resp = cut.getApplications(null, allProvider);
         List<Application> result = getApplicationsFromResponse(resp);
-        
+
         assertEquals(applications, result);
     }
-    
+
     @SuppressWarnings("unchecked")
     private List<Application> getApplicationsFromResponse(Response resp) {
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertTrue(entity instanceof List<?>);
-        
+
         return (List<Application>) entity;
     }
 
@@ -313,29 +313,29 @@ public class ApplicationServiceRestImplTest {
         Object entity = appResponse.getApplicationResponseContent();
         assertNotNull(entity);
         assertTrue(entity instanceof Application);
-        
+
         return (Application)entity;
     }
 
-    @Test 
+    @Test
     @SuppressWarnings("unchecked")
     public void testGetApplicationById() {
         when(service.getApplication(any(Identifier.class))).thenReturn(application);
         Response resp = cut.getApplication(id(1L, Application.class));
-        
+
         Application result = getApplicationFromResponse(resp);
 
         assertEquals(application, result);
     }
 
-    @Test 
+    @Test
     @SuppressWarnings("unchecked")
     public void testFindApplicationsByGroupIdNone() {
         when(service.findApplications(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
         Response resp = cut.getApplications(id(2L, Group.class), allProvider);
-        
+
         List<Application> result = getApplicationsFromResponse(resp);
-        
+
         assertEquals(emptyList, result);
     }
 
@@ -344,7 +344,7 @@ public class ApplicationServiceRestImplTest {
         when(service.findApplicationsByJvmId(Matchers.eq(id(2L, Jvm.class)), any(PaginationParameter.class))).thenReturn(applications);
         Response resp = cut.findApplicationsByJvmId(id(2L, Jvm.class), allProvider);
         List<Application> result = getApplicationsFromResponse(resp);
-        
+
         assertEquals(applications, result);
     }
 
@@ -354,29 +354,29 @@ public class ApplicationServiceRestImplTest {
         when(service.findApplicationsByJvmId(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
         Response resp = cut.findApplicationsByJvmId(null, allProvider);
         List<Application> result = getApplicationsFromResponse(resp);
-        
-        assertEquals(emptyList, result);        
+
+        assertEquals(emptyList, result);
     }
-    
+
     /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#createApplication(JsonCreateApplication)}
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#createApplication(JsonCreateApplication, AuthenticatedUser)}
      */
     @Test
     public void testCreate() {
         when(service.createApplication(any(com.siemens.cto.aem.domain.model.app.CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
 
-        JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();        
+        JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
 
-        Response resp = cut.createApplication(jsonCreateAppRequest);
+        Response resp = cut.createApplication(jsonCreateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertEquals(this.newlyCreatedApp, entity);
         assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
     }
-    
+
     /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#updateApplication(JsonUpdateApplication)}
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#updateApplication(JsonUpdateApplication, AuthenticatedUser)}
      */
     @Test
     public void testUpdate() {
@@ -384,20 +384,20 @@ public class ApplicationServiceRestImplTest {
         ArrayList<UpdateApplicationCommand> multiUpdate = new ArrayList<>();
         multiUpdate.add(new UpdateApplicationCommand(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", ""));
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
-        Response resp = cut.updateApplication(jsonUpdateAppRequest);
+        Response resp = cut.updateApplication(jsonUpdateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());
         ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
-        assertEquals(this.newlyCreatedApp, entity);        
+        assertEquals(this.newlyCreatedApp, entity);
     }
-   
+
     /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl#removeApplication(Identifier)}
+     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#removeApplication(com.siemens.cto.aem.domain.model.id.Identifier}
      */
     @Test
     @SuppressWarnings("unchecked")
     public void testRemove() {
-        Response resp = cut.removeApplication(application.getId());
+        Response resp = cut.removeApplication(application.getId(), authenticatedUser);
         Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class),  any(User.class));
         assertNull(resp.getEntity());
         assertEquals(Status.OK.getStatusCode(), resp.getStatus());

@@ -22,6 +22,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -58,26 +59,28 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response createJvm(final JsonCreateJvm aJvmToCreate) {
+    public Response createJvm(final JsonCreateJvm aJvmToCreate,
+                              final AuthenticatedUser aUser) {
         logger.debug("Create JVM requested: {}", aJvmToCreate);
-        final User hardCodedUser = User.getHardCodedUser();
+        final User user = aUser.getUser();
 
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
             jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
-                                                hardCodedUser);
+                                                user);
         } else {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
-                                       hardCodedUser);
+                                       user);
         }
         return ResponseBuilder.created(jvm);
     }
 
     @Override
-    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate) {
+    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate,
+                              final AuthenticatedUser aUser) {
         logger.debug("Update JVM requested: {}", aJvmToUpdate);
         return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
-                                                       User.getHardCodedUser()));
+                                                       aUser.getUser()));
     }
 
     @Override
@@ -89,10 +92,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl) {
+    public Response controlJvm(final Identifier<Jvm> aJvmId,
+                               final JsonControlJvm aJvmToControl,
+                               final AuthenticatedUser aUser) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
         final JvmControlHistory controlHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
-                                                                              User.getHardCodedUser());
+                                                                              aUser.getUser());
         final ExecData execData = controlHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(controlHistory);

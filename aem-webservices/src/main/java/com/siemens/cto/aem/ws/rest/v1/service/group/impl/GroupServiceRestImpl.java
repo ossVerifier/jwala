@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
@@ -32,8 +30,8 @@ import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.provider.LoggedOnUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -44,7 +42,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServe
 public class GroupServiceRestImpl implements GroupServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
-    
+
     private final GroupService groupService;
 
     @Autowired
@@ -88,19 +86,21 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response createGroup(final String aNewGroupName) {
+    public Response createGroup(final String aNewGroupName,
+                                final AuthenticatedUser aUser) {
         LOGGER.debug("Create Group requested: {}", aNewGroupName);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
-                                                                User.getHardCodedUser()));
+                                                                aUser.getUser()));
     }
 
     @Override
-    public Response updateGroup(final JsonUpdateGroup anUpdatedGroup) {
+    public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
+                                final AuthenticatedUser aUser) {
         LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
         //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
-                                                           User.getHardCodedUser()));
+                                                           aUser.getUser()));
     }
 
     @Override
@@ -112,66 +112,66 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
-                                       final Identifier<Jvm> aJvmId) {
+                                       final Identifier<Jvm> aJvmId,
+                                       final AuthenticatedUser aUser) {
         LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupCommand(aGroupId,
                                                                                                 aJvmId),
-                                                                  User.getHardCodedUser()));
+                                                                  aUser.getUser()));
     }
 
     @Override
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
-                                   final JsonJvms someJvmsToAdd) {
+                                   final JsonJvms someJvmsToAdd,
+                                   final AuthenticatedUser aUser) {
         LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupCommand command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
-                                                              User.getHardCodedUser()));
+                                                              aUser.getUser()));
     }
-
-
 
     @Override
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
-                                   final JsonControlJvm jsonControlJvm,
-                                   final SecurityContext jaxrsSecurityContext) {
+                                     final JsonControlJvm jsonControlJvm,
+                                     final AuthenticatedUser aUser) {
         LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
-                JvmControlOperation.convertFrom(command.getExternalValue()) );
-        return ResponseBuilder.ok(
-                groupJvmControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
-               );
+                                                                             JvmControlOperation.convertFrom(command.getExternalValue()));
+        return ResponseBuilder.ok(groupJvmControlService.controlGroup(grpCommand,
+                                                                      aUser.getUser()));
     }
 
     @Override
     public Response controlGroupWebservers(final Identifier<Group> aGroupId,
-                                   final JsonControlWebServer jsonControlWebServer,
-                                   final SecurityContext jaxrsSecurityContext) {
+                                           final JsonControlWebServer jsonControlWebServer,
+                                           final AuthenticatedUser aUser) {
         LOGGER.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()) );
-        return ResponseBuilder.ok(
-                groupWebServerControlService.controlGroup(grpCommand, LoggedOnUser.fromContext(jaxrsSecurityContext))
-               );
+        return ResponseBuilder.ok(groupWebServerControlService.controlGroup(grpCommand,
+                                                                            aUser.getUser()));
     }
 
     @Override
-    public Response controlGroup(Identifier<Group> aGroupId, JsonControlGroup jsonControlGroup,
-            SecurityContext jaxrsSecurityContext) {
-        
+    public Response controlGroup(final Identifier<Group> aGroupId,
+                                 final JsonControlGroup jsonControlGroup,
+                                 final AuthenticatedUser aUser) {
+
         GroupControlOperation groupControlOperation = jsonControlGroup.toControlOperation();
         LOGGER.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
 
-        ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation );
-        return ResponseBuilder.ok(
-                groupControlService.controlGroup(grpCommand , LoggedOnUser.fromContext(jaxrsSecurityContext))
-               );
+        ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation);
+        return ResponseBuilder.ok(groupControlService.controlGroup(grpCommand,
+                                                                   aUser.getUser()));
     }
 
     @Override
-    public Response resetState(Identifier<Group> aGroupId, SecurityContext jaxrsSecurityContext) {
-        return ResponseBuilder.ok(groupControlService.resetState(aGroupId, LoggedOnUser.fromContext(jaxrsSecurityContext)));
+    public Response resetState(final Identifier<Group> aGroupId,
+                               final AuthenticatedUser aUser) {
+        return ResponseBuilder.ok(groupControlService.resetState(aGroupId,
+                                                                 aUser.getUser()));
     }
 
     @Override
