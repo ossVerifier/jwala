@@ -49,7 +49,7 @@ var stateService = function() {
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
                                         .caught(
-                                            function(e) {console.log("State error occurred"); return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
+                                            function(e) {return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
 
             }
         },
