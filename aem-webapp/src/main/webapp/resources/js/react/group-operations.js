@@ -303,6 +303,7 @@ var GroupOperationsDataTable = React.createClass({
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                 {sTitle:"Name", mData:"jvmName"},
                                 {sTitle:"Host", mData:"hostName"},
+                                {sTitle:"HTTP", mData:"httpPort"},
                                 {sTitle:"Group",
                                  mData:"groups",
                                  tocType:"array",
