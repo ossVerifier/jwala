@@ -49,9 +49,9 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     private PaginationParameter limitNone = new PaginationParameter(1000, 1);
     private PaginationParameter limit10 = new PaginationParameter(0,10);
     private PaginationParameter limitAll = PaginationParameter.all();
-       
+
     private JpaGroup        jpaGroup;
-    
+
     @Before public void setUp() {
 
         jpaJvm = new JpaJvm();
@@ -87,16 +87,16 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     @After public void tearDown() {
         entityManager.createQuery("delete from JpaApplication").executeUpdate();
     }
-    
+
     @Test public void testGetApplication() {
         Application app = applicationDao.getApplication(id(jpaApplication.id, Application.class));
         assertNotNull(app);
-        assertJpaApplicationMatches(app, jpaApplication);        
+        assertJpaApplicationMatches(app, jpaApplication);
         Application app2 = applicationDao.getApplication(id(jpaApplicationWithGroup.id, Application.class));
         assertNotNull(app2);
-        assertJpaApplicationMatches(app2, jpaApplicationWithGroup);        
+        assertJpaApplicationMatches(app2, jpaApplicationWithGroup);
     }
-    
+
     @Test(expected = NotFoundException.class) public void testGetApplicationNotFound() {
         applicationDao.getApplication(id(0L, Application.class));
     }
@@ -119,18 +119,18 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     }
 
     @Test public void testFindApplicationsBelongingTo() {
-        
+
         List<Application> applications = applicationDao.findApplications(jpaGroup.getName(), limit10);
         assertTrue(applications.size() == 1);
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
 
-    @Test public void testFindApplicationsBelongingToGroupId() {        
+    @Test public void testFindApplicationsBelongingToGroupId() {
         List<Application> applications = applicationDao.findApplicationsBelongingTo(id(jpaGroup.getId(), Group.class), limit10);
         assertTrue(applications.size() == 1);
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
-    
+
     @Test public void testFindApplicationsBelongingToJvm() {
         JpaGroup jpaGroup2 = new JpaGroup();
         jpaGroup2.setName("testJpaApp" + randomAscii(5));
@@ -201,6 +201,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         jpaWebServer.setGroups(groups);
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
+        jpaWebServer.setStatusPath("/jk/status");
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5
@@ -258,12 +259,12 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         }
         assertEquals(jpaApplication.getWarPath(), a.getWarPath());
         assertEquals(jpaApplication.name, a.getName());
-        assertEquals(jpaApplication.getWebAppContext(), a.getWebAppContext());    
+        assertEquals(jpaApplication.getWebAppContext(), a.getWebAppContext());
         if(a.getGroup() != null || jpaApplication.group != null) {
             assertGroupMatches(jpaApplication.group, a.getGroup());
         }
     }
-    
+
     private void assertGroupMatches(JpaGroup jpaGroup, Group group) {
         assertEquals(jpaGroup.getId(), group.getId().getId());
         assertEquals(jpaGroup.getName(), group.getName());

@@ -401,6 +401,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setGroups(groups);
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
+        jpaWebServer.setStatusPath("/jk/status");
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5
@@ -461,6 +462,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setName(WS_NAME);
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
+        jpaWebServer.setStatusPath("/jk/status");
         entityManager.persist(jpaWebServer);
         entityManager.flush();
 
@@ -527,6 +529,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
         jpaWebServer.setGroups(groups);
+        jpaWebServer.setStatusPath("/jk/status");
         entityManager.persist(jpaWebServer);
 
         // Create jvm 1, 2, 3, 4 and 5
