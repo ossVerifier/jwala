@@ -49,6 +49,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/datatable-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations.js"></script>
+<script type="text/jsx" src="public-resources/js/react/admin-tab.js"></script>
 <script type="text/jsx" src="public-resources/js/react/jvm-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>

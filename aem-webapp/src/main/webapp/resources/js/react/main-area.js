@@ -39,7 +39,8 @@ var MainTabs = React.createClass({
                                            service={ServiceFactory.getGroupService()}
                                            stateService={ServiceFactory.getStateService()}
                                            statePollTimeout={tocVars.statePollTimeout}/>},
-                 {title: "Configuration", content:<ConfigureTabs/>}];
+                 {title: "Configuration", content:<ConfigureTabs/>},
+                 {title: "Admin", content:<AdminTab/>}];
         return null;
     },
     render: function() {
