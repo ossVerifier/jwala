@@ -33,6 +33,7 @@ public class JsonUpdateJvmDeserializerTest {
     private static final String redirectPort = "3";
     private static final String shutdownPort = "2";
     private static final String ajpPort = "1";
+    private static final String statusPath = "/statusPath";
 
     @Before
     public void setUp() {
@@ -57,7 +58,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -70,6 +72,7 @@ public class JsonUpdateJvmDeserializerTest {
                          redirectPort,
                          shutdownPort,
                          ajpPort,
+                         statusPath,
                          firstGroupId,
                          secondGroupId);
     }
@@ -91,7 +94,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -104,6 +108,7 @@ public class JsonUpdateJvmDeserializerTest {
                          redirectPort,
                          shutdownPort,
                          ajpPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -123,7 +128,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -136,6 +142,7 @@ public class JsonUpdateJvmDeserializerTest {
                          redirectPort,
                          shutdownPort,
                          ajpPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -153,7 +160,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -165,7 +173,8 @@ public class JsonUpdateJvmDeserializerTest {
                          httpsPort,
                          redirectPort,
                          shutdownPort,
-                         ajpPort);
+                         ajpPort,
+                         statusPath);
     }
 
     @Test(expected = BadRequestException.class)
@@ -184,7 +193,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -197,6 +207,7 @@ public class JsonUpdateJvmDeserializerTest {
                          redirectPort,
                          shutdownPort,
                          ajpPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -216,7 +227,8 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -229,6 +241,7 @@ public class JsonUpdateJvmDeserializerTest {
                          redirectPort,
                          shutdownPort,
                          ajpPort,
+                         statusPath,
                          firstGroupId);
     }
 
@@ -249,6 +262,7 @@ public class JsonUpdateJvmDeserializerTest {
                                     final String aRedirectPort,
                                     final String aShutdownPort,
                                     final String aAjpPort,
+                                    final String aStatusPath,
                                     final String ... someGroupIds) {
 
         final UpdateJvmCommand update = anUpdate.toUpdateJvmCommand();
@@ -269,8 +283,10 @@ public class JsonUpdateJvmDeserializerTest {
                      integerToString(update.getNewShutdownPort()));
         assertEquals(aAjpPort,
                      integerToString(update.getNewAjpPort()));
+        assertEquals(aStatusPath,
+                     update.getNewStatusPath().getPath());
         assertEquals(someGroupIds.length,
-                update.getAssignmentCommands().size());
+                     update.getAssignmentCommands().size());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupCommand addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

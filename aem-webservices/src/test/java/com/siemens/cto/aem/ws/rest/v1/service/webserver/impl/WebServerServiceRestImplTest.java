@@ -16,6 +16,7 @@ import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
@@ -52,7 +53,7 @@ public class WebServerServiceRestImplTest {
 
     private static final String name = "webserverName";
     private static final String host = "localhost";
-    private static final String statusPath = "/theStatusPath";
+    private static final Path statusPath = new Path("/statusPath");
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
 
@@ -208,7 +209,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
-        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null,"/statusPath"));
+        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath")));
 
         final Identifier<Group> groupId = new Identifier<>("1");
         final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");

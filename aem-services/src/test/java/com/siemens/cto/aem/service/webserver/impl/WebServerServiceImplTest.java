@@ -19,6 +19,7 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
@@ -97,7 +98,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getGroups()).thenReturn(groups);
         when(mockWebServer.getPort()).thenReturn(51000);
         when(mockWebServer.getHttpsPort()).thenReturn(52000);
-        when(mockWebServer.getStatusPath()).thenReturn("/statusPath");
+        when(mockWebServer.getStatusPath()).thenReturn(new Path("/statusPath"));
 
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
@@ -106,7 +107,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer2.getGroups()).thenReturn(groups2);
         when(mockWebServer2.getPort()).thenReturn(51000);
         when(mockWebServer2.getHttpsPort()).thenReturn(52000);
-        when(mockWebServer2.getStatusPath()).thenReturn("/statusPath");
+        when(mockWebServer2.getStatusPath()).thenReturn(new Path("/statusPath"));
 
         mockWebServersAll.add(mockWebServer);
         mockWebServersAll.add(mockWebServer2);

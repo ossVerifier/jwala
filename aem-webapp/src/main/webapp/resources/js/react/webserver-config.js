@@ -151,7 +151,7 @@ var WebServerConfigForm = React.createClass({
             groupIds: undefined
         }
     },
-    getPropVal: function(props, name, defaultVal) {
+    getPropVal: function(props, name, defaultVal, subName) {
         var val = "";
         if (defaultVal !== undefined) {
             val = defaultVal;
@@ -162,6 +162,9 @@ var WebServerConfigForm = React.createClass({
             } else if (name !== "id") {
                 val = props.data[name];
             }
+            if (subName !== undefined && val !== undefined && val[subName] !== undefined) {
+                val = val[subName];
+            }
         }
         return val;
     },
@@ -171,7 +174,7 @@ var WebServerConfigForm = React.createClass({
                        host:this.getPropVal(nextProps, "host"),
                        port:this.getPropVal(nextProps, "port"),
                        httpsPort:this.getPropVal(nextProps, "httpsPort"),
-                       statusPath:this.getPropVal(nextProps, "statusPath", "/jk/status"),
+                       statusPath:this.getPropVal(nextProps, "statusPath", "/jk/status", "path"),
                        groupIds:this.getPropVal(nextProps, "groupIds")});
     },
     mixins: [
@@ -383,7 +386,7 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Host", mData:"host"},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
-                        {sTitle:"Status Path", mData:"statusPath"},
+                        {sTitle:"Status Path", mData:"statusPath.path"},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",

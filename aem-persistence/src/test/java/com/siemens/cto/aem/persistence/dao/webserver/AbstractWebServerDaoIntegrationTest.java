@@ -24,6 +24,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
@@ -73,7 +74,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	private static final String UNIQUE_NEW_WS_NAME = "Web Server Name to turn into a duplicate";
 	private static final String SECOND_WS_GROUP_NAME = "test group 2";
 	private static final String SECOND_TEST_WS_NAME = "TOC Test 2";
-    private static final String STATUS_PATH = "/statusPath";
+    private static final Path STATUS_PATH = new Path("/statusPath");
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;

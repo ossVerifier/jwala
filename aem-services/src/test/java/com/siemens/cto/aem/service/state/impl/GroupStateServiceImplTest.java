@@ -48,6 +48,7 @@ import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
@@ -155,7 +156,7 @@ public class GroupStateServiceImplTest {
      * @throws InterruptedException
      */
     @Deprecated
-    @Ignore 
+    @Ignore
     @Test
     public void testGroupStateUpdatingInParallel() throws InterruptedException {
 
@@ -173,24 +174,24 @@ public class GroupStateServiceImplTest {
         assertEquals(GroupState.STARTED, state.getState());
 
         Thread.sleep(25);
-        
+
         state = groupWith3.getCurrentState();
         assertEquals(GroupState.STOPPED, state.getState());
     }
 
     ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10);
 
-    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) { 
+    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) {
         concurrencyActions.schedule(
-                Executors.callable(new Runnable() {            
+                Executors.callable(new Runnable() {
             @Override
             public void run() {
-                groupStateService.stateUpdateJvm(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));                
+                groupStateService.stateUpdateJvm(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));
             }
         })
         , delay, units);
     }
-        
+
     @Test
     public void testStateUpdatedJVMResiliency() {
         for(JvmState js : JvmState.values()) {
@@ -214,13 +215,13 @@ public class GroupStateServiceImplTest {
         lgroupWith3 = new LiteGroup(id(2L, Group.class), "");
         lgroups.add(lgroup);
         lgroupsWith3.add(lgroupWith3);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0);
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/abc"));
         jvms.add(jvm);
-        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm2);
-        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm3);
-        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm4);
         group = new Group(group.getId(),  group.getName(), jvms);
         groupWith3 = new Group(groupWith3.getId(),  groupWith3.getName(), jvmsThree);
@@ -258,13 +259,13 @@ public class GroupStateServiceImplTest {
 
         List<SetGroupStateCommand> updates;
         SetGroupStateCommand sgsc;
-        
+
         when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.INITIALIZED, DateTime.now()));
         when(groupStateManager.getCurrentState()).thenReturn(GroupState.INITIALIZED);
         updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.UNKNOWN, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
-         
+
         assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
         updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.INITIALIZED, DateTime.now(), StateType.JVM));
 

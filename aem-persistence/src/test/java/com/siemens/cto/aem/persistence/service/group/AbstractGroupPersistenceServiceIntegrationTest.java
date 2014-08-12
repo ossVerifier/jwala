@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
@@ -51,7 +52,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         preCreatedJvm = jvmHelper.createJvm("Pre-Created JVM Name",
                                             "Pre-Created JVM Host Name",
                                             5, 4, 3, 2, 1,
-                                            userId);
+                                            userId,
+                                            new Path("/abc"));
     }
 
     @Test
@@ -268,7 +270,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         final Jvm aSecondJvm = jvmHelper.createJvm("anotherJvmName",
                                                    "anotherJvmHostName",
                                                    5, 4, 3, 2, 1,
-                                                   userId);
+                                                   userId,
+                                                   new Path("/abc"));
 
         final Identifier<Group> groupId = preCreatedGroup.getId();
 

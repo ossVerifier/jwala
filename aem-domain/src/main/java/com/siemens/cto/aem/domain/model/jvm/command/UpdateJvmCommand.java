@@ -16,12 +16,14 @@ import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
 
 public class UpdateJvmCommand implements Serializable, Command {
 
@@ -35,6 +37,7 @@ public class UpdateJvmCommand implements Serializable, Command {
     private final Integer newRedirectPort;
     private final Integer newShutdownPort;
     private final Integer newAjpPort;
+    private final Path newStatusPath;
 
     private final Set<Identifier<Group>> groupIds;
 
@@ -46,7 +49,8 @@ public class UpdateJvmCommand implements Serializable, Command {
                             final Integer theNewHttpsPort,
                             final Integer theNewRedirectPort,
                             final Integer theNewShutdownPort,
-                            final Integer theNewAjpPort) {
+                            final Integer theNewAjpPort,
+                            final Path theNewStatusPath) {
         id = theId;
         newJvmName = theNewJvmName;
         newHostName = theNewHostName;
@@ -56,6 +60,7 @@ public class UpdateJvmCommand implements Serializable, Command {
         newRedirectPort = theNewRedirectPort;
         newShutdownPort = theNewShutdownPort;
         newAjpPort = theNewAjpPort;
+        newStatusPath = theNewStatusPath;
     }
 
     public Identifier<Jvm> getId() {
@@ -95,10 +100,15 @@ public class UpdateJvmCommand implements Serializable, Command {
                                                   groupIds).build();
     }
 
+    public Path getNewStatusPath() {
+        return newStatusPath;
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRules(new JvmNameRule(newJvmName),
                           new JvmHostNameRule(newHostName),
+                          new StatusPathRule(newStatusPath),
                           new JvmIdRule(id),
                           new GroupIdsRule(groupIds),
                           new PortNumberRule(newHttpPort, AemFaultType.INVALID_JVM_HTTP_PORT),

@@ -1,0 +1,84 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd
+                           http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+                           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <bean id="jvmProvider" class="com.siemens.cto.aem.service.jvm.impl.JvmServiceFacade">
+        <constructor-arg ref="jvmService"/>
+    </bean>
+
+    <bean id="jvmStateServiceFacade" class="com.siemens.cto.aem.service.jvm.impl.JvmStateServiceFacade">
+        <constructor-arg ref="jvmStateService"/>
+    </bean>
+
+    <int:channel id="jvmStateRequest"/>
+    <int:channel id="jvmFailedStateRequest"/>
+    <int:channel id="jvmSuccessfulStateRequest"/>
+    <int:channel id="jvmUnsplitStateRequests"/>
+    <int:channel id="jvmCompletedStateRequest"/>
+    <int:channel id="jvmStateRequests">
+        <int:dispatcher task-executor="jvmStateExecutor"/>
+    </int:channel>
+    <task:executor id="jvmStateExecutor"
+                   pool-size="5"
+                   queue-capacity="200"
+                   keep-alive="5"
+                   rejection-policy="CALLER_RUNS"/>
+
+    <int:inbound-channel-adapter id="jvmStateInitiator"
+                                 ref="jvmProvider"
+                                 method="getAllJvms"
+                                 channel="jvmUnsplitStateRequests" phase="1000">
+        <int:poller fixed-delay="30" time-unit="SECONDS"/>
+    </int:inbound-channel-adapter>
+
+    <int:chain id="jvmRequestSplitter" input-channel="jvmUnsplitStateRequests" output-channel="jvmStateRequests">
+        <int:splitter/>
+        <int:header-enricher id="jvmIdHeaderEnricher">
+            <int:header name="jvmId" expression="payload.id"/>
+        </int:header-enricher>
+        <int:transformer id="jvmStatusUriTransformer" expression="payload.getStatusUri().toString()"/>
+    </int:chain>
+
+    <int:chain id="jvmPreHttpOutboundChain" input-channel="jvmStateRequests" output-channel="jvmStateRequest">
+        <int:header-enricher>
+            <int:error-channel value="jvmFailedStateRequest"/>
+        </int:header-enricher>
+    </int:chain>
+
+    <int-http:outbound-gateway id="jvmHttpOutboundGateway"
+                               request-channel="jvmStateRequest"
+                               reply-channel="jvmSuccessfulStateRequest"
+                               request-factory="httpRequestFactory"
+                               http-method="GET"
+                               url-expression="payload"/>
+
+    <int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest" output-channel="jvmCompletedStateRequest">
+        <int:header-enricher id="jvmFailedHttpHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STARTED}"/>
+        </int:header-enricher>
+        <int:transformer id="jvmFailedHttpTransformer" expression="payload.getFailedMessage().headers['jvmId']"/>
+    </int:chain>
+
+    <int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest" output-channel="jvmCompletedStateRequest">
+        <int:header-enricher id="jvmSuccessfulHttpHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}"/>
+        </int:header-enricher>
+        <int:transformer id="jvmSuccessfulHttpTransformer" expression="headers['jvmId']"/>
+    </int:chain>
+
+    <int:chain id="jvmCompletedStateRequestChain" input-channel="jvmCompletedStateRequest">
+        <int:outbound-channel-adapter id="jvmCompletedStateRequestOutboundAdapter" expression="@jvmStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
+    </int:chain>
+
+    <int:gateway id="jvmExplicitStateGateway" service-interface="com.siemens.cto.aem.service.jvm.JvmStateGateway">
+        <int:method name="setExplicitState" request-channel="jvmCompletedStateRequest"/>
+        <int:method name="initiateJvmStateRequest" request-channel="jvmUnsplitStateRequests"/>
+    </int:gateway>
+
+</beans>

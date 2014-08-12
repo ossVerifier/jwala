@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
@@ -39,6 +40,6 @@ public class JpaWebServerBuilder {
                              webServer.getHost(),
                              webServer.getPort(),
                              webServer.getHttpsPort(),
-                             webServer.getStatusPath());
+                             new Path(webServer.getStatusPath()));
     }
 }

@@ -18,6 +18,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonUpdateJvm.JsonUpdateJvmDeserializer.class)
@@ -26,6 +27,7 @@ public class JsonUpdateJvm {
     private final String jvmId;
     private final String jvmName;
     private final String hostName;
+    private final String statusPath;
     private final Set<String> groupIds;
     private final String httpPort;
     private final String httpsPort;
@@ -41,7 +43,8 @@ public class JsonUpdateJvm {
                          final String theHttpsPort,
                          final String theRedirectPort,
                          final String theShutdownPort,
-                         final String theAjpPort) {
+                         final String theAjpPort,
+                         final String theStatusPath) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -51,6 +54,7 @@ public class JsonUpdateJvm {
         redirectPort = theRedirectPort;
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
+        statusPath = theStatusPath;
     }
 
     public UpdateJvmCommand toUpdateJvmCommand() throws BadRequestException {
@@ -61,12 +65,8 @@ public class JsonUpdateJvm {
         return new UpdateJvmCommand(id,
                                     jvmName,
                                     hostName,
-                                    groupIds,
-                                    JsonUtilJvm.stringToInteger(httpPort),
-                                    JsonUtilJvm.stringToInteger(httpsPort),
-                                    JsonUtilJvm.stringToInteger(redirectPort),
-                                    JsonUtilJvm.stringToInteger(shutdownPort),
-                                    JsonUtilJvm.stringToInteger(ajpPort));
+                                    groupIds, JsonUtilJvm.stringToInteger(httpPort), JsonUtilJvm.stringToInteger(httpsPort), JsonUtilJvm.stringToInteger(redirectPort), JsonUtilJvm.stringToInteger(shutdownPort), JsonUtilJvm.stringToInteger(ajpPort), new Path(statusPath)
+        );
     }
 
     protected Identifier<Jvm> convertJvmId() {
@@ -103,7 +103,8 @@ public class JsonUpdateJvm {
                                      node.get("httpsPort").getValueAsText(),
                                      node.get("redirectPort").getValueAsText(),
                                      node.get("shutdownPort").getValueAsText(),
-                                     node.get("ajpPort").getValueAsText());
+                                     node.get("ajpPort").getValueAsText(),
+                                     node.get("statusPath").getTextValue());
         }
     }
 }

@@ -1,23 +1,15 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -48,6 +40,7 @@ import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -66,6 +59,13 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
 
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
     GroupStateServiceStateMachineIntegrationTest.CommonConfiguration.class,
@@ -79,19 +79,19 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
     // Parallelization
     ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10);
-        
+
     // Entity state follows
     Object groupLock = new Object(), groupWith3Lock = new Object();
     Group group, groupWith3;
     LiteGroup lgroup, lgroupWith3;
     Set<LiteGroup> lgroups = new HashSet<>(), lgroupsWith3 = new HashSet<>();
     Jvm jvm, jvm2, jvm3, jvm4;
-    JvmState[] currentJvmStates = new JvmState[] { 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED        
+    JvmState[] currentJvmStates = new JvmState[] {
+        JvmState.INITIALIZED,
+        JvmState.INITIALIZED,
+        JvmState.INITIALIZED,
+        JvmState.INITIALIZED,
+        JvmState.INITIALIZED
     };
     Set<Jvm> jvms= new HashSet<>(), jvmsThree= new HashSet<>();
 
@@ -116,14 +116,14 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
     @Autowired
     GroupStateMachine   groupStateManagerTableImpl;
-    
-    @Autowired 
+
+    @Autowired
     @Qualifier("jvmStatePersistenceService")
     StatePersistenceService<Jvm, JvmState> jvmStatePersistenceService;
 
     // test state
     int updateReceived = 0;
-    
+
     @SuppressWarnings("unchecked")
     @Before
     public void setupEntities() throws InterruptedException {
@@ -134,13 +134,13 @@ public class GroupStateServiceStateMachineIntegrationTest {
         lgroupWith3 = new LiteGroup(id(2L, Group.class), "");
         lgroups.add(lgroup);
         lgroupsWith3.add(lgroupWith3);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0);
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/abc"));
         jvms.add(jvm);
-        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm2);
-        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm3);
-        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
         jvmsThree.add(jvm4);
         group = new Group(group.getId(),  group.getName(), jvms);
         groupWith3 = new Group(groupWith3.getId(),  groupWith3.getName(), jvmsThree);
@@ -157,14 +157,14 @@ public class GroupStateServiceStateMachineIntegrationTest {
             @Override
             public Group answer(InvocationOnMock invocation) throws Throwable {
 
-                if(invocation.getArguments().length == 0 || invocation.getArguments()[0] == null) {                    
+                if(invocation.getArguments().length == 0 || invocation.getArguments()[0] == null) {
                     LOGGER.error("Error could not find data arguments to updateState!");
                     return null;
                 } else {
                     LOGGER.info("Persisting data...");
                 }
                 Event<SetGroupStateCommand> event = (Event<SetGroupStateCommand>) invocation.getArguments()[0];
-                Identifier<Group> groupId = event.getCommand().getNewState().getId(); 
+                Identifier<Group> groupId = event.getCommand().getNewState().getId();
                 LOGGER.info("Persisting data for groupId " + groupId.getId());
                 LOGGER.info("Persisting data for groupId " + groupId.getId() + " state " + event.getCommand().getNewState().getState());
                 if(groupId.getId() == 1L) {
@@ -185,19 +185,19 @@ public class GroupStateServiceStateMachineIntegrationTest {
             }
 
         });
-        
+
         when(jvmStatePersistenceService.getState(Mockito.any(Identifier.class))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
 
             @Override
             public CurrentState<Jvm, JvmState> answer(InvocationOnMock invocation) throws Throwable {
-                if(invocation.getArguments().length == 0 || invocation.getArguments()[0] == null) {                    
+                if(invocation.getArguments().length == 0 || invocation.getArguments()[0] == null) {
                     LOGGER.error("Error could not find id argument to getJvmState!");
                     return null;
                 }                Identifier<Jvm> idJvm = (Identifier<Jvm>) invocation.getArguments()[0];
                 int id = idJvm.getId().intValue();
-                return new CurrentState<Jvm, JvmState>(idJvm, currentJvmStates[id], DateTime.now(), StateType.JVM);
+                return new CurrentState<>(idJvm, currentJvmStates[id], DateTime.now(), StateType.JVM);
             }
-            
+
         });
 
 
@@ -207,21 +207,19 @@ public class GroupStateServiceStateMachineIntegrationTest {
     }
 
     @After
-    public void settle() throws InterruptedException { 
+    public void settle() throws InterruptedException {
         Thread.sleep(50);
     }
 
     @Test
     /**
-     * Note: this test claims to be 'in Series' but it 
+     * Note: this test claims to be 'in Series' but it
      * is dangerously close to ending up being parallel,
      * so some intermittent failures might occur.
      */
     public void testGroupStateUpdatingSeries() throws InterruptedException {
 
         long await = System.currentTimeMillis();
-
-        await = System.currentTimeMillis();
 
         scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
         scheduleJvmThread(3L, JvmState.STARTED, 5, TimeUnit.MILLISECONDS);
@@ -237,29 +235,29 @@ public class GroupStateServiceStateMachineIntegrationTest {
         scheduleJvmThread(4L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
 
         waitForState(groupWith3Lock, "testGroupStateUpdatingSeries", await-10, 1000, 2L, GroupState.STOPPED);
-        
+
         state = groupWith3.getCurrentState();
         assertEquals(GroupState.STOPPED, state.getState());
     }
-    
+
     @Test
     /**
-     * Note: this test claims to be 'in Series' but it 
+     * Note: this test claims to be 'in Series' but it
      * is dangerously close to ending up being parallel,
      * so some intermittent failures might occur.
      */
     public void testGroupStateParallelStartStop() throws InterruptedException {
 
         long await = System.currentTimeMillis();
-        
+
         groupStateService.signalStartRequested(groupWith3.getId(), User.getSystemUser());
-        
+
         scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
         scheduleJvmThread(3L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
         scheduleJvmThread(4L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
 
         waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 1000, 2L, GroupState.STARTED);
-        
+
         CurrentGroupState state = groupWith3.getCurrentState();
         assertEquals(GroupState.STARTED, state.getState());
         assertTrue(groupStateService.canStop(groupWith3.getId(), User.getSystemUser()));
@@ -271,17 +269,17 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
 
         waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 1000, 2L, GroupState.STOPPED);
-        
+
         state = groupWith3.getCurrentState();
         assertEquals(GroupState.STOPPED, state.getState());
         assertTrue(groupStateService.canStart(groupWith3.getId(), User.getSystemUser()));
     }
 
-    @Ignore // very very slow to run on the server, likely fails    
+    @Ignore // very very slow to run on the server, likely fails
     @Test
     public void testGroupStateUpdatingInParallel() throws InterruptedException {
 
-        Thread.sleep(50);        
+        Thread.sleep(50);
 
         long await = System.currentTimeMillis();
 
@@ -293,12 +291,12 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
         scheduleJvmThread(4L, JvmState.STARTED, 9, TimeUnit.MILLISECONDS);
         scheduleJvmThread(4L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
-        
+
         waitForState(groupWith3Lock, "testGroupStateUpdatingInParallel", await-10, 500, 2L, GroupState.STOPPED);
 
         CurrentGroupState state = groupWith3.getCurrentState();
         assertEquals(GroupState.STOPPED, state.getState());
-        
+
         assertTrue(groupStateService.canStart(groupWith3.getId(), User.getSystemUser()));
     }
 
@@ -308,20 +306,20 @@ public class GroupStateServiceStateMachineIntegrationTest {
         while(System.currentTimeMillis() < end && getStateForGroup(groupId) != state)  {
             synchronized(lock) {
                 lock.wait(maxDuration*2);
-            }        
+            }
         }
         long latency = (System.currentTimeMillis() - start);
-        if(getStateForGroup(groupId) != state) {            
+        if(getStateForGroup(groupId) != state) {
             fail("TIMING: "+test+" latency>"+maxDuration +"ms (" + latency + "ms) waiting for " + state);
         }
         LOGGER.info("TIMING: "+test+" latency = " + latency + "ms waiting for " + state);
     }
-    
-    private GroupState getStateForGroup(long groupId) { 
-        return groupId == 1L ?group.getCurrentState().getState() : 
+
+    private GroupState getStateForGroup(long groupId) {
+        return groupId == 1L ?group.getCurrentState().getState() :
             groupId == 2L ? groupWith3.getCurrentState().getState() : null;
     }
-    
+
     private void waitForCompletion(Object lock, String test, long start, int maxDuration) throws InterruptedException {
         synchronized(lock) {
             lock.wait(maxDuration*2);
@@ -332,20 +330,20 @@ public class GroupStateServiceStateMachineIntegrationTest {
         }
         LOGGER.info("TIMING: "+test+" latency = " + latency + "ms");
     }
-    
-    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) { 
+
+    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) {
         concurrencyActions.schedule(
-                Executors.callable(new Runnable() {            
+                Executors.callable(new Runnable() {
             @Override
             public void run() {
                 LOGGER.info("stateNotificationGateway.jvmStateChanged("+id+") = " + state);
                 currentJvmStates[(int)id] = state;
-                stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));                
+                stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));
             }
         })
         , delay, units);
     }
-    
+
 
     @Configuration
     @ImportResource("classpath*:META-INF/spring/integration-state.xml")
@@ -363,7 +361,7 @@ public class GroupStateServiceStateMachineIntegrationTest {
         public JvmPersistenceService getJvmPersistenceService() {
             return Mockito.mock(JvmPersistenceService.class);
         }
-        
+
         @SuppressWarnings("unchecked")
         @Bean(name = "jvmStatePersistenceService")
         public StatePersistenceService<Jvm, JvmState> getJvmStatePersistenceService() {

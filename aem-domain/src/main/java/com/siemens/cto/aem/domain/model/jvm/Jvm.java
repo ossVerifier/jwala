@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +12,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.uri.UriBuilder;
 
 public class Jvm implements Serializable {
 
@@ -28,6 +31,8 @@ public class Jvm implements Serializable {
     private final Integer shutdownPort;
     private final Integer ajpPort;
 
+    private final Path statusPath;
+
     public Jvm(final Identifier<Jvm> theId,
                final String theName,
                final String theHostName,
@@ -36,16 +41,18 @@ public class Jvm implements Serializable {
                final Integer theHttpsPort,
                final Integer theRedirectPort,
                final Integer theShutdownPort,
-               final Integer theAjpPort) {
+               final Integer theAjpPort,
+               final Path theStatusPath) {
         id = theId;
         jvmName = theName;
         hostName = theHostName;
-        groups = Collections.unmodifiableSet(new HashSet<LiteGroup>(theGroups));
+        groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
         httpPort = theHttpPort;
         httpsPort = theHttpsPort;
         redirectPort = theRedirectPort;
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
+        statusPath = theStatusPath;
     }
 
     public Identifier<Jvm> getId() {
@@ -84,6 +91,17 @@ public class Jvm implements Serializable {
         return ajpPort;
     }
 
+    public Path getStatusPath() {
+        return statusPath;
+    }
+
+    public URI getStatusUri() {
+        final UriBuilder builder = new UriBuilder().setHost(getHostName())
+                                                   .setPort(getHttpPort())
+                                                   .setPath(getStatusPath());
+        return builder.buildUnchecked();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -100,6 +118,7 @@ public class Jvm implements Serializable {
                 .append(this.id, rhs.id)
                 .append(this.jvmName, rhs.jvmName)
                 .append(this.hostName, rhs.hostName)
+                .append(this.statusPath, rhs.statusPath)
                 .append(this.groups, rhs.groups)
                 .append(this.httpPort, rhs.httpPort)
                 .append(this.httpsPort, rhs.httpsPort)
@@ -115,6 +134,7 @@ public class Jvm implements Serializable {
                 .append(id)
                 .append(jvmName)
                 .append(hostName)
+                .append(statusPath)
                 .append(groups)
                 .append(httpPort)
                 .append(httpsPort)
@@ -130,6 +150,7 @@ public class Jvm implements Serializable {
                 .append("id", id)
                 .append("jvmName", jvmName)
                 .append("hostName", hostName)
+                .append("statusPath", statusPath)
                 .append("groups", groups)
                 .append("httpPort", httpPort)
                 .append("httpsPort", httpsPort)

@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver
 import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.domain.model.group.LiteGroup
 import com.siemens.cto.aem.domain.model.jvm.Jvm
+import com.siemens.cto.aem.domain.model.path.Path
 import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
 
 /**
@@ -17,8 +18,8 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
 
     void setUp() {
         jvms = new ArrayList<>()
-        jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009))
-        jvms.add(new Jvm(null, "t c 2", "165.22 6.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8109))
+        jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009, new Path("/statusPath")))
+        jvms.add(new Jvm(null, "t c 2", "165.22 6.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8109, new Path("/statusPath")))
 
         apps = new ArrayList<>()
         apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null))

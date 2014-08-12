@@ -72,7 +72,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             jpaWebServer.setPort(createWebServerCommand.getPort());
             jpaWebServer.setHttpsPort(createWebServerCommand.getHttpsPort());
             jpaWebServer.setGroups(groups);
-            jpaWebServer.setStatusPath(createWebServerCommand.getStatusPath());
+            jpaWebServer.setStatusPath(createWebServerCommand.getStatusPath().getPath());
             jpaWebServer.setCreateBy(userId);
             jpaWebServer.setCreateDate(updateDate);
             jpaWebServer.setUpdateBy(userId);
@@ -112,7 +112,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             jpaWebServer.setHttpsPort(updateWebServerCommand.getNewHttpsPort());
             jpaWebServer.setHost(updateWebServerCommand.getNewHost());
             jpaWebServer.setGroups(groups);
-            jpaWebServer.setStatusPath(updateWebServerCommand.getNewStatusPath());
+            jpaWebServer.setStatusPath(updateWebServerCommand.getNewStatusPath().getPath());
             jpaWebServer.setUpdateBy(auditEvent.getUser().getUserId());
             jpaWebServer.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
 

@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
@@ -32,7 +33,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private final String newName;
     private final Integer newPort;
     private final Integer newHttpsPort;
-    private final String newStatusPath;
+    private final Path newStatusPath;
 
     public UpdateWebServerCommand(final Identifier<WebServer> theId,
                                   final Collection<Identifier<Group>> theNewGroupIds,
@@ -40,7 +41,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                                   final String theNewHost,
                                   final Integer theNewPort,
                                   final Integer theNewHttpsPort,
-                                  final String theNewStatusPath) {
+                                  final Path theNewStatusPath) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
@@ -74,7 +75,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
         return newGroupIds;
     }
 
-    public String getNewStatusPath() {
+    public Path getNewStatusPath() {
         return newStatusPath;
     }
 

@@ -16,6 +16,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
@@ -57,7 +58,7 @@ public class JsonCreateWebServer {
                                           hostName,
                                           port,
                                           securePort,
-                                          statusPath);
+                                          new Path(statusPath));
     }
 
     private Integer convertFrom(final String aValue,

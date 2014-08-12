@@ -31,6 +31,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -164,7 +165,7 @@ public class WebServerStateIntegrationTest {
                                                        "hostname" + i + ".example.com",
                                                        port,
                                                        null,
-                                                       "/the status path");
+                                                       new Path("/statusPath"));
                 servers.add(server);
             }
             return servers;

@@ -2,7 +2,6 @@ package com.siemens.cto.aem.domain.model.webserver;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,13 +12,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.uri.UriBuilder;
 
 public class WebServer implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    public static final String NO_USER_INFO = null;
-    public static final String NO_QUERY = null;
-    public static final String NO_FRAGMENT = null;
 
     private final Identifier<WebServer> id;
     private final Map<Identifier<Group>, Group> groups = new ConcurrentHashMap<>();
@@ -27,7 +25,7 @@ public class WebServer implements Serializable {
     private final String name;
     private final Integer port;
     private final Integer httpsPort;
-    private final String statusPath;
+    private final Path statusPath;
 
     public WebServer(final Identifier<WebServer> theId,
                      final Collection<Group> theGroups,
@@ -35,7 +33,7 @@ public class WebServer implements Serializable {
                      final String theHost,
                      final Integer thePort,
                      final Integer theHttpsPort,
-                     final String theStatusPath) {
+                     final Path theStatusPath) {
         id = theId;
         host = theHost;
         port = thePort;
@@ -75,23 +73,15 @@ public class WebServer implements Serializable {
         return groups.keySet();
     }
 
-    public String getStatusPath() {
+    public Path getStatusPath() {
         return statusPath;
     }
 
     public URI getStatusUri() {
-        try {
-            final URI uri = new URI("http",
-                                    NO_USER_INFO,
-                                    getHost(),
-                                    getPort(),
-                                    getStatusPath(),
-                                    NO_QUERY,
-                                    NO_FRAGMENT);
-            return uri;
-        } catch (final URISyntaxException urise) {
-            throw new RuntimeException("Unable to construct the URI for WebServer Status", urise);
-        }
+        final UriBuilder builder = new UriBuilder().setHost(getHost())
+                                                   .setPort(getPort())
+                                                   .setPath(getStatusPath());
+        return builder.buildUnchecked();
     }
 
     @Override

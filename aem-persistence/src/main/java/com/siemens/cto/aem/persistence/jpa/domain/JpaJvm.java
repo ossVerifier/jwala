@@ -35,6 +35,9 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
     @Column(nullable = false)
     private Integer ajpPort;
 
+    @Column(nullable = false)
+    private String statusPath;
+
     public Long getId() {
         return id;
     }
@@ -49,6 +52,14 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
+    }
+
+    public String getStatusPath() {
+        return statusPath;
+    }
+
+    public void setStatusPath(final String statusPath) {
+        this.statusPath = statusPath;
     }
 
     public List<JpaGroup> getGroups() {

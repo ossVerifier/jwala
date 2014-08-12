@@ -101,7 +101,7 @@ public class AemServiceConfiguration {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService());
     }
 
-    @Bean
+    @Bean(name = "jvmService")
     public JvmService getJvmService() {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                                   getGroupService());
@@ -129,13 +129,13 @@ public class AemServiceConfiguration {
                                          getJvmControlServiceLifecycle());
     }
 
-    @Bean(name="jvmControlServiceLifecycle") 
+    @Bean(name="jvmControlServiceLifecycle")
     public JvmControlService.JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
         return new JvmControlServiceImpl.LifecycleImpl(
                 persistenceServiceConfiguration.getJvmControlPersistenceService(),
                 getJvmStateService());
     }
-    
+
     @Bean(name="groupControlService")
     public GroupControlService getGroupControlService() {
         return new GroupControlServiceImpl(

@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
@@ -52,7 +53,13 @@ public class JsonUpdateWebServer {
         final Identifier<WebServer> webServerId = convertWebServerId();
         final Integer port = convertPortNumber();
         final Integer httpsPort = convertHttpsPortNumber();
-        return new UpdateWebServerCommand(webServerId, groups, webServerName, hostName, port, httpsPort, statusPath);
+        return new UpdateWebServerCommand(webServerId,
+                                          groups,
+                                          webServerName,
+                                          hostName,
+                                          port,
+                                          httpsPort,
+                                          new Path(statusPath));
     }
 
     protected Identifier<WebServer> convertWebServerId() {

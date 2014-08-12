@@ -1,0 +1,99 @@
+package com.siemens.cto.aem.domain.model.uri;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import com.siemens.cto.aem.domain.model.path.Path;
+
+public class UriBuilder {
+
+    private static final String HTTP = "http";
+    private static final String NO_USER_INFO = null;
+    private static final String NO_QUERY = null;
+    private static final String NO_FRAGMENT = null;
+
+    private String scheme;
+    private String user;
+    private String host;
+    private Integer port;
+    private Path path;
+    private String query;
+    private String fragment;
+
+    public UriBuilder() {
+        scheme = HTTP;
+        user = NO_USER_INFO;
+        query = NO_QUERY;
+        fragment = NO_FRAGMENT;
+    }
+
+    public UriBuilder setScheme(final String aScheme) {
+        scheme = aScheme;
+        return this;
+    }
+
+    public UriBuilder setUser(final String aUser) {
+        user = aUser;
+        return this;
+    }
+
+    public UriBuilder setHost(final String aHost) {
+        host = aHost;
+        return this;
+    }
+
+    public UriBuilder setPort(final Integer aPort) {
+        port = aPort;
+        return this;
+    }
+
+    public UriBuilder setPath(final Path aPath) {
+        path = aPath;
+        return this;
+    }
+
+    public UriBuilder setQuery(final String aQuery) {
+        query = aQuery;
+        return this;
+    }
+
+    public UriBuilder setFragment(final String aFragment) {
+        this.fragment = aFragment;
+        return this;
+    }
+
+    public URI buildUnchecked() {
+        try {
+            final URI uri = build();
+            return uri;
+        } catch (final URISyntaxException urise) {
+            throw new RuntimeException("Unable to construct the URI for : " + this.toString(), urise);
+        }
+    }
+
+    public URI build() throws URISyntaxException {
+        final URI uri = new URI(scheme,
+                                user,
+                                host,
+                                port,
+                                path.getPath(),
+                                query,
+                                fragment);
+        return uri;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("scheme", scheme)
+                .append("user", user)
+                .append("host", host)
+                .append("port", port)
+                .append("path", path)
+                .append("query", query)
+                .append("fragment", fragment)
+                .toString();
+    }
+}

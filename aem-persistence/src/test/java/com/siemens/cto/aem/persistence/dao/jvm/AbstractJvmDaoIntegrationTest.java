@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.jvm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -22,8 +18,13 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @Transactional
 public abstract class AbstractJvmDaoIntegrationTest {
@@ -39,14 +40,28 @@ public abstract class AbstractJvmDaoIntegrationTest {
         userName = "jvmTestUserName";
 
         preCreatedJvm =
-                jvmDao.createJvm(createCreateJvmCommand("Pre-created JVM Name", "Pre-created Host Name",
-                                                         5, 4, 3, 2, 1, userName));
+                jvmDao.createJvm(createCreateJvmCommand("Pre-created JVM Name",
+                                                        "Pre-created Host Name",
+                                                         5,
+                                                         4,
+                                                         3,
+                                                         2,
+                                                         1,
+                                                         userName,
+                                                         new Path("/abc")));
     }
 
     @Test
     public void testCreateNewJvm() {
-        final Event<CreateJvmCommand> command = createCreateJvmCommand("New Jvm Name", "New Host Name",
-                                                                        5, 4, 3, 2, 1, userName);
+        final Event<CreateJvmCommand> command = createCreateJvmCommand("New Jvm Name",
+                                                                       "New Host Name",
+                                                                        5,
+                                                                        4,
+                                                                        3,
+                                                                        2,
+                                                                        1,
+                                                                        userName,
+                                                                        new Path("/abc"));
         final Jvm createdJvm = jvmDao.createJvm(command);
 
         assertEquals(command.getCommand().getJvmName(), createdJvm.getJvmName());
@@ -63,7 +78,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                        preCreatedJvm.getRedirectPort(),
                                        preCreatedJvm.getShutdownPort(),
                                        preCreatedJvm.getAjpPort(),
-                                       userName);
+                                       userName,
+                                       preCreatedJvm.getStatusPath());
         jvmDao.createJvm(commandEvent);
     }
 
@@ -78,7 +94,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test
     public void testUpdateJvm() {
         final Event<UpdateJvmCommand> update =
-                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName);
+                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName, new Path("/abc"));
         final Jvm actualJvm = jvmDao.updateJvm(update);
 
         assertEquals(update.getCommand().getNewJvmName(), actualJvm.getJvmName());
@@ -88,12 +104,13 @@ public abstract class AbstractJvmDaoIntegrationTest {
         assertEquals(update.getCommand().getNewRedirectPort(), actualJvm.getRedirectPort());
         assertEquals(update.getCommand().getNewShutdownPort(), actualJvm.getShutdownPort());
         assertEquals(update.getCommand().getNewAjpPort(), actualJvm.getAjpPort());
+        assertEquals(update.getCommand().getNewStatusPath(), actualJvm.getStatusPath());
     }
 
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateJvm() {
         final Jvm newJvm =
-                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", 5, 4, 3, 2, 1, userName));
+                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", 5, 4, 3, 2, 1, userName, new Path("/abc")));
 
         jvmDao.updateJvm(createUpdateJvmCommand(newJvm.getId(),
                                                 preCreatedJvm.getJvmName(),
@@ -103,7 +120,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                 preCreatedJvm.getRedirectPort(),
                                                 preCreatedJvm.getShutdownPort(),
                                                 preCreatedJvm.getAjpPort(),
-                                                userName));
+                                                userName,
+                                                preCreatedJvm.getStatusPath()));
     }
 
     @Test
@@ -113,23 +131,25 @@ public abstract class AbstractJvmDaoIntegrationTest {
 
         final String activeSuffix = "Active";
         final String passiveSuffix = "Passive";
+        final Path statusPath = new Path("/abc");
 
-        createMultipleJvms(numberActive, activeSuffix, activeSuffix);
-        createMultipleJvms(numberToCreate - numberActive, passiveSuffix, passiveSuffix);
+        createMultipleJvms(numberActive, activeSuffix, activeSuffix, statusPath);
+        createMultipleJvms(numberToCreate - numberActive, passiveSuffix, passiveSuffix, statusPath);
 
         final List<Jvm> activeJvms = jvmDao.findJvms(activeSuffix, new PaginationParameter(0, numberToCreate));
         final List<Jvm> passiveJvms = jvmDao.findJvms(passiveSuffix, new PaginationParameter(0, numberToCreate));
 
-        verifyBulkJvmAssertions(activeJvms, numberActive, activeSuffix, activeSuffix, 5, 4, 3, 2, 1);
-        verifyBulkJvmAssertions(passiveJvms, numberToCreate - numberActive, passiveSuffix, passiveSuffix, 5, 4, 3, 2, 1);
+        verifyBulkJvmAssertions(activeJvms, numberActive, activeSuffix, activeSuffix, 5, 4, 3, 2, 1, statusPath);
+        verifyBulkJvmAssertions(passiveJvms, numberToCreate - numberActive, passiveSuffix, passiveSuffix, 5, 4, 3, 2, 1, statusPath);
     }
 
     @Test
     public void testGetJvms() {
         final int numberToCreate = 7;
         final String suffix = "GET_JVM_SUFFIX";
+        final Path statusPath = new Path("/abc");
 
-        createMultipleJvms(numberToCreate, suffix, suffix);
+        createMultipleJvms(numberToCreate, suffix, suffix, statusPath);
         final List<Jvm> jvms = jvmDao.getJvms(new PaginationParameter(0, numberToCreate));
 
         assertEquals(numberToCreate, jvms.size());
@@ -146,18 +166,29 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final Integer redirectPort,
                                                              final Integer shutdownPort,
                                                              final Integer ajpPort,
-                                                             final String aUserName) {
-        return new Event<>(new CreateJvmCommand(aJvmName, aHostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort), AuditEvent.now(new User(aUserName)));
+                                                             final String aUserName,
+                                                             final Path aStatusPath) {
+        return new Event<>(new CreateJvmCommand(aJvmName,
+                                                aHostName,
+                                                httpPort,
+                                                httpsPort,
+                                                redirectPort,
+                                                shutdownPort,
+                                                ajpPort,
+                                                aStatusPath),
+                           AuditEvent.now(new User(aUserName)));
     }
 
-    protected Event<UpdateJvmCommand> createUpdateJvmCommand(final Identifier<Jvm> aJvmId, final String aNewJvmName,
+    protected Event<UpdateJvmCommand> createUpdateJvmCommand(final Identifier<Jvm> aJvmId,
+                                                             final String aNewJvmName,
                                                              final String aNewHostName,
                                                              final Integer aNewHttpPort,
                                                              final Integer aNewHttpsPort,
                                                              final Integer aNewRedirectPort,
                                                              final Integer aNewShutdownPort,
                                                              final Integer aNewAjpPort,
-                                                             final String aUserName) {
+                                                             final String aUserName,
+                                                             final Path aStatusPath) {
         return new Event<>(new UpdateJvmCommand(aJvmId,
                                                 aNewJvmName,
                                                 aNewHostName,
@@ -166,7 +197,9 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                 aNewHttpsPort,
                                                 aNewRedirectPort,
                                                 aNewShutdownPort,
-                                                aNewAjpPort), AuditEvent.now(new User(aUserName)));
+                                                aNewAjpPort,
+                                                aStatusPath),
+                           AuditEvent.now(new User(aUserName)));
     }
 
     protected void verifyBulkJvmAssertions(final List<Jvm> someJvms,
@@ -177,26 +210,36 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                            final Integer httpsPort,
                                            final Integer redirectPort,
                                            final Integer shutdownPort,
-                                           final Integer ajpPort) {
+                                           final Integer ajpPort,
+                                           final Path aStatusPath) {
 
         assertEquals(anExpectedSize, someJvms.size());
         for (final Jvm jvm : someJvms) {
             assertTrue(jvm.getJvmName().contains(anExpectedJvmSuffix));
             assertTrue(jvm.getHostName().contains(anExpectedHostNameSuffix));
 
-            assertTrue(jvm.getHttpPort().equals(httpPort));
-            assertTrue(jvm.getHttpsPort().equals(httpsPort));
-            assertTrue(jvm.getRedirectPort().equals(redirectPort));
-            assertTrue(jvm.getShutdownPort().equals(shutdownPort));
-            assertTrue(jvm.getAjpPort().equals(ajpPort));
+            assertEquals(httpPort, jvm.getHttpPort());
+            assertEquals(httpsPort, jvm.getHttpsPort());
+            assertEquals(redirectPort, jvm.getRedirectPort());
+            assertEquals(shutdownPort, jvm.getShutdownPort());
+            assertEquals(ajpPort, jvm.getAjpPort());
+            assertEquals(aStatusPath, jvm.getStatusPath());
         }
     }
 
-    protected void createMultipleJvms(final int aNumberToCreate, final String aJvmNameSuffix,
-            final String aHostNameSuffix) {
+    protected void createMultipleJvms(final int aNumberToCreate,
+                                      final String aJvmNameSuffix,
+                                      final String aHostNameSuffix,
+                                      final Path aStatusPath) {
         for (int i = 1; i <= aNumberToCreate; i++) {
             jvmDao.createJvm(createCreateJvmCommand("JVM" + i + aJvmNameSuffix, "HostName" + i + aHostNameSuffix,
-                                                    5, 4, 3, 2, 1, userName));
+                                                    5,
+                                                    4,
+                                                    3,
+                                                    2,
+                                                    1,
+                                                    userName,
+                                                    aStatusPath));
         }
     }
 }

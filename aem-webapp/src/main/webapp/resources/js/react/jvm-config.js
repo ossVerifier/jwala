@@ -148,6 +148,7 @@ var JvmConfigForm = React.createClass({
             id: "",
             name: "",
             host: "",
+            statusPath: "",
             groupIds: undefined,
             httpPort: "",
             httpsPort: "",
@@ -156,14 +157,20 @@ var JvmConfigForm = React.createClass({
             ajpPort: ""
         }
     },
-    getPropVal: function(props, name) {
+    getPropVal: function(props, name, defaultVal, subName) {
         var val = "";
+        if (defaultVal !== undefined) {
+            val = defaultVal;
+        }
         if (props.data !== undefined) {
             if (name === "id" && props.data[name] !== undefined) {
                 val = props.data[name].id;
             } else if (name !== "id") {
                 if (name !== "groups") {
                     val = props.data[name];
+                    if (subName !== undefined && val !== undefined && val[subName] !== undefined) {
+                        val = val[subName];
+                    }
                 } else {
                     /**
                      * Because the group id is {id:object} where object = {id:[theId]} we need to
@@ -186,6 +193,7 @@ var JvmConfigForm = React.createClass({
         this.setState({id:this.getPropVal(nextProps, "id"),
                        name:this.getPropVal(nextProps, "jvmName"),
                        host:this.getPropVal(nextProps, "hostName"),
+                       statusPath:this.getPropVal(nextProps, "statusPath", "/manager", "path"),
                        groupIds:this.getPropVal(nextProps, "groups"),
                        httpPort:this.getPropVal(nextProps, "httpPort"),
                        httpsPort:this.getPropVal(nextProps, "httpsPort"),
@@ -221,6 +229,18 @@ var JvmConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="35"/></td>
+                            </tr>
+
+                            <tr>
+                                <td>*Status Path</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="statusPath" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} required maxLength="64"/></td>
                             </tr>
 
                             <tr>
@@ -367,6 +387,9 @@ var JvmConfigForm = React.createClass({
                 "hostName": {
                     regex: true
                 },
+                "statusPath": {
+                    pathCheck: true
+                },
                 "httpPort": {
                     range: [1, 65531]
                 },
@@ -381,7 +404,7 @@ var JvmConfigForm = React.createClass({
                 },
                 "ajpPort": {
                     range: [1, 65535]
-                },
+                }
             },
             messages: {
                 "groupSelector[]": {
@@ -389,6 +412,12 @@ var JvmConfigForm = React.createClass({
                 }
             }
         });
+
+        //TODO These should be re-usable between JVM and WebServer
+        $.validator.addMethod("pathCheck", function(value, element) {
+            var exp = /\/.*/;
+            return exp.test(value);
+        }, "The field must be a valid, absolute path.");
 
         $.validator.addMethod("regex", function(value, element) {
             // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
@@ -405,26 +434,27 @@ var JvmConfigForm = React.createClass({
     insertNewJvm: function() {
         if (this.isValid()) {
             this.props.service.insertNewJvm(this.state.name,
-                                                  this.state.groupIds,
-                                                  this.state.host,
-                                                  this.state.httpPort,
-                                                  this.state.httpsPort,
-                                                  this.state.redirectPort,
-                                                  this.state.shutdownPort,
-                                                  this.state.ajpPort,
-                                                  this.success,
-                                                  function(errMsg) {
-                                                        $.errorAlert(errMsg, "Error");
-                                                  });
+                                            this.state.groupIds,
+                                            this.state.host,
+                                            this.state.statusPath,
+                                            this.state.httpPort,
+                                            this.state.httpsPort,
+                                            this.state.redirectPort,
+                                            this.state.shutdownPort,
+                                            this.state.ajpPort,
+                                            this.success,
+                                            function(errMsg) {
+                                                $.errorAlert(errMsg, "Error");
+                                            });
         }
     },
     updateJvm: function() {
         if (this.isValid()) {
             this.props.service.updateJvm($(this.getDOMNode().children[0]).serializeArray(),
-                                               this.success,
-                                               function(errMsg) {
-                                                    $.errorAlert(errMsg, "Error");
-                                               });
+                                         this.success,
+                                         function(errMsg) {
+                                             $.errorAlert(errMsg, "Error");
+                                         });
         }
     },
     componentDidUpdate: function() {
@@ -457,6 +487,7 @@ var JvmDataTable = React.createClass({
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                         {sTitle:"Name", mData:"jvmName", tocType:"link"},
                         {sTitle:"Host", mData:"hostName"},
+                        {sTitle:"Status Path", mData:"statusPath.path"},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",

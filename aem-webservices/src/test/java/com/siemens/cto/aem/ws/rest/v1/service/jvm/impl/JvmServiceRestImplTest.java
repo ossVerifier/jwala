@@ -24,6 +24,7 @@ import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -61,6 +62,7 @@ public class JvmServiceRestImplTest {
     private static final String redirectPort = "82";
     private static final String shutdownPort = "83";
     private static final String ajpPort = "84";
+    private static final Path statusPath = new Path("/statusPath");
 
     @Mock
     private JvmServiceImpl impl;
@@ -85,7 +87,8 @@ public class JvmServiceRestImplTest {
                                Integer.valueOf(httpsPort),
                                Integer.valueOf(redirectPort),
                                Integer.valueOf(shutdownPort),
-                               Integer.valueOf(ajpPort));
+                               Integer.valueOf(ajpPort),
+                               statusPath);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -133,7 +136,7 @@ public class JvmServiceRestImplTest {
     public void testCreateJvm() {
         when(impl.createJvm(any(CreateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort);
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath.getPath());
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -151,8 +154,15 @@ public class JvmServiceRestImplTest {
 
         final Set<String> groupIds = new HashSet<>();
         groupIds.add("1");
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, groupIds, httpPort, httpsPort,
-                                                              redirectPort, shutdownPort, ajpPort);
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name,
+                                                              hostName,
+                                                              groupIds,
+                                                              httpPort,
+                                                              httpsPort,
+                                                              redirectPort,
+                                                              shutdownPort,
+                                                              ajpPort,
+                                                              statusPath.getPath());
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -167,7 +177,7 @@ public class JvmServiceRestImplTest {
     @Test
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
-        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1");
+        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1", statusPath.getPath());
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
         final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);

@@ -93,7 +93,7 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     USER_AUTHENTICATION_FAILED("AEM44", "UserAuthenticationFailed"),
     /**/
-    INVALID_WEBSERVER_STATUS_PATH("AEM45", "InvalidWebServerStatusPath")
+    INVALID_STATUS_PATH("AEM45", "InvalidStatusPath")
     ;
 
 	private final String faultCode;

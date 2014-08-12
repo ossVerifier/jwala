@@ -15,6 +15,7 @@ import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 
 public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
@@ -30,7 +31,8 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
                                           final Integer theHttpsPort,
                                           final Integer theRedirectPort,
                                           final Integer theShutdownPort,
-                                          final Integer theAjpPort) {
+                                          final Integer theAjpPort,
+                                          final Path theStatusPath) {
 
         createCommand = new CreateJvmCommand(theName,
                                              theHostName,
@@ -38,7 +40,8 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
                                              theHttpsPort,
                                              theRedirectPort,
                                              theShutdownPort,
-                                             theAjpPort);
+                                             theAjpPort,
+                                             theStatusPath);
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 

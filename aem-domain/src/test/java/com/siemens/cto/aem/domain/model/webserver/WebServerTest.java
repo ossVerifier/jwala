@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.uri.UriBuilder;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,7 +18,7 @@ public class WebServerTest {
 
     private static final String HOST = "host";
     private static final String NAME = "name";
-    private static final String STATUS_PATH = "/the status path";
+    private static final Path STATUS_PATH = new Path("/the status path");
     private static final Integer port = 10000;
     private static final Integer httpsPort = 20000;
     private static final Long id = 1L;
@@ -56,13 +58,9 @@ public class WebServerTest {
 
     @Test
     public void testStatusUri() throws Exception {
-        final URI expectedUri = new URI("http",
-                                null,
-                                "my.expected.host.example.com",
-                                12345,
-                                STATUS_PATH,
-                                null,
-                                null);
+        final URI expectedUri = new UriBuilder().setHost("my.expected.host.example.com")
+                                                .setPort(12345)
+                                                .setPath(STATUS_PATH).buildUnchecked();
         final WebServer webServer = new WebServer(new Identifier<WebServer>(123456L),
                                                   Collections.<Group>emptySet(),
                                                   "name",

@@ -6,9 +6,10 @@ import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 
@@ -27,7 +28,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aRedirectPort,
                          final Integer aShutdownPort,
                          final Integer aAjpPort,
-                         final String aUserId) {
+                         final String aUserId,
+                         final Path aStatusPath) {
 
         final Event<CreateJvmCommand> event = createCreateJvmEvent(aJvmName,
                                                                    aHostName,
@@ -36,7 +38,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                    aRedirectPort,
                                                                    aShutdownPort,
                                                                    aAjpPort,
-                                                                   aUserId);
+                                                                   aUserId,
+                                                                   aStatusPath);
 
         return jvmPersistenceService.createJvm(event);
     }
@@ -49,7 +52,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aNewRedirectPort,
                          final Integer aNewShutdownPort,
                          final Integer aNewAjpPort,
-                         final String aUserId) {
+                         final String aUserId,
+                         final Path aStatusPath) {
 
         final Event<UpdateJvmCommand> event = createUpdateJvmEvent(aJvmId,
                                                                    aNewJvmName,
@@ -59,7 +63,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                    aNewRedirectPort,
                                                                    aNewShutdownPort,
                                                                    aNewAjpPort,
-                                                                   aUserId);
+                                                                   aUserId,
+                                                                   aStatusPath);
 
         return jvmPersistenceService.updateJvm(event);
     }
@@ -71,7 +76,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Integer redirectPort,
                                                            final Integer shutdownPort,
                                                            final Integer ajpPort,
-                                                           final String aUserId) {
+                                                           final String aUserId,
+                                                           final Path aStatusPath) {
 
         final Event<CreateJvmCommand> createJvm = new Event<>(new CreateJvmCommand(aJvmName,
                                                                                    aJvmHostName,
@@ -79,8 +85,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                                    httpsPort,
                                                                                    redirectPort,
                                                                                    shutdownPort,
-                                                                                   ajpPort),
-                                                                                   createAuditEvent(aUserId));
+                                                                                   ajpPort,
+                                                                                   aStatusPath),
+                                                              createAuditEvent(aUserId));
 
         return createJvm;
     }
@@ -93,7 +100,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Integer aNewRedirectPort,
                                                            final Integer aNewShutdownPort,
                                                            final Integer aNewAjpPort,
-                                                           final String aUserId) {
+                                                           final String aUserId,
+                                                           final Path aStatusPath) {
 
         final Event<UpdateJvmCommand> event = new Event<>(new UpdateJvmCommand(aJvmId,
                                                                                aNewJvmName,
@@ -103,8 +111,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                                aNewHttpsPort,
                                                                                aNewRedirectPort,
                                                                                aNewShutdownPort,
-                                                                               aNewAjpPort),
-                                                                               createAuditEvent(aUserId));
+                                                                               aNewAjpPort,
+                                                                               aStatusPath),
+                                                          createAuditEvent(aUserId));
 
         return event;
     }

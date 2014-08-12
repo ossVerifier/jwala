@@ -17,6 +17,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
@@ -29,6 +30,7 @@ public class JsonCreateJvm {
     private final String redirectPort;
     private final String shutdownPort;
     private final String ajpPort;
+    private final String statusPath;
 
     private final Set<String> groupIds;
 
@@ -38,7 +40,8 @@ public class JsonCreateJvm {
                          final String theHttpsPort,
                          final String theRedirectPort,
                          final String theShutdownPort,
-                         final String theAjpPort) {
+                         final String theAjpPort,
+                         final String theStatusPath) {
         this(theJvmName,
              theHostName,
              Collections.<String>emptySet(),
@@ -46,7 +49,8 @@ public class JsonCreateJvm {
              theHttpsPort,
              theRedirectPort,
              theShutdownPort,
-             theAjpPort);
+             theAjpPort,
+             theStatusPath);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -56,7 +60,8 @@ public class JsonCreateJvm {
                          final String theHttpsPort,
                          final String theRedirectPort,
                          final String theShutdownPort,
-                         final String theAjpPort) {
+                         final String theAjpPort,
+                         final String theStatusPath) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -64,6 +69,7 @@ public class JsonCreateJvm {
         redirectPort = theRedirectPort;
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
+        statusPath = theStatusPath;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
     }
 
@@ -79,7 +85,8 @@ public class JsonCreateJvm {
                                     JsonUtilJvm.stringToInteger(httpsPort),
                                     JsonUtilJvm.stringToInteger(redirectPort),
                                     JsonUtilJvm.stringToInteger(shutdownPort),
-                                    JsonUtilJvm.stringToInteger(ajpPort));
+                                    JsonUtilJvm.stringToInteger(ajpPort),
+                                    new Path(statusPath));
     }
 
     public CreateJvmAndAddToGroupsCommand toCreateAndAddCommand() throws BadRequestException {
@@ -92,7 +99,8 @@ public class JsonCreateJvm {
                                                   JsonUtilJvm.stringToInteger(httpsPort),
                                                   JsonUtilJvm.stringToInteger(redirectPort),
                                                   JsonUtilJvm.stringToInteger(shutdownPort),
-                                                  JsonUtilJvm.stringToInteger(ajpPort));
+                                                  JsonUtilJvm.stringToInteger(ajpPort),
+                                                  new Path(statusPath));
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -118,6 +126,7 @@ public class JsonCreateJvm {
             final JsonNode redirectPortNode = rootNode.get("redirectPort");
             final JsonNode shutdownPortNode = rootNode.get("shutdownPort");
             final JsonNode ajpPortNode = rootNode.get("ajpPort");
+            final JsonNode statusPathNode = rootNode.get("statusPath");
 
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
 
@@ -128,7 +137,8 @@ public class JsonCreateJvm {
                                      httpsPortNode.getValueAsText(),
                                      redirectPortNode.getValueAsText(),
                                      shutdownPortNode.getValueAsText(),
-                                     ajpPortNode.getValueAsText());
+                                     ajpPortNode.getValueAsText(),
+                                     statusPathNode.getTextValue());
         }
     }
 }

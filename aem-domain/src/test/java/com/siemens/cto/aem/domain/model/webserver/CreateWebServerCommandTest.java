@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 
 import static org.junit.Assert.assertEquals;
 
@@ -16,7 +17,7 @@ public class CreateWebServerCommandTest {
 
     private static final String HOST = "host";
     private static final String NAME = "name";
-    private static final String STATUS_PATH = "/statusPath";
+    private static final Path STATUS_PATH = new Path("/statusPath");
     private static final Integer portNumber = 10000;
     private static final Integer httpsPort = 20000;
 
@@ -59,7 +60,7 @@ public class CreateWebServerCommandTest {
 
     @Test(expected = BadRequestException.class)
     public void testInvalidPath() {
-        final CreateWebServerCommand invalidPath = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0, "abc");
+        final CreateWebServerCommand invalidPath = new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0, new Path("abc"));
         invalidPath.validateCommand();
     }
 }

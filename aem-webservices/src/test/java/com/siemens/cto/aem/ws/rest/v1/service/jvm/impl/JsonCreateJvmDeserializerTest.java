@@ -29,6 +29,7 @@ public class JsonCreateJvmDeserializerTest {
     private static final String redirectPort = "3";
     private static final String shutdownPort = "2";
     private static final String ajpPort = "1";
+    private static final String statusPath = "/statusPath";
 
     @Before
     public void setup() {
@@ -53,7 +54,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -79,7 +81,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -103,7 +106,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -125,7 +129,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -156,7 +161,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort));
+                                   keyTextValue("ajpPort", ajpPort),
+                                   keyTextValue("statusPath", statusPath));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,

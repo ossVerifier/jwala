@@ -5,12 +5,14 @@ import java.util.Set;
 
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.Path;
 
 public class JvmBuilder {
 
     private Identifier<Jvm> id;
     private String name;
     private String hostName;
+    private Path statusPath;
     private Set<LiteGroup> groups = new HashSet<>();
     private Integer httpPort;
     private Integer httpsPort;
@@ -35,6 +37,11 @@ public class JvmBuilder {
 
     public JvmBuilder setHostName(final String aHostName) {
         hostName = aHostName;
+        return this;
+    }
+
+    public JvmBuilder setStatusPath(final Path aStatusPath) {
+        statusPath = aStatusPath;
         return this;
     }
 
@@ -72,6 +79,7 @@ public class JvmBuilder {
                        httpsPort,
                        redirectPort,
                        shutdownPort,
-                       ajpPort);
+                       ajpPort,
+                       statusPath);
     }
 }

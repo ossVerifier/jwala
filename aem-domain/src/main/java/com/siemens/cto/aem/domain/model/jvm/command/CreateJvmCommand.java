@@ -9,10 +9,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
 
 public class CreateJvmCommand implements Serializable, Command {
 
@@ -28,13 +30,16 @@ public class CreateJvmCommand implements Serializable, Command {
     private final Integer shutdownPort;
     private final Integer ajpPort;
 
+    private final Path statusPath;
+
     public CreateJvmCommand(final String theName,
                             final String theHostName,
                             final Integer theHttpPort,
                             final Integer theHttpsPort,
                             final Integer theRedirectPort,
                             final Integer theShutdownPort,
-                            final Integer theAjpPort) {
+                            final Integer theAjpPort,
+                            final Path theStatusPath) {
         jvmName = theName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -42,6 +47,7 @@ public class CreateJvmCommand implements Serializable, Command {
         redirectPort = theRedirectPort;
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
+        statusPath = theStatusPath;
     }
 
     public String getJvmName() {
@@ -72,10 +78,15 @@ public class CreateJvmCommand implements Serializable, Command {
         return ajpPort;
     }
 
+    public Path getStatusPath() {
+        return statusPath;
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRules(new JvmNameRule(jvmName),
                           new JvmHostNameRule(hostName),
+                          new StatusPathRule(statusPath),
                           new PortNumberRule(httpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
                           new PortNumberRule(redirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
@@ -98,6 +109,7 @@ public class CreateJvmCommand implements Serializable, Command {
         return new EqualsBuilder()
                 .append(this.jvmName, rhs.jvmName)
                 .append(this.hostName, rhs.hostName)
+                .append(this.statusPath, rhs.statusPath)
                 .append(this.httpPort, rhs.httpPort)
                 .append(this.httpsPort, rhs.httpsPort)
                 .append(this.redirectPort, rhs.redirectPort)
@@ -111,6 +123,7 @@ public class CreateJvmCommand implements Serializable, Command {
         return new HashCodeBuilder()
                 .append(jvmName)
                 .append(hostName)
+                .append(statusPath)
                 .append(httpPort)
                 .append(httpsPort)
                 .append(redirectPort)
@@ -124,6 +137,7 @@ public class CreateJvmCommand implements Serializable, Command {
         return new ToStringBuilder(this)
                 .append("jvmName", jvmName)
                 .append("hostName", hostName)
+                .append("statusPath", statusPath)
                 .append("httpPort", httpPort)
                 .append("httpsPort", httpsPort)
                 .append("redirectPort", redirectPort)
