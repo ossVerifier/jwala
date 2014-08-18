@@ -77,15 +77,8 @@ public class GroupStateServiceStateMachineIntegrationTest {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateServiceStateMachineIntegrationTest.class);
 
     // Parallelization
-    ThreadGroup threadGroup = new ThreadGroup("TEST-ACTION");
-    ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10, new ThreadFactory() {
+    ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10);
         
-        @Override
-        public Thread newThread(Runnable r) {
-            return new Thread(threadGroup, r);
-        }
-    });
-    
     // Entity state follows
     Object groupLock = new Object(), groupWith3Lock = new Object();
     Group group, groupWith3;

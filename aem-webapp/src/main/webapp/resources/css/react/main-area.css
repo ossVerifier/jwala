@@ -16,15 +16,18 @@ div.main-area {
 
 .banner-container {
     background-color:#70a399;
-    height:99px
+    height:99px;
+    display:block
 }
 
 .banner-title {
-    float:right;
+    display: inline-block;
     font-size:45px;
-    margin-right:30px;
+    width:750px;
     margin-top:25px;
     color:#0d2b88;
     font-family: Arial, Helvetica, sans-serif;
     font-weight:bold;
+    position:absolute;
+    text-align:center;
 }
