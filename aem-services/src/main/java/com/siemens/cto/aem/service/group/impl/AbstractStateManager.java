@@ -83,6 +83,7 @@ public class AbstractStateManager<StatesEnum extends Enum<?>, Entity, Condition1
             @Override
             public boolean canRead(EvaluationContext context, Object target, String name) throws AccessException {
                 try { 
+                    @SuppressWarnings("unchecked")
                     StatesEnum e = (StatesEnum) Enum.valueOf(initializedState.getClass(), name);
                     return e != null;
                 } catch (IllegalArgumentException e) { 
@@ -103,57 +104,52 @@ public class AbstractStateManager<StatesEnum extends Enum<?>, Entity, Condition1
     protected synchronized void synchronizedHandleState(StatesEnum proposedState, User user) {
         StatesEnum nextState;
 
-        try {
+        if(proposedState == null) {
+            // do nothing
+            return;
+        }
 
-            if(proposedState == null) {
-                // do nothing
-                return;
+        nextState = proposedState;
+
+        if(proposedState == currentState) {
+            // staying in same state
+            nextState = (StatesEnum) STATES.get(currentState).state(context, this, currentState);
+            if(nextState == currentState) {
+                return; // no change.
             }
+        }
 
+        // Temporary variables
+        if(nextState == null) {
             nextState = proposedState;
+        }
+        StatesEnum interimState = currentState;
+        StatesEnum nextState2 = nextState;
 
-            if(proposedState == currentState) {
-                // staying in same state
-                nextState = (StatesEnum) STATES.get(currentState).state(context, this, currentState);
-                if(nextState == currentState) {
-                    return; // no change.
-                }
+        // while state changes required.
+        while(nextState != interimState) {
+            // Exit current state.
+            nextState2 = STATES.get(interimState).out(context,this, interimState);
+            // New state change proposed?
+            if(nextState2 != null) {
+                nextState = nextState2;
             }
 
-            // Temporary variables
-            if(nextState == null) {
-                nextState = proposedState;
-            }
-            StatesEnum interimState = currentState;
-            StatesEnum nextState2 = nextState;
-
-            // while state changes required.
-            while(nextState != interimState) {
-                // Exit current state.
-                nextState2 = STATES.get(interimState).out(context,this, interimState);
-                // New state change proposed?
-                if(nextState2 != null) {
+            // If we have somewhere to go ( on the first transition we do ),
+            if(nextState != null) {
+                // Enter new state, record proposition
+                nextState2 = STATES.get(nextState).in(context, this, nextState);
+                // track current 'interim' state
+                interimState = nextState;
+                // new state change proposed ?
+                if(nextState2 != null && nextState2 != nextState) {
+                    // Otherwise, yet another state transition?
                     nextState = nextState2;
                 }
-
-                // If we have somewhere to go ( on the first transition we do ),
-                if(nextState != null) {
-                    // Enter new state, record proposition
-                    nextState2 = STATES.get(nextState).in(context, this, nextState);
-                    // track current 'interim' state
-                    interimState = nextState;
-                    // new state change proposed ?
-                    if(nextState2 != null && nextState2 != nextState) {
-                        // Otherwise, yet another state transition?
-                        nextState = nextState2;
-                    }
-                    // else null or nextState = ok, so enter.
-                }
+                // else null or nextState = ok, so enter.
             }
-            currentState = interimState;
-        } finally {
-            // this.triggers.drain();
         }
+        currentState = interimState;
     }
 
     // ========= INITIALIZER ===============
