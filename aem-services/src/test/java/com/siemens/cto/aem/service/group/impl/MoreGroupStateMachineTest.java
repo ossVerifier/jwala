@@ -136,7 +136,7 @@ public class MoreGroupStateMachineTest {
         groups.add(mockGroup);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0);
         jvms.add(jvm);
-        ws = new WebServer(id(1L, WebServer.class), groups, "ws-1", "localhost", 80,  443);
+        ws = new WebServer(id(1L, WebServer.class), groups, "ws-1", "localhost", 80,  443, "");
         wsList.add(ws);
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState<WebServer, WebServerReachableState>(ws.getId(), WebServerReachableState.REACHABLE, DateTime.now(), StateType.WEB_SERVER));
