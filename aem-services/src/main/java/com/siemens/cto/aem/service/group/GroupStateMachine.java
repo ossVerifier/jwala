@@ -10,13 +10,15 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 
 public interface GroupStateMachine {
 
-    void initializeGroup(Group group, User user);
+    void synchronizedInitializeGroup(Group group, User user);
 
     CurrentGroupState signalReset(User user);
 
     CurrentGroupState signalStopRequested(User user);
 
     CurrentGroupState signalStartRequested(User user);
+    
+    boolean refreshState();
 
     void jvmError(Identifier<Jvm> jvmId);
 

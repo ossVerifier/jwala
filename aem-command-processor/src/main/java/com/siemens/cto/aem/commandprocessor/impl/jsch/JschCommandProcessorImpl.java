@@ -37,6 +37,9 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
         try {
             logger.debug("before executing command {}", theCommand);
+
+            String commandString = theCommand.getCommand().toCommandString();
+            logger.debug("remote Jsch command string is {}", commandString );
             
             remoteCommand = theCommand;
             final RemoteSystemConnection remoteSystemConnection = theCommand.getRemoteSystemConnection();
@@ -45,8 +48,6 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             channel = session.openChannel("exec");
             final ChannelExec channelExec = (ChannelExec)channel;
             
-            String commandString = theCommand.getCommand().toCommandString();
-            logger.debug("remote command string is {}", commandString );
             channelExec.setCommand(commandString.getBytes(StandardCharsets.UTF_8));
             
             remoteOutput = channelExec.getInputStream();
@@ -54,7 +55,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             localInput = channelExec.getOutputStream();
             channelExec.connect();
 
-            logger.debug("after connect for execution of command {}", theCommand);
+            logger.debug("after execution of command {}", commandString);
             
         } catch (final JSchException | IOException e) {
             throw new RemoteCommandFailureException(theCommand,

@@ -317,13 +317,14 @@ var GroupOperationsDataTable = React.createClass({
                                 {sTitle:"",
                                  mData:null,
                                  tocType:"link",
-                                 linkLabel:"Heap Dump",
-                                 onClickCallback:this.jvmHeapDump},
-                                {sTitle:"",
-                                 mData:null,
-                                 tocType:"link",
                                  linkLabel:"Thread Dump",
                                  onClickCallback:this.onClickThreadDump},
+                                {sTitle:"",
+                                 mData:null,
+                                 tocType:"button",
+                                 btnLabel:"Heap Dump",
+                                 btnCallback:this.jvmHeapDump,
+                                 className:"inline-block"},
                                 [{id:"startJvm",
                                   sTitle:"Start",
                                   mData:null,
@@ -432,6 +433,21 @@ var GroupOperationsDataTable = React.createClass({
        var enable = this.enableButtonThunk(buttonSelector);
        Promise.method(disable)().then(func).lastly(enable);
    },
+   enableLinkThunk: function(linkSelector) {
+        return function () {
+            $(linkSelector).removeClass("disabled");
+        };
+    },
+    disableLinkThunk: function(linkSelector) {
+        return function () {
+            $(linkSelector).addClass("disabled");
+        };
+    },
+    disableEnableHeapDumpButton: function(selector, requestTask, requestCallbackTask, errHandler) {
+        var disable = this.disableButtonThunk(selector);
+        var enable = this.enableButtonThunk(selector);
+        Promise.method(disable)().then(requestTask).then(requestCallbackTask).caught(errHandler).lastly(enable);
+    },
    startGroup: function(id, unused, buttonSelector) {
        this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id);});
    },
@@ -450,14 +466,29 @@ var GroupOperationsDataTable = React.createClass({
    stopGroupWebServers: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
    },
-   jvmHeapDump: function(data) {
-	   var dt = new Date().toISOString().replace(/:/g , "-")
-	   var heapDumpFile = 'heapDump-' + dt; 
-       var redirectUrl = window.location.protocol + "//" + data.hostName + ":" + data.httpPort +
-       "/manager/jmxproxy?invoke=com.sun.management:type=HotSpotDiagnostic&op=dumpHeap&ps=" + heapDumpFile + ",true";
+   jvmHeapDump: function(id, unused, selector) {
+       var requestHeapDump = function() {return jvmControlService.heapDump(id);};
+       var heapDumpRequestCallback = function(response){
+                                        var msg = response.applicationResponseContent.execData.standardError === "" ?
+                                        response.applicationResponseContent.execData.standardOutput :
+                                        response.applicationResponseContent.execData.standardError;
+                                        $.alert(msg, "Heap Dump", false);
+                                        $(selector).attr('title', "Last heap dump status: " + msg);
+                                     };
+       var heapDumpErrorHandler = function(e){
+                                      var errCodeAndMsg;
+                                      try {
+                                          var errCode = JSON.parse(e.responseText).msgCode;
+                                          var errMsg = JSON.parse(e.responseText).applicationResponseContent;
+                                          errCodeAndMsg = "Error: " + errCode + (errMsg !== "" ? " - " : "") + errMsg;
+                                      } catch(e) {
+                                          errCodeAndMsg = e.responseText;
+                                      }
+                                      $.alert(errCodeAndMsg, "Heap Dump Error!", false);
+                                      $(selector).attr('title', "Last heap dump status: " + errCodeAndMsg);
+                                  };
 
-       var samlUrl="idp?saml_redirectUrl=" + encodeURIComponent(redirectUrl);
-       window.open(samlUrl, 'heapDumpMessage', 'height=250,width=500, toolbar=no, menubar=no, scrollbars=no, resizable=no,location=no, directories=no, status=no');
+       this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
    jvmStart: function(id, requestReturnCallback) {
         jvmControlService.startJvm(id, requestReturnCallback, requestReturnCallback);

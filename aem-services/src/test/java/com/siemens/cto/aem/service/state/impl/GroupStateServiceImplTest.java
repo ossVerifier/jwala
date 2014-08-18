@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.state.impl;
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,9 +12,13 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -85,10 +90,11 @@ public class GroupStateServiceImplTest {
     GroupStateService.API   groupStateService;
 
     @Autowired
-    GroupStateMachine   groupStateManagerTableImpl;
+    GroupStateMachine   groupStateManager;
 
     int updateReceived = 0;
 
+    @Ignore // right now we are using direct channel, not pub/sub
     @Test
     public void testSubscribeAndReceive() throws InterruptedException {
         stateUpdates.subscribe(new MessageHandler() {
@@ -110,6 +116,7 @@ public class GroupStateServiceImplTest {
         assertTrue(updateReceived > 0);
     }
 
+    @Ignore // right now we are using direct channel, not pub/sub
     @Test
     public void testSubscribeAndReceiveIsParallel() throws InterruptedException {
         stateUpdates.subscribe(new MessageHandler() {
@@ -143,6 +150,47 @@ public class GroupStateServiceImplTest {
         assertEquals(3, updateReceived);
     }
 
+    /**
+     * Please @see com.siemens.cto.aem.service.state.impl.GroupStateServiceStateMachineIntegrationTest
+     * @throws InterruptedException
+     */
+    @Deprecated
+    @Ignore 
+    @Test
+    public void testGroupStateUpdatingInParallel() throws InterruptedException {
+
+        scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.SECONDS);
+        scheduleJvmThread(3L, JvmState.STARTED, 0, TimeUnit.SECONDS);
+        scheduleJvmThread(4L, JvmState.STARTED, 0, TimeUnit.SECONDS);
+
+        scheduleJvmThread(2L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
+
+        Thread.sleep(1);
+
+        CurrentGroupState state = groupWith3.getCurrentState();
+        assertEquals(GroupState.STARTED, state.getState());
+
+        Thread.sleep(25);
+        
+        state = groupWith3.getCurrentState();
+        assertEquals(GroupState.STOPPED, state.getState());
+    }
+
+    ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10);
+
+    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) { 
+        concurrencyActions.schedule(
+                Executors.callable(new Runnable() {            
+            @Override
+            public void run() {
+                groupStateService.stateUpdateJvm(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));                
+            }
+        })
+        , delay, units);
+    }
+        
     @Test
     public void testStateUpdatedJVMResiliency() {
         for(JvmState js : JvmState.values()) {
@@ -150,25 +198,39 @@ public class GroupStateServiceImplTest {
         }
     }
 
-    Group group;
-    LiteGroup lgroup;
-    Set<LiteGroup> lgroups = new HashSet<>();
-    Jvm jvm;
-    Set<Jvm> jvms= new HashSet<>();
+    Group group, groupWith3;
+    LiteGroup lgroup, lgroupWith3;
+    Set<LiteGroup> lgroups = new HashSet<>(), lgroupsWith3 = new HashSet<>();
+    Jvm jvm, jvm2, jvm3, jvm4;
+    Set<Jvm> jvms= new HashSet<>(), jvmsThree= new HashSet<>();
 
     @SuppressWarnings("unchecked")
     @Before
     public void setupEntities() {
 
         group = new Group(id(1L, Group.class), "");
+        groupWith3 = new Group(id(2L, Group.class), "");
         lgroup = new LiteGroup(id(1L, Group.class), "");
+        lgroupWith3 = new LiteGroup(id(2L, Group.class), "");
         lgroups.add(lgroup);
+        lgroupsWith3.add(lgroupWith3);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0);
         jvms.add(jvm);
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvmsThree.add(jvm2);
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvmsThree.add(jvm3);
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0);
+        jvmsThree.add(jvm4);
         group = new Group(group.getId(),  group.getName(), jvms);
+        groupWith3 = new Group(groupWith3.getId(),  groupWith3.getName(), jvmsThree);
 
         when(jvmPersistenceService.getJvm(eq(jvm.getId()))).thenReturn(jvm);
+        when(jvmPersistenceService.getJvm(eq(jvm2.getId()))).thenReturn(jvm2);
+        when(jvmPersistenceService.getJvm(eq(jvm3.getId()))).thenReturn(jvm3);
+        when(jvmPersistenceService.getJvm(eq(jvm4.getId()))).thenReturn(jvm4);
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
+        when(groupPersistenceService.getGroup(eq(groupWith3.getId()))).thenReturn(groupWith3);
 
         when(groupPersistenceService.updateState(Mockito.any(Event.class))).thenAnswer(new Answer<CurrentState<Group, GroupState>>() {
 
@@ -176,8 +238,15 @@ public class GroupStateServiceImplTest {
             public CurrentState<Group, GroupState> answer(InvocationOnMock invocation) throws Throwable {
 
                 Event<SetStateCommand<Group, GroupState>> event = (Event<SetStateCommand<Group, GroupState>>) invocation.getArguments()[0];
-                group = new Group(group.getId(), group.getName(), group.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
-                return group.getCurrentState();
+                if(group.getId().getId() == 1L) {
+                    group = new Group(group.getId(), group.getName(), group.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
+                    return group.getCurrentState();
+                } else if(group.getId().getId() == 2L) {
+                    groupWith3 = new Group(groupWith3.getId(), groupWith3.getName(), groupWith3.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
+                    return group.getCurrentState();
+                }
+                fail("Unexpected groupId " + group.getId());
+                return null;
             }
 
         });
@@ -190,8 +259,8 @@ public class GroupStateServiceImplTest {
         List<SetGroupStateCommand> updates;
         SetGroupStateCommand sgsc;
         
-        when(groupStateManagerTableImpl.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.INITIALIZED, DateTime.now()));
-        when(groupStateManagerTableImpl.getCurrentState()).thenReturn(GroupState.INITIALIZED);
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.INITIALIZED, DateTime.now()));
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.INITIALIZED);
         updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.UNKNOWN, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
@@ -207,26 +276,26 @@ public class GroupStateServiceImplTest {
         sgsc = updates.get(0);
         assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
 
-        when(groupStateManagerTableImpl.getCurrentState()).thenReturn(GroupState.STARTED);
-        when(groupStateManagerTableImpl.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STARTED, DateTime.now()));
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.STARTED);
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STARTED, DateTime.now()));
 
         updates = updateJvmState(JvmState.STARTED);
 
         sgsc = updates.get(0);
         assertEquals(GroupState.STARTED, sgsc.getNewState().getState() );
 
-        verify(groupStateManagerTableImpl, times(1)).jvmStarted(eq(jvm.getId()));
+        verify(groupStateManager, times(1)).jvmStarted(eq(jvm.getId()));
 
         group = new Group(group.getId(), group.getName(), jvms, GroupState.STARTED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
         updates = updateJvmState(JvmState.STOP_REQUESTED);
 
-        when(groupStateManagerTableImpl.getCurrentState()).thenReturn(GroupState.STOPPED);
-        when(groupStateManagerTableImpl.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STOPPED, DateTime
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.STOPPED);
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STOPPED, DateTime
                 .now()));
         updates = updateJvmState(JvmState.STOPPED);
 
-        verify(groupStateManagerTableImpl, times(1)).jvmStopped(eq(jvm.getId()));
+        verify(groupStateManager, times(1)).jvmStopped(eq(jvm.getId()));
 
         sgsc = updates.get(0);
         assertEquals(GroupState.STOPPED, sgsc.getNewState().getState() );
@@ -235,7 +304,7 @@ public class GroupStateServiceImplTest {
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
         updates = updateJvmState(JvmState.FAILED);
 
-        verify(groupStateManagerTableImpl, times(1)).jvmError(eq(jvm.getId()));
+        verify(groupStateManager, times(1)).jvmError(eq(jvm.getId()));
     }
 
     @Test
@@ -247,22 +316,22 @@ public class GroupStateServiceImplTest {
     @Test
     public void testSignals() {
         groupStateService.signalReset(id(1L, Group.class), User.getSystemUser());
-        verify(groupStateManagerTableImpl, times(1)).signalReset(eq(User.getSystemUser()));
+        verify(groupStateManager, times(1)).signalReset(eq(User.getSystemUser()));
         groupStateService.signalStartRequested(id(1L, Group.class), User.getSystemUser());
-        verify(groupStateManagerTableImpl, times(1)).signalStartRequested(eq(User.getSystemUser()));
+        verify(groupStateManager, times(1)).signalStartRequested(eq(User.getSystemUser()));
         groupStateService.signalStopRequested(id(1L, Group.class), User.getSystemUser());
-        verify(groupStateManagerTableImpl, times(1)).signalStopRequested(eq(User.getSystemUser()));
+        verify(groupStateManager, times(1)).signalStopRequested(eq(User.getSystemUser()));
     }
 
     @Test
     public void testQuery() {
         groupStateService.canStart(id(1L, Group.class), User.getSystemUser());
         verify(groupPersistenceService).getGroup(eq(group.getId()));
-        verify(groupStateManagerTableImpl, times(1)).canStart();
-        verify(groupStateManagerTableImpl, times(1)).initializeGroup(group, User.getSystemUser());
+        verify(groupStateManager, times(1)).canStart();
+        verify(groupStateManager, times(1)).synchronizedInitializeGroup(group, User.getSystemUser());
 
         groupStateService.canStop(id(1L, Group.class), User.getSystemUser());
-        verify(groupStateManagerTableImpl, times(1)).canStop();
+        verify(groupStateManager, times(1)).canStop();
     }
 
     private List<SetGroupStateCommand> updateJvmState(final JvmState aState) {
@@ -276,10 +345,11 @@ public class GroupStateServiceImplTest {
         @Autowired
         StateNotificationGateway stateNotification;
 
-        @Bean
+        @Bean(name="groupStateMachine")
         public GroupStateMachine getGroupStateManagerTableImpl() {
             return Mockito.mock(GroupStateMachine.class);
         }
+
         @Bean
         public JvmPersistenceService getJvmPersistenceService() {
             return Mockito.mock(JvmPersistenceService.class);
@@ -302,6 +372,7 @@ public class GroupStateServiceImplTest {
 
         @SuppressWarnings("unchecked")
         @Bean
+        @Qualifier("webServerStateService")
         public StateService<WebServer, WebServerReachableState>    getWebServerStateService() {
             return Mockito.mock(StateService.class);
         }

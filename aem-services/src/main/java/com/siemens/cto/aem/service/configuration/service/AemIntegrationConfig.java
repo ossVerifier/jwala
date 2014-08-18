@@ -7,6 +7,7 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource({
     "classpath:META-INF/spring/integration.xml",
     "classpath:META-INF/spring/integration-state.xml",
+    "classpath:META-INF/spring/integration-jmx.xml",
     "classpath:META-INF/spring/webserver-heartbeat-integration.xml",
     "classpath:META-INF/spring/webserver-heartbeat-dependencies.xml"
 })

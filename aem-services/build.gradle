@@ -15,9 +15,11 @@ dependencies {
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
 
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
     compile group: 'javax', name: 'jms', version: "$project.versions.jms"
+    compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
 
     javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
         exclude group: "junit"
@@ -26,6 +28,7 @@ dependencies {
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"
+    testCompile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"

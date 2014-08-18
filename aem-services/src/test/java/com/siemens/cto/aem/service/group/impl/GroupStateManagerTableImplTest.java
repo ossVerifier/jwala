@@ -6,8 +6,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -60,6 +62,7 @@ public class GroupStateManagerTableImplTest {
     static class CommonConfiguration {
 
         @Bean
+        @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
         public GroupStateMachine getClassUnderTest() {
             return new GroupStateManagerTableImpl();
         }
@@ -70,6 +73,7 @@ public class GroupStateManagerTableImplTest {
         }
         @SuppressWarnings("unchecked")
         @Bean
+        @Qualifier("webServerStateService")
         public StateService<WebServer, WebServerReachableState>    getWebServerStateService() {
             return Mockito.mock(StateService.class);
         }
@@ -98,7 +102,7 @@ public class GroupStateManagerTableImplTest {
         Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupCommand("testGroup"), AuditEvent.now(testUser)));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateCommand(group.getId(), GroupState.INITIALIZED), AuditEvent.now(testUser)));
 
-        classUnderTest.initializeGroup(group, testUser);
+        classUnderTest.synchronizedInitializeGroup(group, testUser);
 
         // an INITIALIZED group will quickly enter some other group based on database state.
         // Since we have no  group content, we will remain in the INITIALIZED state.
@@ -118,7 +122,7 @@ public class GroupStateManagerTableImplTest {
         groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(group.getId(), jvm.getId()),  AuditEvent.now(testUser)));
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.STOPPED), AuditEvent.now(testUser)));
 
-        classUnderTest.initializeGroup(group, testUser);
+        classUnderTest.synchronizedInitializeGroup(group, testUser);
 
         // an INITIALIZED group will quickly enter some other group based on database state.
         // As we have one Jvm with the stopped state, we should be in the STOPPED group.
@@ -136,7 +140,7 @@ public class GroupStateManagerTableImplTest {
         Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupCommand("testGroupInError"), AuditEvent.now(testUser)));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateCommand(group.getId(), GroupState.ERROR), AuditEvent.now(testUser)));
 
-        classUnderTest.initializeGroup(group, testUser);
+        classUnderTest.synchronizedInitializeGroup(group, testUser);
 
         // should return here since there is no content.
         assertEquals(GroupState.ERROR, classUnderTest.getCurrentState());
@@ -162,6 +166,7 @@ public class GroupStateManagerTableImplTest {
         assertFalse(classUnderTest.canStop());
 
         classUnderTest.jvmStarted(jvm.getId());
+        classUnderTest.refreshState();
 
         assertEquals(GroupState.STARTED, classUnderTest.getCurrentState());
 
@@ -183,6 +188,7 @@ public class GroupStateManagerTableImplTest {
         assertEquals(GroupState.STARTED, classUnderTest.getCurrentState());
 
         classUnderTest.jvmStopped(jvm.getId());
+        classUnderTest.refreshState();
 
         assertEquals(GroupState.STOPPED, classUnderTest.getCurrentState());
 
@@ -206,7 +212,7 @@ public class GroupStateManagerTableImplTest {
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STARTED), AuditEvent.now(testUser)));
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.STOPPED), AuditEvent.now(testUser)));
 
-        classUnderTest.initializeGroup(group, testUser);
+        classUnderTest.synchronizedInitializeGroup(group, testUser);
 
         // an INITIALIZED group will quickly enter some other group based on database state.
         // As we have 2 of 3 Jvms with the stopped state, we should be in the PARTIAL state.
@@ -219,16 +225,19 @@ public class GroupStateManagerTableImplTest {
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STOP_REQUESTED), AuditEvent.now(testUser)));
 
         classUnderTest.jvmStopped(jvm.getId());
+        classUnderTest.refreshState();
         // receive a stop event for an already stopped jvm, stay in STOPPING because of jvm2
         assertEquals(GroupState.STOPPING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STOPPED), AuditEvent.now(testUser)));
         classUnderTest.jvmStopped(jvm2.getId());
+        classUnderTest.refreshState();
         // received the final stop, go to STOPPED
         assertEquals(GroupState.STOPPED, classUnderTest.getCurrentState());
 
         classUnderTest.signalStartRequested(testUser);
         // start requested by user,
+        classUnderTest.refreshState();
         assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.START_REQUESTED), AuditEvent.now(testUser)));
@@ -238,25 +247,30 @@ public class GroupStateManagerTableImplTest {
         classUnderTest.jvmStarted(jvm.getId());
         classUnderTest.jvmStarted(jvm2.getId());
         classUnderTest.jvmStarted(jvm3.getId());
+        classUnderTest.refreshState();
         // received a start request for a jvm as a set of triggers
         assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm2.getId());
+        classUnderTest.refreshState();
         // received a start 1/3
         assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm2.getId());
+        classUnderTest.refreshState();
         // received a start 2/3
         assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         classUnderTest.jvmStarted(jvm2.getId());
+        classUnderTest.refreshState();
         // received a start 2/3 - duplicate stay in STARTING
         assertEquals(GroupState.STARTING, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.STARTED), AuditEvent.now(testUser)));
         classUnderTest.jvmStarted(jvm3.getId());
+        classUnderTest.refreshState();
         // received the final Start, go to STARTED
         assertEquals(GroupState.STARTED, classUnderTest.getCurrentState());
 

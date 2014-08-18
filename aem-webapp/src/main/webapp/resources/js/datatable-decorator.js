@@ -289,7 +289,8 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
                                                                      data,
                                                                callback:item.onClickCallback !== undefined ?
                                                                         item.onClickCallback :
-                                                                        editCallback}));
+                                                                        editCallback,
+                                                               waitForResponse:item.waitForResponse}));
     }  else {
         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }

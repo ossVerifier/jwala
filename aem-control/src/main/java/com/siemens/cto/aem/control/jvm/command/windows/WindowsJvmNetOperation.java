@@ -4,6 +4,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
@@ -16,7 +20,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(final String aServiceName) {
             return new ExecCommand("net", "start", quotedServiceName(aServiceName));
         }
-    } ,
+    },
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
@@ -27,12 +31,27 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jStackCmd = properties.getProperty("stp_java_home", "d:/apache/java/jdk1.7.0_45/bin") + "/jstack";
+            String jStackCmd = properties.getProperty("stp.java_home", "d:/apache/java/jdk1.7.0_45/bin") + "/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
+        }
+    },
+    HEAP_DUMP(JvmControlOperation.HEAP_DUMP) {
+        @Override
+        public ExecCommand buildCommandForService(final String aServiceName) {
+            final Properties properties = ApplicationProperties.getProperties();
+            String jMapCmd = properties.getProperty("stp.java_home") + "/bin/jmap";
+            String dataDir = properties.getProperty("stp.data_dir");
+            final boolean dumpLiveEnabled = Boolean.parseBoolean(properties.getProperty("jmap.dump.live.enabled"));
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd-HHmmss.SSS");
+            String dumpFile = dataDir + "/heapDump-" + aServiceName + "-" + fmt.print(new DateTime());
+            String parameters = "-dump:" + (dumpLiveEnabled ? "live," : "") + "format=b,file=" + dumpFile + " `sc queryex " +
+                                aServiceName + " | grep PID | awk '{ print $3 }'`";
+            return new ExecCommand(jMapCmd, parameters);
         }
     };
 
-    private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(JvmControlOperation.class);
+    private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
+            JvmControlOperation.class);
 
     static {
         for (final WindowsJvmNetOperation o : values()) {

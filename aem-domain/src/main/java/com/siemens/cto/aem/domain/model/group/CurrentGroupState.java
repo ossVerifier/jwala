@@ -32,6 +32,8 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
         public float getPercentStarted() {
             return this.total == 0 ? 1.0f : (((float)started) / total);
         }
+        @Override // webservers: {started: 1, total: 2}
+        public String toString() { return "{started: " + started + ", total: "+total + "}"; }
     }
 
     private final StateDetail webServers;
@@ -57,6 +59,6 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
 
     @Override
     public String toString() {
-        return super.toString() + ", 'detail': {'jvmsPercent':"+jvms.getPercentStarted() * 100 +", 'wsPercent':"+webServers.getPercentStarted()*100+"}";
+        return super.toString() + ", 'detail': {jvms: "+jvms +", webservers: " + webServers + "}";
     }
 }

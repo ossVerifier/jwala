@@ -24,10 +24,6 @@ public class CommandController {
     @Qualifier("jvmControlService")
     private JvmControlService jvmControlService;
 
-//    public CommandController(JvmControlService jvmControlService) {
-//        this.jvmControlService = jvmControlService;
-//    }
-//
     @RequestMapping(value = "/jvmCommand")
     public ModelAndView jvmCommand(HttpServletRequest request, HttpServletResponse response) {
 

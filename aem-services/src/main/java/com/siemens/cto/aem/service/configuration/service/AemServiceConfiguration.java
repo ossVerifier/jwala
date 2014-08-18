@@ -80,7 +80,7 @@ public class AemServiceConfiguration {
     @Autowired
     private WebServerStateGateway webServerStateGateway;
 
-    @Bean
+    @Bean(name="groupStateMachine")
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
     public GroupStateMachine getGroupStateMachine() {
         return new GroupStateManagerTableImpl();

@@ -24,11 +24,11 @@
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p {%t} [%c{1}] %m%n"/>
       </layout>
       
       <filter class="org.apache.log4j.varia.LevelRangeFilter">
-       <param name="LevelMin" value="DEBUG" />
+       <param name="LevelMin" value="TRACE" />
        <param name="LevelMax" value="INFO" />
      </filter>
    </appender>
@@ -40,7 +40,7 @@
 
       <layout class="org.apache.log4j.PatternLayout">
          <!-- The default pattern: Date Priority [Category] Message\n -->
-         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n"/>
+         <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p {%t} [%c{1}] %m%n"/>
       </layout>
    </appender>
 
@@ -167,7 +167,7 @@
    </category>
    
    <category name="org.springframework">
-    <priority value="info"/>
+    <priority value="DEBUG"/>
    </category>
 
    <category name="org.apache.cxf">
@@ -188,7 +188,7 @@
          so the full JBoss system property format is not supported; e.g.
          setting a default via ${jboss.server.log.threshold:WARN} will not work.         
        -->
-      <priority value="TRACE"/>
+      <priority value="DEBUG"/>
       <appender-ref ref="CONSOLE_INFO"/>
       <appender-ref ref="CONSOLE_ERR"/>
    </root>

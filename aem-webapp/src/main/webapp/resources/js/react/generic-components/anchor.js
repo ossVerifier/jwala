@@ -12,7 +12,16 @@ var Anchor = React.createClass({
         return <a id={this.props.id} href="">{this.props.value}</a>
     },
     linkClick: function() {
-        this.props.callback(this.props.data);
+        if ($("#" + this.props.id).hasClass("disabled")) {
+            return false;
+        }
+
+        if (this.props.waitForResponse === true) {
+            this.props.callback("#" + this.props.id, this.props.data);
+        } else {
+            this.props.callback(this.props.data);
+        }
+
         return false;
     }
 });

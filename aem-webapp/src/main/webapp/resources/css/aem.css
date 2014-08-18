@@ -123,3 +123,7 @@ body {
     width:100px; /* Works fine for Chrome and Fire Fox */
     width:193px\9;  /* for IE8: This is a hack and it will change in the future once we have our own collapsing table made in React */
 }
+
+.disabled {
+    color:gray !important;
+}

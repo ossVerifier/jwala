@@ -33,12 +33,10 @@
 		input-channel="splitJvms" output-channel="processJvms" />
 
 	<int:channel id="processJvms">
-		<int:queue capacity="3000" />
+		<int:dispatcher task-executor="commonCommandExecutor" />
 	</int:channel>
 
 	<int:chain input-channel="processJvms" output-channel="jvmAggregated">
-		<int:poller max-messages-per-poll="1" fixed-delay="10"
-			receive-timeout="30000" task-executor="commonCommandExecutor" />
 		<int:service-activator method="startStop"
 			ref="jvmCommandExecutorBean" />
 		<int:aggregator id="dispatchCommandAggregator"
@@ -68,12 +66,10 @@
 		input-channel="splitWebServers" output-channel="processWebServers" />
 
 	<int:channel id="processWebServers">
-		<int:queue capacity="3000" />
+		<int:dispatcher task-executor="commonCommandExecutor" />
 	</int:channel>
 
 	<int:chain input-channel="processWebServers" output-channel="webServerAggregated">
-		<int:poller max-messages-per-poll="1" fixed-delay="10"
-			receive-timeout="30000" task-executor="commonCommandExecutor" />
 		<int:service-activator method="startStop"
 			ref="webServerCommandExecutorBean" />
 		<int:aggregator id="dispatchCommandAggregator"
