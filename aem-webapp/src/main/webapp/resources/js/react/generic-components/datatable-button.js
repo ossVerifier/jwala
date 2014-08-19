@@ -78,7 +78,7 @@ var DataTableButton = React.createClass({
                 $("#" + self.props.id).find("span").removeClass();
 
                 // Timeout if when the status gets stuck!
-                var timeout = (self.props.clickedStateTimeout === undefined ? 180000 : self.props.clickedStateTimeout);
+                var timeout = (self.props.clickedStateTimeout === undefined ? self.props.busyStatusTimeout : self.props.clickedStateTimeout);
                 setTimeout(function(){self.requestReturnCallback()}, timeout);
 
                 if (self.props.expectedState !== undefined) {
