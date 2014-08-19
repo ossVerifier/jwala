@@ -51,13 +51,36 @@ var DataTableButton = React.createClass({
         }
     },
 
+    pollForStateChange: function() {
+        if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) { // if still busy check status
+            if (this.props.expectedState === this.props.currentStateCallback(this.props.itemId)) {
+                // return button ui to non busy state
+                $("#" + this.props.id).attr("class",  "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+                $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
+            } else {
+                var self = this;
+                setTimeout(function(){self.pollForStateChange()}, 1000);
+            }
+        }
+    },
+
     statics: {
         handleClick: function(self) {
+
+            // Set the timeouts
+            // Note: Manual state monitoring using timeouts are not needed anymore once we are using "the REACT" grid already ;)
             if (self.props.clickedStateClassName !== undefined) {
                 $("#" + self.props.id).attr("class", self.props.clickedStateClassName);
                 $("#" + self.props.id).find("span").removeClass();
+
+                // Timeout if when the status gets stuck!
                 var timeout = (self.props.clickedStateTimeout === undefined ? 60000 : self.props.clickedStateTimeout);
                 setTimeout(function(){self.requestReturnCallback()}, timeout);
+
+                if (self.props.expectedState !== undefined) {
+                    // Timeout used for polling status change
+                    setTimeout(function(){self.pollForStateChange()}, 100);
+                }
             }
 
             if (self.props.isToggleBtn) {

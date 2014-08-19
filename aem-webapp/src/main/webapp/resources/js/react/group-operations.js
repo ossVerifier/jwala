@@ -226,7 +226,9 @@ var GroupOperationsDataTable = React.createClass({
                                              btnCallback:this.webServerStart,
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-play",
-                                             clickedStateClassName:"busy-button"},
+                                             clickedStateClassName:"busy-button",
+                                             expectedState:"STARTED",
+                                             currentStateCallback:this.getWebServerCurrentState},
                                             {tocType:"space"},
                                             {id:"stopWebServer",
                                              sTitle:"Stop",
@@ -236,7 +238,9 @@ var GroupOperationsDataTable = React.createClass({
                                              btnCallback:this.webServerStop,
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-stop",
-                                             clickedStateClassName:"busy-button"}],
+                                             clickedStateClassName:"busy-button",
+                                             expectedState:"STOPPED",
+                                             currentStateCallback:this.getWebServerCurrentState}],
                                            {sTitle:"State",
                                             mData:null,
                                             mRender: this.getStateForWebServer,
@@ -319,13 +323,14 @@ var GroupOperationsDataTable = React.createClass({
                                  tocType:"link",
                                  linkLabel:"Thread Dump",
                                  onClickCallback:this.onClickThreadDump},
-                                {sTitle:"",
-                                 mData:null,
-                                 tocType:"button",
-                                 btnLabel:"Heap Dump",
-                                 btnCallback:this.jvmHeapDump,
-                                 className:"inline-block"},
-                                [{id:"startJvm",
+                                [{sTitle:"",
+                                  mData:null,
+                                  tocType:"button",
+                                  btnLabel:"Heap Dump",
+                                  btnCallback:this.jvmHeapDump,
+                                  className:"inline-block"},
+                                 {tocType:"space"},
+                                 {id:"startJvm",
                                   sTitle:"Start",
                                   mData:null,
                                   tocType:"button",
@@ -333,7 +338,9 @@ var GroupOperationsDataTable = React.createClass({
                                   btnCallback:this.jvmStart,
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-play",
-                                  clickedStateClassName:"busy-button"},
+                                  clickedStateClassName:"busy-button",
+                                  expectedState:"STARTED",
+                                  currentStateCallback:this.getJvmCurrentState},
                                  {tocType:"space"},
                                  {id:"stopJvm",
                                   sTitle:"Stop",
@@ -343,7 +350,9 @@ var GroupOperationsDataTable = React.createClass({
                                   btnCallback:this.jvmStop,
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-stop",
-                                  clickedStateClassName:"busy-button"}],
+                                  clickedStateClassName:"busy-button",
+                                  expectedState:"STOPPED",
+                                  currentStateCallback:this.getJvmCurrentState}],
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm,
@@ -365,7 +374,15 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
    },
-
+   getWebServerCurrentState: function(id) {
+        if (this.webServersById[id] !== undefined) {
+            return this.webServersById[id].state;
+        }
+        return undefined;
+   },
+   getJvmCurrentState: function(id) {
+        return this.jvmsById[id].state;
+   },
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
           aoColumnDefs[itemIndex].mDataProp = null;
@@ -491,10 +508,10 @@ var GroupOperationsDataTable = React.createClass({
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
    jvmStart: function(id, requestReturnCallback) {
-        jvmControlService.startJvm(id, requestReturnCallback, requestReturnCallback);
+        jvmControlService.startJvm(id);
    },
    jvmStop: function(id, requestReturnCallback) {
-        jvmControlService.stopJvm(id, requestReturnCallback, requestReturnCallback);
+        jvmControlService.stopJvm(id);
    },
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
