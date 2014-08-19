@@ -469,10 +469,10 @@ var GroupOperationsDataTable = React.createClass({
         var enable = this.enableButtonThunk(selector);
         Promise.method(disable)().then(requestTask).then(requestCallbackTask).caught(errHandler).lastly(enable);
     },
-   startGroup: function(id, unused, buttonSelector) {
+   startGroup: function(id, buttonSelector) {
        this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id);});
    },
-   stopGroup: function(id, unused, buttonSelector) {
+   stopGroup: function(id, buttonSelector) {
        this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id);});
    },
    startGroupJvms: function(event) {
@@ -487,7 +487,7 @@ var GroupOperationsDataTable = React.createClass({
    stopGroupWebServers: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
    },
-   jvmHeapDump: function(id, unused, selector) {
+   jvmHeapDump: function(id, selector) {
        var requestHeapDump = function() {return jvmControlService.heapDump(id);};
        var heapDumpRequestCallback = function(response){
                                         var msg = response.applicationResponseContent.execData.standardError === "" ?
