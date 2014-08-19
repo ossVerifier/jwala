@@ -330,7 +330,8 @@ var GroupOperationsDataTable = React.createClass({
                                   tocType:"button",
                                   btnLabel:"Heap Dump",
                                   btnCallback:this.jvmHeapDump,
-                                  className:"inline-block"},
+                                  className:"inline-block",
+                                  extraDataToPassOnCallback:"hostName"},
                                  {tocType:"space"},
                                  {id:"startJvm",
                                   sTitle:"Start",
@@ -487,11 +488,11 @@ var GroupOperationsDataTable = React.createClass({
    stopGroupWebServers: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
    },
-   jvmHeapDump: function(id, selector) {
+   jvmHeapDump: function(id, selector, host) {
        var requestHeapDump = function() {return jvmControlService.heapDump(id);};
        var heapDumpRequestCallback = function(response){
                                         var msg = response.applicationResponseContent.execData.standardError === "" ?
-                                        response.applicationResponseContent.execData.standardOutput :
+                                        response.applicationResponseContent.execData.standardOutput  + " in " + host :
                                         response.applicationResponseContent.execData.standardError;
                                         $.alert(msg, "Heap Dump", false);
                                         $(selector).attr('title', "Last heap dump status: " + msg);
