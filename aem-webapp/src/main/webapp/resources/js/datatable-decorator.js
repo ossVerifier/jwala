@@ -271,7 +271,8 @@ var renderButton = function(tableId, item, data, type, full) {
                                         label2:item.label2,
                                         callback2:item.callback2,
                                         expectedState:item.expectedState,
-                                        currentStateCallback:item.currentStateCallback});
+                                        currentStateCallback:item.currentStateCallback,
+                                        buttonClassName:item.buttonClassName});
 
     TocPager.allButtons[id] = reactBtn;
 

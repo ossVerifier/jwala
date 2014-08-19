@@ -35,35 +35,39 @@ var DataTableButton = React.createClass({
         }
 
         var theLabel = this.toggleStatus === 0 ? this.props.label: this.props.label2;
+        var buttonClassName  = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
 
         return React.DOM.div({className: this.props.className},
                              React.DOM.button({id:this.props.id,
                                                type:"button",
                                                role:"button",
                                                ariaDisabled:false,
-                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"},
+                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only "
+                                                         + buttonClassName},
                                                React.DOM.span({className:spanClassName, title:this.props.sTitle}, theLabel)));
+    },
+    setToNonBusyState: function() {
+        var buttonClassName  = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
+        $("#" + this.props.id).attr("class",
+                                    "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only "
+                                    + buttonClassName);
+        $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
     },
     requestReturnCallback: function() {
         if (this.props.clickedStateClassName !== undefined) {
-            $("#" + this.props.id).attr("class",  "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
-            $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
+            this.setToNonBusyState();
         }
     },
-
     pollForStateChange: function() {
         if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) { // if still busy check status
             if (this.props.expectedState === this.props.currentStateCallback(this.props.itemId)) {
-                // return button ui to non busy state
-                $("#" + this.props.id).attr("class",  "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
-                $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
+                this.setToNonBusyState();
             } else {
                 var self = this;
-                setTimeout(function(){self.pollForStateChange()}, 1000);
+                setTimeout(function(){self.pollForStateChange()}, 500);
             }
         }
     },
-
     statics: {
         handleClick: function(self) {
 
@@ -74,12 +78,12 @@ var DataTableButton = React.createClass({
                 $("#" + self.props.id).find("span").removeClass();
 
                 // Timeout if when the status gets stuck!
-                var timeout = (self.props.clickedStateTimeout === undefined ? 60000 : self.props.clickedStateTimeout);
+                var timeout = (self.props.clickedStateTimeout === undefined ? 180000 : self.props.clickedStateTimeout);
                 setTimeout(function(){self.requestReturnCallback()}, timeout);
 
                 if (self.props.expectedState !== undefined) {
                     // Timeout used for polling status change
-                    setTimeout(function(){self.pollForStateChange()}, 100);
+                    setTimeout(function(){self.pollForStateChange()}, 500);
                 }
             }
 

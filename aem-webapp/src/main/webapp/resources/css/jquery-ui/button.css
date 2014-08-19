@@ -14,5 +14,9 @@
 }
 
 .ui-button {
-    height: 22px;
+    white-space: nowrap
+}
+
+.ui-button-height {
+    height: 22px !important
 }

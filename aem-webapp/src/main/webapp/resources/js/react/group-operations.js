@@ -228,7 +228,8 @@ var GroupOperationsDataTable = React.createClass({
                                              customSpanClassName:"ui-icon ui-icon-play",
                                              clickedStateClassName:"busy-button",
                                              expectedState:"STARTED",
-                                             currentStateCallback:this.getWebServerCurrentState},
+                                             currentStateCallback:this.getWebServerCurrentState,
+                                             buttonClassName:"ui-button-height"},
                                             {tocType:"space"},
                                             {id:"stopWebServer",
                                              sTitle:"Stop",
@@ -240,7 +241,8 @@ var GroupOperationsDataTable = React.createClass({
                                              customSpanClassName:"ui-icon ui-icon-stop",
                                              clickedStateClassName:"busy-button",
                                              expectedState:"STOPPED",
-                                             currentStateCallback:this.getWebServerCurrentState}],
+                                             currentStateCallback:this.getWebServerCurrentState,
+                                             buttonClassName:"ui-button-height"}],
                                            {sTitle:"State",
                                             mData:null,
                                             mRender: this.getStateForWebServer,
@@ -340,7 +342,8 @@ var GroupOperationsDataTable = React.createClass({
                                   customSpanClassName:"ui-icon ui-icon-play",
                                   clickedStateClassName:"busy-button",
                                   expectedState:"STARTED",
-                                  currentStateCallback:this.getJvmCurrentState},
+                                  currentStateCallback:this.getJvmCurrentState,
+                                  buttonClassName:"ui-button-height"},
                                  {tocType:"space"},
                                  {id:"stopJvm",
                                   sTitle:"Stop",
@@ -352,7 +355,8 @@ var GroupOperationsDataTable = React.createClass({
                                   customSpanClassName:"ui-icon ui-icon-stop",
                                   clickedStateClassName:"busy-button",
                                   expectedState:"STOPPED",
-                                  currentStateCallback:this.getJvmCurrentState}],
+                                  currentStateCallback:this.getJvmCurrentState,
+                                  buttonClassName:"ui-button-height"}],
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm,
@@ -376,12 +380,12 @@ var GroupOperationsDataTable = React.createClass({
    },
    getWebServerCurrentState: function(id) {
         if (this.webServersById[id] !== undefined) {
-            return this.webServersById[id].state;
+            return this.webServersById[id].state.stateString;
         }
         return undefined;
    },
    getJvmCurrentState: function(id) {
-        return this.jvmsById[id].state;
+        return this.jvmsById[id].state.stateString;
    },
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
@@ -539,10 +543,10 @@ var GroupOperationsDataTable = React.createClass({
         return "http://" + data.host + ":" + data.port + tocVars.loadBalancerStatusMount;
     },
     webServerStart: function(id, requestReturnCallback) {
-        webServerControlService.startWebServer(id, requestReturnCallback, requestReturnCallback);
+        webServerControlService.startWebServer(id);
     },
     webServerStop: function(id, requestReturnCallback) {
-        webServerControlService.stopWebServer(id, requestReturnCallback, requestReturnCallback);
+        webServerControlService.stopWebServer(id);
     },
 
     /**
