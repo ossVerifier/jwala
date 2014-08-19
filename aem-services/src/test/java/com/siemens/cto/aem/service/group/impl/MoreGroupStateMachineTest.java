@@ -226,7 +226,7 @@ public class MoreGroupStateMachineTest {
         setJvmState(JvmState.FAILED);
         classUnderTest.wsError(ws.getId());
         classUnderTest.refreshState();
-        assertEquals(GroupState.ERROR, classUnderTest.getCurrentState());
+        assertEquals(GroupState.UNKNOWN, classUnderTest.getCurrentState());
 
     }
 

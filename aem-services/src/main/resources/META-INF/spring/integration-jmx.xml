@@ -29,10 +29,12 @@
     <bean class="org.springframework.jmx.export.MBeanExporter">
         <property name="beans">
             <map>
+<!-- Currently not in use.
                 <entry key="com.siemens.cto.TaskExecutors:name=statePubSubBusExecutor" value-ref="statePubSubBusExecutor" />
                 <entry key="com.siemens.cto.TaskExecutors:name=groupRefreshExecutor" value-ref="groupRefreshExecutor" />                
+-->
             </map>
             </property>
     </bean>
-    
+
 </beans>

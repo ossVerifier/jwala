@@ -28,6 +28,7 @@ public class JmsStateNotificationServiceImpl extends AbstractStateNotificationSe
         destination = theDestination;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     @Transactional
     public void notifyStateUpdated(final CurrentState anUpdatedThing) {

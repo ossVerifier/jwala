@@ -24,7 +24,7 @@ public class TestJpaConfiguration {
     @Bean
     public DataSource getDataSource() {
         return new SimpleDriverDataSource(new Driver(),
-                                          "jdbc:h2:~/test",
+                                          "jdbc:h2:~/test-services",
                                           "sa",
                                           "");
     }

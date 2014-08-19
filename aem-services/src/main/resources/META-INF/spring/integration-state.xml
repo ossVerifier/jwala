@@ -4,11 +4,18 @@
 	xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
      
-    <bean id="groupCoalescingBlockingQueue" class="com.siemens.cto.aem.service.group.impl.GroupCoalescingBlockingQueue">
-        <constructor-arg type="int" value="500" /> <!-- number of concurrent groups that need refreshing -->
-    </bean>
-
     <bean id="messageTiming" class="com.siemens.cto.aem.service.group.impl.MessageTimingChannelInterceptor" />
+
+    <int:channel id="jvmStateUpdates" />
+    <int:channel id="webServerStateUpdates" />
+    <int:channel id="groupStateUpdates" />
+    <int:channel id="groupStateLogging" />
+        
+    <!--  use direct channel for now 
+    <int:publish-subscribe-channel id="groupStateLogging" task-executor="statePubSubBusExecutor"/>  -->      
+
+    <!-- All channels are timed -->
+    <int:channel-interceptor ref="messageTiming" pattern="group*, jvm*, web*, state*" order="0"/>    
 
     <int:gateway id="stateNotification" service-interface="com.siemens.cto.aem.service.state.StateNotificationGateway">
         <int:method name="jvmStateChanged" request-channel="jvmStateUpdates"/>
@@ -16,51 +23,30 @@
         <int:method name="groupStateChanged" request-channel="groupStateUpdates"/>
     </int:gateway>
 
-    <!-- Only used For Logging Results -->
+    <!-- Only used For Logging Results 
     <task:executor id="statePubSubBusExecutor" pool-size="3-5"
-        queue-capacity="100" keep-alive="3" rejection-policy="DISCARD" />
-   
-    <!-- Used to process batches of group updates and notify the client. 
-    If you want to limit database connections, you'll have to break task out of the 
-    <int:chain separately, as previously done. Transactions in the chain are small. -->
-    <task:executor id="groupRefreshExecutor" pool-size="5-50"
-        queue-capacity="3000" keep-alive="10" rejection-policy="DISCARD_OLDEST"  />
-
-    <!-- Creates several threads in our blocking queue implementation for 1second at a time, waiting for group updates. 
-         Will return within 20 milliseconds if a group update appears -->
-    <int:poller id="groupRefreshPoller" fixed-rate="20" default="false" max-messages-per-poll="100" receive-timeout="1000" time-unit="MILLISECONDS" task-executor="groupRefreshExecutor" />
+        queue-capacity="100" keep-alive="3" rejection-policy="DISCARD" />-->
     
-    <!-- All channels are timed -->
-    <int:channel-interceptor ref="messageTiming" pattern="group*, jvm*, web*" order="2"/>    
-    <int:channel id="jvmStateUpdates" />
-    <int:channel id="webServerStateUpdates" />
-    <int:channel id="groupCoalescedRefresh" >
-       <int:queue  ref="groupCoalescingBlockingQueue"/>
-    </int:channel>
-    <int:publish-subscribe-channel id="groupStateUpdates" task-executor="statePubSubBusExecutor"/>
-       
-    <!-- Split jvm udpates to groups implementation -->
-    <int:splitter  id="groupJvmStateSplitter" 
-                           input-channel="jvmStateUpdates"
-                           output-channel="groupCoalescedRefresh"
-                           method="stateUpdateJvmSplitOnly"
-                           ref="groupStateService" /> 
+    <int:splitter auto-startup="true" 
+           input-channel="jvmStateUpdates"
+           output-channel="groupStateUpdates"
+           method="stateUpdateJvm"
+           ref="groupStateService" />
 
-    <!-- Split web server udpates to groups implementation -->
-    <int:splitter  id="groupWebServerStateServiceSplitter"  
-                           input-channel="webServerStateUpdates"
-                           output-channel="groupCoalescedRefresh"
-                           method="stateUpdateWebServerSplitOnly"
-                           ref="groupStateService" />
+    <int:splitter auto-startup="true"
+           input-channel="webServerStateUpdates"
+           output-channel="groupStateUpdates"
+           method="stateUpdateWebServer"
+           ref="groupStateService" />
 
-    <!-- Individual group update implementation -->
-    <int:chain input-channel="groupCoalescedRefresh" output-channel="groupStateUpdates">
-         <int:poller ref="groupRefreshPoller" />
-         <int:service-activator 
-                method="coalescedGroupRefresh"
-                ref="groupStateService" />
+    <!-- Handle group persistence and notification -->
+    <int:chain input-channel="groupStateUpdates" output-channel="groupStateLogging">
          <int:service-activator 
                 method="groupStatePersist"
+                ref="groupStateService" />
+         <!-- Unlock group state object to serialize group states with persisting data -->
+         <int:service-activator 
+                method="groupStateUnlock"
                 ref="groupStateService" />
          <!-- Notification to listeners from the UI -->
          <int:service-activator 
@@ -71,7 +57,7 @@
     <!-- Finishes the chain with a subscriber who logs. -->
     <int:logging-channel-adapter 
         id="stateUpdateLogging"
-        channel="groupStateUpdates"
+        channel="groupStateLogging"
         level="TRACE" 
         logger-name="com.siemens.cto.aem.bus"
         expression="'TIMING: Message complete after ' + ( #root.headers.get('startMs') == null ? '?':(T(java.lang.System).currentTimeMillis() - #root.headers.get('startMs'))) +  'ms: ' + #root">

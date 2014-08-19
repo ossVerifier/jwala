@@ -4,7 +4,9 @@ import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.KeyValueStateConsumer;
 import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
 public class CurrentGroupState extends CurrentState<Group, GroupState> {
 
@@ -55,6 +57,12 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
 
     public StateDetail getJvmsDetail() {
         return this.jvms;
+    }
+    
+    @Override
+    public void provideState(final KeyValueStateConsumer aConsumer) {
+        super.provideState(aConsumer);
+        aConsumer.set(CommonStateKey.PROGRESS, "{jvms:"+jvms.toString()+",webservers:"+webServers.toString()+"}");
     }
 
     @Override

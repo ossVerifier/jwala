@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
@@ -101,6 +102,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return new JpaGroupBuilder(aJpaGroup).build();
     }
 
+    protected Group groupFrom(final CurrentState<Group, GroupState> originalStatus, final JpaGroup aJpaGroup) {
+        if(originalStatus instanceof CurrentGroupState) {
+            return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentGroupState)originalStatus).build();
+        } else {
+            return new JpaGroupBuilder(aJpaGroup).build();
+        }
+    }
     protected CurrentState<Group, GroupState> groupStateFrom(final JpaGroup aJpaGroup) {
         return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
     }
@@ -140,7 +148,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     @Override
     public Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
         LOGGER.debug("Persisting new state " + aGroupToUpdate.getCommand());
-        return groupFrom(groupCrudService.updateGroupStatus(Event.<SetStateCommand<Group, GroupState>>create(aGroupToUpdate.getCommand(), aGroupToUpdate.getAuditEvent())));
+        return groupFrom(aGroupToUpdate.getCommand().getNewState(), groupCrudService.updateGroupStatus(Event.<SetStateCommand<Group, GroupState>>create(aGroupToUpdate.getCommand(), aGroupToUpdate.getAuditEvent())));
     }
 
 }

@@ -35,10 +35,6 @@ public class TocFileManagerConfiguration {
         return new PropertyFilesConfigurationImpl(ApplicationProperties.getProperties());
     }
 
-    @Bean(destroyMethod="") FileSystem getPlatformFileSystem() {
-        return FileSystems.getDefault();
-    }
-
     @Bean NameSynthesizer getNameSynthesizer() {
         return new DefaultNameSynthesizer();
     }

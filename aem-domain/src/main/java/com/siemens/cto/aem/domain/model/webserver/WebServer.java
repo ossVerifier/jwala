@@ -125,7 +125,9 @@ public class WebServer implements Serializable {
         return new ToStringBuilder(this)
                 .append("id", id)
                 .append("host", host)
+                .append("name", name)
                 .append("port", port)
+                .append("httpsPort", httpsPort)
                 .append("statusPath", statusPath)
                 .toString();
     }

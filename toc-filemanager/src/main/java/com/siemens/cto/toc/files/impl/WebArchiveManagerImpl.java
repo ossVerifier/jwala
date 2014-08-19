@@ -2,6 +2,7 @@ package com.siemens.cto.toc.files.impl;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,7 @@ import com.siemens.cto.toc.files.WebArchiveManager;
 
 public class WebArchiveManagerImpl implements WebArchiveManager {
 
-    @Autowired
-    private FileSystem platformFileSystem;
+    private FileSystem platformFileSystem = FileSystems.getDefault();
     
     @Autowired
     private NameSynthesizer synth;

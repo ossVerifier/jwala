@@ -8,6 +8,7 @@ import java.util.List;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -119,10 +120,11 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             entityManager.flush();
 
             return webServerFrom(jpaWebServer);
-        } catch (final EntityExistsException eee) {
+        } catch (final PersistenceException eee) {
+            // We have to catch the generalized exception because OpenJPA can throw a rollback instead.
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
                     + aWebServerToUpdate.getCommand().getNewName(), eee);
-        }
+        } 
     }
 
     @Override

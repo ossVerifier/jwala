@@ -12,9 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -46,6 +44,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.path.Path;
@@ -151,49 +150,10 @@ public class GroupStateServiceImplTest {
         assertEquals(3, updateReceived);
     }
 
-    /**
-     * Please @see com.siemens.cto.aem.service.state.impl.GroupStateServiceStateMachineIntegrationTest
-     * @throws InterruptedException
-     */
-    @Deprecated
-    @Ignore
-    @Test
-    public void testGroupStateUpdatingInParallel() throws InterruptedException {
-
-        scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.SECONDS);
-        scheduleJvmThread(3L, JvmState.STARTED, 0, TimeUnit.SECONDS);
-        scheduleJvmThread(4L, JvmState.STARTED, 0, TimeUnit.SECONDS);
-
-        scheduleJvmThread(2L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STOPPED, 25, TimeUnit.MILLISECONDS);
-
-        Thread.sleep(1);
-
-        CurrentGroupState state = groupWith3.getCurrentState();
-        assertEquals(GroupState.STARTED, state.getState());
-
-        Thread.sleep(25);
-
-        state = groupWith3.getCurrentState();
-        assertEquals(GroupState.STOPPED, state.getState());
-    }
-
     ScheduledExecutorService concurrencyActions = java.util.concurrent.Executors.newScheduledThreadPool(10);
-
-    private void scheduleJvmThread(final long id, final JvmState state, final long delay, final TimeUnit units) {
-        concurrencyActions.schedule(
-                Executors.callable(new Runnable() {
-            @Override
-            public void run() {
-                groupStateService.stateUpdateJvm(new CurrentState<>(id(id, Jvm.class), state, DateTime.now(), StateType.JVM));
-            }
-        })
-        , delay, units);
-    }
-
+        
     @Test
-    public void testStateUpdatedJVMResiliency() {
+    public void testStateUpdatedJVMResiliency() throws InterruptedException {
         for(JvmState js : JvmState.values()) {
             groupStateService.stateUpdateJvm(new CurrentState<>(id(0L, Jvm.class), js, DateTime.now(), StateType.JVM));
         }
@@ -215,13 +175,13 @@ public class GroupStateServiceImplTest {
         lgroupWith3 = new LiteGroup(id(2L, Group.class), "");
         lgroups.add(lgroup);
         lgroupsWith3.add(lgroupWith3);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/abc"));
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/hct"));
         jvms.add(jvm);
-        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
         jvmsThree.add(jvm2);
-        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
         jvmsThree.add(jvm3);
-        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/abc"));
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
         jvmsThree.add(jvm4);
         group = new Group(group.getId(),  group.getName(), jvms);
         groupWith3 = new Group(groupWith3.getId(),  groupWith3.getName(), jvmsThree);
@@ -255,24 +215,26 @@ public class GroupStateServiceImplTest {
     }
 
     @Test
-    public void testStateUpdatedJVM() {
+    public void testStateUpdatedJVM() throws InterruptedException {
 
         List<SetGroupStateCommand> updates;
         SetGroupStateCommand sgsc;
-
+        
         when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.INITIALIZED, DateTime.now()));
         when(groupStateManager.getCurrentState()).thenReturn(GroupState.INITIALIZED);
         updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.UNKNOWN, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
-
+        groupStateService.groupStateUnlock(sgsc);
+         
         assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
         updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.INITIALIZED, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
+        groupStateService.groupStateUnlock(sgsc);
         assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
 
-        updates = updateJvmState(JvmState.START_REQUESTED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.START_REQUESTED);
 
         sgsc = updates.get(0);
         assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
@@ -280,7 +242,7 @@ public class GroupStateServiceImplTest {
         when(groupStateManager.getCurrentState()).thenReturn(GroupState.STARTED);
         when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STARTED, DateTime.now()));
 
-        updates = updateJvmState(JvmState.STARTED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.STARTED);
 
         sgsc = updates.get(0);
         assertEquals(GroupState.STARTED, sgsc.getNewState().getState() );
@@ -289,12 +251,12 @@ public class GroupStateServiceImplTest {
 
         group = new Group(group.getId(), group.getName(), jvms, GroupState.STARTED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
-        updates = updateJvmState(JvmState.STOP_REQUESTED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.STOP_REQUESTED);
 
         when(groupStateManager.getCurrentState()).thenReturn(GroupState.STOPPED);
         when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STOPPED, DateTime
                 .now()));
-        updates = updateJvmState(JvmState.STOPPED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.STOPPED);
 
         verify(groupStateManager, times(1)).jvmStopped(eq(jvm.getId()));
 
@@ -303,13 +265,13 @@ public class GroupStateServiceImplTest {
 
         group = new Group(group.getId(), group.getName(), jvms, GroupState.STOPPED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
-        updates = updateJvmState(JvmState.FAILED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.FAILED);
 
         verify(groupStateManager, times(1)).jvmError(eq(jvm.getId()));
     }
 
     @Test
-    public void testWebServerStateUnfinished() {
+    public void testWebServerStateUnfinished() throws InterruptedException {
         groupStateService.stateUpdateWebServer(new CurrentState<>(id(0L, WebServer.class), WebServerReachableState.REACHABLE, DateTime
                 .now(), StateType.WEB_SERVER));
     }
@@ -335,8 +297,12 @@ public class GroupStateServiceImplTest {
         verify(groupStateManager, times(1)).canStop();
     }
 
-    private List<SetGroupStateCommand> updateJvmState(final JvmState aState) {
-        return groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), aState, DateTime.now(), StateType.JVM));
+    private List<SetGroupStateCommand> updateJvmState(final Identifier<Jvm> jvmId, final JvmState aState) throws InterruptedException {
+        List<SetGroupStateCommand> potentiallyLocked = groupStateService.stateUpdateJvm(new CurrentState<>(jvmId, aState, DateTime.now(), StateType.JVM));
+        for(SetGroupStateCommand sgsc : potentiallyLocked) {
+            groupStateService.groupStateUnlock(sgsc);
+        }
+        return potentiallyLocked;
     }
 
     @Configuration

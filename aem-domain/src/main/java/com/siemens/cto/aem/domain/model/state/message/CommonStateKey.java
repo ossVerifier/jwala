@@ -5,7 +5,8 @@ public enum CommonStateKey implements StateKey {
     AS_OF("AS_OF"),
     ID("ID"),
     STATE("STATE"),
-    TYPE("TYPE");
+    TYPE("TYPE"),
+    PROGRESS("PROGRESS");
 
     private final String key;
 

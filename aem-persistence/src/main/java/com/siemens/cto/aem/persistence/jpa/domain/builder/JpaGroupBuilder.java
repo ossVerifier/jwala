@@ -6,6 +6,7 @@ import java.util.Set;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
+import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -17,6 +18,7 @@ public class JpaGroupBuilder {
 
     public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaGroup group;
+    private CurrentGroupState stateDetailSource = null;
 
     public JpaGroupBuilder() {
     }
@@ -31,11 +33,19 @@ public class JpaGroupBuilder {
     }
 
     public Group build() {
-        return new Group(new Identifier<Group>(group.getId()),
-                         group.getName(),
-                         getJvms(),
-                         getState(),
-                         getAsOf());
+        if(stateDetailSource == null) { 
+            return new Group(new Identifier<Group>(group.getId()),
+                             group.getName(),
+                             getJvms(),
+                             getState(),
+                             getAsOf());
+        } else { 
+            return new Group(new Identifier<Group>(group.getId()),
+                             group.getName(),
+                             getJvms(),
+                             stateDetailSource,
+                             getAsOf());
+        }
     }
 
     private DateTime getAsOf() {
@@ -66,5 +76,10 @@ public class JpaGroupBuilder {
         }
 
         return jvms;
+    }
+
+    public JpaGroupBuilder setStateDetail(CurrentGroupState originalStatus) {
+        this.stateDetailSource = originalStatus;
+        return this;
     }
 }
