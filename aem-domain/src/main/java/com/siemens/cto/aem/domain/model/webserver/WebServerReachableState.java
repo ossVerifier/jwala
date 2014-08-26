@@ -38,4 +38,9 @@ public enum WebServerReachableState implements ExternalizableState {
     public String toStateString() {
         return externalName;
     }
+
+    @Override
+    public boolean isTransientState() {
+        return this.equals(START_REQUESTED) || this.equals(STOP_REQUESTED);
+    }
 }

@@ -45,4 +45,9 @@ public enum JvmState implements ExternalizableState {
     public String toString() {
         return stateName;
     }
+
+    @Override
+    public boolean isTransientState() {
+        return this.equals(START_REQUESTED) || this.equals(STOP_REQUESTED);
+    }
 }

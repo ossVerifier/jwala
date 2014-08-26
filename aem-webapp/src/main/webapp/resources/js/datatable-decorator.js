@@ -271,7 +271,7 @@ var renderButton = function(tableId, item, data, type, full) {
                                         label2:item.label2,
                                         callback2:item.callback2,
                                         expectedState:item.expectedState,
-                                        currentStateCallback:item.currentStateCallback,
+                                        isBusyCallback:item.isBusyCallback,
                                         buttonClassName:item.buttonClassName,
                                         extraDataToPassOnCallback:full[item.extraDataToPassOnCallback],
                                         busyStatusTimeout:item.busyStatusTimeout});

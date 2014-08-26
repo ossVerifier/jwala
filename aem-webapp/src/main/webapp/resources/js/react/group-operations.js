@@ -227,8 +227,7 @@ var GroupOperationsDataTable = React.createClass({
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-play",
                                              clickedStateClassName:"busy-button",
-                                             expectedState:"STARTED",
-                                             currentStateCallback:this.getWebServerCurrentState,
+                                             isBusyCallback:this.isWebServerTransientState,
                                              buttonClassName:"ui-button-height",
                                              busyStatusTimeout:tocVars.startStopTimeout},
                                             {tocType:"space"},
@@ -241,8 +240,7 @@ var GroupOperationsDataTable = React.createClass({
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-stop",
                                              clickedStateClassName:"busy-button",
-                                             expectedState:"STOPPED",
-                                             currentStateCallback:this.getWebServerCurrentState,
+                                             isBusyCallback:this.isWebServerTransientState,
                                              buttonClassName:"ui-button-height",
                                              busyStatusTimeout:tocVars.startStopTimeout}],
                                            {sTitle:"State",
@@ -344,8 +342,7 @@ var GroupOperationsDataTable = React.createClass({
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-play",
                                   clickedStateClassName:"busy-button",
-                                  expectedState:"STARTED",
-                                  currentStateCallback:this.getJvmCurrentState,
+                                  isBusyCallback:this.isJvmTransientState,
                                   buttonClassName:"ui-button-height",
                                   busyStatusTimeout:tocVars.startStopTimeout},
                                  {tocType:"space"},
@@ -358,8 +355,7 @@ var GroupOperationsDataTable = React.createClass({
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-stop",
                                   clickedStateClassName:"busy-button",
-                                  expectedState:"STOPPED",
-                                  currentStateCallback:this.getJvmCurrentState,
+                                  isBusyCallback:this.isJvmTransientState,
                                   buttonClassName:"ui-button-height",
                                   busyStatusTimeout:tocVars.startStopTimeout}],
                                 {sTitle:"State",
@@ -383,14 +379,14 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
    },
-   getWebServerCurrentState: function(id) {
+   isWebServerTransientState: function(id) {
         if (this.webServersById[id] !== undefined) {
-            return this.webServersById[id].state.stateString;
+            return this.webServersById[id].state.transientState;
         }
-        return undefined;
+        return false;
    },
-   getJvmCurrentState: function(id) {
-        return this.jvmsById[id].state.stateString;
+   isJvmTransientState: function(id) {
+        return this.jvmsById[id].state.transientState;
    },
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;

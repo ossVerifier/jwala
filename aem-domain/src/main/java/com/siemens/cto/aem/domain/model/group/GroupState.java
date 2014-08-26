@@ -33,4 +33,9 @@ public enum GroupState implements ExternalizableState {
     public String toString() {
         return toStateString();
     }
+
+    @Override
+    public boolean isTransientState() {
+        return this.equals(STARTING) || this.equals(STOPPING);
+    }
 }

@@ -80,6 +80,11 @@ public class CurrentStateProcessorTest {
         public String toStateString() {
             return this.toString();
         }
+
+        @Override
+        public boolean isTransientState() {
+            return false;
+        }
     }
 
 }

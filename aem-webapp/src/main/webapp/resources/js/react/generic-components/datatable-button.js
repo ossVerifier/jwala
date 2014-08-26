@@ -26,6 +26,7 @@ var DataTableButton = React.createClass({
      * "Cannot read property 'firstChild' of undefined"
      */
     toggleStatus: 0,
+    busyTimeout: null,
     render: function() {
         DataTableButton.bindEvents(this);
 
@@ -53,14 +54,15 @@ var DataTableButton = React.createClass({
                                     + buttonClassName);
         $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
     },
-    requestReturnCallback: function() {
+    busyTimeoutCallback: function() {
         if (this.props.clickedStateClassName !== undefined) {
             this.setToNonBusyState();
         }
     },
     pollForStateChange: function() {
         if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) { // if still busy check status
-            if (this.props.expectedState === this.props.currentStateCallback(this.props.itemId)) {
+            if (!this.props.isBusyCallback(this.props.itemId)) {
+                clearTimeout(this.busyTimeout);
                 this.setToNonBusyState();
             } else {
                 var self = this;
@@ -79,9 +81,9 @@ var DataTableButton = React.createClass({
 
                 // Timeout if when the status gets stuck!
                 var timeout = (self.props.clickedStateTimeout === undefined ? self.props.busyStatusTimeout : self.props.clickedStateTimeout);
-                setTimeout(function(){self.requestReturnCallback()}, timeout);
+                self.busyTimeout = setTimeout(function(){self.busyTimeoutCallback()}, timeout);
 
-                if (self.props.expectedState !== undefined) {
+                if (self.props.isBusyCallback !== undefined) {
                     // Timeout used for polling status change
                     setTimeout(function(){self.pollForStateChange()}, 500);
                 }

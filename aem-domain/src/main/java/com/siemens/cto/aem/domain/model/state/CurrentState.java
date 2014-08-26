@@ -42,6 +42,10 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
         return state.toStateString();
     }
 
+    public boolean isTransientState() {
+        return state.isTransientState();
+    }
+
     public DateTime getAsOf() {
         return asOf;
     }
