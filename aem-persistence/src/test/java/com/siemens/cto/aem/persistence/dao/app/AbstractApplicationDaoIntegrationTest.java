@@ -61,6 +61,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         jpaJvm.setRedirectPort(4);
         jpaJvm.setShutdownPort(3);
         jpaJvm.setAjpPort(2);
+        jpaJvm.setStatusPath("/abc");
         entityManager.persist(jpaJvm);
 
         jpaApplication = new JpaApplication();

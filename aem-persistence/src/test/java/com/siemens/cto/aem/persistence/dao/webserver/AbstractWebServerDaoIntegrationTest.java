@@ -540,6 +540,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaJvm1.setAjpPort(8009);
         jpaJvm1.setRedirectPort(443);
         jpaJvm1.setShutdownPort(8005);
+        jpaJvm1.setStatusPath("/abc");
         entityManager.persist(jpaJvm1);
 
         addJvmToGroup(jpaJvm1, jpaGroupA);
@@ -551,6 +552,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaJvm2.setAjpPort(8009);
         jpaJvm2.setRedirectPort(443);
         jpaJvm2.setShutdownPort(8005);
+        jpaJvm2.setStatusPath("/abc");
         entityManager.persist(jpaJvm2);
 
         addJvmToGroup(jpaJvm2, jpaGroupC);
@@ -561,6 +563,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaJvm3.setAjpPort(8009);
         jpaJvm3.setRedirectPort(443);
         jpaJvm3.setShutdownPort(8005);
+        jpaJvm3.setStatusPath("/abc");
         entityManager.persist(jpaJvm3);
 
         addJvmToGroup(jpaJvm3, jpaGroupB);
@@ -572,6 +575,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaJvm4.setAjpPort(8009);
         jpaJvm4.setRedirectPort(443);
         jpaJvm4.setShutdownPort(8005);
+        jpaJvm4.setStatusPath("/abc");
         entityManager.persist(jpaJvm4);
 
         addJvmToGroup(jpaJvm4, jpaGroupA);
@@ -583,6 +587,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaJvm5.setAjpPort(8009);
         jpaJvm5.setRedirectPort(443);
         jpaJvm5.setShutdownPort(8005);
+        jpaJvm5.setStatusPath("/abc");
         entityManager.persist(jpaJvm5);
 
         addJvmToGroup(jpaJvm5, jpaGroupC);
