@@ -11,7 +11,8 @@ public enum WebServerReachableState implements ExternalizableState {
     UNREACHABLE("STOPPED"),
     UNKNOWN("UNKNOWN"),
     START_REQUESTED("STARTING"),
-    STOP_REQUESTED("STOPPING");
+    STOP_REQUESTED("STOPPING"),
+    FAILED("FAILED");
 
     private static final Map<String, WebServerReachableState> LOOKUP_MAP = new HashMap<>(values().length);
 

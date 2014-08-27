@@ -16,14 +16,29 @@
         <constructor-arg ref="webServerStateService"/>
     </bean>
 
+    <bean id="webServerSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
+        <constructor-arg value="'sc query ' + payload.name"/>
+    </bean>
+
+    <bean id="webServerSshHostExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
+        <constructor-arg value="payload.host"/>
+    </bean>
+
     <int:channel id="webServerStateRequest"/>
     <int:channel id="failedWebServerStateRequest"/>
     <int:channel id="successfulWebServerStateRequest"/>
     <int:channel id="unsplitWebServerStateRequests"/>
-    <int:channel id="completedWebServerStateRequest"/>
-    <int:channel id="webServerStateRequests">
+    <int:channel id="splitWebServerStateRequests">
         <int:dispatcher task-executor="webServerStateExecutor"/>
     </int:channel>
+    <int:channel id="completedWebServerStateRequest"/>
+    <int:channel id="webServerServiceExistenceRequest"/>
+    <int:channel id="webServerNoService"/>
+    <int:channel id="webServerBadHost"/>
+    <int:channel id="webServerServiceExistenceResult"/>
+    <int:channel id="webServerStateRequestPreparation"/>
+    <int:channel id="webServerStateRequests"/>
+
     <task:executor id="webServerStateExecutor"
                    pool-size="5"
                    queue-capacity="200"
@@ -37,18 +52,38 @@
         <int:poller fixed-delay="30" time-unit="SECONDS"/>
     </int:inbound-channel-adapter>
 
-    <int:chain id="webServerRequestSplitter" input-channel="unsplitWebServerStateRequests" output-channel="webServerStateRequests">
+    <int:chain id="webServerRequestSplitter" input-channel="unsplitWebServerStateRequests" output-channel="splitWebServerStateRequests">
         <int:splitter/>
         <int:header-enricher id="webServerIdHeaderEnricher">
             <int:header name="webServerId" expression="payload.id"/>
         </int:header-enricher>
-        <int:transformer id="webServerStatusUriTransformer" expression="payload.getStatusUri().toString()"/>
+        <int:header-enricher id="webServerHeaderEnricher">
+            <int:header name="webServer" expression="payload"/>
+        </int:header-enricher>
     </int:chain>
 
-    <int:chain id="webServerPreHttpOutboundChain" input-channel="webServerStateRequests" output-channel="webServerStateRequest">
+    <int:chain id="checkWebServerExistenceChain" input-channel="splitWebServerStateRequests" output-channel="webServerServiceExistenceResult">
         <int:header-enricher>
-            <int:error-channel value="failedWebServerStateRequest"/>
+            <int:error-channel value="webServerBadHost"/>
         </int:header-enricher>
+        <int:service-activator method="handleSshMessage">
+            <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecutingService" autowire="constructor">
+                <constructor-arg ref="webServerSshCommandExpression"/>
+                <constructor-arg ref="webServerSshHostExpression"/>
+            </bean>
+        </int:service-activator>
+    </int:chain>
+
+    <int:router id="webServerServiceExistenceResultRouter" input-channel="webServerServiceExistenceResult" expression="payload.getReturnCode().wasSuccessful()">
+        <int:mapping value="true" channel="webServerStateRequestPreparation"/>
+        <int:mapping value="false" channel="webServerNoService"/>
+    </int:router>
+
+    <int:chain id="webServerPreHttpOutboundChain" input-channel="webServerStateRequestPreparation" output-channel="webServerStateRequest">
+        <int:header-enricher default-overwrite="true">
+            <int:error-channel ref="failedWebServerStateRequest"/>
+        </int:header-enricher>
+        <int:transformer id="webServerStatusUriTransformer" expression="headers['webServer'].getStatusUri().toString()"/>
     </int:chain>
 
     <int-http:outbound-gateway id="webServerHttpOutboundGateway"
@@ -70,6 +105,19 @@
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).REACHABLE}"/>
         </int:header-enricher>
         <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
+    </int:chain>
+
+    <int:chain id="webServerBadHostChain" input-channel="webServerBadHost" output-channel="webServerNoService">
+        <int:header-enricher id="webServerBadHostHeaderEnricher">
+            <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
+        </int:header-enricher>
+    </int:chain>
+
+    <int:chain id="webServerNoServiceChain" input-channel="webServerNoService" output-channel="completedWebServerStateRequest">
+        <int:header-enricher id="webServerNoServiceHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
+        </int:header-enricher>
+        <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>
     </int:chain>
 
     <int:chain id="completedWebServerStateRequestChain" input-channel="completedWebServerStateRequest">

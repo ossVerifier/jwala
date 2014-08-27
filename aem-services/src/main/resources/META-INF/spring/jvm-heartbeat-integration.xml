@@ -16,14 +16,28 @@
         <constructor-arg ref="jvmStateService"/>
     </bean>
 
+    <bean id="jvmSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
+        <constructor-arg value="'sc query ' + payload.jvmName"/>
+    </bean>
+
+    <bean id="jvmSshHostExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
+        <constructor-arg value="payload.hostName"/>
+    </bean>
+
     <int:channel id="jvmStateRequest"/>
     <int:channel id="jvmFailedStateRequest"/>
     <int:channel id="jvmSuccessfulStateRequest"/>
-    <int:channel id="jvmUnsplitStateRequests"/>
-    <int:channel id="jvmCompletedStateRequest"/>
-    <int:channel id="jvmStateRequests">
+    <int:channel id="unsplitHeartbeatJvms"/>
+    <int:channel id="splitHeartbeatJvms">
         <int:dispatcher task-executor="jvmStateExecutor"/>
     </int:channel>
+    <int:channel id="jvmCompletedStateRequest"/>
+    <int:channel id="jvmServiceExistenceRequest"/>
+    <int:channel id="jvmNoService"/>
+    <int:channel id="jvmBadHost"/>
+    <int:channel id="jvmServiceExistenceResult"/>
+    <int:channel id="jvmStateRequestPreparation"/>
+
     <task:executor id="jvmStateExecutor"
                    pool-size="5"
                    queue-capacity="200"
@@ -33,22 +47,42 @@
     <int:inbound-channel-adapter id="jvmStateInitiator"
                                  ref="jvmProvider"
                                  method="getAllJvms"
-                                 channel="jvmUnsplitStateRequests" phase="1000">
+                                 channel="unsplitHeartbeatJvms" phase="1000">
         <int:poller fixed-delay="30" time-unit="SECONDS"/>
     </int:inbound-channel-adapter>
 
-    <int:chain id="jvmRequestSplitter" input-channel="jvmUnsplitStateRequests" output-channel="jvmStateRequests">
+    <int:chain id="jvmRequestSplitter" input-channel="unsplitHeartbeatJvms" output-channel="splitHeartbeatJvms">
         <int:splitter/>
         <int:header-enricher id="jvmIdHeaderEnricher">
             <int:header name="jvmId" expression="payload.id"/>
         </int:header-enricher>
-        <int:transformer id="jvmStatusUriTransformer" expression="payload.getStatusUri().toString()"/>
+        <int:header-enricher id="jvmHeaderEnricher">
+            <int:header name="jvm" expression="payload"/>
+        </int:header-enricher>
     </int:chain>
 
-    <int:chain id="jvmPreHttpOutboundChain" input-channel="jvmStateRequests" output-channel="jvmStateRequest">
+    <int:chain id="checkJvmExistenceChain" input-channel="splitHeartbeatJvms" output-channel="jvmServiceExistenceResult">
+        <int:header-enricher>
+            <int:error-channel value="jvmBadHost"/>
+        </int:header-enricher>
+        <int:service-activator method="handleSshMessage">
+            <bean id="jvmSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecutingService" autowire="constructor">
+                <constructor-arg ref="jvmSshCommandExpression"/>
+                <constructor-arg ref="jvmSshHostExpression"/>
+            </bean>
+        </int:service-activator>
+    </int:chain>
+
+    <int:router id="jvmServiceExistenceResultRouter" input-channel="jvmServiceExistenceResult" expression="payload.getReturnCode().wasSuccessful()">
+        <int:mapping value="true" channel="jvmStateRequestPreparation"/>
+        <int:mapping value="false" channel="jvmNoService"/>
+    </int:router>
+
+    <int:chain id="jvmPreHttpOutboundChain" input-channel="jvmStateRequestPreparation" output-channel="jvmStateRequest">
         <int:header-enricher>
             <int:error-channel value="jvmFailedStateRequest"/>
         </int:header-enricher>
+        <int:transformer id="jvmStatusUriTransformer" expression="headers['jvm'].getStatusUri().toString()"/>
     </int:chain>
 
     <int-http:outbound-gateway id="jvmHttpOutboundGateway"
@@ -72,13 +106,26 @@
         <int:transformer id="jvmSuccessfulHttpTransformer" expression="headers['jvmId']"/>
     </int:chain>
 
+    <int:chain id="jvmBadHostChain" input-channel="jvmBadHost" output-channel="jvmNoService">
+        <int:header-enricher id="jvmBadHostHeaderEnricher">
+            <int:header name="jvmId" expression="payload.getFailedMessage().headers['jvmId']"/>
+        </int:header-enricher>
+    </int:chain>
+
+    <int:chain id="jvmNoServiceChain" input-channel="jvmNoService" output-channel="jvmCompletedStateRequest">
+        <int:header-enricher id="jvmNoServiceHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).FAILED}"/>
+        </int:header-enricher>
+        <int:transformer id="jvmNoServiceTransformer" expression="headers['jvmId']"/>
+    </int:chain>
+
     <int:chain id="jvmCompletedStateRequestChain" input-channel="jvmCompletedStateRequest">
         <int:outbound-channel-adapter id="jvmCompletedStateRequestOutboundAdapter" expression="@jvmStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
     </int:chain>
 
     <int:gateway id="jvmExplicitStateGateway" service-interface="com.siemens.cto.aem.service.jvm.JvmStateGateway">
         <int:method name="setExplicitState" request-channel="jvmCompletedStateRequest"/>
-        <int:method name="initiateJvmStateRequest" request-channel="jvmUnsplitStateRequests"/>
+        <int:method name="initiateJvmStateRequest" request-channel="unsplitHeartbeatJvms"/>
     </int:gateway>
 
 </beans>

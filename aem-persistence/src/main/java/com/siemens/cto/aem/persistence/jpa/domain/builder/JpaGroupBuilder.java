@@ -33,13 +33,13 @@ public class JpaGroupBuilder {
     }
 
     public Group build() {
-        if(stateDetailSource == null) { 
+        if(stateDetailSource == null) {
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
                              getJvms(),
                              getState(),
                              getAsOf());
-        } else { 
+        } else {
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
                              getJvms(),
@@ -54,7 +54,7 @@ public class JpaGroupBuilder {
                                 USE_DEFAULT_CHRONOLOGY);
         }
 
-        return DateTime.now();
+        return null;
     }
 
     private GroupState getState() {

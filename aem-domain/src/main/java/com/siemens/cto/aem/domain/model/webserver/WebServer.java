@@ -129,6 +129,7 @@ public class WebServer implements Serializable {
                 .append("port", port)
                 .append("httpsPort", httpsPort)
                 .append("statusPath", statusPath)
+                .append("groups", groups)
                 .toString();
     }
 }

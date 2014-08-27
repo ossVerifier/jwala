@@ -74,7 +74,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     private ConcurrentHashMap<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
-   
+
     private User systemUser;
 
     @Transactional(readOnly=true)
@@ -93,11 +93,11 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
 
         Set<LiteGroup> groups = jvm.getGroups();
-        
+
         if(groups == null || groups.isEmpty()) {
             return Collections.<SetGroupStateCommand>emptyList();
         }
-        
+
         List<SetGroupStateCommand> result = null;
         result = new ArrayList<>(groups.size());
 
@@ -109,26 +109,26 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
                 @Override
                 public GroupStateMachine initializeGroupStateMachine() {
-                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);                
+                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
                     Group group = groupPersistenceService.getGroup(groupId);
                     newGsm.synchronizedInitializeGroup(group, systemUser);
                     return newGsm;
                 }
             }, 1, TimeUnit.SECONDS);
-            
-            if(gsm == null) { 
+
+            if(gsm == null) {
                 // could not lock
                 LOGGER.warn("Skipping group due to lock {}", group);
                 continue;
-            } 
+            }
             internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
 
             // could check for changes and only persist/notify on changes
             SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-            
+
             result.add(sgsc);
         }
-        
+
         return result;
     }
 
@@ -169,11 +169,11 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
 
         Collection<Group> groups = ws.getGroups();
-        
+
         if(groups == null || groups.isEmpty()) {
             return Collections.<SetGroupStateCommand>emptyList();
         }
-        
+
         List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
 
         for(Group group : groups) {
@@ -184,7 +184,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
                 @Override
                 public GroupStateMachine initializeGroupStateMachine() {
-                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);                
+                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
                     Group group = groupPersistenceService.getGroup(groupId);
                     newGsm.synchronizedInitializeGroup(group, systemUser);
                     return newGsm;
@@ -195,10 +195,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
             // could check for changes and only persist/notify on changes
             SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-            
+
             result.add(sgsc);
         }
-        
+
         return result;
     }
 
@@ -210,6 +210,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             break;
         case UNREACHABLE:
             gsm.wsUnreachable(wsId);
+            break;
+        case FAILED:
+            gsm.wsError(wsId);
             break;
         case START_REQUESTED:
         case STOP_REQUESTED:
@@ -231,31 +234,31 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         LockableGroupStateMachine actualGsm;
         actualGsm = allGSMs.putIfAbsent(groupId, tempGsm = new LockableGroupStateMachine());
 
-        if(actualGsm == null) { 
+        if(actualGsm == null) {
             actualGsm = tempGsm;
         }
-        
+
         return actualGsm;
     }
-        
+
     /**
      * @param groupId group to get a state machine for.
      * @return the state machine
      */
     private ReadWriteLease leaseWritableGsm(final Identifier<Group> groupId, final User user) {
         LockableGroupStateMachine gsm = getLockableGsm(groupId);
-        
+
         ReadWriteLease lockedGsmLease = gsm.lockForWriteWithResources(new Initializer() {
             @Override
             public GroupStateMachine initializeGroupStateMachine() {
-                GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);                
+                GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
                 Group group = groupPersistenceService.getGroup(groupId);
                 newGsm.synchronizedInitializeGroup(group, user);
                 return newGsm;
             }
         });
-        
-        return lockedGsmLease;        
+
+        return lockedGsmLease;
     }
     /**
      * @param groupId group to get a state machine for.
@@ -263,18 +266,18 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
      */
     private Lease getGsmWithResources(final Identifier<Group> groupId, final User user) {
         LockableGroupStateMachine gsm = getLockableGsm(groupId);
-        
+
         Lease lockedGsmLease = gsm.lockForReadWithResources(new Initializer() {
             @Override
             public GroupStateMachine initializeGroupStateMachine() {
-                GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);                
+                GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
                 Group group = groupPersistenceService.getGroup(groupId);
                 newGsm.synchronizedInitializeGroup(group, user);
                 return newGsm;
             }
         });
-        
-        return lockedGsmLease;   
+
+        return lockedGsmLease;
     }
 
     private RuntimeException convert(Exception e) {
@@ -283,46 +286,46 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Override
     public CurrentGroupState signalReset(Identifier<Group> groupId, User user) {
-        try(Lease lease = leaseWritableGsm(groupId, user)) { 
-            return lease.signalReset(user); 
-        } catch (Exception e) { 
-            throw convert(e); 
+        try(Lease lease = leaseWritableGsm(groupId, user)) {
+            return lease.signalReset(user);
+        } catch (Exception e) {
+            throw convert(e);
         }
     }
 
     @Override
     public CurrentGroupState signalStopRequested(Identifier<Group> groupId, User user) {
-        try(Lease lease = leaseWritableGsm(groupId, user)) { 
-            return lease.signalStopRequested(user); 
-        } catch (Exception e) { 
-            throw convert(e); 
+        try(Lease lease = leaseWritableGsm(groupId, user)) {
+            return lease.signalStopRequested(user);
+        } catch (Exception e) {
+            throw convert(e);
         }
     }
 
     @Override
     public CurrentGroupState signalStartRequested(Identifier<Group> groupId, User user) {
-        try(Lease lease = leaseWritableGsm(groupId, user)) { 
-            return lease.signalStartRequested(user); 
-        } catch (Exception e) { 
-            throw convert(e); 
+        try(Lease lease = leaseWritableGsm(groupId, user)) {
+            return lease.signalStartRequested(user);
+        } catch (Exception e) {
+            throw convert(e);
         }
     }
-    
+
     @Override
     public boolean canStart(Identifier<Group> groupId, User user) {
-        try(Lease lease = getGsmWithResources(groupId, user).readOnly()) { 
-            return lease.canStart(); 
-        } catch (Exception e) { 
-            throw convert(e); 
+        try(Lease lease = getGsmWithResources(groupId, user).readOnly()) {
+            return lease.canStart();
+        } catch (Exception e) {
+            throw convert(e);
         }
     }
 
     @Override
     public boolean canStop(Identifier<Group> groupId, User user) {
-        try(Lease lease = getGsmWithResources(groupId, user).readOnly()) { 
-            return lease.canStop(); 
-        } catch (Exception e) { 
-            throw convert(e); 
+        try(Lease lease = getGsmWithResources(groupId, user).readOnly()) {
+            return lease.canStop();
+        } catch (Exception e) {
+            throw convert(e);
         }
     }
 
@@ -342,7 +345,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             return null;
         }
     }
-    
+
     @Override
     @Transactional
     public SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc) {
@@ -383,6 +386,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        
+
     }
 }

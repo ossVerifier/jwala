@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.group.impl;
 
 
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.FAILED;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.REACHABLE;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.START_REQUESTED;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.STOP_REQUESTED;
@@ -41,13 +42,13 @@ import com.siemens.cto.aem.service.state.StateService;
  * Instantaneous FSM for calculating group state at a particular time
  */
 public class GroupStateManagerTableImpl implements GroupStateMachine {
-    
+
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
     public static class Node {
         private final Map<WebServerReachableState, GroupState> wsEdges;
         private final Map<JvmState, GroupState> jvmEdges;
-        public Node(Map<WebServerReachableState, GroupState> wsEdges, Map<JvmState, GroupState> jvmEdges) { 
+        public Node(Map<WebServerReachableState, GroupState> wsEdges, Map<JvmState, GroupState> jvmEdges) {
             this.wsEdges = wsEdges;
             this.jvmEdges = jvmEdges;
         }
@@ -59,15 +60,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         private Map<JvmState, GroupState> jvmEdges = new ConcurrentHashMap<>();
 
         public NodeBuilder() {}
-        public NodeBuilder edge(JvmState signal, GroupState endpoint) { 
+        public NodeBuilder edge(JvmState signal, GroupState endpoint) {
             jvmEdges.put(signal, endpoint);
             return this;
-        } 
-        public NodeBuilder edge(WebServerReachableState signal, GroupState endpoint) { 
+        }
+        public NodeBuilder edge(WebServerReachableState signal, GroupState endpoint) {
             wsEdges.put(signal, endpoint);
             return this;
-        } 
-        public Node build() { 
+        }
+        public Node build() {
             return new Node(wsEdges, jvmEdges);
         }
     }
@@ -84,24 +85,26 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(STOP_REQUESTED,        GroupState.STOPPING)
                              .edge(UNREACHABLE,     GroupState.STOPPED)
                              .edge(JvmState.STOPPED,    GroupState.STOPPED)
-                             .edge(JvmState.FAILED,         GroupState.UNKNOWN) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.UNKNOWN) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.UNKNOWN) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.UNKNOWN) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.UNKNOWN) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.UNKNOWN) // Web Server states too
+                             .edge(FAILED,                  GroupState.UNKNOWN)
                              .build());
 
         ne.put(GroupState.STARTING, new NodeBuilder().edge(JvmState.START_REQUESTED,  GroupState.STARTING)
                              .edge(START_REQUESTED,        GroupState.STARTING)
                              .edge(JvmState.STARTED,    GroupState.STARTING)    // per 8/20 stay in starting
-                             .edge(REACHABLE,       GroupState.STARTING)        // per 8/20 stay in starting 
+                             .edge(REACHABLE,       GroupState.STARTING)        // per 8/20 stay in starting
                              .edge(JvmState.STOP_REQUESTED,   GroupState.PARTIAL)
                              .edge(STOP_REQUESTED,        GroupState.PARTIAL)
                              .edge(UNREACHABLE,     GroupState.PARTIAL)
                              .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.STARTING) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.STARTING) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.STARTING) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.STARTING) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.STARTING) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.STARTING) // Web Server states too
+                             .edge(FAILED,                  GroupState.STARTING)
                              .build());
 
         ne.put(GroupState.STOPPING, new NodeBuilder().edge(JvmState.START_REQUESTED,  GroupState.PARTIAL)
@@ -112,10 +115,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(STOP_REQUESTED,        GroupState.STOPPING)
                              .edge(UNREACHABLE,     GroupState.STOPPING)         // per 8/20 stay in stopping
                              .edge(JvmState.STOPPED,    GroupState.STOPPING)     // per 8/20 stay in stopping
-                             .edge(JvmState.FAILED,         GroupState.STOPPING) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.STOPPING) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.STOPPING) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.STOPPING) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.STOPPING) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.STOPPING) // Web Server states too
+                             .edge(FAILED,                  GroupState.STOPPING) // Web Server states too
                              .build());
 
         ne.put(GroupState.STARTED, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.STARTING) // per 8/20 go to starting
@@ -126,10 +130,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(STOP_REQUESTED,        GroupState.STOPPING)    // per 8/20 go to stopping
                              .edge(UNREACHABLE,     GroupState.PARTIAL)
                              .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.STARTED) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.STARTED) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.STARTED) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.STARTED) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.STARTED) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.STARTED) // Web Server states too
+                             .edge(FAILED,                  GroupState.STARTED) // Web Server states too
                              .build());
 
         ne.put(GroupState.STOPPED, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.STARTING) // per 8/20 go to starting
@@ -140,10 +145,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(STOP_REQUESTED,        GroupState.STOPPING)   // per 8/20 go to stopping
                              .edge(UNREACHABLE,     GroupState.STOPPED)
                              .edge(JvmState.STOPPED,    GroupState.STOPPED)
-                             .edge(JvmState.FAILED,         GroupState.STOPPED) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.STOPPED) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.STOPPED) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.STOPPED) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.STOPPED) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.STOPPED) // Web Server states too
+                             .edge(FAILED,                  GroupState.STOPPED) // Web Server states too
                              .build());
 
         ne.put(GroupState.PARTIAL, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.PARTIAL)
@@ -154,23 +160,24 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(STOP_REQUESTED,        GroupState.PARTIAL)
                              .edge(UNREACHABLE,     GroupState.PARTIAL)
                              .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.PARTIAL) // these will always stay in 
-                             .edge(JvmState.INITIALIZED,    GroupState.PARTIAL) // the same state, we do not 
+                             .edge(JvmState.FAILED,         GroupState.PARTIAL) // these will always stay in
+                             .edge(JvmState.INITIALIZED,    GroupState.PARTIAL) // the same state, we do not
                              .edge(JvmState.UNKNOWN,        GroupState.PARTIAL) // handle bad states.
                              .edge(UNKNOWN,                 GroupState.PARTIAL) // Web Server states too
+                             .edge(FAILED,                  GroupState.PARTIAL) // Web Server states too
                              .build());
 
     }
 
 
     // ========================   Attributes    ==============================
-    
+
     private Group currentGroup;
     private CurrentGroupState currentGroupState;
     private ConcurrentHashMap<Enum<?>, AtomicInteger> counters = new ConcurrentHashMap<>();
 
     // ========================   USES Beans    ==============================
-    
+
     @Autowired
     GroupPersistenceService groupPersistenceService;
 
@@ -184,7 +191,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Autowired
     @Qualifier("webServerStateService")
     StateService<WebServer, WebServerReachableState>    webServerStateService;
-    
+
     /**
      * State transition and counting of jvms and ws active
      * Note that null states coming back from the database
@@ -199,7 +206,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         }
 
         List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId(), PaginationParameter.all());
-    
+
         if(!webServers.isEmpty()) {
 
             Set<Identifier<WebServer>> webServerSet = new HashSet<>();
@@ -208,13 +215,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             }
             Set<CurrentState<WebServer,WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
 
-            for(CurrentState<WebServer, WebServerReachableState> wsState : results) {                
+            for(CurrentState<WebServer, WebServerReachableState> wsState : results) {
                 WebServerReachableState value = wsState!=null?wsState.getState():WebServerReachableState.UNKNOWN;
 
                 counters.get(value).incrementAndGet();
                 state = ne.get(state).transit(value);
             }
-        }    
+        }
 
         for(Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
@@ -237,19 +244,19 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         return currentGroupState = newState(state, jvmStarted, jvmTotal, wsStarted, wsTotal);
     }
-    
+
     private CurrentGroupState newState(GroupState state, int jvmStarted, int jvmTotal, int wsStarted, int wsTotal) {
-        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(), 
+        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(),
                 new StateDetail(jvmStarted, jvmTotal),
                 new StateDetail(wsStarted, wsTotal)
                 );
-        
+
         logCurrentState();
         return currentGroupState;
     }
 
     private CurrentGroupState newState(GroupState state) {
-        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(), 
+        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(),
                 currentGroup.getCurrentState().getJvmsDetail(),
                 currentGroup.getCurrentState().getWebServersDetail()
                 );
@@ -261,7 +268,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         LOGGER.debug("GSM State: {}", this);
     }
     // =============== Constructor =====================
-    
+
     public GroupStateManagerTableImpl() {
         for(JvmState eachJvmState : JvmState.values()) {
             counters.put(eachJvmState, new AtomicInteger(0));
@@ -272,12 +279,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 }
 
     // =============== API METHODS =====================
-    
+
     @Override
     @Transactional
     public synchronized void synchronizedInitializeGroup(Group group, User user) {
         currentGroup = group;
-    
+
         currentGroupState = refreshState(currentGroup);
     }
 
@@ -320,37 +327,37 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     @Transactional
     public void jvmStarted(Identifier<Jvm> jvmId) {
-        refreshState(currentGroup);        
+        refreshState(currentGroup);
     }
 
     @Override
     @Transactional
     public void wsError(Identifier<WebServer> wsId) {
-        refreshState(currentGroup);                
+        refreshState(currentGroup);
     }
 
     @Override
     @Transactional
     public void wsReachable(Identifier<WebServer> wsId) {
-        refreshState(currentGroup);        
+        refreshState(currentGroup);
     }
 
     @Override
     @Transactional
     public void wsUnreachable(Identifier<WebServer> wsId) {
-        refreshState(currentGroup);        
+        refreshState(currentGroup);
     }
 
     @Override
     @Transactional
     public boolean canStart() {
-        return currentGroupState.getState() != GroupState.STARTED;        
+        return currentGroupState.getState() != GroupState.STARTED;
     }
 
     @Override
     @Transactional
     public boolean canStop() {
-        return currentGroupState.getState() != GroupState.STOPPED;        
+        return currentGroupState.getState() != GroupState.STOPPED;
     }
 
     @Override
@@ -367,13 +374,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     public CurrentGroupState getCurrentStateDetail() {
         return currentGroupState;
     }
-    
+
     @Override
     public String toString() {
         if(currentGroup == null) {
             return super.toString();
         } else {
-            return "gsm:{id="+currentGroup.getId().getId()+",name='"+currentGroup.getName()+"',state="+currentGroupState+"}"; 
+            return "gsm:{id="+currentGroup.getId().getId()+",name='"+currentGroup.getName()+"',state="+currentGroupState+"}";
         }
     }
 }
