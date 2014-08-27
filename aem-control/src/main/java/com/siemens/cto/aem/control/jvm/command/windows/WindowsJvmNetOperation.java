@@ -31,7 +31,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jStackCmd = properties.getProperty("stp.java_home") + "/bin/jstack";
+            String jStackCmd = properties.getProperty("stp.java.home") + "/bin/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
         }
     },
@@ -39,8 +39,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jMapCmd = properties.getProperty("stp.java_home") + "/bin/jmap";
-            String dataDir = properties.getProperty("stp.data_dir");
+            String jMapCmd = properties.getProperty("stp.java.home") + "/bin/jmap";
+            String dataDir = properties.getProperty("stp.data.dir");
             final boolean dumpLiveEnabled = Boolean.parseBoolean(properties.getProperty("jmap.dump.live.enabled"));
             DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd-HHmmss.SSS");
             String dumpFile = dataDir + "/heapDump-" + aServiceName + "-" + fmt.print(new DateTime());
