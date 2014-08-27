@@ -31,7 +31,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jStackCmd = properties.getProperty("stp.java_home", "d:/apache/java/jdk1.7.0_45/bin") + "/jstack";
+            String jStackCmd = properties.getProperty("stp.java_home") + "/bin/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
         }
     },
