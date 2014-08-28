@@ -158,7 +158,7 @@
    -->
    
    <category name="com.siemens">
-         <priority value="TRACE"/>
+         <priority value="DEBUG"/>
    </category>
    
 
@@ -167,7 +167,7 @@
    </category>
    
    <category name="org.springframework">
-    <priority value="DEBUG"/>
+    <priority value="ERROR"/>
    </category>
 
    <category name="org.apache.cxf">

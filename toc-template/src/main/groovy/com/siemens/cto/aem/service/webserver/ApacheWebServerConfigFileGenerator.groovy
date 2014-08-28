@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.webserver
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm
+import com.siemens.cto.aem.domain.model.webserver.WebServer
 import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
 import groovy.text.GStringTemplateEngine
 import com.siemens.cto.aem.domain.model.app.Application
@@ -22,9 +23,14 @@ public class ApacheWebServerConfigFileGenerator {
      */
     public static String getHttpdConf(final String webServerName,
                                       final String templateFileName,
-                                      final List<Application> apps) {
+                                      final WebServer webServer,
+                                      final List<Jvm> jvms,
+                                      final List<Application> apps
+                                      ) {
         final binding = [webServerName:webServerName,
+                         webServer:webServer,
                          apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]},
+                         jvms:jvms.collect {jvm:[jvmName: it.jvmName, sslPort: it.httpsPort, hostName : it.hostName]},
                          comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }

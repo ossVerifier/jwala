@@ -4,6 +4,7 @@ import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.domain.model.group.LiteGroup
 import com.siemens.cto.aem.domain.model.jvm.Jvm
 import com.siemens.cto.aem.domain.model.path.Path
+import com.siemens.cto.aem.domain.model.webserver.WebServer
 import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
 
 /**
@@ -15,8 +16,11 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
 
     List<Jvm> jvms
     List<Application> apps
+    WebServer webServer
 
     void setUp() {
+        webServer = new WebServer(null, new HashSet<LiteGroup>(), "Apache2.4", "localhost", 80, 443, new Path("/statusPath"))
+        
         jvms = new ArrayList<>()
         jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009, new Path("/statusPath")))
         jvms.add(new Jvm(null, "t c 2", "165.22 6.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8109, new Path("/statusPath")))
@@ -30,18 +34,18 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
     void testGetHttpdConf() {
         final String refFileText = removeCarriageReturnsAndNewLines(this.getClass().getResource("/httpd.conf").text)
         assert refFileText == removeCarriageReturnsAndNewLines(
-                ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-conf.tpl", apps))
+                ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-conf.tpl", webServer, jvms, apps))
     }
 
     void testGetHttpdConfWithSsl() {
         final String refFileText = removeCarriageReturnsAndNewLines(this.getClass().getResource("/httpd-ssl.conf").text)
         assert refFileText == removeCarriageReturnsAndNewLines(
-                ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-ssl-conf.tpl", apps))
+                ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-ssl-conf.tpl", webServer, jvms, apps))
     }
 
     void testGetHttpdConfMissingTemplate() {
         shouldFail(TemplateNotFoundException) {
-            ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-conf-fictitious.tpl", apps)
+            ApacheWebServerConfigFileGenerator.getHttpdConf("Apache2.4", "/httpd-conf-fictitious.tpl", webServer, jvms, apps)
         }
     }
 

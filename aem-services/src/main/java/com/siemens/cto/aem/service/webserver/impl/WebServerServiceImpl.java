@@ -114,13 +114,15 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
+        final WebServer server = dao.findWebServerByName(aWebServerName);
         final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
+        final List<Jvm> jvms = dao.findJvms(aWebServerName, PaginationParameter.all());
         if (withSsl != null && withSsl) {
             return ApacheWebServerConfigFileGenerator
-                        .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_SSL_CONF_TEMPLATE), apps);
+                        .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
         }
         return ApacheWebServerConfigFileGenerator
-                    .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_CONF_TEMPLATE), apps);
+                    .getHttpdConf(aWebServerName, getTemplatePath(HTTPD_CONF_TEMPLATE), server, jvms, apps);
     }
 
     @Override
