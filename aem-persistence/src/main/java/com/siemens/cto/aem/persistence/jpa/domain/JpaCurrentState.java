@@ -37,6 +37,9 @@ public class JpaCurrentState implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar asOf;
 
+    @Column(name = "MESSAGE")
+    private String message;
+
     public JpaCurrentStateId getId() {
         return id;
     }
@@ -61,6 +64,14 @@ public class JpaCurrentState implements Serializable {
         this.asOf = asOf;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(final String message) {
+        this.message = message;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -77,6 +88,7 @@ public class JpaCurrentState implements Serializable {
                 .append(this.id, rhs.id)
                 .append(this.state, rhs.state)
                 .append(this.asOf, rhs.asOf)
+                .append(this.message, rhs.message)
                 .isEquals();
     }
 
@@ -86,6 +98,7 @@ public class JpaCurrentState implements Serializable {
                 .append(id)
                 .append(state)
                 .append(asOf)
+                .append(message)
                 .toHashCode();
     }
 
@@ -95,6 +108,7 @@ public class JpaCurrentState implements Serializable {
                 .append("id", id)
                 .append("state", state)
                 .append("asOf", asOf)
+                .append("message", message)
                 .toString();
     }
 }

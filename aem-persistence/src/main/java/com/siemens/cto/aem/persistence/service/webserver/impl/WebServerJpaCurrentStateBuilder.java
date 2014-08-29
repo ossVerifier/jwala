@@ -19,15 +19,20 @@ public class WebServerJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuil
     }
 
     @Override
-    public CurrentState<WebServer, WebServerReachableState> build() {
-        if (currentState != null) {
-            return new CurrentState<>(createId(),
-                                      createState(),
-                                      createAsOf(),
-                                      StateType.WEB_SERVER);
-        }
+    protected CurrentState<WebServer, WebServerReachableState> buildWithMessage() {
+        return new CurrentState<>(createId(),
+                                  createState(),
+                                  createAsOf(),
+                                  StateType.WEB_SERVER,
+                                  currentState.getMessage());
+    }
 
-        return null;
+    @Override
+    protected CurrentState<WebServer, WebServerReachableState> buildWithoutMessage() {
+        return new CurrentState<>(createId(),
+                                  createState(),
+                                  createAsOf(),
+                                  StateType.WEB_SERVER);
     }
 
     private WebServerReachableState createState() {

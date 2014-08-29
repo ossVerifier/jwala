@@ -1,16 +1,10 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +31,11 @@ import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.jvm.command.SetJvmStateCommand;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -51,6 +46,11 @@ import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.StateService;
+
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
     MoreGroupStateMachineTest.CommonConfiguration.class})
@@ -188,8 +188,8 @@ public class MoreGroupStateMachineTest {
 
             @Override
             public CurrentState<Jvm, JvmState> answer(InvocationOnMock invocation) throws Throwable {
-                Event<SetJvmStateCommand> event = (Event<SetJvmStateCommand>) invocation.getArguments()[0];
-                currentJvmState = new CurrentState<>(jvm.getId(), event.getCommand().getNewJvmState().getJvmState(), DateTime.now(), StateType.JVM);
+                Event<JvmSetStateCommand> event = (Event<JvmSetStateCommand>) invocation.getArguments()[0];
+                currentJvmState = new CurrentState<>(jvm.getId(), event.getCommand().getNewState().getState(), DateTime.now(), StateType.JVM);
                 return currentJvmState;
            }
 

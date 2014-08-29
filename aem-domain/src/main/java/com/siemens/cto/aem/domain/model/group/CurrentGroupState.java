@@ -58,7 +58,7 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
     public StateDetail getJvmsDetail() {
         return this.jvms;
     }
-    
+
     @Override
     public void provideState(final KeyValueStateConsumer aConsumer) {
         super.provideState(aConsumer);

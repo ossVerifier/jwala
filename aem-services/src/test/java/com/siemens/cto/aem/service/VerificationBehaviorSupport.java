@@ -24,7 +24,7 @@ public class VerificationBehaviorSupport {
     }
 
     protected <T> Event<T> matchCommandInEvent(final T aCommand) {
-        return argThat(new EventMatcher<T>(aCommand));
+        return argThat(new EventMatcher<>(aCommand));
     }
 
     protected <T extends Command> T matchCommand(final T aCommand) {

@@ -18,7 +18,25 @@ public abstract class AbstractJpaCurrentStateBuilder<S, T extends Externalizable
         currentState = aCurrentState;
     }
 
-    public abstract CurrentState<S, T> build();
+    public CurrentState<S, T> build() {
+        if (currentState != null) {
+            if (hasMessage()) {
+                return buildWithMessage();
+            } else {
+                return buildWithoutMessage();
+            }
+        }
+
+        return null;
+    }
+
+    protected abstract CurrentState<S, T> buildWithMessage();
+
+    protected abstract CurrentState<S, T> buildWithoutMessage();
+
+    protected boolean hasMessage() {
+        return currentState.getMessage() != null;
+    }
 
     protected Identifier<S> createId() {
         return new Identifier<>(currentState.getId().getId());

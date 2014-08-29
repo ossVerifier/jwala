@@ -14,20 +14,35 @@ import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 public class CurrentState<S extends Object, T extends ExternalizableState> implements KeyValueStateProvider {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
+    public static final String DEFAULT_EMPTY_MESSAGE = "";
 
     private final Identifier<S> id;
     private final T state;
     private final DateTime asOf;
     private final StateType type;
+    private final String message;
 
     public CurrentState(final Identifier<S> theId,
                         final T theState,
                         final DateTime theAsOf,
                         final StateType theStateType) {
+        this(theId,
+             theState,
+             theAsOf,
+             theStateType,
+             DEFAULT_EMPTY_MESSAGE);
+    }
+
+    public CurrentState(final Identifier<S> theId,
+                        final T theState,
+                        final DateTime theAsOf,
+                        final StateType theStateType,
+                        final String theMessage) {
         id = theId;
         state = theState;
         asOf = theAsOf;
         type = theStateType;
+        message = theMessage;
     }
 
     public Identifier<S> getId() {
@@ -43,7 +58,15 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
     }
 
     public boolean isTransientState() {
-        return state.isTransientState();
+        return state.getTransience().isTransient();
+    }
+
+    public boolean isStableState() {
+        return state.getStability().isStable();
+    }
+
+    public boolean hasMessage() {
+        return (message != null) && (!"".equals(message.trim()));
     }
 
     public DateTime getAsOf() {
@@ -54,12 +77,17 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
         return type;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public void provideState(final KeyValueStateConsumer aConsumer) {
         aConsumer.set(CommonStateKey.ID, id.getId().toString());
         aConsumer.set(CommonStateKey.TYPE, type.toString());
         aConsumer.set(CommonStateKey.AS_OF, DATE_TIME_FORMATTER.print(asOf));
         aConsumer.set(CommonStateKey.STATE, state.toStateString());
+        aConsumer.set(CommonStateKey.MESSAGE, message);
     }
 
     @Override
@@ -79,6 +107,7 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
                 .append(this.state, rhs.state)
                 .append(this.asOf, rhs.asOf)
                 .append(this.type, rhs.type)
+                .append(this.message, rhs.message)
                 .isEquals();
     }
 
@@ -89,6 +118,7 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
                 .append(state)
                 .append(asOf)
                 .append(type)
+                .append(message)
                 .toHashCode();
     }
 
@@ -99,6 +129,7 @@ public class CurrentState<S extends Object, T extends ExternalizableState> imple
                 .append("state", state)
                 .append("asOf", asOf)
                 .append("type", type)
+                .append("message", message)
                 .toString();
     }
 }

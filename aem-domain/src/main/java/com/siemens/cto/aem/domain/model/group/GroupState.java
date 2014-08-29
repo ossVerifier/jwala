@@ -1,23 +1,36 @@
 package com.siemens.cto.aem.domain.model.group;
 
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.Stability;
+import com.siemens.cto.aem.domain.model.state.Transience;
+
+import static com.siemens.cto.aem.domain.model.state.Stability.STABLE;
+import static com.siemens.cto.aem.domain.model.state.Stability.UNSTABLE;
+import static com.siemens.cto.aem.domain.model.state.Transience.PERMANENT;
+import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
 
 public enum GroupState implements ExternalizableState {
 
-    INITIALIZED("INITIALIZED"),
-    PARTIAL("PARTIAL"),
-    ERROR("ERROR"),
-    STARTED("STARTED"),
-    STOPPED("STOPPED"),
-    STARTING("STARTING"),
-    STOPPING("STOPPING"),
-    UNKNOWN("UNKNOWN");
+    INITIALIZED("INITIALIZED", PERMANENT, UNSTABLE),
+    PARTIAL("PARTIAL", PERMANENT, STABLE),
+    ERROR("ERROR", PERMANENT, UNSTABLE),
+    STARTED("STARTED", PERMANENT, STABLE),
+    STOPPED("STOPPED", PERMANENT, STABLE),
+    STARTING("STARTING", TRANSIENT, UNSTABLE),
+    STOPPING("STOPPING", TRANSIENT, UNSTABLE),
+    UNKNOWN("UNKNOWN", PERMANENT, UNSTABLE);
 
     private final String stateName;
+    private final Transience transientState;
+    private final Stability stableState;
 
-    private GroupState(final String theStateName) {
+    private GroupState(final String theStateName,
+                       final Transience theTransientState,
+                       final Stability theStableState) {
         stateName = theStateName;
+        transientState = theTransientState;
+        stableState = theStableState;
     }
 
     public String getStateName() {
@@ -28,14 +41,19 @@ public enum GroupState implements ExternalizableState {
     public String toStateString() {
         return stateName;
     }
-    
-    @Override 
+
+    @Override
     public String toString() {
         return toStateString();
     }
 
     @Override
-    public boolean isTransientState() {
-        return this.equals(STARTING) || this.equals(STOPPING);
+    public Transience getTransience() {
+        return transientState;
+    }
+
+    @Override
+    public Stability getStability() {
+        return stableState;
     }
 }

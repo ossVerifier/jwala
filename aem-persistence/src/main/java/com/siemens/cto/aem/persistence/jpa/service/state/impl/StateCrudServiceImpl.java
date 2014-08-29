@@ -9,6 +9,7 @@ import javax.persistence.Query;
 
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
@@ -35,11 +36,13 @@ public class StateCrudServiceImpl<S, T extends ExternalizableState> implements S
     public JpaCurrentState updateState(final Event<SetStateCommand<S, T>> anEvent) {
 
         final JpaCurrentState currentState = new JpaCurrentState();
-        final JpaCurrentStateId id = new JpaCurrentStateId(anEvent.getCommand().getNewState().getId().getId(),
+        final CurrentState<S,T> newState = anEvent.getCommand().getNewState();
+        final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(),
                                                            stateType);
         currentState.setId(id);
-        currentState.setState(anEvent.getCommand().getNewState().getState().toStateString());
-        currentState.setAsOf(anEvent.getCommand().getNewState().getAsOf().toCalendar(Locale.US));
+        currentState.setState(newState.getState().toStateString());
+        currentState.setAsOf(newState.getAsOf().toCalendar(Locale.US));
+        currentState.setMessage(newState.getMessage());
 
         return entityManager.merge(currentState);
     }

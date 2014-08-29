@@ -13,7 +13,9 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.CurrentStateChronologicalComparator;
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.Stability;
 import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.Transience;
 
 import static org.junit.Assert.assertEquals;
 
@@ -82,8 +84,13 @@ public class CurrentStateProcessorTest {
         }
 
         @Override
-        public boolean isTransientState() {
-            return false;
+        public Transience getTransience() {
+            return Transience.PERMANENT;
+        }
+
+        @Override
+        public Stability getStability() {
+            return Stability.STABLE;
         }
     }
 

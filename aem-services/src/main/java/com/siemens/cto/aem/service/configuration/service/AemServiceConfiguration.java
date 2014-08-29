@@ -167,7 +167,8 @@ public class AemServiceConfiguration {
         return new WebServerControlServiceImpl(getWebServerService(),
                                                aemCommandExecutorConfig.getWebServerCommandExecutor(),
                                                webServerStateGateway,
-                                               getWebServerControlHistoryService());
+                                               getWebServerControlHistoryService(),
+                                               getWebServerStateService());
     }
 
     @Bean(name="webServerCommandService")

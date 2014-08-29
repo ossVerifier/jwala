@@ -24,10 +24,19 @@ public abstract class AbstractCurrentStateMessageExtractor<T extends Externaliza
     }
 
     public CurrentState extract(final MapMessage aMessage) throws JMSException {
-        return new CurrentState<>(getId(aMessage),
-                                  getState(aMessage),
-                                  getAsOf(aMessage),
-                                  stateType);
+        final String stateMessage = getStateMessage(aMessage);
+        if (stateMessage == null) {
+            return new CurrentState<>(getId(aMessage),
+                                      getState(aMessage),
+                                      getAsOf(aMessage),
+                                      stateType);
+        } else {
+            return new CurrentState<>(getId(aMessage),
+                                      getState(aMessage),
+                                      getAsOf(aMessage),
+                                      stateType,
+                                      stateMessage);
+        }
     }
 
     Identifier<?> getId(final MapMessage aMessage) throws JMSException {
@@ -36,6 +45,10 @@ public abstract class AbstractCurrentStateMessageExtractor<T extends Externaliza
 
     DateTime getAsOf(final MapMessage aMessage) throws JMSException {
         return DATE_TIME_FORMATTER.parseDateTime(aMessage.getString(CommonStateKey.AS_OF.getKey()));
+    }
+
+    String getStateMessage(final MapMessage aMessage) throws JMSException {
+        return aMessage.getString(CommonStateKey.MESSAGE.getKey());
     }
 
     abstract T getState(MapMessage aMessage) throws JMSException;

@@ -4,19 +4,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.Stability;
+import com.siemens.cto.aem.domain.model.state.Transience;
+
+import static com.siemens.cto.aem.domain.model.state.Stability.STABLE;
+import static com.siemens.cto.aem.domain.model.state.Stability.UNSTABLE;
+import static com.siemens.cto.aem.domain.model.state.Transience.PERMANENT;
+import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
 public enum JvmState implements ExternalizableState {
 
-    INITIALIZED("INITIALIZED", false),
-    FAILED("FAILED", false),
-    STARTED("STARTED", false),
-    STOPPED("STOPPED", false),
-    UNKNOWN("UNKNOWN", false),
-    START_REQUESTED("STARTING", true),
-    STOP_REQUESTED("STOPPING", true);
+    INITIALIZED("INITIALIZED", PERMANENT, UNSTABLE),
+    FAILED("FAILED", PERMANENT, UNSTABLE),
+    STARTED("STARTED", PERMANENT, STABLE),
+    STOPPED("STOPPED", PERMANENT, STABLE),
+    UNKNOWN("UNKNOWN", PERMANENT, UNSTABLE),
+    START_REQUESTED("STARTING", TRANSIENT, UNSTABLE),
+    STOP_REQUESTED("STOPPING", TRANSIENT, UNSTABLE);
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
-    private final boolean isTransientState;
 
     static {
         for (final JvmState state : values()) {
@@ -25,10 +31,15 @@ public enum JvmState implements ExternalizableState {
     }
 
     private final String stateName;
+    private final Transience transientState;
+    private final Stability stableState;
 
-    private JvmState(final String theStateName, final boolean isTransientState) {
+    private JvmState(final String theStateName,
+                     final Transience theTransientState,
+                     final Stability theStableState) {
         stateName = theStateName;
-        this.isTransientState = isTransientState;
+        transientState = theTransientState;
+        stableState = theStableState;
     }
 
     @Override
@@ -49,7 +60,12 @@ public enum JvmState implements ExternalizableState {
     }
 
     @Override
-    public boolean isTransientState() {
-        return isTransientState;
+    public Transience getTransience() {
+        return transientState;
+    }
+
+    @Override
+    public Stability getStability() {
+        return stableState;
     }
 }

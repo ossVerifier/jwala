@@ -37,11 +37,26 @@ public class WebServerCurrentStateMessageExtractorTest {
     }
 
     @Test
-    public void testExtract() throws Exception {
+    public void testExtractWithoutMessage() throws Exception {
         final CurrentState<WebServer, WebServerReachableState> expectedState = new CurrentState<>(new Identifier<WebServer>(123456L),
                                                                                                   WebServerReachableState.REACHABLE,
                                                                                                   DateTime.now(),
                                                                                                   StateType.WEB_SERVER);
+
+        setupMockMapMessage(expectedState);
+
+        final CurrentState actualState = extractor.extract(message);
+        assertEquals(expectedState,
+                     actualState);
+    }
+
+    @Test
+    public void testExtractWithMessage() throws Exception {
+        final CurrentState<WebServer, WebServerReachableState> expectedState = new CurrentState<>(new Identifier<WebServer>(123456L),
+                                                                                                  WebServerReachableState.REACHABLE,
+                                                                                                  DateTime.now(),
+                                                                                                  StateType.WEB_SERVER,
+                                                                                                  "This is the state message");
 
         setupMockMapMessage(expectedState);
 
@@ -55,6 +70,7 @@ public class WebServerCurrentStateMessageExtractorTest {
         mockMapString(CommonStateKey.ID, aState.getId().getId().toString());
         mockMapString(CommonStateKey.STATE, aState.getState().toStateString());
         mockMapString(CommonStateKey.TYPE, aState.getType().name());
+        mockMapString(CommonStateKey.MESSAGE, aState.getMessage());
     }
 
     private void mockMapString(final StateKey aKey,

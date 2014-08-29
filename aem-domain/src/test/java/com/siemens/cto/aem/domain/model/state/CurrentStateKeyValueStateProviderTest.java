@@ -24,7 +24,7 @@ public class CurrentStateKeyValueStateProviderTest {
     private KeyValueStateConsumer consumer;
 
     @Test
-    public void testProvideState() throws Exception {
+    public void testProvideStateWithoutMessage() throws Exception {
         final Identifier<WebServer> id = new Identifier<>(123456L);
         final WebServerReachableState state = WebServerReachableState.REACHABLE;
         final DateTime asOf = DateTime.now();
@@ -44,6 +44,35 @@ public class CurrentStateKeyValueStateProviderTest {
                      ISODateTimeFormat.dateTime().print(asOf));
         verifyKeySet(CommonStateKey.TYPE,
                      type.name());
+        verifyKeySet(CommonStateKey.MESSAGE,
+                     "");
+    }
+
+    @Test
+    public void testProvideStateWithMessage() throws Exception {
+        final Identifier<WebServer> id = new Identifier<>(123456L);
+        final WebServerReachableState state = WebServerReachableState.REACHABLE;
+        final DateTime asOf = DateTime.now();
+        final StateType type = StateType.WEB_SERVER;
+        final String message = "This is the state message";
+
+        final CurrentState<WebServer, WebServerReachableState> producer = new CurrentState<>(id,
+                                                                                             state,
+                                                                                             asOf,
+                                                                                             type,
+                                                                                             message);
+        producer.provideState(consumer);
+
+        verifyKeySet(CommonStateKey.ID,
+                     id.getId().toString());
+        verifyKeySet(CommonStateKey.STATE,
+                     state.toStateString());
+        verifyKeySet(CommonStateKey.AS_OF,
+                     ISODateTimeFormat.dateTime().print(asOf));
+        verifyKeySet(CommonStateKey.TYPE,
+                     type.name());
+        verifyKeySet(CommonStateKey.MESSAGE,
+                     message);
     }
 
     private void verifyKeySet(final StateKey aKey,

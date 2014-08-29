@@ -19,15 +19,20 @@ public class JvmJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuilder<Jv
     }
 
     @Override
-    public CurrentState<Jvm, JvmState> build() {
-        if (currentState != null) {
-            return new CurrentState<>(createId(),
-                                      createState(),
-                                      createAsOf(),
-                                      StateType.JVM);
-        }
+    protected CurrentState<Jvm, JvmState> buildWithMessage() {
+        return new CurrentState<>(createId(),
+                                  createState(),
+                                  createAsOf(),
+                                  StateType.JVM,
+                                  currentState.getMessage());
+    }
 
-        return null;
+    @Override
+    protected CurrentState<Jvm, JvmState> buildWithoutMessage() {
+        return new CurrentState<>(createId(),
+                                  createState(),
+                                  createAsOf(),
+                                  StateType.JVM);
     }
 
     private JvmState createState() {

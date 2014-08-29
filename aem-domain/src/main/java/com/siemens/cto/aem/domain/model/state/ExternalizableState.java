@@ -4,6 +4,7 @@ public interface ExternalizableState {
 
     String toStateString();
 
-    boolean isTransientState();
+    Transience getTransience();
 
+    Stability getStability();
 }

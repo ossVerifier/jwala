@@ -11,8 +11,8 @@ var jvmControlService = function() {
 
     var controlPromise = function(jvmId, operation) {
     	return serviceFoundation.promisedPost("v1.0/jvms/" + jvmId + "/commands",
-                "json",
-                JSON.stringify({ controlOperation : operation}));
+                                              "json",
+                                              JSON.stringify({ controlOperation : operation}));
     };
 
     return {
