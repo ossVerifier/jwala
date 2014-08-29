@@ -79,7 +79,7 @@
     </int:router>
 
     <int:chain id="jvmPreHttpOutboundChain" input-channel="jvmStateRequestPreparation" output-channel="jvmStateRequest">
-        <int:header-enricher>
+        <int:header-enricher default-overwrite="true">
             <int:error-channel value="jvmFailedStateRequest"/>
         </int:header-enricher>
         <int:transformer id="jvmStatusUriTransformer" expression="headers['jvm'].getStatusUri().toString()"/>
