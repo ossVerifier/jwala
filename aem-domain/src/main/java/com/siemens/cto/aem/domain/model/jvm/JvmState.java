@@ -7,15 +7,16 @@ import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 
 public enum JvmState implements ExternalizableState {
 
-    INITIALIZED("INITIALIZED"),
-    FAILED("FAILED"),
-    STARTED("STARTED"),
-    STOPPED("STOPPED"),
-    UNKNOWN("UNKNOWN"),
-    START_REQUESTED("STARTING"),
-    STOP_REQUESTED("STOPPING");
+    INITIALIZED("INITIALIZED", false),
+    FAILED("FAILED", false),
+    STARTED("STARTED", false),
+    STOPPED("STOPPED", false),
+    UNKNOWN("UNKNOWN", false),
+    START_REQUESTED("STARTING", true),
+    STOP_REQUESTED("STOPPING", true);
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
+    private final boolean isTransientState;
 
     static {
         for (final JvmState state : values()) {
@@ -25,8 +26,9 @@ public enum JvmState implements ExternalizableState {
 
     private final String stateName;
 
-    private JvmState(final String theStateName) {
+    private JvmState(final String theStateName, final boolean isTransientState) {
         stateName = theStateName;
+        this.isTransientState = isTransientState;
     }
 
     @Override
@@ -48,6 +50,6 @@ public enum JvmState implements ExternalizableState {
 
     @Override
     public boolean isTransientState() {
-        return this.equals(START_REQUESTED) || this.equals(STOP_REQUESTED);
+        return isTransientState;
     }
 }
