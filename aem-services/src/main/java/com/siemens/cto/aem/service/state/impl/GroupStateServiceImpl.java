@@ -101,32 +101,46 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         List<SetGroupStateCommand> result = null;
         result = new ArrayList<>(groups.size());
 
-        for(LiteGroup group : groups) {
-
-            final Identifier<Group> groupId = group.getId();
-
-            LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
-            ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
-                @Override
-                public GroupStateMachine initializeGroupStateMachine() {
-                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
-                    Group group = groupPersistenceService.getGroup(groupId);
-                    newGsm.synchronizedInitializeGroup(group, systemUser);
-                    return newGsm;
+        try {
+            for(LiteGroup group : groups) {
+    
+                final Identifier<Group> groupId = group.getId();
+    
+                LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
+                ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
+                    @Override
+                    public GroupStateMachine initializeGroupStateMachine() {
+                        GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
+                        Group group = groupPersistenceService.getGroup(groupId);
+                        newGsm.synchronizedInitializeGroup(group, systemUser);
+                        return newGsm;
+                    }
+                }, 1, TimeUnit.SECONDS);
+    
+                if(gsm == null) {
+                    // could not lock
+                    LOGGER.warn("Skipping group due to lock {}", group);
+                    continue;
                 }
-            }, 1, TimeUnit.SECONDS);
-
-            if(gsm == null) {
-                // could not lock
-                LOGGER.warn("Skipping group due to lock {}", group);
-                continue;
+                try {
+                    internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
+                } catch(Throwable e) {
+                    lockableGsm.unlockPersistent();
+                    throw e;
+                }
+    
+                // could check for changes and only persist/notify on changes
+                SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
+    
+                result.add(sgsc);
             }
-            internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
-
-            // could check for changes and only persist/notify on changes
-            SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-
-            result.add(sgsc);
+        } catch(Throwable e) {
+            LOGGER.warn("GSS Unlocking affected groups due to exception.", e); 
+            for(SetGroupStateCommand sgsc : result) {
+                this.groupStateUnlock(sgsc);
+            }
+            result.clear();
+            throw e;
         }
 
         return result;
@@ -158,7 +172,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     @Splitter
     public List<SetGroupStateCommand>  stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) throws InterruptedException {
-        LOGGER.debug("Recalculating group state due to web server update: " + wsState.toString());
+        LOGGER.debug("GSS Recalc group state due to web server update: " + wsState.toString());
 
         // lookup children
         Identifier<WebServer> wsId = wsState.getId();
@@ -176,29 +190,48 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
         List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
 
-        for(Group group : groups) {
-
-            final Identifier<Group> groupId = group.getId();
-
-            LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
-            ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
-                @Override
-                public GroupStateMachine initializeGroupStateMachine() {
-                    GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
-                    Group group = groupPersistenceService.getGroup(groupId);
-                    newGsm.synchronizedInitializeGroup(group, systemUser);
-                    return newGsm;
+        try {
+            for(Group group : groups) {
+    
+                final Identifier<Group> groupId = group.getId();
+    
+                LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
+                ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
+                    @Override
+                    public GroupStateMachine initializeGroupStateMachine() {
+                        GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
+                        Group group = groupPersistenceService.getGroup(groupId);
+                        newGsm.synchronizedInitializeGroup(group, systemUser);
+                        return newGsm;
+                    }
+                }, 1, TimeUnit.SECONDS);
+    
+                if(gsm == null) {
+                    // could not lock
+                    LOGGER.warn("GSS Skipping group due to lock {}", group);
+                    continue;
                 }
-            }, 1, TimeUnit.SECONDS);
+    
+                try {
+                    internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());        
+                } catch(Throwable e) {
+                    lockableGsm.unlockPersistent();
+                    throw e;
+                }
+                
+                // could check for changes and only persist/notify on changes
+                SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
 
-            internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
-
-            // could check for changes and only persist/notify on changes
-            SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-
-            result.add(sgsc);
+                result.add(sgsc);
+            }
+        } catch(Throwable e) {
+            LOGGER.warn("GSS Unlocking affected groups due to exception.", e); 
+            for(SetGroupStateCommand sgsc : result) {
+                this.groupStateUnlock(sgsc);
+            }
+            result.clear();
+            throw e;
         }
-
         return result;
     }
 
@@ -350,9 +383,15 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Transactional
     public SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
-        if(sgsc != null && sgsc.getNewState() != null) {
-            LOGGER.trace("GSS Persist: {}", sgsc.getNewState());
-            groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+        try {
+            if(sgsc != null && sgsc.getNewState() != null) {
+                LOGGER.trace("GSS Persist: {}", sgsc.getNewState());
+                groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+            }
+        } catch(Throwable e) {
+            LOGGER.warn("GSS Unlocking group due to database exception.", e); 
+            groupStateUnlock(sgsc);
+            throw e;
         }
         return sgsc;
     }
