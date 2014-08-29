@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
@@ -29,19 +30,22 @@ public class JsonCreateWebServer {
     private final String hostName;
     private final String httpsPort;
     private final String statusPath;
+    private final String httpConfigFile;
 
     public JsonCreateWebServer(final String theName,
                                final String theHostName,
                                final String thePortNumber,
                                final String theHttpsPort,
                                final Set<String> theGroupIds,
-                               final String theStatusPath) {
+                               final String theStatusPath,
+                               final String theHttpConfigFile) {
         webserverName = theName;
         hostName = theHostName;
         portNumber = thePortNumber;
         httpsPort = theHttpsPort;
         groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
         statusPath = theStatusPath;
+        httpConfigFile = theHttpConfigFile;
     }
 
     public CreateWebServerCommand toCreateWebServerCommand() throws BadRequestException {
@@ -58,7 +62,8 @@ public class JsonCreateWebServer {
                                           hostName,
                                           port,
                                           securePort,
-                                          new Path(statusPath));
+                                          new Path(statusPath),
+                                          new FileSystemPath(httpConfigFile));
     }
 
     private Integer convertFrom(final String aValue,
@@ -99,7 +104,8 @@ public class JsonCreateWebServer {
                                                                      node.get("portNumber").getValueAsText(),
                                                                      node.get("httpsPort").getValueAsText(),
                                                                      deserializeGroupIdentifiers(node),
-                                                                     node.get("statusPath").getTextValue());
+                                                                     node.get("statusPath").getTextValue(),
+                                                                     node.get("httpConfigFile").getTextValue());
             return jcws;
         }
     }

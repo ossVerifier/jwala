@@ -30,6 +30,6 @@ public class DefaultJvmExecCommandBuilderImpl implements JvmExecCommandBuilder {
         //TODO The platform must come from the Jvm in the future (i.e. once it's ready and available)
         final PlatformCommandProvider provider = PlatformCommandProvider.lookup(Platform.WINDOWS);
         final ServiceCommandBuilder builder = provider.getServiceCommandBuilderFor(controlOperation);
-        return builder.buildCommandForService(jvm.getJvmName());
+        return builder.buildCommandForService(jvm.getJvmName(), null);
     }
 }

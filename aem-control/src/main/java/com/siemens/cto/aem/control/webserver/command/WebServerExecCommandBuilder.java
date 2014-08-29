@@ -10,5 +10,7 @@ public interface WebServerExecCommandBuilder {
 
     WebServerExecCommandBuilder setOperation(final WebServerControlOperation anOperation);
 
+    WebServerExecCommandBuilder setParameter(final String...aParams);
+
     ExecCommand build();
 }

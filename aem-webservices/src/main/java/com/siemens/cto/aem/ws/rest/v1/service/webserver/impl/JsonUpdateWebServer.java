@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 import java.io.IOException;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
@@ -29,6 +30,7 @@ public class JsonUpdateWebServer {
     private final String httpsPort;
     private final String hostName;
     private final String statusPath;
+    private final String httpConfigFile;
 
     public JsonUpdateWebServer(final String aWebServerId,
                                final String aWebServerName,
@@ -36,7 +38,8 @@ public class JsonUpdateWebServer {
                                final String aPortNumber,
                                final String aHttpsPort,
                                final Set<String> someGroupIds,
-                               final String aStatusPath) {
+                               final String aStatusPath,
+                               final String aHttpConfigFile) {
 
         webServerName = aWebServerName;
         hostName = aHostName;
@@ -45,6 +48,7 @@ public class JsonUpdateWebServer {
         webServerId = aWebServerId;
         groupIds = someGroupIds;
         statusPath = aStatusPath;
+        httpConfigFile = aHttpConfigFile;
     }
 
     public UpdateWebServerCommand toUpdateWebServerCommand() throws BadRequestException {
@@ -59,7 +63,8 @@ public class JsonUpdateWebServer {
                                           hostName,
                                           port,
                                           httpsPort,
-                                          new Path(statusPath));
+                                          new Path(statusPath),
+                                          new FileSystemPath(httpConfigFile));
     }
 
     protected Identifier<WebServer> convertWebServerId() {
@@ -108,7 +113,8 @@ public class JsonUpdateWebServer {
                                             node.get("portNumber").getValueAsText(),
                                             node.get("httpsPort").getValueAsText(),
                                             groupIds,
-                                            node.get("statusPath").getTextValue());
+                                            node.get("statusPath").getTextValue(),
+                                            node.get("httpConfigFile").getTextValue());
             return juws;
         }
     }

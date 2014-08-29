@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.rule.webserver.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -18,10 +20,6 @@ import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.WebServerIdRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
 public class UpdateWebServerCommand implements Serializable, Command {
 
@@ -35,13 +33,16 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private final Integer newHttpsPort;
     private final Path newStatusPath;
 
+    private final FileSystemPath newHttpConfigFile;
+
     public UpdateWebServerCommand(final Identifier<WebServer> theId,
                                   final Collection<Identifier<Group>> theNewGroupIds,
                                   final String theNewName,
                                   final String theNewHost,
                                   final Integer theNewPort,
                                   final Integer theNewHttpsPort,
-                                  final Path theNewStatusPath) {
+                                  final Path theNewStatusPath,
+                                  final FileSystemPath theNewHttpConfigFile) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
@@ -49,6 +50,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
         newName = theNewName;
         newGroupIds = Collections.unmodifiableCollection(new HashSet<>(theNewGroupIds));
         newStatusPath = theNewStatusPath;
+        newHttpConfigFile = theNewHttpConfigFile;
     }
 
     public Identifier<WebServer> getId() {
@@ -79,6 +81,10 @@ public class UpdateWebServerCommand implements Serializable, Command {
         return newStatusPath;
     }
 
+    public FileSystemPath getNewHttpConfigFile() {
+        return newHttpConfigFile;
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         final MultipleRules mr =
@@ -88,7 +94,8 @@ public class UpdateWebServerCommand implements Serializable, Command {
                                   new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
                                   new WebServerIdRule(id),
                                   new GroupIdsRule(newGroupIds),
-                                  new StatusPathRule(newStatusPath));
+                                  new StatusPathRule(newStatusPath),
+                                  new HttpConfigFileRule(newHttpConfigFile));
 
         mr.validate();
     }
@@ -113,6 +120,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append(this.newPort, rhs.newPort)
                 .append(this.newHttpsPort, rhs.newHttpsPort)
                 .append(this.newStatusPath, rhs.newStatusPath)
+                .append(this.newHttpConfigFile, rhs.newHttpConfigFile)
                 .isEquals();
     }
 
@@ -126,6 +134,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append(newPort)
                 .append(newHttpsPort)
                 .append(newStatusPath)
+                .append(newHttpConfigFile)
                 .toHashCode();
     }
 
@@ -139,6 +148,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append("newPort", newPort)
                 .append("newHttpsPort", newHttpsPort)
                 .append("newStatusPath", newStatusPath)
+                .append("newHttpConfigFile", newHttpConfigFile)
                 .toString();
     }
 }

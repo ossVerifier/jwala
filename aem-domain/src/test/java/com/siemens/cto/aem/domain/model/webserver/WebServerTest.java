@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Test;
 
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -19,12 +20,13 @@ public class WebServerTest {
     private static final String HOST = "host";
     private static final String NAME = "name";
     private static final Path STATUS_PATH = new Path("/the status path");
+    private static final FileSystemPath HTTP_CONFIG_FILE = new FileSystemPath("d:/some-dir/httpd.conf");
     private static final Integer port = 10000;
     private static final Integer httpsPort = 20000;
     private static final Long id = 1L;
     private static final Identifier<WebServer> wsId = new Identifier<>(id);
     private final List<Group> groups = new ArrayList<>();
-    private final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort, STATUS_PATH);
+    private final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE);
 
     @Test
     public void testGetId() {
@@ -67,7 +69,8 @@ public class WebServerTest {
                                                   expectedUri.getHost(),
                                                   expectedUri.getPort(),
                                                   99,
-                                                  STATUS_PATH);
+                                                  STATUS_PATH,
+                                                  HTTP_CONFIG_FILE);
         final URI actualUri = webServer.getStatusUri();
         assertEquals(expectedUri,
                      actualUri);

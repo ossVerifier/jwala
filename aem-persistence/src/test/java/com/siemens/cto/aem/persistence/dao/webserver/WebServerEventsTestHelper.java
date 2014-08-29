@@ -6,6 +6,7 @@ import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
@@ -20,7 +21,8 @@ public class WebServerEventsTestHelper {
                                                                            final Integer aNewWebServerPort,
                                                                            final Integer aNewWebServerHttpPort,
                                                                            final String aUserId,
-                                                                           final Path aStatusPath) {
+                                                                           final Path aStatusPath,
+                                                                           final FileSystemPath aFileSystemPath) {
 
 		final Event<CreateWebServerCommand> createWebServer = new Event<>(
 				new CreateWebServerCommand(someGroupIds,
@@ -28,7 +30,8 @@ public class WebServerEventsTestHelper {
                                            aNewWebServerHost,
                                            aNewWebServerPort,
                                            aNewWebServerHttpPort,
-                                           aStatusPath),
+                                           aStatusPath,
+                                           aFileSystemPath),
 				createAuditEvent(aUserId));
 
 		return createWebServer;
@@ -41,7 +44,8 @@ public class WebServerEventsTestHelper {
                                                                            final Integer aNewWebServerPort,
                                                                            final Integer aNewWebServerHttpsPort,
                                                                            final String aUserId,
-                                                                           final Path aStatusPath) {
+                                                                           final Path aStatusPath,
+                                                                           final FileSystemPath aHttpConfigFile) {
 
 		final Event<UpdateWebServerCommand> updateWebServer = new Event<>(new UpdateWebServerCommand(id,
                                                                                                      newGroupIds,
@@ -49,7 +53,8 @@ public class WebServerEventsTestHelper {
                                                                                                      aNewWebServerHost,
                                                                                                      aNewWebServerPort,
                                                                                                      aNewWebServerHttpsPort,
-                                                                                                     aStatusPath),
+                                                                                                     aStatusPath,
+                                                                                                     aHttpConfigFile),
                                                                           createAuditEvent(aUserId));
 
 		return updateWebServer;

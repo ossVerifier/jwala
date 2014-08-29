@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -137,7 +138,13 @@ public class MoreGroupStateMachineTest {
         groups.add(mockGroup);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"));
         jvms.add(jvm);
-        ws = new WebServer(id(1L, WebServer.class), groups, "ws-1", "localhost", 80,  443, new Path("/statusPath"));
+        ws = new WebServer(id(1L, WebServer.class),
+                           groups, "ws-1",
+                           "localhost",
+                           80,
+                           443,
+                           new Path("/statusPath"),
+                           new FileSystemPath("d:/some-dir/httpd.conf"));
         wsList.add(ws);
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.REACHABLE, DateTime.now(), StateType.WEB_SERVER));

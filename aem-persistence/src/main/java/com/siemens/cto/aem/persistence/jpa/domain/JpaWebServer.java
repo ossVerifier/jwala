@@ -40,6 +40,9 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     @Column(nullable = false)
     private String statusPath;
 
+    @Column(nullable = false)
+    private String httpConfigFile;
+
     public static final String FIND_APPLICATIONS_QUERY = "findApplicationsQuery";
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
@@ -96,5 +99,13 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     public void setStatusPath(final String statusPath) {
         this.statusPath = statusPath;
+    }
+
+    public String getHttpConfigFile() {
+        return httpConfigFile;
+    }
+
+    public void setHttpConfigFile(String httpConfigFile) {
+        this.httpConfigFile = httpConfigFile;
     }
 }

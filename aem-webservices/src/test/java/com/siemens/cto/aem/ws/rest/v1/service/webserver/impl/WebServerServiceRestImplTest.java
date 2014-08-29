@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +56,7 @@ public class WebServerServiceRestImplTest {
     private static final String name = "webserverName";
     private static final String host = "localhost";
     private static final Path statusPath = new Path("/statusPath");
+    private static final FileSystemPath httpConfigFile = new FileSystemPath("d:/some-dir/httpd.conf");
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
 
@@ -62,6 +65,9 @@ public class WebServerServiceRestImplTest {
 
     @Mock
     private WebServerControlService controlImpl;
+
+    @Mock
+    private WebServerCommandService commandImpl;
 
     @Mock
     private WebServerControlHistory webServerControlHistory;
@@ -82,7 +88,8 @@ public class WebServerServiceRestImplTest {
         groupsList.add(groupOne);
         groupsList.add(groupTwo);
 
-        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009, statusPath);
+        final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009,
+                statusPath, httpConfigFile);
         final List<WebServer> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -90,8 +97,8 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new WebServerServiceRestImpl(impl, controlImpl, webServerStateService);
-        when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
+	cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService);
+	when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
     @Test
@@ -209,7 +216,8 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
-        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath")));
+        webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath"),
+                new FileSystemPath("d:/some-dir/httpd.conf")));
 
         final Identifier<Group> groupId = new Identifier<>("1");
         final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");

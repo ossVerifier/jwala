@@ -218,6 +218,11 @@ var GroupOperationsDataTable = React.createClass({
                                             tocType:"link",
                                             linkLabel:"Load Balancer",
                                             hRefCallback:this.buildHRefLoadBalancerConfig},
+                                           {sTitle:"",
+                                            mData:null,
+                                            tocType:"link",
+                                            linkLabel:"HTTPD Conf",
+                                            onClickCallback:this.onClickHttpdConf},
                                            [{id:"startWebServer",
                                              sTitle:"Start",
                                              mData:null,
@@ -488,6 +493,11 @@ var GroupOperationsDataTable = React.createClass({
    },
    stopGroupWebServers: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
+   },
+   onClickHttpdConf: function(data) {
+       var id = data.id.id;
+       var url = "webServerCommand?webServerId=" + id + "&operation=viewHttpdConf";
+       window.open(url)
    },
    jvmHeapDump: function(id, selector, host) {
        var requestHeapDump = function() {return jvmControlService.heapDump(id);};

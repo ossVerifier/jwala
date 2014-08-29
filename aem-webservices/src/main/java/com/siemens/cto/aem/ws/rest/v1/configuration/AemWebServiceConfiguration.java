@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -67,6 +68,9 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerControlService webServerControlService;
+
+    @Autowired
+    private WebServerCommandService webServerCommandService;
 
     @Autowired
     @Qualifier("jvmStateService")
@@ -139,6 +143,7 @@ public class AemWebServiceConfiguration {
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService,
                                             webServerControlService,
+                                            webServerCommandService,
                                             webServerStateService);
     }
 

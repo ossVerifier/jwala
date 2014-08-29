@@ -10,6 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	private static final String SECOND_WS_GROUP_NAME = "test group 2";
 	private static final String SECOND_TEST_WS_NAME = "TOC Test 2";
     private static final Path STATUS_PATH = new Path("/statusPath");
+    private static final FileSystemPath HTTP_CONFIG_FILE = new FileSystemPath("d:/some-dir/httpd.conf");
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
@@ -92,7 +94,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				.createWebServer(createCreateWebServerEvent(
 						preCreatedGroupIds, TEST_WS_NAME, TEST_WS_HOST,
 						TEST_WS_PORT, TEST_WS_HTTPS_PORT, userName,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 	}
 
 	static {
@@ -111,7 +113,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		final Event<CreateWebServerCommand> createWebServer = createCreateWebServerEvent(
 				preCreatedGroupIds, TEST_WS_NAME, UNCHECKED_WS_HOST,
 				UNCHECKED_WS_PORT, TEST_WS_HTTPS_PORT, userName,
-                STATUS_PATH);
+                STATUS_PATH, HTTP_CONFIG_FILE);
 
 		webServerDao.createWebServer(createWebServer);
 	}
@@ -122,7 +124,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		final Event<UpdateWebServerCommand> updateWebServer = createUpdateWebServerEvent(
 				preCreatedWebServer.getId(), preCreatedGroupIds,
 				"My New Name", "My New Host", 1, 2, userName,
-                STATUS_PATH);
+                STATUS_PATH, HTTP_CONFIG_FILE);
 
 		final WebServer actualWebServer = webServerDao
 				.updateWebServer(updateWebServer);
@@ -137,6 +139,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
                 actualWebServer.getHttpsPort());
 		assertEquals(updateWebServer.getCommand().getId(),
 				actualWebServer.getId());
+        assertEquals(updateWebServer.getCommand().getNewHttpConfigFile(), actualWebServer.getHttpConfigFile());
 
 	}
 
@@ -150,7 +153,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				nonExistentWebServerId, preCreatedGroupIds,
 				UNCHECKED_WS_NAME, UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT,
 				userName,
-                STATUS_PATH));
+                STATUS_PATH, HTTP_CONFIG_FILE));
 	}
 
 	@Test(expected = BadRequestException.class)
@@ -160,13 +163,13 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				.createWebServer(createCreateWebServerEvent(
 				        preCreatedGroupIds, UNIQUE_NEW_WS_NAME,
 						UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, userName,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 
 		webServerDao.updateWebServer(createUpdateWebServerEvent(
 				newWebServer.getId(), preCreatedGroupIds,
 				preCreatedWebServer.getName(), UNCHECKED_WS_HOST, UNCHECKED_WS_HTTPS_PORT,
 				UNCHECKED_WS_PORT, userName,
-                STATUS_PATH));
+                STATUS_PATH, HTTP_CONFIG_FILE));
 	}
 
 	@Test
@@ -205,7 +208,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 			webServerDao.createWebServer(createCreateWebServerEvent(
 					preCreatedGroupIds, TEST_WS_NAME + (i + 1),
 					UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, TEST_USER_NAME + (i + 1),
-                    STATUS_PATH));
+                    STATUS_PATH, HTTP_CONFIG_FILE));
 		}
 
 		final List<WebServer> actualWebServers = webServerDao
@@ -258,7 +261,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 				.createWebServer(createCreateWebServerEvent(NONEXISTANT_GROUP_IDS,
 						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT,
 						TEST_USER_NAME,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 
 		assertNotNull(webServer.getId());
 		assertNotNull(webServer.getId().getId());
@@ -269,7 +272,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         WebServer webServer = webServerDao
                 .createWebServer(createCreateWebServerEvent(null, SECOND_TEST_WS_NAME,
                         TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT, TEST_USER_NAME,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 
         assertNotNull(webServer.getId());
         assertNotNull(webServer.getId().getId());
@@ -280,7 +283,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         WebServer webServer = webServerDao
                 .createWebServer(createCreateWebServerEvent(new ArrayList<Identifier<Group>>(0), SECOND_TEST_WS_NAME,
                         TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT, TEST_USER_NAME,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 
         assertNotNull(webServer.getId());
         assertNotNull(webServer.getId().getId());
@@ -299,7 +302,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 						preCreatedWebServer.getId(), newGroupIds,
 						TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT,
 						TEST_USER_NAME,
-                        STATUS_PATH));
+                        STATUS_PATH, HTTP_CONFIG_FILE));
 
 		assertTrue(webServer.getGroupIds().containsAll(newGroupIds));
 
@@ -354,7 +357,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         WebServer webServer = generalizedDao.update(createUpdateWebServerEvent(
 				preCreatedWebServer.getId(), newGroupIds, TEST_WS_NAME,
 				TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT, TEST_USER_NAME,
-                STATUS_PATH));
+                STATUS_PATH, HTTP_CONFIG_FILE));
 
         assertTrue(webServer.getGroupIds().containsAll(newGroupIds));
         assertEquals(newGroupIds.size(), webServer.getGroups().size());

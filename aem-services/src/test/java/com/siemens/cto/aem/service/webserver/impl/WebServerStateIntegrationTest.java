@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -235,7 +236,8 @@ public class WebServerStateIntegrationTest {
                                                        "hostname" + i + ".example.com",
                                                        port,
                                                        null,
-                                                       new Path("/statusPath"));
+                                                       new Path("/statusPath"),
+                                                       new FileSystemPath("d:/some-dir/httpd.conf"));
                 servers.add(server);
             }
             return servers;

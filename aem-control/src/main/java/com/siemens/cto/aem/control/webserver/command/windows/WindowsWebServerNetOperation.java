@@ -11,14 +11,20 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
     START(WebServerControlOperation.START) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand("net", "start", quotedServiceName(aServiceName));
         }
     } ,
     STOP(WebServerControlOperation.STOP) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
+        }
+    },
+    VIEW_HTTP_CONFIG_FILE(WebServerControlOperation.VIEW_HTTP_CONFIG_FILE) {
+        @Override
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
+            return new ExecCommand("cat", aParams[0]);
         }
     };
 
@@ -31,6 +37,10 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     }
 
     private final WebServerControlOperation operation;
+
+    private WindowsWebServerNetOperation() {
+        operation = null;
+    }
 
     private WindowsWebServerNetOperation(final WebServerControlOperation theOperation) {
         operation = theOperation;

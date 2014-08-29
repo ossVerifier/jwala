@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -26,6 +27,7 @@ public class WebServer implements Serializable {
     private final Integer port;
     private final Integer httpsPort;
     private final Path statusPath;
+    private final FileSystemPath httpConfigFile;
 
     public WebServer(final Identifier<WebServer> theId,
                      final Collection<Group> theGroups,
@@ -33,13 +35,15 @@ public class WebServer implements Serializable {
                      final String theHost,
                      final Integer thePort,
                      final Integer theHttpsPort,
-                     final Path theStatusPath) {
+                     final Path theStatusPath,
+                     final FileSystemPath theHttpConfigFile) {
         id = theId;
         host = theHost;
         port = thePort;
         name = theName;
         httpsPort = theHttpsPort;
         statusPath = theStatusPath;
+        httpConfigFile = theHttpConfigFile;
         for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
@@ -77,6 +81,10 @@ public class WebServer implements Serializable {
         return statusPath;
     }
 
+    public FileSystemPath getHttpConfigFile() {
+        return httpConfigFile;
+    }
+
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHost())
                                                    .setPort(getPort())
@@ -104,6 +112,7 @@ public class WebServer implements Serializable {
                 .append(this.port, rhs.port)
                 .append(this.httpsPort, rhs.httpsPort)
                 .append(this.statusPath, rhs.statusPath)
+                .append(this.httpConfigFile, rhs.httpConfigFile)
                 .isEquals();
     }
 
@@ -117,6 +126,7 @@ public class WebServer implements Serializable {
                 .append(port)
                 .append(httpsPort)
                 .append(statusPath)
+                .append(httpConfigFile)
                 .toHashCode();
     }
 
@@ -129,6 +139,7 @@ public class WebServer implements Serializable {
                 .append("port", port)
                 .append("httpsPort", httpsPort)
                 .append("statusPath", statusPath)
+                .append("httpConfigFile", httpConfigFile)
                 .append("groups", groups)
                 .toString();
     }

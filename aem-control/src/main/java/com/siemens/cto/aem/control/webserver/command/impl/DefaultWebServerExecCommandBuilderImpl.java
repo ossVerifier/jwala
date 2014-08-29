@@ -13,6 +13,7 @@ public class DefaultWebServerExecCommandBuilderImpl implements WebServerExecComm
 
     private WebServer webServer;
     private WebServerControlOperation controlOperation;
+    private String [] params;
 
     @Override
     public WebServerExecCommandBuilder setWebServer(final WebServer aWebServer) {
@@ -27,10 +28,16 @@ public class DefaultWebServerExecCommandBuilderImpl implements WebServerExecComm
     }
 
     @Override
+    public WebServerExecCommandBuilder setParameter(String...aParams) {
+        params = aParams;
+        return this;
+    }
+
+    @Override
     public ExecCommand build() {
         //TODO The platform must come from the Web Server in the future (i.e. once it's ready and available)
         final PlatformCommandProvider provider = PlatformCommandProvider.lookup(Platform.WINDOWS);
         final ServiceCommandBuilder builder = provider.getServiceCommandBuilderFor(controlOperation);
-        return builder.buildCommandForService(webServer.getName());
+        return builder.buildCommandForService(webServer.getName(), params);
     }
 }

@@ -11,13 +11,13 @@ public enum LinuxJvmInitDOperation implements ServiceCommandBuilder {
 
     START(JvmControlOperation.START) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand(initDPath(aServiceName), "start");
         }
     } ,
     STOP(JvmControlOperation.STOP) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand(initDPath(aServiceName), "stop");
         }
     };

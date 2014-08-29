@@ -68,4 +68,8 @@ public interface WebServerServiceRest {
     @Path("/states/current")
     Response getCurrentWebServerStates(@BeanParam final WebServerIdsParameterProvider webServerIdsParameterProvider);
 
+    @GET
+    @Path("/{webServerId}/conf/current")
+    Response getHttpdConfig(@PathParam("webServerId") final Identifier<WebServer> aWebServerId);
+
 }

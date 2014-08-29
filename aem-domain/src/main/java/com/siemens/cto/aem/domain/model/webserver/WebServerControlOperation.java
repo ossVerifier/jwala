@@ -9,7 +9,8 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 public enum WebServerControlOperation {
 
     START("start", WebServerReachableState.START_REQUESTED),
-    STOP("stop", WebServerReachableState.STOP_REQUESTED);
+    STOP("stop", WebServerReachableState.STOP_REQUESTED),
+    VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();
 

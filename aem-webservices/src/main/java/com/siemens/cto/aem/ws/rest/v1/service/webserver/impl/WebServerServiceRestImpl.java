@@ -5,6 +5,9 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +38,17 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
+    private final WebServerCommandService webServerCommandService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
+                                    final WebServerCommandService theWebServerCommandService,
                                     final StateService<WebServer, WebServerReachableState> theWebServerStateService) {
         logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
+        webServerCommandService = theWebServerCommandService;
         webServerStateService = theWebServerStateService;
     }
 
@@ -136,5 +142,16 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
 
         return ResponseBuilder.ok(currentWebServerStates);
+    }
+
+    @Override
+    public Response getHttpdConfig(Identifier<WebServer> aWebServerId) {
+        try {
+            return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
+        } catch (CommandFailureException cmdFailEx) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                                         new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                                                                cmdFailEx.getMessage()));
+        }
     }
 }

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,6 +100,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getPort()).thenReturn(51000);
         when(mockWebServer.getHttpsPort()).thenReturn(52000);
         when(mockWebServer.getStatusPath()).thenReturn(new Path("/statusPath"));
+        when(mockWebServer.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
 
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
@@ -108,6 +110,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer2.getPort()).thenReturn(51000);
         when(mockWebServer2.getHttpsPort()).thenReturn(52000);
         when(mockWebServer2.getStatusPath()).thenReturn(new Path("/statusPath"));
+        when(mockWebServer2.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
 
         mockWebServersAll.add(mockWebServer);
         mockWebServersAll.add(mockWebServer2);
@@ -164,7 +167,8 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer.getHost(),
                                                                 mockWebServer.getPort(),
                                                                 mockWebServer.getHttpsPort(),
-                                                                mockWebServer.getStatusPath());
+                                                                mockWebServer.getStatusPath(),
+                                                                mockWebServer.getHttpConfigFile());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
@@ -192,7 +196,8 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer2.getHost(),
                                                                 mockWebServer2.getPort(),
                                                                 mockWebServer2.getHttpsPort(),
-                                                                mockWebServer2.getStatusPath());
+                                                                mockWebServer2.getStatusPath(),
+                                                                mockWebServer2.getHttpConfigFile());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());
@@ -200,6 +205,7 @@ public class WebServerServiceImplTest {
         assertEquals("the-ws-name-2", webServer.getName());
         assertEquals(group2.getName(), webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
+        assertEquals("d:/some-dir/httpd.conf", webServer.getHttpConfigFile().getPath());
     }
 
     @Test

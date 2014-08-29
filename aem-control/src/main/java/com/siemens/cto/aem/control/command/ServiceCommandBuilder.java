@@ -4,5 +4,5 @@ import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 
 public interface ServiceCommandBuilder {
 
-    ExecCommand buildCommandForService(final String aServiceName);
+    ExecCommand buildCommandForService(final String aServiceName, final String...aParams);
 }

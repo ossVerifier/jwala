@@ -17,19 +17,19 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 
     START(JvmControlOperation.START) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand("net", "start", quotedServiceName(aServiceName));
         }
     },
     STOP(JvmControlOperation.STOP) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
         }
     },
     THREAD_DUMP(JvmControlOperation.THREAD_DUMP) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             final Properties properties = ApplicationProperties.getProperties();
             String jStackCmd = properties.getProperty("stp.java.home") + "/bin/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
@@ -37,7 +37,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     },
     HEAP_DUMP(JvmControlOperation.HEAP_DUMP) {
         @Override
-        public ExecCommand buildCommandForService(final String aServiceName) {
+        public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
             final Properties properties = ApplicationProperties.getProperties();
             String jMapCmd = properties.getProperty("stp.java.home") + "/bin/jmap";
             String dataDir = properties.getProperty("stp.data.dir");

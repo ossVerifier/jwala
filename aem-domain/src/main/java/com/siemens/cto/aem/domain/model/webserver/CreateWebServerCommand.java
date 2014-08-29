@@ -3,6 +3,8 @@ package com.siemens.cto.aem.domain.model.webserver;
 import java.io.Serializable;
 import java.util.Collection;
 
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.rule.webserver.HttpConfigFileRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,19 +31,22 @@ public class CreateWebServerCommand implements Serializable, Command {
     private final Integer port;
     private final Integer httpsPort;
     private final Path statusPath;
+    private final FileSystemPath httpConfigFile;
 
     public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds,
                                   final String theName,
                                   final String theHost,
                                   final Integer thePort,
                                   final Integer theHttpsPort,
-                                  final Path theStatusPath) {
+                                  final Path theStatusPath,
+                                  final FileSystemPath theHttpConfigFile) {
         host = theHost;
         port = thePort;
         httpsPort = theHttpsPort;
         name = theName;
         groupIds = theGroupIds;
         statusPath = theStatusPath;
+        httpConfigFile = theHttpConfigFile;
     }
 
     public Collection<Identifier<Group>> getGroups() {
@@ -68,6 +73,10 @@ public class CreateWebServerCommand implements Serializable, Command {
         return statusPath;
     }
 
+    public FileSystemPath getHttpConfigFile() {
+        return httpConfigFile;
+    }
+
     @Override
     public void validateCommand() {
         new MultipleRules(new WebServerNameRule(name),
@@ -75,7 +84,8 @@ public class CreateWebServerCommand implements Serializable, Command {
                           new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
                           new GroupIdsRule(groupIds),
-                          new StatusPathRule(statusPath)).validate();
+                          new StatusPathRule(statusPath),
+                          new HttpConfigFileRule(httpConfigFile)).validate();
     }
 
     @Override
@@ -97,6 +107,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(this.port, rhs.port)
                 .append(this.httpsPort, rhs.httpsPort)
                 .append(this.statusPath, rhs.statusPath)
+                .append(this.httpConfigFile, rhs.httpConfigFile)
                 .isEquals();
     }
 
@@ -109,6 +120,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(port)
                 .append(httpsPort)
                 .append(statusPath)
+                .append(httpConfigFile)
                 .toHashCode();
     }
 
@@ -121,6 +133,7 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append("port", port)
                 .append("httpsPort", httpsPort)
                 .append("statusPath", statusPath)
+                .append("httpConfigFile", httpConfigFile)
                 .toString();
     }
 }
