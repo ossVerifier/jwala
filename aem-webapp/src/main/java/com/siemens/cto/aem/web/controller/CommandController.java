@@ -52,7 +52,7 @@ public class CommandController {
     public void webServerCommand(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final Identifier<WebServer> id = new Identifier<>(request.getParameter("webServerId"));
         final String ERROR_MSG_PREFIX = "Error reading HTTPD Conf: ";
-
+        response.setContentType("text/plain");
         try {
             final ExecData execData = webServerCommandService.getHttpdConf(id);
             if (execData.getReturnCode().wasSuccessful()) {
