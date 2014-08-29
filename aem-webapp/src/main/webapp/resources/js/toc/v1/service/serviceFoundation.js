@@ -1,6 +1,6 @@
 var serviceFoundation = {
 
-    get : function (url, dataType, caughtCallback) {
+    get : function (url, dataType, thenCallback) {
         var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
         return Promise.cast($.ajax({url: url,
                                     dataType: dataType,
@@ -9,8 +9,8 @@ var serviceFoundation = {
                                     beforeSend: loadingUiBehavior.showLoading,
                                     complete: loadingUiBehavior.hideLoading
                                 })).then(function(response){
-                                    if ($.isFunction(caughtCallback)) {
-                                        caughtCallback(response);
+                                    if ($.isFunction(thenCallback)) {
+                                        thenCallback(response);
                                     }
                                 }).caught(function(response){
                                     if (response.message !== undefined) {
