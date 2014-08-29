@@ -94,14 +94,14 @@
 
     <int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest" output-channel="jvmCompletedStateRequest">
         <int:header-enricher id="jvmFailedHttpHeaderEnricher">
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STARTED}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}"/>
         </int:header-enricher>
         <int:transformer id="jvmFailedHttpTransformer" expression="payload.getFailedMessage().headers['jvmId']"/>
     </int:chain>
 
     <int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest" output-channel="jvmCompletedStateRequest">
         <int:header-enricher id="jvmSuccessfulHttpHeaderEnricher">
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STARTED}"/>
         </int:header-enricher>
         <int:transformer id="jvmSuccessfulHttpTransformer" expression="headers['jvmId']"/>
     </int:chain>
