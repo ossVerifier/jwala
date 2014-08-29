@@ -3,6 +3,10 @@ package com.siemens.cto.aem.web.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -17,12 +21,17 @@ import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 
+import java.io.IOException;
+
 @Controller
 public class CommandController {
 
     @Autowired
     @Qualifier("jvmControlService")
     private JvmControlService jvmControlService;
+
+    @Autowired
+    private WebServerCommandService webServerCommandService;
 
     @RequestMapping(value = "/jvmCommand")
     public ModelAndView jvmCommand(HttpServletRequest request, HttpServletResponse response) {
@@ -37,6 +46,23 @@ public class CommandController {
         mv.addObject("stdOut", jvmControlHistory.getExecData().getStandardOutput());
 
         return mv;
+    }
+
+    @RequestMapping(value = "/webServerCommand")
+    public void webServerCommand(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final Identifier<WebServer> id = new Identifier<>(request.getParameter("webServerId"));
+        final String ERROR_MSG_PREFIX = "Error reading HTTPD Conf: ";
+
+        try {
+            final ExecData execData = webServerCommandService.getHttpdConf(id);
+            if (execData.getReturnCode().wasSuccessful()) {
+                response.getWriter().println(execData.getStandardOutput());
+            } else {
+                response.getWriter().println(ERROR_MSG_PREFIX + execData.getStandardError());
+            }
+        } catch (CommandFailureException cmdFailEx) {
+            response.getWriter().println(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
+        }
     }
 
     protected ControlJvmCommand getControlOperation(HttpServletRequest request, Identifier<Jvm> jvmIdentifier) {
