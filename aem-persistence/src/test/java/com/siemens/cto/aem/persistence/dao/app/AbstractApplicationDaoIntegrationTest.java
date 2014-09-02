@@ -203,6 +203,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
+        jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5

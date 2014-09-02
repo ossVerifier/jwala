@@ -188,6 +188,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		assertEquals(preCreatedWebServer.getHost(), webServer.getHost());
 		assertEquals(preCreatedWebServer.getPort(), webServer.getPort());
 		assertEquals(preCreatedWebServer.getStatusPath(), webServer.getStatusPath());
+        assertEquals(preCreatedWebServer.getHttpConfigFile(), webServer.getHttpConfigFile());
 		assertEquals(expectedWebServerIdentifier, webServer.getId());
 		assertEquals(preCreatedWebServer, webServer);
 		assertEquals(preCreatedWebServer.hashCode(), webServer.hashCode());
@@ -406,6 +407,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
+        jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5
@@ -467,6 +469,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setHost("the-host-name");
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
+        jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
         entityManager.persist(jpaWebServer);
         entityManager.flush();
 
@@ -534,6 +537,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setPort(80);
         jpaWebServer.setGroups(groups);
         jpaWebServer.setStatusPath("/jk/status");
+        jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
         entityManager.persist(jpaWebServer);
 
         // Create jvm 1, 2, 3, 4 and 5
