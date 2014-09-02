@@ -8,7 +8,6 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,12 +25,15 @@ import java.io.IOException;
 @Controller
 public class CommandController {
 
-    @Autowired
-    @Qualifier("jvmControlService")
     private JvmControlService jvmControlService;
 
-    @Autowired
     private WebServerCommandService webServerCommandService;
+
+    @Autowired
+    public CommandController(JvmControlService aJvmControlService, WebServerCommandService aWebServerCommandService) {
+        jvmControlService = aJvmControlService;
+        webServerCommandService = aWebServerCommandService;
+    }
 
     @RequestMapping(value = "/jvmCommand")
     public ModelAndView jvmCommand(HttpServletRequest request, HttpServletResponse response) {
@@ -56,9 +58,9 @@ public class CommandController {
         try {
             final ExecData execData = webServerCommandService.getHttpdConf(id);
             if (execData.getReturnCode().wasSuccessful()) {
-                response.getWriter().println(execData.getStandardOutput());
+                response.getWriter().print(execData.getStandardOutput());
             } else {
-                response.getWriter().println(ERROR_MSG_PREFIX + execData.getStandardError());
+                response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
             }
         } catch (CommandFailureException cmdFailEx) {
             response.getWriter().println(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
