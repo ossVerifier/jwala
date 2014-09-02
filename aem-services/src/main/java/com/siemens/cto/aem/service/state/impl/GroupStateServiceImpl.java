@@ -103,9 +103,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
         try {
             for(LiteGroup group : groups) {
-    
+
                 final Identifier<Group> groupId = group.getId();
-    
+
                 LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
                 ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
                     @Override
@@ -116,7 +116,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                         return newGsm;
                     }
                 }, 1, TimeUnit.SECONDS);
-    
+
                 if(gsm == null) {
                     // could not lock
                     LOGGER.warn("Skipping group due to lock {}", group);
@@ -124,23 +124,23 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 }
                 try {
                     internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
-                } catch(Throwable e) {
+                } catch(final RuntimeException re) {
                     lockableGsm.unlockPersistent();
-                    throw e;
+                    throw re;
                 }
-    
+
                 // could check for changes and only persist/notify on changes
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-    
+
                 result.add(sgsc);
             }
-        } catch(Throwable e) {
-            LOGGER.warn("GSS Unlocking affected groups due to exception.", e); 
+        } catch(final RuntimeException re) {
+            LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
             for(SetGroupStateCommand sgsc : result) {
                 this.groupStateUnlock(sgsc);
             }
             result.clear();
-            throw e;
+            throw re;
         }
 
         return result;
@@ -192,9 +192,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
         try {
             for(Group group : groups) {
-    
+
                 final Identifier<Group> groupId = group.getId();
-    
+
                 LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
                 ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
                     @Override
@@ -205,32 +205,32 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                         return newGsm;
                     }
                 }, 1, TimeUnit.SECONDS);
-    
+
                 if(gsm == null) {
                     // could not lock
                     LOGGER.warn("GSS Skipping group due to lock {}", group);
                     continue;
                 }
-    
+
                 try {
-                    internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());        
-                } catch(Throwable e) {
+                    internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
+                } catch(final RuntimeException re) {
                     lockableGsm.unlockPersistent();
-                    throw e;
+                    throw re;
                 }
-                
+
                 // could check for changes and only persist/notify on changes
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
 
                 result.add(sgsc);
             }
-        } catch(Throwable e) {
-            LOGGER.warn("GSS Unlocking affected groups due to exception.", e); 
+        } catch(final RuntimeException re) {
+            LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
             for(SetGroupStateCommand sgsc : result) {
                 this.groupStateUnlock(sgsc);
             }
             result.clear();
-            throw e;
+            throw re;
         }
         return result;
     }
@@ -388,10 +388,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 LOGGER.trace("GSS Persist: {}", sgsc.getNewState());
                 groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
             }
-        } catch(Throwable e) {
-            LOGGER.warn("GSS Unlocking group due to database exception.", e); 
+        } catch(final RuntimeException re) {
+            LOGGER.warn("GSS Unlocking group due to database exception.", re);
             groupStateUnlock(sgsc);
-            throw e;
+            throw re;
         }
         return sgsc;
     }
