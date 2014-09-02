@@ -63,7 +63,7 @@ public class CommandController {
                 response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
             }
         } catch (CommandFailureException cmdFailEx) {
-            response.getWriter().println(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
+            response.getWriter().print(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
         }
     }
 
