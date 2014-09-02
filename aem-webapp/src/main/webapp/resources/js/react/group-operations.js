@@ -221,7 +221,7 @@ var GroupOperationsDataTable = React.createClass({
                                            {sTitle:"",
                                             mData:null,
                                             tocType:"link",
-                                            linkLabel:"HTTPD Conf",
+                                            linkLabel:"httpd.conf",
                                             onClickCallback:this.onClickHttpdConf},
                                            [{id:"startWebServer",
                                              sTitle:"Start",
