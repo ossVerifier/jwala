@@ -502,9 +502,14 @@ var GroupOperationsDataTable = React.createClass({
    jvmHeapDump: function(id, selector, host) {
        var requestHeapDump = function() {return jvmControlService.heapDump(id);};
        var heapDumpRequestCallback = function(response){
-                                        var msg = response.applicationResponseContent.execData.standardError === "" ?
-                                        response.applicationResponseContent.execData.standardOutput  + " in " + host :
-                                        response.applicationResponseContent.execData.standardError;
+                                        var msg;
+                                        if (response.applicationResponseContent.execData.standardError === "") {
+                                            msg = response.applicationResponseContent.execData.standardOutput;
+                                            msg = msg.replace("Dumping heap to", "Heap dump saved to " + host + " in ");
+                                            msg = msg.replace("Heap dump file created", "");
+                                        } else {
+                                            msg = response.applicationResponseContent.execData.standardError;
+                                        }
                                         $.alert(msg, "Heap Dump", false);
                                         $(selector).attr('title', "Last heap dump status: " + msg);
                                      };
