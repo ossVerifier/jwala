@@ -3,32 +3,36 @@ package com.siemens.cto.aem.service.webserver.impl;
 import java.io.IOException;
 import java.util.List;
 
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
-import com.siemens.cto.toc.files.RepositoryAction;
-import com.siemens.cto.toc.files.TemplateManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.TemplateManager;
 
 public class WebServerServiceImpl implements WebServerService {
 
-    private WebServerDao dao;
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
+
+    private final WebServerDao dao;
     private final String HTTPD_CONF_TEMPLATE = "httpd-conf.tpl";
     private final String HTTPD_SSL_CONF_TEMPLATE = "httpd-ssl-conf.tpl";
     private final String WORKERS_PROPS_TEMPLATE = "workers-properties.tpl";
-    private TemplateManager templateManager;
+    private final TemplateManager templateManager;
 
     public WebServerServiceImpl(final WebServerDao theDao, final TemplateManager theTemplateManager) {
         dao = theDao;
@@ -38,12 +42,12 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional
     public WebServer createWebServer(final CreateWebServerCommand aCreateWebServerCommand,
-                         final User aCreatingUser) {
+                                     final User aCreatingUser) {
 
         aCreateWebServerCommand.validateCommand();
 
         final Event<CreateWebServerCommand> event = new Event<>(aCreateWebServerCommand,
-                                                          AuditEvent.now(aCreatingUser));
+                                                                AuditEvent.now(aCreatingUser));
 
         return  dao.createWebServer(event);
     }
@@ -65,31 +69,31 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final String aWebServerNameFragment,
-                              final PaginationParameter aPaginationParam) {
+                                          final PaginationParameter aPaginationParam) {
 
         return dao.findWebServers(aWebServerNameFragment,
-                            aPaginationParam);
+                                  aPaginationParam);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final Identifier<Group> aGroupId,
-                              final PaginationParameter aPaginationParam) {
+                                          final PaginationParameter aPaginationParam) {
 
         return dao.findWebServersBelongingTo(aGroupId,
-                                       aPaginationParam);
+                                             aPaginationParam);
 
     }
 
     @Override
     @Transactional
     public WebServer updateWebServer(final UpdateWebServerCommand anUpdateWebServerCommand,
-                         final User anUpdatingUser) {
+                                     final User anUpdatingUser) {
 
         anUpdateWebServerCommand.validateCommand();
 
         final Event<UpdateWebServerCommand> event = new Event<>(anUpdateWebServerCommand,
-                                                          AuditEvent.now(anUpdatingUser));
+                                                                AuditEvent.now(anUpdatingUser));
 
         return dao.updateWebServer(event);
     }
@@ -139,10 +143,9 @@ public class WebServerServiceImpl implements WebServerService {
             if (result.getType() == RepositoryAction.Type.FOUND ) {
                 return result.getPath().toString();
             }
-            return "/" + templateName;
         } catch (IOException ioe) {
-            return "/" + templateName;
+            LOGGER.info("Unable to locate template", ioe);
         }
+        return "/" + templateName;
     }
-
 }

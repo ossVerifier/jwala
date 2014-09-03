@@ -125,6 +125,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 try {
                     internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
                 } catch(final RuntimeException re) {
+                    LOGGER.warn("Unlocking GSM after receiving RuntimeException", re);
                     lockableGsm.unlockPersistent();
                     throw re;
                 }
@@ -215,6 +216,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 try {
                     internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
                 } catch(final RuntimeException re) {
+                    LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
                     lockableGsm.unlockPersistent();
                     throw re;
                 }

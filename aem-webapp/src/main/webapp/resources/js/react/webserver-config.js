@@ -175,7 +175,7 @@ var WebServerConfigForm = React.createClass({
                        host:this.getPropVal(nextProps, "host"),
                        port:this.getPropVal(nextProps, "port"),
                        httpsPort:this.getPropVal(nextProps, "httpsPort"),
-                       statusPath:this.getPropVal(nextProps, "statusPath", "/jk/status", "path"),
+                       statusPath:this.getPropVal(nextProps, "statusPath", tocVars.loadBalancerStatusMount, "path"),
                        httpConfigFile:this.getPropVal(nextProps,
                                                       "httpConfigFile",
                                                       "D:/apache/httpd-2.4.9/conf/httpd.conf",

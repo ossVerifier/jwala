@@ -10,7 +10,12 @@ import java.util.TreeMap;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Version {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Version.class);
 
     private static final String MANIFEST_NAME = "META-INF/MANIFEST.MF";
     private static final String IMPLEMENTATION_TITLE = "Implementation-Title";
@@ -55,7 +60,6 @@ public class Version {
         return result;
     }
 
-    @SuppressWarnings("PMD.EmptyCatchBlock")
     private static Manifest getManifest() {
         Manifest result = null;
         final Class<Version> objectsClass = Version.class;
@@ -88,7 +92,7 @@ public class Version {
                 }
             }
         } catch (final IOException e) {
-            // Can not obtain manifest
+            LOGGER.warn("Unable to obtain manifest", e);
         }
         return result;
     }

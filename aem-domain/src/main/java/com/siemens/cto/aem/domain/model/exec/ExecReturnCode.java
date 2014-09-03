@@ -31,7 +31,6 @@ public class ExecReturnCode implements Serializable {
     }
 
     public boolean wasSuccessful() {
-        System.out.println("WasSuccessful("+ (returnCode.equals(ZERO)) + ")");
         return (returnCode.equals(ZERO));
     }
 

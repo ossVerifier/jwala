@@ -15,6 +15,6 @@ public class GroupCurrentStateMessageExtractor extends AbstractCurrentStateMessa
 
     @Override
     GroupState getState(final MapMessage aMessage) throws JMSException {
-        return GroupState.valueOf(aMessage.getString(CommonStateKey.STATE.getKey()));
+        return GroupState.convertFrom(aMessage.getString(CommonStateKey.STATE.getKey()));
     }
 }

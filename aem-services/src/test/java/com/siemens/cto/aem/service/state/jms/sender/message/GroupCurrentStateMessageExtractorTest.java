@@ -1,0 +1,60 @@
+package com.siemens.cto.aem.service.state.jms.sender.message;
+
+import javax.jms.JMSException;
+
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class GroupCurrentStateMessageExtractorTest extends AbstractCurrentStateMessageExtractorTest {
+
+    private GroupCurrentStateMessageExtractor extractor;
+
+    @Before
+    public void setup() throws Exception {
+        extractor = new GroupCurrentStateMessageExtractor();
+    }
+
+    @Test
+    public void testExtract() throws Exception {
+        final CurrentState expectedState = new CurrentState<>(new Identifier<Group>(123456L),
+                                                              GroupState.STARTED,
+                                                              DateTime.now(),
+                                                              StateType.GROUP);
+
+        setupMockMapMessage(expectedState);
+
+        final CurrentState actualState = extractor.extract(message);
+        assertEquals(expectedState,
+                     actualState);
+    }
+
+    @Test
+    public void testExtractUnknownState() throws JMSException {
+        final ExternalizableState fakeState = mock(ExternalizableState.class);
+        when(fakeState.toStateString()).thenReturn("This isn't a real Group State");
+
+        final CurrentState expectedState = new CurrentState<>(new Identifier<Group>(123456L),
+                                                              fakeState,
+                                                              DateTime.now(),
+                                                              StateType.GROUP);
+        setupMockMapMessage(expectedState);
+        final CurrentState actualState = extractor.extract(message);
+        assertEquals(GroupState.UNKNOWN,
+                     actualState.getState());
+    }
+}

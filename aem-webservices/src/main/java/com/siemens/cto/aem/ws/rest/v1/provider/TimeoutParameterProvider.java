@@ -4,11 +4,16 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.QueryParam;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.ws.rest.v1.fault.RestFaultType;
 
 public class TimeoutParameterProvider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutParameterProvider.class);
 
     private static final TimeDuration DEFAULT_TIMEOUT_VALUE = new TimeDuration(30L, TimeUnit.SECONDS);
 
@@ -37,6 +42,8 @@ public class TimeoutParameterProvider {
             return new TimeDuration(timeoutValue,
                                     TimeUnit.SECONDS);
         } catch (final NumberFormatException nfe) {
+            //This is logged here instead of included in the BadRequestException because it's a potential CSRF vector
+            LOGGER.info("Non-integer value specified for the timeout parameter", nfe);
             throw new BadRequestException(RestFaultType.INVALID_TIMEOUT_PARAMETER,
                                           "Non-integer value specified for the timeout parameter");
         }

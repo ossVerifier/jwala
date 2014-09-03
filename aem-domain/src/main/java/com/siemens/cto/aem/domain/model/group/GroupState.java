@@ -1,5 +1,8 @@
 package com.siemens.cto.aem.domain.model.group;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.Stability;
 import com.siemens.cto.aem.domain.model.state.Transience;
@@ -20,6 +23,21 @@ public enum GroupState implements ExternalizableState {
     STARTING("STARTING", TRANSIENT, UNSTABLE),
     STOPPING("STOPPING", TRANSIENT, UNSTABLE),
     UNKNOWN("UNKNOWN", PERMANENT, UNSTABLE);
+
+    private static final Map<String, GroupState> LOOKUP_MAP = new HashMap<>();
+
+    static {
+        for (final GroupState state : values()) {
+            LOOKUP_MAP.put(state.toStateString(), state);
+        }
+    }
+
+    public static GroupState convertFrom(final String aStateName) {
+        if (LOOKUP_MAP.containsKey(aStateName)) {
+            return LOOKUP_MAP.get(aStateName);
+        }
+        return UNKNOWN;
+    }
 
     private final String stateName;
     private final Transience transientState;

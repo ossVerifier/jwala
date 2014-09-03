@@ -4,10 +4,15 @@ import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by z002xuvs on 11/29/13.
  */
 public class ObjectFormatter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObjectFormatter.class);
 
     public static final String DATE_FORMAT = "MM/dd/yy HH:mm:ss a";
 
@@ -76,7 +81,6 @@ public class ObjectFormatter {
         return new SimpleDateFormat(DATE_FORMAT).format(((Calendar) fieldValue(f)).getTime());
     }
 
-    @SuppressWarnings("PMD.EmptyCatchBlock")
     protected Object fieldValue(final Field f) {
         if (printAll()) {
             f.setAccessible(true);
@@ -85,7 +89,7 @@ public class ObjectFormatter {
         try {
             return f.get(object);
         } catch (final IllegalAccessException e) {
-            // do nothing
+            LOGGER.warn("IllegalAccessException when attempting to call get() on a field", e);
         }
 
         return null;

@@ -88,6 +88,7 @@ public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationC
             final StateType stateType = StateType.valueOf(rawStateType);
             return extractors.get(stateType).extract(aMapMessage);
         } catch (final IllegalArgumentException e) {
+            LOGGER.warn("Unmapped State Type", e);
             throw new JMSException("Unmapped State Type: " + rawStateType);
         }
     }

@@ -30,8 +30,16 @@ public enum JvmState implements ExternalizableState {
         }
     }
 
+    public static JvmState convertFrom(final String aStateName) {
+        if (LOOKUP_MAP.containsKey(aStateName)) {
+            return LOOKUP_MAP.get(aStateName);
+        }
+        return UNKNOWN;
+    }
+
     private final String stateName;
     private final Transience transientState;
+
     private final Stability stableState;
 
     private JvmState(final String theStateName,
@@ -45,13 +53,6 @@ public enum JvmState implements ExternalizableState {
     @Override
     public String toStateString() {
         return stateName;
-    }
-
-    public static JvmState convertFrom(final String aStateName) {
-        if (LOOKUP_MAP.containsKey(aStateName)) {
-            return LOOKUP_MAP.get(aStateName);
-        }
-        return UNKNOWN;
     }
 
     @Override

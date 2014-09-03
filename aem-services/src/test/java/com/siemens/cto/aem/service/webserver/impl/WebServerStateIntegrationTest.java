@@ -107,7 +107,6 @@ public class WebServerStateIntegrationTest {
                                                        Matchers.<User>anyObject());
 
         final List<WebServerSetStateCommand> allValues = commandCaptor.getAllValues();
-        System.out.println("Size is " + allValues.size());
         assertFalse(allValues.isEmpty());
         for (final WebServerSetStateCommand command : allValues) {
             final WebServerReachableState expectedState;
@@ -254,7 +253,6 @@ public class WebServerStateIntegrationTest {
         }
         final ExecReturnCode returnCode = new ExecReturnCode(returnCodeValue);
         when(data.getReturnCode()).thenReturn(returnCode);
-        System.out.println("Constructed " + returnCode);
         return data;
     }
 

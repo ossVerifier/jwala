@@ -1,29 +1,33 @@
 package com.siemens.cto.aem.web.controller;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.service.webserver.WebServerCommandService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
-
-import java.io.IOException;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
 @Controller
 public class CommandController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandController.class);
 
     private JvmControlService jvmControlService;
 
@@ -63,6 +67,7 @@ public class CommandController {
                 response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
             }
         } catch (CommandFailureException cmdFailEx) {
+            LOGGER.warn("Command Failure occurred", cmdFailEx);
             response.getWriter().print(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
         }
     }
