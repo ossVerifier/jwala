@@ -8,4 +8,8 @@
         <property name="readTimeout" value="1000"/>
     </bean>
 
+    <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">
+        <constructor-arg value="INSTANCE"/>
+    </bean>
+
 </beans>

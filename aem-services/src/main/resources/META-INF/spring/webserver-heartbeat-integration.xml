@@ -31,7 +31,8 @@
     <int:channel id="splitWebServerStateRequests">
         <int:dispatcher task-executor="webServerStateExecutor"/>
     </int:channel>
-    <int:channel id="completedWebServerStateRequest"/>
+    <int:channel id="completedWithoutMessageWebServerStateRequest"/>
+    <int:channel id="completedWithMessageWebServerStateRequest"/>
     <int:channel id="webServerServiceExistenceRequest"/>
     <int:channel id="webServerNoService"/>
     <int:channel id="webServerBadHost"/>
@@ -93,39 +94,47 @@
                                http-method="GET"
                                url-expression="payload"/>
 
-    <int:chain id="failedWebServerHttpChain" input-channel="failedWebServerStateRequest" output-channel="completedWebServerStateRequest">
+    <int:chain id="failedWebServerHttpChain" input-channel="failedWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="failedWebServerHttpHeaderEnricher">
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
         </int:header-enricher>
         <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServerId']"/>
     </int:chain>
 
-    <int:chain id="successfulWebServerHttpChain" input-channel="successfulWebServerStateRequest" output-channel="completedWebServerStateRequest">
+    <int:chain id="successfulWebServerHttpChain" input-channel="successfulWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="successfulWebServerHttpHeaderEnricher">
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).REACHABLE}"/>
         </int:header-enricher>
         <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
     </int:chain>
 
-    <int:chain id="webServerBadHostChain" input-channel="webServerBadHost" output-channel="webServerNoService">
+    <int:chain id="webServerBadHostChain" input-channel="webServerBadHost" output-channel="completedWithMessageWebServerStateRequest">
         <int:header-enricher id="webServerBadHostHeaderEnricher">
             <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
-        </int:header-enricher>
-    </int:chain>
-
-    <int:chain id="webServerNoServiceChain" input-channel="webServerNoService" output-channel="completedWebServerStateRequest">
-        <int:header-enricher id="webServerNoServiceHeaderEnricher">
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
+            <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
         </int:header-enricher>
         <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>
     </int:chain>
 
-    <int:chain id="completedWebServerStateRequestChain" input-channel="completedWebServerStateRequest">
+    <int:chain id="webServerNoServiceChain" input-channel="webServerNoService" output-channel="completedWithMessageWebServerStateRequest">
+        <int:header-enricher id="webServerNoServiceHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
+            <int:header name="failureMessage" expression="payload.standardErrorOrStandardOut()"/>
+        </int:header-enricher>
+        <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>
+    </int:chain>
+
+    <int:chain id="completedSuccessWebServerStateRequestChain" input-channel="completedWithoutMessageWebServerStateRequest">
         <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
     </int:chain>
 
+    <int:chain id="completedFailureWebServerStateRequestChain" input-channel="completedWithMessageWebServerStateRequest">
+        <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setStateWithMessage(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'])"/>
+    </int:chain>
+
     <int:gateway id="explicitWebServerStateGateway" service-interface="com.siemens.cto.aem.service.webserver.WebServerStateGateway">
-        <int:method name="setExplicitState" request-channel="completedWebServerStateRequest"/>
+        <int:method name="setExplicitState" request-channel="completedWithoutMessageWebServerStateRequest"/>
         <int:method name="initiateWebServerStateRequest" request-channel="unsplitWebServerStateRequests"/>
     </int:gateway>
 

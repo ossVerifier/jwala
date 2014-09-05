@@ -34,6 +34,18 @@ public class ExecData implements Serializable {
         return standardError;
     }
 
+    public String standardErrorOrStandardOut() {
+        if (isPresent(standardError)) {
+            return standardError;
+        } else {
+            return standardOutput;
+        }
+    }
+
+    private boolean isPresent(final String aString) {
+        return (aString != null) && (!"".equals(aString.trim()));
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
