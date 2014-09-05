@@ -108,7 +108,8 @@ public class AemServiceConfiguration {
     @Bean(name = "jvmService")
     public JvmService getJvmService() {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
-                                  getGroupService());
+                                  getGroupService(),
+                                  templateManager);
     }
 
     @Bean(name="webServerService")

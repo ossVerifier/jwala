@@ -26,7 +26,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<WebServer> id;
-    private final Collection<Identifier<Group>> newGroupIds; //TODO Change this to a Set all the way down the line...
+    private final Collection<Identifier<Group>> newGroupIds; //TODO (Corey) Peter Agrees: Change this to a Set all the way down the line...
     private final String newHost;
     private final String newName;
     private final Integer newPort;

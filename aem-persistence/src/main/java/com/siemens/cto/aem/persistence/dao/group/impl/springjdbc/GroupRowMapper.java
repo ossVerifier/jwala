@@ -10,6 +10,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
+@Deprecated
 public class GroupRowMapper implements RowMapper<Group> {
 
     @Override

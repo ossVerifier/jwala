@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.junit.Before;
@@ -19,6 +20,8 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
+import com.siemens.cto.toc.files.TemplateManager;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -33,6 +36,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupService groupService;
     private User user;
     private PaginationParameter pagination;
+    private TemplateManager templateManager;
 
     @Before
     public void setup() {
@@ -40,8 +44,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService = mock(GroupService.class);
         user = new User("unused");
         pagination = new PaginationParameter();
+        templateManager = mock(TemplateManager.class);
         impl = new JvmServiceImpl(jvmPersistenceService,
-                                  groupService);
+                                  groupService,
+                                  templateManager);
     }
 
     @Test
@@ -148,6 +154,17 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         impl.getJvms(pagination);
 
         verify(jvmPersistenceService, times(1)).getJvms(eq(pagination));
+    }
+    
+
+    @Test
+    public void testGenerateConfig() throws IOException {
+
+        final String jvmName = "unused";
+
+        impl.generateConfig(jvmName);
+
+        verify(templateManager, times(1)).getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE));
     }
 
     @Test

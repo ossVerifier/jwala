@@ -71,8 +71,7 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
         try {
             return aFuture.get();
         } catch (final InterruptedException | ExecutionException e) {
-            //TODO Decide how to handle these exceptions in a real-world scenario
-            throw new RuntimeException(e);
+            throw new RuntimeException(e); // by agreement
         }
     }
 }

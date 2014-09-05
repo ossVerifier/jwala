@@ -34,4 +34,6 @@ public interface JvmService {
 
     void removeJvm(final Identifier<Jvm> aJvmId);
 
+    String generateConfig(String aJvmName);
+
 }

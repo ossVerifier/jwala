@@ -89,7 +89,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Create Group requested: {}", aNewGroupName);
-        //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
                                                                 aUser.getUser()));
     }
@@ -98,7 +97,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
-        //TODO We must put the user originating the request in here from however we get it
         return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
                                                            aUser.getUser()));
     }

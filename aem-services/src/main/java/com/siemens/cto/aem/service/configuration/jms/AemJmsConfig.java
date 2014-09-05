@@ -21,8 +21,8 @@ public class AemJmsConfig {
 
     @Bean
     public Destination getJvmStateDestination() {
-        //TODO change to a queue specific to JVM states maybe?
-        //TODO change the JNDI name to something better
+        //TODO change to a queue specific to JVM states maybe? (Corey) 
+        //TODO change the JNDI name to something better (Corey) 
         return lookup("jms/toc-status", Destination.class);
     }
 

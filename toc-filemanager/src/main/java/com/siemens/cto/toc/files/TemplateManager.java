@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface TemplateManager {
 
-    RepositoryAction locateTemplate(String templateName) throws IOException;
+    <T extends TocFile> String getAbsoluteLocation(T templateName) throws IOException;
 
 }

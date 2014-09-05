@@ -52,11 +52,9 @@ public interface JvmServiceRest {
                         final JsonControlJvm aJvmToControl,
                         @BeanParam final AuthenticatedUser aUser);
 
-//    @GET
-//    @Path("/states")
-//    Response pollJvmStates(@Context final HttpServletRequest aRequest,
-//                           @BeanParam final TimeoutParameterProvider aTimeoutParamProvider,
-//                           @QueryParam("clientId") @DefaultValue("1") final String clientId);
+    @GET
+    @Path("/{jvmName}/conf")
+    Response generateConfig(@PathParam("jvmName") final String aJvmName);
 
     @GET
     @Path("/states/current")

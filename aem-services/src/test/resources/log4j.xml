@@ -161,6 +161,10 @@
          <priority value="DEBUG"/>
    </category>
    
+   <category name="com.siemens.cto.aem.service.state.impl.GroupStateServiceStateMachineIntegrationTest">
+        <priority value="TRACE" />
+   </category>
+   
 
    <category name="org.apache.openjpa">
     <priority value="ERROR"/>

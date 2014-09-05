@@ -71,9 +71,14 @@ public class TemplateManagerTest {
         
     @Test
     public void testFindCurrent() throws IOException {
-        RepositoryAction result = templateManager.locateTemplate(".");
-        assertEquals(RepositoryAction.Type.FOUND, result.getType());
-        assertEquals(filesConfiguration.getConfiguredPath(TocPath.TEMPLATES) + "\\.", result.getPath().toFile().getPath());
+        String  result = templateManager.getAbsoluteLocation(new TocFile()  {
+
+            @Override
+            public String getFileName() {
+                return ".";
+            }} );
+        
+        assertEquals(filesConfiguration.getConfiguredPath(TocPath.TEMPLATES) + "\\.", result);
     }
     
 }

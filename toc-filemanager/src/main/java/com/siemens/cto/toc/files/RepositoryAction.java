@@ -1,5 +1,6 @@
 package com.siemens.cto.toc.files;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -37,6 +38,15 @@ public class RepositoryAction {
 
     public Type getType() {
         return type;
+    }
+
+    public Path getFoundPath() throws FileNotFoundException {
+        if(type == Type.FOUND) { 
+            return path;
+        } else {
+            throw new FileNotFoundException(path.toString());
+        }
+            
     }
 
     public Path getPath() {

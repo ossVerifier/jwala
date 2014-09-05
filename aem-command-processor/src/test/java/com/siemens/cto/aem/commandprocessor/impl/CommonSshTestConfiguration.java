@@ -12,7 +12,7 @@ public class CommonSshTestConfiguration {
     private final RemoteSystemConnection remoteSystemConnection;
 
     public CommonSshTestConfiguration() {
-        //TODO generalize this so that %HOME% works
+        //TODO (Corey) generalize this so that %HOME% works
         //TODO create duplicate set of keys without a passphrase for testing
         builder = new JschBuilder(KNOWN_HOSTS_FILE,
                                   PRIVATE_KEY);

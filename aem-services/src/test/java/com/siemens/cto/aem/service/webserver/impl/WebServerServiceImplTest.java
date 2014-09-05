@@ -1,5 +1,15 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +29,7 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -29,16 +39,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.toc.files.RepositoryAction;
 import com.siemens.cto.toc.files.TemplateManager;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.siemens.cto.toc.files.TocFile;
 
 /**
  * Created by z0031wps on 4/2/2014.
@@ -121,7 +122,7 @@ public class WebServerServiceImplTest {
         wsService = new WebServerServiceImpl(wsDao, templateManager);
 
         when(repositoryAction.getType()).thenReturn(RepositoryAction.Type.NONE);
-        when(templateManager.locateTemplate(anyString())).thenReturn(repositoryAction);
+        when(templateManager.getAbsoluteLocation(any(TocFile.class))).thenReturn(new FileSystemPath("d:/stp/data/toc/templates/httpd-conf.tpl").toString());
     }
 
     @SuppressWarnings("unchecked")

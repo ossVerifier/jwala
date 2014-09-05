@@ -76,7 +76,6 @@ public class GroupWebServerControlServiceImplTest {
         verify(mockCommandDispatchGateway).asyncDispatchCommand(dispatchCommand);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testDispatchCommandComplete() {
         List<WebServerDispatchCommandResult> results = new ArrayList<>();
