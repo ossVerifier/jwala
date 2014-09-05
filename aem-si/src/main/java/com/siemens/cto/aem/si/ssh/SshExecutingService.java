@@ -23,13 +23,13 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class SshExecutingService {
 
-    private final BeanFactory beanFactory;
-    private final CommandExecutor commandExecutor;
-    private final JschBuilder jschBuilder;
-    private final SshConfiguration sshConfiguration;
-    private final Expression commandExpression;
-    private final Expression hostExpression;
-    private final EvaluationContext evaluationContext;
+    protected final BeanFactory beanFactory;
+    protected final CommandExecutor commandExecutor;
+    protected final JschBuilder jschBuilder;
+    protected final SshConfiguration sshConfiguration;
+    protected final Expression commandExpression;
+    protected final Expression hostExpression;
+    protected final EvaluationContext evaluationContext;
 
     public SshExecutingService(final BeanFactory theBeanFactory,
                                final CommandExecutor theCommandExecutor,
@@ -96,15 +96,15 @@ public class SshExecutingService {
         return connection;
     }
 
-    private ExecCommand createExecCommand(final Message<?> aMessage) {
-        final ExecCommand command = new ExecCommand(evaluateCommandExpression(aMessage));
-        return command;
-    }
-
     private String evaluateHostExpression(final Message<?> aMessage) {
         return hostExpression.getValue(evaluationContext,
                                        aMessage,
                                        String.class);
+    }
+
+    protected ExecCommand createExecCommand(final Message<?> aMessage) {
+        final ExecCommand command = new ExecCommand(evaluateCommandExpression(aMessage));
+        return command;
     }
 
     private String evaluateCommandExpression(final Message<?> aMessage) {

@@ -13,7 +13,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,10 +43,12 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
@@ -143,6 +144,11 @@ public class WebServerStateIntegrationTest {
     @Configuration
     @ImportResource("classpath*:META-INF/spring/webserver-heartbeat-integration.xml")
     static class CommonConfiguration {
+
+        @Bean(name = "webServerServiceExistence")
+        public WebServerServiceExistenceFacade getWebServerServiceExistenceFacade() {
+            return new WebServerServiceExistenceFacade();
+        }
 
         @Bean(name = "webServerService")
         public WebServerService getWebServerService() {

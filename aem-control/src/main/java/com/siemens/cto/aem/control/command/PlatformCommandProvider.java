@@ -21,7 +21,13 @@ public enum PlatformCommandProvider {
         public ServiceCommandBuilder getServiceCommandBuilderFor(final WebServerControlOperation anOperation) {
             return WindowsWebServerNetOperation.lookup(anOperation);
         }
-    };
+
+        @Override
+        public ServiceCommandBuilder getGenericServiceCommandBuilder() {
+            return WindowsGenericNonControlOperation.QUERY_SERVICE_EXISTENCE;
+        }
+
+    }; //TODO LINUX goes here
 
     private static final Map<Platform, PlatformCommandProvider> LOOKUP_MAP = new EnumMap<>(Platform.class);
 
@@ -41,7 +47,10 @@ public enum PlatformCommandProvider {
         return LOOKUP_MAP.get(aPlatform);
     }
 
-    public abstract ServiceCommandBuilder getServiceCommandBuilderFor(JvmControlOperation anOperation);
+    public abstract ServiceCommandBuilder getServiceCommandBuilderFor(final JvmControlOperation anOperation);
 
-    public abstract ServiceCommandBuilder getServiceCommandBuilderFor(WebServerControlOperation anOperation);
+    public abstract ServiceCommandBuilder getServiceCommandBuilderFor(final WebServerControlOperation anOperation);
+
+    public abstract ServiceCommandBuilder getGenericServiceCommandBuilder();
+
 }

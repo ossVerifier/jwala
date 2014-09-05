@@ -17,7 +17,7 @@
     </bean>
 
     <bean id="jvmSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
-        <constructor-arg value="'sc query ' + payload.jvmName"/>
+        <constructor-arg value="@jvmServiceExistence.getServiceExistenceCommandFor(payload)"/>
     </bean>
 
     <bean id="jvmSshHostExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
@@ -67,7 +67,7 @@
             <int:error-channel value="jvmBadHost"/>
         </int:header-enricher>
         <int:service-activator method="handleSshMessage">
-            <bean id="jvmSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecutingService" autowire="constructor">
+            <bean id="jvmSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService" autowire="constructor">
                 <constructor-arg ref="jvmSshCommandExpression"/>
                 <constructor-arg ref="jvmSshHostExpression"/>
             </bean>

@@ -17,7 +17,7 @@
     </bean>
 
     <bean id="webServerSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
-        <constructor-arg value="'sc query ' + payload.name"/>
+        <constructor-arg value="@webServerServiceExistence.getServiceExistenceCommandFor(payload)"/>
     </bean>
 
     <bean id="webServerSshHostExpression" class="org.springframework.integration.config.ExpressionFactoryBean">
@@ -68,7 +68,7 @@
             <int:error-channel value="webServerBadHost"/>
         </int:header-enricher>
         <int:service-activator method="handleSshMessage">
-            <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecutingService" autowire="constructor">
+            <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService" autowire="constructor">
                 <constructor-arg ref="webServerSshCommandExpression"/>
                 <constructor-arg ref="webServerSshHostExpression"/>
             </bean>
