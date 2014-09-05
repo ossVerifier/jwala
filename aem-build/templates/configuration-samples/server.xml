@@ -108,7 +108,7 @@
       SSLCertificateFile="${catalina.base}/../../../data/security/id/ct1005kc.cer" 
       SSLCertificateKeyFile="${catalina.base}/../../../data/security/id/ct1005kc.key" 
       SSLEnabled="true" 
-      SSLPassword="" 
+      SSLPassword="Passw0rd" 
       acceptCount="100" 
       clientAuth="false" 
       disableUploadTimeout="true" 

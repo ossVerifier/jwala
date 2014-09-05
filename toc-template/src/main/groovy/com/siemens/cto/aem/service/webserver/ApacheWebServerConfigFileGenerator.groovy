@@ -30,7 +30,7 @@ public class ApacheWebServerConfigFileGenerator {
         final binding = [webServerName:webServerName,
                          webServer:webServer,
                          apps:apps.collect {app:[mount: it.webAppContext + "/*", name: it.name]},
-                         jvms:jvms.collect {jvm:[jvmName: it.jvmName, sslPort: it.httpsPort, hostName : it.hostName]},
+                         jvms:jvms.collect {jvm:it},
                          comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }

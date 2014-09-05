@@ -2,9 +2,13 @@
     def jmsServer = "tcp://localhost:7222"
     def jmsUsername = "admin"
     def jmsPassword = "Passw0rd"
-    def webServerName = "usmlvv1cto1520.usmlvv1d0a.smshsc.net"
+    def sslPassword = "Passw0rd"
+    def webServerName = "usmlvv1cto1649"
+    def webServerDomain = "usmlvv1d0a.smshsc.net"
     jvms.each() {
-    def jvmName = it.jvmName.replaceAll(" ", "")
+      def rmiServerPort = it.shutdownPort + 40000
+      def rmiServerPort = it.shutdownPort + 40001
+      def jvmName = it.jvmName.replaceAll(" ", "")
 %><?xml version='1.0' encoding='utf-8'?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -27,7 +31,7 @@
      define subcomponents such as "Valves" at this level.
      Documentation at /docs/config/server.html
  -->
-<Server port="${it.shutdownPort}" shutdown="SHUTDOWN">
+<Server port="-1" shutdown="notused">
   <!-- Security listener. Documentation at /docs/config/listeners.html
   <Listener className="org.apache.catalina.security.SecurityListener" />
   -->
@@ -55,7 +59,7 @@
       schedulerThreadCount="1"
       schedulerThreadNamePrefix="JMS Reporting Thread"/>
   <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
-            rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" />
+            rmiRegistryPortPlatform="${rmiRegistryPort}" rmiServerPortPlatform="${rmiServerPort}" />
   
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html
@@ -109,7 +113,7 @@
       SSLCertificateFile="${catalina.base}/../../../data/security/id/${webServerName}.cer" 
       SSLCertificateKeyFile="${catalina.base}/../../../data/security/id/${webServerName}.key" 
       SSLEnabled="true" 
-      SSLPassword="" 
+      SSLPassword="${sslPassword}" 
       acceptCount="100" 
       clientAuth="false" 
       disableUploadTimeout="true" 
@@ -121,7 +125,7 @@
       protocol="HTTP/1.1" 
       scheme="https" 
       secure="true" 
-      sslProtocol="TLS"
+      sslProtocol="TLS1.2"
       compressableMimeTypes="text/html,text/xml,text/plain,application/json"
       compressionMinSize="2048"
       compression="force"
@@ -135,7 +139,7 @@
      
      <!-- The STP Engine is the normal standalone Tomcat host 
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="tc-2">
+    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvmName}">
       <!-- Host Features: Standard Host
            AppBase: stpapps/
            Unpacking: no
@@ -151,7 +155,7 @@
             errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
 
         <!-- Attempt to ensure we 'could' identify ourselves properly over SSL -->  
-        <Alias>${webServerName}</Alias>
+        <Alias>${webServerName}.${webServerDomain}</Alias>
         
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
