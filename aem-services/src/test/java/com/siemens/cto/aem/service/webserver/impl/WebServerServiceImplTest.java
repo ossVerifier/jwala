@@ -22,7 +22,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -122,7 +124,14 @@ public class WebServerServiceImplTest {
         wsService = new WebServerServiceImpl(wsDao, templateManager);
 
         when(repositoryAction.getType()).thenReturn(RepositoryAction.Type.NONE);
-        when(templateManager.getAbsoluteLocation(any(TocFile.class))).thenReturn(new FileSystemPath("d:/stp/data/toc/templates/httpd-conf.tpl").toString());
+        when(templateManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
+
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                TocFile file = (TocFile)invocation.getArguments()[0];
+                return "/" + file.getFileName();
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

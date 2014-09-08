@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
@@ -10,11 +12,13 @@ import org.mockito.Matchers;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
@@ -24,6 +28,7 @@ import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
 import com.siemens.cto.toc.files.TemplateManager;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -160,9 +165,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testGenerateConfig() throws IOException {
 
-        final String jvmName = "unused";
-
-        impl.generateConfig(jvmName);
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L), 
+                "jvm-name", "host-name", new HashSet<LiteGroup>(),  80, 443, 443, 8005, 8009, new Path("/"));
+        final ArrayList<Jvm> jvms = new ArrayList<>(1);
+        jvms.add(jvm);
+        
+        when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()), any(PaginationParameter.class))).thenReturn(jvms);
+        when(templateManager.getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE))).thenReturn("/server-xml.tpl");
+        impl.generateConfig(jvm.getJvmName());
 
         verify(templateManager, times(1)).getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE));
     }

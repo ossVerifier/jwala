@@ -3,10 +3,10 @@
     def jmsUsername = "admin"
     def jmsPassword = "Passw0rd"
     def sslPassword = "Passw0rd"
-    def webServerName = "usmlvv1cto1649"
-    //def webServerDomain = ".usmlvv1d0a.smshsc.net"
+    // def webServerDomain = "usmlvv1d0a.smshsc.net"
     jvms.each() {
-      def rmiServerPort = it.shutdownPort + 40000
+      def webServerName = it.hostName
+      def rmiRegistryPort = it.shutdownPort + 40000
       def rmiServerPort = it.shutdownPort + 40001
       def jvmName = it.jvmName.replaceAll(" ", "")
 %><?xml version='1.0' encoding='utf-8'?>
@@ -109,9 +109,9 @@
         threadPriority: 1 above Java NORM_PRIORITY - 6
         -->
     <Connector 
-      port="${it.sslPort}" 
-      SSLCertificateFile="${catalina.base}/../../../data/security/id/${webServerName}.cer" 
-      SSLCertificateKeyFile="${catalina.base}/../../../data/security/id/${webServerName}.key" 
+      port="${it.httpsPort}" 
+      SSLCertificateFile="\${catalina.base}/../../../data/security/id/${webServerName}.cer" 
+      SSLCertificateKeyFile="\${catalina.base}/../../../data/security/id/${webServerName}.key" 
       SSLEnabled="true" 
       SSLPassword="${sslPassword}" 
       acceptCount="100" 
@@ -155,8 +155,8 @@
             errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
 
         <!-- Attempt to ensure we 'could' identify ourselves properly over SSL -->  
-        <Alias>${webServerName}</Alias>
-        <!-- Unsupported: <Alias>${webServerName}.webServerDomain</Alias> -->
+        <Alias>${webServerName}</Alias> 
+        <!-- TOC does not support a domain specifier: <Alias>${webServerName}.webServerDomain</Alias> -->
         
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
@@ -190,14 +190,14 @@
          Java HTTP Connector: /docs/config/http.html (blocking & non-blocking)
          Java AJP  Connector: /docs/config/ajp.html
          APR (HTTP/AJP) Connector: /docs/apr.html
-         Define a non-SSL HTTP/1.1 Connector on port ${httpPort}
+         Define a non-SSL HTTP/1.1 Connector on port ${it.httpPort}
     -->
-    <Connector port="${httpPort}" protocol="HTTP/1.1"
+    <Connector port="${it.httpPort}" protocol="HTTP/1.1"
                connectionTimeout="20000"
-               redirectPort="${sslPort}" />
+               redirectPort="${it.httpsPort}" />
 
-    <!-- Define an AJP 1.3 Connector on port ${ajpPort} -->
-    <Connector port="${ajpPort}" protocol="AJP/1.3" redirectPort="${sslPort}" />
+    <!-- Define an AJP 1.3 Connector on port ${it.ajpPort} -->
+    <Connector port="${it.ajpPort}" protocol="AJP/1.3" redirectPort="${it.httpsPort}" />
 
 
     <!-- An Engine represents the entry point (within Catalina) that processes
@@ -227,7 +227,7 @@
       </Realm>
 
       <Host name="localhost"  appBase="webapps"
-            unpackWARs="true" autoDeploy="true">
+            unpackWARs="false" autoDeploy="true">
 
         <!-- SingleSignOn valve, share authentication between web applications
              Documentation at: /docs/config/valve.html -->
@@ -246,3 +246,4 @@
     </Engine>
   </Service>
 </Server>
+<%}%>
