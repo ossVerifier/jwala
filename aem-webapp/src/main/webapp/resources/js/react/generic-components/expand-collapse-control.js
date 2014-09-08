@@ -123,6 +123,11 @@ var ExpandCollapseControl = React.createClass({
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
                 var data = dataSources[i].jsonData;
                 if (data !== undefined && data !== null) {
+
+                    data.forEach(function(o) {
+                        o["parentItemId"] = self.props.parentItemId;
+                    });
+
                     this.drawDataTable(subDataTable,
                                        data,
                                        childTableDetailsArray[i].defaultSorting,

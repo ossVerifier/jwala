@@ -248,6 +248,23 @@ var groupOperationsHelper = function(){
             return result;
         },
 
+        getCurrentDateTime: function() {
+            var currentDate = new Date();
+            return  ('0' + (currentDate.getMonth() + 1)).slice(-2) + '/' +
+                    ('0' + currentDate.getDate()).slice(-2) + '/' +
+                    currentDate.getFullYear() + " " +
+                    ('0' + currentDate.getHours()).slice(-2) + ":" +
+                    ('0' + currentDate.getMinutes()).slice(-2);
+        },
+
+        lastItemEquals: function(array, key, val) {
+            if (array.length > 0) {
+                var o = array[array.length - 1];
+                return o[key] === val;
+            }
+            return false;
+        },
+
         getJvmStatesByGroupIdAndJvmId: function(jvms) {
             var result = [];
             jvms.forEach(function(jvm) {
@@ -274,7 +291,7 @@ var groupOperationsHelper = function(){
         },
 
         updateWebServersInDataTables: function(groupId, webServerId, state) {
-            $("table[id*='web-server'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
+            $("table[id*='ws'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
                                                         .each(function(index, elem) { $(elem).dataTable().fnDraw();});
 
         },

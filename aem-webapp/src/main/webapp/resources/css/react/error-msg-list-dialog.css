@@ -1,0 +1,7 @@
+table.errMsgTable tr.odd {
+    background-color: #E7E7E7;
+}
+
+table.errMsgTable td {
+    padding-right: 5px;
+}

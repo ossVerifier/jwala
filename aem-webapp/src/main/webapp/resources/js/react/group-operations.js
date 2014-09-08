@@ -161,6 +161,8 @@ var GroupOperations = React.createClass({
 });
 
 var GroupOperationsDataTable = React.createClass({
+   webServerStateErrorMessages: [],
+   jvmStateErrorMessages: [],
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -253,7 +255,7 @@ var GroupOperationsDataTable = React.createClass({
                                             mRender: this.getStateForWebServer,
                                             colWidth:"75px"}];
 
-        var webServerOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-server-child-table",
+        var webServerOfGrpChildTableDetails = {tableIdPrefix:"ws-child-table_",
                                                className:"simple-data-table",
                                                dataCallback:this.getWebServersOfGrp,
                                                title:"Web Servers",
@@ -267,7 +269,7 @@ var GroupOperationsDataTable = React.createClass({
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
 
-        var webAppOfGrpChildTableDetails = {tableIdPrefix:"group-operations-web-app-child-table",
+        var webAppOfGrpChildTableDetails = {tableIdPrefix:"web-app-child-table_",
                                             className:"simple-data-table",
                                             dataCallback:this.getApplicationsOfGrp,
                                             title:"Applications",
@@ -282,7 +284,7 @@ var GroupOperationsDataTable = React.createClass({
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
-        var webAppOfJvmChildTableDetails = {tableIdPrefix:"group-operations-web-app-of-jvm-child-table",
+        var webAppOfJvmChildTableDetails = {tableIdPrefix:"web-app-child-table_jvm-child-table_", /* TODO: We may need to append the group and jvm id once this table is enabled in the next release. */
                                             className:"simple-data-table",
                                             dataCallback:this.getApplicationsOfJvm,
                                             defaultSorting: {col:5, sort:"asc"},
@@ -297,9 +299,9 @@ var GroupOperationsDataTable = React.createClass({
 
         webAppOfJvmChildTableDetails["tableDef"] = webAppOfJvmChildTableDef;
 
-        var jvmChildTableDetails = {tableIdPrefix:"group-operations-jvm-child-table",
+        var jvmChildTableDetails = {tableIdPrefix:"jvm-child-table_",
                                     className:"simple-data-table",
-                                    /* childTableDetails:webAppOfJvmChildTableDetails, !!! Disable for the Aug 11, 2014 Demo */
+                                    /* childTableDetails:webAppOfJvmChildTaapbleDetails, !!! Disable for the Aug 11, 2014 Demo */
                                     title:"JVMs",
                                     isCollapsible:true,
                                     headerComponents:[
@@ -412,8 +414,14 @@ var GroupOperationsDataTable = React.createClass({
         webServerService.getWebServerByGroupId(idObj.parentId, function(response) {
             // This is when the row is initially opened.
             // Unlike JVMs, web server data is retrieved when the row is opened.
-            self.webServersById = groupOperationsHelper.keyWebServersById(response.applicationResponseContent);
 
+            if (response.applicationResponseContent !== undefined && response.applicationResponseContent !== null) {
+                response.applicationResponseContent.forEach(function(o) {
+                    o["parentItemId"] = idObj.parentId;
+                });
+            }
+
+            self.webServersById = groupOperationsHelper.keyWebServersById(response.applicationResponseContent);
             responseCallback(response);
 
             // This will set the state and which triggers DOM rendering thus the state will be updated
@@ -421,6 +429,7 @@ var GroupOperationsDataTable = React.createClass({
         });
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
+        // TODO: Verify if we need to display the applications on a group. If we need to, I think this needs fixing. For starters, we need to include the group id in the application response.
         webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
    },
    getApplicationsOfJvm: function(idObj, responseCallback) {
@@ -546,14 +555,68 @@ var GroupOperationsDataTable = React.createClass({
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
+        var jvmToRender = this.jvmsById[jvmId];
 
-        if (this.jvmsById[jvmId].state !== undefined) {
-            $(".jvm-state-" + jvmId).html(this.jvmsById[jvmId].state.stateString);
+        var colComponentClassName = "jvm" + jvmId + "-grp" + fullData.parentItemId + "-state";
+
+        if (jvmToRender.state !== undefined) {
+
+            if (jvmToRender.state.message !== undefined && jvmToRender.state.message !== "") {
+
+                if (this.jvmStateErrorMessages[jvmId] === undefined) {
+                    this.jvmStateErrorMessages[jvmId] = [];
+                }
+
+                if (!groupOperationsHelper.lastItemEquals(this.jvmStateErrorMessages[jvmId],
+                                                          "msg",
+                                                          jvmToRender.state.message)) {
+                    this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
+                                                                        msg:jvmToRender.state.message});
+                }
+
+                if (this.jvmStateErrorMessages[jvmId].length > 0) {
+                    var self = this;
+
+                    // TODO: Have this one as a property of the class instead of having it inline
+                    var alertCallback = function() {
+                        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+                        React.renderComponent(<ErrorMsgListDialog title={jvmToRender.jvmName + " State Error Messages"}
+                                               msgList={self.jvmStateErrorMessages[jvmId]}/>,
+                                               document.getElementById(alertDlgDivId));
+                    };
+
+                    var alertBtnDivId = "alert-btn-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
+                    var alertDlgDivId = "alert-dlg-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
+
+                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
+                                                           "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
+                                                           "<div id='" + alertDlgDivId + "'>");
+                    $("." + colComponentClassName).html(jvmToRender.state.stateString);
+
+                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+
+                    if (document.getElementById(alertBtnDivId) !== null) {
+                        React.renderComponent(<GenericButton className="ui-button-height ui-alert-border ui-state-error"
+                                                             spanClassName="ui-icon ui-icon-alert"
+                                                             callback={alertCallback} />, document.getElementById(alertBtnDivId));
+                    }
+                }
+
+            } else {
+                if (jvmToRender.state.stableState) {
+                    this.jvmStateErrorMessages[jvmId] = [];
+                    React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
+                    $("." + colComponentClassName).html(jvmToRender.state.stateString);
+                }
+            }
+
         } else {
-            $(".jvm-state-" + jvmId).html("UNKNOWN");
+            $("." + colComponentClassName).html("UNKNOWN");
         }
 
-        return "<span class='jvm-state-" + jvmId + "'/>"
+        return "<div class='" + colComponentClassName + "'/>"
     },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
@@ -570,19 +633,67 @@ var GroupOperationsDataTable = React.createClass({
      * This method is responsible for displaying the state in the grid
      *
      */
-    getStateForWebServer: function(mData, type, fullData) {
+    getStateForWebServer: function(mData, type, fullData, parentItemId) {
         var webServerId = fullData.id.id;
         var webServerToRender = this.webServersById[webServerId];
 
+        var colComponentClassName = "ws" + webServerId + "-grp" + fullData.parentItemId + "-state";
+
         if (this.webServersById !== undefined && webServerToRender !== undefined) {
             if (webServerToRender.state !== undefined) {
-                $(".ws-state-" + webServerId).html(webServerToRender.state.stateString);
+
+                if (webServerToRender.state.message !== undefined && webServerToRender.state.message !== "") {
+
+                    if (this.webServerStateErrorMessages[webServerId] === undefined) {
+                        this.webServerStateErrorMessages[webServerId] = [];
+                    }
+
+                    if (!groupOperationsHelper.lastItemEquals(this.webServerStateErrorMessages[webServerId],
+                                                              "msg",
+                                                              webServerToRender.state.message)) {
+                        this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
+                                                                            msg:webServerToRender.state.message});
+                    }
+
+                    if (this.webServerStateErrorMessages[webServerId].length > 0) {
+                        var self = this;
+                        var alertCallback = function() {
+                            React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+                            React.renderComponent(<ErrorMsgListDialog title={webServerToRender.name + " State Error Messages"}
+                                                   msgList={self.webServerStateErrorMessages[webServerId]}/>,
+                                                   document.getElementById(alertDlgDivId));
+                        };
+
+                        var alertBtnDivId = "alert-btn-div-ws" + webServerId + "-grp" + fullData.parentItemId;
+                        var alertDlgDivId = "alert-dlg-div-ws" + webServerId + "-grp" + fullData.parentItemId;
+
+                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
+                                                                    "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
+                                                                    "<div id='" + alertDlgDivId + "'>");
+                        $("." + colComponentClassName).html(webServerToRender.state.stateString);
+
+                        React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+                        React.renderComponent(<GenericButton className="ui-button-height ui-alert-border ui-state-error"
+                                                             spanClassName="ui-icon ui-icon-alert"
+                                                             callback={alertCallback} />, document.getElementById(alertBtnDivId));
+                    }
+
+                } else {
+                    if (webServerToRender.state.stableState) {
+                        this.webServerStateErrorMessages[webServerId] = [];
+                        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+                        React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
+                        $("." + colComponentClassName).html(webServerToRender.state.stateString);
+                    }
+                }
+
             } else {
-                $(".ws-state-" + webServerId).html("UNKNOWN");
+                $("." + colComponentClassName).html("UNKNOWN");
             }
         }
 
-        return "<span class='ws-state-" + webServerId + "'/>"
+        return "<div class='" + colComponentClassName + "'/>"
     },
 
     getStateForGroup: function(mData, type, fullData) {

@@ -20,3 +20,7 @@
 .ui-button-height {
     height: 22px !important
 }
+
+.ui-alert-border {
+    border: 1px solid #FFBBC8 !important
+}

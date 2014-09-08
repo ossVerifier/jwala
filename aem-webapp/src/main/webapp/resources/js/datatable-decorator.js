@@ -314,7 +314,6 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
 
     var theRootId = (rootId === undefined ? full.id.id : rootId);
     var delimitedId = createDelimitedId([tableId,
-                                         "ctrl-expand-collapse",
                                          full.id.id], "_");
 
     var dataSources = [];

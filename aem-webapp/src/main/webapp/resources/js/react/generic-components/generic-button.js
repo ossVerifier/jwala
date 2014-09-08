@@ -10,13 +10,14 @@
  */
 var GenericButton = React.createClass({
     render: function() {
-
-        return React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover",
+        var className = (this.props.className !== undefined) ? this.props.className : "";
+        var spanClassName = (this.props.spanClassName !== undefined) ? this.props.spanClassName : "ui-button-text";
+        return React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover " + className,
                                  type:"button",
                                  role:"button",
                                  ariaDisabled:false,
                                  onClick:this.handleClick},
-                                 React.DOM.span({className: "ui-button-text"}, this.props.label));
+                                 React.DOM.span({className:spanClassName}, this.props.label));
     },
     handleClick: function() {
         this.props.callback();
