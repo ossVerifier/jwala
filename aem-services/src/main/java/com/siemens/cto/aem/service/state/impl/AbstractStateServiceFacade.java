@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.state.StateService;
 
-public abstract class AbstractStateServiceFacade<S, T extends ExternalizableState> {
+public abstract class AbstractStateServiceFacade<S, T extends OperationalState> {
 
     private final StateType stateType;
     private final StateService<S, T> service;

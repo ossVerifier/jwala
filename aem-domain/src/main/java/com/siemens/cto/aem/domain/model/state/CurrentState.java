@@ -11,7 +11,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
-public class CurrentState<S extends Object, T extends ExternalizableState> implements KeyValueStateProvider {
+public class CurrentState<S extends Object, T extends OperationalState> implements KeyValueStateProvider {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
     public static final String DEFAULT_EMPTY_MESSAGE = "";

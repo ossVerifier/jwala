@@ -5,11 +5,11 @@ import java.util.Set;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 
-public interface StatePersistenceService<S, T  extends ExternalizableState> {
+public interface StatePersistenceService<S, T  extends OperationalState> {
 
     CurrentState<S, T> updateState(final Event<SetStateCommand<S, T>> aNewState);
 

@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.state.jms.sender.message;
 
 import javax.jms.JMSException;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +45,7 @@ public class GroupCurrentStateMessageExtractorTest extends AbstractCurrentStateM
 
     @Test
     public void testExtractUnknownState() throws JMSException {
-        final ExternalizableState fakeState = mock(ExternalizableState.class);
+        final OperationalState fakeState = mock(OperationalState.class);
         when(fakeState.toStateString()).thenReturn("This isn't a real Group State");
 
         final CurrentState expectedState = new CurrentState<>(new Identifier<Group>(123456L),

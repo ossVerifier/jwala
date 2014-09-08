@@ -5,17 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.siemens.cto.aem.domain.model.state.*;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.CurrentStateChronologicalComparator;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
-import com.siemens.cto.aem.domain.model.state.Stability;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.Transience;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 
 import static org.junit.Assert.assertEquals;
 
@@ -74,7 +70,7 @@ public class CurrentStateProcessorTest {
         }
     }
 
-    private static enum MarkerState implements ExternalizableState {
+    private static enum MarkerState implements OperationalState {
         RIGHT,
         WRONG;
 

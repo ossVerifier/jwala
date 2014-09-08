@@ -3,7 +3,7 @@ package com.siemens.cto.aem.domain.model.jvm;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.Stability;
 import com.siemens.cto.aem.domain.model.state.Transience;
 
@@ -12,7 +12,7 @@ import static com.siemens.cto.aem.domain.model.state.Stability.UNSTABLE;
 import static com.siemens.cto.aem.domain.model.state.Transience.PERMANENT;
 import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
-public enum JvmState implements ExternalizableState {
+public enum JvmState implements OperationalState {
 
     INITIALIZED("INITIALIZED", PERMANENT, UNSTABLE),
     FAILED("FAILED", PERMANENT, UNSTABLE),

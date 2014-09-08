@@ -3,11 +3,11 @@ package com.siemens.cto.aem.service.state.jms.sender.message;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.joda.time.format.ISODateTimeFormat;
 import org.mockito.Mock;
 
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 import com.siemens.cto.aem.domain.model.state.message.StateKey;
 
@@ -19,7 +19,7 @@ public class AbstractCurrentStateMessageExtractorTest {
     @Mock
     protected MapMessage message;
 
-    protected <S, T extends ExternalizableState> void setupMockMapMessage(final CurrentState<S, T> aState) throws JMSException {
+    protected <S, T extends OperationalState> void setupMockMapMessage(final CurrentState<S, T> aState) throws JMSException {
         mockMapString(CommonStateKey.AS_OF, ISODateTimeFormat.dateTime().print(aState.getAsOf()));
         mockMapString(CommonStateKey.ID, aState.getId().getId().toString());
         mockMapString(CommonStateKey.STATE, aState.getState().toStateString());

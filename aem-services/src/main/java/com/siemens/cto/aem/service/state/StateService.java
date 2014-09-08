@@ -4,12 +4,12 @@ import java.util.Set;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 
-public interface StateService<S, T extends ExternalizableState> {
+public interface StateService<S, T extends OperationalState> {
 
     CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand,
                                        final User aUser);

@@ -4,20 +4,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 
-public abstract class JpaStatePersistenceServiceImpl<S, T extends ExternalizableState> implements StatePersistenceService<S, T> {
+public abstract class JpaStatePersistenceServiceImpl<S, T extends OperationalState> implements StatePersistenceService<S, T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaStatePersistenceServiceImpl.class);
 

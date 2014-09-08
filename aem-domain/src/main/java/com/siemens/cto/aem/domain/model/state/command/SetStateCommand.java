@@ -2,6 +2,7 @@ package com.siemens.cto.aem.domain.model.state.command;
 
 import java.io.Serializable;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -9,9 +10,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 
-public abstract class SetStateCommand<S, T extends ExternalizableState> implements Serializable, Command {
+public abstract class SetStateCommand<S, T extends OperationalState> implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 

@@ -10,7 +10,7 @@ import javax.persistence.Query;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
@@ -19,7 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 
-public class StateCrudServiceImpl<S, T extends ExternalizableState> implements StateCrudService<S, T> {
+public class StateCrudServiceImpl<S, T extends OperationalState> implements StateCrudService<S, T> {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;

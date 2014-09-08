@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.service.state.impl;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 
-public abstract class AbstractJpaCurrentStateBuilder<S, T extends ExternalizableState> {
+public abstract class AbstractJpaCurrentStateBuilder<S, T extends OperationalState> {
 
     private static final Chronology USE_DEFAULT_CHRONOLOGY = null;
 

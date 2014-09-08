@@ -3,7 +3,7 @@ package com.siemens.cto.aem.domain.model.webserver;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.siemens.cto.aem.domain.model.state.ExternalizableState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.Stability;
 import com.siemens.cto.aem.domain.model.state.Transience;
 
@@ -12,7 +12,7 @@ import static com.siemens.cto.aem.domain.model.state.Stability.UNSTABLE;
 import static com.siemens.cto.aem.domain.model.state.Transience.PERMANENT;
 import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
-public enum WebServerReachableState implements ExternalizableState {
+public enum WebServerReachableState implements OperationalState {
 
     REACHABLE("STARTED", PERMANENT, STABLE),
     UNREACHABLE("STOPPED", PERMANENT, STABLE),
