@@ -24,3 +24,7 @@
 .ui-alert-border {
     border: 1px solid #FFBBC8 !important
 }
+
+.flash {
+    border: 1px solid red !important
+}

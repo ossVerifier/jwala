@@ -161,8 +161,10 @@ var GroupOperations = React.createClass({
 });
 
 var GroupOperationsDataTable = React.createClass({
-   webServerStateErrorMessages: [],
    jvmStateErrorMessages: [],
+   jvmHasNewMessage: [],
+   webServerStateErrorMessages: [],
+   webServerHasNewMessage: [],
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -365,7 +367,8 @@ var GroupOperationsDataTable = React.createClass({
                                   clickedStateClassName:"busy-button",
                                   isBusyCallback:this.isJvmTransientState,
                                   buttonClassName:"ui-button-height",
-                                  busyStatusTimeout:tocVars.startStopTimeout}],
+                                  busyStatusTimeout:tocVars.startStopTimeout,
+                                  extraDataToPassOnCallback:"groups"}],
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm,
@@ -553,6 +556,13 @@ var GroupOperationsDataTable = React.createClass({
         var url = "jvmCommand?jvmId=" + jvmId + "&operation=threadDump";
         window.open(url)
     },
+    jvmErrorAlertCallback: function(alertDlgDivId, jvm) {
+        this.jvmHasNewMessage[jvm.id.id] = "false";
+        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+        React.renderComponent(<ErrorMsgListDialog title={jvm.jvmName + " State Error Messages"}
+                                                  msgList={this.jvmStateErrorMessages[jvm.id.id]}/>,
+                              document.getElementById(alertDlgDivId));
+    },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
         var jvmToRender = this.jvmsById[jvmId];
@@ -572,18 +582,10 @@ var GroupOperationsDataTable = React.createClass({
                                                           jvmToRender.state.message)) {
                     this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
                                                                         msg:jvmToRender.state.message});
+                    this.jvmHasNewMessage[jvmId] = "true";
                 }
 
                 if (this.jvmStateErrorMessages[jvmId].length > 0) {
-                    var self = this;
-
-                    // TODO: Have this one as a property of the class instead of having it inline
-                    var alertCallback = function() {
-                        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-                        React.renderComponent(<ErrorMsgListDialog title={jvmToRender.jvmName + " State Error Messages"}
-                                               msgList={self.jvmStateErrorMessages[jvmId]}/>,
-                                               document.getElementById(alertDlgDivId));
-                    };
 
                     var alertBtnDivId = "alert-btn-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
                     var alertDlgDivId = "alert-dlg-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
@@ -596,9 +598,12 @@ var GroupOperationsDataTable = React.createClass({
                     React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
 
                     if (document.getElementById(alertBtnDivId) !== null) {
-                        React.renderComponent(<GenericButton className="ui-button-height ui-alert-border ui-state-error"
-                                                             spanClassName="ui-icon ui-icon-alert"
-                                                             callback={alertCallback} />, document.getElementById(alertBtnDivId));
+                        var flashing = this.jvmHasNewMessage[jvmId] !== undefined ? this.jvmHasNewMessage[jvmId] : "true";
+                        React.renderComponent(<FlashingButton className="ui-button-height ui-alert-border ui-state-error"
+                                                              spanClassName="ui-icon ui-icon-alert"
+                                                              callback={this.jvmErrorAlertCallback.bind(this, alertDlgDivId, jvmToRender)}
+                                                              flashing={flashing}
+                                                              flashClass="flash"/>, document.getElementById(alertBtnDivId));
                     }
                 }
 
@@ -628,7 +633,13 @@ var GroupOperationsDataTable = React.createClass({
     webServerStop: function(id, requestReturnCallback) {
         webServerControlService.stopWebServer(id);
     },
-
+    webServerErrorAlertCallback: function(alertDlgDivId, ws) {
+        this.webServerHasNewMessage[ws.id.id] = "false";
+        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+        React.renderComponent(<ErrorMsgListDialog title={ws.name + " State Error Messages"}
+                                                  msgList={this.webServerStateErrorMessages[ws.id.id]}/>,
+                                                  document.getElementById(alertDlgDivId));
+    },
     /**
      * This method is responsible for displaying the state in the grid
      *
@@ -651,19 +662,13 @@ var GroupOperationsDataTable = React.createClass({
                     if (!groupOperationsHelper.lastItemEquals(this.webServerStateErrorMessages[webServerId],
                                                               "msg",
                                                               webServerToRender.state.message)) {
-                        this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
+                        this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(webServerToRender.state.asOf),
                                                                             msg:webServerToRender.state.message});
+                        this.webServerHasNewMessage[webServerId] = "true";
                     }
 
                     if (this.webServerStateErrorMessages[webServerId].length > 0) {
                         var self = this;
-                        var alertCallback = function() {
-                            React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-                            React.renderComponent(<ErrorMsgListDialog title={webServerToRender.name + " State Error Messages"}
-                                                   msgList={self.webServerStateErrorMessages[webServerId]}/>,
-                                                   document.getElementById(alertDlgDivId));
-                        };
-
                         var alertBtnDivId = "alert-btn-div-ws" + webServerId + "-grp" + fullData.parentItemId;
                         var alertDlgDivId = "alert-dlg-div-ws" + webServerId + "-grp" + fullData.parentItemId;
 
@@ -673,9 +678,12 @@ var GroupOperationsDataTable = React.createClass({
                         $("." + colComponentClassName).html(webServerToRender.state.stateString);
 
                         React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
-                        React.renderComponent(<GenericButton className="ui-button-height ui-alert-border ui-state-error"
+                        var flashing = this.webServerHasNewMessage[webServerId] !== undefined ? this.webServerHasNewMessage[webServerId] : "true";
+                        React.renderComponent(<FlashingButton className="ui-button-height ui-alert-border ui-state-error"
                                                              spanClassName="ui-icon ui-icon-alert"
-                                                             callback={alertCallback} />, document.getElementById(alertBtnDivId));
+                                                             callback={self.webServerErrorAlertCallback.bind(this, alertDlgDivId, webServerToRender)}
+                                                             flashing={flashing}
+                                                             flashClass="flash"/>, document.getElementById(alertBtnDivId));
                     }
 
                 } else {

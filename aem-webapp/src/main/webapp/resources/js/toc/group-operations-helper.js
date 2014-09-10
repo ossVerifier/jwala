@@ -248,13 +248,14 @@ var groupOperationsHelper = function(){
             return result;
         },
 
-        getCurrentDateTime: function() {
-            var currentDate = new Date();
+        getCurrentDateTime: function(time) {
+            var currentDate = new Date(time);
             return  ('0' + (currentDate.getMonth() + 1)).slice(-2) + '/' +
                     ('0' + currentDate.getDate()).slice(-2) + '/' +
                     currentDate.getFullYear() + " " +
                     ('0' + currentDate.getHours()).slice(-2) + ":" +
-                    ('0' + currentDate.getMinutes()).slice(-2);
+                    ('0' + currentDate.getMinutes()).slice(-2) + ":" +
+                    ('0' + currentDate.getSeconds()).slice(-2);
         },
 
         lastItemEquals: function(array, key, val) {
