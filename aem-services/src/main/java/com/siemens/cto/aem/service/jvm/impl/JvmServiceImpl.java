@@ -29,12 +29,11 @@ import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.TomcatJvmConfigFileGenerator;
-import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.toc.files.TemplateManager;
 
 public class JvmServiceImpl implements JvmService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
