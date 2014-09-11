@@ -93,11 +93,14 @@
                                http-method="GET"
                                url-expression="payload"/>
 
-    <int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest" output-channel="jvmCompletedWithoutMessageStateRequest">
+    <int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest" output-channel="jvmCompletedWithMessageStateRequest">
         <int:header-enricher id="jvmFailedHttpHeaderEnricher">
+            <int:header name="jvmId" expression="payload.getFailedMessage().headers['jvmId']"/>
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}"/>
+            <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
+            <int:header name="failureException" expression="payload"/>
         </int:header-enricher>
-        <int:transformer id="jvmFailedHttpTransformer" expression="payload.getFailedMessage().headers['jvmId']"/>
+        <int:transformer id="jvmFailedHttpTransformer" expression="headers['jvmId']"/>
     </int:chain>
 
     <int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest" output-channel="jvmCompletedWithoutMessageStateRequest">
@@ -112,6 +115,7 @@
             <int:header name="jvmId" expression="payload.getFailedMessage().headers['jvmId']"/>
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).FAILED}"/>
             <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
+            <int:header name="failureException" expression="payload"/>
         </int:header-enricher>
         <int:transformer id="jvmBadHostHeaderIdTransformer" expression="headers['jvmId']"/>
     </int:chain>
@@ -129,7 +133,7 @@
     </int:chain>
 
     <int:chain id="jvmCompletedFailureStateRequestChain" input-channel="jvmCompletedWithMessageStateRequest">
-        <int:outbound-channel-adapter id="jvmCompletedStateRequestOutboundAdapter" expression="@jvmStateServiceFacade.setStateWithMessage(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'])"/>
+        <int:outbound-channel-adapter id="jvmCompletedStateRequestOutboundAdapter" expression="@jvmStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])"/>
     </int:chain>
 
     <int:gateway id="jvmExplicitStateGateway" service-interface="com.siemens.cto.aem.service.jvm.JvmStateGateway">
