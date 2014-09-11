@@ -96,7 +96,10 @@
 
     <int:chain id="failedWebServerHttpChain" input-channel="failedWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="failedWebServerHttpHeaderEnricher">
+            <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
+            <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
+            <int:header name="failureException" expression="payload"/>
         </int:header-enricher>
         <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServerId']"/>
     </int:chain>
@@ -113,6 +116,7 @@
             <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
             <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
+            <int:header name="failureException" expression="payload"/>
         </int:header-enricher>
         <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>
     </int:chain>
@@ -130,7 +134,7 @@
     </int:chain>
 
     <int:chain id="completedFailureWebServerStateRequestChain" input-channel="completedWithMessageWebServerStateRequest">
-        <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setStateWithMessage(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'])"/>
+        <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])"/>
     </int:chain>
 
     <int:gateway id="explicitWebServerStateGateway" service-interface="com.siemens.cto.aem.service.webserver.WebServerStateGateway">
