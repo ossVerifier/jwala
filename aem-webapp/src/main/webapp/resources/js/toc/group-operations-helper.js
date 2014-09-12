@@ -258,6 +258,21 @@ var groupOperationsHelper = function(){
                     ('0' + currentDate.getSeconds()).slice(-2);
         },
 
+        /**
+         * Splits a message specified by the msg parameter by the first CR-
+         * @param msg the message
+         * @return array that contains the short message and the stack trace.
+         */
+        splitErrorMsgIntoShortMsgAndStackTrace: function(msg) {
+            var indexOfFirstLine = msg.indexOf("\r\n");
+            if (indexOfFirstLine > -1) {
+                var errMsg = msg.substring(0, indexOfFirstLine);
+                var stackTrace = msg.substring(indexOfFirstLine, msg.length - 1);
+                return [errMsg, stackTrace];
+            }
+            return [msg, ""];
+        },
+
         lastItemEquals: function(array, key, val) {
             if (array.length > 0) {
                 var o = array[array.length - 1];

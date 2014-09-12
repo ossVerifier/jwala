@@ -578,12 +578,14 @@ var GroupOperationsDataTable = React.createClass({
                     this.jvmStateErrorMessages[jvmId] = [];
                 }
 
+                var msgs = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(jvmToRender.state.message);
                 if (!groupOperationsHelper.lastItemEquals(this.jvmStateErrorMessages[jvmId],
                                                           "msg",
-                                                          jvmToRender.state.message)) {
-                    this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
-                                                            msg:jvmToRender.state.message,
-                                                            pullDown:"Stack trace here..."});
+                                                          msgs[0])) {
+
+                    this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(jvmToRender.state.asOf),
+                                                            msg:msgs[0],
+                                                            pullDown:msgs[1]});
                     this.jvmHasNewMessage[jvmId] = "true";
                 }
 
@@ -662,12 +664,13 @@ var GroupOperationsDataTable = React.createClass({
                         this.webServerStateErrorMessages[webServerId] = [];
                     }
 
+                    var msgs = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(webServerToRender.state.message);
                     if (!groupOperationsHelper.lastItemEquals(this.webServerStateErrorMessages[webServerId],
                                                               "msg",
-                                                              webServerToRender.state.message)) {
+                                                              msgs[0])) {
                         this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(webServerToRender.state.asOf),
-                                                                            msg:webServerToRender.state.message,
-                                                                            pullDown:"Stack trace here..."});
+                                                                            msg:msgs[0],
+                                                                            pullDown:msgs[1]});
                         this.webServerHasNewMessage[webServerId] = "true";
                     }
 
