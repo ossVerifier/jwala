@@ -50,7 +50,7 @@
     <int:inbound-channel-adapter id="webServerStateInitiator"
                                  ref="webServerProvider"
                                  method="getAllWebServers"
-                                 channel="unsplitWebServerStateRequests" phase="1000">
+                                 channel="unsplitWebServerStateRequests" phase="1000" auto-startup="false">
         <int:poller fixed-delay="30" time-unit="SECONDS"/>
     </int:inbound-channel-adapter>
 

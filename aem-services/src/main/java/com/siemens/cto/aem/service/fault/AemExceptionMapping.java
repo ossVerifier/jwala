@@ -29,16 +29,20 @@ public class AemExceptionMapping {
             if(x.getCause() instanceof ConnectException) {
                 ConnectException cnx = (ConnectException)x.getCause();
                 if("Connection timed out: connect".equals(cnx.getMessage())) {
-                   return AemFaultType.CANNOT_CONNECT;
-                }
+                    return AemFaultType.CANNOT_CONNECT;
+                 } else if("Connection refused: connect".equals(cnx.getMessage())) {
+                     return AemFaultType.CANNOT_CONNECT;
+                 }
             }
         } else if(penultimateRootCause instanceof ResourceAccessException) {
             ResourceAccessException x = (ResourceAccessException) penultimateRootCause;
             if(x.getCause() instanceof ConnectException) {
                 ConnectException cnx = (ConnectException)x.getCause();
-                if("Connection refused: connect".equals(cnx.getMessage())) {
-                   return AemFaultType.CANNOT_CONNECT;
-                }
+                if("Connection timed out: connect".equals(cnx.getMessage())) {
+                    return AemFaultType.CANNOT_CONNECT;
+                 } else if("Connection refused: connect".equals(cnx.getMessage())) {
+                     return AemFaultType.CANNOT_CONNECT;
+                 }
             } else if(x.getCause() instanceof SocketTimeoutException) {
                 SocketTimeoutException stx = (SocketTimeoutException)x.getCause();
                 if("connect timed out".equals(stx.getMessage())) {
