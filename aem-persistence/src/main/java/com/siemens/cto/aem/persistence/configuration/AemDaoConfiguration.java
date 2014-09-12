@@ -29,7 +29,8 @@ public class AemDaoConfiguration {
         return new JpaJvmDaoImpl();
     }
 
-    @Bean
+    @Deprecated // TODO (Peter) Needs replacing with a PersistenceService
+    @Bean(name="webServerDao")
     public WebServerDao getWebServerDao() {
         return new JpaWebServerDaoImpl();
     }

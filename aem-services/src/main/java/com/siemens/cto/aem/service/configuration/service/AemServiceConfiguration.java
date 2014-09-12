@@ -1,20 +1,18 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import com.siemens.cto.aem.commandprocessor.CommandExecutor;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.service.webserver.*;
-import com.siemens.cto.aem.service.webserver.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import com.siemens.cto.aem.commandprocessor.CommandExecutor;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -49,6 +47,16 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
+import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
+import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerControlHistoryServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import com.siemens.cto.toc.files.TemplateManager;
 
 @Configuration

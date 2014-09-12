@@ -1,5 +1,15 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -57,18 +67,9 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = { WebServerStateIntegrationTest.CommonConfiguration.class })
@@ -156,6 +157,14 @@ public class WebServerStateIntegrationTest {
             final WebServerService service = mock(WebServerService.class);
             when(service.getWebServers(Matchers.<PaginationParameter>anyObject())).thenReturn(webServers);
             return service;
+        }
+
+        @Bean(name = "webServerDao")
+        public WebServerDao getWebServerDao() {
+            final List<WebServer> webServers = createWebServers(1);
+            final WebServerDao dao = mock(WebServerDao.class);
+            when(dao.getWebServer(eq(Identifier.<WebServer>id(0L)))).thenReturn(webServers.get(0));
+            return dao;
         }
 
         @Bean

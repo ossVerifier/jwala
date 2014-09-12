@@ -48,7 +48,7 @@ public class AemPersistenceServiceConfiguration {
     @Autowired
     private SharedEntityManagerBean sharedEntityManager;
 
-    @Bean
+    @Bean(name="jvmPersistenceService")
     public JvmPersistenceService getJvmPersistenceService() {
         return new JpaJvmPersistenceServiceImpl(getJvmCrudService(),
                                                 getGroupJvmRelationshipService());

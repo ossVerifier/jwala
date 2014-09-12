@@ -97,7 +97,9 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_HTTP_CONFIG_FILE("AEM46", "InvalidHttpConfigFile"),
     /**/
-    TEMPLATE_NOT_FOUND("AEM47", "TemplateNotFound")
+    TEMPLATE_NOT_FOUND("AEM47", "TemplateNotFound"), 
+    /**/
+    CANNOT_CONNECT("AEM48", "CannotConnect")
     ;
 
 	private final String faultCode;

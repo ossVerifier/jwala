@@ -14,6 +14,7 @@
 
     <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceFacade">
         <constructor-arg ref="webServerStateService"/>
+        <constructor-arg ref="webServerDao"/>
     </bean>
 
     <bean id="webServerSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">

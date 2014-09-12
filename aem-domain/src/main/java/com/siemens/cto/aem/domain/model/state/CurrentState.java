@@ -90,6 +90,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
         aConsumer.set(CommonStateKey.MESSAGE, message);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -101,7 +102,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
         if (obj.getClass() != getClass()) {
             return false;
         }
-        CurrentState rhs = (CurrentState) obj;
+        CurrentState<S,T> rhs = (CurrentState<S,T>) obj;
         return new EqualsBuilder()
                 .append(this.id, rhs.id)
                 .append(this.state, rhs.state)

@@ -14,6 +14,7 @@
 
     <bean id="jvmStateServiceFacade" class="com.siemens.cto.aem.service.jvm.impl.JvmStateServiceFacade">
         <constructor-arg ref="jvmStateService"/>
+        <constructor-arg ref="jvmPersistenceService"/>
     </bean>
 
     <bean id="jvmSshCommandExpression" class="org.springframework.integration.config.ExpressionFactoryBean">

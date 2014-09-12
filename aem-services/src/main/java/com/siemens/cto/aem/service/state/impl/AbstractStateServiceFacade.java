@@ -54,37 +54,35 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
             final String aMessage,
             final Throwable anException) throws IOException /*does not really.*/ {
 
-        StringWriter writer = null;
-        PrintWriter printer = null;
-        Throwable penaCause = null;
+        StringWriter writer = new StringWriter();
+        PrintWriter printer = new PrintWriter(writer);
+        Throwable penultimateRootCause = null;
         if(anException != null) {
-            penaCause = ExceptionUtil.INSTANCE.getPenultimateRootCause(anException);
-            if(penaCause == null) { 
-                penaCause = anException;
+            penultimateRootCause = ExceptionUtil.INSTANCE.getPenultimateRootCause(anException);
+            if(penultimateRootCause == null) { 
+                penultimateRootCause = anException;
             }
-            writer = new StringWriter();
-            printer = new PrintWriter(writer);
         } 
         
-        String message = "";
-        if(penaCause == null && aMessage == null) { 
-            message = "";
-        } else if(aMessage == null && penaCause != null) { 
-            printer.append(penaCause.getLocalizedMessage());
-        } else if(penaCause != null) {
-            printer.append(aMessage);
-        } else { 
-            message = aMessage;
+        if(penultimateRootCause == null && aMessage == null) { 
+            printer.append(ExceptionUtil.NO_EXCEPTION_MESSAGE);
+        } else if(aMessage == null && penultimateRootCause != null) { 
+            printer.append(penultimateRootCause.getLocalizedMessage());
+        } else if(aMessage != null && penultimateRootCause != null) {
+            printCustomizedStateMessageFromException(printer, anId, aNewState, anAsOf, aMessage, penultimateRootCause);
+        } else {
+            printCustomizedStateMessage(printer, anId, aNewState, anAsOf, aMessage);
         }
         
-        if(penaCause != null) {
+        if(penultimateRootCause != null) {
             printer.append(System.lineSeparator());
-            penaCause.printStackTrace(printer);
-            printer.flush();
-            message = writer.toString();
-            printer.close();
-            writer.close();
+            penultimateRootCause.printStackTrace(printer);
         }
+
+        printer.flush();
+        String message = writer.toString();
+        printer.close();
+        writer.close();
         
         final CurrentState<S, T> newCurrentState = createCurrentStateWithMessage(anId,
                                                                  aNewState,
@@ -93,6 +91,38 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
         setState(newCurrentState);
     }
 
+    /**
+     * This API lets you manipulate the message returned in the state string
+     * Default implementation writes aMessage to the PrintWriter
+     * 
+     * @param printer Implementors must write aMessage output to this PrintWriter
+     * @param anId the entity id 
+     * @param aNewState the state being changed to
+     * @param anAsOf the date of the state change
+     * @param aMessage the string to start from 
+     * 
+     */
+    protected void printCustomizedStateMessage(PrintWriter printer, Identifier<S> anId, T aNewState, DateTime anAsOf, String aMessage) {
+        printer.print(aMessage);
+    }
+
+    /**
+     * This API lets you manipulate the message returned in the state string
+     * Default implementation writes aMessage to the PrintWriter
+     * 
+     * @param printer Implementors must write aMessage output to this PrintWriter
+     * @param anId the entity id 
+     * @param aNewState the state being changed to
+     * @param anAsOf the date of the state change
+     * @param aMessage the string to start from 
+     * @param penultimateRootCause the exception that was thrown 
+     */
+    protected void printCustomizedStateMessageFromException(PrintWriter printer, Identifier<S> anId, T aNewState, DateTime anAsOf,
+            String aMessage, Throwable penultimateRootCause) {        
+        printer.print(aMessage);
+    }
+
+    
     void setState(final CurrentState<S, T> aNewCurrentState) {
         final SetStateCommand<S, T> command = createCommand(aNewCurrentState);
         service.setCurrentState(command,
