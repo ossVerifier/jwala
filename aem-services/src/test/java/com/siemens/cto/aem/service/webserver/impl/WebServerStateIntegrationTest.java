@@ -43,6 +43,7 @@ import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.integration.config.SourcePollingChannelAdapterFactoryBean;
+import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.annotation.DirtiesContext;
@@ -85,6 +86,9 @@ public class WebServerStateIntegrationTest {
     @Autowired
     private CommonConfiguration configuration;
 
+    @Autowired
+    private SourcePollingChannelAdapter webServerStateInitiator;
+    
     @Autowired
     private SourcePollingChannelAdapterFactoryBean webServerPollingChannel;
 
@@ -142,10 +146,15 @@ public class WebServerStateIntegrationTest {
         }
     }
 
+    @Before
+    public void startHeartbeat() {
+        webServerStateInitiator.start();
+    }
+    
     @Configuration
     @ImportResource("classpath*:META-INF/spring/webserver-heartbeat-integration.xml")
     static class CommonConfiguration {
-
+      
         @Bean(name = "webServerServiceExistence")
         public WebServerServiceExistenceFacade getWebServerServiceExistenceFacade() {
             return new WebServerServiceExistenceFacade();
