@@ -559,9 +559,10 @@ var GroupOperationsDataTable = React.createClass({
     jvmErrorAlertCallback: function(alertDlgDivId, jvm) {
         this.jvmHasNewMessage[jvm.id.id] = "false";
         React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-        React.renderComponent(<ErrorMsgListDialog title={jvm.jvmName + " State Error Messages"}
-                                                  msgList={this.jvmStateErrorMessages[jvm.id.id]}/>,
-                              document.getElementById(alertDlgDivId));
+        React.renderComponent(<DialogBox title={jvm.jvmName + " State Error Messages"}
+                                         content={<ErrorMsgList msgList={this.jvmStateErrorMessages[jvm.id.id]}/>} />,
+                                         document.getElementById(alertDlgDivId));
+
     },
     getStateForJvm: function(mData, type, fullData) {
         var jvmId = fullData.id.id;
@@ -581,7 +582,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           "msg",
                                                           jvmToRender.state.message)) {
                     this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(),
-                                                                        msg:jvmToRender.state.message});
+                                                            msg:jvmToRender.state.message,
+                                                            pullDown:"Stack trace here..."});
                     this.jvmHasNewMessage[jvmId] = "true";
                 }
 
@@ -590,12 +592,12 @@ var GroupOperationsDataTable = React.createClass({
                     var alertBtnDivId = "alert-btn-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
                     var alertDlgDivId = "alert-dlg-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
 
-                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
-                                                           "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
-                                                           "<div id='" + alertDlgDivId + "'>");
-                    $("." + colComponentClassName).html(jvmToRender.state.stateString);
-
-                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+                    if ($("." + colComponentClassName).parent().find("#" + alertBtnDivId).size() === 0) {
+                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
+                                                                      "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
+                                                                      "<div id='" + alertDlgDivId + "'>");
+                        $("." + colComponentClassName).html(jvmToRender.state.stateString);
+                    }
 
                     if (document.getElementById(alertBtnDivId) !== null) {
                         var flashing = this.jvmHasNewMessage[jvmId] !== undefined ? this.jvmHasNewMessage[jvmId] : "true";
@@ -622,6 +624,7 @@ var GroupOperationsDataTable = React.createClass({
         }
 
         return "<div class='" + colComponentClassName + "'/>"
+
     },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
@@ -636,9 +639,9 @@ var GroupOperationsDataTable = React.createClass({
     webServerErrorAlertCallback: function(alertDlgDivId, ws) {
         this.webServerHasNewMessage[ws.id.id] = "false";
         React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-        React.renderComponent(<ErrorMsgListDialog title={ws.name + " State Error Messages"}
-                                                  msgList={this.webServerStateErrorMessages[ws.id.id]}/>,
-                                                  document.getElementById(alertDlgDivId));
+        React.renderComponent(<DialogBox title={ws.name + " State Error Messages"}
+                                         content={<ErrorMsgList msgList={this.webServerStateErrorMessages[ws.id.id]}/>} />,
+                                         document.getElementById(alertDlgDivId));
     },
     /**
      * This method is responsible for displaying the state in the grid
@@ -663,7 +666,8 @@ var GroupOperationsDataTable = React.createClass({
                                                               "msg",
                                                               webServerToRender.state.message)) {
                         this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(webServerToRender.state.asOf),
-                                                                            msg:webServerToRender.state.message});
+                                                                            msg:webServerToRender.state.message,
+                                                                            pullDown:"Stack trace here..."});
                         this.webServerHasNewMessage[webServerId] = "true";
                     }
 
@@ -672,18 +676,19 @@ var GroupOperationsDataTable = React.createClass({
                         var alertBtnDivId = "alert-btn-div-ws" + webServerId + "-grp" + fullData.parentItemId;
                         var alertDlgDivId = "alert-dlg-div-ws" + webServerId + "-grp" + fullData.parentItemId;
 
-                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
-                                                                    "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
-                                                                    "<div id='" + alertDlgDivId + "'>");
-                        $("." + colComponentClassName).html(webServerToRender.state.stateString);
+                        if ($("." + colComponentClassName).parent().find("#" + alertBtnDivId).size() === 0) {
+                            $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
+                                                                         "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
+                                                                         "<div id='" + alertDlgDivId + "'>");
+                            $("." + colComponentClassName).html(webServerToRender.state.stateString);
+                        }
 
-                        React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
                         var flashing = this.webServerHasNewMessage[webServerId] !== undefined ? this.webServerHasNewMessage[webServerId] : "true";
                         React.renderComponent(<FlashingButton className="ui-button-height ui-alert-border ui-state-error"
-                                                             spanClassName="ui-icon ui-icon-alert"
-                                                             callback={self.webServerErrorAlertCallback.bind(this, alertDlgDivId, webServerToRender)}
-                                                             flashing={flashing}
-                                                             flashClass="flash"/>, document.getElementById(alertBtnDivId));
+                                                              spanClassName="ui-icon ui-icon-alert"
+                                                              callback={self.webServerErrorAlertCallback.bind(this, alertDlgDivId, webServerToRender)}
+                                                              flashing={flashing}
+                                                              flashClass="flash"/>, document.getElementById(alertBtnDivId));
                     }
 
                 } else {

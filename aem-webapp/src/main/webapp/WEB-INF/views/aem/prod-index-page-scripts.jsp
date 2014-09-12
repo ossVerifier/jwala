@@ -36,6 +36,7 @@
 
 <!-- React UI -->
 <script src="gen-public-resources/js/react/generic-components/tabs.js"></script>
+<script src="gen-public-resources/js/react/generic-components/dialog-box.js"></script>
 <script src="gen-public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-multi-select-box.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-combobox.js"></script>
@@ -57,4 +58,4 @@
 <script src="gen-public-resources/js/react/webserver-config.js"></script>
 <script src="gen-public-resources/js/react/webapp-config.js"></script>
 <script src="gen-public-resources/js/react/main-area.js"></script>
-<script src="gen-public-resources/js/react/error-msg-list-dialog.js"></script>
+<script src="gen-public-resources/js/react/error-msg-list.js"></script>

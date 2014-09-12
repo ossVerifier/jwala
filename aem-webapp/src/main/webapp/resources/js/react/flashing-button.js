@@ -27,13 +27,27 @@ var FlashingButton = React.createClass({
                                       this.props.flashDuration === undefined ? 500 : this.props.flashDuration);
         }
     },
+    shouldComponentUpdate: function(nextProps, nextState) {
+        var flashing = nextProps.flashing === "true" ? true : false;
+        if (flashing !== this.state.flashing && nextState.flash === this.state.flash) {
+            // State "flashing" update does not require re-rendering
+            return false;
+        }
+        return true;
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.flashing === "true" && this.state.flashing === false) {
+            this.setState({flashing:true});
+            this.flasher = setTimeout(this.flashCallback,
+                                      this.props.flashDuration === undefined ? 500 : this.props.flashDuration);
+        }
+    },
     flashCallback: function() {
         if (this.state.flash) {
             this.setState({flash:false});
         } else {
             this.setState({flash:true});
         }
-
         this.flasher = setTimeout(this.flashCallback,
                                   this.props.flashDuration === undefined ? 500 : this.props.flashDuration);
     },
@@ -50,5 +64,8 @@ var FlashingButton = React.createClass({
         this.stopFlashing();
 
         this.props.callback();
+    },
+    componentWillUnmount: function() {
+        clearTimeout(this.flasher);
     }
 });

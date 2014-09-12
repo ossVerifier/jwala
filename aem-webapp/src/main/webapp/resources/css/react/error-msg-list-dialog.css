@@ -5,3 +5,8 @@ table.errMsgTable tr.odd {
 table.errMsgTable td {
     padding-right: 5px;
 }
+
+.cursorPointer {
+    cursor: pointer
+}
+
