@@ -1,5 +1,11 @@
-table.errMsgTable tr.odd {
-    background-color: #E7E7E7;
+table.errMsgTable {
+    table-layout:fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.errMsgTable tr.odd > td {
+    background-color: #E7E7E7 !important;
 }
 
 table.errMsgTable td {
@@ -7,6 +13,14 @@ table.errMsgTable td {
 }
 
 .cursorPointer {
-    cursor: pointer
+    cursor: pointer;
 }
 
+table.errMsgTable tr > td {
+    border: 1px solid #E6D6D6;
+    vertical-align: top;
+}
+
+table.errMsgTable td {
+    width:"auto";
+}

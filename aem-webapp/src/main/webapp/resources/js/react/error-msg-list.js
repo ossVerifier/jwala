@@ -27,14 +27,18 @@ var ErrorMsgList = React.createClass({
             var row = this.props.msgList[i];
             var pullDownMsg = null;
             cols = [];
+
             for (var col in row) {
                 if (col !== "pullDown") {
-                    cols.push(React.DOM.td(null, row[col]));
+                    var className = ((col === "dateTime") ? "nowrap" : "");
+                    var style = ((col === "dateTime") ? {width:"115px"} : {});
+                    cols.push(React.DOM.td({className:className, style:style}, row[col]));
                 } else {
                    var theKey = "key" + i;
-                    cols.push(React.DOM.td(null,
-                                           React.DOM.span({className:"ui-icon ui-icon-link cursorPointer",
-                                           onClick:this.clickPullDown.bind(this, theKey)}, "")));
+                   var pullDownIconClassName = this.state.pullDownVisible["key" + i] === true ? "ui-icon-triangle-1-n" : "ui-icon-triangle-1-s";
+                   cols.push(React.DOM.td({className:"text-align-center", style:{width:"16px"} /* Easiest way to center the pull down icon. */},
+                                           React.DOM.span({className:"ui-icon cursorPointer " + pullDownIconClassName,
+                                                          onClick:this.clickPullDown.bind(this, theKey)}, "")));
 
                         if (propertyCount === undefined) {
                             propertyCount = ErrorMsgList.getPropertyCount(row);

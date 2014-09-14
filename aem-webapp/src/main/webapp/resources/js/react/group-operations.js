@@ -560,6 +560,7 @@ var GroupOperationsDataTable = React.createClass({
         this.jvmHasNewMessage[jvm.id.id] = "false";
         React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
         React.renderComponent(<DialogBox title={jvm.jvmName + " State Error Messages"}
+                                         contentDivClassName="maxHeight400px"
                                          content={<ErrorMsgList msgList={this.jvmStateErrorMessages[jvm.id.id]}/>} />,
                                          document.getElementById(alertDlgDivId));
 
@@ -642,6 +643,7 @@ var GroupOperationsDataTable = React.createClass({
         this.webServerHasNewMessage[ws.id.id] = "false";
         React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
         React.renderComponent(<DialogBox title={ws.name + " State Error Messages"}
+                                         contentDivClassName="maxHeight400px"
                                          content={<ErrorMsgList msgList={this.webServerStateErrorMessages[ws.id.id]}/>} />,
                                          document.getElementById(alertDlgDivId));
     },

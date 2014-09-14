@@ -111,6 +111,10 @@ body {
     text-align: right;
 }
 
+.text-align-center {
+    text-align: center;
+}
+
 .accordion-title-text-position {
     position: absolute;
     left: 2.5em;
@@ -131,4 +135,9 @@ body {
 div .state {
     display:inline-block;
     width:70px
+}
+
+/* used by dialog box content div */
+.maxHeight400px {
+    max-height:400px !important;
 }
