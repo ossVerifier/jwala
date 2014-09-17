@@ -20,8 +20,8 @@ var serviceFoundation = {
                                     }
                                 });
     },
-    promisedGet : function(url, dataType) {
-        var loadingUiBehavior = serviceFoundationUi.visibleLoading(false);
+    promisedGet : function(url, dataType, showLoading) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading === undefined ? false : showLoading);
         return Promise.cast($.ajax({url: url,
                                        dataType: dataType,
                                        type: 'GET',

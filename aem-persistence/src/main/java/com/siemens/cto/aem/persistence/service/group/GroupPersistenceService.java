@@ -35,4 +35,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     Group removeJvmFromGroup(final Event<RemoveJvmFromGroupCommand> anEvent) throws NotFoundException;
 
     Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate);
+
+    public Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
 }

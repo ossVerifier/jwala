@@ -45,7 +45,10 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     
     @Column(nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
-    private Calendar stateUpdated;    
+    private Calendar stateUpdated;
+
+    @ManyToMany(mappedBy = "groups")
+    private List<JpaWebServer> webServers;
     
     @Override
     public Long getId() {
@@ -79,7 +82,15 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     public void setStateUpdated(Calendar stateUpdated) {
         this.stateUpdated = stateUpdated;
     }
-    
+
+    public List<JpaWebServer> getWebServers() {
+        return webServers;
+    }
+
+    public void setWebServers(List<JpaWebServer> webServers) {
+        this.webServers = webServers;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {

@@ -3,6 +3,9 @@ package com.siemens.cto.aem.persistence.jpa.domain.builder;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
@@ -19,6 +22,7 @@ public class JpaGroupBuilder {
     public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaGroup group;
     private CurrentGroupState stateDetailSource = null;
+    private boolean fetchWebServers = false;
 
     public JpaGroupBuilder() {
     }
@@ -34,6 +38,13 @@ public class JpaGroupBuilder {
 
     public Group build() {
         if(stateDetailSource == null) {
+            if (fetchWebServers) {
+                return new Group(new Identifier<Group>(group.getId()),
+                                     group.getName(),
+                                     getJvms(),
+                                     getWebServers(),
+                                     stateDetailSource);
+            }
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
                              getJvms(),
@@ -78,8 +89,24 @@ public class JpaGroupBuilder {
         return jvms;
     }
 
+    protected Set<WebServer> getWebServers() {
+        final Set<WebServer> webServers = new HashSet<>();
+        if (group.getWebServers() != null) {
+            for (final JpaWebServer jpaWebServer : group.getWebServers()) {
+                webServers.add(new JpaWebServerBuilder(jpaWebServer).build());
+            }
+        }
+
+        return webServers;
+    }
+
     public JpaGroupBuilder setStateDetail(CurrentGroupState originalStatus) {
         this.stateDetailSource = originalStatus;
+        return this;
+    }
+
+    public JpaGroupBuilder setFetchWebServers(boolean fetchWebServers) {
+        this.fetchWebServers = fetchWebServers;
         return this;
     }
 }

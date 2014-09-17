@@ -90,4 +90,9 @@ public interface GroupServiceRest {
     @Path("/states/current")
 //    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
     Response getCurrentJvmStates(@BeanParam final GroupIdsParameterProvider aGroupIdsParameterProvider);
+
+    @GET
+    @Path("/{groupId}/children/otherGroup/connectionDetails")
+    Response getChildrenOtherGroupConnectionDetails(@PathParam("groupId") final Identifier<Group> id);
+
 }

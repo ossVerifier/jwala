@@ -1,23 +1,21 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.List;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class GroupServiceImpl implements GroupService {
 
@@ -108,6 +106,45 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         return groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
                                                                       aRemovingUser));
+    }
+
+    @Override
+    @Transactional
+    public List<String> getChildrenOtherGroupConnectionDetails(Identifier<Group> id) {
+        final String memberOfStr = " is a member of ";
+        final List<String> otherGroupConnectionDetails = new ArrayList<>();
+        final Group group = groupPersistenceService.getGroup(id, true);
+        final Set<Jvm> jvms = group.getJvms();
+        final Set<WebServer> webServers = group.getWebServers();
+        for (Jvm jvm : jvms) {
+            if (jvm.getGroups() != null && !jvm.getGroups().isEmpty()) {
+                String groupNames = "";
+                for (LiteGroup liteGroup : jvm.getGroups()) {
+                    if (!id.getId().equals(liteGroup.getId().getId())) {
+                        groupNames += groupNames == "" ? liteGroup.getName() : "," + liteGroup.getName();
+                    }
+                }
+                if (groupNames != "") {
+                    otherGroupConnectionDetails.add(jvm.getJvmName() + memberOfStr + groupNames);
+                }
+            }
+        }
+
+        for (WebServer webServer: webServers) {
+            if (webServer.getGroups() != null && !webServer.getGroups().isEmpty()) {
+                String groupNames = "";
+                for (Group webServerGroup : webServer.getGroups()) {
+                    if (!id.getId().equals(webServerGroup.getId().getId())) {
+                        groupNames += groupNames == "" ? webServerGroup.getName() : "," + webServerGroup.getName();
+                    }
+                }
+                if (groupNames != "") {
+                    otherGroupConnectionDetails.add(webServer.getName() + memberOfStr + groupNames);
+                }
+            }
+        }
+
+        return otherGroupConnectionDetails;
     }
 
     protected <T> Event<T> createEvent(final T aCommand,

@@ -63,6 +63,14 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
+    public Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException {
+
+        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+
+        return new JpaGroupBuilder(group).setFetchWebServers(fetchWebServers).build();
+    }
+
+    @Override
     public List<Group> getGroups(final PaginationParameter somePagination) {
 
         final List<JpaGroup> groups = groupCrudService.getGroups(somePagination);

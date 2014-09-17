@@ -193,13 +193,15 @@ var GroupOperationsDataTable = React.createClass({
                                tocType:"button",
                                btnLabel:"Start Group",
                                btnCallback:this.startGroup,
-                               className:"inline-block"},
+                               className:"inline-block",
+                               extraDataToPassOnCallback:"name"},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
                                btnLabel:"Stop Group",
                                btnCallback:this.stopGroup,
-                               className:"inline-block"}],
+                               className:"inline-block",
+                               extraDataToPassOnCallback:"name"}],
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
@@ -488,12 +490,62 @@ var GroupOperationsDataTable = React.createClass({
         var enable = this.enableButtonThunk(selector);
         Promise.method(disable)().then(requestTask).then(requestCallbackTask).caught(errHandler).lastly(enable);
     },
-   startGroup: function(id, buttonSelector) {
-       this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id);});
+   confirmStartStopDialogBox: function(id, buttonSelector, msg, callbackOnConfirm) {
+        var dialogId = "group-stop-confirm-dialog-" + id;
+        $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
+        $(buttonSelector).parent().find("#" + dialogId).dialog({
+            title: "Confirmation",
+            width: "auto",
+            modal: true,
+            buttons: {
+                "Yes": function() {
+                    callbackOnConfirm(id, buttonSelector);
+                    $(this).dialog("close");
+                },
+                "No": function() {
+                    $(this).dialog("close");
+                }
+            },
+            open: function() {
+                // Set focus to "No button"
+                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(1)').focus();
+            }
+        });
    },
-   stopGroup: function(id, buttonSelector) {
-       this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id);});
-   },
+    /**
+     * Verifies and confirms to the user whether to continue the operation or not.
+     * @param id the id (e.g. group id)
+     * @param name the name (e.g. group name)
+     * @param buttonSelector the jquery button selector
+     * @param operation control operation namely "Start" and "Stop"
+     * @param operationCallback operation to execute (e.g. startGroupCallback)
+     */
+    verifyAndConfirmControlOperation: function(id, buttonSelector, name, operation, operationCallback) {
+        var self = this;
+        groupService.getChildrenOtherGroupConnectionDetails(id).then(function(data) {
+            if (data.applicationResponseContent instanceof Array && data.applicationResponseContent.length > 0) {
+                self.confirmStartStopDialogBox(id,
+                                               buttonSelector,
+                                               data.applicationResponseContent.join("<br/>")
+                                                    + "<br/><br/>Are you sure you want to " + operation + " " + name + " ?",
+                                               operationCallback);
+            } else {
+                operationCallback(id, buttonSelector);
+            }
+        });
+    },
+    startGroupCallback: function(id, buttonSelector) {
+        this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)});
+    },
+    startGroup: function(id, buttonSelector, name) {
+        this.verifyAndConfirmControlOperation(id, buttonSelector, name, "start", this.startGroupCallback);
+    },
+    stopGroupCallback: function(id, buttonSelector) {
+        this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)});
+    },
+    stopGroup: function(id, buttonSelector, name) {
+        this.verifyAndConfirmControlOperation(id, buttonSelector, name, "stop", this.stopGroupCallback);
+    },
    startGroupJvms: function(event) {
        this.disableEnable(event.data.buttonSelector, function() { return groupControlService.startJvms(event.data.id);});
    },

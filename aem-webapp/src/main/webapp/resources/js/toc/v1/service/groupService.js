@@ -22,5 +22,10 @@ var groupService = {
 	},
 	getGroup: function(id, responseCallback) {
 	    return serviceFoundation.get("v1.0/groups/" + id, "json", responseCallback);
+	},
+	getChildrenOtherGroupConnectionDetails: function(id) {
+        return serviceFoundation.promisedGet("v1.0/groups/" + id + "/children/otherGroup/connectionDetails",
+                                             "json",
+                                             true);
 	}
 }

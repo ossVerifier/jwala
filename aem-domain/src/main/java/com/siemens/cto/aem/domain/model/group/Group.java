@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -20,6 +21,7 @@ public class Group implements Serializable {
     private final Identifier<Group> id;
     private final String name;
     private final Set<Jvm> jvms;
+    private final Set<WebServer> webServers;
     private final CurrentGroupState currentState;
 
     public Group(final Identifier<Group> theId, final String theName) {
@@ -33,12 +35,25 @@ public class Group implements Serializable {
         id = theId;
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
+        webServers = null;
         currentState = new CurrentGroupState(theId, theState, theAsOf);
+    }
+    public Group(final Identifier<Group> theId,
+                 final String theName,
+                 final Set<Jvm> theJvms,
+                 final Set<WebServer> theWebServers,
+                 final CurrentGroupState theState) {
+        id = theId;
+        name = theName;
+        jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
+        webServers = Collections.unmodifiableSet(new HashSet<>(theWebServers));
+        currentState = theState;
     }
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms, final CurrentGroupState theState, final DateTime theAsOf) {
         id = theId;
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
+        webServers = null;
         currentState = theState;
     }
 
@@ -52,6 +67,10 @@ public class Group implements Serializable {
 
     public Set<Jvm> getJvms() {
         return jvms;
+    }
+
+    public Set<WebServer> getWebServers() {
+        return webServers;
     }
 
     public CurrentGroupState getCurrentState() {

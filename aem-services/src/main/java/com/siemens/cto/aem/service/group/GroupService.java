@@ -37,4 +37,12 @@ public interface GroupService {
 
     Group removeJvmFromGroup(final RemoveJvmFromGroupCommand aCommand,
                              final User aRemovingUser);
+
+    /**
+     * Gets the connection details of JVMs and Web Servers under a group specified by id.
+     * @param id the group id
+     * @return A list of String that describes the connections of JVMs and Web Servers of a group
+     *         specified by id. Example description: JVM1 is a member of group2, group3, group4.
+     */
+    List<String> getChildrenOtherGroupConnectionDetails(final Identifier<Group> id);
 }

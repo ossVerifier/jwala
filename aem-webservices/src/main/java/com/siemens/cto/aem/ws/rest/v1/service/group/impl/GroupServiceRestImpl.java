@@ -186,4 +186,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         return ResponseBuilder.ok(currentGroupStates);
     }
+
+    @Override
+    public Response getChildrenOtherGroupConnectionDetails(final Identifier<Group> id) {
+        return ResponseBuilder.ok(groupService.getChildrenOtherGroupConnectionDetails(id));
+    }
 }
