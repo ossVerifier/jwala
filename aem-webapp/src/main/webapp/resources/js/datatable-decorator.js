@@ -240,7 +240,7 @@ var renderComponents = function(tableId,
                                 "</span>";
         }
     } else if (item.tocType === "button") {
-        renderedComponent = renderButton(tableId, item, data, type, full);
+        renderedComponent = renderButton(tableId, item, data, type, full, parentItemId);
     } else if (item.tocType === "emptyColumn") {
         renderedComponent = "";
     } else {
@@ -253,10 +253,20 @@ var isArray = function(val) {
     return (val instanceof Array)
 };
 
-var renderButton = function(tableId, item, data, type, full) {
+var renderButton = function(tableId, item, data, type, full, parentItemId) {
 
     var btnClassifier = item.id !== undefined ? item.id : item.btnLabel;
     var id = tableId + "btn" + btnClassifier.replace(/[\. ,:-]+/g, '') +  full.id.id;
+
+    var extraData;
+    if (item.extraDataToPassOnCallback instanceof Array) {
+        extraData = {};
+        item.extraDataToPassOnCallback.forEach(function(property){
+            extraData[property] = full[property];
+        });
+    } else {
+        extraData = full[item.extraDataToPassOnCallback];
+    }
 
     var reactBtn = new DataTableButton({id:id,
                                         sTitle:item.sTitle,
@@ -273,8 +283,9 @@ var renderButton = function(tableId, item, data, type, full) {
                                         expectedState:item.expectedState,
                                         isBusyCallback:item.isBusyCallback,
                                         buttonClassName:item.buttonClassName,
-                                        extraDataToPassOnCallback:full[item.extraDataToPassOnCallback],
-                                        busyStatusTimeout:item.busyStatusTimeout});
+                                        extraDataToPassOnCallback:extraData,
+                                        busyStatusTimeout:item.busyStatusTimeout,
+                                        parentItemId:parentItemId});
 
     TocPager.allButtons[id] = reactBtn;
 

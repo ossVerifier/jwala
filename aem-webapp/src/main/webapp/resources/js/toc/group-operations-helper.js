@@ -272,7 +272,15 @@ var groupOperationsHelper = function(){
             }
             return [msg, ""];
         },
-
+        groupArrayToString: function(groups, excludedGroupId) {
+            var str = "";
+            groups.forEach(function(group){
+                if (excludedGroupId === undefined || excludedGroupId !== group.id.id) {
+                    str += (str === "" ? group.name : "," + group.name);
+                }
+            });
+            return str;
+        },
         lastItemEquals: function(array, key, val) {
             if (array.length > 0) {
                 var o = array[array.length - 1];

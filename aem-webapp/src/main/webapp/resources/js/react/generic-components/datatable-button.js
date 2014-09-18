@@ -17,6 +17,8 @@
  * 10. clickedStateTimeout - duration in which to show the button clicked state style,
  *                           default is 10 seconds if this is not set
  *
+ * NOTE: Documentation needs to be updated!
+ *
  */
 var DataTableButton = React.createClass({
     /**
@@ -104,7 +106,10 @@ var DataTableButton = React.createClass({
                                            self.props.label2 :
                                            self.props.label);
             } else {
-                self.props.callback(self.props.itemId, "#" + self.props.id, self.props.extraDataToPassOnCallback);
+                self.props.callback(self.props.itemId,
+                                    "#" + self.props.id,
+                                    self.props.extraDataToPassOnCallback,
+                                    self.props.parentItemId);
             }
         },
         hoverCallback: function(id, label) {
