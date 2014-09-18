@@ -23,8 +23,14 @@ var groupService = {
 	getGroup: function(id, responseCallback) {
 	    return serviceFoundation.get("v1.0/groups/" + id, "json", responseCallback);
 	},
-	getChildrenOtherGroupConnectionDetails: function(id) {
-        return serviceFoundation.promisedGet("v1.0/groups/" + id + "/children/otherGroup/connectionDetails",
+	getChildrenOtherGroupConnectionDetails: function(id, groupChildType) {
+	    var queryParam = "";
+	    if (groupChildType === "jvm") {
+            queryParam = "?groupChildType=JVM";
+	    } else if (groupChildType === "webServer") {
+	        queryParam = "?groupChildType=WEB_SERVER";
+	    }
+        return serviceFoundation.promisedGet("v1.0/groups/" + id + "/children/otherGroup/connectionDetails" + queryParam,
                                              "json",
                                              true);
 	}

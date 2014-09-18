@@ -39,7 +39,8 @@ var ExpandCollapseControl = React.createClass({
                                         childTableDetails.childTableDetails,
                                         this.props.parentItemId,
                                         this.props.rootId,
-                                        childTableDetails.initialSortColumn);
+                                        childTableDetails.initialSortColumn,
+                                        this.props.parentItemName);
     },
     drawDataTable: function(dataTable, data, defaultSorting, isCollapsible, headerComponents) {
         dataTable.fnClearTable(data);
@@ -97,6 +98,7 @@ var ExpandCollapseControl = React.createClass({
                         $(buttonSelector).off("click");
                         $(buttonSelector).on("click",
                                        {id:self.props.parentItemId,
+                                        name:self.props.parentItemName,
                                         buttonSelector: buttonSelector},
                                        component.btnCallback);
                     }

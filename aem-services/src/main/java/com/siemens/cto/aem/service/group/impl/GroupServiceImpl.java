@@ -110,12 +110,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public List<String> getChildrenOtherGroupConnectionDetails(Identifier<Group> id) {
+    public List<String> getOtherGroupingDetailsOfJvms(Identifier<Group> id) {
         final String memberOfStr = " is a member of ";
         final List<String> otherGroupConnectionDetails = new ArrayList<>();
         final Group group = groupPersistenceService.getGroup(id, true);
         final Set<Jvm> jvms = group.getJvms();
-        final Set<WebServer> webServers = group.getWebServers();
+
         for (Jvm jvm : jvms) {
             if (jvm.getGroups() != null && !jvm.getGroups().isEmpty()) {
                 String groupNames = "";
@@ -129,6 +129,17 @@ public class GroupServiceImpl implements GroupService {
                 }
             }
         }
+
+        return otherGroupConnectionDetails;
+    }
+
+    @Override
+    @Transactional
+    public List<String> getOtherGroupingDetailsOfWebServers(Identifier<Group> id) {
+        final String memberOfStr = " is a member of ";
+        final List<String> otherGroupConnectionDetails = new ArrayList<>();
+        final Group group = groupPersistenceService.getGroup(id, true);
+        final Set<WebServer> webServers = group.getWebServers();
 
         for (WebServer webServer: webServers) {
             if (webServer.getGroups() != null && !webServer.getGroups().isEmpty()) {

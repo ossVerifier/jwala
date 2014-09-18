@@ -522,10 +522,12 @@ var GroupOperationsDataTable = React.createClass({
      * @param buttonSelector the jquery button selector
      * @param operation control operation namely "Start" and "Stop"
      * @param operationCallback operation to execute (e.g. startGroupCallback)
+     * @param groupChildType a group's children to verify membership in other groups
+     *                       (jvm - all JVMs, webServer - all web servers, undefined = jvms and web servers)
      */
-    verifyAndConfirmControlOperation: function(id, buttonSelector, name, operation, operationCallback) {
+    verifyAndConfirmControlOperation: function(id, buttonSelector, name, operation, operationCallback, groupChildType) {
         var self = this;
-        groupService.getChildrenOtherGroupConnectionDetails(id).then(function(data) {
+        groupService.getChildrenOtherGroupConnectionDetails(id, groupChildType).then(function(data) {
             if (data.applicationResponseContent instanceof Array && data.applicationResponseContent.length > 0) {
                 self.confirmStartStopGroupDialogBox(id,
                                                buttonSelector,
@@ -549,18 +551,65 @@ var GroupOperationsDataTable = React.createClass({
     stopGroup: function(id, buttonSelector, name) {
         this.verifyAndConfirmControlOperation(id, buttonSelector, name, "stop", this.stopGroupCallback);
     },
-   startGroupJvms: function(event) {
-       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.startJvms(event.data.id);});
-   },
-   stopGroupJvms: function(event) {
-       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopJvms(event.data.id);});
-   },
-   startGroupWebServers: function(event) {
-       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.startWebServers(event.data.id);});
-   },
-   stopGroupWebServers: function(event) {
-       this.disableEnable(event.data.buttonSelector, function() { return groupControlService.stopWebServers(event.data.id);});
-   },
+
+    startGroupJvms: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) {
+                            self.disableEnable(event.data.buttonSelector,
+                                               function() { return groupControlService.startJvms(event.data.id)});
+                       }
+
+        this.verifyAndConfirmControlOperation(event.data.id,
+                                              event.data.buttonSelector,
+                                              event.data.name,
+                                              "start all JVMs under",
+                                              callback,
+                                              "jvm");
+    },
+
+    stopGroupJvms: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) {
+                            self.disableEnable(event.data.buttonSelector,
+                                               function() { return groupControlService.stopJvms(event.data.id)});
+                       }
+
+        this.verifyAndConfirmControlOperation(event.data.id,
+                                              event.data.buttonSelector,
+                                              event.data.name,
+                                              "stop all JVMs under",
+                                              callback,
+                                              "jvm");
+    },
+    startGroupWebServers: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) {
+                            self.disableEnable(event.data.buttonSelector,
+                                               function() { return groupControlService.startWebServers(event.data.id)});
+                       }
+
+        this.verifyAndConfirmControlOperation(event.data.id,
+                                              event.data.buttonSelector,
+                                              event.data.name,
+                                              "start all Web Servers under",
+                                              callback,
+                                              "webServer");
+    },
+    stopGroupWebServers: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) {
+                            self.disableEnable(event.data.buttonSelector,
+                                               function() { return groupControlService.stopWebServers(event.data.id)});
+                       }
+
+        this.verifyAndConfirmControlOperation(event.data.id,
+                                              event.data.buttonSelector,
+                                              event.data.name,
+                                              "stop all Web Servers under",
+                                              callback,
+                                              "webServer");
+    },
+
    onClickHttpdConf: function(data) {
        var id = data.id.id;
        var url = "webServerCommand?webServerId=" + id + "&operation=viewHttpdConf";

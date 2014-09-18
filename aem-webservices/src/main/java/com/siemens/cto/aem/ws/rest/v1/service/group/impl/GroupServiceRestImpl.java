@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,7 +189,22 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getChildrenOtherGroupConnectionDetails(final Identifier<Group> id) {
-        return ResponseBuilder.ok(groupService.getChildrenOtherGroupConnectionDetails(id));
+    public Response getOtherGroupMembershipDetailsOfTheChildren(final Identifier<Group> id,
+                                                                final GroupChildType groupChildType) {
+        if (groupChildType != null) {
+            if (groupChildType == GroupChildType.JVM) {
+                return ResponseBuilder.ok(groupService.getOtherGroupingDetailsOfJvms(id));
+            } else if (groupChildType == GroupChildType.WEB_SERVER) {
+                return ResponseBuilder.ok(groupService.getOtherGroupingDetailsOfWebServers(id));
+            }
+        }
+
+        final List<String> jvmGroupingDetails = groupService.getOtherGroupingDetailsOfJvms(id);
+        final List<String> webServersGroupingDetails = groupService.getOtherGroupingDetailsOfWebServers(id);
+
+        jvmGroupingDetails.addAll(webServersGroupingDetails);
+
+        return ResponseBuilder.ok(jvmGroupingDetails);
     }
+
 }

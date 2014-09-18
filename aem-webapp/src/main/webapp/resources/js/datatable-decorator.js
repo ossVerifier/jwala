@@ -29,7 +29,8 @@ var decorateTableAsDataTable = function(tableId,
                                         childTableDetails,
                                         parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */,
                                         rootId /* This is the first element id in a hierarchy */,
-                                        initialSortColumn){
+                                        initialSortColumn,
+                                        parentItemName){
 
     var self = this;
 
@@ -116,7 +117,8 @@ var decorateTableAsDataTable = function(tableId,
                                                           full,
                                                           expandIcon,
                                                           collapseIcon,
-                                                          editCallback);
+                                                          editCallback,
+                                                          parentItemName);
                         }
                     } else {
                         renderStr = renderComponents(tableId,
@@ -129,7 +131,8 @@ var decorateTableAsDataTable = function(tableId,
                                                      full,
                                                      expandIcon,
                                                      collapseIcon,
-                                                     editCallback);
+                                                     editCallback,
+                                                     parentItemName);
                         return renderStr;
                     }
                     return "<div style='overflow:hidden;text-align:right'>" + renderStr + "</div>"
@@ -215,7 +218,8 @@ var renderComponents = function(tableId,
                                 full,
                                 expandIcon,
                                 collapseIcon,
-                                editCallback) {
+                                editCallback,
+                                parentItemName) {
     var renderedComponent;
 
     if (item.tocType === "space") {
@@ -231,7 +235,8 @@ var renderComponents = function(tableId,
                                                         type,
                                                         full,
                                                         expandIcon,
-                                                        collapseIcon);
+                                                        collapseIcon,
+                                                        parentItemName);
     } else if (item.tocType === "array") {
         renderedComponent = renderArray(item, data);
         if (renderedComponent.length > item.maxDisplayTextLen) {
@@ -350,6 +355,7 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
                                                childTableDetails:childTableDetails,
                                                rowSubComponentContainerClassName:"row-sub-component-container",
                                                parentItemId:full.id.id,
+                                               parentItemName:full.name,
                                                dataTable:$("#" + tableId).dataTable(),
                                                rootId:theRootId});
 

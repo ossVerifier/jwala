@@ -1,14 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -91,8 +83,17 @@ public interface GroupServiceRest {
 //    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
     Response getCurrentJvmStates(@BeanParam final GroupIdsParameterProvider aGroupIdsParameterProvider);
 
+    /**
+     * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)
+     * Note: The group specified by id will not be included hence the word "Other" in the method name.
+     *
+     * @param id the id of the group
+     * @param groupChildType the child type to get details on
+     * @return membership details of a group's children
+     */
     @GET
     @Path("/{groupId}/children/otherGroup/connectionDetails")
-    Response getChildrenOtherGroupConnectionDetails(@PathParam("groupId") final Identifier<Group> id);
+    Response getOtherGroupMembershipDetailsOfTheChildren(@PathParam("groupId") final Identifier<Group> id,
+                                                         @QueryParam("groupChildType") final GroupChildType groupChildType);
 
 }
