@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -260,5 +261,46 @@ public class GroupServiceRestImplTest {
         assertTrue(content instanceof CurrentGroupState);
 
         // act of calling the service has been verified because it was stubbed with when.
+    }
+
+    @Test
+    public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeNull() {
+        final List<String> jvmMsgs = new ArrayList<>();
+        jvmMsgs.add("jvm message");
+        final List<String> webServerMsgs = new ArrayList<>();
+        jvmMsgs.add("web server message");
+        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvmMsgs);
+        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServerMsgs);
+        final Response response = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), null);
+        assertEquals(response.getStatus(), 200);
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("[jvm message, web server message]",
+                     applicationResponse.getApplicationResponseContent().toString());
+    }
+
+    @Test
+    public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeJvm() {
+        final List<String> jvmMsgs = new ArrayList<>();
+        jvmMsgs.add("jvm message");
+        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvmMsgs);
+        final Response response =
+                cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.JVM);
+        assertEquals(response.getStatus(), 200);
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("[jvm message]",
+                applicationResponse.getApplicationResponseContent().toString());
+    }
+
+    @Test
+    public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeWebServer() {
+        final List<String> webServerMsgs = new ArrayList<>();
+        webServerMsgs.add("web server message");
+        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServerMsgs);
+        final Response response
+            = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.WEB_SERVER);
+        assertEquals(response.getStatus(), 200);
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("[web server message]",
+                applicationResponse.getApplicationResponseContent().toString());
     }
 }

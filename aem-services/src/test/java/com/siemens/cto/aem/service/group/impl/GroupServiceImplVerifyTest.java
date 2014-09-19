@@ -1,23 +1,26 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -153,6 +156,53 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(command, times(1)).validateCommand();
         verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
+    }
+
+    @Test
+    public void testGetOtherGroupingDetailsOfJvms() {
+        final Set<LiteGroup> groupSet = new HashSet<>();
+        groupSet.add(new LiteGroup(new Identifier<Group>("1"), "Group1"));
+        groupSet.add(new LiteGroup(new Identifier<Group>("2"), "Group2"));
+        groupSet.add(new LiteGroup(new Identifier<Group>("3"), "Group3"));
+
+        final Set<Jvm> jvmSet = new HashSet<>();
+        jvmSet.add(new Jvm(new Identifier<Jvm>("1"), "Jvm1", null, groupSet, null, null, null, null, null, null));
+
+        final Group group = new Group(new Identifier<Group>("1"), "Group1" , jvmSet);
+
+        when(groupPersistenceService.getGroup(any(Identifier.class), eq(false))).thenReturn(group);
+
+        final List<String> otherGroupingDetailsOfJvm = impl.getOtherGroupingDetailsOfJvms(new Identifier<Group>("1"));
+        assertTrue(otherGroupingDetailsOfJvm.size() == 1);
+        assertTrue("Jvm1 is a member of Group2,Group3".equals(otherGroupingDetailsOfJvm.get(0)) ||
+                   "Jvm1 is a member of Group3,Group2".equals(otherGroupingDetailsOfJvm.get(0)));
+    }
+
+    @Test
+    public void testGetOtherGroupingDetailsOfWebServers() {
+        final List<Group> groupSet = new ArrayList<>();
+        groupSet.add(new Group(new Identifier<Group>("2"), "Group2"));
+        groupSet.add(new Group(new Identifier<Group>("3"), "Group3"));
+
+        final Set<WebServer> webServerSet = new HashSet<>();
+        webServerSet.add(new WebServer(new Identifier<WebServer>("1"),
+                                       groupSet,
+                                       "WebServer1",
+                                       null,
+                                       null,
+                                       null,
+                                       null,
+                                       null));
+
+        groupSet.add(new Group(new Identifier<Group>("1"), "Group1", new HashSet<Jvm>(), webServerSet, null));
+
+        when(groupPersistenceService.getGroup(any(Identifier.class), eq(true))).thenReturn(groupSet.get(2));
+
+        final List<String> otherGroupingDetailsOfWebServer =
+                impl.getOtherGroupingDetailsOfWebServers(new Identifier<Group>("1"));
+        assertTrue(otherGroupingDetailsOfWebServer.size() == 1);
+        assertTrue("WebServer1 is a member of Group2,Group3".equals(otherGroupingDetailsOfWebServer.get(0)) ||
+                   "WebServer1 is a member of Group3,Group2".equals(otherGroupingDetailsOfWebServer.get(0)));
     }
 
 }
