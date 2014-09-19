@@ -113,7 +113,7 @@ public class GroupServiceImpl implements GroupService {
     public List<String> getOtherGroupingDetailsOfJvms(Identifier<Group> id) {
         final String memberOfStr = " is a member of ";
         final List<String> otherGroupConnectionDetails = new ArrayList<>();
-        final Group group = groupPersistenceService.getGroup(id, true);
+        final Group group = groupPersistenceService.getGroup(id, false);
         final Set<Jvm> jvms = group.getJvms();
 
         for (Jvm jvm : jvms) {
