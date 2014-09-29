@@ -201,7 +201,7 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="35"/></td>
+                                <td><input name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
                             </tr>
                             <tr>
                                 <td>*Host</td>
@@ -212,7 +212,7 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="35"/></td>
+                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="255"/></td>
                             </tr>
                             <tr>
                                 <td>*HTTP Port</td>
