@@ -708,7 +708,8 @@ var GroupOperationsDataTable = React.createClass({
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
                 window.location.protocol + "//" +
-                data.hostName + ":" + data.httpPort + "/manager/";
+                data.hostName + ":" +
+                (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
     onClickThreadDump: function(data) {
         var jvmId = data.id.id;
