@@ -72,7 +72,7 @@ public class CreateWebServerCommandTest {
     @Test(expected = BadRequestException.class)
     public void testInvalidFileSystemPath() {
         final CreateWebServerCommand invalidPath =
-                new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0, new Path("/abc"), new FileSystemPath("/some-dir/httpd.conf"));
+                new CreateWebServerCommand(groupIdsFour, "otherName", HOST, 0, 0, new Path("/abc"), new FileSystemPath("/some-dir/httpd.conf/"));
         invalidPath.validateCommand();
     }
 }
