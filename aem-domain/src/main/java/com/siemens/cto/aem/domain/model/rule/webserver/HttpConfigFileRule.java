@@ -22,11 +22,12 @@ public class HttpConfigFileRule implements Rule {
     public boolean isValid() {
 
         /**
-         * Note: Path is not absolute since config file can be
+         * Note: Path IS absolute since config file can be
          *       d:/some-dir/httpd.conf or /cygdrive/some-dir/httpd-conf
+         *       Both of which are interpreted as absolute paths by Java.
          */
         return (fileSystemPath != null) &&
-               !fileSystemPath.isAbsolute() &&
+                fileSystemPath.isAbsolute() &&
                !fileSystemPath.getPath().endsWith("/") &&
                !fileSystemPath.getPath().endsWith("\\");
     }
