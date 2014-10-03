@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.domain.model.path;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -10,6 +11,7 @@ public class Path implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Pattern absoluteRegEx = Pattern.compile("^(([a-zA-Z]:)|([\\/])).*");
     private final String path;
 
     public Path(final String thePath) {
@@ -17,7 +19,7 @@ public class Path implements Serializable {
     }
 
     public boolean isAbsolute() {
-        return path.startsWith("/");
+        return absoluteRegEx.matcher(path).matches();
     }
 
     public String getPath() {
