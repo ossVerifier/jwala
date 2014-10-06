@@ -147,17 +147,21 @@
 	</int:chain>
 
 	<int:chain id="jvmCompletedSuccessStateRequestChain"
-		input-channel="jvmCompletedWithoutMessageStateRequest">
-		<int:outbound-channel-adapter
+		input-channel="jvmCompletedWithoutMessageStateRequest"
+		output-channel="nullChannel">
+		<int:transformer
 			id="jvmCompletedStateRequestOutboundAdapter"
 			expression="@jvmStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})" />
 	</int:chain>
 
 	<int:chain id="jvmCompletedFailureStateRequestChain"
 		input-channel="jvmCompletedWithMessageStateRequest">
-		<int:outbound-channel-adapter
-			id="jvmCompletedStateRequestOutboundAdapter"
+		<int:transformer
+			id="jvmCompletedStateRequestNotifyingTransformer"
 			expression="@jvmStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])" />
+		<int:outbound-channel-adapter
+		    id="groupFsmOutboundAdapter"
+		    expression="@stateNotification.jvmStateChanged(payload)" />
 	</int:chain>
 
 	<int:gateway id="jvmExplicitStateGateway"

@@ -130,12 +130,15 @@
         <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>
     </int:chain>
 
-    <int:chain id="completedSuccessWebServerStateRequestChain" input-channel="completedWithoutMessageWebServerStateRequest">
-        <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
+    <int:chain id="completedSuccessWebServerStateRequestChain" input-channel="completedWithoutMessageWebServerStateRequest" output-channel="nullChannel">
+        <int:transformer id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})"/>
     </int:chain>
 
     <int:chain id="completedFailureWebServerStateRequestChain" input-channel="completedWithMessageWebServerStateRequest">
-        <int:outbound-channel-adapter id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])"/>
+        <int:transformer id="completedWebServerStateRequestOutboundAdapter" expression="@webServerStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])"/>
+        <int:outbound-channel-adapter
+            id="groupFsmOutboundAdapter"
+            expression="@stateNotification.webServerStateChanged(payload)" />
     </int:chain>
 
     <int:gateway id="explicitWebServerStateGateway" service-interface="com.siemens.cto.aem.service.webserver.WebServerStateGateway">

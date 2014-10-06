@@ -26,7 +26,7 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
         stateType = theStateType;
     }
 
-    public void setState(final Identifier<S> anId,
+    public CurrentState<S, T> setState(final Identifier<S> anId,
                          final T aNewState,
                          final DateTime anAsOf) {
 
@@ -34,6 +34,8 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
                                                                       aNewState,
                                                                       anAsOf);
         setState(newCurrentState);
+        
+        return newCurrentState;
     }
 
     @Deprecated
@@ -48,7 +50,7 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
         setState(newCurrentState);
     }
 
-    public void setStateWithMessageAndException(final Identifier<S> anId,
+    public CurrentState<S, T> setStateWithMessageAndException(final Identifier<S> anId,
             final T aNewState,
             final DateTime anAsOf,
             final String aMessage,
@@ -89,6 +91,8 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
                                                                  anAsOf,
                                                                  message);
         setState(newCurrentState);
+        
+        return newCurrentState;
     }
 
     /**
@@ -122,11 +126,11 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
         printer.print(aMessage);
     }
 
-    
-    void setState(final CurrentState<S, T> aNewCurrentState) {
+    protected SetStateCommand<S, T> setState(final CurrentState<S, T> aNewCurrentState) {
         final SetStateCommand<S, T> command = createCommand(aNewCurrentState);
         service.setCurrentState(command,
                                 User.getSystemUser());
+        return command;
     }
 
     CurrentState<S, T> createCurrentState(final Identifier<S> anId,
