@@ -400,7 +400,8 @@ var JvmConfigForm = React.createClass({
                     range: [1, 65535]
                 },
                 "shutdownPort": {
-                    range: [1, 65535]
+                    range: [-1, 65535],
+                    notEqualTo: 0
                 },
                 "ajpPort": {
                     range: [1, 65535]

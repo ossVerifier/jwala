@@ -68,5 +68,9 @@ var ConfigureTabs = React.createClass({
 });
 
 $(document).ready(function(){
+    jQuery.validator.addMethod("notEqualTo", function(v, e, p) {  
+      return this.optional(e) || v != p;
+    }, "Please specify a different value");
+
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
