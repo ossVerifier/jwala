@@ -12,6 +12,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
+import com.siemens.cto.aem.domain.model.rule.ShutdownPortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
@@ -90,7 +91,7 @@ public class CreateJvmCommand implements Serializable, Command {
                           new PortNumberRule(httpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
                           new PortNumberRule(redirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
-                          new PortNumberRule(shutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
+                          new ShutdownPortNumberRule(shutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
                           new PortNumberRule(ajpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 

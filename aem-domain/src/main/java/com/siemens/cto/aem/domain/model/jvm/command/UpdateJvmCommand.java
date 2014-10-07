@@ -19,6 +19,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
+import com.siemens.cto.aem.domain.model.rule.ShutdownPortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
@@ -114,7 +115,7 @@ public class UpdateJvmCommand implements Serializable, Command {
                           new PortNumberRule(newHttpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(newHttpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
                           new PortNumberRule(newRedirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
-                          new PortNumberRule(newShutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
+                          new ShutdownPortNumberRule(newShutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
                           new PortNumberRule(newAjpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 

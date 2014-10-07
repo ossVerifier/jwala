@@ -26,6 +26,10 @@ public class PortNumberRule implements Rule {
         this.nullable = nullable;
     }
 
+    protected Integer getPort() { 
+        return port;
+    }
+    
     @Override
     public boolean isValid() {
         if (nullable && port == null) {
