@@ -32,7 +32,9 @@ public class JpaCurrentState implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar asOf;
 
-    @Column(name = "MESSAGE", length=20000)
+    // @Column(name = "MESSAGE", columnDefinition="CLOB") 
+    // @Lob
+    @Column(name = "MESSAGE", length=2147483647)
     private String message;
 
     public JpaCurrentStateId getId() {
