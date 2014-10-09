@@ -22,6 +22,9 @@ var ConfirmDeleteModalDialog = React.createClass({
             title: "Confirmation Dialog Box",
             height: "auto",
             width: "auto",
+            close: function () {
+                dialogConfirm.props.btnClickedCallback("no");
+            },
             buttons: {
                 "Yes": function () {
                     $(thisDomNode).dialog("destroy");
