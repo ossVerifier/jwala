@@ -339,13 +339,17 @@ var GroupOperationsDataTable = React.createClass({
                                  hRefCallback:this.buildHRef},
                                  {tocType:"space"},
                                  {tocType:"space"},
-                                 {sTitle:"",
-                                 mData:null,
-                                 tocType:"link",
-                                 linkLabel:"Thread Dump",
-                                 onClickCallback:this.onClickThreadDump},
-                                 {tocType:"space"},
-                                 {tocType:"space"},
+                                 {id:"threadDump",
+                                  sTitle:"Thread Dump",
+                                  mData:null,
+                                  tocType:"button",
+                                  btnLabel:"",
+                                  btnCallback:this.onClickThreadDump,
+                                  className:"inline-block",
+                                  customSpanClassName:"ui-icon ui-icon-thread-dump",
+                                  buttonClassName:"ui-button-height"},
+                                  {tocType:"space"},
+
                                  {sTitle:"",
                                   mData:null,
                                   tocType:"button",
@@ -718,9 +722,8 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" +
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
-    onClickThreadDump: function(data) {
-        var jvmId = data.id.id;
-        var url = "jvmCommand?jvmId=" + jvmId + "&operation=threadDump";
+    onClickThreadDump: function(id, unused1) {
+        var url = "jvmCommand?jvmId=" + id + "&operation=threadDump";
         window.open(url)
     },
     jvmErrorAlertCallback: function(alertDlgDivId, jvm) {
