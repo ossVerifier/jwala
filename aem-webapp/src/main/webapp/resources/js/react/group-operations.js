@@ -22,7 +22,7 @@ var GroupOperations = React.createClass({
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
-                    <table>
+                    <table style={{width:"1084px"}}>
                         <tr>
                             <td>
                                 <div>
@@ -185,27 +185,29 @@ var GroupOperationsDataTable = React.createClass({
        return this.hasNoData;
     },
     render: function() {
-        var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
-                             {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                             {sTitle:"Group Name", mData:"name"},
+        var groupTableDef = [{sTitle:"Group ID", mData:"id.id", bVisible:false},
+                             {sTitle:"", mData: "jvms", tocType:"control", colWidth:"2%"},
+                             {sTitle:"Group Name", mData:"name", colWidth:"78%"},
                              [{sTitle:"",
                                mData:null,
                                tocType:"button",
                                btnLabel:"Start Group",
                                btnCallback:this.startGroup,
                                className:"inline-block",
-                               extraDataToPassOnCallback:"name"},
+                               extraDataToPassOnCallback:"name",
+                               colWidth:5},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
                                btnLabel:"Stop Group",
                                btnCallback:this.stopGroup,
                                className:"inline-block",
-                               extraDataToPassOnCallback:"name"}],
+                               extraDataToPassOnCallback:"name",
+                               colWidth:5}],
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"75px"}];
+                               colWidth:"10%"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {sTitle:"Name", mData:"name"},

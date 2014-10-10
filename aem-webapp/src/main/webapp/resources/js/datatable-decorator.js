@@ -78,13 +78,19 @@ var decorateTableAsDataTable = function(tableId,
                  * And that includes the ExpandCollapseControl which has an mData!
                  * This is because every cell can only have one mData.
                  */
-                var theItem = {"sTitle": null, "mData": null};
+                var theItem;
+                var colWidth = 0;
                 // look for the item with the mData
                 for (var i = 0; i < item.length; i++) {
-                    if (item[i].mData !== undefined && item[i].tocType === undefined) {
+                    if (theItem === undefined && item[i].mData !== undefined && item[i].tocType === undefined) {
                         theItem = item[i];
-                        break;
                     }
+                    colWidth += item[i].colWidth !== undefined ? item[i].colWidth : 0;
+                }
+
+                if (theItem === undefined) {
+                    // Init to empty item
+                    theItem = {"sTitle": null, "mData": null};
                 }
 
                 aoColumnDefs[itemIndex] = {"sTitle": theItem.sTitle,
@@ -93,6 +99,10 @@ var decorateTableAsDataTable = function(tableId,
 
                 aoColumnDefs[itemIndex].sClass = "nowrap";
                 aoColumnDefs[itemIndex].bSortable = false;
+
+                if (colWidth !== 0) {
+                    aoColumnDefs[itemIndex].sWidth = colWidth + "%";
+                }
             }
 
             if (!isArray(item) && item.mRender !== undefined) {
