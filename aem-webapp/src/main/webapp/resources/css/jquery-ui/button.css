@@ -36,3 +36,7 @@
 .ui-icon-heap-dump {
     background-image: url(../../img/icons/heap-dump.png) !important
 }
+
+.ui-icon-health-check {
+    background-image: url(../../img/icons/health-check.png) !important
+}

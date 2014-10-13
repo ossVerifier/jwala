@@ -339,6 +339,16 @@ var GroupOperationsDataTable = React.createClass({
                                  hRefCallback:this.buildHRef},
                                  {tocType:"space"},
                                  {tocType:"space"},
+                                 {id:"healthCheck",
+                                  sTitle:"Health Check",
+                                  mData:null,
+                                  tocType:"button",
+                                  btnLabel:"",
+                                  btnCallback:this.onClickHealthCheck,
+                                  className:"inline-block",
+                                  customSpanClassName:"ui-icon ui-icon-health-check",
+                                  buttonClassName:"ui-button-height"},
+                                  {tocType:"space"},
                                  {id:"threadDump",
                                   sTitle:"Thread Dump",
                                   mData:null,
@@ -723,6 +733,14 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" +
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
+    onClickHealthCheck: function(unused1, unused2) {
+        var url = window.location.protocol + "//" +
+                  window.location.hostname +
+                  ":" +
+                  window.location.port +
+                  tocVars.healthCheckApp;
+        window.open(url)
+    },
     onClickThreadDump: function(id, unused1) {
         var url = "jvmCommand?jvmId=" + id + "&operation=threadDump";
         window.open(url)
