@@ -32,3 +32,7 @@
 .ui-icon-thread-dump {
     background-image: url(../../img/icons/thread-dump.png) !important
 }
+
+.ui-icon-heap-dump {
+    background-image: url(../../img/icons/heap-dump.png) !important
+}
