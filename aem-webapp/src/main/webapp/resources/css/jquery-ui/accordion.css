@@ -27,3 +27,12 @@
 .ui-accordion .ui-accordion-header {
     margin-top: 0px;
 }
+
+.ui-accordion .ui-accordion-icons {
+    padding-left: 1.8em;
+}
+
+/* CSS setting that affects title position of accordion with buttons */
+.accordion-title-text-position {
+    left: 1.8em;
+}

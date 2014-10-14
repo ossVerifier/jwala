@@ -101,7 +101,7 @@ var decorateTableAsDataTable = function(tableId,
                 aoColumnDefs[itemIndex].bSortable = false;
 
                 if (colWidth !== 0) {
-                    aoColumnDefs[itemIndex].sWidth = colWidth + "%";
+                    aoColumnDefs[itemIndex].sWidth = colWidth + "px";
                 }
             }
 

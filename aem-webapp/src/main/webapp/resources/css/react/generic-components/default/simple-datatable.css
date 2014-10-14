@@ -19,3 +19,11 @@ table.simple-data-table tbody > tr > td {
 table.simple-data-table tbody > tr > td.row-sub-component-container {
     background: #E5E5E5
 }
+
+table.simple-data-table thead th {
+    padding: 1px 4px 0px 5px !important
+}
+
+table.simple-data-table td {
+    padding: 1px 4px 0px 5px !important
+}

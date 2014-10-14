@@ -185,9 +185,9 @@ var GroupOperationsDataTable = React.createClass({
        return this.hasNoData;
     },
     render: function() {
-        var groupTableDef = [{sTitle:"Group ID", mData:"id.id", bVisible:false},
-                             {sTitle:"", mData: "jvms", tocType:"control", colWidth:"2%"},
-                             {sTitle:"Group Name", mData:"name", colWidth:"78%"},
+        var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
+                             {sTitle:"Group ID", mData:"id.id", bVisible:false},
+                             {sTitle:"Group Name", mData:"name", colWidth:"600px"},
                              [{sTitle:"",
                                mData:null,
                                tocType:"button",
@@ -195,7 +195,7 @@ var GroupOperationsDataTable = React.createClass({
                                btnCallback:this.startGroup,
                                className:"inline-block",
                                extraDataToPassOnCallback:"name",
-                               colWidth:5},
+                               colWidth:70},
                               {sTitle:"",
                                mData:null,
                                tocType:"button",
@@ -203,13 +203,14 @@ var GroupOperationsDataTable = React.createClass({
                                btnCallback:this.stopGroup,
                                className:"inline-block",
                                extraDataToPassOnCallback:"name",
-                               colWidth:5}],
+                               colWidth:70}],
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"10%"}];
+                               colWidth:"70px"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
+                                           {mData:null, colWidth:"10px"},
                                            {sTitle:"Name", mData:"name"},
                                            {sTitle:"Host", mData:"host"},
                                            {sTitle:"HTTP", mData:"port"},
@@ -288,6 +289,7 @@ var GroupOperationsDataTable = React.createClass({
                                             initialSortColumn: [[1, "asc"]]};
 
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
+                                        {mData:null, colWidth:"10px"},
                                         {sTitle:"Name", mData:"name"},
                                         {sTitle:"War Path", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderWebAppRowData},
                                         {sTitle:"Context", mData:"webAppContext"}];
@@ -322,6 +324,7 @@ var GroupOperationsDataTable = React.createClass({
                                     initialSortColumn: [[2, "asc"]]};
 
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
+                                {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                 {sTitle:"Name", mData:"jvmName"},
                                 {sTitle:"Host", mData:"hostName"},
@@ -408,6 +411,7 @@ var GroupOperationsDataTable = React.createClass({
                                       webAppOfGrpChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
+                             className="dataTable operationGroupTable"
                              tableDef={groupTableDef}
                              data={this.props.data}
                              expandIcon="public-resources/img/react/components/details-expand.png"

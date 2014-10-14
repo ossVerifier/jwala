@@ -3,7 +3,7 @@ var TocDataTable = React.createClass({
     dataTable: null,
     render: function() {
         if (this.props.className !== undefined) {
-            $.fn.dataTableExt.oStdClasses = {sTable:this.props.className,
+            $.fn.dataTableExt.oStdClasses = {sTable:this.props.className /* This will not be set if applyThemeRoller is true */,
                                              sSortAsc:$.fn.dataTableExt.oStdClasses.sSortAsc,
                                              sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
         }
@@ -54,6 +54,10 @@ var TocDataTable = React.createClass({
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
             this.dataTable.fnSort(this.props.initialSortColumn);
+        }
+
+        if (this.props.applyThemeRoller !== false && this.props.className !== "") {
+            $("#" + this.props.tableId).attr("class", this.props.className);
         }
     },
     rowSelectCallback: function() {
