@@ -335,12 +335,16 @@ var GroupOperationsDataTable = React.createClass({
                                  tocType:"array",
                                  displayProperty:"name",
                                  maxDisplayTextLen:20},
-                                [{sTitle:"",
-                                 mData:null,
-                                 tocType:"link",
-                                 linkLabel:"Manager",
-                                 hRefCallback:this.buildHRef},
-                                 {tocType:"space"},
+                                [{id:"tomcatManager",
+                                  sTitle:"Manager",
+                                  mData:null,
+                                  tocType:"button",
+                                  btnLabel:"",
+                                  btnCallback:this.onClickMgr,
+                                  className:"inline-block",
+                                  customSpanClassName:"ui-icon ui-icon-mgr",
+                                  buttonClassName:"ui-button-height",
+                                  extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
                                  {tocType:"space"},
                                  {id:"healthCheck",
                                   sTitle:"Health Check",
@@ -737,6 +741,13 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" +
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
+    onClickMgr: function(unused1, unused2, data) {
+        var url = "idp?saml_redirectUrl=" +
+                  window.location.protocol + "//" +
+                  data.hostName + ":" +
+                  (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
+        window.open(url);
+    },
     onClickHealthCheck: function(unused1, unused2) {
         var url = window.location.protocol + "//" +
                   window.location.hostname +
