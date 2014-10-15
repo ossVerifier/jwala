@@ -48,7 +48,7 @@
 	<int:inbound-channel-adapter id="jvmStateInitiator"
 		ref="jvmProvider" method="getAllJvms" channel="unsplitHeartbeatJvms"
 		phase="1000" auto-startup="false">
-		<int:poller fixed-delay="30" time-unit="SECONDS" />
+		<int:poller fixed-delay="5" time-unit="SECONDS" />
 	</int:inbound-channel-adapter>
 
 	<int:chain id="jvmRequestSplitter" input-channel="unsplitHeartbeatJvms"
