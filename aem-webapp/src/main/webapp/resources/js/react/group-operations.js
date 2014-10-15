@@ -356,7 +356,8 @@ var GroupOperationsDataTable = React.createClass({
                                   btnCallback:this.onClickHealthCheck,
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-health-check",
-                                  buttonClassName:"ui-button-height"},
+                                  buttonClassName:"ui-button-height",
+                                  extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
                                   {tocType:"space"},
                                  {id:"threadDump",
                                   sTitle:"Thread Dump",
@@ -750,11 +751,11 @@ var GroupOperationsDataTable = React.createClass({
                   (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
         window.open(url);
     },
-    onClickHealthCheck: function(unused1, unused2) {
+    onClickHealthCheck: function(unused1, unused2, data) {
         var url = window.location.protocol + "//" +
-                  window.location.hostname +
+                  data.hostName +
                   ":" +
-                  window.location.port +
+                  (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) +
                   tocVars.healthCheckApp;
         window.open(url)
     },
