@@ -187,7 +187,7 @@ var GroupOperationsDataTable = React.createClass({
     render: function() {
         var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                              {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                             {sTitle:"Group Name", mData:"name", colWidth:"600px"},
+                             {sTitle:"Group Name", mData:"name", colWidth:"650px"},
                              [{sTitle:"",
                                mData:null,
                                tocType:"button",
@@ -207,24 +207,25 @@ var GroupOperationsDataTable = React.createClass({
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"70px"}];
+                               colWidth:"90px"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
-                                           {sTitle:"Name", mData:"name"},
-                                           {sTitle:"Host", mData:"host"},
-                                           {sTitle:"HTTP", mData:"port"},
-                                           {sTitle:"HTTPS", mData:"httpsPort"},
-                                           {sTitle:"Status Path", mData:"statusPath.path"},
+                                           {sTitle:"Name", mData:"name", colWidth:"250px"},
+                                           {sTitle:"Host", mData:"host", colWidth:"250px"},
+                                           {sTitle:"HTTP", mData:"port", colWidth:"40px"},
+                                           {sTitle:"HTTPS", mData:"httpsPort", colWidth:"40px"},
+                                           {sTitle:"Status Path", mData:"statusPath.path", colWidth:"60px"},
                                            {sTitle:"Group",
                                             mData:"groups",
                                             tocType:"array",
                                             displayProperty:"name",
-                                            maxDisplayTextLen:20},
-                                           [{sTitle:"",
+                                            maxDisplayTextLen:20,
+                                            colWidth:"120px"},
+                                           [{sTitle:"Load Balancer",
                                              mData:null,
                                              tocType:"link",
-                                             linkLabel:"Load Balancer",
+                                             linkLabel:"LB",
                                              hRefCallback:this.buildHRefLoadBalancerConfig},
                                             {tocType:"space"},
                                             {tocType:"space"},
@@ -265,7 +266,7 @@ var GroupOperationsDataTable = React.createClass({
                                            {sTitle:"State",
                                             mData:null,
                                             mRender: this.getStateForWebServer,
-                                            colWidth:"75px"}];
+                                            colWidth:"105px"}];
 
         var webServerOfGrpChildTableDetails = {tableIdPrefix:"ws-child-table_",
                                                className:"simple-data-table",
@@ -326,15 +327,16 @@ var GroupOperationsDataTable = React.createClass({
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                {sTitle:"Name", mData:"jvmName"},
-                                {sTitle:"Host", mData:"hostName"},
-                                {sTitle:"Status Path", mData:"statusPath.path"},
-                                {sTitle:"HTTP", mData:"httpPort"},
+                                {sTitle:"Name", mData:"jvmName", colWidth:"250px"},
+                                {sTitle:"Host", mData:"hostName", colWidth:"250px"},
+                                {sTitle:"Status Path", mData:"statusPath.path", colWidth:"60px"},
+                                {sTitle:"HTTP", mData:"httpPort", colWidth:"40px"},
                                 {sTitle:"Group",
                                  mData:"groups",
                                  tocType:"array",
                                  displayProperty:"name",
-                                 maxDisplayTextLen:20},
+                                 maxDisplayTextLen:20,
+                                 colWidth:"120px"},
                                 [{id:"tomcatManager",
                                   sTitle:"Manager",
                                   mData:null,
@@ -406,7 +408,7 @@ var GroupOperationsDataTable = React.createClass({
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm,
-                                 colWidth:"75px"}];
+                                 colWidth:"105px"}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
