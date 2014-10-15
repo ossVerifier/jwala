@@ -192,7 +192,8 @@ LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so
 #LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so
 
 SSLSessionCache shmcb:logs/ssl_cache_shm
-SSLPassPhraseDialog "exec:../data/security/apache/authorize.bat"
+#Note: we are not password protecting our keys
+#SSLPassPhraseDialog "exec:../siemens/data/security/apache/authorize.bat"
 
 <VirtualHost *:443>
 DocumentRoot "htdocs"
@@ -247,8 +248,8 @@ SSLCipherSuite HIGH:MEDIUM:!aNULL:+SHA1:+MD5:+HIGH:+MEDIUM
 
 SSLSessionCacheTimeout 300
 
-SSLCertificateFile ../data/security/id/${webServer.host}.cer
-SSLCertificateKeyFile ../data/security/id/${webServer.host}.key
+SSLCertificateFile ../siemens/data/security/id/${webServer.host}.cer
+SSLCertificateKeyFile ../siemens/data/security/id/${webServer.host}.key
 
 SSLVerifyClient none
 
@@ -259,14 +260,14 @@ SSLProxyVerifyDepth 1
 
 # Do not check expiration, to avoid outages
 SSLProxyCheckPeerExpire off
-SSLProxyCACertificatePath ../data/security/openssl/
+SSLProxyCACertificatePath ../siemens/data/security/openssl/
 
 #The following option must be set if you have a locally signed certificate
-#SSLProxyVerify none
+SSLProxyVerify optional_no_ca
 
 # Check names and CN so that we must use machine specific certs
-SSLProxyCheckPeerName on
-SSLProxyCheckPeerCN on
+SSLProxyCheckPeerName off
+SSLProxyCheckPeerCN off
 
 <IfModule mime.c>
 AddType application/x-x509-ca-cert.crt
