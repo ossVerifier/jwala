@@ -96,7 +96,7 @@
 		request-factory="httpRequestFactory" http-method="GET" url-expression="payload" />
 
 	<int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest"
-		output-channel="jvmCompletedWithMessageStateRequest">
+		output-channel="jvmCompletedWithoutMessageStateRequest">
 		<int:header-enricher id="jvmFailedHttpHeaderEnricher">
 			<int:header name="jvmId"
 				expression="payload.getFailedMessage().headers['jvmId']" />
@@ -110,7 +110,7 @@
 			expression="headers['jvmId']" />
 	</int:chain>
 
-	<int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest"
+    <int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest"
 		output-channel="jvmCompletedWithoutMessageStateRequest">
 		<int:header-enricher id="jvmSuccessfulHttpHeaderEnricher">
 			<int:header name="reachableState"
@@ -146,7 +146,7 @@
 			expression="headers['jvmId']" />
 	</int:chain>
 
-	<int:chain id="jvmCompletedSuccessStateRequestChain"
+	<int:chain id="jvmCompletedStateRequestChain"
 		input-channel="jvmCompletedWithoutMessageStateRequest"
 		output-channel="nullChannel">
 		<int:transformer
@@ -154,9 +154,9 @@
 			expression="@jvmStateServiceFacade.setState(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()})" />
 	</int:chain>
 
-	<int:chain id="jvmCompletedFailureStateRequestChain"
+	<int:chain id="jvmFailedStateRequestChain"
 		input-channel="jvmCompletedWithMessageStateRequest">
-		<int:transformer
+        <int:transformer
 			id="jvmCompletedStateRequestNotifyingTransformer"
 			expression="@jvmStateServiceFacade.setStateWithMessageAndException(payload, headers['reachableState'], {T(org.joda.time.DateTime).now()}, headers['failureMessage'], headers['failureException'])" />
 		<int:outbound-channel-adapter
