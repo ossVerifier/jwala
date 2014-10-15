@@ -197,6 +197,12 @@ SSLPassPhraseDialog "exec:../data/security/apache/authorize.bat"
 <VirtualHost *:443>
 DocumentRoot "htdocs"
 
+#IPINS
+LoadModule rewrite_module modules/mod_rewrite.so
+RewriteEngine on      
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
+RewriteRule .* - [F]    
+
 SSLEngine on
 SSLOptions +StrictRequire
 
@@ -280,6 +286,12 @@ ProxyPass ${it.mount.replaceAll(" ", "")} balancer://lb-${it.name.replaceAll(" "
 <VirtualHost *:80>
 DocumentRoot "htdocs"
 
+#IPINS
+LoadModule rewrite_module modules/mod_rewrite.so
+RewriteEngine on      
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
+RewriteRule .* - [F]    
+
 SSLEngine off
 
 # Export the two Apache standard status page routes
@@ -330,7 +342,7 @@ ProxySet nofailover=On
         def hostName = it.hostName.replaceAll(" ", "")
         def jvmName = it.jvmName.replaceAll(" ", "")
 %>
-BalancerMember https://${hostName}:${it.httpsPort}${ctxPath} route=${jvmName}
+BalancerMember https://${hostName}:${it.httpsPort}${ctxPath} route=${jvmName} ping=250ms
 <%  } %>
 </Proxy>
 <% } %>
@@ -347,7 +359,7 @@ ProxySet nofailover=On
         def jvmName = it.jvmName.replaceAll(" ", "")
         def jvmAjpPort = it.ajpPort
 %>
-BalancerMember ajp://${hostName}:${jvmAjpPort}/ route=${jvmName}
+BalancerMember ajp://${hostName}:${jvmAjpPort}/ route=${jvmName} ping=250ms
 <%  } %>
 </Proxy>
 
