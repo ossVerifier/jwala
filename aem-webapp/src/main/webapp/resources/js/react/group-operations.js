@@ -369,7 +369,8 @@ var GroupOperationsDataTable = React.createClass({
                                   customSpanClassName:"ui-icon ui-icon-thread-dump",
                                   buttonClassName:"ui-button-height"},
                                   {tocType:"space"},
-                                 {sTitle:"Heap Dump",
+                                 {id:"heapDump",
+                                  sTitle:"Heap Dump",
                                   mData:null,
                                   tocType:"button",
                                   btnLabel:"",
@@ -496,14 +497,19 @@ var GroupOperationsDataTable = React.createClass({
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
    },
-   enableButtonThunk: function(buttonSelector) {
+   enableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
-           $(buttonSelector).button("enable");
+           $(buttonSelector).prop('disabled', false);
+           $(buttonSelector).attr("class",
+           "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
+           $(buttonSelector).find("span").attr("class", "ui-icon ui-icon-heap-dump");
        };
    },
-   disableButtonThunk: function(buttonSelector) {
+   disableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
-           $(buttonSelector).button("disable");
+           $(buttonSelector).prop('disabled', true);
+           $(buttonSelector).attr("class", "busy-button");
+           $(buttonSelector).find("span").removeClass();
        };
    },
    disableEnable: function(buttonSelector, func) {
@@ -522,8 +528,8 @@ var GroupOperationsDataTable = React.createClass({
         };
     },
     disableEnableHeapDumpButton: function(selector, requestTask, requestCallbackTask, errHandler) {
-        var disable = this.disableButtonThunk(selector);
-        var enable = this.enableButtonThunk(selector);
+        var disable = this.disableHeapDumpButtonThunk(selector);
+        var enable = this.enableHeapDumpButtonThunk(selector);
         Promise.method(disable)().then(requestTask).then(requestCallbackTask).caught(errHandler).lastly(enable);
     },
    confirmStartStopGroupDialogBox: function(id, buttonSelector, msg, callbackOnConfirm) {
