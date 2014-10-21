@@ -47,6 +47,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/expand-collapse-control.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/datatable.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/simple-data-table.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/rdatatable.js"></script>
 <script type="text/jsx" src="public-resources/js/react/delete-item-widget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/flashing-button.js"></script>
@@ -57,5 +58,6 @@
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webapp-config.js"></script>
+<script type="text/jsx" src="public-resources/js/react/resources-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/main-area.js"></script>
 <script type="text/jsx" src="public-resources/js/react/error-msg-list.js"></script>
