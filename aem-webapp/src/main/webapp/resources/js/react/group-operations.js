@@ -225,7 +225,7 @@ var GroupOperationsDataTable = React.createClass({
                                            [{sTitle:"Load Balancer",
                                              mData:null,
                                              tocType:"link",
-                                             linkLabel:"Load B",
+                                             linkLabel:"LB",
                                              hRefCallback:this.buildHRefLoadBalancerConfig},
                                             {tocType:"space"},
                                             {tocType:"space"},
