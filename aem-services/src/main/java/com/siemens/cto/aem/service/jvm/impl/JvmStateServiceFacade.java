@@ -46,25 +46,27 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
 
         boolean discard = false;
 
-        // if starting, ignore stopped. If stopping, ignore started.
-        // TODO: we rely on started to exit starting. However, we have no way to leave STARTING to STOPPED in case of failure.
-        switch(currentState.getState()) {
-            case START_REQUESTED:
-                switch(newState.getState()) {
-                    case STOPPED: 
-                        discard = true;
-                    default: break;
-                } break;
-            case STOP_REQUESTED:
-                switch(newState.getState()) {
-                    case STARTED: 
-                        discard = true;
-                    default: break;
-                } break;
-            default:
-                discard = false;        
+        if(currentState != null) {
+            // if starting, ignore stopped. If stopping, ignore started.
+            // TODO: we rely on started to exit starting. However, we have no way to leave STARTING to STOPPED in case of failure.
+            switch(currentState.getState()) {
+                case START_REQUESTED:
+                    switch(newState.getState()) {
+                        case STOPPED: 
+                            discard = true;
+                        default: break;
+                    } break;
+                case STOP_REQUESTED:
+                    switch(newState.getState()) {
+                        case STARTED: 
+                            discard = true;
+                        default: break;
+                    } break;
+                default:
+                    discard = false;        
+            }
         }
-        
+
         if(discard) { 
             LOGGER.debug("Discarding reverse heartbeat; Jvm starting/stopping: {}", aNewCurrentState);                
             return null;
