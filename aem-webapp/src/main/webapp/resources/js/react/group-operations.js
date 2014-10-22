@@ -497,6 +497,16 @@ var GroupOperationsDataTable = React.createClass({
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
    },
+    enableButtonThunk: function(buttonSelector) {
+        return function() {
+            $(buttonSelector).button("enable");
+        };
+    },
+    disableButtonThunk: function(buttonSelector) {
+        return function() {
+            $(buttonSelector).button("disable");
+        };
+    },
    enableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
            $(buttonSelector).prop('disabled', false);
