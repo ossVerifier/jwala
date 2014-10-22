@@ -826,13 +826,11 @@ var GroupOperationsDataTable = React.createClass({
                 }
 
             } else {
-                if (jvmToRender.state.stableState) {
                     this.jvmStateErrorMessages[jvmId] = [];
                     React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
                     React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
                     $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
                     $("." + colComponentClassName).html(jvmToRender.state.stateString);
-                }
             }
 
         } else {
