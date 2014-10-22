@@ -922,13 +922,11 @@ var GroupOperationsDataTable = React.createClass({
                     }
 
                 } else {
-                    if (webServerToRender.state.stableState) {
-                        this.webServerStateErrorMessages[webServerId] = [];
-                        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-                        React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
-                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
-                        $("." + colComponentClassName).html(webServerToRender.state.stateString);
-                    }
+                    this.webServerStateErrorMessages[webServerId] = [];
+                    React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
+                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
+                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
+                    $("." + colComponentClassName).html(webServerToRender.state.stateString);
                 }
 
             } else {
