@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.exception.ExceptionUtil;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -17,9 +19,15 @@ import com.siemens.cto.aem.service.state.StateService;
 
 public abstract class AbstractStateServiceFacade<S, T extends OperationalState> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStateServiceFacade.class);
+
     private final StateType stateType;
     private final StateService<S, T> service;
 
+    protected StateService<S,T> getStateService() {
+        return service;
+    }
+    
     public AbstractStateServiceFacade(final StateService<S, T> theService,
                                       final StateType theStateType) {
         service = theService;
@@ -128,6 +136,12 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
 
     protected SetStateCommand<S, T> setState(final CurrentState<S, T> aNewCurrentState) {
         final SetStateCommand<S, T> command = createCommand(aNewCurrentState);
+        
+        if(command == null) { 
+            LOGGER.debug("Not returning SetStateCommand for {}; no state transition required.", aNewCurrentState);
+            return null;
+        }
+        
         service.setCurrentState(command,
                                 User.getSystemUser());
         return command;

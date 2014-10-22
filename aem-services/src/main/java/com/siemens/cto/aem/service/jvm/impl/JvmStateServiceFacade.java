@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -16,10 +18,13 @@ import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.fault.AemExceptionMapping;
+import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.AbstractStateServiceFacade;
 
 public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmState> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
 
     private final JvmPersistenceService jvmPersistenceService;
     
@@ -33,6 +38,38 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
 
     @Override
     protected SetStateCommand<Jvm, JvmState> createCommand(final CurrentState<Jvm, JvmState> aNewCurrentState) {
+
+        // startup/shutdown protection - check for starting/stopping
+        
+        CurrentState<Jvm, JvmState> newState = aNewCurrentState;
+        CurrentState<Jvm, JvmState> currentState = getStateService().getCurrentState(newState.getId());
+
+        boolean discard = false;
+
+        // if starting, ignore stopped. If stopping, ignore started.
+        // TODO: we rely on started to exit starting. However, we have no way to leave STARTING to STOPPED in case of failure.
+        switch(currentState.getState()) {
+            case START_REQUESTED:
+                switch(newState.getState()) {
+                    case STOPPED: 
+                        discard = true;
+                    default: break;
+                } break;
+            case STOP_REQUESTED:
+                switch(newState.getState()) {
+                    case STARTED: 
+                        discard = true;
+                    default: break;
+                } break;
+            default:
+                discard = false;        
+        }
+        
+        if(discard) { 
+            LOGGER.debug("Discarding reverse heartbeat; Jvm starting/stopping: {}", aNewCurrentState);                
+            return null;
+        } 
+
         return new JvmSetStateCommand(aNewCurrentState);
     }
     

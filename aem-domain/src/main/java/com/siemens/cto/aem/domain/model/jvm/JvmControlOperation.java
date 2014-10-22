@@ -10,8 +10,8 @@ public enum JvmControlOperation {
 
     START("start", JvmState.START_REQUESTED),
     STOP("stop", JvmState.STOP_REQUESTED),
-    THREAD_DUMP("threadDump", JvmState.STARTED),
-    HEAP_DUMP("heapDump", JvmState.STARTED);
+    THREAD_DUMP("threadDump", null),
+    HEAP_DUMP("heapDump", null);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 

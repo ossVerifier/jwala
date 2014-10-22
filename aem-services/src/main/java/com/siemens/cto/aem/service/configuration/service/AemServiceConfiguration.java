@@ -35,6 +35,7 @@ import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
 import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
+import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
@@ -143,7 +144,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name="jvmControlServiceLifecycle")
-    public JvmControlService.JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
+    public JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
         return new JvmControlServiceImpl.LifecycleImpl(
                 persistenceServiceConfiguration.getJvmControlPersistenceService(),
                 getJvmStateService());

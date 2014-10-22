@@ -21,6 +21,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
+import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
 
@@ -53,8 +54,10 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
-            jvmControlServiceLifecycle.startState(aCommand,
-                                                  aUser);
+            if(aCommand.getControlOperation().getOperationState() != null) {
+                jvmControlServiceLifecycle.startState(aCommand,
+                        aUser);
+            }
 
             final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
                                                                     jvm);
@@ -78,7 +81,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
     }
 
-    public static class LifecycleImpl implements JvmControlService.JvmControlServiceLifecycle {
+    public static class LifecycleImpl implements JvmControlServiceLifecycle {
 
         private final JvmControlPersistenceService persistenceService;
         private final StateService<Jvm, JvmState> jvmStateService;
