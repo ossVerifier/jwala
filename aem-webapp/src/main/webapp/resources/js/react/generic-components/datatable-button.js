@@ -63,12 +63,12 @@ var DataTableButton = React.createClass({
     },
     pollForStateChange: function() {
         if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) { // if still busy check status
-            if (!this.props.isBusyCallback(this.props.itemId)) {
+            if (!this.props.isBusyCallback(this.props.itemId, this.props.expectedState)) {
                 clearTimeout(this.busyTimeout);
                 this.setToNonBusyState();
             } else {
                 var self = this;
-                setTimeout(function(){self.pollForStateChange()}, 500);
+                setTimeout(function(){self.pollForStateChange()}, 1000);
             }
         }
     },
@@ -87,7 +87,7 @@ var DataTableButton = React.createClass({
 
                 if (self.props.isBusyCallback !== undefined) {
                     // Timeout used for polling status change
-                    setTimeout(function(){self.pollForStateChange()}, 500);
+                    setTimeout(function(){self.pollForStateChange()}, 1000);
                 }
             }
 
@@ -109,7 +109,8 @@ var DataTableButton = React.createClass({
                 self.props.callback(self.props.itemId,
                                     "#" + self.props.id,
                                     self.props.extraDataToPassOnCallback,
-                                    self.props.parentItemId);
+                                    self.props.parentItemId,
+                                    self.busyTimeoutCallback);
             }
         },
         hoverCallback: function(id, label) {

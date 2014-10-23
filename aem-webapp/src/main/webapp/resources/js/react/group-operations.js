@@ -245,10 +245,11 @@ var GroupOperationsDataTable = React.createClass({
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-play",
                                              clickedStateClassName:"busy-button",
-                                             isBusyCallback:this.isWebServerTransientState,
+                                             isBusyCallback:this.isWebServerStartStopInProcess,
                                              buttonClassName:"ui-button-height",
                                              busyStatusTimeout:tocVars.startStopTimeout,
-                                             extraDataToPassOnCallback:["name","groups"]},
+                                             extraDataToPassOnCallback:["name","groups"],
+                                             expectedState:"STARTED"},
                                             {tocType:"space"},
                                             {id:"stopWebServer",
                                              sTitle:"Stop",
@@ -259,10 +260,11 @@ var GroupOperationsDataTable = React.createClass({
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-stop",
                                              clickedStateClassName:"busy-button",
-                                             isBusyCallback:this.isWebServerTransientState,
+                                             isBusyCallback:this.isWebServerStartStopInProcess,
                                              buttonClassName:"ui-button-height",
                                              busyStatusTimeout:tocVars.startStopTimeout,
-                                             extraDataToPassOnCallback:["name","groups"]}],
+                                             extraDataToPassOnCallback:["name","groups"],
+                                             expectedState:"STOPPED"}],
                                            {sTitle:"State",
                                             mData:null,
                                             mRender: this.getStateForWebServer,
@@ -389,10 +391,11 @@ var GroupOperationsDataTable = React.createClass({
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-play",
                                   clickedStateClassName:"busy-button",
-                                  isBusyCallback:this.isJvmTransientState,
+                                  isBusyCallback:this.isJvmStartStopInProcess,
                                   buttonClassName:"ui-button-height",
                                   busyStatusTimeout:tocVars.startStopTimeout,
-                                  extraDataToPassOnCallback:["jvmName","groups"]},
+                                  extraDataToPassOnCallback:["jvmName","groups"],
+                                  expectedState:"STARTED"},
                                  {tocType:"space"},
                                  {id:"stopJvm",
                                   sTitle:"Stop",
@@ -403,10 +406,11 @@ var GroupOperationsDataTable = React.createClass({
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-stop",
                                   clickedStateClassName:"busy-button",
-                                  isBusyCallback:this.isJvmTransientState,
+                                  isBusyCallback:this.isJvmStartStopInProcess,
                                   buttonClassName:"ui-button-height",
                                   busyStatusTimeout:tocVars.startStopTimeout,
-                                  extraDataToPassOnCallback:["jvmName","groups"]}],
+                                  extraDataToPassOnCallback:["jvmName","groups"],
+                                  expectedState:"STOPPED"}],
                                 {sTitle:"State",
                                  mData:null,
                                  mRender: this.getStateForJvm,
@@ -429,14 +433,14 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
    },
-   isWebServerTransientState: function(id) {
+   isWebServerStartStopInProcess: function(id, expectedState) {
         if (this.webServersById[id] !== undefined) {
-            return this.webServersById[id].state.transientState;
+            return (expectedState !== this.webServersById[id].state.stateString);
         }
-        return false;
+        return true;
    },
-   isJvmTransientState: function(id) {
-        return this.jvmsById[id].state.transientState;
+   isJvmStartStopInProcess: function(id, expectedState) {
+        return (expectedState !== this.jvmsById[id].state.stateString);
    },
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
@@ -694,7 +698,7 @@ var GroupOperationsDataTable = React.createClass({
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
 
-    confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm) {
+    confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
         var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm" + id;
         $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
@@ -708,6 +712,7 @@ var GroupOperationsDataTable = React.createClass({
                },
                "No": function() {
                    $(this).dialog("close");
+                   cancelCallback();
                }
            },
            open: function() {
@@ -722,7 +727,8 @@ var GroupOperationsDataTable = React.createClass({
                                                            name,
                                                            groups,
                                                            operation,
-                                                           operationCallback) {
+                                                           operationCallback,
+                                                           cancelCallback) {
         var msg = name + " is a member of " +
                   groupOperationsHelper.groupArrayToString(groups, parentItemId)
                   + "<br/><br/> Are you sure you want to " + operation + " " + name + " ?";
@@ -731,28 +737,31 @@ var GroupOperationsDataTable = React.createClass({
                                                        parentItemId,
                                                        buttonSelector,
                                                        msg,
-                                                       operationCallback);
+                                                       operationCallback,
+                                                       cancelCallback);
         } else {
             operationCallback(id);
         }
     },
-    jvmStart: function(id, buttonSelector, data, parentItemId) {
+    jvmStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.jvmName,
                                                           data.groups,
                                                           "start",
-                                                          jvmControlService.startJvm);
+                                                          jvmControlService.startJvm,
+                                                          cancelCallback);
     },
-    jvmStop: function(id, buttonSelector, data, parentItemId) {
+    jvmStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.jvmName,
                                                           data.groups,
                                                           "stop",
-                                                          jvmControlService.stopJvm);
+                                                          jvmControlService.stopJvm,
+                                                          cancelCallback);
     },
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
@@ -854,23 +863,25 @@ var GroupOperationsDataTable = React.createClass({
     buildHRefLoadBalancerConfig: function(data) {
         return "http://" + data.host + ":" + data.port + tocVars.loadBalancerStatusMount;
     },
-    webServerStart: function(id, buttonSelector, data, parentItemId) {
+    webServerStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.name,
                                                           data.groups,
                                                           "start",
-                                                          webServerControlService.startWebServer);
+                                                          webServerControlService.startWebServer,
+                                                          cancelCallback);
     },
-    webServerStop: function(id, buttonSelector, data, parentItemId) {
+    webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.name,
                                                           data.groups,
                                                           "stop",
-                                                          webServerControlService.stopWebServer);
+                                                          webServerControlService.stopWebServer,
+                                                          cancelCallback);
     },
     webServerErrorAlertCallback: function(alertDlgDivId, ws) {
         this.webServerHasNewMessage[ws.id.id] = "false";
