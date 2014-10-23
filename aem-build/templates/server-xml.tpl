@@ -175,7 +175,11 @@
   </Service>
   
   <!-- Default well-known service 
-       Only supports HTTP connections -->
+       Only supports HTTP connections 
+	Note: Tomcat will startup services in order, so 
+              if we are using http and /stp.png for the TOC 
+	 reporting status path, connections will hang until
+	the previous service has completely started up. -->
   <Service name="Catalina">
 
     <!--The connectors can use a shared executor, you can define one or more named thread pools-->
