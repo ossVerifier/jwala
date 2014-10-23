@@ -13,8 +13,8 @@ public interface StateNotificationService {
 
     boolean isValid(final StateNotificationConsumerId aConsumerId);
 
-    void notifyStateUpdated(final CurrentState aNotification);
+    void notifyStateUpdated(final CurrentState<?,?> aNotification);
 
-    List<CurrentState> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
+    List<CurrentState<?, ?>> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
                                          final TimeRemainingCalculator aTimeRemaining);
 }

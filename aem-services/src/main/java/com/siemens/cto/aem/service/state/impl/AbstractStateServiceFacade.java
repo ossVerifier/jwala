@@ -7,6 +7,10 @@ import java.io.StringWriter;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.integration.Message;
+import org.springframework.integration.MessagingException;
+import org.springframework.integration.annotation.Transformer;
+import org.springframework.integration.support.MessageBuilder;
 
 import com.siemens.cto.aem.common.exception.ExceptionUtil;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -135,7 +139,10 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
     }
 
     protected SetStateCommand<S, T> setState(final CurrentState<S, T> aNewCurrentState) {
-        final SetStateCommand<S, T> command = createCommand(aNewCurrentState);
+        
+        CurrentState<S, T> currentState = getStateService().getCurrentState(aNewCurrentState.getId());
+
+        final SetStateCommand<S, T> command = createCommand(currentState, aNewCurrentState);
         
         if(command == null) { 
             LOGGER.debug("Not returning SetStateCommand for {}; no state transition required.", aNewCurrentState);
@@ -169,5 +176,15 @@ public abstract class AbstractStateServiceFacade<S, T extends OperationalState> 
         return state;
     }
 
-    protected abstract SetStateCommand<S, T> createCommand(final CurrentState<S, T> aNewCurrentState);
+    protected abstract SetStateCommand<S, T> createCommand(final CurrentState<S, T> currentState, final CurrentState<S, T> aNewCurrentState);
+    
+    @Transformer
+    public Message<?> recoverOriginalMessage(Message<MessagingException> failureMessage) {
+        Message<?> temp = MessageBuilder
+                .fromMessage(failureMessage.getPayload().getFailedMessage())
+                .setHeader("failureMessage", failureMessage.getHeaders().get("failureMessage"))
+                .build();
+        return temp;
+    }
+
 }

@@ -25,22 +25,26 @@
         <constructor-arg value="payload.host"/>
     </bean>
 
-    <int:channel id="webServerStateRequest"/>
-    <int:channel id="failedWebServerStateRequest"/>
-    <int:channel id="successfulWebServerStateRequest"/>
+<!-- not used  
+    <int:channel id="webServerServiceExistenceRequest"/>
+    <int:channel id="webServerStateRequestPreparation"/>
+    <int:channel id="webServerStateRequests"/>
+ --> 
+
     <int:channel id="unsplitWebServerStateRequests"/>
     <int:channel id="splitWebServerStateRequests">
         <int:dispatcher task-executor="webServerStateExecutor"/>
     </int:channel>
+    <int:channel id="webServerStateRequest"/>
+    <int:channel id="failedWebServerStateRequest"/>
+    <int:channel id="successfulWebServerStateRequest"/>
     <int:channel id="completedWithoutMessageWebServerStateRequest"/>
     <int:channel id="completedWithMessageWebServerStateRequest"/>
-    <int:channel id="webServerServiceExistenceRequest"/>
+    <int:channel id="webServerServiceExistenceResult"/>
     <int:channel id="webServerNoService"/>
     <int:channel id="webServerBadHost"/>
-    <int:channel id="webServerServiceExistenceResult"/>
-    <int:channel id="webServerStateRequestPreparation"/>
-    <int:channel id="webServerStateRequests"/>
-
+    <int:channel id="webServerHasServiceResult"/>
+    
     <task:executor id="webServerStateExecutor"
                    pool-size="5"
                    queue-capacity="200"
@@ -64,24 +68,8 @@
         </int:header-enricher>
     </int:chain>
 
-    <int:chain id="checkWebServerExistenceChain" input-channel="splitWebServerStateRequests" output-channel="webServerServiceExistenceResult">
-        <int:header-enricher>
-            <int:error-channel value="webServerBadHost"/>
-        </int:header-enricher>
-        <int:service-activator method="handleSshMessage">
-            <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService" autowire="constructor">
-                <constructor-arg ref="webServerSshCommandExpression"/>
-                <constructor-arg ref="webServerSshHostExpression"/>
-            </bean>
-        </int:service-activator>
-    </int:chain>
-
-    <int:router id="webServerServiceExistenceResultRouter" input-channel="webServerServiceExistenceResult" expression="payload.getReturnCode().wasSuccessful()">
-        <int:mapping value="true" channel="webServerStateRequestPreparation"/>
-        <int:mapping value="false" channel="webServerNoService"/>
-    </int:router>
-
-    <int:chain id="webServerPreHttpOutboundChain" input-channel="webServerStateRequestPreparation" output-channel="webServerStateRequest">
+    <!-- splitWebServerStateRequests =>  webServerPreHttpOutboundChain => webServerHttpOutboundGateway -->
+    <int:chain id="webServerPreHttpOutboundChain" input-channel="splitWebServerStateRequests" output-channel="webServerStateRequest">
         <int:header-enricher default-overwrite="true">
             <int:error-channel ref="failedWebServerStateRequest"/>
         </int:header-enricher>
@@ -95,6 +83,59 @@
                                http-method="GET"
                                url-expression="payload"/>
 
+    <!--  success splitWebServerStateRequests => successfulWebServerStateRequest  (end) -->
+    <!--  failure splitWebServerStateRequests => failedWebServerStateRequest --> 
+    <!--  end splitWebServerStateRequests  -->
+    
+    <!-- failedWebServerStateRequest => checkWebServerExistenceChain -->
+    <int:chain id="checkWebServerExistenceChain" input-channel="failedWebServerStateRequest" output-channel="webServerServiceExistenceResult">
+        <!-- acquire original payload, save failure message  -->
+        <int:header-enricher>
+            <int:header name="failureMessage"
+               expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()" />
+            <int:header name="webServer" expression="payload.getFailedMessage().headers['webServer']"/>
+            <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
+        </int:header-enricher>
+
+        <!-- acquire original Message TODO this loses the error message.
+        <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage()"/>
+        <int:transformer ref="jvmStateServiceFacade" method="recoverOriginalMessage" />
+        <int:header-enricher>
+            <int:header name="failureMessage"
+               value="GET of status URL failed." />
+        </int:header-enricher>
+
+        -->
+
+        <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServer']"/>
+        
+        <int:header-enricher>
+            <int:error-channel value="webServerBadHost"/>
+        </int:header-enricher>
+        <int:service-activator method="handleSshMessage">
+            <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService" autowire="constructor">
+                <constructor-arg ref="webServerSshCommandExpression"/>
+                <constructor-arg ref="webServerSshHostExpression"/>
+            </bean>
+        </int:service-activator>
+    </int:chain>
+
+    <int:router id="webServerServiceExistenceResultRouter" input-channel="webServerServiceExistenceResult" expression="payload.getReturnCode().wasSuccessful()">
+        <int:mapping value="true" channel="webServerHasServiceResult"/>
+        <int:mapping value="false" channel="webServerNoService"/>
+    </int:router>
+    <!--  success => successfulWebServerHttpChain (end) --> 
+    <!--  failure => webServerBadHost, webServerNoService -->
+
+    <!-- fail with original message -->
+    <int:chain id="failedWebServerHttpChain" input-channel="webServerHasServiceResult" output-channel="completedWithoutMessageWebServerStateRequest">
+        <int:header-enricher id="failedWebServerHttpHeaderEnricher">
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
+        </int:header-enricher>
+    </int:chain>
+    
+
+    <!-- never used, state request fails directly into SSH calls  
     <int:chain id="failedWebServerHttpChain" input-channel="failedWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="failedWebServerHttpHeaderEnricher">
             <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
@@ -104,6 +145,7 @@
         </int:header-enricher>
         <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServerId']"/>
     </int:chain>
+    -->
 
     <int:chain id="successfulWebServerHttpChain" input-channel="successfulWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="successfulWebServerHttpHeaderEnricher">

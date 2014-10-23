@@ -37,13 +37,11 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
     }
 
     @Override
-    protected SetStateCommand<Jvm, JvmState> createCommand(final CurrentState<Jvm, JvmState> aNewCurrentState) {
+    protected SetStateCommand<Jvm, JvmState> createCommand(final CurrentState<Jvm, JvmState> currentState, final CurrentState<Jvm, JvmState> aNewCurrentState) {
 
-        // startup/shutdown protection - check for starting/stopping
-        
+        // startup/shutdown protection - check for starting/stopping        
         CurrentState<Jvm, JvmState> newState = aNewCurrentState;
-        CurrentState<Jvm, JvmState> currentState = getStateService().getCurrentState(newState.getId());
-
+        
         boolean discard = false;
 
         if(currentState != null) {

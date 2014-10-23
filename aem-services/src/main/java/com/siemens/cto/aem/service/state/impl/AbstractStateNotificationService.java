@@ -56,12 +56,12 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     }
 
     @Override
-    public List<CurrentState> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
+    public List<CurrentState<?,?>> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
                                                                              final TimeRemainingCalculator aTimeRemaining) {
         final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
 
         if (consumer != null) {
-            final List<CurrentState> notifications = consumer.getNotifications(aTimeRemaining);
+            final List<CurrentState<?,?>> notifications = consumer.getNotifications(aTimeRemaining);
             return notifications;
         }
 

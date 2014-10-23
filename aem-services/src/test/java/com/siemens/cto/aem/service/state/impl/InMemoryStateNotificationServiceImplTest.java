@@ -76,11 +76,11 @@ public class InMemoryStateNotificationServiceImplTest {
         final Set<Identifier<WebServer>> webServers = trackAndAddNotifications(numberOfNotifications);
 
         for (final StateNotificationConsumerId consumerId : consumerIds) {
-            final List<CurrentState> currentWebServerStates = notificationService.pollUpdatedStates(consumerId,
+            final List<CurrentState<?, ?>> currentWebServerStates = notificationService.pollUpdatedStates(consumerId,
                                                                                                     new TimeRemainingCalculator(new TimeDuration(1L, TimeUnit.SECONDS)));
             assertEquals(numberOfNotifications,
                          currentWebServerStates.size());
-            for (final CurrentState state : currentWebServerStates) {
+            for (final CurrentState<?, ?> state : currentWebServerStates) {
                 assertTrue(webServers.contains(state.getId()));
                 assertEquals(WebServerReachableState.REACHABLE,
                              state.getState());
@@ -98,7 +98,7 @@ public class InMemoryStateNotificationServiceImplTest {
 
         for (final StateNotificationConsumerId consumerId : consumerIds) {
             notificationService.deregister(consumerId);
-            final List<CurrentState> currentStates = notificationService.pollUpdatedStates(consumerId,
+            final List<CurrentState<?, ?>> currentStates = notificationService.pollUpdatedStates(consumerId,
                                                                                            new TimeRemainingCalculator(new TimeDuration(500L, TimeUnit.MILLISECONDS)));
             assertTrue(currentStates.isEmpty());
             assertFalse(notificationService.isValid(consumerId));
@@ -115,7 +115,7 @@ public class InMemoryStateNotificationServiceImplTest {
         final Queue<StateNotificationConsumerId> consumerIds = new LinkedBlockingQueue<>(trackAndRegisterConsumers(numberOfConsumers));
         final AtomicBoolean stopFlag = new AtomicBoolean(false);
 
-        final Future<List<CurrentState>> resultsFromActiveConsumer = Executors.newFixedThreadPool(1).submit(createCallable(consumerIds.poll(),
+        final Future<List<CurrentState<?, ?>>> resultsFromActiveConsumer = Executors.newFixedThreadPool(1).submit(createCallable(consumerIds.poll(),
                                                                                                                            notificationService,
                                                                                                                            new TimeDuration(1L, TimeUnit.SECONDS),
                                                                                                                            stopFlag));
@@ -132,11 +132,11 @@ public class InMemoryStateNotificationServiceImplTest {
                                                              new TimeRemainingCalculator(new TimeDuration(200L, TimeUnit.MILLISECONDS))).isEmpty());
         }
 
-        final List<CurrentState> activeResults = resultsFromActiveConsumer.get();
+        final List<CurrentState<?, ?>> activeResults = resultsFromActiveConsumer.get();
 
         assertEquals(numberOfNotifications,
                      activeResults.size());
-        for (final CurrentState state : activeResults) {
+        for (final CurrentState<?, ?> state : activeResults) {
             assertTrue(notifications.contains(state.getId()));
         }
     }
@@ -175,16 +175,16 @@ public class InMemoryStateNotificationServiceImplTest {
         return webServers;
     }
 
-    private Callable<List<CurrentState>> createCallable(final StateNotificationConsumerId aConsumerId,
+    private Callable<List<CurrentState<?, ?>>> createCallable(final StateNotificationConsumerId aConsumerId,
                                                                                             final StateNotificationService aService,
                                                                                             final TimeDuration aDuration,
                                                                                             final AtomicBoolean aStopFlag) {
-        return new Callable<List<CurrentState>>() {
+        return new Callable<List<CurrentState<?, ?>>>() {
             @Override
-            public List<CurrentState> call() throws Exception {
-                final List<CurrentState> states = new ArrayList<>();
+            public List<CurrentState<?, ?>> call() throws Exception {
+                final List<CurrentState<?, ?>> states = new ArrayList<>();
                 while (!aStopFlag.get()) {
-                    final List<CurrentState> polledStates = aService.pollUpdatedStates(aConsumerId,
+                    final List<CurrentState<?, ?>> polledStates = aService.pollUpdatedStates(aConsumerId,
                                                                                        new TimeRemainingCalculator(aDuration));
                     states.addAll(polledStates);
                 }

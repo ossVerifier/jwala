@@ -45,15 +45,15 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
     }
 
     @Override
-    public List<CurrentState> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
+    public List<CurrentState<?,?>> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
         updateLastAccessTime();
 
-        final List<CurrentState> notifications = new ArrayList<>();
+        final List<CurrentState<?,?>> notifications = new ArrayList<>();
 
         TimeRemainingCalculator calculator = new TimeRemainingCalculator(defaultPollDuration);
         TimeRemaining timeRemaining;
         while ( (timeRemaining = calculator.getTimeRemaining()).isTimeRemaining()) {
-            final CurrentState notification = getNotificationsHelper(timeRemaining.getDuration());
+            final CurrentState<?,?> notification = getNotificationsHelper(timeRemaining.getDuration());
             if (notification != null) {
                 notifications.add(notification);
                 calculator = aRequestedTimeoutCalculator;
@@ -73,5 +73,5 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
 
     protected abstract void closeHelper();
 
-    protected abstract CurrentState getNotificationsHelper(final TimeDuration someTimeLeft);
+    protected abstract CurrentState<?,?> getNotificationsHelper(final TimeDuration someTimeLeft);
 }

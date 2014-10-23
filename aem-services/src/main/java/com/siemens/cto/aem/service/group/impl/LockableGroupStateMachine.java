@@ -21,6 +21,9 @@ public class LockableGroupStateMachine {
     Semaphore readLock;
     Semaphore writeLock;
     
+    // tracks information across calls
+    private boolean isDirty = false;
+    
     // for multiple calls 
     private ReadWriteLease writeLease;
 
@@ -159,6 +162,14 @@ public class LockableGroupStateMachine {
     public void unlockPersistent() {
         LOGGER.debug("GSM Unlocking: " + delegate);
         writeUnlock();
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    public void setDirty(boolean isDirty) {
+        this.isDirty = isDirty;
     }
 
     private class ReadOnlyLease extends ReadWriteLease {

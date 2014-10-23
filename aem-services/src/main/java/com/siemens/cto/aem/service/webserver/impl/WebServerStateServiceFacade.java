@@ -30,7 +30,23 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
     }
 
     @Override
-    protected SetStateCommand<WebServer, WebServerReachableState> createCommand(final CurrentState<WebServer, WebServerReachableState> aNewCurrentState) {
+    protected SetStateCommand<WebServer, WebServerReachableState> createCommand(final CurrentState<WebServer, WebServerReachableState> currentState, final CurrentState<WebServer, WebServerReachableState> aNewCurrentState) {
+        
+        switch(currentState.getState()) {
+            case START_REQUESTED:
+                if(aNewCurrentState.getState() == WebServerReachableState.UNREACHABLE) {
+                    return null; // discard
+                }
+                break;
+            case STOP_REQUESTED:
+                if(aNewCurrentState.getState() == WebServerReachableState.REACHABLE) {
+                    return null; // discard
+                }
+                break;
+            default:
+                break;
+        }
+        
         return new WebServerSetStateCommand(aNewCurrentState);
     }
     

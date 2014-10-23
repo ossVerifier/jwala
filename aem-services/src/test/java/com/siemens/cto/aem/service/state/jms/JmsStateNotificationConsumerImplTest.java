@@ -68,7 +68,7 @@ public class JmsStateNotificationConsumerImplTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testAddNotification() {
-        final CurrentState unused = mock(CurrentState.class);
+        final CurrentState<?, ?> unused = mock(CurrentState.class);
         impl.addNotification(unused);
     }
 
@@ -77,7 +77,7 @@ public class JmsStateNotificationConsumerImplTest {
         final int numberOfMessages = 5;
         configureMessageConsumerForMessages(numberOfMessages);
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(numberOfMessages);
-        final List<CurrentState> states = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState<?, ?>> states = impl.getNotifications(timeRemainingCalculator);
 
         assertEquals(numberOfMessages,
                      states.size());
@@ -95,7 +95,7 @@ public class JmsStateNotificationConsumerImplTest {
     public void testGetNotificationsWithJmsException() throws Exception {
         configureMessageConsumerForException();
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(1);
-        final List<CurrentState> actualIds = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState<?, ?>> actualIds = impl.getNotifications(timeRemainingCalculator);
 
         assertTrue(actualIds.isEmpty());
     }
@@ -104,7 +104,7 @@ public class JmsStateNotificationConsumerImplTest {
     public void testReceiveReturnsNoMessage() throws Exception {
         when(consumer.receive(anyLong())).thenReturn(null);
         final TimeRemainingCalculator timeRemainingCalculator = createEnoughTimeForMessages(1);
-        final List<CurrentState> actualIds = impl.getNotifications(timeRemainingCalculator);
+        final List<CurrentState<?, ?>> actualIds = impl.getNotifications(timeRemainingCalculator);
 
         assertTrue(actualIds.isEmpty());
         verify(timeRemainingCalculator, never()).getTimeRemaining();

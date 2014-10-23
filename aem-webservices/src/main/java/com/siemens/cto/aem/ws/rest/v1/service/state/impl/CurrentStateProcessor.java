@@ -17,23 +17,23 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 
 public class CurrentStateProcessor {
 
-    private final List<CurrentState> states;
-    private final Comparator<CurrentState> comparator;
+    private final List<CurrentState<?,?>> states;
+    private final Comparator<CurrentState<?,?>> comparator;
 
-    public CurrentStateProcessor(final List<CurrentState> theStates,
-                                 final Comparator<CurrentState> theComparator) {
+    public CurrentStateProcessor(final List<CurrentState<?,?>> theStates,
+                                 final Comparator<CurrentState<?,?>> theComparator) {
         states = new ArrayList<>(theStates);
         comparator = theComparator;
     }
 
-    public Collection<CurrentState> getUniqueStates() {
+    public Collection<CurrentState<?,?>> getUniqueStates() {
         Collections.sort(states, comparator);
         return unique();
     }
 
-    Collection<CurrentState> unique() {
-        final ConcurrentMap<CurrentStateKey, CurrentState> values = new ConcurrentHashMap<>();
-        for (final CurrentState state : states) {
+    Collection<CurrentState<?,?>> unique() {
+        final ConcurrentMap<CurrentStateKey, CurrentState<?,?>> values = new ConcurrentHashMap<>();
+        for (final CurrentState<?,?> state : states) {
             values.putIfAbsent(new CurrentStateKey(state), state);
         }
         return values.values();
@@ -43,7 +43,7 @@ public class CurrentStateProcessor {
         private final Identifier<?> id;
         private final StateType type;
 
-        private CurrentStateKey(final CurrentState theCurrentState) {
+        private CurrentStateKey(final CurrentState<?,?> theCurrentState) {
             this(theCurrentState.getId(),
                  theCurrentState.getType());
         }

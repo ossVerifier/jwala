@@ -24,18 +24,17 @@ import com.siemens.cto.aem.service.state.StateService;
 
 public abstract class StateServiceImpl<S, T extends OperationalState> implements StateService<S, T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
+    private static final Logger                 LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
 
     private final StatePersistenceService<S, T> persistenceService;
-    private final StateNotificationService notificationService;
-    private final StateType stateType;
+    private final StateNotificationService      notificationService;
+    private final StateType                     stateType;
 
-    protected final StateNotificationGateway stateNotificationGateway;
+    protected final StateNotificationGateway    stateNotificationGateway;
 
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
-                            final StateNotificationService theNotificationService,
-                            final StateType theStateType,
-                            final StateNotificationGateway theStateNotificationGateway) {
+            final StateNotificationService theNotificationService, final StateType theStateType,
+            final StateNotificationGateway theStateNotificationGateway) {
         persistenceService = thePersistenceService;
         notificationService = theNotificationService;
         stateType = theStateType;
@@ -44,16 +43,26 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand,
-                                              final User aUser) {
+    public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand, final User aUser) {
         LOGGER.trace("Attempting to set state for {} {} ", stateType, aCommand);
         aCommand.validateCommand();
 
-        final CurrentState<S, T> currentState = persistenceService.updateState(new Event<>(aCommand,
-                                                                                           AuditEvent.now(aUser)));
-        notificationService.notifyStateUpdated(currentState);
-        sendNotification(currentState);
-        return currentState;
+        final CurrentState<S, T> currentState = persistenceService.getState(aCommand.getNewState().getId());
+
+        final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(aCommand, AuditEvent
+                .now(aUser)));
+
+        if (currentState == null || currentState.getState() != latestState.getState()) {
+
+            notificationService.notifyStateUpdated(latestState); // the UI only
+                                                                 // cares about
+                                                                 // changes.
+
+        }
+
+        // The internal bus is allowed to care about all state updates.
+        sendNotification(latestState);
+        return latestState;
     }
 
     @Override
@@ -86,13 +95,13 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         return persistenceService.getAllKnownStates(somePagination);
     }
 
-    /** 
-     * Accessor for derived class. 
+    /**
+     * Accessor for derived class.
      */
     protected StateNotificationService getNotificationService() {
         return notificationService;
     }
-    
+
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);
 
     protected abstract void sendNotification(CurrentState<S, T> anUpdatedState);

@@ -46,18 +46,18 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
 
         addNotifications(numberOfNotifications);
 
-        final List<CurrentState> notifications = consumer.getNotifications(getLongAmountOfTime());
+        final List<CurrentState<?, ?>> notifications = consumer.getNotifications(getLongAmountOfTime());
         assertEquals(numberOfNotifications,
                      notifications.size());
 
-        final List<CurrentState> additionalNotifications = consumer.getNotifications(getShortAmountOfTime());
+        final List<CurrentState<?, ?>> additionalNotifications = consumer.getNotifications(getShortAmountOfTime());
         assertTrue(additionalNotifications.isEmpty());
     }
 
     @Test
     public void testNoNotificationsAdded() {
         final TimeRemainingCalculator shortTimeRemaining = spy(getShortAmountOfTime());
-        final List<CurrentState> notifications = consumer.getNotifications(shortTimeRemaining);
+        final List<CurrentState<?, ?>> notifications = consumer.getNotifications(shortTimeRemaining);
         assertTrue(notifications.isEmpty());
         verify(shortTimeRemaining, never()).getTimeRemaining();
     }
@@ -71,7 +71,7 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
                                                                                                   System.currentTimeMillis());
         addNotifications(smallConsumer,
                          maxCapacity + 1);
-        final List<CurrentState> notifications = smallConsumer.getNotifications(getShortAmountOfTime());
+        final List<CurrentState<?, ?>> notifications = smallConsumer.getNotifications(getShortAmountOfTime());
 
         assertEquals(maxCapacity,
                      notifications.size());
@@ -103,7 +103,7 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
             @Override
             public void run() {
                 start.countDown();
-                final CurrentState jvm = consumer.getNotificationsHelper(waitPeriod);
+                final CurrentState<?, ?> jvm = consumer.getNotificationsHelper(waitPeriod);
                 result.set(jvm);
                 end.countDown();
             }

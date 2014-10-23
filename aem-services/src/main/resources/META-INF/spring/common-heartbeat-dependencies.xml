@@ -4,8 +4,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="httpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
-        <property name="connectTimeout" value="1000"/>
-        <property name="readTimeout" value="1000"/>
+        <property name="connectTimeout" value="200"/>
+        <property name="readTimeout" value="50"/>
     </bean>
 
     <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">

@@ -106,6 +106,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
                 final Identifier<Group> groupId = group.getId();
 
+                boolean changed = false;
+                Group fullGroup = groupPersistenceService.getGroup(groupId);
+                CurrentGroupState priorState = fullGroup.getCurrentState();
+
                 LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
                 ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
                     @Override
@@ -122,15 +126,18 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                     LOGGER.warn("Skipping group due to lock {}", group);
                     continue;
                 }
-                try {
-                    internalHandleJvmStateUpdate(gsm, jvmId, cjs.getState());
-                } catch(final RuntimeException re) {
-                    LOGGER.warn("Unlocking GSM after receiving RuntimeException", re);
-                    lockableGsm.unlockPersistent();
-                    throw re;
+                                
+                gsm.refreshState();
+                
+                if(priorState != null) {
+                    if(priorState.getState() != gsm.getCurrentState()) {
+                        changed = true;
+                    }
+                }
+                if(changed) {
+                    lockableGsm.setDirty(true);                    
                 }
 
-                // could check for changes and only persist/notify on changes
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
 
                 result.add(sgsc);
@@ -195,6 +202,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             for(Group group : groups) {
 
                 final Identifier<Group> groupId = group.getId();
+                boolean changed = false;
+                CurrentState<Group, GroupState> priorState = group.getCurrentState();
 
                 LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
                 ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
@@ -213,15 +222,17 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                     continue;
                 }
 
-                try {
-                    internalHandleWebServerStateUpdate(gsm, wsId, wsState.getState());
-                } catch(final RuntimeException re) {
-                    LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
-                    lockableGsm.unlockPersistent();
-                    throw re;
+                gsm.refreshState();
+                
+                if(priorState != null) {
+                    if(priorState.getState() != gsm.getCurrentState()) {
+                        changed = true;
+                    }
                 }
-
-                // could check for changes and only persist/notify on changes
+                if(changed) {
+                    lockableGsm.setDirty(true);                    
+                }
+                
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
 
                 result.add(sgsc);
@@ -402,8 +413,13 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     public SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
         if(sgsc != null && sgsc.getNewState() != null) {
-            LOGGER.trace("GSS Notify: {}", sgsc.getNewState());
-            getNotificationService().notifyStateUpdated(sgsc.getNewState());
+            if(getLockableGsm(sgsc.getNewState().getId()).isDirty()) {
+                LOGGER.trace("GSS Notify: {}", sgsc.getNewState());
+                getNotificationService().notifyStateUpdated(sgsc.getNewState());
+            } else { 
+                LOGGER.trace("GSS Discard Notify (Same State): {}", sgsc.getNewState());
+            }
+            getLockableGsm(sgsc.getNewState().getId()).setDirty(false);
         }
         return sgsc;
     }

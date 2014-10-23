@@ -11,9 +11,9 @@ public interface StateNotificationConsumer {
 
     boolean isClosed();
 
-    void addNotification(final CurrentState aNotification);
+    void addNotification(final CurrentState<?, ?> aNotification);
 
     boolean isStale();
 
-    List<CurrentState> getNotifications(final TimeRemainingCalculator someTime);
+    List<CurrentState<?, ?>> getNotifications(final TimeRemainingCalculator someTime);
 }

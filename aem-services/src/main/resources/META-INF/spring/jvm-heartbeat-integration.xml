@@ -39,6 +39,7 @@
 	<int:channel id="jvmServiceExistenceRequest" />
 	<int:channel id="jvmNoService" />
 	<int:channel id="jvmBadHost" />
+    <int:channel id="jvmHttpOnlyFailed" />	
 	<int:channel id="jvmServiceExistenceResult" />
 	<int:channel id="jvmStateRequestPreparation" />
 
@@ -62,8 +63,41 @@
 		</int:header-enricher>
 	</int:chain>
 
-	<int:chain id="checkJvmExistenceChain" input-channel="splitHeartbeatJvms"
+    <int:chain id="jvmPreHttpOutboundChain" input-channel="splitHeartbeatJvms"
+        output-channel="jvmStateRequest">
+        <int:header-enricher default-overwrite="true">
+            <int:error-channel value="jvmFailedStateRequest" />
+        </int:header-enricher>
+        <int:transformer id="jvmStatusUriTransformer"
+            expression="headers['jvm'].getStatusUri().toString()" />
+    </int:chain>
+
+    <int-http:outbound-gateway id="jvmHttpOutboundGateway"
+        request-channel="jvmStateRequest" reply-channel="jvmSuccessfulStateRequest"
+        request-factory="httpRequestFactory" http-method="GET" url-expression="payload" />
+
+	<int:chain id="checkJvmExistenceChain" input-channel="jvmFailedStateRequest"
 		output-channel="jvmServiceExistenceResult">
+        <!-- acquire original payload, save failure message  -->
+        <int:header-enricher>
+	        <int:header name="failureMessage"
+	           expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()" />
+            <int:header name="jvmId" expression="payload.getFailedMessage().headers['jvmId']" />
+            <int:header name="jvm" expression="payload.getFailedMessage().headers['jvm']" />
+        </int:header-enricher>
+
+<!-- TODO: this loses the original error, so we'll make one up  
+        <int:transformer id="failedJvmHttpRecoveryTransformer" expression="payload.getFailedMessage()"/>
+        <int:transformer ref="jvmStateServiceFacade" method="recoverOriginalMessage" />
+        <int:header-enricher>
+            <int:header name="failureMessage"
+               value="HTTP GET of status URL failed." />
+        </int:header-enricher>
+-->
+        <int:transformer id="failedJvmHttpRecoveryTransformer" expression="payload.getFailedMessage().headers['jvm']"/>
+
+        
+
 		<int:header-enricher>
 			<int:error-channel value="jvmBadHost" />
 		</int:header-enricher>
@@ -78,23 +112,23 @@
 
 	<int:router id="jvmServiceExistenceResultRouter"
 		input-channel="jvmServiceExistenceResult" expression="payload.getReturnCode().wasSuccessful()">
-		<int:mapping value="true" channel="jvmStateRequestPreparation" />
+		<int:mapping value="true" channel="jvmHttpOnlyFailed" />
 		<int:mapping value="false" channel="jvmNoService" />
 	</int:router>
 
-	<int:chain id="jvmPreHttpOutboundChain" input-channel="jvmStateRequestPreparation"
-		output-channel="jvmStateRequest">
-		<int:header-enricher default-overwrite="true">
-			<int:error-channel value="jvmFailedStateRequest" />
-		</int:header-enricher>
-		<int:transformer id="jvmStatusUriTransformer"
-			expression="headers['jvm'].getStatusUri().toString()" />
-	</int:chain>
+    <int:chain id="jvmFailedHttpChain" input-channel="jvmHttpOnlyFailed"
+        output-channel="jvmCompletedWithoutMessageStateRequest">
+        
+        <int:header-enricher id="jvmFailedHttpHeaderEnricher">
+            <int:header name="reachableState"
+                value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}" />
+        </int:header-enricher>
 
-	<int-http:outbound-gateway id="jvmHttpOutboundGateway"
-		request-channel="jvmStateRequest" reply-channel="jvmSuccessfulStateRequest"
-		request-factory="httpRequestFactory" http-method="GET" url-expression="payload" />
+        <int:transformer id="jvmSuccessfulHeaderIdTransformer"
+            expression="headers['jvmId']" />
 
+    </int:chain>
+<!-- 
 	<int:chain id="jvmFailedHttpChain" input-channel="jvmFailedStateRequest"
 		output-channel="jvmCompletedWithoutMessageStateRequest">
 		<int:header-enricher id="jvmFailedHttpHeaderEnricher">
@@ -109,7 +143,7 @@
 		<int:transformer id="jvmFailedHttpTransformer"
 			expression="headers['jvmId']" />
 	</int:chain>
-
+ -->
     <int:chain id="jvmSuccessfulHttpChain" input-channel="jvmSuccessfulStateRequest"
 		output-channel="jvmCompletedWithoutMessageStateRequest">
 		<int:header-enricher id="jvmSuccessfulHttpHeaderEnricher">

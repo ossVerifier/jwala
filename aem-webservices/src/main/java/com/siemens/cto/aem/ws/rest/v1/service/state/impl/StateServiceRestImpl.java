@@ -23,7 +23,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
 public class StateServiceRestImpl implements StateServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceRestImpl.class);
-    private static final Comparator<CurrentState> REVERSE_CHRONOLOGICAL_ORDER = Collections.reverseOrder(CurrentStateChronologicalComparator.CHRONOLOGICAL);
+    private static final Comparator<CurrentState<?,?>> REVERSE_CHRONOLOGICAL_ORDER = Collections.reverseOrder(CurrentStateChronologicalComparator.CHRONOLOGICAL);
 
     private final StateNotificationService stateNotificationService;
     private final StateConsumerManager stateConsumerManager;
@@ -41,11 +41,11 @@ public class StateServiceRestImpl implements StateServiceRest {
         LOGGER.debug("Poll states requested with timeout : {}", aTimeoutParamProvider);
         final StateNotificationConsumerId consumerId = stateConsumerManager.getConsumerId(aRequest,
                                                                                           aClientId);
-        final List<CurrentState> updates = stateNotificationService.pollUpdatedStates(consumerId,
+        final List<CurrentState<?,?>> updates = stateNotificationService.pollUpdatedStates(consumerId,
                                                                                       new TimeRemainingCalculator(aTimeoutParamProvider.valueOf()));
         final CurrentStateProcessor processor = new CurrentStateProcessor(updates,
                                                                           REVERSE_CHRONOLOGICAL_ORDER);
-        final Collection<CurrentState> uniqueUpdates = processor.getUniqueStates();
+        final Collection<CurrentState<?,?>> uniqueUpdates = processor.getUniqueStates();
 
         return ResponseBuilder.ok(uniqueUpdates);
     }
