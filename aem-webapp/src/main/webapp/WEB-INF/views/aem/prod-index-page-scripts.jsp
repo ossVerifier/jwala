@@ -29,7 +29,6 @@
 <script src="public-resources/js/toc/v1/service/groupControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/jvmControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerControlService.js"></script>
-<script src="public-resources/js/toc/v1/service/webServerCommandService.js"></script>
 <script src="public-resources/js/toc/v1/service/userService.js"></script>
 <script src="public-resources/js/toc/v1/service/stateService.js"></script>
 <script src="public-resources/js/toc/group-operations-helper.js"></script>
@@ -48,7 +47,6 @@
 <script src="gen-public-resources/js/react/generic-components/datatable.js"></script>
 <script src="gen-public-resources/js/react/generic-components/simple-data-table.js"></script>
 <script src="gen-public-resources/js/react/generic-components/rdatatable.js"></script>
-<script src="gen-public-resources/js/react/delete-item-widget.js"></script>
 <script src="gen-public-resources/js/react/generic-components/generic-button.js"></script>
 <script src="gen-public-resources/js/react/flashing-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/datatable-button.js"></script>
