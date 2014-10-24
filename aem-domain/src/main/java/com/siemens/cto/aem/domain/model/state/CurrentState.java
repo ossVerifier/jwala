@@ -130,7 +130,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append("state", state)
                 .append("asOf", asOf)
                 .append("type", type)
-                .append("message", message)
+                .append("message", (message != null && message.length() > 19) ? message.substring(0, 19) : message)
                 .toString();
     }
 }

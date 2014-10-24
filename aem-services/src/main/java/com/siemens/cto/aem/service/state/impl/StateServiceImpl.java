@@ -52,7 +52,9 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(aCommand, AuditEvent
                 .now(aUser)));
 
-        if (currentState == null || currentState.getState() != latestState.getState()) {
+        if (    currentState == null || 
+                currentState.getState() != latestState.getState() || 
+                !currentState.getMessage().equals(latestState.getMessage())) {
 
             notificationService.notifyStateUpdated(latestState); // the UI only
                                                                  // cares about

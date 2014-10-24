@@ -27,8 +27,12 @@
 		<constructor-arg value="payload.hostName" />
 	</bean>
 
-	<int:channel id="jvmStateRequest" />
-	<int:channel id="jvmFailedStateRequest" />
+	<int:channel id="jvmStateRequest">
+        <int:dispatcher task-executor="jvmStateExecutor" />
+	</int:channel>
+	<int:channel id="jvmFailedStateRequest">
+        <int:dispatcher task-executor="jvmStateExecutor" />
+	</int:channel>
 	<int:channel id="jvmSuccessfulStateRequest" />
 	<int:channel id="unsplitHeartbeatJvms" />
 	<int:channel id="splitHeartbeatJvms">
@@ -96,11 +100,10 @@
 -->
         <int:transformer id="failedJvmHttpRecoveryTransformer" expression="payload.getFailedMessage().headers['jvm']"/>
 
-        
-
-		<int:header-enricher>
-			<int:error-channel value="jvmBadHost" />
+		<int:header-enricher> 
+			<int:error-channel overwrite="true" value="jvmBadHost" />
 		</int:header-enricher>
+
 		<int:service-activator method="handleSshMessage">
 			<bean id="jvmSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService"
 				autowire="constructor">

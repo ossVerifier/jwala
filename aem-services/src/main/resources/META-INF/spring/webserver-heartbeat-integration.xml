@@ -35,8 +35,12 @@
     <int:channel id="splitWebServerStateRequests">
         <int:dispatcher task-executor="webServerStateExecutor"/>
     </int:channel>
-    <int:channel id="webServerStateRequest"/>
-    <int:channel id="failedWebServerStateRequest"/>
+    <int:channel id="webServerStateRequest">
+        <int:dispatcher task-executor="webServerStateExecutor"/>
+    </int:channel>
+    <int:channel id="failedWebServerStateRequest">
+        <int:dispatcher task-executor="webServerStateExecutor"/>
+    </int:channel>
     <int:channel id="successfulWebServerStateRequest"/>
     <int:channel id="completedWithoutMessageWebServerStateRequest"/>
     <int:channel id="completedWithMessageWebServerStateRequest"/>
@@ -110,8 +114,9 @@
         <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServer']"/>
         
         <int:header-enricher>
-            <int:error-channel value="webServerBadHost"/>
+            <int:error-channel overwrite="true" value="webServerBadHost"/>
         </int:header-enricher>
+        
         <int:service-activator method="handleSshMessage">
             <bean id="webServerSshHandler" class="com.siemens.cto.aem.si.ssh.SshExecExecutingService" autowire="constructor">
                 <constructor-arg ref="webServerSshCommandExpression"/>
