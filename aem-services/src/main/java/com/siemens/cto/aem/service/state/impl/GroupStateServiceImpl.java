@@ -106,7 +106,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
                 final Identifier<Group> groupId = group.getId();
 
-                boolean changed = false;
                 Group fullGroup = groupPersistenceService.getGroup(groupId);
                 CurrentGroupState priorState = fullGroup.getCurrentState();
 
@@ -129,13 +128,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                                 
                 gsm.refreshState();
                 
-                if(priorState != null) {
-                    if(priorState.getState() != gsm.getCurrentState()) {
-                        changed = true;
-                    }
-                }
-                if(changed) {
-                    lockableGsm.setDirty(true);                    
+                if(priorState != null &&
+                    priorState.getState() != gsm.getCurrentState() ) {
+                        lockableGsm.setDirty(true);                    
                 }
 
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
@@ -152,28 +147,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
 
         return result;
-    }
-
-    private void internalHandleJvmStateUpdate(GroupStateMachine gsm, Identifier<Jvm> jvmId, JvmState jvmState) {
-
-        switch(jvmState) {
-        case STARTED:
-            gsm.jvmStarted(jvmId);
-            break;
-        case STOPPED:
-            gsm.jvmStopped(jvmId);
-            break;
-        case FAILED:
-            gsm.jvmError(jvmId);
-            break;
-        case INITIALIZED:
-        case START_REQUESTED:
-        case STOP_REQUESTED:
-        case UNKNOWN:
-        default:
-            // no action needed for these states
-            break;
-        }
     }
 
     @Transactional(readOnly=true)
@@ -202,7 +175,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             for(Group group : groups) {
 
                 final Identifier<Group> groupId = group.getId();
-                boolean changed = false;
                 CurrentState<Group, GroupState> priorState = group.getCurrentState();
 
                 LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
@@ -224,13 +196,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
                 gsm.refreshState();
                 
-                if(priorState != null) {
-                    if(priorState.getState() != gsm.getCurrentState()) {
-                        changed = true;
-                    }
-                }
-                if(changed) {
-                    lockableGsm.setDirty(true);                    
+                if(priorState != null &&
+                        priorState.getState() != gsm.getCurrentState() ) {
+                            lockableGsm.setDirty(true);                    
                 }
                 
                 SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
@@ -246,29 +214,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             throw re;
         }
         return result;
-    }
-
-    private void internalHandleWebServerStateUpdate(GroupStateMachine gsm, Identifier<WebServer> wsId, WebServerReachableState webServerReachableState) {
-
-        switch(webServerReachableState) {
-        case REACHABLE:
-            gsm.wsReachable(wsId);
-            break;
-        case UNREACHABLE:
-            gsm.wsUnreachable(wsId);
-            break;
-        case FAILED:
-            gsm.wsError(wsId);
-            break;
-        case START_REQUESTED:
-        case STOP_REQUESTED:
-        case UNKNOWN:
-        default:
-            // no action needed for these states
-            break;
-        }
-
-        // note - error is not supported.
     }
 
     /**

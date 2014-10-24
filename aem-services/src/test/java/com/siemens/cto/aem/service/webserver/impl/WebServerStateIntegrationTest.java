@@ -117,17 +117,14 @@ public class WebServerStateIntegrationTest {
         assertFalse(allValues.isEmpty());
         for (final WebServerSetStateCommand command : allValues) {
             final WebServerReachableState expectedState;
-            if (shouldBeSuccessful(command.getNewState().getId().getId())) {
-                expectedState = WebServerReachableState.REACHABLE;
-            } else {
-                expectedState = WebServerReachableState.UNREACHABLE;
-            }
+
+            expectedState = WebServerReachableState.UNREACHABLE; // in either case, we already failed the 404
+
             assertEquals(expectedState,
                          command.getNewState().getState());
         }
     }
 
-    @Ignore // TODO: We changed the way that service existence is tested during heartbeat. Now it is only tested if HTTP ping fails.
     @Test
     public void testConfigWhenServiceDoesNotExist() throws Exception {
 
@@ -179,7 +176,7 @@ public class WebServerStateIntegrationTest {
         }
 
         @Bean
-        public ClientHttpRequestFactory httpRequestFactory() throws Exception {
+        public ClientHttpRequestFactory webServerHttpRequestFactory() throws Exception {
             final ClientHttpRequestFactory factory = mock(ClientHttpRequestFactory.class);
             final ClientHttpResponse successResponse = mockResponse(true);
             final ClientHttpResponse failureResponse = mockResponse(false);
@@ -191,6 +188,11 @@ public class WebServerStateIntegrationTest {
             when(factory.createRequest(isUri(FAILURE_PORT),
                                        eq(HttpMethod.GET))).thenReturn(failureRequest);
             return factory;
+        }
+
+        @Bean
+        public com.siemens.cto.aem.common.exception.ExceptionUtil exceptionUtilHelper() {
+            return com.siemens.cto.aem.common.exception.ExceptionUtil.INSTANCE;
         }
 
         @Bean(name = "webServerStateService")
@@ -250,11 +252,12 @@ public class WebServerStateIntegrationTest {
             for (int i = 1; i <= aNumberToCreate; i++) {
                 final Identifier<WebServer> id = new Identifier<>((long) i);
                 final Integer port;
-                if (shouldBeSuccessful(id.getId())) {
+                /*if (shouldBeSuccessful(id.getId())) {
                     port = SUCCESS_PORT;
                 } else {
                     port = FAILURE_PORT;
-                }
+                }*/
+                port = FAILURE_PORT;
                 final WebServer server = new WebServer(id,
                                                        Collections.<Group>emptySet(),
                                                        "unused",

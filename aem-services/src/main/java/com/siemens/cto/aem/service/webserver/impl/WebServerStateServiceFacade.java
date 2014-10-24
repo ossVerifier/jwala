@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -21,6 +23,8 @@ import com.siemens.cto.aem.service.state.impl.AbstractStateServiceFacade;
 
 public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebServer, WebServerReachableState> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateServiceFacade.class);
+
     private final WebServerDao webServerDao;
     
     public WebServerStateServiceFacade(final StateService<WebServer, WebServerReachableState> theService, final WebServerDao theWebServerDao) {
@@ -32,20 +36,24 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
     @Override
     protected SetStateCommand<WebServer, WebServerReachableState> createCommand(final CurrentState<WebServer, WebServerReachableState> currentState, final CurrentState<WebServer, WebServerReachableState> aNewCurrentState) {
         
-        switch(currentState.getState()) {
-            case START_REQUESTED:
-                if(aNewCurrentState.getState() == WebServerReachableState.UNREACHABLE) {
-                    return null; // discard
-                }
-                break;
-            case STOP_REQUESTED:
-                if(aNewCurrentState.getState() == WebServerReachableState.REACHABLE) {
-                    return null; // discard
-                }
-                break;
-            default:
-                break;
-        }
+        if(currentState != null) {
+            switch(currentState.getState()) {
+                case START_REQUESTED:
+                    if(aNewCurrentState.getState() == WebServerReachableState.UNREACHABLE) {
+                        LOGGER.debug("Discarding reverse heartbeat; Webserver STARTING: {}", aNewCurrentState);                
+                        return null; // discard
+                    }
+                    break;
+                case STOP_REQUESTED:
+                    if(aNewCurrentState.getState() == WebServerReachableState.REACHABLE) {
+                        LOGGER.debug("Discarding reverse heartbeat; Webserver STOPPING: {}", aNewCurrentState);                
+                        return null; // discard
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }        
         
         return new WebServerSetStateCommand(aNewCurrentState);
     }

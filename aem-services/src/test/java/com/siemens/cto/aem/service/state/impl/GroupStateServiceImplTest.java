@@ -247,7 +247,9 @@ public class GroupStateServiceImplTest {
         sgsc = updates.get(0);
         assertEquals(GroupState.STARTED, sgsc.getNewState().getState() );
 
-        verify(groupStateManager, times(1)).jvmStarted(eq(jvm.getId()));
+        // In the new GSM, we do not call the trigger methods. The GSM is 
+        // evaluated based on current state.
+        // verify(groupStateManager, times(1)).jvmStarted(eq(jvm.getId()));
 
         group = new Group(group.getId(), group.getName(), jvms, GroupState.STARTED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
@@ -258,7 +260,9 @@ public class GroupStateServiceImplTest {
                 .now()));
         updates = updateJvmState(id(1L, Jvm.class), JvmState.STOPPED);
 
-        verify(groupStateManager, times(1)).jvmStopped(eq(jvm.getId()));
+        // In the new GSM, we do not call the trigger methods. The GSM is 
+        // evaluated based on current state.
+        // verify(groupStateManager, times(1)).jvmStopped(eq(jvm.getId()));
 
         sgsc = updates.get(0);
         assertEquals(GroupState.STOPPED, sgsc.getNewState().getState() );
@@ -267,7 +271,9 @@ public class GroupStateServiceImplTest {
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
         updates = updateJvmState(id(1L, Jvm.class), JvmState.FAILED);
 
-        verify(groupStateManager, times(1)).jvmError(eq(jvm.getId()));
+        // In the new GSM, we do not call the trigger methods. The GSM is 
+        // evaluated based on current state.
+        // verify(groupStateManager, times(1)).jvmError(eq(jvm.getId()));
     }
 
     @Test

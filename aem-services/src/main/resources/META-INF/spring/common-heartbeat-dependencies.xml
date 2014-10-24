@@ -8,6 +8,16 @@
         <property name="readTimeout" value="50"/>
     </bean>
 
+    <bean id="jvmHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+        <property name="connectTimeout" value="250"/>
+        <property name="readTimeout" value="1000"/>
+    </bean>
+
+    <bean id="webServerHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+        <property name="connectTimeout" value="500"/>
+        <property name="readTimeout" value="1000"/>
+    </bean>
+
     <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">
         <constructor-arg value="INSTANCE"/>
     </bean>

@@ -83,7 +83,7 @@
     <int-http:outbound-gateway id="webServerHttpOutboundGateway"
                                request-channel="webServerStateRequest"
                                reply-channel="successfulWebServerStateRequest"
-                               request-factory="httpRequestFactory"
+                               request-factory="webServerHttpRequestFactory"
                                http-method="GET"
                                url-expression="payload"/>
 
@@ -101,16 +101,7 @@
             <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
         </int:header-enricher>
 
-        <!-- acquire original Message TODO this loses the error message.
-        <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage()"/>
-        <int:transformer ref="jvmStateServiceFacade" method="recoverOriginalMessage" />
-        <int:header-enricher>
-            <int:header name="failureMessage"
-               value="GET of status URL failed." />
-        </int:header-enricher>
-
-        -->
-
+        <!-- acquire original Message payload --> 
         <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServer']"/>
         
         <int:header-enricher>
@@ -139,19 +130,6 @@
         </int:header-enricher>
         <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
     </int:chain>
-    
-
-    <!-- never used, state request fails directly into SSH calls  
-    <int:chain id="failedWebServerHttpChain" input-channel="failedWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
-        <int:header-enricher id="failedWebServerHttpHeaderEnricher">
-            <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
-            <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
-            <int:header name="failureException" expression="payload"/>
-        </int:header-enricher>
-        <int:transformer id="failedWebServerHttpTransformer" expression="payload.getFailedMessage().headers['webServerId']"/>
-    </int:chain>
-    -->
 
     <int:chain id="successfulWebServerHttpChain" input-channel="successfulWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="successfulWebServerHttpHeaderEnricher">
