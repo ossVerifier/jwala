@@ -137,6 +137,7 @@
         <int:header-enricher id="failedWebServerHttpHeaderEnricher">
             <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
         </int:header-enricher>
+        <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
     </int:chain>
     
 
