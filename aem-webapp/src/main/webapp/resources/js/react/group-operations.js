@@ -329,9 +329,8 @@ var GroupOperationsDataTable = React.createClass({
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                {sTitle:"Name", mData:"jvmName", colWidth:"240px"},
-                                {sTitle:"Host", mData:"hostName", colWidth:"240px"},
-                                {sTitle:"Status Path", mData:"statusPath.path", colWidth:"60px"},
+                                {sTitle:"Name", mData:"jvmName", colWidth:"270px"},
+                                {sTitle:"Host", mData:"hostName", colWidth:"270px"},
                                 {sTitle:"HTTP", mData:"httpPort", colWidth:"40px"},
                                 {sTitle:"Group",
                                  mData:"groups",
