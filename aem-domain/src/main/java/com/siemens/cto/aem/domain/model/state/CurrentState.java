@@ -130,7 +130,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append("state", state)
                 .append("asOf", asOf)
                 .append("type", type)
-                .append("message", (message != null && message.length() > 1024) ? message.substring(0, 1024) : message)
+                .append("message", message) // Log the entire, because nobody else will report this message. 
                 .toString();
     }
 }
