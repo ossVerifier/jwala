@@ -59,7 +59,7 @@
                                  ref="webServerProvider"
                                  method="getAllWebServers"
                                  channel="unsplitWebServerStateRequests" phase="1000" auto-startup="false">
-        <int:poller fixed-delay="5" time-unit="SECONDS"/>
+        <int:poller fixed-delay="${ping.webServer.period.millis}" time-unit="MILLISECONDS"/>
     </int:inbound-channel-adapter>
 
     <int:chain id="webServerRequestSplitter" input-channel="unsplitWebServerStateRequests" output-channel="splitWebServerStateRequests">

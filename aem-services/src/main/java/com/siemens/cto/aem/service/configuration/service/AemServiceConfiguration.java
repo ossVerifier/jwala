@@ -2,12 +2,15 @@ package com.siemens.cto.aem.service.configuration.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.ClassPathResource;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -93,6 +96,21 @@ public class AemServiceConfiguration {
     @Autowired
     private AemSshConfig aemSshConfig;
 
+    /**
+     * Make toc.properties available to spring integration configuration
+     * System properties are only used if there is no setting in toc.properties.
+     */
+    @Bean 
+    public static PropertyPlaceholderConfigurer configurer() { 
+         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+         ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+         ppc.setLocalOverride(true);
+         ppc.setProperties(ApplicationProperties.getProperties());
+         ppc.setSearchSystemEnvironment(true);
+         ppc.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+         return ppc; 
+    } 
+    
     @Bean(name="groupStateMachine")
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
     public GroupStateMachine getGroupStateMachine() {
