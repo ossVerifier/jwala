@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!--  toc-default.propeties, and toc.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
+
+    <!-- The first one may be used during testing only -->
     <bean id="httpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
         <property name="connectTimeout" value="200"/>
         <property name="readTimeout" value="50"/>
     </bean>
 
+    <!-- Configured versions -->
     <bean id="jvmHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
-        <property name="connectTimeout" value="250"/>
-        <property name="readTimeout" value="1000"/>
+        <property name="connectTimeout" value="${ping.webServer.connectTimeout}"/>
+        <property name="readTimeout" value="${ping.webServer.readTimeout}"/>
     </bean>
 
     <bean id="webServerHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
-        <property name="connectTimeout" value="500"/>
-        <property name="readTimeout" value="1000"/>
+        <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
+        <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
     </bean>
 
     <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">
