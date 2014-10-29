@@ -475,6 +475,7 @@ var JvmConfigForm = React.createClass({
         }
     },
     destroy: function() {
+        this.validator.resetForm();
         $(this.getDOMNode()).dialog("destroy");
         this.props.destroyCallback();
     }

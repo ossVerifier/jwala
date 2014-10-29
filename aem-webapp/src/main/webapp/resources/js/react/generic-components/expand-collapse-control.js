@@ -115,7 +115,7 @@ var ExpandCollapseControl = React.createClass({
         // We need the <tr> node for DataTable to insert the child table
         var nTr = $("#" + this.props.id).parent().parent().get(0);
 
-        if (this.currentIcon === this.props.expandIcon) {
+        if (!dataTable.fnIsOpen(nTr)) {
             this.currentIcon = this.props.collapseIcon;
             dataTable.fnOpen(nTr,
                              this.fnFormatDetails(),
