@@ -4,12 +4,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.domain.model.path.Path;
 
 public class UriBuilder {
 
-    private static final String HTTP = "http";
+    private final static Logger LOGGER = LoggerFactory.getLogger(UriBuilder.class); 
+
+    public static final String HTTP = "http";
+    public static final String HTTPS = "https";
     private static final String NO_USER_INFO = null;
     private static final String NO_QUERY = null;
     private static final String NO_FRAGMENT = null;
@@ -18,6 +23,7 @@ public class UriBuilder {
     private String user;
     private String host;
     private Integer port;
+    private Integer httpsPort;
     private Path path;
     private String query;
     private String fragment;
@@ -50,6 +56,7 @@ public class UriBuilder {
     }
 
     public UriBuilder setPath(final Path aPath) {
+        setScheme(aPath.getFeature("scheme", scheme));
         path = aPath;
         return this;
     }
@@ -67,6 +74,7 @@ public class UriBuilder {
     public URI buildUnchecked() {
         try {
             final URI uri = build();
+            LOGGER.trace("Constructed URI: " + uri.toString());
             return uri;
         } catch (final URISyntaxException urise) {
             throw new RuntimeException("Unable to construct the URI for : " + this.toString(), urise);
@@ -77,8 +85,8 @@ public class UriBuilder {
         final URI uri = new URI(scheme,
                                 user,
                                 host,
-                                port,
-                                path.getPath(),
+                                (httpsPort != null && scheme.equals(HTTPS)) ? httpsPort : port,
+                                path.getUriPath(),
                                 query,
                                 fragment);
         return uri;
@@ -91,9 +99,15 @@ public class UriBuilder {
                 .append("user", user)
                 .append("host", host)
                 .append("port", port)
+                .append("httpsPort", httpsPort)
                 .append("path", path)
                 .append("query", query)
                 .append("fragment", fragment)
                 .toString();
+    }
+
+    public UriBuilder setHttpsPort(Integer httpsPort) {
+        this.httpsPort = httpsPort;
+        return this;
     }
 }

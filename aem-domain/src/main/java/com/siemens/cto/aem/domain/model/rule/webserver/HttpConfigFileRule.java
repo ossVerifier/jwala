@@ -28,8 +28,8 @@ public class HttpConfigFileRule implements Rule {
          */
         return (fileSystemPath != null) &&
                 fileSystemPath.isAbsolute() &&
-               !fileSystemPath.getPath().endsWith("/") &&
-               !fileSystemPath.getPath().endsWith("\\");
+               !fileSystemPath.getUriPath().endsWith("/") &&
+               !fileSystemPath.getUriPath().endsWith("\\");
     }
 
     @Override

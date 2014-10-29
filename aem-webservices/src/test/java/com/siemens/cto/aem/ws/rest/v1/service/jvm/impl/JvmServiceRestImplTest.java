@@ -136,7 +136,7 @@ public class JvmServiceRestImplTest {
     public void testCreateJvm() {
         when(impl.createJvm(any(CreateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath.getPath());
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath.getUriPath());
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -162,7 +162,7 @@ public class JvmServiceRestImplTest {
                                                               redirectPort,
                                                               shutdownPort,
                                                               ajpPort,
-                                                              statusPath.getPath());
+                                                              statusPath.getUriPath());
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -177,7 +177,7 @@ public class JvmServiceRestImplTest {
     @Test
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
-        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1", statusPath.getPath());
+        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1", statusPath.getUriPath());
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
         final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);

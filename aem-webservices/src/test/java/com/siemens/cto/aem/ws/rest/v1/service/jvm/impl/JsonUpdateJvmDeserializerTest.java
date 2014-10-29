@@ -284,7 +284,7 @@ public class JsonUpdateJvmDeserializerTest {
         assertEquals(aAjpPort,
                      integerToString(update.getNewAjpPort()));
         assertEquals(aStatusPath,
-                     update.getNewStatusPath().getPath());
+                     update.getNewStatusPath().getUriPath());
         assertEquals(someGroupIds.length,
                      update.getAssignmentCommands().size());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();

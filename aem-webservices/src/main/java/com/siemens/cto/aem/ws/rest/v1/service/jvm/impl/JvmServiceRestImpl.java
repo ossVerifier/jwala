@@ -48,7 +48,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getJvms(final PaginationParamProvider paginationParamProvider) {
-        logger.debug("Get JVMs requested with pagination: {}", paginationParamProvider);
+        logger.debug("Get JVMs with pagination requested: {}", paginationParamProvider);
         final List<Jvm> jvms = jvmService.getJvms(paginationParamProvider.getPaginationParameter());
         return ResponseBuilder.ok(jvms);
     }

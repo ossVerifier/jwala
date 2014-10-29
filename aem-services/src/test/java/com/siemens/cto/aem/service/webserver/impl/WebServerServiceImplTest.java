@@ -215,7 +215,7 @@ public class WebServerServiceImplTest {
         assertEquals("the-ws-name-2", webServer.getName());
         assertEquals(group2.getName(), webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
-        assertEquals("d:/some-dir/httpd.conf", webServer.getHttpConfigFile().getPath());
+        assertEquals("d:/some-dir/httpd.conf", webServer.getHttpConfigFile().getUriPath());
     }
 
     @Test

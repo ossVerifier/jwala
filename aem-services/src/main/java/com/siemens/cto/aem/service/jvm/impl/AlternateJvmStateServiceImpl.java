@@ -20,7 +20,7 @@ public class AlternateJvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState
                                         final StateNotificationGateway theStateNotificationGateway) {
         super(thePersistenceService,
               theNotificationService,
-              StateType.WEB_SERVER,
+              StateType.JVM,
               theStateNotificationGateway);
     }
 

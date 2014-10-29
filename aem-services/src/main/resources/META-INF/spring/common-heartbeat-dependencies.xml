@@ -14,12 +14,16 @@
     </bean>
 
     <!-- Configured versions -->
-    <bean id="jvmHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+    <bean id="nullHostNameVerifier" class="com.siemens.cto.aem.si.ssl.NullHostNameVerifier" />
+    
+    <bean id="jvmHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.SslClientHttpRequestFactory">
+        <property name="verifier" value="#{nullHostNameVerifier}"/>
         <property name="connectTimeout" value="${ping.webServer.connectTimeout}"/>
         <property name="readTimeout" value="${ping.webServer.readTimeout}"/>
     </bean>
 
-    <bean id="webServerHttpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+    <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.SslClientHttpRequestFactory">
+        <property name="verifier" value="#{nullHostNameVerifier}"/>
         <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
         <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
     </bean>

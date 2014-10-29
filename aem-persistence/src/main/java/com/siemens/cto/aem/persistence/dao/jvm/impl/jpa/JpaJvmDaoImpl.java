@@ -53,7 +53,7 @@ public class JpaJvmDaoImpl implements JvmDao {
             jpaJvm.setRedirectPort(command.getRedirectPort());
             jpaJvm.setShutdownPort(command.getShutdownPort());
             jpaJvm.setAjpPort(command.getAjpPort());
-            jpaJvm.setStatusPath(command.getStatusPath().getPath());
+            jpaJvm.setStatusPath(command.getStatusPath().getUriPath());
 
             jpaJvm.setCreateBy(userId);
             jpaJvm.setCreateDate(updateTime);
@@ -86,7 +86,7 @@ public class JpaJvmDaoImpl implements JvmDao {
             jvm.setRedirectPort(command.getNewRedirectPort());
             jvm.setShutdownPort(command.getNewShutdownPort());
             jvm.setAjpPort(command.getNewAjpPort());
-            jvm.setStatusPath(command.getNewStatusPath().getPath());
+            jvm.setStatusPath(command.getNewStatusPath().getUriPath());
 
             entityManager.flush();
 

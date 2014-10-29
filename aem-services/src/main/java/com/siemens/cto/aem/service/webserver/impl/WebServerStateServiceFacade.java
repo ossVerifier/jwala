@@ -79,7 +79,7 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
                     if(webServer != null) {
                         wsName = webServer.getName();
                         wsHost = webServer.getHost();
-                        wsStatusPath = webServer.getStatusPath().getPath();
+                        wsStatusPath = webServer.getStatusPath().getUriPath();
                     }
                     String message = MessageFormat.format(pattern,
                             wsName,

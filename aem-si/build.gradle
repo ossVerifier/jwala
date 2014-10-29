@@ -10,6 +10,8 @@ dependencies {
 
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
 
     testCompile project(path: ":aem-common", configuration: "commonTest")
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"

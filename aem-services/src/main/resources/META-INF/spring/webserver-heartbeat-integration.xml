@@ -84,7 +84,7 @@
                                request-channel="webServerStateRequest"
                                reply-channel="successfulWebServerStateRequest"
                                request-factory="webServerHttpRequestFactory"
-                               http-method="GET"
+                               http-method="GET" 
                                url-expression="payload"/>
 
     <!--  success splitWebServerStateRequests => successfulWebServerStateRequest  (end) -->

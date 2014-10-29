@@ -270,8 +270,8 @@ public class JsonUpdateWebServerDeserializerTest {
         assertEquals(Integer.valueOf(aHttpsPort),
                      updateCommand.getNewHttpsPort());
         assertEquals(aStatusPath,
-                     updateCommand.getNewStatusPath().getPath());
-        assertEquals(aHttpConfigFile, updateCommand.getNewHttpConfigFile().getPath());
+                     updateCommand.getNewStatusPath().getUriPath());
+        assertEquals(aHttpConfigFile, updateCommand.getNewHttpConfigFile().getUriPath());
         assertCollectionEquals(new IdentifierSetBuilder(Arrays.asList(groupIds)).<Group>build(),
                                updateCommand.getNewGroupIds());
 

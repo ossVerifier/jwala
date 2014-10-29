@@ -94,7 +94,7 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
                     if(jvm != null) {
                         jvmName = jvm.getJvmName();
                         jvmHost = jvm.getHostName();
-                        jvmStatusPath = jvm.getStatusPath().getPath();
+                        jvmStatusPath = jvm.getStatusPath().getUriPath();
                     }
                     String message = MessageFormat.format(pattern,
                             jvmName,

@@ -44,7 +44,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         final WebServerExecCommandBuilder builder = new DefaultWebServerExecCommandBuilderImpl();
         final ExecCommand execCommand = builder.setOperation(WebServerControlOperation.VIEW_HTTP_CONFIG_FILE)
                                                 .setWebServer(aWebServer)
-                                                .setParameter(aWebServer.getHttpConfigFile().getPath())
+                                                .setParameter(aWebServer.getHttpConfigFile().getUriPath())
                                                 .build();
 
         try {

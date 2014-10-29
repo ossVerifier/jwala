@@ -97,6 +97,7 @@ public class Jvm implements Serializable {
 
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
+                                                   .setHttpsPort(getHttpsPort())
                                                    .setPort(getHttpPort())
                                                    .setPath(getStatusPath());
         return builder.buildUnchecked();

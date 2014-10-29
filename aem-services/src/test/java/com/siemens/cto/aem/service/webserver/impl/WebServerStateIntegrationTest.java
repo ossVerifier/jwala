@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -35,9 +34,11 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
@@ -55,6 +56,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
@@ -154,6 +156,20 @@ public class WebServerStateIntegrationTest {
     @ImportResource("classpath*:META-INF/spring/webserver-heartbeat-integration.xml")
     static class CommonConfiguration {
       
+        /**
+         * Make toc.properties available to spring integration configuration
+         * System properties are only used if there is no setting in toc.properties.
+         */
+        @Bean(name = "propertyPlaceholderConfigurer")
+        public static PropertyPlaceholderConfigurer getPropertyPlaceholderConfigurer() {
+            PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+            ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties", StateService.class.getClassLoader()));
+            ppc.setLocalOverride(true);
+            ppc.setSearchSystemEnvironment(true);
+            ppc.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
+            return ppc; 
+        }
+        
         @Bean(name = "webServerServiceExistence")
         public WebServerServiceExistenceFacade getWebServerServiceExistenceFacade() {
             return new WebServerServiceExistenceFacade();
