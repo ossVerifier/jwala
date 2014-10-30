@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedList;
+import java.util.LinkedHashSet;
 
 public class GroupServiceImpl implements GroupService {
 
@@ -110,47 +112,46 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public List<String> getOtherGroupingDetailsOfJvms(Identifier<Group> id) {
-        final String memberOfStr = " is a member of ";
-        final List<String> otherGroupConnectionDetails = new ArrayList<>();
+    public List<Jvm> getOtherGroupingDetailsOfJvms(Identifier<Group> id) {
+        final List<Jvm> otherGroupConnectionDetails = new LinkedList<>();
         final Group group = groupPersistenceService.getGroup(id, false);
         final Set<Jvm> jvms = group.getJvms();
 
         for (Jvm jvm : jvms) {
+            final Set<LiteGroup> tmpGroup = new LinkedHashSet<>();
             if (jvm.getGroups() != null && !jvm.getGroups().isEmpty()) {
-                String groupNames = "";
                 for (LiteGroup liteGroup : jvm.getGroups()) {
                     if (!id.getId().equals(liteGroup.getId().getId())) {
-                        groupNames += groupNames == "" ? liteGroup.getName() : "," + liteGroup.getName();
+                        tmpGroup.add(liteGroup);
                     }
                 }
-                if (groupNames != "") {
-                    otherGroupConnectionDetails.add(jvm.getJvmName() + memberOfStr + groupNames);
+                if (!tmpGroup.isEmpty()) {
+                    otherGroupConnectionDetails.add(new Jvm(jvm.getId(), jvm.getHostName(), tmpGroup));
                 }
             }
         }
-
         return otherGroupConnectionDetails;
     }
 
     @Override
     @Transactional
-    public List<String> getOtherGroupingDetailsOfWebServers(Identifier<Group> id) {
-        final String memberOfStr = " is a member of ";
-        final List<String> otherGroupConnectionDetails = new ArrayList<>();
+    public List<WebServer> getOtherGroupingDetailsOfWebServers(Identifier<Group> id) {
+        final List<WebServer> otherGroupConnectionDetails = new ArrayList<>();
         final Group group = groupPersistenceService.getGroup(id, true);
         final Set<WebServer> webServers = group.getWebServers();
 
         for (WebServer webServer: webServers) {
+            final Set<Group> tmpGroup = new LinkedHashSet<>();
             if (webServer.getGroups() != null && !webServer.getGroups().isEmpty()) {
-                String groupNames = "";
                 for (Group webServerGroup : webServer.getGroups()) {
                     if (!id.getId().equals(webServerGroup.getId().getId())) {
-                        groupNames += groupNames == "" ? webServerGroup.getName() : "," + webServerGroup.getName();
+                        tmpGroup.add(webServerGroup);
                     }
                 }
-                if (groupNames != "") {
-                    otherGroupConnectionDetails.add(webServer.getName() + memberOfStr + groupNames);
+                if (!tmpGroup.isEmpty()) {
+                    otherGroupConnectionDetails.add(new WebServer(webServer.getId(),
+                                                        webServer.getGroups(),
+                                                        webServer.getName()));
                 }
             }
         }

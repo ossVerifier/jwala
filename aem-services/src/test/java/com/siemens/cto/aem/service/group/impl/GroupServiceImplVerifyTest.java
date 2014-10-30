@@ -166,16 +166,23 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupSet.add(new LiteGroup(new Identifier<Group>("3"), "Group3"));
 
         final Set<Jvm> jvmSet = new HashSet<>();
-        jvmSet.add(new Jvm(new Identifier<Jvm>("1"), "Jvm1", null, groupSet, null, null, null, null, null, null));
+        jvmSet.add(new Jvm(new Identifier<Jvm>("1"), "Jvm1", groupSet));
 
         final Group group = new Group(new Identifier<Group>("1"), "Group1" , jvmSet);
 
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(false))).thenReturn(group);
 
-        final List<String> otherGroupingDetailsOfJvm = impl.getOtherGroupingDetailsOfJvms(new Identifier<Group>("1"));
+        final List<Jvm> otherGroupingDetailsOfJvm = impl.getOtherGroupingDetailsOfJvms(new Identifier<Group>("1"));
+
         assertTrue(otherGroupingDetailsOfJvm.size() == 1);
-        assertTrue("Jvm1 is a member of Group2,Group3".equals(otherGroupingDetailsOfJvm.get(0)) ||
-                   "Jvm1 is a member of Group3,Group2".equals(otherGroupingDetailsOfJvm.get(0)));
+        assertEquals(otherGroupingDetailsOfJvm.get(0).getGroups().size(), 2);
+
+        String groupNames = "";
+        for (LiteGroup grp: otherGroupingDetailsOfJvm.get(0).getGroups()) {
+            groupNames += grp.getName();
+        }
+
+        assertTrue("Group3Group2".equalsIgnoreCase(groupNames) || "Group2Group3".equalsIgnoreCase(groupNames));
     }
 
     @Test
@@ -198,11 +205,16 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(true))).thenReturn(groupSet.get(2));
 
-        final List<String> otherGroupingDetailsOfWebServer =
+        final List<WebServer> otherGroupingDetailsOfWebServer =
                 impl.getOtherGroupingDetailsOfWebServers(new Identifier<Group>("1"));
         assertTrue(otherGroupingDetailsOfWebServer.size() == 1);
-        assertTrue("WebServer1 is a member of Group2,Group3".equals(otherGroupingDetailsOfWebServer.get(0)) ||
-                   "WebServer1 is a member of Group3,Group2".equals(otherGroupingDetailsOfWebServer.get(0)));
+
+        String groupNames = "";
+        for (Group grp: otherGroupingDetailsOfWebServer.get(0).getGroups()) {
+            groupNames += grp.getName();
+        }
+
+        assertTrue("Group3Group2".equalsIgnoreCase(groupNames) || "Group2Group3".equalsIgnoreCase(groupNames));
     }
 
 }

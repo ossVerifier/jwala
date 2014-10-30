@@ -320,6 +320,25 @@ var groupOperationsHelper = function(){
 
         },
 
+        /**
+         * Creates a HTML representation of group membership details
+         *
+         * @param membershipDetails group membership details array
+         */
+        createMembershipDetailsHtmlRepresentation: function(membershipDetails) {
+            var html = "";
+            membershipDetails.forEach(function(membershipDetail) {
+                var groupNames = "<ul>";
+                membershipDetail.groupNames.forEach(function(name){
+                                                        groupNames += "<li>" + name + "</li>";
+                                                    });
+                html += "<b>" + (membershipDetail.type === "WEB_SERVER" ? "Web Server" : "JVM") + " " +
+                        membershipDetail.name + " is a member of:</b><br/>" +
+                        groupNames + "</ul><br/>";
+            });
+            return html;
+        },
+
         updateDataTables: function(groupId, jvmId, state) {
             $("table[id*='jvm'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
                                                         .each(function(index, elem) { $(elem).dataTable().fnDraw();});

@@ -547,7 +547,7 @@ var GroupOperationsDataTable = React.createClass({
     },
    confirmStartStopGroupDialogBox: function(id, buttonSelector, msg, callbackOnConfirm) {
         var dialogId = "group-stop-confirm-dialog-" + id;
-        $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
+        $(buttonSelector).parent().append("<div id='" + dialogId +"' style='text-align:left'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
             title: "Confirmation",
             width: "auto",
@@ -581,10 +581,13 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         groupService.getChildrenOtherGroupConnectionDetails(id, groupChildType).then(function(data) {
             if (data.applicationResponseContent instanceof Array && data.applicationResponseContent.length > 0) {
+                var membershipDetails =
+                    groupOperationsHelper.createMembershipDetailsHtmlRepresentation(data.applicationResponseContent);
+
                 self.confirmStartStopGroupDialogBox(id,
                                                buttonSelector,
-                                               data.applicationResponseContent.join("<br/>")
-                                                    + "<br/><br/>Are you sure you want to " + operation + " " + name + " ?",
+                                               membershipDetails
+                                                    + "<br/><b>Are you sure you want to " + operation + " " + name + " ?</b>",
                                                operationCallback);
             } else {
                 operationCallback(id, buttonSelector);

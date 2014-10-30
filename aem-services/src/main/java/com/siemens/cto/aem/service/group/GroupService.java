@@ -9,8 +9,10 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 
 public interface GroupService {
 
@@ -41,16 +43,14 @@ public interface GroupService {
     /**
      * Gets the connection details of JVMs under a group specified by id.
      * @param id the group id
-     * @return A list of String that describes the connections of JVMs and Web Servers of a group
-     *         specified by id. Example description: JVM1 is a member of group2, group3, group4.
+     * @return JVMs that are members of more than one group.
      */
-    List<String> getOtherGroupingDetailsOfJvms(final Identifier<Group> id);
+    List<Jvm> getOtherGroupingDetailsOfJvms(final Identifier<Group> id);
 
     /**
      * Gets the connection details of Web Servers under a group specified by id.
      * @param id the group id
-     * @return A list of String that describes the connections of Web Servers of a group
-     *         specified by id. Example description: WebServer1 is a member of group2, group3, group4.
+     * @return Web Servers that are members of more than one group.
      */
-    List<String> getOtherGroupingDetailsOfWebServers(final Identifier<Group> id);
+    List<WebServer> getOtherGroupingDetailsOfWebServers(final Identifier<Group> id);
 }

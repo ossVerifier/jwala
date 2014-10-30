@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
+import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,15 +19,6 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -78,6 +69,26 @@ public class GroupServiceRestImplTest {
     @Mock
     private AuthenticatedUser authenticatedUser;
 
+    @Mock
+    private Jvm mockJvm;
+
+    private List<Jvm> jvms;
+
+    @Mock
+    private WebServer mockWebServer;
+
+    private List<WebServer> webServers;
+
+    private Set<Group> groups;
+
+    @Mock
+    private LiteGroup mockLiteGroup;
+
+    private Set<LiteGroup> liteGroups;
+
+    @Mock
+    private Group mockGroup;
+
     @InjectMocks @Spy
     private GroupServiceRestImpl cut = new GroupServiceRestImpl(impl = Mockito.mock(GroupServiceImpl.class));
 
@@ -101,6 +112,22 @@ public class GroupServiceRestImplTest {
     @Before
     public void setup() {
         when(authenticatedUser.getUser()).thenReturn(new User(GROUP_CONTROL_TEST_USERNAME));
+
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockLiteGroup.getName()).thenReturn("group1");
+        liteGroups = new HashSet<>();
+        liteGroups.add(mockLiteGroup);
+        when(mockJvm.getGroups()).thenReturn(liteGroups);
+        jvms = new ArrayList<>();
+        jvms.add(mockJvm);
+
+        when(mockWebServer.getName()).thenReturn("webServer1");
+        when(mockGroup.getName()).thenReturn("group2");
+        groups = new HashSet<>();
+        groups.add(mockGroup);
+        when(mockWebServer.getGroups()).thenReturn(groups);
+        webServers = new ArrayList<>();
+        webServers.add(mockWebServer);
     }
 
     @Test
@@ -265,42 +292,42 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeNull() {
-        final List<String> jvmMsgs = new ArrayList<>();
-        jvmMsgs.add("jvm message");
-        final List<String> webServerMsgs = new ArrayList<>();
-        jvmMsgs.add("web server message");
-        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvmMsgs);
-        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServerMsgs);
+        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
+
+        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
         final Response response = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), null);
         assertEquals(response.getStatus(), 200);
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        assertEquals("[jvm message, web server message]",
-                     applicationResponse.getApplicationResponseContent().toString());
+
+        final List<MembershipDetails> membershipDetailsList = (List) applicationResponse.getApplicationResponseContent();
+        assertEquals("jvm1", membershipDetailsList.get(0).getName());
+        assertEquals("group1", membershipDetailsList.get(0).getGroupNames().get(0));
+        assertEquals("webServer1", membershipDetailsList.get(1).getName());
+        assertEquals("group2", membershipDetailsList.get(1).getGroupNames().get(0));
     }
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeJvm() {
-        final List<String> jvmMsgs = new ArrayList<>();
-        jvmMsgs.add("jvm message");
-        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvmMsgs);
+        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
         final Response response =
                 cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.JVM);
         assertEquals(response.getStatus(), 200);
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        assertEquals("[jvm message]",
-                applicationResponse.getApplicationResponseContent().toString());
+
+        final List<MembershipDetails> membershipDetailsList = (List) applicationResponse.getApplicationResponseContent();
+        assertEquals("jvm1", membershipDetailsList.get(0).getName());
+        assertEquals("group1", membershipDetailsList.get(0).getGroupNames().get(0));
     }
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeWebServer() {
-        final List<String> webServerMsgs = new ArrayList<>();
-        webServerMsgs.add("web server message");
-        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServerMsgs);
+        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
         final Response response
             = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.WEB_SERVER);
         assertEquals(response.getStatus(), 200);
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        assertEquals("[web server message]",
-                applicationResponse.getApplicationResponseContent().toString());
+        final List<MembershipDetails> membershipDetailsList = (List) applicationResponse.getApplicationResponseContent();
+        assertEquals("webServer1", membershipDetailsList.get(0).getName());
+        assertEquals("group2", membershipDetailsList.get(0).getGroupNames().get(0));
     }
 }
