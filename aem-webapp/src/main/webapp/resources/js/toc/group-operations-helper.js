@@ -332,8 +332,9 @@ var groupOperationsHelper = function(){
                 membershipDetail.groupNames.forEach(function(name){
                                                         groupNames += "<li>" + name + "</li>";
                                                     });
-                html += "<b>" + (membershipDetail.type === "WEB_SERVER" ? "Web Server" : "JVM") + " " +
-                        membershipDetail.name + " is a member of:</b><br/>" +
+                html += "<b>" + (membershipDetail.type === "WEB_SERVER" ? "Web Server" : "JVM") +
+                        " <span style='color:#2a70d0'>" +
+                        membershipDetail.name + "</span> is a member of:</b><br/>" +
                         groupNames + "</ul><br/>";
             });
             return html;

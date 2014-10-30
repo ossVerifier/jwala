@@ -587,7 +587,8 @@ var GroupOperationsDataTable = React.createClass({
                 self.confirmStartStopGroupDialogBox(id,
                                                buttonSelector,
                                                membershipDetails
-                                                    + "<br/><b>Are you sure you want to " + operation + " " + name + " ?</b>",
+                                                    + "<br/><b>Are you sure you want to " + operation
+                                                    + " <span style='color:#2a70d0'>" + name + "</span> ?</b>",
                                                operationCallback);
             } else {
                 operationCallback(id, buttonSelector);
