@@ -364,7 +364,9 @@ var WebServerConfigForm = React.createClass({
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
                                                   });
+            return true;
         }
+        return false;
     },
     updateWebServer: function() {
         if (this.isValid()) {
@@ -373,7 +375,9 @@ var WebServerConfigForm = React.createClass({
                                                function(errMsg) {
                                                     $.errorAlert(errMsg, "Error");
                                                });
+            return true;
         }
+        return false;
     },
     componentDidUpdate: function() {
         if (this.props.show === true) {

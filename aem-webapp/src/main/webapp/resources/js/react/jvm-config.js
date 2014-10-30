@@ -447,7 +447,9 @@ var JvmConfigForm = React.createClass({
                                             function(errMsg) {
                                                 $.errorAlert(errMsg, "Error");
                                             });
+            return true;
         }
+        return false;
     },
     updateJvm: function() {
         if (this.isValid()) {
@@ -456,7 +458,9 @@ var JvmConfigForm = React.createClass({
                                          function(errMsg) {
                                              $.errorAlert(errMsg, "Error");
                                          });
+            return true;
         }
+        return false;
     },
     componentDidUpdate: function() {
         if (this.props.show === true) {

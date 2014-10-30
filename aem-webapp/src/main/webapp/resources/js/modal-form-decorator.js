@@ -12,14 +12,25 @@ var decorateNodeAsModalFormDialog = function(divNode, title, okCallback, cancelC
         width: "auto",
         buttons: {
             "Ok": function () {
-                okCallback();
+                if (okCallback()) {
+                    $(document).off("keydown");
+                }
             },
             "Cancel": function () {
+                $(document).off("keydown");
                 cancelCallback();
             }
         },
         close: function() {
+            $(document).off("keydown");
             closeCallback();
+        }
+    });
+
+    $(document).keydown(function(e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            $(divNode).parent().find("button:contains('Ok')").trigger("click");
         }
     });
 }

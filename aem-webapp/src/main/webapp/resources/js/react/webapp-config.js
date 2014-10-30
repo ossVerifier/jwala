@@ -301,7 +301,9 @@ var WebAppConfigForm = React.createClass({
                                               function(errMsg) {
                                                     $.errorAlert(errMsg, "Error");
                                               });
+            return true;
         }
+        return false;
     },
     updateWebApp: function() {
         var self = this;
@@ -314,7 +316,9 @@ var WebAppConfigForm = React.createClass({
                                            function(errMsg) {
                                                 $.errorAlert(errMsg, "Error");
                                            });
+            return true;
         }
+        return false;
     },
     destroy: function() {
         this.validator.resetForm();

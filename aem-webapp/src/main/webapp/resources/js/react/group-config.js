@@ -220,7 +220,9 @@ var GroupConfigForm = React.createClass({
                                               function(errMsg) {
                                                     $.errorAlert(errMsg, "Error");
                                               });
+            return true;
         }
+        return false;
     },
     updateGroup: function() {
         var self = this;
@@ -233,7 +235,9 @@ var GroupConfigForm = React.createClass({
                                            function(errMsg) {
                                                 $.errorAlert(errMsg, "Error");
                                            });
+            return true;
         }
+        return false;
     },
     destroy: function() {
         this.validator.resetForm();
