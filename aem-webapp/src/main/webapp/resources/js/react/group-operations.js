@@ -211,8 +211,8 @@ var GroupOperationsDataTable = React.createClass({
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
-                                           {sTitle:"Name", mData:"name", colWidth:"240px"},
-                                           {sTitle:"Host", mData:"host", colWidth:"240px"},
+                                           {sTitle:"Name", mData:"name", colWidth:"340px"},
+                                           {sTitle:"Host", mData:"host", colWidth:"140px"},
                                            {sTitle:"HTTP", mData:"port", colWidth:"40px"},
                                            {sTitle:"HTTPS", mData:"httpsPort", colWidth:"40px"},
                                            {sTitle:"Status Path", mData:"statusPath.uriPath", colWidth:"60px"},
@@ -329,8 +329,8 @@ var GroupOperationsDataTable = React.createClass({
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                {sTitle:"Name", mData:"jvmName", colWidth:"270px"},
-                                {sTitle:"Host", mData:"hostName", colWidth:"270px"},
+                                {sTitle:"Name", mData:"jvmName", colWidth:"340px"},
+                                {sTitle:"Host", mData:"hostName", colWidth:"200px"},
                                 {sTitle:"HTTP", mData:"httpPort", colWidth:"40px"},
                                 {sTitle:"Group",
                                  mData:"groups",
