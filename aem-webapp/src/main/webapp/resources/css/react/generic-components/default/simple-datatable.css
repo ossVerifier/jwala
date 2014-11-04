@@ -31,3 +31,11 @@ table.simple-data-table td {
 table.simple-data-table {
     table-layout: fixed
 }
+
+table.simple-data-table td > div > a {
+    color:#1d5987;
+}
+
+table.simple-data-table td > div > a:hover {
+    font-weight:bold;
+}
