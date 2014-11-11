@@ -272,14 +272,14 @@ var groupOperationsHelper = function(){
             }
             return [msg, ""];
         },
-        groupArrayToString: function(groups, excludedGroupId) {
-            var str = "";
+        groupArrayToHtmlList: function(groups, excludedGroupId) {
+            var str = "<ul>";
             groups.forEach(function(group){
                 if (excludedGroupId === undefined || excludedGroupId !== group.id.id) {
-                    str += (str === "" ? group.name : "," + group.name);
+                    str += "<li>" + group.name + "</li>";
                 }
             });
-            return str;
+            return str + "</ul>";
         },
         lastItemEquals: function(array, key, val) {
             if (array.length > 0) {

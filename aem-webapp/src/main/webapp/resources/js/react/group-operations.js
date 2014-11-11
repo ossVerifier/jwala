@@ -703,7 +703,7 @@ var GroupOperationsDataTable = React.createClass({
 
     confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
         var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm" + id;
-        $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
+        $(buttonSelector).parent().append("<div id='" + dialogId +"' style='text-align:left'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
            title: "Confirmation",
            width: "auto",
@@ -731,10 +731,11 @@ var GroupOperationsDataTable = React.createClass({
                                                            groups,
                                                            operation,
                                                            operationCallback,
-                                                           cancelCallback) {
-        var msg = name + " is a member of " +
-                  groupOperationsHelper.groupArrayToString(groups, parentItemId)
-                  + "<br/><br/> Are you sure you want to " + operation + " " + name + " ?";
+                                                           cancelCallback,
+                                                           serverType) {
+        var msg = "<b>" + serverType + " <span style='color:#2a70d0'>" + name + "</span> is a member of:</b><br/>" +
+                  groupOperationsHelper.groupArrayToHtmlList(groups, parentItemId)
+                  + "<br/><b> Are you sure you want to " + operation + " <span style='color:#2a70d0'>" + name + "</span></b> ?";
         if (groups.length > 1) {
             this.confirmJvmWebServerStopGroupDialogBox(id,
                                                        parentItemId,
@@ -754,7 +755,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "start",
                                                           jvmControlService.startJvm,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "JVM");
     },
     jvmStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
@@ -764,7 +766,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "stop",
                                                           jvmControlService.stopJvm,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "JVM");
     },
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
@@ -874,7 +877,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "start",
                                                           webServerControlService.startWebServer,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "Web Server");
     },
     webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
@@ -884,7 +888,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "stop",
                                                           webServerControlService.stopWebServer,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "Web Server");
     },
     webServerErrorAlertCallback: function(alertDlgDivId, ws) {
         this.webServerHasNewMessage[ws.id.id] = "false";
