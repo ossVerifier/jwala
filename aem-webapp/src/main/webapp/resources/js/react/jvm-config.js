@@ -491,7 +491,7 @@ var JvmDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"jvmName", tocType:"link"},
+                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                         {sTitle:"Host", mData:"hostName"},
                         {sTitle:"Status Path", mData:"statusPath.path"},
                         {sTitle:"Group",
@@ -509,5 +509,12 @@ var JvmDataTable = React.createClass({
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}/>
+    },
+    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+            return React.renderComponent(new React.DOM.button({className:"button-link",
+                                         onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+        }.bind(this);
     }
 });

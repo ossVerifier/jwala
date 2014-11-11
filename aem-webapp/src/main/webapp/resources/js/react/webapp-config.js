@@ -336,7 +336,7 @@ var WebAppDataTable = React.createClass({
     render: function() {
         var tableDef = [
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
-                         {sTitle:"WebApp Name", mData:"name", tocType:"link"},
+                         {sTitle:"WebApp Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                          {sTitle:"Context", mData:"webAppContext"},
                          {sTitle:"Web Archive", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderRowData },
                          {sTitle:"Group ID", mData:"group.id.id", bVisible:false},
@@ -378,7 +378,15 @@ var WebAppDataTable = React.createClass({
 
                   return "<div />";
                 }.bind(this);
+    },
+    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+            aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+                return React.renderComponent(new React.DOM.button({className:"button-link",
+                                                 onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+            }.bind(this);
     }
+
 });
 
 var WARUpload = React.createClass({ 
