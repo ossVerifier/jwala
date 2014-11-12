@@ -352,8 +352,9 @@ var WebAppDataTable = React.createClass({
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"/>
     },
-    renderRowData:function(dataTable, data, aoColumnDefs, itemIndex) {
 
+
+    renderRowData:function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
           aoColumnDefs[itemIndex].mDataProp = null;
           aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
@@ -363,15 +364,15 @@ var WebAppDataTable = React.createClass({
                   var full = oData;
                   var parentItemId = (dataTable.parentItemId === undefined ? full.id.id : dataTable.parentItemId);
                   var theRootId = (dataTable.rootId === undefined ? full.id.id : dataTable.rootId);
-                  
-                  if(data != null && full != null) { 
+
+                  if(data != null && full != null) {
                     return React.renderComponent(
                       <WARUpload service={this.props.service} war={sData} full={oData} row={iRow} />
                       ,nTd
                     );
-                  } else { 
+                  } else {
                     return ;
-                  }            
+                  }
           }.bind(this);
 
           aoColumnDefs[itemIndex].mRender = function (data, type, full) {
@@ -436,7 +437,7 @@ var WARUpload = React.createClass({
         return <div>
                 <div className="tocTable"> 
                   <div className="tocRowContent">
-                    <span title={this.state.warPath}>{this.state.warName}</span> 
+                    <span title={this.state.warPath}>{this.state.warName}</span>
                   </div>
                 </div>
                </div>
@@ -445,7 +446,7 @@ var WARUpload = React.createClass({
         return <div>
                 <div className="tocTable"> 
                   <div className="tocRowContent">
-                    <span title={this.state.warPath}>{this.state.warName}</span> 
+                    <span title={this.state.warPath}>{this.state.warName}</span>
                   </div>
                   <div className="tocRowIcons">
                     <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
@@ -473,21 +474,24 @@ var WARUpload = React.createClass({
            backgroundColor: 'green'
         };
         
-        return <div className="tocTable"> 
-                <div className="tocRowContents">
-                  <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
-                    <input type="file" name="file"></input>
-                    <input type="button" value="Upload" onClick={this.performUpload}></input> 
-                    <div style={progressStyle}>
-                      <div style={progressStyleInner} className="progress" />
-                    </div>
-                    <span className="uploadResult"></span>
-                  </form>
-                </div>
-                 <div className="tocRowIcons">
-                  <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
-                </div>
-              </div>
+        return <div className="war-upload-component">
+                   <div className="archive-file">
+                       <span title={this.state.warPath}>{this.state.warName}</span>
+                       <div className="file-upload">
+                           <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
+                               <input type="file" name="file"></input>
+                               <input type="button" value="Upload" onClick={this.performUpload}></input>
+                               <div style={progressStyle}>
+                                   <div style={progressStyleInner} className="progress" />
+                               </div>
+                               <span className="uploadResult"></span>
+                           </form>
+                       </div>
+                   </div>
+                   <div className="eject-icon">
+                       <img onClick={this.editRequest} src="public-resources/img/icons/eject.png" />
+                   </div>
+               </div>
               ;
       }
     },
@@ -565,6 +569,7 @@ var WARUpload = React.createClass({
                 // actually an error
                 self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
               } else {
+                $(self.getDOMNode()).parent().parent().find("td").removeClass("vertical-align-top");
                 self.setState({
                   uploadData: undefined, 
                   editable: false,
@@ -593,7 +598,13 @@ var WARUpload = React.createClass({
         return false;
     },
     editRequest : function(event) {
-      
+        var td = $(this.getDOMNode()).parent().parent().find("td");
+        if (td.hasClass("vertical-align-top")) {
+            td.removeClass("vertical-align-top");
+        } else {
+            td.addClass("vertical-align-top");
+        }
+
       this.setState({ editable: !this.state.editable, uploadData: undefined });
 
     },

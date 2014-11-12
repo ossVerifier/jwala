@@ -140,3 +140,7 @@ div .state {
 .maxHeight400px {
     max-height:400px !important;
 }
+
+.vertical-align-top {
+    vertical-align: top !important;
+}
