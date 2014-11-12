@@ -7,9 +7,8 @@
      text-decoration: underline;
      cursor: pointer;
      color: #1d5987;
-     font-weight: normal;
 }
 
 .button-link:hover {
-    font-weight: bold;
+    color:#4585C5
 }

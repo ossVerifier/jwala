@@ -37,5 +37,5 @@ table.simple-data-table td > div > a {
 }
 
 table.simple-data-table td > div > a:hover {
-    font-weight:bold;
+    color:#4585C5;
 }
