@@ -14,3 +14,7 @@
     padding: 10px 0 0 0;
     width: 300px
 }
+
+.webapp-config > table {
+    width: 100%
+}

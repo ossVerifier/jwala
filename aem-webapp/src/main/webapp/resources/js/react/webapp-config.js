@@ -343,6 +343,7 @@ var WebAppDataTable = React.createClass({
                          {sTitle:"Group", mData:"group.name"}
                         ];
         return <TocDataTable tableId="WebAppDataTable"
+                             className="dataTable"
                              tableDef={tableDef}
                              colHeaders={["...", "..."]}
                              data={this.props.data}
