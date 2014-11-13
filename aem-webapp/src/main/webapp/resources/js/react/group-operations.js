@@ -422,7 +422,7 @@ var GroupOperationsDataTable = React.createClass({
                                       webAppOfGrpChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
-                             className="dataTable operationGroupTable"
+                             className="dataTable hierarchical"
                              tableDef={groupTableDef}
                              data={this.props.data}
                              expandIcon="public-resources/img/react/components/details-expand.png"
