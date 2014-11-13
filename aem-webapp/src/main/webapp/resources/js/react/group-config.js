@@ -251,9 +251,9 @@ var GroupConfigDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control"},
+        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name", tocType:"link"}];
+                        {sTitle:"Group Name", mData:"name", tocType:"link", colWidth:"1132px"}];
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
                                  className:"simple-data-table"};
@@ -265,6 +265,7 @@ var GroupConfigDataTable = React.createClass({
         childTableDetails["tableDef"] = childTableDef;
 
         return <TocDataTable tableId="group-config-table"
+                             className="groupConfig dataTable hierarchical"
                              tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
