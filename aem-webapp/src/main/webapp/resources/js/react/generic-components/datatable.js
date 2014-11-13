@@ -28,7 +28,7 @@ var TocDataTable = React.createClass({
             header = React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
                                                                   headerComponents)
         } else {
-            header = React.DOM.h3(null, this.props.title);
+            header = this.props.title === undefined ? "" : new React.DOM.h3(null, this.props.title);
         }
 
         return React.DOM.div({style:this.props.hide === true ? {display:"none"} : {}},
