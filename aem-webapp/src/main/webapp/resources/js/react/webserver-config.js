@@ -418,7 +418,7 @@ var WebServerDataTable = React.createClass({
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name",
-                         sWidth: "40%"}];
+                         sWidth: "40%", maxDisplayTextLen:20}];
         return <TocDataTable tableId="webserver-config-datatable"
                              tableDef={tableDef}
                              colHeaders={["JVM Name", "Host Name"]}
