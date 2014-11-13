@@ -124,7 +124,7 @@ body {
 }
 
 .header-component-label  {
-    width:113px; /* Works fine for Chrome and Fire Fox */
+    width:116px; /* Works fine for Chrome and Fire Fox */
 }
 
 .disabled {
