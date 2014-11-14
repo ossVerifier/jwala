@@ -225,7 +225,6 @@ var GroupOperationsDataTable = React.createClass({
                                            {sTitle:"Host", mData:"host", colWidth:"140px"},
                                            {sTitle:"HTTP", mData:"port", colWidth:"40px"},
                                            {sTitle:"HTTPS", mData:"httpsPort", colWidth:"40px"},
-                                           {sTitle:"Status Path", mData:"statusPath.uriPath", colWidth:"60px"},
                                            {sTitle:"Group",
                                             mData:"groups",
                                             tocType:"array",
