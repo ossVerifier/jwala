@@ -860,7 +860,7 @@ var GroupOperationsDataTable = React.createClass({
     },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
-        return "http://" + data.host + ":" + data.port + tocVars.loadBalancerStatusMount;
+        return "https://" + data.host + ":" + data.httpsPort + tocVars.loadBalancerStatusMount;
     },
     webServerStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
