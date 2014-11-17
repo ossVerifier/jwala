@@ -188,34 +188,43 @@ var GroupOperationsDataTable = React.createClass({
         var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                              {sTitle:"Group ID", mData:"id.id", bVisible:false},
                              {sTitle:"Group Name", mData:"name", colWidth:"650px"},
-                             [{sTitle:"",
-                               mData:null,
-                               tocType:"button",
-                               btnLabel:"Start Group",
-                               btnCallback:this.startGroup,
-                               className:"inline-block",
-                               extraDataToPassOnCallback:"name",
-                               colWidth:70},
-                              {sTitle:"",
-                               mData:null,
-                               tocType:"button",
-                               btnLabel:"Stop Group",
-                               btnCallback:this.stopGroup,
-                               className:"inline-block",
-                               extraDataToPassOnCallback:"name",
-                               colWidth:70}],
+                              [{id:"startGroup",
+                                sTitle:"Start Group",
+                                mData:null,
+                                tocType:"button",
+                                btnLabel:"",
+                                btnCallback:this.startGroup,
+                                className:"inline-block",
+                                customSpanClassName:"ui-icon ui-icon-play",
+                                clickedStateClassName:"busy-button",
+                                buttonClassName:"ui-button-height",
+                                extraDataToPassOnCallback:"name",
+                               },
+                               {tocType:"space"},
+                               {id:"stopGroup",
+                                sTitle:"Stop Group",
+                                mData:null,
+                                tocType:"button",
+                                btnLabel:"",
+                                btnCallback:this.stopGroup,
+                                className:"inline-block",
+                                customSpanClassName:"ui-icon ui-icon-stop",
+                                clickedStateClassName:"busy-button",
+                                buttonClassName:"ui-button-height",
+                                extraDataToPassOnCallback:"name",
+                              }],
+
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"94px"}];
+                               colWidth:"117px"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
-                                           {sTitle:"Name", mData:"name", colWidth:"240px"},
-                                           {sTitle:"Host", mData:"host", colWidth:"240px"},
+                                           {sTitle:"Name", mData:"name", colWidth:"340px"},
+                                           {sTitle:"Host", mData:"host", colWidth:"140px"},
                                            {sTitle:"HTTP", mData:"port", colWidth:"40px"},
                                            {sTitle:"HTTPS", mData:"httpsPort", colWidth:"40px"},
-                                           {sTitle:"Status Path", mData:"statusPath.uriPath", colWidth:"60px"},
                                            {sTitle:"Group",
                                             mData:"groups",
                                             tocType:"array",
@@ -276,8 +285,23 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
-                                                    {id:"startWebServers", tocType:"button", btnLabel:"Start Web Servers", btnCallback: this.startGroupWebServers},
-                                                    {id:"stopWebServers", tocType:"button", btnLabel:"Stop Web Servers", btnCallback: this.stopGroupWebServers},
+                                                   {id:"startWebServers",
+                                                    sTitle:"Start Web Servers",
+                                                    tocType:"button",
+                                                    btnLabel:"",
+                                                    btnCallback:this.startGroupWebServers,
+                                                    className:"inline-block",
+                                                    customSpanClassName:"ui-icon ui-icon-play",
+                                                    buttonClassName:"ui-button-height"},
+                                                    {id:"space1", tocType:"space"},
+                                                    {id:"stopWebServers",
+                                                    sTitle:"Stop Web Servers",
+                                                    tocType:"button",
+                                                    btnLabel:"",
+                                                    btnCallback:this.startGroupWebServers,
+                                                    className:"inline-block",
+                                                    customSpanClassName:"ui-icon ui-icon-stop",
+                                                    buttonClassName:"ui-button-height"},
                                                     {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]]};
@@ -320,8 +344,23 @@ var GroupOperationsDataTable = React.createClass({
                                     title:"JVMs",
                                     isCollapsible:true,
                                     headerComponents:[
-                                         {id:"startJvms", tocType:"button", btnLabel:"Start JVMs", btnCallback: this.startGroupJvms},
-                                         {id:"stopJvms", tocType:"button", btnLabel:"Stop JVMs", btnCallback: this.stopGroupJvms},
+                                         {id:"startJvms",
+                                          sTitle:"Start JVMs",
+                                          tocType:"button",
+                                          btnLabel:"",
+                                          btnCallback:this.startGroupJvms,
+                                          className:"inline-block",
+                                          customSpanClassName:"ui-icon ui-icon-play",
+                                          buttonClassName:"ui-button-height"},
+                                         {id:"space1", tocType:"space"},
+                                         {id:"stopJvms",
+                                          sTitle:"Stop JVMs",
+                                          tocType:"button",
+                                          btnLabel:"",
+                                          btnCallback:this.stopGroupJvms,
+                                          className:"inline-block",
+                                          customSpanClassName:"ui-icon ui-icon-stop",
+                                          buttonClassName:"ui-button-height"},
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]]};
@@ -329,8 +368,8 @@ var GroupOperationsDataTable = React.createClass({
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                                {sTitle:"Name", mData:"jvmName", colWidth:"270px"},
-                                {sTitle:"Host", mData:"hostName", colWidth:"270px"},
+                                {sTitle:"Name", mData:"jvmName", colWidth:"340px"},
+                                {sTitle:"Host", mData:"hostName", colWidth:"200px"},
                                 {sTitle:"HTTP", mData:"httpPort", colWidth:"40px"},
                                 {sTitle:"Group",
                                  mData:"groups",
@@ -422,7 +461,7 @@ var GroupOperationsDataTable = React.createClass({
                                       webAppOfGrpChildTableDetails];
 
         return <TocDataTable tableId="group-operations-table"
-                             className="dataTable operationGroupTable"
+                             className="dataTable hierarchical"
                              tableDef={groupTableDef}
                              data={this.props.data}
                              expandIcon="public-resources/img/react/components/details-expand.png"
@@ -547,7 +586,7 @@ var GroupOperationsDataTable = React.createClass({
     },
    confirmStartStopGroupDialogBox: function(id, buttonSelector, msg, callbackOnConfirm) {
         var dialogId = "group-stop-confirm-dialog-" + id;
-        $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
+        $(buttonSelector).parent().append("<div id='" + dialogId +"' style='text-align:left'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
             title: "Confirmation",
             width: "auto",
@@ -581,10 +620,14 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         groupService.getChildrenOtherGroupConnectionDetails(id, groupChildType).then(function(data) {
             if (data.applicationResponseContent instanceof Array && data.applicationResponseContent.length > 0) {
+                var membershipDetails =
+                    groupOperationsHelper.createMembershipDetailsHtmlRepresentation(data.applicationResponseContent);
+
                 self.confirmStartStopGroupDialogBox(id,
                                                buttonSelector,
-                                               data.applicationResponseContent.join("<br/>")
-                                                    + "<br/><br/>Are you sure you want to " + operation + " " + name + " ?",
+                                               membershipDetails
+                                                    + "<br/><b>Are you sure you want to " + operation
+                                                    + " <span style='color:#2a70d0'>" + name + "</span> ?</b>",
                                                operationCallback);
             } else {
                 operationCallback(id, buttonSelector);
@@ -699,7 +742,7 @@ var GroupOperationsDataTable = React.createClass({
 
     confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
         var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm" + id;
-        $(buttonSelector).parent().append("<div id='" + dialogId +"'>" + msg + "</div>");
+        $(buttonSelector).parent().append("<div id='" + dialogId +"' style='text-align:left'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
            title: "Confirmation",
            width: "auto",
@@ -727,10 +770,11 @@ var GroupOperationsDataTable = React.createClass({
                                                            groups,
                                                            operation,
                                                            operationCallback,
-                                                           cancelCallback) {
-        var msg = name + " is a member of " +
-                  groupOperationsHelper.groupArrayToString(groups, parentItemId)
-                  + "<br/><br/> Are you sure you want to " + operation + " " + name + " ?";
+                                                           cancelCallback,
+                                                           serverType) {
+        var msg = "<b>" + serverType + " <span style='color:#2a70d0'>" + name + "</span> is a member of:</b><br/>" +
+                  groupOperationsHelper.groupArrayToHtmlList(groups, parentItemId)
+                  + "<br/><b> Are you sure you want to " + operation + " <span style='color:#2a70d0'>" + name + "</span></b> ?";
         if (groups.length > 1) {
             this.confirmJvmWebServerStopGroupDialogBox(id,
                                                        parentItemId,
@@ -750,7 +794,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "start",
                                                           jvmControlService.startJvm,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "JVM");
     },
     jvmStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
@@ -760,7 +805,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "stop",
                                                           jvmControlService.stopJvm,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "JVM");
     },
    buildHRef: function(data) {
         return  "idp?saml_redirectUrl=" +
@@ -870,7 +916,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "start",
                                                           webServerControlService.startWebServer,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "Web Server");
     },
     webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
@@ -880,7 +927,8 @@ var GroupOperationsDataTable = React.createClass({
                                                           data.groups,
                                                           "stop",
                                                           webServerControlService.stopWebServer,
-                                                          cancelCallback);
+                                                          cancelCallback,
+                                                          "Web Server");
     },
     webServerErrorAlertCallback: function(alertDlgDivId, ws) {
         this.webServerHasNewMessage[ws.id.id] = "false";

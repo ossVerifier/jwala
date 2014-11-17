@@ -9,7 +9,12 @@ var Anchor = React.createClass({
         $("#" + this.props.id).off("click");
         $("#" + this.props.id).on("click", this.linkClick);
 
-        return <a id={this.props.id} href="">{this.props.value}</a>
+        /**
+         * Use button element since the link element and all other HTML elements (except button) and their attributes
+         * show up in the filter. This is a shortcoming of jQuery Datatable 1.9.4. Please see
+         * http://datatables.net/forums/discussion/20831/exclude-html-contents-classes-from-text-search.
+         */
+        return <button id={this.props.id} className="button-link">{this.props.value}</button>
     },
     linkClick: function() {
         if ($("#" + this.props.id).hasClass("disabled")) {

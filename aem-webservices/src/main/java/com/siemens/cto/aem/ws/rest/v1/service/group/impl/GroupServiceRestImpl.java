@@ -1,22 +1,20 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
+import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -188,23 +186,56 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(currentGroupStates);
     }
 
+    private List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
+        final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
+        for (Jvm jvm : jvms) {
+            final List<String> groupNames = new LinkedList<>();
+            for (LiteGroup group: jvm.getGroups()) {
+                groupNames.add(group.getName());
+            }
+            membershipDetailsList.add(new MembershipDetails(jvm.getJvmName(),
+                    GroupChildType.JVM,
+                    groupNames));
+        }
+        return membershipDetailsList;
+    }
+
+    private List<MembershipDetails> createMembershipDetailsFromWebServers(final List<WebServer> webServers) {
+        final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
+        for (WebServer webServer : webServers) {
+            final List<String> groupNames = new LinkedList<>();
+            for (Group group: webServer.getGroups()) {
+                groupNames.add(group.getName());
+            }
+            membershipDetailsList.add(new MembershipDetails(webServer.getName(),
+                                          GroupChildType.WEB_SERVER,
+                                          groupNames));
+        }
+        return membershipDetailsList;
+    }
+
     @Override
     public Response getOtherGroupMembershipDetailsOfTheChildren(final Identifier<Group> id,
                                                                 final GroupChildType groupChildType) {
+        final List<Jvm> jvmGroupingDetails;
+        final List<WebServer> webServerGroupingDetails;
+
         if (groupChildType != null) {
             if (groupChildType == GroupChildType.JVM) {
-                return ResponseBuilder.ok(groupService.getOtherGroupingDetailsOfJvms(id));
+                jvmGroupingDetails = groupService.getOtherGroupingDetailsOfJvms(id);
+                return ResponseBuilder.ok(createMembershipDetailsFromJvms(jvmGroupingDetails));
             } else if (groupChildType == GroupChildType.WEB_SERVER) {
-                return ResponseBuilder.ok(groupService.getOtherGroupingDetailsOfWebServers(id));
+                webServerGroupingDetails = groupService.getOtherGroupingDetailsOfWebServers(id);
+                return ResponseBuilder.ok(createMembershipDetailsFromWebServers(webServerGroupingDetails));
             }
         }
 
-        final List<String> jvmGroupingDetails = groupService.getOtherGroupingDetailsOfJvms(id);
-        final List<String> webServersGroupingDetails = groupService.getOtherGroupingDetailsOfWebServers(id);
+        jvmGroupingDetails = groupService.getOtherGroupingDetailsOfJvms(id);
+        final List<MembershipDetails> membershipDetailsList = createMembershipDetailsFromJvms(jvmGroupingDetails);
+        webServerGroupingDetails = groupService.getOtherGroupingDetailsOfWebServers(id);
+        membershipDetailsList.addAll(createMembershipDetailsFromWebServers(webServerGroupingDetails));
 
-        jvmGroupingDetails.addAll(webServersGroupingDetails);
-
-        return ResponseBuilder.ok(jvmGroupingDetails);
+        return ResponseBuilder.ok(membershipDetailsList);
     }
 
 }

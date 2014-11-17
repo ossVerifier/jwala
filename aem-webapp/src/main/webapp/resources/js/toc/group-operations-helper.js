@@ -272,14 +272,14 @@ var groupOperationsHelper = function(){
             }
             return [msg, ""];
         },
-        groupArrayToString: function(groups, excludedGroupId) {
-            var str = "";
+        groupArrayToHtmlList: function(groups, excludedGroupId) {
+            var str = "<ul>";
             groups.forEach(function(group){
                 if (excludedGroupId === undefined || excludedGroupId !== group.id.id) {
-                    str += (str === "" ? group.name : "," + group.name);
+                    str += "<li>" + group.name + "</li>";
                 }
             });
-            return str;
+            return str + "</ul>";
         },
         lastItemEquals: function(array, key, val) {
             if (array.length > 0) {
@@ -318,6 +318,26 @@ var groupOperationsHelper = function(){
             $("table[id*='ws'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
                                                         .each(function(index, elem) { $(elem).dataTable().fnDraw();});
 
+        },
+
+        /**
+         * Creates a HTML representation of group membership details
+         *
+         * @param membershipDetails group membership details array
+         */
+        createMembershipDetailsHtmlRepresentation: function(membershipDetails) {
+            var html = "";
+            membershipDetails.forEach(function(membershipDetail) {
+                var groupNames = "<ul>";
+                membershipDetail.groupNames.forEach(function(name){
+                                                        groupNames += "<li>" + name + "</li>";
+                                                    });
+                html += "<b>" + (membershipDetail.type === "WEB_SERVER" ? "Web Server" : "JVM") +
+                        " <span style='color:#2a70d0'>" +
+                        membershipDetail.name + "</span> is a member of:</b><br/>" +
+                        groupNames + "</ul><br/>";
+            });
+            return html;
         },
 
         updateDataTables: function(groupId, jvmId, state) {

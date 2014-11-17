@@ -33,6 +33,25 @@ public class Jvm implements Serializable {
 
     private final Path statusPath;
 
+    /**
+     * Constructor for a bare minimum Jvm with group details.
+     * @param theId the id
+     * @param theName the jvm name
+     * @param theGroups the groups in which the web server is assigned to.
+     */
+    public Jvm(final Identifier<Jvm> theId, final String theName, final Set<LiteGroup> theGroups) {
+        id = theId;
+        jvmName = theName;
+        hostName = null;
+        groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
+        httpPort = null;
+        httpsPort = null;
+        redirectPort = null;
+        shutdownPort = null;
+        ajpPort = null;
+        statusPath = null;
+    }
+
     public Jvm(final Identifier<Jvm> theId,
                final String theName,
                final String theHostName,

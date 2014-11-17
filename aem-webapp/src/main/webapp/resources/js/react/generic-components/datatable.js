@@ -22,13 +22,15 @@ var TocDataTable = React.createClass({
                 } else if (obj.tocType === "label") {
                     // TODO: Modify so it can display changing status. For now it would act as a shim to align the buttons
                     headerComponents.push(React.DOM.div({className:obj.className}, obj.text));
+                } else if (obj.tocType === "space") {
+                    headerComponents.push(" ");
                 }
             }
             headerComponents.push(React.DOM.span({className:"accordion-title-text-position"}, this.props.title));
             header = React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
                                                                   headerComponents)
         } else {
-            header = React.DOM.h3(null, this.props.title);
+            header = this.props.title === undefined ? "" : new React.DOM.h3(null, this.props.title);
         }
 
         return React.DOM.div({style:this.props.hide === true ? {display:"none"} : {}},

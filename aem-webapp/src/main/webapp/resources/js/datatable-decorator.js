@@ -71,6 +71,10 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].sWidth = item.colWidth;
                 }
 
+                if (item.sClass !== undefined) {
+                    aoColumnDefs[itemIndex].sClass = aoColumnDefs[itemIndex].sClass + " " + item.sClass;
+                }
+
             } else {
 
                 /**

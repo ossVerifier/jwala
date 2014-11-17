@@ -29,6 +29,27 @@ public class WebServer implements Serializable {
     private final Path statusPath;
     private final FileSystemPath httpConfigFile;
 
+    /**
+     * Constructor for a bare minimum web server with group details.
+     * @param theId the id
+     * @param theGroups the groups that the web server is assigned to.
+     * @param theName the name of the web server.
+     */
+    public WebServer(final Identifier<WebServer> theId,
+                     final Collection<Group> theGroups,
+                     final String theName) {
+        id = theId;
+        host = null;
+        port = null;
+        name = theName;
+        httpsPort = null;
+        statusPath = null;
+        httpConfigFile = null;
+        for (final Group grp : theGroups) {
+            groups.put(grp.getId(), grp);
+        }
+    }
+
     public WebServer(final Identifier<WebServer> theId,
                      final Collection<Group> theGroups,
                      final String theName,

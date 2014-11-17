@@ -124,7 +124,7 @@ body {
 }
 
 .header-component-label  {
-    width:113px; /* Works fine for Chrome and Fire Fox */
+    width:116px; /* Works fine for Chrome and Fire Fox */
 }
 
 .disabled {
@@ -139,4 +139,8 @@ div .state {
 /* used by dialog box content div */
 .maxHeight400px {
     max-height:400px !important;
+}
+
+.vertical-align-top {
+    vertical-align: top !important;
 }

@@ -364,7 +364,9 @@ var WebServerConfigForm = React.createClass({
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
                                                   });
+            return true;
         }
+        return false;
     },
     updateWebServer: function() {
         if (this.isValid()) {
@@ -373,7 +375,9 @@ var WebServerConfigForm = React.createClass({
                                                function(errMsg) {
                                                     $.errorAlert(errMsg, "Error");
                                                });
+            return true;
         }
+        return false;
     },
     componentDidUpdate: function() {
         if (this.props.show === true) {
@@ -404,7 +408,7 @@ var WebServerDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"name", tocType:"link"},
+                        {sTitle:"Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                         {sTitle:"Host", mData:"host"},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
@@ -414,7 +418,7 @@ var WebServerDataTable = React.createClass({
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name",
-                         sWidth: "40%"}];
+                         sWidth: "40%", maxDisplayTextLen:20}];
         return <TocDataTable tableId="webserver-config-datatable"
                              tableDef={tableDef}
                              colHeaders={["JVM Name", "Host Name"]}
@@ -424,5 +428,12 @@ var WebServerDataTable = React.createClass({
                              expandIcon="public-resources/img/react/components/details-expand.png"
                              collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"/>
+    },
+    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+            return React.renderComponent(new React.DOM.button({className:"button-link",
+                                         onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+        }.bind(this);
     }
 });
