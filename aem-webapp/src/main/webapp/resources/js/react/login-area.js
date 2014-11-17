@@ -18,7 +18,7 @@ var LoginArea = React.createClass({
                        <span className="title">CENTER</span>
                        <br/>
                        <br/>
-                       <TextBox id="userName" name="userName" className="input" hint="User Name" hintClassName="hint"/>
+                       <TextBox ref="userName" id="userName" name="userName" className="input" hint="User Name" hintClassName="hint"/>
                        <br/>
                        <TextBox id="password" name="password" isPassword={true} className="input" hint="Password"
                                 hintClassName="hint" onKeyPress={this.passwordTextKeyPress}/>
@@ -26,6 +26,10 @@ var LoginArea = React.createClass({
                        <input type="button" value="Log In" onClick={this.logIn} />
                    </form>
                </div>
+    },
+    componentDidMount: function() {
+        // Set initial focus on the user name text field
+        $(this.refs.userName.getDOMNode()).children().focus();
     },
     passwordTextKeyPress: function(event) {
         if (event.keyCode === 13) {
