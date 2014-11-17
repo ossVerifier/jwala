@@ -164,6 +164,11 @@ var GroupConfigForm = React.createClass({
                                 <td>Name</td>
                             </tr>
                             <tr>
+                                <td>
+                                    <label htmlFor="name" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td><input name="name"
                                            type="text"
                                            value={this.state.groupName}
