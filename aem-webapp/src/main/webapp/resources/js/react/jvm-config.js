@@ -491,20 +491,20 @@ var JvmDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
-                        {sTitle:"Host", mData:"hostName"},
-                        {sTitle:"Status Path", mData:"statusPath.path"},
+                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink, colWidth:"400px"},
+                        {sTitle:"Host", mData:"hostName", colWidth:"150px"},
+                        {sTitle:"Sts Path", mData:"statusPath.path", colWidth:"150px"},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name",
-                        sWidth: "40%",
+                        sWidth: "150px",
                         maxDisplayTextLen:20},
-                        {sTitle:"Http", mData:"httpPort"},
-                        {sTitle:"Https", mData:"httpsPort"},
-                        {sTitle:"Redirect", mData:"redirectPort"},
-                        {sTitle:"Shutdown", mData:"shutdownPort"},
-                        {sTitle:"AJP", mData:"ajpPort"}];
+                        {sTitle:"Http", mData:"httpPort", colWidth:"90px"},
+                        {sTitle:"Https", mData:"httpsPort", colWidth:"90px"},
+                        {sTitle:"Redir", mData:"redirectPort", colWidth:"90px"},
+                        {sTitle:"Shutdwn", mData:"shutdownPort", colWidth:"100px"},
+                        {sTitle:"AJP", mData:"ajpPort", colWidth:"90px"}];
         return <TocDataTable tableId="jvm-config-datatable"
                              tableDef={tableDef}
                              data={this.props.data}
