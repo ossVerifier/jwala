@@ -118,36 +118,35 @@ var decorateTableAsDataTable = function(tableId,
                 } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
             } else {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
-                   var renderStr = "";
-                   if (isArray(item)) {
-                        for (var i = 0; i < item.length; i++) {
-                            renderStr += renderComponents(tableId,
-                                                          parentItemId,
-                                                          rootId,
-                                                          childTableDetails,
-                                                          item[i],
-                                                          data,
-                                                          type,
-                                                          full,
-                                                          expandIcon,
-                                                          collapseIcon,
-                                                          editCallback,
-                                                          parentItemName);
-                        }
-                    } else {
-                        renderStr = renderComponents(tableId,
-                                                     parentItemId,
-                                                     rootId,
-                                                     childTableDetails,
-                                                     item,
-                                                     data,
-                                                     type,
-                                                     full,
-                                                     expandIcon,
-                                                     collapseIcon,
-                                                     editCallback,
-                                                     parentItemName);
-                        return renderStr;
+                   if (!isArray(item)) {
+                        return renderComponents(tableId,
+                                                parentItemId,
+                                                rootId,
+                                                childTableDetails,
+                                                item,
+                                                data,
+                                                type,
+                                                full,
+                                                expandIcon,
+                                                collapseIcon,
+                                                editCallback,
+                                                parentItemName);
+                    }
+
+                    var renderStr = "";
+                    for (var i = 0; i < item.length; i++) {
+                        renderStr += renderComponents(tableId,
+                                                      parentItemId,
+                                                      rootId,
+                                                      childTableDetails,
+                                                      item[i],
+                                                      data,
+                                                      type,
+                                                      full,
+                                                      expandIcon,
+                                                      collapseIcon,
+                                                      editCallback,
+                                                      parentItemName);
                     }
                     return "<div style='overflow:hidden;text-align:right'>" + renderStr + "</div>"
                 }
