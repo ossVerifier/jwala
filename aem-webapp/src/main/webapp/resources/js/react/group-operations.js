@@ -508,7 +508,7 @@ var GroupOperationsDataTable = React.createClass({
             self.webServersById = groupOperationsHelper.keyWebServersById(response.applicationResponseContent);
             responseCallback(response);
 
-            // This will set the state and which triggers DOM rendering thus the state will be updated
+            // This will set the state which triggers DOM rendering thus the state will be updated
             self.props.updateWebServerDataCallback(response.applicationResponseContent);
         });
    },
