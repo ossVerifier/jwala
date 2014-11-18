@@ -495,6 +495,7 @@ var GroupOperationsDataTable = React.createClass({
    },
    getWebServersOfGrp: function(idObj, responseCallback) {
         var self = this;
+
         webServerService.getWebServerByGroupId(idObj.parentId, function(response) {
             // This is when the row is initially opened.
             // Unlike JVMs, web server data is retrieved when the row is opened.
@@ -509,6 +510,7 @@ var GroupOperationsDataTable = React.createClass({
             responseCallback(response);
 
             // This will set the state which triggers DOM rendering thus the state will be updated
+            // TODO: Find out if the code below is still necessary since removing it seems to have no effect whatsoever.
             self.props.updateWebServerDataCallback(response.applicationResponseContent);
         });
    },
