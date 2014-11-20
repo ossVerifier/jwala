@@ -1,24 +1,38 @@
 /** @jsx React.DOM */
 var GroupConfig = React.createClass({
+
+
+    /**
+     * This object is used to let the component know when to update itself.
+     * It essentially uses a kind of "toggle switch" pattern wherein when set
+     * the flag is set to true then when "checked/viewed" the flag is set to false.
+     * This mechanism is required to essentially tell the component if the
+     * table needs to be updated since the underlying table is using jQuery Datatable.
+     * This should not be necessary if the entire table is purely made in React.
+     */
+    cancelFlag: {
+        flag: false,
+        set: function() {
+            this.flag = true;
+        },
+        check: function () {
+            var prevFlag = this.flag;
+            this.flag = false; // reset the flag
+            return prevFlag;
+        }
+    },
+
+
+    selectedGroup: null,
     getInitialState: function() {
-        selectedGroup = null;
         return {
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
-            groupFormData: {},
+            selectedGroupForEditing: null,
             groupTableData: [{"name":"","id":{"id":0}}]
         }
     },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        if(
-          (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog) 
-        ){
-          return false; 
-        }
-        return true;
-    },        
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
@@ -40,125 +54,136 @@ var GroupConfig = React.createClass({
                                                           noUpdateWhen={
                                                                 this.state.showModalFormAddDialog ||
                                                                 this.state.showDeleteConfirmDialog ||
-                                                                this.state.showModalFormEditDialog
+                                                                this.state.showModalFormEditDialog ||
+                                                                this.cancelFlag.check()
                                                           }/>
                                 </div>
                             </td>
                         </tr>
                    </table>
-                   <GroupConfigForm title="Add Group"
-                                    show={this.state.showModalFormAddDialog}
-                                    service={this.props.service}
-                                    successCallback={this.addSuccessCallback}
-                                    destroyCallback={this.closeModalFormAddDialog}
-                                    className="textAlignLeft"
-                                    noUpdateWhen={
-                                        this.state.showDeleteConfirmDialog ||
-                                        this.state.showModalFormEditDialog
-                                    }/>
-                  <GroupConfigForm title="Edit Group"
-                                  show={this.state.showModalFormEditDialog}
-                                  service={this.props.service}
-                                  data={this.state.groupFormData}
-                                  successCallback={this.editSuccessCallback}
-                                  destroyCallback={this.closeModalFormEditDialog}
-                                  className="textAlignLeft"
-                                  noUpdateWhen={
-                                      this.state.showModalFormAddDialog ||
-                                      this.state.showDeleteConfirmDialog
-                                  }/>
 
+                   <ModalDialogBox title="Add Group"
+                                   show={this.state.showModalFormAddDialog}
+                                   okCallback={this.okAddCallback}
+                                   cancelCallback={this.cancelAddCallback}
+                                   content={<GroupConfigForm ref="groupAddForm" />}
+                                   width="auto"
+                                   height="auto"/>
 
+                   <ModalDialogBox title="Edit Group"
+                                   show={this.state.showModalFormEditDialog}
+                                   okCallback={this.okEditCallback}
+                                   cancelCallback={this.cancelEditCallback}
+                                   content={<GroupConfigForm ref="groupEditForm"
+                                                             data={this.state.selectedGroupForEditing}/>}
+                    />
 
-                   <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                             btnClickedCallback={this.confirmDeleteCallback} />
+                    <ModalDialogBox title="Confirmation Dialog Box"
+                                    show={this.state.showDeleteConfirmDialog}
+                                    okCallback={this.confirmDeleteCallback}
+                                    cancelCallback={this.cancelDeleteCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                </div>
     },
-    confirmDeleteCallback: function(ans) {
-        var self = this;
-        this.setState({showDeleteConfirmDialog: false});
-        if (ans === "yes") {
-            this.props.service.deleteGroup(selectedGroup.id.id, self.retrieveData);
+    cancelAddCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormAddDialog:false});
+    },
+    cancelEditCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormEditDialog:false});
+    },
+    okAddCallback: function() {
+        if (this.refs.groupAddForm.isValid()) {
+            var self = this;
+            this.props.service.insertNewGroup(this.refs.groupAddForm.state.groupName,
+                                              function(){
+                                                  self.refreshData({showModalFormAddDialog:false});
+                                              },
+                                              function(errMsg) {
+                                                  $.errorAlert(errMsg, "Error");
+                                              });
         }
     },
-    retrieveData: function() {
+    okEditCallback: function() {
+        if (this.refs.groupEditForm.isValid()) {
+            var self = this;
+            this.props.service.updateGroup($(this.refs.groupEditForm.getDOMNode().children[0]).serializeArray(),
+                                           function(){
+                                               self.refreshData({showModalFormEditDialog:false});
+                                           },
+                                           function(errMsg) {
+                                               $.errorAlert(errMsg, "Error");
+                                           });
+        }
+    },
+
+    /**
+     * Retrieve data from REST Api the set states passed in parameter "states".
+     */
+    refreshData: function(states, doneCallback) {
         var self = this;
         this.props.service.getGroups(function(response){
-                                        self.setState({groupTableData:response.applicationResponseContent});
+                                         states["groupTableData"] = response.applicationResponseContent;
+                                         if (doneCallback !== undefined) {
+                                            doneCallback();
+                                         }
+                                         self.setState(states);
                                      });
-    },
-    addSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormAddDialog();
-    },
-    editSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormEditDialog();
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (selectedGroup != undefined) {
+        if (this.selectedGroup !== null) {
             this.setState({showDeleteConfirmDialog: true});
         }
     },
+    confirmDeleteCallback: function() {
+        var self = this;
+        this.props.service.deleteGroup(this.selectedGroup.id.id,
+                                       this.refreshData.bind(this,
+                                                             {showDeleteConfirmDialog: false},
+                                                             function(){self.selectedGroup = null}));
+    },
+    cancelDeleteCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showDeleteConfirmDialog: false});
+    },
     selectItemCallback: function(item) {
-        selectedGroup = item;
+        this.selectedGroup = item;
     },
     editCallback: function(data) {
-        var thisComponent = this;
+        var self = this;
         this.props.service.getGroup(data.id.id,
             function(response){
-                thisComponent.setState({groupFormData: response.applicationResponseContent,
-                                        showModalFormEditDialog: true})
+                self.setState({selectedGroupForEditing:response.applicationResponseContent,
+                               showModalFormEditDialog:true});
             }
         );
     },
-    closeModalFormAddDialog: function() {
-        this.setState({showModalFormAddDialog: false})
-    },
-    closeModalFormEditDialog: function() {
-        this.setState({showModalFormEditDialog: false})
-    },
     componentDidMount: function() {
-        this.retrieveData();
+        this.refreshData({});
     }
 });
 
+/**
+ * The form that provides data input.
+ */
 var GroupConfigForm = React.createClass({
-    mixins: [
-      Toc.mixins.PreventEnterSubmit
-    ],
-    validator: null,
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return !nextProps.noUpdateWhen;
-    },
     getInitialState: function() {
+        var groupName = this.props.data !== undefined ? this.props.data.name : "";
         return {
-            groupId: "",
-            groupName: "",
+            groupName: groupName,
         }
-    },
-    getGroupIdProp: function(props) {
-        if (props.data !== undefined && props.data.id !== undefined) {
-            return props.data.id.id;
-        }
-        return "";
-    },
-    getGroupProp: function(props, name) {
-        if (props.data !== undefined) {
-            return props.data[name];
-        }
-        return "";
-    },
-    componentWillReceiveProps: function(nextProps) {
-        this.setState({groupId:this.getGroupIdProp(nextProps), groupName:this.getGroupProp(nextProps, "name")});
     },
     render: function() {
-        return <div className={this.props.className} style={{display:"none"}}>
+        var groupId =  this.props.data !== undefined ? this.props.data.id.id : "";
+        return <div className={this.props.className}>
                     <form>
-                        <input name="id" type="hidden" value={this.state.groupId} />
+                        <input type="hidden" name="id" value={groupId} />
                         <table>
                             <tr>
                                 <td>Name</td>
@@ -182,75 +207,22 @@ var GroupConfigForm = React.createClass({
     onChangeGroupName: function(event) {
         this.setState({groupName:event.target.value});
     },
+    validator: null,
     componentDidMount: function() {
-        if (this.validator === null) {
-            this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden"});
-        }
-    },
-    componentDidUpdate: function() {
-        if (this.props.show === true) {
-
-            // Check first if this component has been decorated already.
-            // Decorate only once!
-            if (!$(this.getDOMNode()).hasClass("ui-dialog-content")) {
-                var okCallback = this.props.data === undefined ? this.insertNewGroup : this.updateGroup;
-                decorateNodeAsModalFormDialog(this.getDOMNode(),
-                                              this.props.title,
-                                              okCallback,
-                                              this.destroy,
-                                              this.destroy);
-            }
-
-        }
+        this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden"});
     },
     isValid: function() {
-        if (this.validator !== null) {
-            this.validator.form();
-            if (this.validator.numberOfInvalids() === 0) {
-                return true;
-            }
-        } else {
-            alert("There is no validator for the form!");
-        }
-        return false;
-    },
-    insertNewGroup: function() {
-        var self = this;
-        if (this.isValid()) {
-            this.props.service.insertNewGroup(this.state.groupName,
-                                              function(){
-                                                self.props.successCallback();
-                                                $(self.getDOMNode()).dialog("destroy");
-                                              },
-                                              function(errMsg) {
-                                                    $.errorAlert(errMsg, "Error");
-                                              });
+        this.validator.form();
+        if (this.validator.numberOfInvalids() === 0) {
             return true;
         }
         return false;
-    },
-    updateGroup: function() {
-        var self = this;
-        if (this.isValid()) {
-            this.props.service.updateGroup($(this.getDOMNode().children[0]).serializeArray(),
-                                           function(){
-                                                self.props.successCallback();
-                                                $(self.getDOMNode()).dialog("destroy");
-                                           },
-                                           function(errMsg) {
-                                                $.errorAlert(errMsg, "Error");
-                                           });
-            return true;
-        }
-        return false;
-    },
-    destroy: function() {
-        this.validator.resetForm();
-        $(this.getDOMNode()).dialog("destroy");
-        this.props.destroyCallback();
     }
 });
 
+/**
+ * The group data table.
+ */
 var GroupConfigDataTable = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
       return !nextProps.noUpdateWhen;

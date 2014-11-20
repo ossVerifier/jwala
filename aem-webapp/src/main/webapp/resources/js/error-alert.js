@@ -11,6 +11,7 @@ $.extend({ errorAlert: function (message, dlgTitle) {
         modal: true,
         open: function () {
             $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-state-error");
+            $(this).parents(".ui-dialog:first").zIndex(999);
         }
       }).text(message);
     }
