@@ -543,12 +543,20 @@ var GroupOperationsDataTable = React.createClass({
    },
     enableButtonThunk: function(buttonSelector) {
         return function() {
-            $(buttonSelector).button("enable");
+            try {
+                $(buttonSelector).button("enable");
+            } catch (e) {
+                // TODO: Enable/disable of image button results to and error. Fix this ASAP!
+            }
         };
     },
     disableButtonThunk: function(buttonSelector) {
         return function() {
-            $(buttonSelector).button("disable");
+            try {
+                $(buttonSelector).button("disable");
+            } catch (e) {
+                // TODO: Enable/disable of image button results to and error. Fix this ASAP!
+            }
         };
     },
    enableHeapDumpButtonThunk: function(buttonSelector) {
