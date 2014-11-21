@@ -18,8 +18,7 @@ ModalDialogBox = React.createClass({
     getInitialState: function() {
         return {
             top: -1000,
-            left: -1000,
-            xBtnHover:false
+            left: -1000
         }
     },
     render: function() {
@@ -34,7 +33,6 @@ ModalDialogBox = React.createClass({
         var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"100%"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
 
-        hoverClass = this.state.xBtnHover ? "ui-state-hover" : "";
         var theDialog = React.DOM.div({ref:"theDialog",
                                        className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
                                        tabIndex:"-1",
@@ -43,19 +41,15 @@ ModalDialogBox = React.createClass({
                                                       onMouseDown:this.mouseDownHandler,
                                                       onMouseUp:this.mouseUpHandler},
                                                      React.DOM.span({className:"ui-dialog-title text-align-center"}, this.props.title),
-                                                     React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close " + hoverClass,
-                                                                       title:"close",
-                                                                       onMouseOver:this.xBtnMouseOverHandler,
-                                                                       onMouseOut:this.xBtnMouseOutHandler,
-                                                                       onClick:this.xBtnClick},
-                                                                       React.DOM.span({className:"ui-button-icon-primary ui-icon ui-icon-closethick"}, ""))),
+                                                     RButton({title:"close",
+                                                              className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
+                                                              onClick:this.xBtnClick,
+                                                              spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick"})),
                                        React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.props.content),
                                        React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                                                      React.DOM.div({className:"ui-dialog-buttonset"},
-                                                     React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only", onClick:this.okCallback},
-                                                                      React.DOM.span({className:"ui-button-text"}, this.props.okLabel === undefined ? "Ok" : this.props.okLabel)),
-                                                     React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only", onClick:this.cancelCallback},
-                                                                      React.DOM.span({className:"ui-button-text"}, this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel)))));
+                                                     RButton({onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}),
+                                                     RButton({onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
 
         return React.DOM.div({style:this.props.show ? {} : {display:"none"}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
@@ -71,12 +65,6 @@ ModalDialogBox = React.createClass({
                                left: ($(window).width()/2) - (width/2)});
             }
         }
-    },
-    xBtnMouseOverHandler: function() {
-        this.setState({xBtnHover:true});
-    },
-    xBtnMouseOutHandler: function() {
-        this.setState({xBtnHover:false});
     },
     xBtnClick: function() {
         this.props.cancelCallback();
