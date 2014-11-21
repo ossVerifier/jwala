@@ -298,7 +298,7 @@ var GroupOperationsDataTable = React.createClass({
                                                     sTitle:"Stop Web Servers",
                                                     tocType:"button",
                                                     btnLabel:"",
-                                                    btnCallback:this.startGroupWebServers,
+                                                    btnCallback:this.stopGroupWebServers,
                                                     className:"inline-block",
                                                     customSpanClassName:"ui-icon ui-icon-stop",
                                                     buttonClassName:"ui-button-height"},
