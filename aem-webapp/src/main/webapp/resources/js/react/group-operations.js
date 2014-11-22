@@ -541,22 +541,19 @@ var GroupOperationsDataTable = React.createClass({
    deploy: function(id) {
         alert("Deploy applications for group_" + id + "...");
    },
-    enableButtonThunk: function(buttonSelector) {
+    enableButtonThunk: function(buttonSelector, iconClass) {
         return function() {
-            try {
-                $(buttonSelector).button("enable");
-            } catch (e) {
-                // TODO: Enable/disable of image button results to and error. Fix this ASAP!
-            }
+            $(buttonSelector).prop('disabled', false);
+            $(buttonSelector).attr("class",
+            "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
+            $(buttonSelector).find("span").attr("class", "ui-icon " + iconClass);
         };
     },
     disableButtonThunk: function(buttonSelector) {
         return function() {
-            try {
-                $(buttonSelector).button("disable");
-            } catch (e) {
-                // TODO: Enable/disable of image button results to and error. Fix this ASAP!
-            }
+            $(buttonSelector).prop('disabled', true);
+            $(buttonSelector).attr("class", "busy-button");
+            $(buttonSelector).find("span").removeClass();
         };
     },
    enableHeapDumpButtonThunk: function(buttonSelector) {
@@ -574,9 +571,9 @@ var GroupOperationsDataTable = React.createClass({
            $(buttonSelector).find("span").removeClass();
        };
    },
-   disableEnable: function(buttonSelector, func) {
+   disableEnable: function(buttonSelector, func, iconClass) {
        var disable = this.disableButtonThunk(buttonSelector);
-       var enable = this.enableButtonThunk(buttonSelector);
+       var enable = this.enableButtonThunk(buttonSelector, iconClass);
        Promise.method(disable)().then(func).lastly(enable);
    },
    enableLinkThunk: function(linkSelector) {
@@ -645,13 +642,13 @@ var GroupOperationsDataTable = React.createClass({
         });
     },
     startGroupCallback: function(id, buttonSelector) {
-        this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)});
+        this.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)}, "ui-icon-play");
     },
     startGroup: function(id, buttonSelector, name) {
         this.verifyAndConfirmControlOperation(id, buttonSelector, name, "start", this.startGroupCallback);
     },
     stopGroupCallback: function(id, buttonSelector) {
-        this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)});
+        this.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)}, "ui-icon-stop");
     },
     stopGroup: function(id, buttonSelector, name) {
         this.verifyAndConfirmControlOperation(id, buttonSelector, name, "stop", this.stopGroupCallback);
@@ -661,7 +658,8 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.startJvms(event.data.id)});
+                                               function() { return groupControlService.startJvms(event.data.id)},
+                                               "ui-icon-play");
                        }
 
         this.verifyAndConfirmControlOperation(event.data.id,
@@ -676,7 +674,8 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.stopJvms(event.data.id)});
+                                               function() { return groupControlService.stopJvms(event.data.id)},
+                                               "ui-icon-stop");
                        }
 
         this.verifyAndConfirmControlOperation(event.data.id,
@@ -690,7 +689,8 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.startWebServers(event.data.id)});
+                                               function() { return groupControlService.startWebServers(event.data.id)},
+                                               "ui-icon-play");
                        }
 
         this.verifyAndConfirmControlOperation(event.data.id,
@@ -704,7 +704,8 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.stopWebServers(event.data.id)});
+                                               function() { return groupControlService.stopWebServers(event.data.id)},
+                                               "ui-icon-stop");
                        }
 
         this.verifyAndConfirmControlOperation(event.data.id,
