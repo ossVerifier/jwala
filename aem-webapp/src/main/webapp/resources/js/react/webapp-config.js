@@ -455,9 +455,15 @@ var WARUpload = React.createClass({
                     <span title={this.state.warPath}>{this.state.warName}</span>
                   </div>
                   <div className="tocRowIcons">
-                    <img onClick={this.editRequest} className="btnAppsCfgClose" src="public-resources/img/icons/eject.png" />
+                    <img onClick={this.editRequest}
+                         className="btnAppsCfgClose"
+                         src="public-resources/img/icons/eject.png"
+                         title="Upload war file" />
                     {this.state.hasWar?
-                      <img onClick={this.handleDelete} className="btnAppsCfgClose" src="public-resources/img/icons/delete.png" />
+                      <img onClick={this.handleDelete}
+                           className="btnAppsCfgClose"
+                           src="public-resources/img/icons/delete.png"
+                           title="Remove war file" />
                       :""}               
                   </div>
                 </div>
@@ -502,7 +508,7 @@ var WARUpload = React.createClass({
                        </div>
                    </div>
                    <div className="eject-icon">
-                       <img onClick={this.editRequest} src="public-resources/img/icons/eject.png" />
+                       <img onClick={this.editRequest} src="public-resources/img/icons/eject.png" title="Hide upload war file facility" />
                    </div>
                </div>
               ;
