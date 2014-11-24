@@ -68,3 +68,7 @@ table.hierarchical > tbody > tr > td {
 span[class^="group-state-"] {
     padding-left:7px
 }
+
+table > thead > tr > th {
+    text-align:left
+}
