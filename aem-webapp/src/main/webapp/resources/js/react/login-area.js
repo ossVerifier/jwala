@@ -9,7 +9,6 @@ var LoginArea = React.createClass({
         return <div className={this.props.className}>
                     <form id="logInForm">
                        <br/>
-                       <MessageLabel msg={this.state.error} className="login-error-msg"/>
                        <span className="title">TOMCAT</span><br/>
                        <div className="gear-position">
                             <img src="public-resources/img/react/gear.gif"/>
@@ -22,6 +21,8 @@ var LoginArea = React.createClass({
                        <br/>
                        <TextBox id="password" name="password" isPassword={true} className="input" hint="Password"
                                 hintClassName="hint" onKeyPress={this.passwordTextKeyPress}/>
+                       <br/>
+                       <MessageLabel msg={this.state.error} className="login-error-msg"/>
                        <br/>
                        <input type="button" value="Log In" onClick={this.logIn} />
                    </form>
