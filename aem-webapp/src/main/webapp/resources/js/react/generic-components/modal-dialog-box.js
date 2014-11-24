@@ -23,8 +23,10 @@ ModalDialogBox = React.createClass({
     },
     render: function() {
         if (!this.props.show) {
+            $(document).off("keydown");
             return React.DOM.div();
         }
+        $(document).on("keydown", this.keyDownHandler);
 
         var height = this.props.height === undefined ? "auto" : this.props.height;
         var width = this.props.width === undefined ? "auto" : this.props.width;
@@ -54,6 +56,11 @@ ModalDialogBox = React.createClass({
         return React.DOM.div({style:this.props.show ? {} : {display:"none"}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
 
+    },
+    keyDownHandler: function(e) {
+        if (e.keyCode == 27) {
+            this.props.cancelCallback();
+        }
     },
     componentDidUpdate: function() {
         // Set the initial position if it is not yet set.
