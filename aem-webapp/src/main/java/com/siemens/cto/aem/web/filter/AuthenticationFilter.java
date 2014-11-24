@@ -38,6 +38,14 @@ public class AuthenticationFilter implements Filter {
         final HttpServletRequest httpReq = (HttpServletRequest) request;
         final HttpServletResponse httpRes = (HttpServletResponse) response;
 
+        if (!this.isExcludeUrl(httpReq)) {
+            // This prevents the back button from displaying a secure page once logged out
+            httpRes.setHeader("Cache-Control", "no-cache");
+            httpRes.setHeader("Cache-Control", "no-store");
+            httpRes.setDateHeader("Expires", 0);
+            httpRes.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
+        }
+
         AuthenticationFilter.LOG.debug("Verifying request " + httpReq.getRequestURI() + " requires validation.");
         if (!this.isExcludeUrl(httpReq) && !this.isAuthenticated(httpReq)) {
             AuthenticationFilter.LOG.debug("URL is restricted");
