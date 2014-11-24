@@ -461,8 +461,15 @@ var WARUpload = React.createClass({
                       :""}               
                   </div>
                 </div>
-                <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                         btnClickedCallback={this.confirmDeleteCallback} />
+
+                <ModalDialogBox title="Confirmation Dialog Box"
+                                show={this.state.showDeleteConfirmDialog}
+                                okCallback={this.confirmDeleteCallback}
+                                cancelCallback={this.cancelDeleteCallback}
+                                content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                okLabel="Yes"
+                                cancelLabel="No" />
+
               </div>
         ;
       } else { 
@@ -623,19 +630,20 @@ var WARUpload = React.createClass({
     handleDelete: function() {
         this.setState({showDeleteConfirmDialog: true});
     },
-    confirmDeleteCallback: function(ans) {
+    confirmDeleteCallback: function() {
         var self = this;
         try {
-          this.setState({showDeleteConfirmDialog: false});
-          if (ans === "yes") {
-              self.props.service.deleteWar(self.props.full.id.id).then( function() {
-                  self.setState({
-                    hasWar: false,
-                    warPath: self.state.noArchive
-                });
-              });
-          }
+          self.setState({showDeleteConfirmDialog: false});
+          self.props.service.deleteWar(self.props.full.id.id).then( function() {
+              self.setState({
+                hasWar: false,
+                warPath: self.state.noArchive
+            });
+          });
         } finally { 
         }
-    }    
+    },
+    cancelDeleteCallback: function() {
+        this.setState({showDeleteConfirmDialog:false});
+    }
 });
