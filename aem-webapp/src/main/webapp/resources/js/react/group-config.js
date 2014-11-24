@@ -194,7 +194,8 @@ var GroupConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="name"
+                                <td><input ref="groupName"
+                                           name="name"
                                            type="text"
                                            value={this.state.groupName}
                                            onChange={this.onChangeGroupName}
@@ -210,6 +211,7 @@ var GroupConfigForm = React.createClass({
     validator: null,
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden"});
+        $(this.refs.groupName.getDOMNode()).focus();
     },
     isValid: function() {
         this.validator.form();
