@@ -17,7 +17,8 @@ var LoginArea = React.createClass({
                        <span className="title">CENTER</span>
                        <br/>
                        <br/>
-                       <TextBox ref="userName" id="userName" name="userName" className="input" hint="User Name" hintClassName="hint"/>
+                       <TextBox ref="userName" id="userName" name="userName" className="input" hint="User Name" hintClassName="hint"
+                                onKeyPress={this.userNameTextKeyPress}/>
                        <br/>
                        <TextBox id="password" name="password" isPassword={true} className="input" hint="Password"
                                 hintClassName="hint" onKeyPress={this.passwordTextKeyPress}/>
@@ -32,10 +33,18 @@ var LoginArea = React.createClass({
         // Set initial focus on the user name text field
         $(this.refs.userName.getDOMNode()).children().focus();
     },
+    userNameTextKeyPress: function() {
+        if (event.keyCode === 13) {
+            return false; // prevent beep in IE8
+        }
+        return true;
+    },
     passwordTextKeyPress: function(event) {
         if (event.keyCode === 13) {
             this.logIn();
+            return false;
         }
+        return true;
     },
     logIn: function() {
         // TODO: Refactor to use dynamic state update to make this more inline with React.
