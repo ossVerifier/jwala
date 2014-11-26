@@ -64,7 +64,7 @@ var decorateTableAsDataTable = function(tableId,
                     item.tocType === "button"  ||
                     item.tocType === "control" ||
                     item.tocType === "emptyColumn") {
-                        aoColumnDefs[itemIndex].bSortable = false;
+                        aoColumnDefs[itemIndex].bSortable = (item.bSortable === undefined ? false : item.bSortable);
                 }
 
                 if (item.colWidth !== undefined) {

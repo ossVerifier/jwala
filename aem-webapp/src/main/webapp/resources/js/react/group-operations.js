@@ -217,7 +217,8 @@ var GroupOperationsDataTable = React.createClass({
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"117px"}];
+                               colWidth:"117px",
+                               bSortable:true}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
