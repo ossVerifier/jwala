@@ -1,7 +1,7 @@
 .tabs-default {
     list-style: none;
     padding: 0;
-    height: 14px; /* Removes the space between the tabs and the div that holds the content */
+    height: 13px; /* Removes the space between the tabs and the div that holds the content */
 }
 
 .tabs-default > div > li {
