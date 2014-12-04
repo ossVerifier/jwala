@@ -425,8 +425,6 @@ var WebServerDataTable = React.createClass({
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}
-                             expandIcon="public-resources/img/react/components/details-expand.png"
-                             collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {

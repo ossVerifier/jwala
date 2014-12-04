@@ -185,7 +185,7 @@ var GroupOperationsDataTable = React.createClass({
        return this.hasNoData;
     },
     render: function() {
-        var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
+        var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"14px"},
                              {sTitle:"Group ID", mData:"id.id", bVisible:false},
                              {sTitle:"Group Name", mData:"name", colWidth:"650px"},
                               [{id:"startGroup",
@@ -465,8 +465,6 @@ var GroupOperationsDataTable = React.createClass({
                              className="dataTable hierarchical"
                              tableDef={groupTableDef}
                              data={this.props.data}
-                             expandIcon="public-resources/img/react/components/details-expand.png"
-                             collapseIcon="public-resources/img/react/components/details-collapse.png"
                              rowSubComponentContainerClassName="row-sub-component-container"
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}

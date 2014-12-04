@@ -1,9 +1,6 @@
 /** @jsx React.DOM */
 var ExpandCollapseControl = React.createClass({
-    currentIcon: "",
     render: function() {
-        this.currentIcon = this.props.expandIcon;
-
         var dataSources = [];
         var childTableDetailsArray = [];
 
@@ -24,8 +21,7 @@ var ExpandCollapseControl = React.createClass({
         $("#" + this.props.id).off("click");
         $("#" + this.props.id).on("click", this.onClick.bind(this, dataSources, childTableDetailsArray));
 
-        return <img id={this.props.id}
-                    src={this.props.expandIcon}/>
+        return <span id={this.props.id} className="ui-icon ui-icon-triangle-1-e"/>
     },
     decorateTable: function(childTableDetails) {
         return decorateTableAsDataTable(childTableDetails.tableIdPrefix + this.props.id,
@@ -119,7 +115,6 @@ var ExpandCollapseControl = React.createClass({
         var nTr = $("#" + this.props.id).parent().parent().get(0);
 
         if (!dataTable.fnIsOpen(nTr)) {
-            this.currentIcon = this.props.collapseIcon;
             dataTable.fnOpen(nTr,
                              this.fnFormatDetails(),
                              this.props.rowSubComponentContainerClassName);
@@ -150,11 +145,13 @@ var ExpandCollapseControl = React.createClass({
                 }
             }
 
+            $("#" + this.props.id).removeClass("ui-icon-triangle-1-e");
+            $("#" + this.props.id).addClass("ui-icon-triangle-1-s");
         } else {
-            this.currentIcon = this.props.expandIcon;
+            $("#" + this.props.id).removeClass("ui-icon-triangle-1-s");
+            $("#" + this.props.id).addClass("ui-icon-triangle-1-e");
             dataTable.fnClose(nTr);
         }
-        $("#" + this.props.id).attr("src", this.currentIcon);
 
     },
     fnFormatDetails: function() {
