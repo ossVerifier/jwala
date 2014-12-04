@@ -115,9 +115,11 @@ var ExpandCollapseControl = React.createClass({
         var nTr = $("#" + this.props.id).parent().parent().get(0);
 
         if (!dataTable.fnIsOpen(nTr)) {
-            dataTable.fnOpen(nTr,
-                             this.fnFormatDetails(),
-                             this.props.rowSubComponentContainerClassName);
+            var rowNode = dataTable.fnOpen(nTr,
+                                           this.fnFormatDetails(),
+                                           this.props.rowSubComponentContainerClassName);
+
+              $(rowNode).addClass($(nTr).attr("class"));
 
             for (var i = 0; i < dataSources.length; i++) {
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
