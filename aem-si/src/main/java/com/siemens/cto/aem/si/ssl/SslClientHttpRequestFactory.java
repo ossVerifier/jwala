@@ -13,6 +13,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 public class SslClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
 
@@ -22,14 +23,14 @@ public class SslClientHttpRequestFactory extends SimpleClientHttpRequestFactory 
     
     public SslClientHttpRequestFactory() throws KeyManagementException, NoSuchAlgorithmException {
         
-        context = SSLContext.getInstance("TLS");
+        context = SSLContext.getInstance("TLSv1.2");
 
         TrustManager[] tm = { new TrustingX509TrustManager() };
         context.init(null,  tm, new SecureRandom());
 
         socketFactory = context.getSocketFactory(); 
     }
-    
+
     @Override
     protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
         
