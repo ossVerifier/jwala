@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -21,10 +22,9 @@ import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.ShutdownPortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
+import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
 
 public class UpdateJvmCommand implements Serializable, Command {
 
@@ -108,7 +108,7 @@ public class UpdateJvmCommand implements Serializable, Command {
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRules(new JvmNameRule(newJvmName),
-                          new JvmHostNameRule(newHostName),
+                          new HostNameRule(newHostName),
                           new StatusPathRule(newStatusPath),
                           new JvmIdRule(id),
                           new GroupIdsRule(groupIds),

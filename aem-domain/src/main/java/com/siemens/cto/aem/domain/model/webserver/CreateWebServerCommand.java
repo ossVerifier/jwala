@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.HttpConfigFileRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -17,8 +18,7 @@ import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.WebServerHostNameRule;
+import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
 public class CreateWebServerCommand implements Serializable, Command {
@@ -80,7 +80,7 @@ public class CreateWebServerCommand implements Serializable, Command {
     @Override
     public void validateCommand() {
         new MultipleRules(new WebServerNameRule(name),
-                          new WebServerHostNameRule(host),
+                          new HostNameRule(host),
                           new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
                           new GroupIdsRule(groupIds),

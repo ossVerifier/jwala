@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
+import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -89,7 +91,7 @@ public class UpdateWebServerCommand implements Serializable, Command {
     public void validateCommand() throws BadRequestException {
         final MultipleRules mr =
                 new MultipleRules(new WebServerNameRule(newName),
-                                  new WebServerHostNameRule(newHost),
+                                  new HostNameRule(newHost),
                                   new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
                                   new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
                                   new WebServerIdRule(id),

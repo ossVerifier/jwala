@@ -2,6 +2,7 @@ package com.siemens.cto.aem.domain.model.jvm.command;
 
 import java.io.Serializable;
 
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -13,9 +14,8 @@ import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.ShutdownPortNumberRule;
-import com.siemens.cto.aem.domain.model.rule.jvm.JvmHostNameRule;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
-import com.siemens.cto.aem.domain.model.rule.webserver.StatusPathRule;
+import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
 
 public class CreateJvmCommand implements Serializable, Command {
 
@@ -86,7 +86,7 @@ public class CreateJvmCommand implements Serializable, Command {
     @Override
     public void validateCommand() throws BadRequestException {
         new MultipleRules(new JvmNameRule(jvmName),
-                          new JvmHostNameRule(hostName),
+                          new HostNameRule(hostName),
                           new StatusPathRule(statusPath),
                           new PortNumberRule(httpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),

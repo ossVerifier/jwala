@@ -342,9 +342,9 @@ var WebServerConfigForm = React.createClass({
         $.validator.addMethod("regex", function(value, element) {
             // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
             // var exp = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-            var exp = /^[a-zA-Z0-9-_.]+$/i;
+            var exp = /^[a-zA-Z0-9-.]+$/i;
             return this.optional(element) || exp.test(value);
-        }, "The field must only contain letters, numbers, underscore, dashes or periods.");
+        }, "The field must only contain letters, numbers, dashes or periods.");
 
     },
     success: function() {

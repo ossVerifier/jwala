@@ -1,9 +1,11 @@
-package com.siemens.cto.aem.domain.model.rule.webserver;
+package com.siemens.cto.aem.domain.model.rule;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.rule.Rule;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class StatusPathRule implements Rule {
 
@@ -15,7 +17,15 @@ public class StatusPathRule implements Rule {
 
     @Override
     public boolean isValid() {
-        return (statusPath != null) && statusPath.isAbsolute();
+        if ((statusPath != null) && statusPath.isAbsolute()) {
+            try {
+                new URI("http", null, "hostName", 8080, statusPath.getPath(), "", "");
+            } catch (URISyntaxException e) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override

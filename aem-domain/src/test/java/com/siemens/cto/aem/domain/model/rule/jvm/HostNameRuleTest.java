@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.domain.model.rule.jvm;
 
+import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import org.junit.Test;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -8,15 +9,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class JvmHostNameRuleTest {
+public class HostNameRuleTest {
 
     @Test
     public void testValidHostNames() {
 
-        final String[] validNames = {"abc", "def", "a really long name goes here"};
+        final String[] validNames = {"abc", "def", "AReallyLongNameGoesHere"};
 
         for (final String name : validNames) {
-            final JvmHostNameRule rule = new JvmHostNameRule(name);
+            final HostNameRule rule = new HostNameRule(name);
             assertTrue(rule.isValid());
             rule.validate();
         }
@@ -25,10 +26,10 @@ public class JvmHostNameRuleTest {
     @Test
     public void testInvalidHostNames() {
 
-        final String[] invalidNames = {"", "      ", null};
+        final String[] invalidNames = {"", "      ", null, "uri_with_underscore", "uri with spaces", "uriwith@#$%^&*"};
 
         for (final String name : invalidNames) {
-            final JvmHostNameRule rule = new JvmHostNameRule(name);
+            final HostNameRule rule = new HostNameRule(name);
             assertFalse(rule.isValid());
             try {
                 rule.validate();
