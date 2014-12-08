@@ -13,21 +13,15 @@
         <property name="readTimeout" value="50"/>
     </bean>
 
-    <!-- Configured versions -->
-    <bean id="nullHostNameVerifier" class="com.siemens.cto.aem.si.ssl.NullHostNameVerifier" />
-    
-
-<!-- class="com.siemens.cto.aem.si.ssl.SslClientHttpRequestFactory" -->
-    <bean id="jvmHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.HttpClientRequestFactory">
-        <property name="verifier" value="#{nullHostNameVerifier}"/>
+    <!-- Use configurable timeouts -->
+    <bean id="jvmHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
         <property name="connectTimeout" value="${ping.webServer.connectTimeout}"/>
         <property name="readTimeout" value="${ping.webServer.readTimeout}"/>
         <property name="periodMillis" value="${ping.webServer.period.millis}"/>
         <property name="maxHttpConnections" value="${ping.webServer.maxHttpConnections}" />    
     </bean>
 
-    <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.HttpClientRequestFactory">
-        <property name="verifier" value="#{nullHostNameVerifier}"/>
+    <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
         <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
         <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
         <property name="periodMillis" value="${ping.jvm.period.millis}"/>
