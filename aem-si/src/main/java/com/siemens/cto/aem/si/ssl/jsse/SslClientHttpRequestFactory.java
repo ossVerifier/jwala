@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl;
+package com.siemens.cto.aem.si.ssl.jsse;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -13,8 +13,18 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
+@Deprecated
+/**
+ * Ping using JSSE and HttpUrlConnection
+ * <code>
+ *     <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.jsse.SslClientHttpRequestFactory">
+ *       <property name="verifier" value="#{nullHostNameVerifier}"/>
+ *       <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
+ *       <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
+ *     </bean>
+ * </code>
+ */
 public class SslClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
 
     private HostnameVerifier verifier;

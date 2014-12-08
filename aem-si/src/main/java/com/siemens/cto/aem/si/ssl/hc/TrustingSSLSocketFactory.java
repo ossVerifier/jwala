@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl;
+package com.siemens.cto.aem.si.ssl.hc;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -10,6 +10,11 @@ import java.security.cert.X509Certificate;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 
+import com.siemens.cto.aem.si.ssl.jsse.NullHostNameVerifier;
+
+/**
+ * Provides SSL Sockets to HTTP Client that do not do verification
+ */
 public class TrustingSSLSocketFactory extends SSLSocketFactory {
 
     public TrustingSSLSocketFactory() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
