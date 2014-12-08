@@ -15,11 +15,13 @@ dependencies {
     compile group: "javax.servlet", name: "jstl", version: "$localVersions.jstl"
     compile group: "org.codehaus.jackson", name: "jackson-mapper-asl", version: "$project.versions.jackson"
 
+    runtime group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
+    runtime group: "log4j", name:"log4j", version:"$project.versions.log4j"
+    
     providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: "javax", name: "jms", version: "$project.versions.jms"
     providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided"
     providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-security", version: "$project.versions.infrastructureSecurity"
-    providedCompile group: "org.slf4j", name:"slf4j-api", version:"$project.versions.slf4j"
 
     compile project(":aem-common")
     compile project(":aem-persistence")
@@ -29,6 +31,14 @@ dependencies {
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 
+}
+
+war {
+    println 'Adding logging jars to the war that are excluded as transient provided dependencies.'
+    configurations.runtime.files { dep -> dep.name == 'log4j' || dep.name == 'slf4j-log4j12' }.each { file ->
+        println "... Adding jar $file.name"
+        classpath file
+    }
 }
 
 task generateMyResources {
