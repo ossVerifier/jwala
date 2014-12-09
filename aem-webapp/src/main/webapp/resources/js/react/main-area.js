@@ -72,17 +72,20 @@ $(document).ready(function(){
       return this.optional(e) || v != p;
     }, "Please specify a different value");
 
-    // Used by JVM and WebServer add/edit
     $.validator.addMethod("pathCheck", function(value, element) {
         var exp = /\/.*/;
         return exp.test(value);
     }, "The field must be a valid, absolute path.");
 
-    // Used by JVM and WebServer add/edit
-    $.validator.addMethod("regex", function(value, element) {
+    $.validator.addMethod("hostNameCheck", function(value, element) {
         var exp = /^[a-zA-Z0-9-.]+$/i;
         return this.optional(element) || exp.test(value);
     }, "The field must only contain letters, numbers, dashes or periods.");
+
+    $.validator.addMethod("nameCheck", function(value, element) {
+        var exp = /^[a-zA-Z0-9-_.]+$/i;
+        return this.optional(element) || exp.test(value);
+    }, "The field must only contain letters, numbers, underscores, dashes or periods.");
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });

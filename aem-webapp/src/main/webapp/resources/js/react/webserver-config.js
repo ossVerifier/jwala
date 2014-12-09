@@ -315,10 +315,10 @@ var WebServerConfigForm = React.createClass({
                     range: [1, 65535]
                 },
                 "webserverName": {
-                    regex: true
+                    nameCheck: true
                 },
                 "hostName": {
-                    regex: true
+                    hostNameCheck: true
                 },
                 "statusPath": {
                     pathCheck: true
@@ -333,19 +333,6 @@ var WebServerConfigForm = React.createClass({
                 }
             }
         });
-
-        $.validator.addMethod("pathCheck", function(value, element) {
-            var exp = /\/.*/;
-            return exp.test(value);
-        }, "The field must be a valid, absolute path.");
-
-        $.validator.addMethod("regex", function(value, element) {
-            // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
-            // var exp = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-            var exp = /^[a-zA-Z0-9-.]+$/i;
-            return this.optional(element) || exp.test(value);
-        }, "The field must only contain letters, numbers, dashes or periods.");
-
     },
     success: function() {
         this.props.successCallback();

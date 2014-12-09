@@ -385,8 +385,8 @@ var JvmConfigForm = React.createClass({
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden",
                                                                     rules: {"groupSelector[]": {required: true},
-                                                                            "jvmName": {regex: true},
-                                                                            "hostName": {regex: true},
+                                                                            "jvmName": {nameCheck: true},
+                                                                            "hostName": {hostNameCheck: true},
                                                                             "statusPath": {pathCheck: true},
                                                                             "httpPort": {range: [1, 65531]},
                                                                             "httpsPort": {range: [1, 65535]},
