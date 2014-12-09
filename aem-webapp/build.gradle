@@ -17,6 +17,7 @@ dependencies {
 
     runtime group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
     runtime group: "log4j", name:"log4j", version:"$project.versions.log4j"
+    runtime group: "commons-logging", name: "commons-logging", version: "$project.versions.commons_logging"
     
     providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: "javax", name: "jms", version: "$project.versions.jms"
@@ -35,7 +36,7 @@ dependencies {
 
 war {
     println 'Adding logging jars to the war that are excluded as transient provided dependencies.'
-    configurations.runtime.files { dep -> dep.name == 'log4j' || dep.name == 'slf4j-log4j12' }.each { file ->
+    configurations.runtime.files { dep -> dep.name == 'log4j' || dep.name == 'commons-logging' || dep.name == 'slf4j-log4j12' }.each { file ->
         println "... Adding jar $file.name"
         classpath file
     }
