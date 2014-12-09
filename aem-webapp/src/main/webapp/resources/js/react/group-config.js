@@ -210,7 +210,7 @@ var GroupConfigForm = React.createClass({
     },
     validator: null,
     componentDidMount: function() {
-        this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden"});
+        this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden", rules:{name: {nameCheck: true}}});
         $(this.refs.groupName.getDOMNode()).focus();
     },
     isValid: function() {
