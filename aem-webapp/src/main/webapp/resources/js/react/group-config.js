@@ -232,7 +232,7 @@ var GroupConfigDataTable = React.createClass({
     render: function() {
         var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name", tocType:"link", colWidth:"1132px"}];
+                        {sTitle:"Group Name", mData:"name", tocType:"link", colWidth:"1132px", maxDisplayTextLen:150}];
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
                                  className:"simple-data-table"};

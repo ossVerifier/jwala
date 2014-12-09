@@ -144,3 +144,13 @@ div .state {
 .vertical-align-top {
     vertical-align: top !important;
 }
+
+.ui-tooltip {
+    text-align:left;
+}
+
+.ui-tooltip * {
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 10pt;
+    word-wrap: break-word
+}

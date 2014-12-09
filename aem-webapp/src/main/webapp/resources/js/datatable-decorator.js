@@ -262,7 +262,14 @@ var renderComponents = function(tableId,
     } else if (item.tocType === "emptyColumn") {
         renderedComponent = "";
     } else {
-        renderedComponent = data;
+
+        if (data !== undefined && data !== null && data.length > item.maxDisplayTextLen) {
+            renderedComponent = "<span title=' " + data + " '>" +
+                                data.substring(0, item.maxDisplayTextLen) + "...</span>";
+        } else {
+            renderedComponent = data;
+        }
+
     }
     return renderedComponent;
 };
@@ -324,7 +331,8 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
                                                                callback:item.onClickCallback !== undefined ?
                                                                         item.onClickCallback :
                                                                         editCallback,
-                                                               waitForResponse:item.waitForResponse}));
+                                                               waitForResponse:item.waitForResponse,
+                                                               maxDisplayTextLen:item.maxDisplayTextLen}));
     }  else {
         return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }

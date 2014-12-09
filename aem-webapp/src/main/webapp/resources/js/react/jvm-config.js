@@ -430,9 +430,9 @@ var JvmConfigDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink, colWidth:"380px"},
-                        {sTitle:"Host", mData:"hostName", colWidth:"150px"},
-                        {sTitle:"Sts Path", mData:"statusPath.path", colWidth:"150px"},
+                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink, colWidth:"380px", maxDisplayTextLen:45},
+                        {sTitle:"Host", mData:"hostName", colWidth:"150px", maxDisplayTextLen:45},
+                        {sTitle:"Sts Path", mData:"statusPath.path", colWidth:"150px", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
@@ -453,8 +453,16 @@ var JvmConfigDataTable = React.createClass({
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
         aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+            var MAX_VAL_LEN = 50;
+            var val = sData;
+            var title = "";
+            if (val.length > MAX_VAL_LEN) {
+                title = sData;
+                val = val.substring(0, MAX_VAL_LEN) + "...";
+            }
+
             return React.renderComponent(new React.DOM.button({className:"button-link",
-                                         onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+                                         onClick:self.props.editCallback.bind(this, oData), title:title}, val), nTd);
         }.bind(this);
    }
 });

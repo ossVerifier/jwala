@@ -396,11 +396,11 @@ var WebServerDataTable = React.createClass({
     render: function() {
         var tableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                         {sTitle:"Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
-                        {sTitle:"Host", mData:"host"},
+                        {sTitle:"Host", mData:"host", maxDisplayTextLen:45},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
-			{sTitle:"Status Path", mData:"statusPath.path"},
-			{sTitle:"HTTP Config File", mData:"httpConfigFile.path"},
+			{sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
+			{sTitle:"HTTP Config File", mData:"httpConfigFile.path", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
@@ -416,9 +416,17 @@ var WebServerDataTable = React.createClass({
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
+
         aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+            var MAX_VAL_LEN = 50;
+            var val = sData;
+            var title = "";
+            if (val.length > MAX_VAL_LEN) {
+                title = sData;
+                val = val.substring(0, MAX_VAL_LEN) + "...";
+            }
             return React.renderComponent(new React.DOM.button({className:"button-link",
-                                         onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+                                         onClick:self.props.editCallback.bind(this, oData), title:title}, val), nTd);
         }.bind(this);
     }
 });

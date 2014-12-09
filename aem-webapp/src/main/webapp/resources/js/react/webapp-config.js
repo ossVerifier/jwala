@@ -387,8 +387,16 @@ var WebAppDataTable = React.createClass({
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
             aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-                return React.renderComponent(new React.DOM.button({className:"button-link",
-                                                 onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
+                var MAX_VAL_LEN = 50;
+                var val = sData;
+                var title = "";
+                if (val.length > MAX_VAL_LEN) {
+                    title = sData;
+                    val = val.substring(0, MAX_VAL_LEN) + "...";
+                }
+
+                return React.renderComponent(new React.DOM.button({className:"button-link", title:title,
+                                                 onClick:self.props.editCallback.bind(this, oData)}, val), nTd);
             }.bind(this);
     }
 

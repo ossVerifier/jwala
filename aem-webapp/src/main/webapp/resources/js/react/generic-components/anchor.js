@@ -14,7 +14,15 @@ var Anchor = React.createClass({
          * show up in the filter. This is a shortcoming of jQuery Datatable 1.9.4. Please see
          * http://datatables.net/forums/discussion/20831/exclude-html-contents-classes-from-text-search.
          */
-        return <button id={this.props.id} className="button-link">{this.props.value}</button>
+
+        var val = this.props.value;
+        var title = "";
+        if (this.props.maxDisplayTextLen !== undefined && val.length > this.props.maxDisplayTextLen) {
+            title = val;
+            val = val.substring(0, this.props.maxDisplayTextLen) + "...";
+        }
+
+        return <button id={this.props.id} className="button-link" title={title}>{val}</button>
     },
     linkClick: function() {
         if ($("#" + this.props.id).hasClass("disabled")) {
