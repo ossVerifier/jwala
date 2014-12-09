@@ -1,24 +1,36 @@
 /** @jsx React.DOM */
 var JvmConfig = React.createClass({
+
+    /**
+     * This object is used to let the component know when to update itself.
+     * It essentially uses a kind of "toggle switch" pattern wherein when set
+     * the flag is set to true then when "checked/viewed" the flag is set to false.
+     * This mechanism is required to essentially tell the component if the
+     * table needs to be updated since the underlying table is using jQuery Datatable.
+     * This should not be necessary if the entire table is purely made in React.
+     */
+    cancelFlag: {
+        flag: false,
+        set: function() {
+            this.flag = true;
+        },
+        check: function () {
+            var prevFlag = this.flag;
+            this.flag = false; // reset the flag
+            return prevFlag;
+        }
+    },
+
+
+    selectedJvm: null,
     getInitialState: function() {
-        selectedJvm = null;
         return {
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
-            jvmFormData: {},
-            jvmTableData: [{"jvmName":"","id":{"id":0},"hostName":"b","groups":[]}],
-            groupMultiSelectData: []
+            selectedJvmForEditing: null,
+            jvmTableData: [{"jvmName":"","id":{"id":0},"hostName":"b","groups":[]}]
         }
-    },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        if(
-          (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
-        ){
-          return false;
-        }
-        return true;
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
@@ -35,178 +47,188 @@ var JvmConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <JvmDataTable data={this.state.jvmTableData}
-                                                    selectItemCallback={this.selectItemCallback}
-                                                    editCallback={this.editCallback}
-                                                    noUpdateWhen={
-                                                      this.state.showModalFormAddDialog ||
-                                                      this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog
-                                                      }/>
+                                    <JvmConfigDataTable data={this.state.jvmTableData}
+                                                        selectItemCallback={this.selectItemCallback}
+                                                        editCallback={this.editCallback}
+                                                        noUpdateWhen={this.state.showModalFormAddDialog ||
+                                                                      this.state.showDeleteConfirmDialog ||
+                                                                      this.state.showModalFormEditDialog ||
+                                                                      this.cancelFlag.check()
+                                                        }/>
                                 </div>
                             </td>
                         </tr>
                    </table>
-                   <JvmConfigForm title="Add JVM"
-                                        show={this.state.showModalFormAddDialog}
-                                        service={this.props.service}
-                                        groupMultiSelectData={this.state.groupMultiSelectData}
-                                        successCallback={this.addSuccessCallback}
-                                        destroyCallback={this.closeModalFormAddDialog}
-                                        className="textAlignLeft"
-                                        noUpdateWhen={
-                                            this.state.showDeleteConfirmDialog ||
-                                            this.state.showModalFormEditDialog
-                                        }/>
-                   <JvmConfigForm title="Edit JVM"
-                                    show={this.state.showModalFormEditDialog}
-                                    service={this.props.service}
-                                    data={this.state.jvmFormData}
-                                    groupMultiSelectData={this.state.groupMultiSelectData}
-                                    successCallback={this.editSuccessCallback}
-                                    destroyCallback={this.closeModalFormEditDialog}
-                                    className="textAlignLeft"
-                                    noUpdateWhen={
-                                        this.state.showModalFormAddDialog ||
-                                        this.state.showDeleteConfirmDialog
-                                    }/>
-                   <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                             btnClickedCallback={this.confirmDeleteCallback} />
+
+                   <ModalDialogBox title="Add JVM"
+                                   show={this.state.showModalFormAddDialog}
+                                   okCallback={this.okAddCallback}
+                                   cancelCallback={this.cancelAddCallback}
+                                   content={<JvmConfigForm ref="jvmAddForm" />}
+                                   width="auto"
+                                   height="auto"/>
+
+                   <ModalDialogBox title="Edit JVM"
+                                   show={this.state.showModalFormEditDialog}
+                                   okCallback={this.okEditCallback}
+                                   cancelCallback={this.cancelEditCallback}
+                                   content={<JvmConfigForm ref="jvmEditForm"
+                                                           data={this.state.selectedJvmForEditing}/>}
+                    />
+
+                    <ModalDialogBox title="Confirmation Dialog Box"
+                                    show={this.state.showDeleteConfirmDialog}
+                                    okCallback={this.confirmDeleteCallback}
+                                    cancelCallback={this.cancelDeleteCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                </div>
     },
-    confirmDeleteCallback: function(ans) {
-        var self = this;
-        this.setState({showDeleteConfirmDialog: false});
-        if (ans === "yes") {
-            this.props.service.deleteJvm(selectedJvm.id.id, self.retrieveData);
+    cancelAddCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormAddDialog:false});
+    },
+    cancelEditCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormEditDialog:false});
+    },
+    okAddCallback: function() {
+        if (this.refs.jvmAddForm.isValid()) {
+            var self = this;
+            this.props.service.insertNewJvm(this.refs.jvmAddForm.state.name,
+                                            this.refs.jvmAddForm.state.groupIds,
+                                            this.refs.jvmAddForm.state.host,
+                                            this.refs.jvmAddForm.state.statusPath,
+                                            this.refs.jvmAddForm.state.httpPort,
+                                            this.refs.jvmAddForm.state.httpsPort,
+                                            this.refs.jvmAddForm.state.redirectPort,
+                                            this.refs.jvmAddForm.state.shutdownPort,
+                                            this.refs.jvmAddForm.state.ajpPort,
+                                            function(){
+                                                self.refreshData({showModalFormAddDialog:false});
+                                            },
+                                            function(errMsg) {
+                                                $.errorAlert(errMsg, "Error");
+                                            });
         }
     },
-    retrieveData: function() {
+    okEditCallback: function() {
+        if (this.refs.jvmEditForm.isValid()) {
+            var self = this;
+            this.props.service.updateJvm($(this.refs.jvmEditForm.getDOMNode().children[0]).serializeArray(),
+                                           function(){
+                                               self.refreshData({showModalFormEditDialog:false});
+                                           },
+                                           function(errMsg) {
+                                               $.errorAlert(errMsg, "Error");
+                                           });
+        }
+    },
+
+    /**
+     * Retrieve data from REST Api the set states passed in parameter "states".
+     */
+    refreshData: function(states, doneCallback) {
         var self = this;
         this.props.service.getJvms(function(response){
-                var jvmTableData = response.applicationResponseContent;
-                groupService.getGroups(
-                    function(response){
-                        self.setState({jvmTableData:jvmTableData,
-                                       groupMultiSelectData:response.applicationResponseContent});
-                    }
-                );
-        });
-    },
-    addSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormAddDialog();
-    },
-    editSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormEditDialog();
+                                         states["jvmTableData"] = response.applicationResponseContent;
+                                         if (doneCallback !== undefined) {
+                                            doneCallback();
+                                         }
+                                         self.setState(states);
+                                     });
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (selectedJvm != undefined) {
+        if (this.selectedJvm !== null) {
             this.setState({showDeleteConfirmDialog: true});
         }
     },
+    confirmDeleteCallback: function() {
+        var self = this;
+        this.props.service.deleteJvm(this.selectedJvm.id.id,
+                                       this.refreshData.bind(this,
+                                                             {showDeleteConfirmDialog: false},
+                                                             function(){self.selectedJvm = null}));
+    },
+    cancelDeleteCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showDeleteConfirmDialog: false});
+    },
     selectItemCallback: function(item) {
-        selectedJvm = item;
+        this.selectedJvm = item;
     },
     editCallback: function(data) {
-        var thisComponent = this;
+        var self = this;
         this.props.service.getJvm(data.id.id,
             function(response){
-                thisComponent.setState({jvmFormData: response.applicationResponseContent,
-                                        showModalFormEditDialog: true})
+                self.setState({selectedJvmForEditing:response.applicationResponseContent,
+                               showModalFormEditDialog:true});
             }
         );
     },
-    closeModalFormAddDialog: function() {
-        this.setState({showModalFormAddDialog: false})
-    },
-    closeModalFormEditDialog: function() {
-        this.setState({showModalFormEditDialog: false})
-    },
     componentDidMount: function() {
-        // this.retrieveData();
+        this.refreshData({});
     },
-    componentWillMount: function() {
-        this.retrieveData();
-    }
+
 });
 
+/**
+ * The form that provides data input.
+ */
 var JvmConfigForm = React.createClass({
-    mixins: [
-      Toc.mixins.PreventEnterSubmit
-    ],
-    validator: null,
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return !nextProps.noUpdateWhen;
-    },
     getInitialState: function() {
+
+        var jvmName = this.props.data !== undefined ? this.props.data.name : "";
+        var id = "";
+        var name = "";
+        var host = "";
+        var statusPath = "";
+        var groupIds = [];
+        var httpPort = "";
+        var httpsPort = "";
+        var redirectPort = "";
+        var shutdownPort = "";
+        var ajpPort = "";
+
+        if (this.props.data !== undefined) {
+            id = this.props.data.id;
+            name = this.props.data.jvmName;
+            host = this.props.data.hostName;
+            statusPath = this.props.data.statusPath.path;
+            this.props.data.groups.forEach(function(group) {
+                groupIds.push(group.id);
+            });
+            httpPort = this.props.data.httpPort;
+            httpsPort = this.props.data.httpsPort;
+            redirectPort = this.props.data.redirectPort;
+            shutdownPort = this.props.data.shutdownPort;
+            ajpPort = this.props.data.ajpPort;
+        }
+
         return {
-            id: "",
-            name: "",
-            host: "",
-            statusPath: "",
-            groupIds: undefined,
-            httpPort: "",
-            httpsPort: "",
-            redirectPort: "",
-            shutdownPort: "",
-            ajpPort: ""
+            id: id,
+            name: name,
+            host: host,
+            statusPath: statusPath,
+            groupIds: groupIds,
+            groupMultiSelectData: [],
+            httpPort: httpPort,
+            httpsPort: httpsPort,
+            redirectPort: redirectPort,
+            shutdownPort: shutdownPort,
+            ajpPort: ajpPort
         }
-    },
-    getPropVal: function(props, name, defaultVal, subName) {
-        var val = "";
-        if (defaultVal !== undefined) {
-            val = defaultVal;
-        }
-        if (props.data !== undefined) {
-            if (name === "id" && props.data[name] !== undefined) {
-                val = props.data[name].id;
-            } else if (name !== "id") {
-                if (name !== "groups") {
-                    val = props.data[name];
-                    if (subName !== undefined && val !== undefined && val[subName] !== undefined) {
-                        val = val[subName];
-                    }
-                } else {
-                    /**
-                     * Because the group id is {id:object} where object = {id:[theId]} we need to
-                     * convert the group id to {id:[theId]} for the multi-select checkbox component
-                     * to consume. This is not the case for Web Server's group ids in which
-                     * the said component was first used.
-                     */
-                    if (props.data[name] !== undefined) {
-                        val = [];
-                        for (var i = 0; i < props.data[name].length; i++) {
-                            val.push({id:props.data[name][i].id.id});
-                        }
-                    }
-                }
-            }
-        }
-        return val;
-    },
-    componentWillReceiveProps: function(nextProps) {
-        this.setState({id:this.getPropVal(nextProps, "id"),
-                       name:this.getPropVal(nextProps, "jvmName"),
-                       host:this.getPropVal(nextProps, "hostName"),
-                       statusPath:this.getPropVal(nextProps, "statusPath", "/manager", "path"),
-                       groupIds:this.getPropVal(nextProps, "groups"),
-                       httpPort:this.getPropVal(nextProps, "httpPort"),
-                       httpsPort:this.getPropVal(nextProps, "httpsPort"),
-                       redirectPort:this.getPropVal(nextProps, "redirectPort"),
-                       shutdownPort:this.getPropVal(nextProps, "shutdownPort"),
-                       ajpPort:this.getPropVal(nextProps, "ajpPort")});
     },
     mixins: [React.addons.LinkedStateMixin],
     render: function() {
-        var self = this;
-        return  <div className={this.props.className} style={{display:"none"}}>
+        var jvmId =  this.props.data !== undefined ? this.props.data.id.id : "";
+        return <div className={this.props.className}>
                     <form>
-                        <input name="jvmId" type="hidden" value={this.state.id} />
+                        <input type="hidden" name="id" value={jvmId} />
                         <table>
                             <tr>
                                 <td>*Name</td>
@@ -217,7 +239,7 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="jvmName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
+                                <td><input ref="jvmName" name="jvmName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
                             </tr>
                             <tr>
                                 <td>*Host</td>
@@ -230,7 +252,6 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="255"/></td>
                             </tr>
-
                             <tr>
                                 <td>*Status Path</td>
                             </tr>
@@ -242,7 +263,6 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} required maxLength="64"/></td>
                             </tr>
-
                             <tr>
                                 <td>*HTTP Port</td>
                             </tr>
@@ -254,7 +274,6 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td><input name="httpPort" type="text" valueLink={this.linkState("httpPort")} required maxLength="5" onBlur={this.handleHttpBlur}/></td>
                             </tr>
-
                             <tr>
                                 <td>HTTPS Port</td>
                             </tr>
@@ -266,7 +285,6 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td><input name="httpsPort" type="text" valueLink={this.linkState("httpsPort")} maxLength="5"/></td>
                             </tr>
-
                             <tr>
                                 <td>*Redirect Port</td>
                             </tr>
@@ -316,7 +334,7 @@ var JvmConfigForm = React.createClass({
                             <tr>
                                 <td>
                                     <DataMultiSelectBox name="groupSelector[]"
-                                                        data={this.props.groupMultiSelectData}
+                                                        data={this.state.groupMultiSelectData}
                                                         selectedValIds={this.state.groupIds}
                                                         key="id"
                                                         keyPropertyName="id"
@@ -324,12 +342,12 @@ var JvmConfigForm = React.createClass({
                                                         className="data-multi-select-box"
                                                         onSelectCallback={this.onSelectGroups}
                                                         idKey="groupId"/>
+
                                 </td>
                             </tr>
-
                         </table>
                     </form>
-                </div>
+               </div>
     },
     isHttpPortInteger: function() {
         return (this.state.httpPort % 1 === 0);
@@ -363,131 +381,52 @@ var JvmConfigForm = React.createClass({
     onSelectGroups: function(groupIds) {
         this.setState({groupIds:groupIds});
     },
-    isValid: function() {
-        if (this.validator !== null) {
-            this.validator.form();
-            if (this.validator.numberOfInvalids() === 0) {
-                return true;
-            }
-        } else {
-            alert("There is no validator for the form!");
-        }
-        return false;
-    },
+    validator: null,
     componentDidMount: function() {
-        this.validator = $(this.getDOMNode().children[0]).validate({
-            ignore: ":hidden",
-            rules: {
-                "groupSelector[]": {
-                    required: true
-                },
-                "jvmName": {
-                    regex: true
-                },
-                "hostName": {
-                    regex: true
-                },
-                "statusPath": {
-                    pathCheck: true
-                },
-                "httpPort": {
-                    range: [1, 65531]
-                },
-                "httpsPort": {
-                    range: [1, 65535]
-                },
-                "redirectPort": {
-                    range: [1, 65535]
-                },
-                "shutdownPort": {
-                    range: [-1, 65535],
-                    notEqualTo: 0
-                },
-                "ajpPort": {
-                    range: [1, 65535]
-                }
-            },
-            messages: {
-                "groupSelector[]": {
-                    required: "Please select at least 1 group"
-                }
-            }
-        });
-
-        //TODO These should be re-usable between JVM and WebServer
-        $.validator.addMethod("pathCheck", function(value, element) {
-            var exp = /\/.*/;
-            return exp.test(value);
-        }, "The field must be a valid, absolute path.");
-
-        $.validator.addMethod("regex", function(value, element) {
-            // TODO: Verfiy if Siemen's host naming convention follows that of a regular domain name
-            // var exp = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-            var exp = /^[a-zA-Z0-9-.]+$/i;
-            return this.optional(element) || exp.test(value);
-        }, "The field must only contain letters, numbers, dashes or periods.");
-
+        this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden",
+                                                                    rules: {"groupSelector[]": {required: true},
+                                                                            "jvmName": {regex: true},
+                                                                            "hostName": {regex: true},
+                                                                            "statusPath": {pathCheck: true},
+                                                                            "httpPort": {range: [1, 65531]},
+                                                                            "httpsPort": {range: [1, 65535]},
+                                                                            "redirectPort": {range: [1, 65535]},
+                                                                            "shutdownPort": {
+                                                                                range: [-1, 65535],
+                                                                                notEqualTo: 0
+                                                                             },
+                                                                            "ajpPort": {range: [1, 65535]}
+                                                                            },
+                                                                            messages: {
+                                                                                "groupSelector[]": {
+                                                                                    required: "Please select at least 1 group"
+                                                                                 }
+                                                                            }
+                                                                    });
+        $(this.refs.jvmName.getDOMNode()).focus();
+        this.retrieveGroups();
     },
-    success: function() {
-        this.props.successCallback();
-        $(this.getDOMNode()).dialog("destroy");
-    },
-    insertNewJvm: function() {
-        if (this.isValid()) {
-            this.props.service.insertNewJvm(this.state.name,
-                                            this.state.groupIds,
-                                            this.state.host,
-                                            this.state.statusPath,
-                                            this.state.httpPort,
-                                            this.state.httpsPort,
-                                            this.state.redirectPort,
-                                            this.state.shutdownPort,
-                                            this.state.ajpPort,
-                                            this.success,
-                                            function(errMsg) {
-                                                $.errorAlert(errMsg, "Error");
-                                            });
+    isValid: function() {
+        this.validator.form();
+        if (this.validator.numberOfInvalids() === 0) {
             return true;
         }
         return false;
     },
-    updateJvm: function() {
-        if (this.isValid()) {
-            this.props.service.updateJvm($(this.getDOMNode().children[0]).serializeArray(),
-                                         this.success,
-                                         function(errMsg) {
-                                             $.errorAlert(errMsg, "Error");
-                                         });
-            return true;
-        }
-        return false;
-    },
-    componentDidUpdate: function() {
-        if (this.props.show === true) {
-
-            // Check first if this component has been decorated already.
-            // Decorate only once!
-            if (!$(this.getDOMNode()).hasClass("ui-dialog-content")) {
-                var okCallback = this.props.data === undefined ? this.insertNewJvm : this.updateJvm;
-                decorateNodeAsModalFormDialog(this.getDOMNode(),
-                                              this.props.title,
-                                              okCallback,
-                                              this.destroy,
-                                              this.destroy);
-            }
-
-        }
-    },
-    destroy: function() {
-        this.validator.resetForm();
-        $(this.getDOMNode()).dialog("destroy");
-        this.props.destroyCallback();
+    retrieveGroups: function() {
+        var self = this;
+        groupService.getGroups(function(response){
+                                   self.setState({groupMultiSelectData:response.applicationResponseContent});
+                               });
     }
 });
 
-var JvmDataTable = React.createClass({
+/**
+ * The jvm data table.
+ */
+var JvmConfigDataTable = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
-      return !nextProps.noUpdateWhen;
+        return !nextProps.noUpdateWhen;
     },
     render: function() {
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
@@ -517,5 +456,5 @@ var JvmDataTable = React.createClass({
             return React.renderComponent(new React.DOM.button({className:"button-link",
                                          onClick:self.props.editCallback.bind(this, oData)}, sData), nTd);
         }.bind(this);
-    }
+   }
 });

@@ -68,9 +68,21 @@ var ConfigureTabs = React.createClass({
 });
 
 $(document).ready(function(){
-    jQuery.validator.addMethod("notEqualTo", function(v, e, p) {  
+    $.validator.addMethod("notEqualTo", function(v, e, p) {
       return this.optional(e) || v != p;
     }, "Please specify a different value");
+
+    // Used by JVM and WebServer add/edit
+    $.validator.addMethod("pathCheck", function(value, element) {
+        var exp = /\/.*/;
+        return exp.test(value);
+    }, "The field must be a valid, absolute path.");
+
+    // Used by JVM and WebServer add/edit
+    $.validator.addMethod("regex", function(value, element) {
+        var exp = /^[a-zA-Z0-9-.]+$/i;
+        return this.optional(element) || exp.test(value);
+    }, "The field must only contain letters, numbers, dashes or periods.");
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
