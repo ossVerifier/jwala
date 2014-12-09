@@ -25,7 +25,7 @@ DialogBox = React.createClass({
                               React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.props.content),
                               React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                                 React.DOM.div({className:"ui-dialog-buttonset"},
-                                    React.DOM.button({className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only", onClick:this.closeCallback},
+                                    React.DOM.button({ref:"xBtn", className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only", onClick:this.closeCallback},
                                         React.DOM.span({className:"ui-button-text"}, "Close")))));
     },
     divOverlay: $('<div class="ui-widget-overlay ui-front"></div>'),
@@ -35,6 +35,7 @@ DialogBox = React.createClass({
         }
     },
     closeCallback: function() {
+        $(this.refs.xBtn.getDOMNode()).removeAttr("title");
         React.unmountComponentAtNode($(this.getDOMNode()).parent().get(0));
     },
     mouseDownXDiff: 0,

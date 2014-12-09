@@ -43,7 +43,8 @@ ModalDialogBox = React.createClass({
                                                       onMouseDown:this.mouseDownHandler,
                                                       onMouseUp:this.mouseUpHandler},
                                                      React.DOM.span({className:"ui-dialog-title text-align-center"}, this.props.title),
-                                                     RButton({title:"close",
+                                                     RButton({ref:"xBtn",
+                                                              title:"close",
                                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
                                                               onClick:this.xBtnClick,
                                                               spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick"})),
@@ -74,6 +75,7 @@ ModalDialogBox = React.createClass({
         }
     },
     xBtnClick: function() {
+        $(".ui-tooltip-content").parents('div').remove();
         this.props.cancelCallback();
     },
     okCallback: function() {
