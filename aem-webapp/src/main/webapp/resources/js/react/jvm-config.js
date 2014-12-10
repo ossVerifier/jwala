@@ -227,7 +227,7 @@ var JvmConfigForm = React.createClass({
     render: function() {
         var jvmId =  this.props.data !== undefined ? this.props.data.id.id : "";
         return <div className={this.props.className}>
-                    <form>
+                    <form ref="jvmConfigForm">
                         <input type="hidden" name="id" value={jvmId} />
                         <table>
                             <tr>
@@ -404,6 +404,11 @@ var JvmConfigForm = React.createClass({
                                                                             }
                                                                     });
         $(this.refs.jvmName.getDOMNode()).focus();
+
+        $(this.refs.jvmConfigForm.getDOMNode()).submit(function(e) {
+            e.preventDefault();
+        });
+
         this.retrieveGroups();
     },
     isValid: function() {
