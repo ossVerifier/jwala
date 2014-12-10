@@ -211,7 +211,15 @@ var GroupConfigForm = React.createClass({
     validator: null,
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden", rules:{name: {nameCheck: true}}});
-        $(this.refs.groupName.getDOMNode()).focus();
+
+        /**
+         * setTimeout is fixes the problem wherein the input box doesn't get focused in IE8.
+         * Strangely it works without the setTimeout in jvm-config. What's more strange is that
+         * any other component like a button can get focused except input elements!
+         * This is the case whether jQuery or the node element focus is used.
+         */
+        var groupNameNode = this.refs.groupName.getDOMNode();
+        setTimeout(function(){ groupNameNode.focus(); }, 100);
 
         $(this.refs.groupConfigForm.getDOMNode()).submit(function(e) {
             e.preventDefault();
