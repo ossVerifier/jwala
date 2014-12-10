@@ -22,11 +22,10 @@ ModalDialogBox = React.createClass({
         }
     },
     render: function() {
+
         if (!this.props.show) {
-            $(document).off("keydown");
             return React.DOM.div();
         }
-        $(document).on("keydown", this.keyDownHandler);
 
         var height = this.props.height === undefined ? "auto" : this.props.height;
         var width = this.props.width === undefined ? "auto" : this.props.width;
@@ -38,7 +37,8 @@ ModalDialogBox = React.createClass({
         var theDialog = React.DOM.div({ref:"theDialog",
                                        className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
                                        tabIndex:"-1",
-                                       style:theStyle},
+                                       style:theStyle,
+                                       onKeyDown:this.keyDownHandler},
                                        React.DOM.div({className:"ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix",
                                                       onMouseDown:this.mouseDownHandler,
                                                       onMouseUp:this.mouseUpHandler},
@@ -59,8 +59,11 @@ ModalDialogBox = React.createClass({
 
     },
     keyDownHandler: function(e) {
-        if (e.keyCode == 27) {
+        if (e.keyCode === 27) {
             this.props.cancelCallback();
+        } else if (e.keyCode === 13) {
+            this.props.okCallback();
+            e.preventDefault();
         }
     },
     componentDidUpdate: function() {

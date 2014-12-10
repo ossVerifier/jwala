@@ -182,7 +182,7 @@ var GroupConfigForm = React.createClass({
     render: function() {
         var groupId =  this.props.data !== undefined ? this.props.data.id.id : "";
         return <div className={this.props.className}>
-                    <form>
+                    <form ref="groupConfigForm">
                         <input type="hidden" name="id" value={groupId} />
                         <table>
                             <tr>
@@ -212,6 +212,10 @@ var GroupConfigForm = React.createClass({
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden", rules:{name: {nameCheck: true}}});
         $(this.refs.groupName.getDOMNode()).focus();
+
+        $(this.refs.groupConfigForm.getDOMNode()).submit(function(e) {
+            e.preventDefault();
+        });
     },
     isValid: function() {
         this.validator.form();
