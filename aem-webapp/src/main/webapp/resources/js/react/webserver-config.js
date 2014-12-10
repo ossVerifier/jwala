@@ -1,24 +1,36 @@
 /** @jsx React.DOM */
 var WebServerConfig = React.createClass({
+
+    /**
+     * This object is used to let the component know when to update itself.
+     * It essentially uses a kind of "toggle switch" pattern wherein when set
+     * the flag is set to true then when "checked/viewed" the flag is set to false.
+     * This mechanism is required to essentially tell the component if the
+     * table needs to be updated since the underlying table is using jQuery Datatable.
+     * This should not be necessary if the entire table is purely made in React.
+     */
+    cancelFlag: {
+        flag: false,
+        set: function() {
+            this.flag = true;
+        },
+        check: function () {
+            var prevFlag = this.flag;
+            this.flag = false; // reset the flag
+            return prevFlag;
+        }
+    },
+
+
+    selectedWebServer: null,
     getInitialState: function() {
-        selectedWebServer = null;
         return {
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
-            webServerFormData: {},
-            webServerTableData: [],
-            groupMultiSelectData: []
+            selectedWebServerForEditing: null,
+            webServerTableData: []
         }
-    },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        if(
-          (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
-        ){
-          return false;
-        }
-        return true;
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
@@ -36,161 +48,173 @@ var WebServerConfig = React.createClass({
                             <td>
                                 <div>
                                     <WebServerDataTable data={this.state.webServerTableData}
-                                                    selectItemCallback={this.selectItemCallback}
-                                                    editCallback={this.editCallback}
-                                                    noUpdateWhen={
-                                                      this.state.showModalFormAddDialog ||
-                                                      this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog
-                                                      }/>
+                                                        selectItemCallback={this.selectItemCallback}
+                                                        editCallback={this.editCallback}
+                                                        noUpdateWhen={this.state.showModalFormAddDialog ||
+                                                                      this.state.showDeleteConfirmDialog ||
+                                                                      this.state.showModalFormEditDialog ||
+                                                                      this.cancelFlag.check()
+                                                        }/>
                                 </div>
                             </td>
                         </tr>
                    </table>
-                   <WebServerConfigForm title="Add Web Server"
-                                        show={this.state.showModalFormAddDialog}
-                                        service={this.props.service}
-                                        groupMultiSelectData={this.state.groupMultiSelectData}
-                                        successCallback={this.addSuccessCallback}
-                                        destroyCallback={this.closeModalFormAddDialog}
-                                        className="textAlignLeft"
-                                        noUpdateWhen={
-                                            this.state.showDeleteConfirmDialog ||
-                                            this.state.showModalFormEditDialog
-                                        }/>
-                   <WebServerConfigForm title="Edit Web Server"
-                                    show={this.state.showModalFormEditDialog}
-                                    service={this.props.service}
-                                    data={this.state.webServerFormData}
-                                    groupMultiSelectData={this.state.groupMultiSelectData}
-                                    successCallback={this.editSuccessCallback}
-                                    destroyCallback={this.closeModalFormEditDialog}
-                                    className="textAlignLeft"
-                                    noUpdateWhen={
-                                        this.state.showModalFormAddDialog ||
-                                        this.state.showDeleteConfirmDialog
-                                    }/>
-                   <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                             btnClickedCallback={this.confirmDeleteCallback} />
+
+                   <ModalDialogBox title="Add Web Server"
+                                   show={this.state.showModalFormAddDialog}
+                                   okCallback={this.okAddCallback}
+                                   cancelCallback={this.cancelAddCallback}
+                                   content={<WebServerConfigForm ref="webServerAddForm" />}
+                                   width="auto"
+                                   height="auto"/>
+
+                   <ModalDialogBox title="Edit Web Server"
+                                   show={this.state.showModalFormEditDialog}
+                                   okCallback={this.okEditCallback}
+                                   cancelCallback={this.cancelEditCallback}
+                                   content={<WebServerConfigForm ref="webServerEditForm"
+                                                                 data={this.state.selectedWebServerForEditing}/>}
+                    />
+
+                    <ModalDialogBox title="Confirmation Dialog Box"
+                                    show={this.state.showDeleteConfirmDialog}
+                                    okCallback={this.confirmDeleteCallback}
+                                    cancelCallback={this.cancelDeleteCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                </div>
     },
-    confirmDeleteCallback: function(ans) {
-        var self = this;
-        this.setState({showDeleteConfirmDialog: false});
-        if (ans === "yes") {
-            this.props.service.deleteWebServer(selectedWebServer.id.id, self.retrieveData);
+    cancelAddCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormAddDialog:false});
+    },
+    cancelEditCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showModalFormEditDialog:false});
+    },
+    okAddCallback: function() {
+        if (this.refs.webServerAddForm.isValid()) {
+            var self = this;
+            this.props.service.insertNewWebServer(this.refs.webServerAddForm.state.name,
+                                                  this.refs.webServerAddForm.state.groupIds,
+                                                  this.refs.webServerAddForm.state.host,
+                                                  this.refs.webServerAddForm.state.port,
+                                                  this.refs.webServerAddForm.state.httpsPort,
+                                                  this.refs.webServerAddForm.state.statusPath,
+                                                  this.refs.webServerAddForm.state.httpConfigFile,
+                                                  function(){
+                                                      self.refreshData({showModalFormAddDialog:false});
+                                                  },
+                                                  function(errMsg) {
+                                                        $.errorAlert(errMsg, "Error");
+                                                  });
         }
     },
-    retrieveData: function() {
+    okEditCallback: function() {
+        if (this.refs.webServerEditForm.isValid()) {
+            var self = this;
+            this.props.service.updateWebServer($(this.refs.webServerEditForm.getDOMNode().children[0]).serializeArray(),
+                                                 function(){
+                                                    self.refreshData({showModalFormEditDialog:false});
+                                                 },
+                                                 function(errMsg) {
+                                                     $.errorAlert(errMsg, "Error");
+                                                });
+        }
+    },
+    refreshData: function(states, doneCallback) {
         var self = this;
         this.props.service.getWebServers(function(response){
-                var webServerTableData = response.applicationResponseContent;
-                groupService.getGroups(
-                    function(response){
-                        self.setState({webServerTableData:webServerTableData,
-                                       groupMultiSelectData:response.applicationResponseContent});
-                    }
-                );
-        });
-    },
-    addSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormAddDialog();
-    },
-    editSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormEditDialog();
+                                             states["webServerTableData"] = response.applicationResponseContent;
+                                             if (doneCallback !== undefined) {
+                                                 doneCallback();
+                                             }
+                                             self.setState(states);
+                                        });
     },
     addBtnCallback: function() {
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (selectedWebServer != undefined) {
+        if (this.selectedWebServer !== null) {
             this.setState({showDeleteConfirmDialog: true});
         }
     },
+    confirmDeleteCallback: function() {
+        var self = this;
+        this.props.service.deleteWebServer(this.selectedWebServer.id.id,
+                                           this.refreshData.bind(this,
+                                                                 {showDeleteConfirmDialog: false},
+                                                                 function(){self.selectedWebServer = null}));
+    },
+    cancelDeleteCallback: function() {
+        this.cancelFlag.set();
+        this.setState({showDeleteConfirmDialog: false});
+    },
     selectItemCallback: function(item) {
-        selectedWebServer = item;
+        this.selectedWebServer = item;
     },
     editCallback: function(data) {
-        var thisComponent = this;
+        var self = this;
         this.props.service.getWebServer(data.id.id,
             function(response){
-                thisComponent.setState({webServerFormData: response.applicationResponseContent,
-                                        showModalFormEditDialog: true})
+                self.setState({selectedWebServerForEditing:response.applicationResponseContent,
+                               showModalFormEditDialog:true});
             }
         );
     },
-    closeModalFormAddDialog: function() {
-        this.setState({showModalFormAddDialog: false})
-    },
-    closeModalFormEditDialog: function() {
-        this.setState({showModalFormEditDialog: false})
-    },
     componentDidMount: function() {
-        // this.retrieveData();
+        this.refreshData({});
     },
-    componentWillMount: function() {
-        this.retrieveData();
-    }
+
 });
 
+/**
+ * The form that provides data input.
+ */
 var WebServerConfigForm = React.createClass({
-    validator: null,
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return !nextProps.noUpdateWhen;
-    },
     getInitialState: function() {
+        var id = "";
+        var name = "";
+        var host = "";
+        var port = "";
+        var httpsPort = "";
+        var statusPath = tocVars.loadBalancerStatusMount;
+        var httpConfigFile = "D:/apache/httpd-2.4.9/conf/httpd.conf";
+        var groupIds = [];
+
+        if (this.props.data !== undefined) {
+            id = this.props.data.id;
+            name = this.props.data.name;
+            host = this.props.data.host;
+            port = this.props.data.port;
+            httpsPort = this.props.data.httpsPort;
+            statusPath = this.props.data.statusPath.path;
+            httpConfigFile = this.props.data.httpConfigFile.path;
+            this.props.data.groups.forEach(function(group) {
+                groupIds.push(group.id);
+            });
+        }
+
         return {
-            id: "",
-            name: "",
-            host: "",
-            port: "",
-            httpsPort: "",
-            statusPath: "",
-            httpConfigFile: "",
-            groupIds: undefined
+            id: id,
+            name: name,
+            host: host,
+            port: port,
+            httpsPort: httpsPort,
+            statusPath: statusPath,
+            httpConfigFile: httpConfigFile,
+            groupIds: groupIds,
+            groupMultiSelectData: [],
         }
     },
-    getPropVal: function(props, name, defaultVal, subName) {
-        var val = "";
-        if (defaultVal !== undefined) {
-            val = defaultVal;
-        }
-        if (props.data !== undefined) {
-            if (name === "id" && props.data[name] !== undefined) {
-                val = props.data[name].id;
-            } else if (name !== "id") {
-                val = props.data[name];
-            }
-            if (subName !== undefined && val !== undefined && val[subName] !== undefined) {
-                val = val[subName];
-            }
-        }
-        return val;
-    },
-    componentWillReceiveProps: function(nextProps) {
-        this.setState({id:this.getPropVal(nextProps, "id"),
-                       name:this.getPropVal(nextProps, "name"),
-                       host:this.getPropVal(nextProps, "host"),
-                       port:this.getPropVal(nextProps, "port"),
-                       httpsPort:this.getPropVal(nextProps, "httpsPort"),
-                       statusPath:this.getPropVal(nextProps, "statusPath", tocVars.loadBalancerStatusMount, "path"),
-                       httpConfigFile:this.getPropVal(nextProps,
-                                                      "httpConfigFile",
-                                                      "D:/apache/httpd-2.4.9/conf/httpd.conf",
-                                                      "path"),
-                       groupIds:this.getPropVal(nextProps, "groupIds")});
-    },
-    mixins: [
-        React.addons.LinkedStateMixin,
-        Toc.mixins.PreventEnterSubmit
-    ],
+    mixins: [React.addons.LinkedStateMixin],
     render: function() {
-        var self = this;
-        return  <div className={this.props.className} style={{display:"none"}}>
-                    <form>
-                        <input name="webserverId" type="hidden" value={this.state.id} />
+        var webServerId = this.props.data !== undefined ? this.props.data.id.id : "";
+        return  <div className={this.props.className}>
+                    <form ref="webServerConfigForm">
+                        <input name="webserverId" type="hidden" value={webServerId} />
                         <table>
                             <tr>
                                 <td>*Name</td>
@@ -201,7 +225,7 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
+                                <td><input ref="webServerName" name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
                             </tr>
                             <tr>
                                 <td>*Host</td>
@@ -272,7 +296,7 @@ var WebServerConfigForm = React.createClass({
                             <tr>
                                 <td>
                                     <DataMultiSelectBox name="groupSelector[]"
-                                                        data={this.props.groupMultiSelectData}
+                                                        data={this.state.groupMultiSelectData}
                                                         selectedValIds={this.state.groupIds}
                                                         key="id"
                                                         keyPropertyName="id"
@@ -290,105 +314,66 @@ var WebServerConfigForm = React.createClass({
     onSelectGroups: function(groupIds) {
         this.setState({groupIds:groupIds});
     },
-    isValid: function() {
-        if (this.validator !== null) {
-            this.validator.form();
-            if (this.validator.numberOfInvalids() === 0) {
-                return true;
-            }
-        } else {
-            alert("There is no validator for the form!");
-        }
-        return false;
-    },
+    validator: null,
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({
-            ignore: ":hidden",
-            rules: {
-                "groupSelector[]": {
-                    required: true
-                },
-                "portNumber": {
-                    range: [1, 65535]
-                },
-                "httpsPort": {
-                    range: [1, 65535]
-                },
-                "webserverName": {
-                    nameCheck: true
-                },
-                "hostName": {
-                    hostNameCheck: true
-                },
-                "statusPath": {
-                    pathCheck: true
-                },
-                "httpConfigFile": {
-                    required: true
-                }
-            },
-            messages: {
-                "groupSelector[]": {
-                    required: "Please select at least 1 group"
-                }
-            }
+                                ignore: ":hidden",
+                                rules: {
+                                    "groupSelector[]": {
+                                        required: true
+                                    },
+                                    "portNumber": {
+                                        range: [1, 65535]
+                                    },
+                                    "httpsPort": {
+                                        range: [1, 65535]
+                                    },
+                                    "webserverName": {
+                                        nameCheck: true
+                                    },
+                                    "hostName": {
+                                        hostNameCheck: true
+                                    },
+                                    "statusPath": {
+                                        pathCheck: true
+                                    },
+                                    "httpConfigFile": {
+                                        required: true
+                                    }
+                                },
+                                messages: {
+                                    "groupSelector[]": {
+                                        required: "Please select at least 1 group"
+                                    }
+                                }
+                            });
+
+        $(this.refs.webServerName.getDOMNode()).focus();
+
+        $(this.refs.webServerConfigForm.getDOMNode()).submit(function(e) {
+            e.preventDefault();
         });
+
+        this.retrieveGroups();
     },
-    success: function() {
-        this.props.successCallback();
-        $(this.getDOMNode()).dialog("destroy");
-    },
-    insertNewWebServer: function() {
-        if (this.isValid()) {
-            this.props.service.insertNewWebServer(this.state.name,
-                                                  this.state.groupIds,
-                                                  this.state.host,
-                                                  this.state.port,
-                                                  this.state.httpsPort,
-                                                  this.state.statusPath,
-                                                  this.state.httpConfigFile,
-                                                  this.success,
-                                                  function(errMsg) {
-                                                        $.errorAlert(errMsg, "Error");
-                                                  });
+    isValid: function() {
+        this.validator.form();
+        if (this.validator.numberOfInvalids() === 0) {
             return true;
         }
         return false;
     },
-    updateWebServer: function() {
-        if (this.isValid()) {
-            this.props.service.updateWebServer($(this.getDOMNode().children[0]).serializeArray(),
-                                               this.success,
-                                               function(errMsg) {
-                                                    $.errorAlert(errMsg, "Error");
-                                               });
-            return true;
-        }
-        return false;
-    },
-    componentDidUpdate: function() {
-        if (this.props.show === true) {
-
-            // Check first if this component has been decorated already.
-            // Decorate only once!
-            if (!$(this.getDOMNode()).hasClass("ui-dialog-content")) {
-                var okCallback = this.props.data === undefined ? this.insertNewWebServer : this.updateWebServer;
-                decorateNodeAsModalFormDialog(this.getDOMNode(),
-                                              this.props.title,
-                                              okCallback,
-                                              this.destroy,
-                                              this.destroy);
-            }
-
-        }
-    },
-    destroy: function() {
-        this.validator.resetForm();
-        $(this.getDOMNode()).dialog("destroy");
-        this.props.destroyCallback();
+    retrieveGroups: function() {
+        var self = this;
+        groupService.getGroups(function(response){
+                                   self.setState({groupMultiSelectData:response.applicationResponseContent});
+                               });
     }
 });
 
+/**
+ * The Web Server data table.
+ */
 var WebServerDataTable = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
       return !nextProps.noUpdateWhen;
@@ -399,8 +384,8 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Host", mData:"host", maxDisplayTextLen:45},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"Https Port", mData:"httpsPort"},
-			{sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
-			{sTitle:"HTTP Config File", mData:"httpConfigFile.path", maxDisplayTextLen:20},
+                        {sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
+                        {sTitle:"HTTP Config File", mData:"httpConfigFile.path", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
