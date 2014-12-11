@@ -78,7 +78,6 @@ ModalDialogBox = React.createClass({
         }
     },
     xBtnClick: function() {
-        $(".ui-tooltip-content").parents('div').remove();
         this.props.cancelCallback();
     },
     okCallback: function() {

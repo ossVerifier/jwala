@@ -87,7 +87,5 @@ $(document).ready(function(){
         return this.optional(element) || exp.test(value);
     }, "The field must only contain letters, numbers, underscores, dashes or periods.");
 
-    $(document).tooltip();
-
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
