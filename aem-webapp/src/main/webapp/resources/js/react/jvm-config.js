@@ -125,10 +125,6 @@ var JvmConfig = React.createClass({
                                            });
         }
     },
-
-    /**
-     * Retrieve data from REST Api the set states passed in parameter "states".
-     */
     refreshData: function(states, doneCallback) {
         var self = this;
         this.props.service.getJvms(function(response){
@@ -182,11 +178,11 @@ var JvmConfig = React.createClass({
 var JvmConfigForm = React.createClass({
     getInitialState: function() {
 
-        var jvmName = this.props.data !== undefined ? this.props.data.name : "";
+        var jvmName = "";
         var id = "";
         var name = "";
         var host = "";
-        var statusPath = "";
+        var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
         var httpPort = "";
         var httpsPort = "";
