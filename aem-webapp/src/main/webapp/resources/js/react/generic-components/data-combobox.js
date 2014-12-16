@@ -3,7 +3,7 @@ var DataCombobox = React.createClass({
       if(this.props.data !== undefined &&
          this.props.data[idx] !== undefined) {
           try {
-            return eval("this.props.data[idx]." + this.props.key);
+            return eval("this.props.data[idx]." + this.props.dataField);
           } catch(x) {
             if(console !== undefined) { 
               console.log('Exception in getKey' + x);

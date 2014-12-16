@@ -3,10 +3,10 @@
 <script src="page-constants" type="text/javascript"></script>
 
 <!-- JQuery, React, ES5, JSON2 -->
-<script src="public-resources/ext/js/es5-shim/es5-shim.js"></script>
-<script src="public-resources/ext/js/es5-shim/es5-sham.js"></script>
-<script src="public-resources/ext/js/react/JSXTransformer-0.10.0.js"></script>
-<script src="public-resources/ext/js/react/react-with-addons-0.10.0.js"></script>
+<script src="public-resources/ext/js/es5-4.0.5/es5-shim.js"></script>
+<script src="public-resources/ext/js/es5-4.0.5/es5-sham.js"></script>
+<script src="public-resources/ext/js/react-0.12.1/JSXTransformer.js"></script>
+<script src="public-resources/ext/js/react-0.12.1/react-with-addons.js"></script>
 <script src="public-resources/ext/js/jquery/jquery-1.11.0.js"></script>
 <script src="public-resources/ext/js/jquery/jquery-ui-1.10.4.custom.js"></script>
 <script src="public-resources/ext/js/jquery/jquery.validate.js"></script>

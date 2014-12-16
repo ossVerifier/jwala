@@ -1,14 +1,25 @@
 var DataMultiSelectBox = React.createClass({
+    /**
+     * Returns a value based on the dataField.
+     * This method can return values whose dataField are 2 levels deep e.g. (id.id, name.lastName).
+     */
+    getVal: function(data) {
+        var fieldArray = this.props.dataField.split(".");
+        if (fieldArray.length === 2) {
+            return data[fieldArray[0]][fieldArray[1]];
+        }
+        return data[fieldArray[0]]
+    },
     shouldComponentUpdate: function(nextProps, nextState) {
         return !nextProps.noUpdateWhen;
     },
     getInitialState: function() {
-        return {checkBoxData: undefined};
+        return {checkBoxData: []};
     },
     componentWillReceiveProps: function(nextProps) {
         var checkBoxData = [];
         for (var i = 0; i < nextProps.data.length; i++) {
-            var valId = nextProps.data[i][nextProps.key][nextProps.keyPropertyName];
+            var valId = this.getVal(nextProps.data[i]);
             checkBoxData.push({checked: this.getCheckedVal(nextProps.selectedValIds, valId), valId:valId});
         }
         this.setState({checkBoxData:checkBoxData});
@@ -26,19 +37,11 @@ var DataMultiSelectBox = React.createClass({
     render: function() {
         var self = this;
         var options = [];
-        for (var i = 0; i < this.props.data.length; i++) {
-            var props;
-            if (this.props.keyPropertyName !== undefined) {
-                props = {name:this.props.name,type:"checkbox",
-                         value:this.props.data[i][this.props.key][this.props.keyPropertyName],
+       for (var i = 0; i < this.props.data.length; i++) {
+            var props = {name:this.props.name,type:"checkbox",
+                         value:this.getVal(this.props.data[i]),
                          checked:this.state.checkBoxData[i].checked,
                          onChange:this.changeHandler.bind(this, i)};
-            } else {
-                props = {name:this.props.name,type:"checkbox",
-                         value:this.props.data[i][this.props.key],
-                         checked:this.state.checkBoxData[i].checked,
-                         onChange:this.changeHandler.bind(this, i)};
-            }
 
             // We need to wrap the checkbox in a div to prevent this issue:
             // https://github.com/facebook/react/issues/997

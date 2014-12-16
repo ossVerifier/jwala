@@ -116,7 +116,7 @@ var DataTableButton = React.createClass({
         hoverCallback: function(id, label) {
             var MARKER = "jquery-button-applied";
             var theBtn = $("#" + id);
-            if (label !== "" && !theBtn.hasClass(MARKER)) {
+            if (label !== undefined && label !== "" && !theBtn.hasClass(MARKER)) {
                 theBtn.html(label);
                 theBtn.button();
                 theBtn.addClass(MARKER);
@@ -127,7 +127,7 @@ var DataTableButton = React.createClass({
             $("#" + self.props.id).on("click", DataTableButton.handleClick.bind(self, self));
 
             var theLabel = self.toggleStatus === 0 ? self.props.label: self.props.label2;
-            if (theLabel === "") { // This means that this button is graphical e.g. play, stop button
+            if (theLabel === undefined || theLabel === "") { // This means that this button is graphical e.g. play, stop button
                 // We have to handle button highlight on hover ourselves since we don't want
                 // the default button handler to convert this button back to a regular text
                 // button when the user finishes hovering over it!

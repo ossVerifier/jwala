@@ -235,7 +235,7 @@ var WebAppConfigForm = React.createClass({
                                 <DataCombobox           name="groupId"
                                                         data={this.props.groupSelectData}
                                                         selectedVal={this.state.GroupId}
-                                                        key="id.id"
+                                                        dataField="id.id"
                                                         val="name"
                                                         onChange={this.onSelectGroup}/>
                                 </td>

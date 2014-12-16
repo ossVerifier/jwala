@@ -34,13 +34,13 @@ var LoginArea = React.createClass({
         $(this.refs.userName.getDOMNode()).children().focus();
     },
     userNameTextKeyPress: function() {
-        if (event.keyCode === 13) {
+        if (event.charCode === 13) {
             return false; // prevent beep in IE8
         }
         return true;
     },
     passwordTextKeyPress: function(event) {
-        if (event.keyCode === 13) {
+        if (event.charCode === 13) {
             this.logIn();
             return false;
         }
