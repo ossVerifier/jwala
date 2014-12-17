@@ -1,1 +1,0 @@
-alter table CURRENT_STATE alter column MESSAGE varchar(20000);

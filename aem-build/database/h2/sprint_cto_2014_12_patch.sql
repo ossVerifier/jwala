@@ -1,1 +1,0 @@
-alter table CURRENT_STATE add MESSAGE varchar(255);

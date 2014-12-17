@@ -1,8 +1,0 @@
-table.groupConfig {
-    width:auto
-}
-
-table.groupConfig > tbody > tr > td.row-sub-component-container {
-    padding-left: 10px !important;
-    padding-bottom: 10px !important
-}
