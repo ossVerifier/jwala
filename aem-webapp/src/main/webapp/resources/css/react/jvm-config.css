@@ -1,0 +1,12 @@
+.jvm-config > table {
+    width: 100%
+}
+
+.jvm-config > table > tbody > tr > td {
+    width: 100%;
+    text-align: left
+}
+
+.jvm-config > table > tbody > tr > td > div > input  {
+    float: right
+}

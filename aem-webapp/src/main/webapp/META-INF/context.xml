@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/">
+
+    <Resource name="jdbc/toc-xa"
+              auth="Container"
+              type="com.atomikos.jdbc.AtomikosDataSourceBean"
+              factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
+              uniqueResourceName="AtomikosJndiXaDataSource"
+              poolSize="20"
+              xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
+              xaProperties.user="sa"
+              xaProperties.password=""
+              xaProperties.URL="jdbc:h2:tcp://localhost/~/aem;LOCK_MODE=0"/>
+
+    <!--<Resource name="jdbc/toc-xa"-->
+              <!--auth="Container"-->
+              <!--type="org.h2.jdbcx.JdbcDataSource"-->
+              <!--factory="org.apache.tomcat.jdbc.naming.GenericNamingResourcesFactory"-->
+              <!--URL="jdbc:h2:tcp://localhost/~/aem"-->
+              <!--user="sa"-->
+              <!--password=""/>-->
+
+    <!--<Loader loaderClass="org.springframework.instrument.classloading.tomcat.TomcatInstrumentableClassLoader"/>-->
+
+    <Resource name="jms/toc-status"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocStatus"/>
+
+    <Resource name="jms/toc-state-notification"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="tocStateNotification"/>
+
+    <!--<Resource name="jms/toc-cf"-->
+              <!--auth="Container"-->
+              <!--type="com.atomikos.jms.AtomikosConnectionFactoryBean"-->
+              <!--factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"-->
+              <!--uniqueResourceName="AtomikosJndiJmsXaConnectionFactory"-->
+              <!--xaConnectionFactoryClassName="com.tibco.tibjms.TibjmsXAConnectionFactory"-->
+              <!--xaProperties.serverUrl="tcp://localhost:7222"-->
+              <!--xaProperties.userName="admin"-->
+              <!--xaProperties.userPassword="Passw0rd"/>-->
+
+    <Resource auth="Container"
+              name="jms/toc-cf"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsConnectionFactory"
+              serverUrl="tcp://localhost:7222"
+              userName="admin"
+              userPassword="Passw0rd"/>
+
+    <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory"/>
+
+    <Realm className="org.apache.catalina.realm.JNDIRealm"
+           connectionURL="ldap://custldapsrv1.usmlvv1d0a.smshsc.net:389"
+           authentication="simple"
+           referrals="follow"
+           connectionName="CN=N9SFLDAPaccount,OU=N9SF Service Accounts,OU=N9SF - SF Deployment Model Environment,OU=I03 - Soarian Financials,OU=I03,OU=US,dc=usmlvv1d0a,dc=smshsc,dc=net"
+           connectionPassword="Passw0rd"
+           userBase="ou=d1,dc=usmlvv1d0a,dc=smshsc,dc=net"
+           userSubtree="true"
+           userSearch="(sAMAccountName={0})"
+           commonRole="AllAuthenticated"/>
+
+</Context>

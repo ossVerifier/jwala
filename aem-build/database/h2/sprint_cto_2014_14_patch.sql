@@ -1,0 +1,1 @@
+alter table current_state alter column message VARCHAR(2147483647)

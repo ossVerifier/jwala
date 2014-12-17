@@ -1,0 +1,89 @@
+<Context docBase="D:/apache/tomcat/webapps/healthcheck-webapp-1.0-20140707.132735-246.war">
+
+    <Listener className="com.siemens.cto.infrastructure.atomikos.AtomikosTaskManagerLifecycleListener"/>
+
+    <Environment name="jvmInstanceName"
+                 value="USMLVV1CTO933-1-JVM-01"
+                 type="java.lang.String"
+                 override="false"/>
+
+    <Resource name="jdbc/hct-xa"
+              auth="Container"
+              type="com.atomikos.jdbc.AtomikosDataSourceBean"
+              factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
+              uniqueResourceName="AtomikosJndiXaDataSource2"
+              xaDataSourceClassName="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+              xaProperties.user="tomcat"
+              xaProperties.password="tomcatpassword"
+              xaProperties.URL="jdbc:sqlserver://usmlvv1cto924;DatabaseName=HCT;SelectMethod=cursor;"/>
+
+    <Resource factory="org.apache.naming.factory.BeanFactory"
+              name="jdbc/hct-ds"
+              type="com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean"
+              url="jdbcqlserver://usmlvv1cto924;DatabaseName=HCT;SelectMethod=cursor;"
+              driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+              uniqueResourceName="healthCheck"
+              user="tomcat"
+              password="tomcatpassword"/>
+
+    <Resource name="jms/hct-xacf"
+              auth="Container"
+              type="com.atomikos.jms.AtomikosConnectionFactoryBean"
+              factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
+              uniqueResourceName="AtomikosJndiJmsXaConnectionFactory"
+              xaConnectionFactoryClassName="com.tibco.tibjms.TibjmsXAConnectionFactory"
+              xaProperties.serverUrl="tcp://usmlvv1cto924:7222"
+              xaProperties.userName="admin"
+              xaProperties.userPassword="Passw0rd"/>
+
+    <Resource auth="Container"
+              name="jms/hct-cf"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsConnectionFactory"
+              serverUrl="tcp://usmlvv1cto924:7222"
+              userName="admin"
+              userPassword="Passw0rd"/>
+
+    <Resource auth="Container"
+              name="jms/healthCheckServiceDestination"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsQueue"
+              address="healthCheckService"/>
+
+    <Resource name="jms/healthCheckServiceReplyDestination"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsQueue"
+              address="healthCheckServiceReply"/>
+
+    <Resource name="jms/healthCheckStatusDestination"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsQueue"
+              address="healthCheckStatus"/>
+
+    <Resource name="wm/healthWorkManager"
+              auth="Container"
+              type="commonj.work.WorkManager"
+              factory="de.myfoo.commonj.work.FooWorkManagerFactory"
+              maxThreads="5"/>
+
+    <Realm className="org.apache.catalina.realm.CombinedRealm">
+        <Realm className="com.siemens.cto.security.tomcat.GsmRealm" />
+        <Realm className="com.siemens.cto.security.tomcat.RoleMapperRealm"
+            connectionURL="ldap://custldapsrv1.usmlvv1d0a.smshsc.net:389"
+            authentication="simple"
+            connectionName="CN=N9SFLDAPaccount,OU=N9SF Service Accounts,OU=N9SF - SF Deployment Model Environment,OU=I03 - Soarian Financials,OU=I03,OU=US,dc=usmlvv1d0a,dc=smshsc,dc=net"
+            connectionPassword="Passw0rd"
+            userBase="dc=usmlvv1d0a,dc=smshsc,dc=net"
+            userSearch="(sAMAccountName={0})"
+            userRoleName="memberOf"
+            userSubtree="true"
+            roleBase="dc=usmlvv1d0a,dc=smshsc,dc=net"
+            roleName="sAMAccountName"
+            roleNested="true"
+            roleSubtree="true"
+            roleSearch="(member={0})"
+            referrals="follow" />
+    </Realm>
+</Context> 

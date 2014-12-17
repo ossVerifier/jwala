@@ -1,0 +1,12 @@
+include "aem-common",
+        "aem-persistence",
+        "aem-services",
+        "aem-webapp",
+        "aem-webservices",
+        "aem-domain",
+        "aem-command-processor",
+        "aem-control",
+        "toc-filemanager",
+        "aem-config",
+        "toc-template",
+        "aem-si"

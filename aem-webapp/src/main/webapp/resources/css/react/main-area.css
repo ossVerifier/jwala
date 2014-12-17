@@ -1,0 +1,33 @@
+div.main-area {
+    width: 1100px; /* Copy EPM header width which is 1100px */
+    height: auto;
+    text-align: left;
+    margin: 0 auto;
+}
+
+.banner-logout {
+    float:right;
+    margin-right:5px
+}
+
+.main-area-table {
+    width:100%
+}
+
+.banner-container {
+    background-color:#70a399;
+    height:99px;
+    display:block
+}
+
+.banner-title {
+    display: inline-block;
+    font-size:45px;
+    width:650px;
+    margin-top:25px;
+    color:#0d2b88;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight:bold;
+    position:absolute;
+    text-align:center;
+}

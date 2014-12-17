@@ -1,0 +1,22 @@
+configurations {
+    commonTest
+}
+
+task commonTestJar(type: Jar) {
+    baseName = "commonTest"
+    dependsOn classes
+    from sourceSets.test.output
+    include('com/siemens/cto/aem/common/IntegrationTestRule*')
+}
+
+artifacts {
+    commonTest commonTestJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
