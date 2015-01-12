@@ -39,6 +39,7 @@ public class UpdateJvmCommand implements Serializable, Command {
     private final Integer newShutdownPort;
     private final Integer newAjpPort;
     private final Path newStatusPath;
+    private final String newSystemProperties;
 
     private final Set<Identifier<Group>> groupIds;
 
@@ -51,7 +52,8 @@ public class UpdateJvmCommand implements Serializable, Command {
                             final Integer theNewRedirectPort,
                             final Integer theNewShutdownPort,
                             final Integer theNewAjpPort,
-                            final Path theNewStatusPath) {
+                            final Path theNewStatusPath,
+                            final String theNewSystemProperties) {
         id = theId;
         newJvmName = theNewJvmName;
         newHostName = theNewHostName;
@@ -62,6 +64,7 @@ public class UpdateJvmCommand implements Serializable, Command {
         newShutdownPort = theNewShutdownPort;
         newAjpPort = theNewAjpPort;
         newStatusPath = theNewStatusPath;
+        newSystemProperties = theNewSystemProperties;
     }
 
     public Identifier<Jvm> getId() {
@@ -95,6 +98,8 @@ public class UpdateJvmCommand implements Serializable, Command {
     public Integer getNewAjpPort() {
         return newAjpPort;
     }
+
+    public String getNewSystemProperties() {return newSystemProperties;}
 
     public Set<AddJvmToGroupCommand> getAssignmentCommands() {
         return new AddJvmToGroupCommandSetBuilder(id,
@@ -141,6 +146,7 @@ public class UpdateJvmCommand implements Serializable, Command {
                 .append(this.newShutdownPort, rhs.newShutdownPort)
                 .append(this.newAjpPort, rhs.newAjpPort)
                 .append(this.groupIds, rhs.groupIds)
+                .append(this.newSystemProperties, rhs.newSystemProperties)
                 .isEquals();
     }
 
@@ -156,6 +162,7 @@ public class UpdateJvmCommand implements Serializable, Command {
                 .append(newShutdownPort)
                 .append(newAjpPort)
                 .append(groupIds)
+                .append(newSystemProperties)
                 .toHashCode();
     }
 
@@ -171,6 +178,7 @@ public class UpdateJvmCommand implements Serializable, Command {
                 .append("newShutdownPort", newShutdownPort)
                 .append("newAjpPort", newAjpPort)
                 .append("groupIds", groupIds)
+                .append("newSystemProperties", newSystemProperties)
                 .toString();
     }
 }

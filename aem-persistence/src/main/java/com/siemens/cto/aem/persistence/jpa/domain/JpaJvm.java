@@ -38,6 +38,8 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
     @Column(nullable = false)
     private String statusPath;
 
+    private String systemProperties;
+
     public Long getId() {
         return id;
     }
@@ -108,6 +110,14 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     public void setAjpPort(Integer ajpPort) {
         this.ajpPort = ajpPort;
+    }
+
+    public String getSystemProperties() {
+        return systemProperties;
+    }
+
+    public void setSystemProperties(String systemProperties) {
+        this.systemProperties = systemProperties;
     }
 
     @Override

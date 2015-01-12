@@ -34,6 +34,7 @@ public class JsonUpdateJvm {
     private final String redirectPort;
     private final String shutdownPort;
     private final String ajpPort;
+    private final String systemProperties;
 
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
@@ -44,7 +45,8 @@ public class JsonUpdateJvm {
                          final String theRedirectPort,
                          final String theShutdownPort,
                          final String theAjpPort,
-                         final String theStatusPath) {
+                         final String theStatusPath,
+                         final String theSystemProperties) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -55,6 +57,7 @@ public class JsonUpdateJvm {
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
+        systemProperties = theSystemProperties;
     }
 
     public UpdateJvmCommand toUpdateJvmCommand() throws BadRequestException {
@@ -65,7 +68,14 @@ public class JsonUpdateJvm {
         return new UpdateJvmCommand(id,
                                     jvmName,
                                     hostName,
-                                    groupIds, JsonUtilJvm.stringToInteger(httpPort), JsonUtilJvm.stringToInteger(httpsPort), JsonUtilJvm.stringToInteger(redirectPort), JsonUtilJvm.stringToInteger(shutdownPort), JsonUtilJvm.stringToInteger(ajpPort), new Path(statusPath)
+                                    groupIds,
+                                    JsonUtilJvm.stringToInteger(httpPort),
+                                    JsonUtilJvm.stringToInteger(httpsPort),
+                                    JsonUtilJvm.stringToInteger(redirectPort),
+                                    JsonUtilJvm.stringToInteger(shutdownPort),
+                                    JsonUtilJvm.stringToInteger(ajpPort),
+                                    new Path(statusPath),
+                                    systemProperties
         );
     }
 
@@ -104,7 +114,8 @@ public class JsonUpdateJvm {
                                      node.get("redirectPort").getValueAsText(),
                                      node.get("shutdownPort").getValueAsText(),
                                      node.get("ajpPort").getValueAsText(),
-                                     node.get("statusPath").getTextValue());
+                                     node.get("statusPath").getTextValue(),
+                                     node.get("systemProperties").getTextValue());
         }
     }
 }

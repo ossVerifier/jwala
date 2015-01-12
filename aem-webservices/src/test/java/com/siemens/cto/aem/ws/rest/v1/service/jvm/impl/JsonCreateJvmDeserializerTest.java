@@ -30,6 +30,7 @@ public class JsonCreateJvmDeserializerTest {
     private static final String shutdownPort = "2";
     private static final String ajpPort = "1";
     private static final String statusPath = "/statusPath";
+    private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
 
     @Before
     public void setup() {
@@ -55,7 +56,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath));
+                                   keyTextValue("statusPath", statusPath),
+                                   keyTextValue("systemProperties", systemProperties));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -82,7 +84,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath));
+                                   keyTextValue("statusPath", statusPath),
+                                   keyTextValue("systemProperties", systemProperties));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -107,7 +110,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath));
+                                   keyTextValue("statusPath", statusPath),
+                                   keyTextValue("systemProperties", systemProperties));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -130,7 +134,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath));
+                                   keyTextValue("statusPath", statusPath),
+                                   keyTextValue("systemProperties", systemProperties));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -162,7 +167,8 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("redirectPort", redirectPort),
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath));
+                                   keyTextValue("statusPath", statusPath),
+                                   keyTextValue("systemProperties", systemProperties));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,
@@ -190,6 +196,7 @@ public class JsonCreateJvmDeserializerTest {
         assertTrue(new IdentifierSetBuilder(Arrays.asList(groupIds)).build().containsAll(createAndAddCommand.getGroups()));
         assertEquals(groupIds.length > 0,
                      aCreate.areGroupsPresent());
+
     }
 
     protected JsonCreateJvm readValue(final String someJson) throws IOException {

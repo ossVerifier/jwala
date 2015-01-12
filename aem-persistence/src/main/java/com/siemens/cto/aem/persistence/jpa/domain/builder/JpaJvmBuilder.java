@@ -37,7 +37,8 @@ public class JpaJvmBuilder {
                                                    .setHttpsPort(jvm.getHttpsPort())
                                                    .setRedirectPort(jvm.getRedirectPort())
                                                    .setShutdownPort(jvm.getShutdownPort())
-                                                   .setAjpPort(jvm.getAjpPort());
+                                                   .setAjpPort(jvm.getAjpPort())
+                                                   .setSystemProperties(jvm.getSystemProperties()) ;
         return builder.build();
     }
 

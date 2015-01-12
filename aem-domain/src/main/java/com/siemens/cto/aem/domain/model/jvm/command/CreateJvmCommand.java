@@ -33,6 +33,8 @@ public class CreateJvmCommand implements Serializable, Command {
 
     private final Path statusPath;
 
+    private final String systemsProperties;
+
     public CreateJvmCommand(final String theName,
                             final String theHostName,
                             final Integer theHttpPort,
@@ -40,7 +42,8 @@ public class CreateJvmCommand implements Serializable, Command {
                             final Integer theRedirectPort,
                             final Integer theShutdownPort,
                             final Integer theAjpPort,
-                            final Path theStatusPath) {
+                            final Path theStatusPath,
+                            final String theSystemProperties) {
         jvmName = theName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -49,6 +52,7 @@ public class CreateJvmCommand implements Serializable, Command {
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
+        systemsProperties = theSystemProperties;
     }
 
     public String getJvmName() {
@@ -81,6 +85,10 @@ public class CreateJvmCommand implements Serializable, Command {
 
     public Path getStatusPath() {
         return statusPath;
+    }
+
+    public String getSystemProperties() {
+        return systemsProperties;
     }
 
     @Override
@@ -116,6 +124,7 @@ public class CreateJvmCommand implements Serializable, Command {
                 .append(this.redirectPort, rhs.redirectPort)
                 .append(this.shutdownPort, rhs.shutdownPort)
                 .append(this.ajpPort, rhs.ajpPort)
+                .append(this.systemsProperties, rhs.systemsProperties)
                 .isEquals();
     }
 
@@ -130,6 +139,7 @@ public class CreateJvmCommand implements Serializable, Command {
                 .append(redirectPort)
                 .append(shutdownPort)
                 .append(ajpPort)
+                .append(systemsProperties)
                 .toHashCode();
     }
 
@@ -144,6 +154,7 @@ public class CreateJvmCommand implements Serializable, Command {
                 .append("redirectPort", redirectPort)
                 .append("shutdownPort", shutdownPort)
                 .append("ajpPort", ajpPort)
+                .append("systemProperties", systemsProperties)
                 .toString();
     }
 }

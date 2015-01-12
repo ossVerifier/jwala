@@ -31,6 +31,7 @@ public class JsonCreateJvm {
     private final String shutdownPort;
     private final String ajpPort;
     private final String statusPath;
+    private final String systemProperties;
 
     private final Set<String> groupIds;
 
@@ -41,7 +42,8 @@ public class JsonCreateJvm {
                          final String theRedirectPort,
                          final String theShutdownPort,
                          final String theAjpPort,
-                         final String theStatusPath) {
+                         final String theStatusPath,
+                         final String theSystemProperties) {
         this(theJvmName,
              theHostName,
              Collections.<String>emptySet(),
@@ -50,7 +52,8 @@ public class JsonCreateJvm {
              theRedirectPort,
              theShutdownPort,
              theAjpPort,
-             theStatusPath);
+             theStatusPath,
+             theSystemProperties);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -61,7 +64,8 @@ public class JsonCreateJvm {
                          final String theRedirectPort,
                          final String theShutdownPort,
                          final String theAjpPort,
-                         final String theStatusPath) {
+                         final String theStatusPath,
+                         final String theSystemProperties) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -70,6 +74,7 @@ public class JsonCreateJvm {
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
+        systemProperties = theSystemProperties;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
     }
 
@@ -86,7 +91,8 @@ public class JsonCreateJvm {
                                     JsonUtilJvm.stringToInteger(redirectPort),
                                     JsonUtilJvm.stringToInteger(shutdownPort),
                                     JsonUtilJvm.stringToInteger(ajpPort),
-                                    new Path(statusPath));
+                                    new Path(statusPath),
+                                    systemProperties);
     }
 
     public CreateJvmAndAddToGroupsCommand toCreateAndAddCommand() throws BadRequestException {
@@ -100,7 +106,8 @@ public class JsonCreateJvm {
                                                   JsonUtilJvm.stringToInteger(redirectPort),
                                                   JsonUtilJvm.stringToInteger(shutdownPort),
                                                   JsonUtilJvm.stringToInteger(ajpPort),
-                                                  new Path(statusPath));
+                                                  new Path(statusPath),
+                                                  systemProperties);
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -127,6 +134,7 @@ public class JsonCreateJvm {
             final JsonNode shutdownPortNode = rootNode.get("shutdownPort");
             final JsonNode ajpPortNode = rootNode.get("ajpPort");
             final JsonNode statusPathNode = rootNode.get("statusPath");
+            final JsonNode systemProperties = rootNode.get("systemProperties");
 
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
 
@@ -138,7 +146,8 @@ public class JsonCreateJvm {
                                      redirectPortNode.getValueAsText(),
                                      shutdownPortNode.getValueAsText(),
                                      ajpPortNode.getValueAsText(),
-                                     statusPathNode.getTextValue());
+                                     statusPathNode.getTextValue(),
+                                     systemProperties.getTextValue());
         }
     }
 }

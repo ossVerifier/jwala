@@ -145,15 +145,20 @@ public class GroupStateServiceStateMachineIntegrationTest {
         lgroups2.add(lgroup2);
         lgroups2.add(lgroup2b);
         lgroupsWith3.add(lgroupWith3);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/hct"));
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvms.add(jvm);
-        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm2);
-        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm3);
-        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm4);
-        jvm5 = new Jvm(id(5L, Jvm.class), "", "", lgroups2, 0,0,0,0,0, new Path("/hct"));
+        jvm5 = new Jvm(id(5L, Jvm.class), "", "", lgroups2, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmInTwoGroups.add(jvm5);
         group = new Group(group.getId(),  group.getName(), jvms);
         group2 = new Group(group2.getId(), group2.getName(), jvmInTwoGroups);

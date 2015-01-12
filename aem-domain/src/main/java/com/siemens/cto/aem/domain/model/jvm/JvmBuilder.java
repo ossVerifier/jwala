@@ -19,6 +19,7 @@ public class JvmBuilder {
     private Integer redirectPort;
     private Integer shutdownPort;
     private Integer ajpPort;
+    private String systemProperties;
 
     public JvmBuilder setId(final Identifier<Jvm> anId) {
         id = anId;
@@ -70,6 +71,11 @@ public class JvmBuilder {
         return this;
     }
 
+    public JvmBuilder setSystemProperties(String systemProperties) {
+        this.systemProperties = systemProperties;
+        return this;
+    }
+
     public Jvm build() {
         return new Jvm(id,
                        name,
@@ -80,6 +86,7 @@ public class JvmBuilder {
                        redirectPort,
                        shutdownPort,
                        ajpPort,
-                       statusPath);
+                       statusPath,
+                       systemProperties);
     }
 }

@@ -136,7 +136,8 @@ public class MoreGroupStateMachineTest {
         lgroup = new LiteGroup(id(1L, Group.class), "");
         lgroups.add(lgroup);
         groups.add(mockGroup);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"));
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvms.add(jvm);
         ws = new WebServer(id(1L, WebServer.class),
                            groups, "ws-1",

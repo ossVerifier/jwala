@@ -175,13 +175,17 @@ public class GroupStateServiceImplTest {
         lgroupWith3 = new LiteGroup(id(2L, Group.class), "");
         lgroups.add(lgroup);
         lgroupsWith3.add(lgroupWith3);
-        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/hct"));
+        jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvms.add(jvm);
-        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm2 = new Jvm(id(2L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm2);
-        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm3 = new Jvm(id(3L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm3);
-        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"));
+        jvm4 = new Jvm(id(4L, Jvm.class), "", "", lgroupsWith3, 0,0,0,0,0, new Path("/hct"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         jvmsThree.add(jvm4);
         group = new Group(group.getId(),  group.getName(), jvms);
         groupWith3 = new Group(groupWith3.getId(),  groupWith3.getName(), jvmsThree);

@@ -62,8 +62,9 @@ ModalDialogBox = React.createClass({
         if (e.keyCode === 27) {
             this.props.cancelCallback();
         } else if (e.keyCode === 13) {
-            this.props.okCallback();
-            e.preventDefault();
+            if (this.props.okCallback() !== false) {
+                e.preventDefault();
+            }
         }
     },
     componentDidUpdate: function() {

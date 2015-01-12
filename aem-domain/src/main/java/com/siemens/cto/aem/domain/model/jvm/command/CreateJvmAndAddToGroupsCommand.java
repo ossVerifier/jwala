@@ -32,7 +32,8 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
                                           final Integer theRedirectPort,
                                           final Integer theShutdownPort,
                                           final Integer theAjpPort,
-                                          final Path theStatusPath) {
+                                          final Path theStatusPath,
+                                          final String theSystemProperties) {
 
         createCommand = new CreateJvmCommand(theName,
                                              theHostName,
@@ -41,7 +42,8 @@ public class CreateJvmAndAddToGroupsCommand implements Serializable, Command {
                                              theRedirectPort,
                                              theShutdownPort,
                                              theAjpPort,
-                                             theStatusPath);
+                                             theStatusPath,
+                                             theSystemProperties);
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 

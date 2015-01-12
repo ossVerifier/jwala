@@ -42,7 +42,7 @@ public class JsonJvmsDeserializerTest {
         final JsonJvms jvms = readJvms(json);
 
         verifyAssertions(jvms,
-                         "1");
+                "1");
     }
 
     @Test

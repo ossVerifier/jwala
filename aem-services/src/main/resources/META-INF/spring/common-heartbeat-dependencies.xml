@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--  toc-default.propeties, and toc.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
+
+    <!-- The first one may be used during testing only -->
+    <bean id="httpRequestFactory" class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+        <property name="connectTimeout" value="200"/>
+        <property name="readTimeout" value="50"/>
+    </bean>
+
+    <!-- Use configurable timeouts -->
+    <bean id="jvmHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
+        <property name="connectTimeout" value="${ping.webServer.connectTimeout}"/>
+        <property name="readTimeout" value="${ping.webServer.readTimeout}"/>
+        <property name="periodMillis" value="${ping.webServer.period.millis}"/>
+        <property name="maxHttpConnections" value="${ping.webServer.maxHttpConnections}" />    
+    </bean>
+
+    <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
+        <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
+        <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
+        <property name="periodMillis" value="${ping.jvm.period.millis}"/>
+        <property name="maxHttpConnections" value="${ping.jvm.maxHttpConnections}" />        
+    </bean>
+
+    <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">
+        <constructor-arg value="INSTANCE"/>
+    </bean>
+
+    <bean id="jvmServiceExistence" class="com.siemens.cto.aem.control.jvm.command.impl.JvmServiceExistenceFacade"/>
+
+    <bean id="webServerServiceExistence" class="com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade"/>
+
+</beans>

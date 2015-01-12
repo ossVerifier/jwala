@@ -33,6 +33,8 @@ public class Jvm implements Serializable {
 
     private final Path statusPath;
 
+    private final String systemProperties;
+
     /**
      * Constructor for a bare minimum Jvm with group details.
      * @param theId the id
@@ -50,6 +52,7 @@ public class Jvm implements Serializable {
         shutdownPort = null;
         ajpPort = null;
         statusPath = null;
+        systemProperties = null;
     }
 
     public Jvm(final Identifier<Jvm> theId,
@@ -61,7 +64,8 @@ public class Jvm implements Serializable {
                final Integer theRedirectPort,
                final Integer theShutdownPort,
                final Integer theAjpPort,
-               final Path theStatusPath) {
+               final Path theStatusPath,
+               final String theSystemProperties) {
         id = theId;
         jvmName = theName;
         hostName = theHostName;
@@ -72,6 +76,7 @@ public class Jvm implements Serializable {
         shutdownPort = theShutdownPort;
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
+        systemProperties = theSystemProperties;
     }
 
     public Identifier<Jvm> getId() {
@@ -114,6 +119,10 @@ public class Jvm implements Serializable {
         return statusPath;
     }
 
+    public String getSystemProperties() {
+        return systemProperties;
+    }
+
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
                                                    .setHttpsPort(getHttpsPort())
@@ -145,6 +154,7 @@ public class Jvm implements Serializable {
                 .append(this.redirectPort, rhs.redirectPort)
                 .append(this.shutdownPort, rhs.shutdownPort)
                 .append(this.ajpPort, rhs.ajpPort)
+                .append(this.systemProperties, rhs.systemProperties)
                 .isEquals();
     }
 
@@ -161,6 +171,7 @@ public class Jvm implements Serializable {
                 .append(redirectPort)
                 .append(shutdownPort)
                 .append(ajpPort)
+                .append(systemProperties)
                 .toHashCode();
     }
 
@@ -177,6 +188,7 @@ public class Jvm implements Serializable {
                 .append("redirectPort", redirectPort)
                 .append("shutdownPort", shutdownPort)
                 .append("ajpPort", ajpPort)
+                .append("systemProperties", systemProperties)
                 .toString();
     }
 }

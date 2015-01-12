@@ -53,7 +53,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                             "Pre-Created JVM Host Name",
                                             5, 4, 3, 2, 1,
                                             userId,
-                                            new Path("/abc"));
+                                            new Path("/abc"),
+                                            "EXAMPLE_OPTS=%someEnv%/someVal");
     }
 
     @Test
@@ -271,7 +272,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                                    "anotherJvmHostName",
                                                    5, 4, 3, 2, 1,
                                                    userId,
-                                                   new Path("/abc"));
+                                                   new Path("/abc"),
+                                                   "EXAMPLE_OPTS=%someEnv%/someVal");
 
         final Identifier<Group> groupId = preCreatedGroup.getId();
 

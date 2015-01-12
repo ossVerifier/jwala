@@ -63,6 +63,7 @@ public class JvmServiceRestImplTest {
     private static final String shutdownPort = "83";
     private static final String ajpPort = "84";
     private static final Path statusPath = new Path("/statusPath");
+    private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
 
     @Mock
     private JvmServiceImpl impl;
@@ -88,7 +89,8 @@ public class JvmServiceRestImplTest {
                                Integer.valueOf(redirectPort),
                                Integer.valueOf(shutdownPort),
                                Integer.valueOf(ajpPort),
-                               statusPath);
+                               statusPath,
+                               systemProperties);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -136,7 +138,8 @@ public class JvmServiceRestImplTest {
     public void testCreateJvm() {
         when(impl.createJvm(any(CreateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
-        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath.getUriPath());
+        final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
+                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties);
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -162,7 +165,8 @@ public class JvmServiceRestImplTest {
                                                               redirectPort,
                                                               shutdownPort,
                                                               ajpPort,
-                                                              statusPath.getUriPath());
+                                                              statusPath.getUriPath(),
+                                                              systemProperties);
         final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -177,7 +181,8 @@ public class JvmServiceRestImplTest {
     @Test
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
-        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1", statusPath.getUriPath());
+        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
+                statusPath.getUriPath(), systemProperties);
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
         final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);

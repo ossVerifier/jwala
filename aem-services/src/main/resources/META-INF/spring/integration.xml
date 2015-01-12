@@ -1,0 +1,118 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<task:executor id="commonCommandExecutor" pool-size="5"
+		queue-capacity="20" keep-alive="5" rejection-policy="CALLER_RUNS" />
+
+	<int:gateway id="commandDispatch" default-request-channel="gatewayChannel"
+		service-interface="com.siemens.cto.aem.service.dispatch.CommandDispatchGateway"></int:gateway>
+
+	<int:channel id="gatewayChannel" />
+
+	<int:payload-type-router input-channel="gatewayChannel">
+		<int:mapping
+			type="com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand"
+			channel="splitJvms" />
+		<int:mapping
+			type="com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand"
+			channel="splitWebServers" />
+	</int:payload-type-router>
+
+	<int:channel id="subcommand-error" />
+
+	<!-- ************************** -->
+	<!-- ***** JVM PROCESSING ***** -->
+	<!-- ************************** -->
+
+	<int:channel id="splitJvms" />
+
+	<int:splitter ref="groupJvmSplitterBean" method="split"
+		input-channel="splitJvms" output-channel="processJvms" />
+
+	<int:channel id="processJvms">
+		<int:dispatcher task-executor="commonCommandExecutor" />
+	</int:channel>
+
+	<int:chain input-channel="processJvms" output-channel="jvmAggregated">
+		<int:service-activator method="startStop"
+			ref="jvmCommandExecutorBean" />
+		<int:aggregator id="dispatchCommandAggregator"
+			message-store="commandExecutionMessageStore"
+			send-partial-result-on-expiry="true" discard-channel="subcommand-error" />
+	</int:chain>
+
+	<int:channel id="jvmAggregated" />
+
+	<int:service-activator id="groupJvmControlServiceActivator"
+		input-channel="jvmAggregated" method="dispatchCommandComplete" ref="groupJvmControlService" />
+
+	<bean id="groupJvmSplitterBean"
+		class="com.siemens.cto.aem.service.dispatch.impl.GroupJvmSplitterBean" />
+	<bean id="jvmCommandExecutorBean"
+		class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBean">
+		<constructor-arg ref="jvmControlService" />
+	</bean>
+
+	<!-- ********************************* -->
+	<!-- ***** WEB SERVER PROCESSING ***** -->
+	<!-- ********************************* -->
+
+	<int:channel id="splitWebServers" />
+
+	<int:splitter ref="groupWebServerSplitterBean" method="split"
+		input-channel="splitWebServers" output-channel="processWebServers" />
+
+	<int:channel id="processWebServers">
+		<int:dispatcher task-executor="commonCommandExecutor" />
+	</int:channel>
+
+	<int:chain input-channel="processWebServers" output-channel="webServerAggregated">
+		<int:service-activator method="startStop"
+			ref="webServerCommandExecutorBean" />
+		<int:aggregator id="dispatchCommandAggregator"
+			message-store="commandExecutionMessageStore"
+			send-partial-result-on-expiry="true" discard-channel="subcommand-error" />
+	</int:chain>
+
+	<bean id="groupWebServerSplitterBean"
+		class="com.siemens.cto.aem.service.dispatch.impl.GroupWebServerSplitterBean">
+		<constructor-arg ref="webServerService"/>
+	</bean>
+
+	<bean id="webServerCommandExecutorBean"
+		class="com.siemens.cto.aem.service.dispatch.impl.WebServerCommandExecutorBean">
+		<constructor-arg ref="webServerControlService" />
+	</bean>
+
+	<int:channel id="webServerAggregated" />
+
+	<int:service-activator id="groupWebServerControlServiceActivator"
+		input-channel="webServerAggregated" method="dispatchCommandComplete"
+		ref="groupWebServerControlService" />
+
+	<!-- ************************* -->
+	<!-- ***** MESSAGE STORE ***** -->
+	<!-- ************************* -->
+
+	<bean id="commandExecutionMessageStore"
+		class="org.springframework.integration.store.SimpleMessageStore" />
+
+	<!-- Expire results for jobs that are complete, or stuck -->
+	<bean id="commandExecutionMessageStoreReaper"
+		class="com.siemens.cto.aem.service.dispatch.impl.CommandExecutionMessageStoreReaper">
+		<property name="messageGroupStore" ref="commandExecutionMessageStore" />
+		<property name="timeout" value="360000" />
+		<!-- All commands in a group must end within 5 minutes or they will be 
+			reaped. ?? -->
+	</bean>
+
+	<!-- Do the expiration once every second -->
+	<task:scheduled-tasks>
+		<task:scheduled ref="commandExecutionMessageStoreReaper"
+			method="run" fixed-rate="60000" />
+	</task:scheduled-tasks>
+
+</beans>

@@ -52,6 +52,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
             jpaJvm.setShutdownPort(command.getShutdownPort());
             jpaJvm.setAjpPort(command.getAjpPort());
             jpaJvm.setStatusPath(command.getStatusPath().getPath());
+            jpaJvm.setSystemProperties(command.getSystemProperties());
 
             jpaJvm.setCreateBy(userId);
             jpaJvm.setCreateDate(updateTime);
@@ -85,6 +86,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
             jvm.setShutdownPort(command.getNewShutdownPort());
             jvm.setAjpPort(command.getNewAjpPort());
             jvm.setStatusPath(command.getNewStatusPath().getPath());
+            jvm.setSystemProperties(command.getNewSystemProperties());
 
             entityManager.flush();
 

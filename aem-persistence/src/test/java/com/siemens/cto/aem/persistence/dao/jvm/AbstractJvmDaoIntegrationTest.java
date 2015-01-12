@@ -48,7 +48,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                          2,
                                                          1,
                                                          userName,
-                                                         new Path("/abc")));
+                                                         new Path("/abc"),
+                                                         "EXAMPLE_OPTS=%someEnv%/someVal"));
     }
 
     @Test
@@ -61,7 +62,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                                         2,
                                                                         1,
                                                                         userName,
-                                                                        new Path("/abc"));
+                                                                        new Path("/abc"),
+                                                                        "EXAMPLE_OPTS=%someEnv%/someVal");
         final Jvm createdJvm = jvmDao.createJvm(command);
 
         assertEquals(command.getCommand().getJvmName(), createdJvm.getJvmName());
@@ -79,7 +81,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                        preCreatedJvm.getShutdownPort(),
                                        preCreatedJvm.getAjpPort(),
                                        userName,
-                                       preCreatedJvm.getStatusPath());
+                                       preCreatedJvm.getStatusPath(),
+                                       preCreatedJvm.getSystemProperties());
         jvmDao.createJvm(commandEvent);
     }
 
@@ -94,7 +97,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test
     public void testUpdateJvm() {
         final Event<UpdateJvmCommand> update =
-                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName, new Path("/abc"));
+                createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName,
+                        new Path("/abc"), "EXAMPLE_OPTS=%someEnv%/someVal");
         final Jvm actualJvm = jvmDao.updateJvm(update);
 
         assertEquals(update.getCommand().getNewJvmName(), actualJvm.getJvmName());
@@ -110,7 +114,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateJvm() {
         final Jvm newJvm =
-                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", 5, 4, 3, 2, 1, userName, new Path("/abc")));
+                jvmDao.createJvm(createCreateJvmCommand("Eventually duplicate JVM name", "Unused", 5, 4, 3, 2, 1,
+                        userName, new Path("/abc"), "EXAMPLE_OPTS=%someEnv%/someVal"));
 
         jvmDao.updateJvm(createUpdateJvmCommand(newJvm.getId(),
                                                 preCreatedJvm.getJvmName(),
@@ -121,7 +126,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                 preCreatedJvm.getShutdownPort(),
                                                 preCreatedJvm.getAjpPort(),
                                                 userName,
-                                                preCreatedJvm.getStatusPath()));
+                                                preCreatedJvm.getStatusPath(),
+                                                preCreatedJvm.getSystemProperties()));
     }
 
     @Test
@@ -167,7 +173,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final Integer shutdownPort,
                                                              final Integer ajpPort,
                                                              final String aUserName,
-                                                             final Path aStatusPath) {
+                                                             final Path aStatusPath,
+                                                             final String aSystemProperties) {
         return new Event<>(new CreateJvmCommand(aJvmName,
                                                 aHostName,
                                                 httpPort,
@@ -175,7 +182,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                 redirectPort,
                                                 shutdownPort,
                                                 ajpPort,
-                                                aStatusPath),
+                                                aStatusPath,
+                                                aSystemProperties),
                            AuditEvent.now(new User(aUserName)));
     }
 
@@ -188,7 +196,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final Integer aNewShutdownPort,
                                                              final Integer aNewAjpPort,
                                                              final String aUserName,
-                                                             final Path aStatusPath) {
+                                                             final Path aStatusPath,
+                                                             final String aSystemProperties) {
         return new Event<>(new UpdateJvmCommand(aJvmId,
                                                 aNewJvmName,
                                                 aNewHostName,
@@ -198,7 +207,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                 aNewRedirectPort,
                                                 aNewShutdownPort,
                                                 aNewAjpPort,
-                                                aStatusPath),
+                                                aStatusPath,
+                                                aSystemProperties),
                            AuditEvent.now(new User(aUserName)));
     }
 
@@ -239,7 +249,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                     2,
                                                     1,
                                                     userName,
-                                                    aStatusPath));
+                                                    aStatusPath,
+                                                    "EXAMPLE_OPTS=%someEnv%/someVal"));
         }
     }
 }

@@ -29,7 +29,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aShutdownPort,
                          final Integer aAjpPort,
                          final String aUserId,
-                         final Path aStatusPath) {
+                         final Path aStatusPath,
+                         final String aSystemProperties) {
 
         final Event<CreateJvmCommand> event = createCreateJvmEvent(aJvmName,
                                                                    aHostName,
@@ -39,7 +40,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                    aShutdownPort,
                                                                    aAjpPort,
                                                                    aUserId,
-                                                                   aStatusPath);
+                                                                   aStatusPath,
+                                                                   aSystemProperties);
 
         return jvmPersistenceService.createJvm(event);
     }
@@ -53,7 +55,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aNewShutdownPort,
                          final Integer aNewAjpPort,
                          final String aUserId,
-                         final Path aStatusPath) {
+                         final Path aStatusPath,
+                         final String aSystemProperties) {
 
         final Event<UpdateJvmCommand> event = createUpdateJvmEvent(aJvmId,
                                                                    aNewJvmName,
@@ -64,7 +67,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                    aNewShutdownPort,
                                                                    aNewAjpPort,
                                                                    aUserId,
-                                                                   aStatusPath);
+                                                                   aStatusPath,
+                                                                   aSystemProperties);
 
         return jvmPersistenceService.updateJvm(event);
     }
@@ -77,7 +81,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Integer shutdownPort,
                                                            final Integer ajpPort,
                                                            final String aUserId,
-                                                           final Path aStatusPath) {
+                                                           final Path aStatusPath,
+                                                           final String aSystemProperties) {
 
         final Event<CreateJvmCommand> createJvm = new Event<>(new CreateJvmCommand(aJvmName,
                                                                                    aJvmHostName,
@@ -86,7 +91,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                                    redirectPort,
                                                                                    shutdownPort,
                                                                                    ajpPort,
-                                                                                   aStatusPath),
+                                                                                   aStatusPath,
+                                                                                   aSystemProperties
+                                                                            ),
                                                               createAuditEvent(aUserId));
 
         return createJvm;
@@ -101,7 +108,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Integer aNewShutdownPort,
                                                            final Integer aNewAjpPort,
                                                            final String aUserId,
-                                                           final Path aStatusPath) {
+                                                           final Path aStatusPath,
+                                                           final String systemProperties) {
 
         final Event<UpdateJvmCommand> event = new Event<>(new UpdateJvmCommand(aJvmId,
                                                                                aNewJvmName,
@@ -112,7 +120,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                                                aNewRedirectPort,
                                                                                aNewShutdownPort,
                                                                                aNewAjpPort,
-                                                                               aStatusPath),
+                                                                               aStatusPath,
+                                                                               systemProperties),
                                                           createAuditEvent(aUserId));
 
         return event;

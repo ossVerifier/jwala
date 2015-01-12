@@ -1,0 +1,40 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+    xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd
+    http://www.springframework.org/schema/integration/jmx http://www.springframework.org/schema/integration/jmx/spring-integration-jmx-3.0.xsd
+    http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd 
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <int-jmx:mbean-export id="integrationMBeanExporter"
+                default-domain="com.siemens.cto" server="mbeanServer"/>
+    
+    <bean class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="com.siemens.cto.TaskExecutors:name=commonCommandExecutor" value-ref="commonCommandExecutor" />
+                <entry key="com.siemens.cto.Reapers:name=commandExecutionMessageStoreReaper" value-ref="commandExecutionMessageStoreReaper" />                               
+            </map>
+            </property>
+    </bean>
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+<!-- Currently not in use.
+                <entry key="com.siemens.cto.TaskExecutors:name=statePubSubBusExecutor" value-ref="statePubSubBusExecutor" />
+                <entry key="com.siemens.cto.TaskExecutors:name=groupRefreshExecutor" value-ref="groupRefreshExecutor" />                
+-->
+            </map>
+            </property>
+    </bean>
+
+</beans>

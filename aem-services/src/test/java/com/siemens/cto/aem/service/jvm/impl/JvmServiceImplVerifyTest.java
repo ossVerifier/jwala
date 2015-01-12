@@ -166,7 +166,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateConfig() throws IOException {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L), 
-                "jvm-name", "host-name", new HashSet<LiteGroup>(),  80, 443, 443, 8005, 8009, new Path("/"));
+                "jvm-name", "host-name", new HashSet<LiteGroup>(),  80, 443, 443, 8005, 8009, new Path("/"),
+                "EXAMPLE_OPTS=%someEnv%/someVal");
         final ArrayList<Jvm> jvms = new ArrayList<>(1);
         jvms.add(jvm);
         

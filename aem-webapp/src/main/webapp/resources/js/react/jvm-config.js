@@ -94,12 +94,18 @@ var JvmConfig = React.createClass({
         this.setState({showModalFormEditDialog:false});
     },
     okAddCallback: function() {
+        if (this.refs.jvmAddForm.isSysPropsOnFocus()) {
+            return false; // sys props is multi line so don't submit when enter is pressed
+        }
+
         if (this.refs.jvmAddForm.isValid()) {
             var self = this;
+
             this.props.service.insertNewJvm(this.refs.jvmAddForm.state.name,
                                             this.refs.jvmAddForm.state.groupIds,
                                             this.refs.jvmAddForm.state.host,
                                             this.refs.jvmAddForm.state.statusPath,
+                                            this.refs.jvmAddForm.state.sysProps,
                                             this.refs.jvmAddForm.state.httpPort,
                                             this.refs.jvmAddForm.state.httpsPort,
                                             this.refs.jvmAddForm.state.redirectPort,
@@ -114,6 +120,10 @@ var JvmConfig = React.createClass({
         }
     },
     okEditCallback: function() {
+        if (this.refs.jvmEditForm.isSysPropsOnFocus()) {
+            return false; // sys props is multi line so don't submit when enter is pressed
+        }
+
         if (this.refs.jvmEditForm.isValid()) {
             var self = this;
             this.props.service.updateJvm($(this.refs.jvmEditForm.getDOMNode().children[0]).serializeArray(),
@@ -183,6 +193,7 @@ var JvmConfigForm = React.createClass({
         var name = "";
         var host = "";
         var statusPath = "/manager"; // TODO: Define in a properties file
+        var sysProps = "";
         var groupIds = [];
         var httpPort = "";
         var httpsPort = "";
@@ -195,6 +206,7 @@ var JvmConfigForm = React.createClass({
             name = this.props.data.jvmName;
             host = this.props.data.hostName;
             statusPath = this.props.data.statusPath.path;
+            sysProps = this.props.data.systemProperties;
             this.props.data.groups.forEach(function(group) {
                 groupIds.push(group.id);
             });
@@ -210,6 +222,7 @@ var JvmConfigForm = React.createClass({
             name: name,
             host: host,
             statusPath: statusPath,
+            sysProps: sysProps,
             groupIds: groupIds,
             groupMultiSelectData: [],
             httpPort: httpPort,
@@ -225,6 +238,7 @@ var JvmConfigForm = React.createClass({
         return <div className={this.props.className}>
                     <form ref="jvmConfigForm">
                         <input type="hidden" name="id" value={jvmId} />
+                        <input type="hidden" name="systemProperties" value="" />
                         <table>
                             <tr>
                                 <td>*Name</td>
@@ -258,6 +272,18 @@ var JvmConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} required maxLength="64"/></td>
+                            </tr>
+                            <tr>
+                                <td>System Properties</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="systemProperties" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><textarea name="systemProperties" ref="sysProps" cols="35" rows="5"
+                                              valueLink={this.linkState("sysProps")} maxLength="5000"/></td>
                             </tr>
                             <tr>
                                 <td>*HTTP Port</td>
@@ -343,6 +369,9 @@ var JvmConfigForm = React.createClass({
                         </table>
                     </form>
                </div>
+    },
+    isSysPropsOnFocus: function() {
+        return $(this.refs.sysProps.getDOMNode()).is(":focus");
     },
     isHttpPortInteger: function() {
         return (this.state.httpPort % 1 === 0);
