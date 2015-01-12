@@ -6,3 +6,7 @@ table.groupConfig > tbody > tr > td.row-sub-component-container {
     padding-left: 10px !important;
     padding-bottom: 10px !important
 }
+
+.group-config-form-name-input {
+    width: 200px
+}
