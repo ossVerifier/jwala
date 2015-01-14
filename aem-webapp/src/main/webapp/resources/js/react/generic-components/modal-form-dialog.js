@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 var ModalFormDialog = React.createClass({
     isShowing: false,
     shouldComponentUpdate: function(nextProps, nextState) {
@@ -6,9 +5,9 @@ var ModalFormDialog = React.createClass({
     },
     render: function() {
         if (this.props.show === true) {
-            return <div className={this.props.className}>{this.props.form}</div>
+            return React.createElement("div", {className:this.props.className}, this.props.form);
         }
-        return <div/>
+        return React.createElement("div");
     },
     componentDidUpdate: function () {
         if (this.props.show === true) {
