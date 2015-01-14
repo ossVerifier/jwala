@@ -79,9 +79,9 @@ ModalDialogBox = React.createClass({
     componentDidUpdate: function() {
         // Set the initial position if it is not yet set.
         if (this.refs.theDialog !== undefined) {
-            var height = $(this.refs.theDialog.getDOMNode()).height();
-            var width = $(this.refs.theDialog.getDOMNode()).width();
             if (this.state.top < 0) {
+                var height = $(this.refs.theDialog.getDOMNode()).height();
+                var width = $(this.refs.theDialog.getDOMNode()).width();
                 this.setState({top: ($(window).height()/2) - (height/2),
                                left: ($(window).width()/2) - (width/2)});
             }
