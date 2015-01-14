@@ -13,6 +13,15 @@
  * 8. cancelCallback - the callback that is called when the cancel button is clicked.
  * 9. okLabel - the "ok" button label. If undefined the button label shows "Ok" by default.
  * 10. cancelLabel - the "cancel" button label. If undefined the button label shows "Cancel" by default.
+ *
+ * Usage Example (in JSX)
+ *
+ * <ModalDialogBox title="Edit JVM"
+ *                 show={this.state.showModalFormEditDialog}
+ *                 okCallback={this.okEditCallback}
+ *                 cancelCallback={this.cancelEditCallback}
+ *                 content={<JvmConfigForm ref="jvmEditForm"
+ *                                         data={this.state.selectedJvmForEditing}/>}
  */
 ModalDialogBox = React.createClass({
     getInitialState: function() {
