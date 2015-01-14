@@ -26,7 +26,10 @@ public class WebServerTest {
     private static final Long id = 1L;
     private static final Identifier<WebServer> wsId = new Identifier<>(id);
     private final List<Group> groups = new ArrayList<>();
-    private final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE);
+    private static final Path SVR_ROOT = new Path("./");
+    private static final Path DOC_ROOT = new Path("htdocs");
+    private final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE,
+                                        SVR_ROOT, DOC_ROOT);
 
     @Test
     public void testGetId() {
@@ -70,7 +73,9 @@ public class WebServerTest {
                                                   expectedUri.getPort(),
                                                   99,
                                                   STATUS_PATH,
-                                                  HTTP_CONFIG_FILE);
+                                                  HTTP_CONFIG_FILE,
+                                                  SVR_ROOT,
+                                                  DOC_ROOT);
         final URI actualUri = webServer.getStatusUri();
         assertEquals(expectedUri,
                      actualUri);

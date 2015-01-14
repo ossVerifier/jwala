@@ -34,7 +34,7 @@
 # same ServerRoot for multiple httpd daemons, you will need to change at
 # least PidFile.
 #
-ServerRoot ./
+ServerRoot "${webServer.svrRoot.path}"
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -189,7 +189,7 @@ JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
 SSLSessionCache shmcb:logs/ssl_cache_shm
 
 <VirtualHost *:443>
-DocumentRoot "htdocs"
+DocumentRoot "${webServer.docRoot.path}"
 
 SSLEngine on
 SSLOptions +StrictRequire
@@ -295,8 +295,8 @@ ServerAdmin admin@example.com
 # documents. By default, all requests are taken from this directory, but
 # symbolic links and aliases may be used to point to other locations.
 #
-DocumentRoot htdocs
-<Directory "htdocs">
+DocumentRoot "${webServer.docRoot.path}"
+<Directory "${webServer.docRoot.path}">
     #
     # Possible values for the Options directive are "None", "All",
     # or any combination of:

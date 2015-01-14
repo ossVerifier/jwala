@@ -145,7 +145,9 @@ public class MoreGroupStateMachineTest {
                            80,
                            443,
                            new Path("/statusPath"),
-                           new FileSystemPath("d:/some-dir/httpd.conf"));
+                           new FileSystemPath("d:/some-dir/httpd.conf"),
+                           new Path("./"),
+                           new Path("htdocs"));
         wsList.add(ws);
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.REACHABLE, DateTime.now(), StateType.WEB_SERVER));

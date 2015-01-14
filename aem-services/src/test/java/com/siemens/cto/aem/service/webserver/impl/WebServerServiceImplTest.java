@@ -104,6 +104,8 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getHttpsPort()).thenReturn(52000);
         when(mockWebServer.getStatusPath()).thenReturn(new Path("/statusPath"));
         when(mockWebServer.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
+        when(mockWebServer.getSvrRoot()).thenReturn(new Path("./"));
+        when(mockWebServer.getDocRoot()).thenReturn(new Path("htdocs"));
 
 
         when(mockWebServer2.getId()).thenReturn(new Identifier<WebServer>(2L));
@@ -114,6 +116,8 @@ public class WebServerServiceImplTest {
         when(mockWebServer2.getHttpsPort()).thenReturn(52000);
         when(mockWebServer2.getStatusPath()).thenReturn(new Path("/statusPath"));
         when(mockWebServer2.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
+        when(mockWebServer2.getSvrRoot()).thenReturn(new Path("./"));
+        when(mockWebServer2.getDocRoot()).thenReturn(new Path("htdocs"));
 
         mockWebServersAll.add(mockWebServer);
         mockWebServersAll.add(mockWebServer2);
@@ -178,7 +182,9 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer.getPort(),
                                                                 mockWebServer.getHttpsPort(),
                                                                 mockWebServer.getStatusPath(),
-                                                                mockWebServer.getHttpConfigFile());
+                                                                mockWebServer.getHttpConfigFile(),
+                                                                mockWebServer.getSvrRoot(),
+                                                                mockWebServer.getDocRoot());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
@@ -207,7 +213,9 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer2.getPort(),
                                                                 mockWebServer2.getHttpsPort(),
                                                                 mockWebServer2.getStatusPath(),
-                                                                mockWebServer2.getHttpConfigFile());
+                                                                mockWebServer2.getHttpConfigFile(),
+                                                                mockWebServer2.getSvrRoot(),
+                                                                mockWebServer2.getDocRoot());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());
@@ -261,6 +269,7 @@ public class WebServerServiceImplTest {
 
         Application [] appArray = {app1, app2};
 
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
 
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", null);
@@ -276,6 +285,7 @@ public class WebServerServiceImplTest {
 
         Application [] appArray = {app1, app2};
 
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
 
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);

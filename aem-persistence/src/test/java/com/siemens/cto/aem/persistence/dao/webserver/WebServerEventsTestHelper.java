@@ -22,7 +22,9 @@ public class WebServerEventsTestHelper {
                                                                            final Integer aNewWebServerHttpPort,
                                                                            final String aUserId,
                                                                            final Path aStatusPath,
-                                                                           final FileSystemPath aFileSystemPath) {
+                                                                           final FileSystemPath aFileSystemPath,
+                                                                           final Path aSvrRoot,
+                                                                           final Path aDocRoot) {
 
 		final Event<CreateWebServerCommand> createWebServer = new Event<>(
 				new CreateWebServerCommand(someGroupIds,
@@ -31,7 +33,9 @@ public class WebServerEventsTestHelper {
                                            aNewWebServerPort,
                                            aNewWebServerHttpPort,
                                            aStatusPath,
-                                           aFileSystemPath),
+                                           aFileSystemPath,
+                                           aSvrRoot,
+                                           aDocRoot),
 				createAuditEvent(aUserId));
 
 		return createWebServer;
@@ -45,7 +49,9 @@ public class WebServerEventsTestHelper {
                                                                            final Integer aNewWebServerHttpsPort,
                                                                            final String aUserId,
                                                                            final Path aStatusPath,
-                                                                           final FileSystemPath aHttpConfigFile) {
+                                                                           final FileSystemPath aHttpConfigFile,
+                                                                           final Path aSvrRoot,
+                                                                           final Path aDocRoot) {
 
 		final Event<UpdateWebServerCommand> updateWebServer = new Event<>(new UpdateWebServerCommand(id,
                                                                                                      newGroupIds,
@@ -54,7 +60,9 @@ public class WebServerEventsTestHelper {
                                                                                                      aNewWebServerPort,
                                                                                                      aNewWebServerHttpsPort,
                                                                                                      aStatusPath,
-                                                                                                     aHttpConfigFile),
+                                                                                                     aHttpConfigFile,
+                                                                                                     aSvrRoot,
+                                                                                                     aDocRoot),
                                                                           createAuditEvent(aUserId));
 
 		return updateWebServer;

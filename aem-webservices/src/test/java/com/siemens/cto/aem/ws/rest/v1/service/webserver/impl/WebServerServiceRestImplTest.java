@@ -57,6 +57,8 @@ public class WebServerServiceRestImplTest {
     private static final String host = "localhost";
     private static final Path statusPath = new Path("/statusPath");
     private static final FileSystemPath httpConfigFile = new FileSystemPath("d:/some-dir/httpd.conf");
+    private static final Path SVR_ROOT = new Path("./");
+    private static final Path DOC_ROOT = new Path("htdocs");
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
 
@@ -89,7 +91,7 @@ public class WebServerServiceRestImplTest {
         groupsList.add(groupTwo);
 
         final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009,
-                statusPath, httpConfigFile);
+                statusPath, httpConfigFile, SVR_ROOT, DOC_ROOT);
         final List<WebServer> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -217,7 +219,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
         webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath"),
-                new FileSystemPath("d:/some-dir/httpd.conf")));
+                new FileSystemPath("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT ));
 
         final Identifier<Group> groupId = new Identifier<>("1");
         final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");

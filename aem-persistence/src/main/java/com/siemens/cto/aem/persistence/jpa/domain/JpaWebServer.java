@@ -43,6 +43,12 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     @Column(nullable = false)
     private String httpConfigFile;
 
+    @Column(nullable = false)
+    private String svrRoot;
+
+    @Column(nullable = false)
+    private String docRoot;
+
     public static final String FIND_APPLICATIONS_QUERY = "findApplicationsQuery";
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
@@ -108,4 +114,21 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     public void setHttpConfigFile(String httpConfigFile) {
         this.httpConfigFile = httpConfigFile;
     }
+
+    public String getSvrRoot() {
+        return svrRoot;
+    }
+
+    public void setSvrRoot(String svrRoot) {
+        this.svrRoot = svrRoot;
+    }
+
+    public String getDocRoot() {
+        return docRoot;
+    }
+
+    public void setDocRoot(String docRoot) {
+        this.docRoot = docRoot;
+    }
+
 }

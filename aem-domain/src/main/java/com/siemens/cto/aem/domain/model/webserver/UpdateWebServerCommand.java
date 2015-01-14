@@ -6,8 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
-import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
+import com.siemens.cto.aem.domain.model.rule.*;
 import com.siemens.cto.aem.domain.model.rule.webserver.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -19,8 +18,6 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.rule.MultipleRules;
-import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
 
 public class UpdateWebServerCommand implements Serializable, Command {
@@ -34,6 +31,8 @@ public class UpdateWebServerCommand implements Serializable, Command {
     private final Integer newPort;
     private final Integer newHttpsPort;
     private final Path newStatusPath;
+    private final Path newSvrRoot;
+    private final Path newDocRoot;
 
     private final FileSystemPath newHttpConfigFile;
 
@@ -44,7 +43,9 @@ public class UpdateWebServerCommand implements Serializable, Command {
                                   final Integer theNewPort,
                                   final Integer theNewHttpsPort,
                                   final Path theNewStatusPath,
-                                  final FileSystemPath theNewHttpConfigFile) {
+                                  final FileSystemPath theNewHttpConfigFile,
+                                  final Path theSvrRoot,
+                                  final Path theDocRoot) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
@@ -53,6 +54,8 @@ public class UpdateWebServerCommand implements Serializable, Command {
         newGroupIds = Collections.unmodifiableCollection(new HashSet<>(theNewGroupIds));
         newStatusPath = theNewStatusPath;
         newHttpConfigFile = theNewHttpConfigFile;
+        newSvrRoot = theSvrRoot;
+        newDocRoot = theDocRoot;
     }
 
     public Identifier<WebServer> getId() {
@@ -87,6 +90,14 @@ public class UpdateWebServerCommand implements Serializable, Command {
         return newHttpConfigFile;
     }
 
+    public Path getNewSvrRoot() {
+        return newSvrRoot;
+    }
+
+    public Path getNewDocRoot() {
+        return newDocRoot;
+    }
+
     @Override
     public void validateCommand() throws BadRequestException {
         final MultipleRules mr =
@@ -97,7 +108,9 @@ public class UpdateWebServerCommand implements Serializable, Command {
                                   new WebServerIdRule(id),
                                   new GroupIdsRule(newGroupIds),
                                   new StatusPathRule(newStatusPath),
-                                  new HttpConfigFileRule(newHttpConfigFile));
+                                  new HttpConfigFileRule(newHttpConfigFile),
+                                  new PathRule(newSvrRoot),
+                                  new PathRule(newDocRoot));
 
         mr.validate();
     }
@@ -123,6 +136,8 @@ public class UpdateWebServerCommand implements Serializable, Command {
                 .append(this.newHttpsPort, rhs.newHttpsPort)
                 .append(this.newStatusPath, rhs.newStatusPath)
                 .append(this.newHttpConfigFile, rhs.newHttpConfigFile)
+                .append(this.newSvrRoot, rhs.newSvrRoot)
+                .append(this.newDocRoot, rhs.newDocRoot)
                 .isEquals();
     }
 

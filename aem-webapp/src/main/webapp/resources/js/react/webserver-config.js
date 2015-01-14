@@ -103,6 +103,8 @@ var WebServerConfig = React.createClass({
                                                   this.refs.webServerAddForm.state.httpsPort,
                                                   this.refs.webServerAddForm.state.statusPath,
                                                   this.refs.webServerAddForm.state.httpConfigFile,
+                                                  this.refs.webServerAddForm.state.svrRoot,
+                                                  this.refs.webServerAddForm.state.docRoot,
                                                   function(){
                                                       self.refreshData({showModalFormAddDialog:false});
                                                   },
@@ -182,6 +184,8 @@ var WebServerConfigForm = React.createClass({
         var httpsPort = "";
         var statusPath = tocVars.loadBalancerStatusMount;
         var httpConfigFile = "D:/apache/httpd-2.4.9/conf/httpd.conf";
+        var svrRoot = "";
+        var docRoot = "";
         var groupIds = [];
 
         if (this.props.data !== undefined) {
@@ -192,6 +196,8 @@ var WebServerConfigForm = React.createClass({
             httpsPort = this.props.data.httpsPort;
             statusPath = this.props.data.statusPath.path;
             httpConfigFile = this.props.data.httpConfigFile.path;
+            svrRoot = this.props.data.svrRoot.path;
+            docRoot = this.props.data.docRoot.path;
             this.props.data.groups.forEach(function(group) {
                 groupIds.push(group.id);
             });
@@ -205,6 +211,8 @@ var WebServerConfigForm = React.createClass({
             httpsPort: httpsPort,
             statusPath: statusPath,
             httpConfigFile: httpConfigFile,
+            svrRoot: svrRoot,
+            docRoot: docRoot,
             groupIds: groupIds,
             groupMultiSelectData: [],
         }
@@ -281,6 +289,28 @@ var WebServerConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td><input name="httpConfigFile" type="text" valueLink={this.linkState("httpConfigFile")} maxLength="64"/></td>
+                            </tr>
+                            <tr>
+                                <td>*Server Root</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="svrRoot" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="svrRoot" type="text" valueLink={this.linkState("svrRoot")} maxLength="64" required/></td>
+                            </tr>
+                            <tr>
+                                <td>*Document Root</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="docRoot" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input name="docRoot" type="text" valueLink={this.linkState("docRoot")} maxLength="64" required/></td>
                             </tr>
 
                             <tr>

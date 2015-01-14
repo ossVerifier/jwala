@@ -99,7 +99,10 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     TEMPLATE_NOT_FOUND("AEM47", "TemplateNotFound"), 
     /**/
-    CANNOT_CONNECT("AEM48", "CannotConnect")
+    CANNOT_CONNECT("AEM48", "CannotConnect"),
+
+    /**/
+    INVALID_PATH("AEM49", "InvalidPath")
     ;
 
 	private final String faultCode;

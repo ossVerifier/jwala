@@ -39,45 +39,45 @@
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto" additivity="false">
-        <level value="INFO" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.persistence.service.state.impl.JpaStatePersistenceServiceImpl" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
     
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
     
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.commandprocessor" additivity="false">
-        <level value="WARN" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
     
@@ -89,40 +89,40 @@
 
     <!-- CTO TCO logger -->
     <logger name="org.springframework" additivity="false">
-        <level value="INFO" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="org.springframework.integration" additivity="false">
-        <level value="INFO" />
+        <level value="ERROR" />
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.service.state" additivity="false">
-        <level value="TRACE" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="com.siemens.cto.aem.ws.rest.v1.service.state" additivity="false">
-        <level value="DEBUG" />
+        <level value="ERROR" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="org.springframework.web" additivity="false">
-        <level value="INFO" />
+        <level value="ERROR" />
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
     <!-- The root logger -->
     <root>
-        <level value="INFO" />
+        <level value="ERROR" />
         <appender-ref ref="CONSOLE" />
     </root>
 </log4j:configuration>

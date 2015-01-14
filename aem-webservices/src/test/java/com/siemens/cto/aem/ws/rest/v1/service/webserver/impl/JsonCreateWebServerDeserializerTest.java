@@ -29,6 +29,8 @@ public class JsonCreateWebServerDeserializerTest {
     private static final String groupIdTwo = "2";
     private static final String statusPath = "/statusPath";
     private static final String httpConfigFile = "d:/some-dir/httpd.conf";
+    private static final String SVR_ROOT = "./";
+    private static final String DOC_ROOT = "htdocs";
 
     private ObjectMapper mapper;
 
@@ -47,6 +49,8 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("statusPath", statusPath),
                                    keyTextValue("httpConfigFile", httpConfigFile),
+                                   keyTextValue("svrRoot", SVR_ROOT),
+                                   keyTextValue("docRoot", DOC_ROOT),
                                    keyValue("groupIds",
                                             array(object(keyTextValue("groupId", groupIdOne)),
                                                   object(keyTextValue("groupId", groupIdTwo))))));
@@ -62,6 +66,8 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("statusPath", statusPath),
                                    keyTextValue("httpConfigFile", httpConfigFile),
+                                   keyTextValue("svrRoot", SVR_ROOT),
+                                   keyTextValue("docRoot", DOC_ROOT),
                                    keyValue("groupIds", array(object(keyTextValue("groupId", groupIdOne))))));
         final JsonCreateWebServer create = readValue(json);
         verifyAssertions(create, webserverName, hostName, groupIdOne);
@@ -74,7 +80,9 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("portNumber", portNumber),
                                    keyTextValue("httpsPort", httpsPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("httpConfigFile", httpConfigFile)));
+                                   keyTextValue("httpConfigFile", httpConfigFile),
+                                   keyTextValue("svrRoot", SVR_ROOT),
+                                   keyTextValue("docRoot", DOC_ROOT)));
         final JsonCreateWebServer create = readValue(json);
         verifyAssertions(create, webserverName, hostName);
     }
@@ -86,7 +94,9 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("portNumber", "abcd"),
                                    keyTextValue("httpsPort", "312"),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("httpConfigFile", httpConfigFile)));
+                                   keyTextValue("httpConfigFile", httpConfigFile),
+                                   keyTextValue("svrRoot", SVR_ROOT),
+                                   keyTextValue("docRoot", DOC_ROOT)));
         final JsonCreateWebServer create = readValue(json);
         create.toCreateWebServerCommand();
     }
@@ -98,7 +108,9 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("portNumber", "321"),
                                    keyTextValue("httpsPort", "sxxs"),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("httpConfigFile", httpConfigFile)));
+                                   keyTextValue("httpConfigFile", httpConfigFile),
+                                   keyTextValue("svrRoot", SVR_ROOT),
+                                   keyTextValue("docRoot", DOC_ROOT)));
         final JsonCreateWebServer create = readValue(json);
         create.toCreateWebServerCommand();
     }

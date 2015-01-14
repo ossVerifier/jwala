@@ -31,6 +31,8 @@ public class JsonUpdateWebServer {
     private final String hostName;
     private final String statusPath;
     private final String httpConfigFile;
+    private final String svrRoot;
+    private final String docRoot;
 
     public JsonUpdateWebServer(final String aWebServerId,
                                final String aWebServerName,
@@ -39,7 +41,9 @@ public class JsonUpdateWebServer {
                                final String aHttpsPort,
                                final Set<String> someGroupIds,
                                final String aStatusPath,
-                               final String aHttpConfigFile) {
+                               final String aHttpConfigFile,
+                               final String aSvrRoot,
+                               final String aDocRoot) {
 
         webServerName = aWebServerName;
         hostName = aHostName;
@@ -49,6 +53,8 @@ public class JsonUpdateWebServer {
         groupIds = someGroupIds;
         statusPath = aStatusPath;
         httpConfigFile = aHttpConfigFile;
+        svrRoot = aSvrRoot;
+        docRoot = aDocRoot;
     }
 
     public UpdateWebServerCommand toUpdateWebServerCommand() throws BadRequestException {
@@ -64,7 +70,9 @@ public class JsonUpdateWebServer {
                                           port,
                                           httpsPort,
                                           new Path(statusPath),
-                                          new FileSystemPath(httpConfigFile));
+                                          new FileSystemPath(httpConfigFile),
+                                          new Path(svrRoot),
+                                          new Path(docRoot));
     }
 
     protected Identifier<WebServer> convertWebServerId() {
@@ -114,7 +122,9 @@ public class JsonUpdateWebServer {
                                             node.get("httpsPort").getValueAsText(),
                                             groupIds,
                                             node.get("statusPath").getTextValue(),
-                                            node.get("httpConfigFile").getTextValue());
+                                            node.get("httpConfigFile").getTextValue(),
+                                            node.get("svrRoot").getTextValue(),
+                                            node.get("docRoot").getTextValue());
             return juws;
         }
     }

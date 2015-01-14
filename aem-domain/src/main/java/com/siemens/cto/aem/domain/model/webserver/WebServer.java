@@ -28,6 +28,8 @@ public class WebServer implements Serializable {
     private final Integer httpsPort;
     private final Path statusPath;
     private final FileSystemPath httpConfigFile;
+    private final Path svrRoot;
+    private final Path docRoot;
 
     /**
      * Constructor for a bare minimum web server with group details.
@@ -48,6 +50,8 @@ public class WebServer implements Serializable {
         for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
+        svrRoot = null;
+        docRoot = null;
     }
 
     public WebServer(final Identifier<WebServer> theId,
@@ -57,8 +61,9 @@ public class WebServer implements Serializable {
                      final Integer thePort,
                      final Integer theHttpsPort,
                      final Path theStatusPath,
-                     final FileSystemPath theHttpConfigFile) {
-        id = theId;
+                     final FileSystemPath theHttpConfigFile,
+                     final Path theSvrRoot,
+                     final Path theDocRoot) { id = theId;
         host = theHost;
         port = thePort;
         name = theName;
@@ -68,6 +73,8 @@ public class WebServer implements Serializable {
         for (final Group grp : theGroups) {
             groups.put(grp.getId(), grp);
         }
+        svrRoot = theSvrRoot;
+        docRoot = theDocRoot;
     }
 
     public Identifier<WebServer> getId() {
@@ -114,6 +121,14 @@ public class WebServer implements Serializable {
         return builder.buildUnchecked();
     }
 
+    public Path getSvrRoot() {
+        return svrRoot;
+    }
+
+    public Path getDocRoot() {
+        return docRoot;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -135,6 +150,8 @@ public class WebServer implements Serializable {
                 .append(this.httpsPort, rhs.httpsPort)
                 .append(this.statusPath, rhs.statusPath)
                 .append(this.httpConfigFile, rhs.httpConfigFile)
+                .append(this.svrRoot, rhs.svrRoot)
+                .append(this.docRoot, rhs.docRoot)
                 .isEquals();
     }
 
@@ -149,6 +166,8 @@ public class WebServer implements Serializable {
                 .append(httpsPort)
                 .append(statusPath)
                 .append(httpConfigFile)
+                .append(svrRoot)
+                .append(docRoot)
                 .toHashCode();
     }
 
@@ -163,6 +182,8 @@ public class WebServer implements Serializable {
                 .append("statusPath", statusPath)
                 .append("httpConfigFile", httpConfigFile)
                 .append("groups", groups)
+                .append("svrRoot", svrRoot)
+                .append("docRoot", docRoot)
                 .toString();
     }
 }

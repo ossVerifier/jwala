@@ -34,7 +34,7 @@
 # same ServerRoot for multiple httpd daemons, you will need to change at
 # least PidFile.
 #
-ServerRoot ./
+ServerRoot "${webServer.svrRoot.path}"
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -196,7 +196,7 @@ SSLSessionCache shmcb:logs/ssl_cache_shm
 #SSLPassPhraseDialog "exec:../siemens/data/security/apache/authorize.bat"
 
 <VirtualHost *:443>
-DocumentRoot "htdocs"
+DocumentRoot "${webServer.docRoot.path}"
 
 #IPINS
 LoadModule rewrite_module modules/mod_rewrite.so
@@ -285,7 +285,7 @@ ProxyPass ${it.mount.replaceAll(" ", "")} balancer://lb-${it.name.replaceAll(" "
 </VirtualHost>
 
 <VirtualHost *:80>
-DocumentRoot "htdocs"
+DocumentRoot "${webServer.docRoot.path}"
 
 #IPINS
 LoadModule rewrite_module modules/mod_rewrite.so
@@ -466,8 +466,8 @@ ServerAdmin admin@example.com
 # documents. By default, all requests are taken from this directory, but
 # symbolic links and aliases may be used to point to other locations.
 #
-DocumentRoot htdocs
-<Directory "htdocs">
+DocumentRoot "${webServer.docRoot.path}"
+<Directory "${webServer.docRoot.path}">
     #
     # Possible values for the Options directive are "None", "All",
     # or any combination of:

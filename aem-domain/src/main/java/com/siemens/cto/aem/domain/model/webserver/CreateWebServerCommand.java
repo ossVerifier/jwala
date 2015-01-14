@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
+import com.siemens.cto.aem.domain.model.rule.*;
 import com.siemens.cto.aem.domain.model.rule.webserver.HttpConfigFileRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -15,10 +15,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.rule.MultipleRules;
-import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
 
 public class CreateWebServerCommand implements Serializable, Command {
@@ -32,6 +29,8 @@ public class CreateWebServerCommand implements Serializable, Command {
     private final Integer httpsPort;
     private final Path statusPath;
     private final FileSystemPath httpConfigFile;
+    private final Path svrRoot;
+    private final Path docRoot;
 
     public CreateWebServerCommand(final Collection<Identifier<Group>> theGroupIds,
                                   final String theName,
@@ -39,7 +38,9 @@ public class CreateWebServerCommand implements Serializable, Command {
                                   final Integer thePort,
                                   final Integer theHttpsPort,
                                   final Path theStatusPath,
-                                  final FileSystemPath theHttpConfigFile) {
+                                  final FileSystemPath theHttpConfigFile,
+                                  final Path theSvrRoot,
+                                  final Path theDocRoot) {
         host = theHost;
         port = thePort;
         httpsPort = theHttpsPort;
@@ -47,6 +48,8 @@ public class CreateWebServerCommand implements Serializable, Command {
         groupIds = theGroupIds;
         statusPath = theStatusPath;
         httpConfigFile = theHttpConfigFile;
+        svrRoot = theSvrRoot;
+        docRoot = theDocRoot;
     }
 
     public Collection<Identifier<Group>> getGroups() {
@@ -77,6 +80,14 @@ public class CreateWebServerCommand implements Serializable, Command {
         return httpConfigFile;
     }
 
+    public Path getSvrRoot() {
+        return svrRoot;
+    }
+
+    public Path getDocRoot() {
+        return docRoot;
+    }
+
     @Override
     public void validateCommand() {
         new MultipleRules(new WebServerNameRule(name),
@@ -85,7 +96,9 @@ public class CreateWebServerCommand implements Serializable, Command {
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
                           new GroupIdsRule(groupIds),
                           new StatusPathRule(statusPath),
-                          new HttpConfigFileRule(httpConfigFile)).validate();
+                          new HttpConfigFileRule(httpConfigFile),
+                          new PathRule(svrRoot),
+                          new PathRule(docRoot)).validate();
     }
 
     @Override
@@ -108,6 +121,8 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(this.httpsPort, rhs.httpsPort)
                 .append(this.statusPath, rhs.statusPath)
                 .append(this.httpConfigFile, rhs.httpConfigFile)
+                .append(this.svrRoot, rhs.svrRoot)
+                .append(this.docRoot, rhs.docRoot)
                 .isEquals();
     }
 
@@ -121,6 +136,8 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append(httpsPort)
                 .append(statusPath)
                 .append(httpConfigFile)
+                .append(svrRoot)
+                .append(docRoot)
                 .toHashCode();
     }
 
@@ -134,6 +151,8 @@ public class CreateWebServerCommand implements Serializable, Command {
                 .append("httpsPort", httpsPort)
                 .append("statusPath", statusPath)
                 .append("httpConfigFile", httpConfigFile)
+                .append("svrRoot", svrRoot)
+                .append("docRoot", docRoot)
                 .toString();
     }
 }

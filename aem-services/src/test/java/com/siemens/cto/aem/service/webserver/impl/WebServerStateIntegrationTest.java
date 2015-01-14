@@ -281,7 +281,9 @@ public class WebServerStateIntegrationTest {
                                                        port,
                                                        null,
                                                        new Path("/statusPath"),
-                                                       new FileSystemPath("d:/some-dir/httpd.conf"));
+                                                       new FileSystemPath("d:/some-dir/httpd.conf"),
+                                                       new Path("./"),
+                                                       new Path("htdocs"));
                 servers.add(server);
             }
             return servers;

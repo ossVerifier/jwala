@@ -20,7 +20,9 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
     WebServer webServer
 
     void setUp() {
-        webServer = new WebServer(null, new HashSet<LiteGroup>(), "Apache2.4", "localhost", 80, 443, new Path("/statusPath"), new FileSystemPath("D:/stp/http-2.4.9/conf/httpd.conf") )
+        webServer = new WebServer(null, new HashSet<LiteGroup>(), "Apache2.4", "localhost", 80, 443,
+                                  new Path("/statusPath"), new FileSystemPath("D:/stp/http-2.4.9/conf/httpd.conf"),
+                                  new Path("./"), new Path("htdocs"))
         
         jvms = new ArrayList<>()
         jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009, new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal"))

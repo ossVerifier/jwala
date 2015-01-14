@@ -31,6 +31,8 @@ public class JsonCreateWebServer {
     private final String httpsPort;
     private final String statusPath;
     private final String httpConfigFile;
+    private final String svrRoot;
+    private final String docRoot;
 
     public JsonCreateWebServer(final String theName,
                                final String theHostName,
@@ -38,7 +40,9 @@ public class JsonCreateWebServer {
                                final String theHttpsPort,
                                final Set<String> theGroupIds,
                                final String theStatusPath,
-                               final String theHttpConfigFile) {
+                               final String theHttpConfigFile,
+                               final String theSvrRoot,
+                               final String theDocRoot) {
         webserverName = theName;
         hostName = theHostName;
         portNumber = thePortNumber;
@@ -46,6 +50,8 @@ public class JsonCreateWebServer {
         groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
         statusPath = theStatusPath;
         httpConfigFile = theHttpConfigFile;
+        svrRoot = theSvrRoot;
+        docRoot = theDocRoot;
     }
 
     public CreateWebServerCommand toCreateWebServerCommand() throws BadRequestException {
@@ -63,7 +69,9 @@ public class JsonCreateWebServer {
                                           port,
                                           securePort,
                                           new Path(statusPath),
-                                          new FileSystemPath(httpConfigFile));
+                                          new FileSystemPath(httpConfigFile),
+                                          new Path(svrRoot),
+                                          new Path(docRoot));
     }
 
     private Integer convertFrom(final String aValue,
@@ -105,7 +113,9 @@ public class JsonCreateWebServer {
                                                                      node.get("httpsPort").getValueAsText(),
                                                                      deserializeGroupIdentifiers(node),
                                                                      node.get("statusPath").getTextValue(),
-                                                                     node.get("httpConfigFile").getTextValue());
+                                                                     node.get("httpConfigFile").getTextValue(),
+                                                                     node.get("svrRoot").getTextValue(),
+                                                                     node.get("docRoot").getTextValue());
             return jcws;
         }
     }
