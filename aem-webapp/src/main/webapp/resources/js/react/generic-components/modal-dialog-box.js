@@ -13,6 +13,8 @@
  * 8. cancelCallback - the callback that is called when the cancel button is clicked.
  * 9. okLabel - the "ok" button label. If undefined the button label shows "Ok" by default.
  * 10. cancelLabel - the "cancel" button label. If undefined the button label shows "Cancel" by default.
+ * 11. top - the dialog's top position. If not set top will be computed to position the dialog at the middle of the screen.
+ * 12. left - the dialog's left position. If not set left will be computed to position the dialog at the center of the screen.
  *
  * Usage Example (in JSX)
  *
@@ -25,9 +27,12 @@
  */
 ModalDialogBox = React.createClass({
     getInitialState: function() {
+        var top = this.props.top === undefined ? -1000 : this.props.top;
+        var left = this.props.left === undefined ? -1000 : this.props.left;
+
         return {
-            top: -1000,
-            left: -1000
+            top: top,
+            left: left
         }
     },
     render: function() {
@@ -76,8 +81,15 @@ ModalDialogBox = React.createClass({
             }
         }
     },
+    componentDidMount: function() {
+        // This is for scenario where show is set to true initially.
+        // Initiate re-render if top and left is not defined.
+        if (this.props.show && this.state.top < 0) {
+            this.setState({show:true}); // Initiates render which computes top and left
+        }
+    },
     componentDidUpdate: function() {
-        // Set the initial position if it is not yet set.
+        // Set the initial position if it is not yet set. Position the dialog at the center of the screen.
         if (this.refs.theDialog !== undefined) {
             if (this.state.top < 0) {
                 var height = $(this.refs.theDialog.getDOMNode()).height();
