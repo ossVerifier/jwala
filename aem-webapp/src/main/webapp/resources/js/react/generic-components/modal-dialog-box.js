@@ -65,8 +65,8 @@ ModalDialogBox = React.createClass({
                                        React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.props.content),
                                        React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                                                      React.DOM.div({className:"ui-dialog-buttonset"},
-                                                     RButton({onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}),
-                                                     RButton({onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
+                                                     RButton({ref:"okBtn", onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}),
+                                                     RButton({ref:"cancelBtn", onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
 
         return React.DOM.div({style:this.props.show ? {} : {display:"none"}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
