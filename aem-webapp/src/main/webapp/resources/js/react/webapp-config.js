@@ -136,8 +136,7 @@ var WebAppConfig = React.createClass({
 
 var WebAppConfigForm = React.createClass({
     mixins: [
-      React.addons.LinkedStateMixin,
-      Toc.mixins.PreventEnterSubmit
+      React.addons.LinkedStateMixin
     ],
     validator: null,
     shouldComponentUpdate: function(nextProps, nextState) {
