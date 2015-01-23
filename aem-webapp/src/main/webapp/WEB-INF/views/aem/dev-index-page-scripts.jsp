@@ -40,7 +40,6 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-combobox.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-multi-select-box.js"></script>
-<script type="text/jsx" src="public-resources/js/react/generic-components/modal-form-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-grid.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/anchor.js"></script>
