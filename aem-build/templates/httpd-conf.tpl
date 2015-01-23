@@ -219,7 +219,7 @@ LoadModule deflate_module modules/mod_deflate.so
         BrowserMatch ^Mozilla/4 gzip-only-text/html
  
 # Netscape 4.06-4.08 have some more problems
-        BrowserMatch ^Mozilla/4\.0[678] no-gzip
+        BrowserMatch ^Mozilla/4\\.0[678] no-gzip
  
 # MSIE masquerades as Netscape, but it is fine
         BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
