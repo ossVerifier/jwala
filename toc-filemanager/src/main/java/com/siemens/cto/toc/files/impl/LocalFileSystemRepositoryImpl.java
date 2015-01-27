@@ -6,10 +6,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
+import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.siemens.cto.toc.files.FilesConfiguration;
@@ -19,6 +24,8 @@ import com.siemens.cto.toc.files.RepositoryAction.Type;
 import com.siemens.cto.toc.files.TocPath;
 
 public class LocalFileSystemRepositoryImpl implements Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileSystemRepositoryImpl.class);
 
     @Autowired
     FilesConfiguration filesConfiguration;
@@ -66,7 +73,31 @@ public class LocalFileSystemRepositoryImpl implements Repository {
         if(Files.exists(resolvedPath)) {
             return RepositoryAction.found(resolvedPath, inResponseTo);
         }
-        return RepositoryAction.none();
+        return RepositoryAction.none(inResponseTo);
     }
 
+    @Override
+    public RepositoryAction findAll(TocPath refPlace, String filter, RepositoryAction... inResponseTo) throws IOException {
+        Path place = filesConfiguration.getConfiguredPath(refPlace);
+        List<Path> results = new LinkedList<Path>();
+
+        try(DirectoryStream<Path> directory = Files.newDirectoryStream(place, filter)) {
+            
+            if(LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Inspecting path '"+place.toAbsolutePath().toString()+"' for children matching '"+filter+"'"); 
+            }
+            
+            for(Path p : directory) { 
+
+                LOGGER.debug("Found file: '"+p.toAbsolutePath().toString()+"'"); 
+                results.add(p); 
+            }
+                
+            if(results.size() > 0) {
+                return RepositoryAction.found(results, inResponseTo);
+            }
+        }
+
+        return RepositoryAction.none(inResponseTo);
+    }
 }

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.TocPath;
 
@@ -18,15 +19,24 @@ import com.siemens.cto.toc.files.TocPath;
  */
 public class PropertyFilesConfigurationImpl implements FilesConfiguration {
 
-    HashMap<TocPath, Path> paths = new HashMap<>();
-    FileSystem defaultFs = FileSystems.getDefault();
+    private final HashMap<TocPath, Path> paths = new HashMap<>();
+    private final FileSystem defaultFs = FileSystems.getDefault();
     
     @Override
     public Path getConfiguredPath(TocPath which) {
         return paths.get(which);
     }
-    
+
     public PropertyFilesConfigurationImpl(Properties fmProperties) {
+        load(fmProperties); 
+    }
+    
+    public void reload() {
+        paths.clear();
+        load(ApplicationProperties.getProperties());
+    }
+
+    public void load(Properties fmProperties) {         
         for(TocPath path : TocPath.values()) {
             paths.put(path, path.getDefaultPath());
         }

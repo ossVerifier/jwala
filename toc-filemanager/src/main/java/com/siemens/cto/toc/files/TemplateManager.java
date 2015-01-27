@@ -1,9 +1,13 @@
 package com.siemens.cto.toc.files;
 
 import java.io.IOException;
+import java.util.Collection;
+
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
 
 public interface TemplateManager {
 
-    <T extends TocFile> String getAbsoluteLocation(T templateName) throws IOException;
-
+    String getAbsoluteLocation(TocFile templateName) throws IOException;
+    Collection<ResourceType> getResourceTypes() throws IOException;
+    
 }

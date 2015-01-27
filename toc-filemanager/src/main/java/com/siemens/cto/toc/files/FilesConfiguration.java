@@ -6,4 +6,6 @@ public interface FilesConfiguration {
 
     Path getConfiguredPath(TocPath webArchive);
 
+    void reload();
+
 }

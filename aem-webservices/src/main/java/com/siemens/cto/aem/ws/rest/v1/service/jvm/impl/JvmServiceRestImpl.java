@@ -31,7 +31,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
-    private final Logger logger;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceRestImpl.class);
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
@@ -40,7 +40,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public JvmServiceRestImpl(final JvmService theJvmService,
                               final JvmControlService theJvmControlService,
                               final StateService<Jvm, JvmState> theJvmStateService) {
-        logger = LoggerFactory.getLogger(JvmServiceRestImpl.class);
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
@@ -48,21 +47,21 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getJvms(final PaginationParamProvider paginationParamProvider) {
-        logger.debug("Get JVMs with pagination requested: {}", paginationParamProvider);
+        LOGGER.debug("Get JVMs with pagination requested: {}", paginationParamProvider);
         final List<Jvm> jvms = jvmService.getJvms(paginationParamProvider.getPaginationParameter());
         return ResponseBuilder.ok(jvms);
     }
 
     @Override
     public Response getJvm(final Identifier<Jvm> aJvmId) {
-        logger.debug("Get JVM requested: {}", aJvmId);
+        LOGGER.debug("Get JVM requested: {}", aJvmId);
         return ResponseBuilder.ok(jvmService.getJvm(aJvmId));
     }
 
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate,
                               final AuthenticatedUser aUser) {
-        logger.debug("Create JVM requested: {}", aJvmToCreate);
+        LOGGER.debug("Create JVM requested: {}", aJvmToCreate);
         final User user = aUser.getUser();
 
         final Jvm jvm;
@@ -79,7 +78,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate,
                               final AuthenticatedUser aUser) {
-        logger.debug("Update JVM requested: {}", aJvmToUpdate);
+        LOGGER.debug("Update JVM requested: {}", aJvmToUpdate);
         return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
                                                        aUser.getUser()));
     }
@@ -87,7 +86,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response removeJvm(final Identifier<Jvm> aJvmId) {
         //TODO This needs to be audited
-        logger.debug("Delete JVM requested: {}", aJvmId);
+        LOGGER.debug("Delete JVM requested: {}", aJvmId);
         jvmService.removeJvm(aJvmId);
         return ResponseBuilder.ok();
     }
@@ -96,7 +95,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response controlJvm(final Identifier<Jvm> aJvmId,
                                final JsonControlJvm aJvmToControl,
                                final AuthenticatedUser aUser) {
-        logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
+        LOGGER.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
         final JvmControlHistory controlHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
                                                                               aUser.getUser());
         final ExecData execData = controlHistory.getExecData();
@@ -110,7 +109,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getCurrentJvmStates(final JvmIdsParameterProvider aJvmIdsParameterProvider) {
-        logger.debug("Current JVM states requested : {}", aJvmIdsParameterProvider);
+        LOGGER.debug("Current JVM states requested : {}", aJvmIdsParameterProvider);
         final Set<Identifier<Jvm>> jvmIds = aJvmIdsParameterProvider.valueOf();
         final Set<CurrentState<Jvm, JvmState>> currentJvmStates;
 

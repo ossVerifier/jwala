@@ -19,6 +19,7 @@ import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
 import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
 import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
+import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 
 @Configuration
 public class TocFileManagerConfiguration {
@@ -49,4 +50,9 @@ public class TocFileManagerConfiguration {
     public TemplateManager getTemplateManager() {
         return new TemplateManagerImpl();
     }   
+    
+    @Bean
+    public ResourceTypeDeserializer getResourceTypeDeserializer() { 
+        return new ResourceTypeDeserializer();
+    }
 }

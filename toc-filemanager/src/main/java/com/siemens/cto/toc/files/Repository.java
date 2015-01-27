@@ -11,4 +11,6 @@ public interface Repository {
     RepositoryAction writeStream(TocPath refPlace, Path filename, InputStream transientData, RepositoryAction... inResponseTo) throws IOException;
     
     RepositoryAction deleteIfExisting(TocPath refPlace, Path filename, RepositoryAction... inResponseTo) throws IOException;
+
+    RepositoryAction findAll(TocPath refPlace, String filter, RepositoryAction... inResponseTo) throws IOException;
 }

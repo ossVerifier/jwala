@@ -6,6 +6,7 @@ import java.util.List;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
+
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -22,6 +23,7 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -30,6 +32,8 @@ import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.resource.ResourceServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.resource.impl.ResourceServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -47,10 +51,14 @@ import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
+import com.siemens.cto.toc.files.FilesConfiguration;
 
 @Configuration
 public class AemWebServiceConfiguration {
 
+    @Autowired
+    private FilesConfiguration filesConfiguration;
+    
     @Autowired
     private GroupService groupService;
 
@@ -71,6 +79,9 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerCommandService webServerCommandService;
+    
+    @Autowired
+    private ResourceService resourceService;
 
     @Autowired
     @Qualifier("jvmStateService")
@@ -108,13 +119,14 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1UserServiceRest());
         serviceBeans.add(getV1AdminServiceRest());
         serviceBeans.add(getV1StateServiceRest());
+        serviceBeans.add(getV1ResourceServiceRest());
 
         return serviceBeans;
     }
 
     @Bean
     public AdminServiceRest getV1AdminServiceRest() {
-        return new AdminServiceRestImpl();
+        return new AdminServiceRestImpl(filesConfiguration);
     }
 
     @Bean
@@ -132,6 +144,11 @@ public class AemWebServiceConfiguration {
         return new JvmServiceRestImpl(jvmService,
                                       jvmControlService,
                                       jvmStateService);
+    }
+    
+    @Bean
+    public ResourceServiceRest getV1ResourceServiceRest() { 
+        return new ResourceServiceRestImpl(resourceService);
     }
 
     @Bean

@@ -43,6 +43,8 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
@@ -241,5 +243,10 @@ public class AemServiceConfiguration {
     @Bean
     public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
         return new JmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
+    }
+    
+    @Bean(name = "resourceService")
+    public ResourceService getResourceService() {
+        return new ResourceServiceImpl(templateManager);
     }
 }

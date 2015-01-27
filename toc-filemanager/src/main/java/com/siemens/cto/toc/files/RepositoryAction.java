@@ -2,6 +2,9 @@ package com.siemens.cto.toc.files;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -11,12 +14,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Intended for chain-of-responsibilities pattern
  * @author horspe00
  */
-public class RepositoryAction {
+public class RepositoryAction implements Iterable<Path> {
 
     public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
         NONE,
-        /** Verified Exists */
+        /** Verified one or more results exist */
         FOUND, 
         /** Either created or updated */
         STORED,
@@ -24,16 +27,82 @@ public class RepositoryAction {
         DELETED;
     }
 
-    private Type type;
-    private Path path;
-    private Long length;
-    private RepositoryAction[] inResponseTo;
+    private class Entry {
+        public Path path;
+        public Long length;
+        
+        public Entry(Path path, Long length) {
+            this.path = path;
+            this.length = length;
+        }
 
-    public RepositoryAction(Type type, Path path, Long length, RepositoryAction[] inResponseTo) {
-        this.path = path;
-        this.length = length;
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (obj == this) {
+                return true;
+            }
+            if (obj.getClass() != getClass()) {
+                return false;
+            }
+            Entry rhs = (Entry) obj;
+            return new EqualsBuilder()
+                    .append(this.path, rhs.path)
+                    .append(this.length, rhs.length)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder()
+                    .append(path)
+                    .append(length)
+                    .toHashCode();
+        }
+    }
+
+    protected class EntryIterator implements Iterator<Path> {
+        public int index = 0;
+
+        @Override
+        public boolean hasNext() {
+            return index < RepositoryAction.this.paths.length;
+        }
+
+        @Override
+        public Path next() {
+            if(index < RepositoryAction.this.paths.length) {
+                return RepositoryAction.this.paths[index++].path;
+            } 
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        } 
+    }
+
+    private final Type type;
+    private final Entry[] paths;
+    private final RepositoryAction[] inResponseTo;
+
+    public RepositoryAction(final Type type, final Path path, final Long length, final RepositoryAction[] inResponseTo) {
+        this.paths = new Entry[] { new Entry(path, length) };
         this.type = type;
         this.inResponseTo = inResponseTo;
+    }
+
+    public RepositoryAction(final Type type, final List<Path> theFoundPaths, final RepositoryAction[] inResponseTo) {
+        this.type = type;
+        this.paths = new Entry[theFoundPaths.size()];
+        this.inResponseTo = inResponseTo;
+        int idx = -1;
+        for(Path path : theFoundPaths) { 
+            this.paths[++idx] = new Entry(path, path.toFile().length());
+        }
     }
 
     public Type getType() {
@@ -42,19 +111,18 @@ public class RepositoryAction {
 
     public Path getFoundPath() throws FileNotFoundException {
         if(type == Type.FOUND) { 
-            return path;
+            return paths[0].path;
         } else {
-            throw new FileNotFoundException(path.toString());
+            throw new FileNotFoundException(paths[0].path.toString());
         }
-            
     }
 
     public Path getPath() {
-        return path;
+        return paths[0].path;
     }
 
     public Long getLength() {
-        return length;
+        return paths[0].length;
     }
 
     public RepositoryAction[] getCauses() {
@@ -69,6 +137,9 @@ public class RepositoryAction {
         return new RepositoryAction(Type.STORED, resolvedPath, copied, inResponseTo);
     }
 
+    public static RepositoryAction found(List<Path> paths, RepositoryAction... inResponseTo) {
+        return new RepositoryAction(Type.FOUND, paths, inResponseTo);
+    }
     public static RepositoryAction found(Path resolvedPath, RepositoryAction... inResponseTo) {
         return new RepositoryAction(Type.FOUND, resolvedPath, null, inResponseTo);
     }
@@ -79,8 +150,14 @@ public class RepositoryAction {
 
     @Override
     public String toString() {
-        String msg = type.toString() + " " + path + ((length != null) ? ";" + length : "");
-        String csep=" -> ";
+        String csep="";
+        String msg= type.toString() + "[ ";
+        for(Entry e : paths) {             
+             msg = msg + csep + e.path + ((e.length != null) ? ";" + e.length : "");
+             csep = ", ";
+        }
+        msg = msg + " ]";
+        csep=" -> ";
 
         if(inResponseTo != null) {
             for(RepositoryAction action : inResponseTo) {
@@ -108,8 +185,7 @@ public class RepositoryAction {
         RepositoryAction rhs = (RepositoryAction) obj;
         return new EqualsBuilder()
                 .append(this.type, rhs.type)
-                .append(this.path, rhs.path)
-                .append(this.length, rhs.length)
+                .append(this.paths, rhs.paths)
                 .append(this.inResponseTo, rhs.inResponseTo)
                 .isEquals();
     }
@@ -118,9 +194,14 @@ public class RepositoryAction {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(type)
-                .append(path)
-                .append(length)
+                .append(paths)
                 .append(inResponseTo)
                 .toHashCode();
     }
+
+    @Override
+    public Iterator<Path> iterator() {        
+        return new EntryIterator();
+    }
+
 }

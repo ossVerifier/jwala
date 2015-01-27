@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +49,7 @@ import org.springframework.integration.config.SourcePollingChannelAdapterFactory
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -155,7 +157,12 @@ public class WebServerStateIntegrationTest {
     @Configuration
     @ImportResource("classpath*:META-INF/spring/webserver-heartbeat-integration.xml")
     static class CommonConfiguration {
-      
+
+        @Bean(name = "generalCallerRunsPolicy")
+        public static CallerRunsPolicy getCallerRunsPolicy() { 
+            return new CallerRunsPolicy();
+        }
+        
         /**
          * Make toc.properties available to spring integration configuration
          * System properties are only used if there is no setting in toc.properties.
