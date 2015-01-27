@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,6 +50,7 @@ import org.springframework.integration.config.SourcePollingChannelAdapterFactory
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -158,6 +160,18 @@ public class WebServerStateIntegrationTest {
     @ImportResource("classpath*:META-INF/spring/webserver-heartbeat-integration.xml")
     static class CommonConfiguration {
 
+        /**
+         * Bean method to create a thread factory that creates daemon threads.
+         * <code>
+        <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+            <constructor-arg value="polling-"/>
+        </bean></code> */
+        @Bean(name="pollingThreadFactory") public ThreadFactory getPollingThreadFactory() {
+            CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
+            tf.setDaemon(true);
+            return tf;
+        }
+        
         @Bean(name = "generalCallerRunsPolicy")
         public static CallerRunsPolicy getCallerRunsPolicy() { 
             return new CallerRunsPolicy();
