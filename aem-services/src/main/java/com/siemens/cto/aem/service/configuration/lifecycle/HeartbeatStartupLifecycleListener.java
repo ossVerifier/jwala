@@ -2,8 +2,10 @@ package com.siemens.cto.aem.service.configuration.lifecycle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.event.ContextStartedEvent;
@@ -20,27 +22,38 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ContextRefreshedEvent) {
-            LOGGER.info("Heartbeat: Context Refreshed - Starting Background Process");
-            ContextRefreshedEvent ctxRE = (ContextRefreshedEvent)event;
-            SourcePollingChannelAdapter jvmInitiator = ctxRE.getApplicationContext().getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
-            jvmInitiator.start();
-            SourcePollingChannelAdapter webServerStateInitiator = ctxRE.getApplicationContext().getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
-            webServerStateInitiator.start();
-        } else if (event instanceof ContextStoppedEvent) {
-            LOGGER.info("Heartbeat: Context Stopped - Starting Background Process");
-            ContextStoppedEvent ctxSE = (ContextStoppedEvent)event;
-            SourcePollingChannelAdapter jvmInitiator = ctxSE.getApplicationContext().getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
-            jvmInitiator.stop();
-            SourcePollingChannelAdapter webServerStateInitiator = ctxSE.getApplicationContext().getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
-            webServerStateInitiator.stop();
-        }  else if (event instanceof ContextStartedEvent) {
-            LOGGER.info("Heartbeat: Context Started - Starting Background Process");
+        ApplicationContext appCtx;
+        String msg;
+        
+        if (event instanceof ContextStartedEvent) {
+            msg = "Heartbeat: Context Started - Starting Background Process";
             ContextStartedEvent ctxSE = (ContextStartedEvent)event;
-            SourcePollingChannelAdapter jvmInitiator = ctxSE.getApplicationContext().getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
+            appCtx = ctxSE.getApplicationContext();
+        }  else if (event instanceof ContextRefreshedEvent) {
+            msg = "Heartbeat: Context Refreshed - Starting Background Process";
+            ContextRefreshedEvent ctxRE = (ContextRefreshedEvent)event;
+            appCtx = ctxRE.getApplicationContext();
+        } else if (event instanceof ContextStoppedEvent) {
+            msg = "Heartbeat: Context Stopped - Stopping Background Process";
+            ContextStoppedEvent ctxSE = (ContextStoppedEvent)event;
+            appCtx = ctxSE.getApplicationContext();
+        } else if (event instanceof ContextClosedEvent) {
+            msg = "Heartbeat: Context Closed - Stopping Background Process";
+            ContextClosedEvent ctxCE = (ContextClosedEvent)event;
+            appCtx = ctxCE.getApplicationContext();
+        } else { 
+            // not handled.
+            msg = "";
+            appCtx = null;
+        }
+        
+        if(appCtx != null) {
+            msg = msg  + ((event.getSource() != null) ? ("; source=" + event.getSource().toString()) : "");
+            LOGGER.info(msg);
+            SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
             jvmInitiator.start();
-            SourcePollingChannelAdapter webServerStateInitiator = ctxSE.getApplicationContext().getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
+            SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
             webServerStateInitiator.start();
-        }       
+        }
     }
 }

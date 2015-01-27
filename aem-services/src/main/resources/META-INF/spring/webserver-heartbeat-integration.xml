@@ -49,12 +49,16 @@
     <int:channel id="webServerBadHost"/>
     <int:channel id="webServerHasServiceResult"/>
     
-    <task:executor id="webServerStateExecutor"
-                   pool-size="5"
-                   queue-capacity="200"
-                   keep-alive="5"
-                   rejection-policy="CALLER_RUNS"/>
-
+    <!-- Heartbeat polling will use daemon threads so must use a thread factory configured in Java -->  
+    <bean  id="webServerStateExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="5" />
+        <property name="queueCapacity" value="200" />
+        <property name="keepAliveSeconds" value="5" />
+        <property name="rejectedExecutionHandler" ref="generalCallerRunsPolicy" />
+        <property name="threadFactory" ref="pollingThreadFactory" />
+    </bean>
+        
     <int:inbound-channel-adapter id="webServerStateInitiator"
                                  ref="webServerProvider"
                                  method="getAllWebServers"
