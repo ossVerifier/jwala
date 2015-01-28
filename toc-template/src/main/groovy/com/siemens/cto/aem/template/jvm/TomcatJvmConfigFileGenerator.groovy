@@ -1,11 +1,11 @@
-package com.siemens.cto.aem.service.jvm
+package com.siemens.cto.aem.template.jvm
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm
 import com.siemens.cto.aem.domain.model.webserver.WebServer
 
-import static com.siemens.cto.aem.service.GeneratorUtils.*
+import static com.siemens.cto.aem.template.GeneratorUtils.*
 
-import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 
 import groovy.text.GStringTemplateEngine
 

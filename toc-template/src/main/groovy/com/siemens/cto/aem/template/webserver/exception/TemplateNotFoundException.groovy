@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.webserver.exception
+package com.siemens.cto.aem.template.webserver.exception
 
 /**
  * Runtime exception wrapper for missing template file

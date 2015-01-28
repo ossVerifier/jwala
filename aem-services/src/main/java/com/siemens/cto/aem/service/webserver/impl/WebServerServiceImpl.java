@@ -25,7 +25,7 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.service.webserver.ApacheWebServerConfigFileGenerator;
+import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.TemplateManager;
 

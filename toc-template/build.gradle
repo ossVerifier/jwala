@@ -2,6 +2,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(":aem-domain")
-
+    compile project(":toc-filemanager")
+    
     compile 'org.codehaus.groovy:groovy-all:2.2.0'
 }

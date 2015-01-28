@@ -7,6 +7,7 @@ import com.siemens.cto.aem.control.configuration.AemControlConfigReference;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceConfigurationReference;
 import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfiguration;
+import com.siemens.cto.aem.template.configuration.TocTemplateConfigurationReference;
 
 @Configuration
 @Import({AemServiceConfiguration.class,
@@ -14,7 +15,8 @@ import com.siemens.cto.aem.service.configuration.transaction.AemTransactionConfi
          AemDaoConfiguration.class,
          AemTransactionConfiguration.class,
          AemControlConfigReference.class,
-         AemIntegrationConfig.class
+         AemIntegrationConfig.class,
+         TocTemplateConfigurationReference.class
          })
 public class AemServiceConfigReference {
 }

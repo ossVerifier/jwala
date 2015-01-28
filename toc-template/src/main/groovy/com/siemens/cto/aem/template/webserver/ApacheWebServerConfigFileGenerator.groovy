@@ -1,13 +1,14 @@
-package com.siemens.cto.aem.service.webserver
+package com.siemens.cto.aem.template.webserver
 
 import com.siemens.cto.aem.domain.model.jvm.Jvm
 import com.siemens.cto.aem.domain.model.webserver.WebServer
-import static com.siemens.cto.aem.service.GeneratorUtils.*
-import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
+import static com.siemens.cto.aem.template.GeneratorUtils.*
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 
 import groovy.text.GStringTemplateEngine
 
 import com.siemens.cto.aem.domain.model.app.Application
+
 
 /**
  * Wrapper that contains methods that generates configuration files for an Apache Web Server

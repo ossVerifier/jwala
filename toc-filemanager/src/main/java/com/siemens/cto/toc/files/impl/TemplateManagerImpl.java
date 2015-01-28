@@ -1,5 +1,6 @@
 package com.siemens.cto.toc.files.impl;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -52,5 +53,21 @@ public class TemplateManagerImpl implements TemplateManager {
             return Collections.<ResourceType>emptyList();
         }
         
+    }
+
+
+    @Override
+    public Path getTemplatePathForResourceType(ResourceType template) throws IOException {
+        RepositoryAction action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
+        if(action.getType() == Type.FOUND) {
+            for(Path path : action) {
+                ResourceType type = resourceTypeDeserializer.loadResourceType(path);
+                if(type.isValid() && type.getName().equals(template.getName())) {
+                    String baseName = ResourceTypeDeserializer.parseRootNameFromFile(path);                   
+                    return path.getParent().resolve(baseName + "Template.tpl");
+                }
+            }            
+        }
+        throw new FileNotFoundException("xxxTemplate.tpl file for " + template.getName());
     }
 }

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.webserver
+package com.siemens.cto.aem.template.webserver
 
 import com.siemens.cto.aem.domain.model.app.Application
 import com.siemens.cto.aem.domain.model.group.LiteGroup
@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm
 import com.siemens.cto.aem.domain.model.path.FileSystemPath
 import com.siemens.cto.aem.domain.model.path.Path
 import com.siemens.cto.aem.domain.model.webserver.WebServer
-import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 
 /**
  * Unit test for {@link ApacheWebServerConfigFileGenerator}

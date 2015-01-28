@@ -1,11 +1,11 @@
-package com.siemens.cto.aem.service;
+package com.siemens.cto.aem.template;
 
-import com.siemens.cto.aem.service.webserver.exception.TemplateNotFoundException
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 import groovy.text.GStringTemplateEngine
 
 public class GeneratorUtils {
     
-    static String bindDataToTemplate(final binding, final String templateFileName) {
+    public static String bindDataToTemplate(final binding, final String templateFileName) {
         def resource = new File(templateFileName)
         binding.comments = "Generated from " + templateFileName
         if (!resource.exists()) {

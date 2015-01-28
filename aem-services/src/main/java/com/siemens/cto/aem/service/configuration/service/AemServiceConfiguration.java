@@ -63,6 +63,7 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlHistoryService
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
+import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.TemplateManager;
 
 @Configuration
@@ -97,6 +98,9 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemSshConfig aemSshConfig;
+    
+    @Autowired
+    private HarmonyTemplateEngine harmonyTemplateEngine;
 
     /**
      * Make toc.properties available to spring integration configuration
@@ -247,6 +251,6 @@ public class AemServiceConfiguration {
     
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
-        return new ResourceServiceImpl(templateManager);
+        return new ResourceServiceImpl(templateManager, harmonyTemplateEngine);
     }
 }
