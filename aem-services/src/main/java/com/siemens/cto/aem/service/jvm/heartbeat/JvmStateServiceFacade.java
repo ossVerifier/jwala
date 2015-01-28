@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.jvm.impl;
+package com.siemens.cto.aem.service.jvm.heartbeat;
 
 import java.io.PrintWriter;
 import java.text.MessageFormat;

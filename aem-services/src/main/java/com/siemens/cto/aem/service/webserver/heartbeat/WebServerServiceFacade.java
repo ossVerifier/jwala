@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.service.webserver.impl;
+package com.siemens.cto.aem.service.webserver.heartbeat;
 
 import java.util.List;
 

@@ -8,12 +8,12 @@
 
     <!--  toc-default.propeties, and toc.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
 
-	<bean id="jvmProvider" class="com.siemens.cto.aem.service.jvm.impl.JvmServiceFacade">
+	<bean id="jvmProvider" class="com.siemens.cto.aem.service.jvm.heartbeat.JvmServiceFacade">
 		<constructor-arg ref="jvmService" />
 	</bean>
 
 	<bean id="jvmStateServiceFacade"
-		class="com.siemens.cto.aem.service.jvm.impl.JvmStateServiceFacade">
+		class="com.siemens.cto.aem.service.jvm.heartbeat.JvmStateServiceFacade">
 		<constructor-arg ref="jvmStateService" />
 		<constructor-arg ref="jvmPersistenceService" />
 	</bean>

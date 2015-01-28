@@ -8,11 +8,11 @@
                            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
-    <bean id="webServerProvider" class="com.siemens.cto.aem.service.webserver.impl.WebServerServiceFacade">
+    <bean id="webServerProvider" class="com.siemens.cto.aem.service.webserver.heartbeat.WebServerServiceFacade">
         <constructor-arg ref="webServerService"/>
     </bean>
 
-    <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceFacade">
+    <bean id="webServerStateServiceFacade" class="com.siemens.cto.aem.service.webserver.heartbeat.WebServerStateServiceFacade">
         <constructor-arg ref="webServerStateService"/>
         <constructor-arg ref="webServerDao"/>
     </bean>
