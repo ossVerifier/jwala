@@ -24,7 +24,7 @@ public class TestJpaConfiguration {
     @Bean
     public DataSource getDataSource() {
         return new SimpleDriverDataSource(new Driver(),
-                "jdbc:h2:~/test-services;LOCK_MODE=0;MVCC=true",
+                "jdbc:h2:mem:test-services;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
                 "sa",
                 "");
     }

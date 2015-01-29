@@ -1,143 +1,285 @@
-apply plugin: "java"
-apply plugin: "jacoco"
-apply plugin: "jetty"
-apply plugin: "eclipse"
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 
-ext {
-  localVersions = [
-    rhino : "1.7R4"
-  ]
+apply plugin: 'java'
+
+version = '1.0'
+
+/**
+ *  UI integration tests work/task flow
+ *
+ *  1. Remove old STP
+ *  2. Pull new STP
+ *  3. Define STP jvm instance as a service
+ *  4. Prep STP for HTC (remove default wars and install new HTC)
+ *  5. Start Tomcat
+ *  6. Run integration tests
+ *  7. Shutdown Tomcat
+ *  8. Remove STP jvm instance as a service
+ *
+ *  Note: After running tasks above, sonarRunner task can now be executed to merge the exec file created by
+ *        the Jacoco agent when the integration tests were ran.
+ */
+
+def STP_TEMP_PATH = "D:/integ-test-temp";
+def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
+def CATALINA_HOME = "${STP_TEMP_PATH}/stp/siemens/apache-tomcat-7.0.55/core"
+def JVM_NAME = "INTEG-TEST-JVM"
+def JACOCO_AGENT = "jacocoagent.jar" // TODO: Refactor so that the Jacoco agent jar comes from Artifactory.
+def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
+def WEB_APP_PATH = "stp/siemens/webapps"
+def TIMEOUT = 300000 // 5 minutes
+
+/**
+ * Creates a process to execute an OS command.
+ */
+class ProcessExec extends DefaultTask {
+    String command
+    String directory
+    String exitProcessIndicator
+    long timeout
+
+    @TaskAction
+    def spawnProcess() {
+        ProcessBuilder builder = new ProcessBuilder(command.split(" "))
+        builder.directory(new File(directory));
+        def process = builder.start()
+
+        InputStream stdout = process.getInputStream()
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
+        def line
+
+        def startTime = System.currentTimeMillis()
+        while ((line = reader.readLine()) != null) {
+            println line
+            if (exitProcessIndicator != null && line.contains(exitProcessIndicator)) {
+                break;
+            } else if ((System.currentTimeMillis() - startTime) > timeout) {
+                throw new RuntimeException("${command} has timed out!")
+            }
+        }
+    }
+}
+
+/**
+ * REST SSL Get
+ */
+class RestGet extends DefaultTask {
+    String url
+
+    static final def TrustManager[] getTrustMgr() {
+        TrustManager[] certs = [
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {return null}
+                    public void checkClientTrusted(X509Certificate[] certs, String t) {}
+                    public void checkServerTrusted(X509Certificate[] certs, String t) {}
+                }
+        ]
+        return certs
+    }
+
+    @TaskAction
+    def spawnProcess() {
+        final SSLContext sslCtx = SSLContext.getInstance("TLS")
+
+        TrustManager [] trustMgr = getTrustMgr();
+        sslCtx.init(null, trustMgr, new SecureRandom())
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslCtx.getSocketFactory())
+
+        final URL url = new URL(url);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection()
+
+        conn.setHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String host, SSLSession sslSession) {
+                return host.equals("localhost")
+            }
+        })
+
+        conn.setRequestMethod("GET")
+        conn.setRequestProperty("Accept", "*/*")
+        conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5")
+        conn.setRequestProperty("Cache-Control", "no-cache")
+        conn.setUseCaches(false)
+        conn.setDoOutput(true)
+        conn.setDoInput(true)
+        println "Rest Get response code: " + conn.getResponseCode()
+        if (conn.getResponseCode() != 200) {
+            conn.disconnect()
+            throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode())
+        }
+
+        final BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
+        String reponseText = br.readLine()
+        println "Rest Get reponse text: " + reponseText
+
+        conn.disconnect()
+    }
+}
+
+task removeStp(type: Delete) {
+    doFirst {
+        sleep(45000) // sleep for a while to make sure that the JVM has shutdown
+    }
+    delete "${STP_TEMP_PATH}/stp"
+}
+
+task installStpAsAService(type: ProcessExec) {
+    command "cmd /c ${project.projectDir}/resources/install-service.bat " +
+            "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
+            "${CATALINA_HOME} " +
+            "${JVM_NAME} " +
+            "${project.projectDir}/resources/${JACOCO_AGENT} " +
+            "${project.buildDir}/jacoco/${JACOCO_EXEC_FILE}"
+    directory "${project.projectDir}/resources"
+    exitProcessIndicator "Finished"
+    timeout TIMEOUT
+}
+
+task deleteDefaultWebApps(type: Delete) {
+    delete fileTree(dir: "${STP_TEMP_PATH}/${WEB_APP_PATH}")
+}
+
+task activateHctContext(type: Copy) {
+    from "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
+    into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
+    include "hct.xml.NOAUTOSTART"
+    rename "hct.xml.NOAUTOSTART", "hct.xml"
+}
+
+task (checkIfHctBuildFileExist) << {
+    def f = new File("${project.parent.childProjects.get('healthcheck-webapp').buildDir.path}/libs/healthcheck-webapp-1.0-SNAPSHOT.war")
+    if (!f.exists()) {
+        throw new RuntimeException("Build file missing! Please run gradle build.")
+    }
+}
+
+task installHct(type: Copy) {
+    from file("${project.parent.childProjects.get('healthcheck-webapp').buildDir.path}/libs/")
+    into file("${STP_TEMP_PATH}/${WEB_APP_PATH}")
+    include "healthcheck-webapp-1.0-SNAPSHOT.war"
+}
+
+task removeStpAsAService(type: ProcessExec) {
+    command "cmd /c ${project.projectDir}/resources/remove-service.bat " +
+            "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
+            "${CATALINA_HOME} " +
+            "${JVM_NAME}"
+    directory "${project.projectDir}/resources"
+    exitProcessIndicator "Finished"
+    timeout TIMEOUT
+}
+
+task startHct(type: ProcessExec) {
+    doFirst {
+        activateHctContext.execute()
+    }
+    command "net start ${JVM_NAME}"
+    directory "./"
+    exitProcessIndicator "started successfully"
+    timeout TIMEOUT
+}
+
+/**
+ * Checks if HCT is alive for x minutes defined by local var timeout.
+ * If there are no exceptions or if the exception is due to
+ * a certificate problem, exit checkIfHctIsAlive and proceed to next
+ * task.
+ */
+task (checkIfHctIsAlive) << {
+    sendRestGetToHct.execute()
+}
+
+task sendRestGetToHct(type: RestGet) {
+    url "https://localhost:9101/hct/services/rest/v1/health"
+}
+
+task stopHct(type: ProcessExec) {
+    command "net stop ${JVM_NAME}"
+    directory "./"
+    exitProcessIndicator "stopped"
+    timeout TIMEOUT
+}
+
+task (hctIntegTest) << {
+    println "Running integ test..."
+    sleep(5000) // Breather before we start testing to make sure HCT is all warmed up.
+    sendRestGetToHct.execute()
+}
+
+/**
+ * Pull STP developer bundle tasks
+ */
+apply plugin: "stpDeploy"
+
+task installStp(type: com.siemens.cto.gradle.StpDeployTask) {
+    destination STP_TEMP_PATH
+}
+
+repositories {
+    maven {
+        url "http://usmlvv1srn464/artifactory/repo/"
+    }
+}
+
+configurations {
+    stpConfig
 }
 
 dependencies {
-
-    compile project(":aem-webapp")
-    testCompile group: 'org.mozilla', name: 'rhino', version: "$project.localVersions.rhino"
-
-    // runtime dependency on h2 so jetty can load it into jndi
-    runtime "com.h2database:h2:$project.versions.h2"
-    runtime "commons-dbcp:commons-dbcp:$project.localVersions.dbcp"
-
+    stpConfig "com.siemens.cto:dev-bundle:1.0-SNAPSHOT"
 }
 
-/*
-jettyRunWar {
-  // not supported, inject into war instead: jettyEnvXml = file('src/test/resources/jetty-env.xml')
-  webApp = project(":aem-webapp").war.archivePath
-  contextPath = "aem"
-  stopPort = 58080
-  stopKey = "KILLJETTY"
-}*/
-
-def catalina_base = file("../aem-build/toc-tomcat").absolutePath
-def catalina_home = file(System.env.CATALINA_HOME).absolutePath
-def java_home = file(System.env.JAVA_HOME).absolutePath
-
-def tomcat = ''+
-'start "Tomcat" "'+java_home+'\\bin\\java.exe"'+
-' "-javaagent:lib\\jacocoagent.jar=destfile=../jacoco.exec,append=true,in'+
-'cludes=com.siemens.*" -Dnop -Djava.util.logging.manager=org.apache.juli.ClassLoa'+
-'derLogManager   -Djava.endorsed.dirs="'+catalina_home+'\\endorsed" -classpath "'+catalina_home+'\\'+
-'bin\\bootstrap.jar;'+catalina_home+'\\bin\\tomcat-juli.jar" -Dcatalina.base='+
-'"'+catalina_base+'" -Dcatalina.home="'+catalina_home+'" -D'+
-'java.io.tmpdir="'+catalina_base+'\\temp" org.apache.cata'+
-'lina.startup.Bootstrap'
-
-task tomcatRunWar(type:Exec) {
-    workingDir catalina_base
-
-    environment.CATALINA_BASE = catalina_base
-    environment.CATALINA_HOME = catalina_home
-
-    commandLine "cmd", "/c", tomcat, 'start'
-
-    standardOutput = new ByteArrayOutputStream()
-    ext.output = {
-        return standardOutput.toString()
+buildscript {
+    repositories {
+        maven { url "http://usmlvv1srn464/artifactory/repo/" }
+    }
+    dependencies {
+        classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
     }
 }
 
-task tomcatStop(type:Exec) {
-    workingDir catalina_base
+//Empty task that runs the whole inntegration test process
+task runIntegTests {}
 
-    environment.CATALINA_BASE = catalina_base
-    environment.CATALINA_HOME = catalina_home
+// TODO If there's a better of way of doing this please refactor.
+installStpAsAService.dependsOn installStp
+deleteDefaultWebApps.dependsOn installStpAsAService
+installHct.dependsOn deleteDefaultWebApps, checkIfHctBuildFileExist
+startHct.dependsOn installHct
+checkIfHctIsAlive.dependsOn startHct
+hctIntegTest.dependsOn checkIfHctIsAlive
+stopHct.dependsOn hctIntegTest
+removeStp.dependsOn stopHct
 
-    
-    commandLine "cmd", "/c", tomcat, 'stop'
+runIntegTests.dependsOn removeStp, removeStpAsAService
 
-    standardOutput = new ByteArrayOutputStream()
-    ext.output = {
-        return standardOutput.toString()
+task renameMergedReportToAccumExec (type: Copy) {
+    from "${buildDir}/jacoco"
+    into "${project.parent.buildDir}/jacoco"
+    include "accum-merged.exec"
+    rename "accum-merged.exec", "accum.exec"
+}
+
+/**
+ * Merge test coverage report.
+ */
+task mergeIntegTestReport(type: JacocoMerge) {
+    destinationFile = file("${buildDir}/jacoco/accum-merged.exec")
+    executionData {
+        return files(file("${project.parent.buildDir}/jacoco/accum.exec"),
+                     file("${buildDir}/jacoco/${JACOCO_EXEC_FILE}"))
+    }
+
+    doLast {
+        renameMergedReportToAccumExec.execute()
     }
 }
 
-jettyRun { 
-  jettyEnvXml = file('src/test/resources/jetty-env.xml')
-  webAppSourceDirectory = project(":aem-webapp").jettyRun.webAppSourceDirectory
-  contextPath = "aem"
-  stopPort = 58080
-  stopKey = "KILLJETTY"
-}
-
-jettyStop { 
-  stopPort = 58080
-  stopKey = "KILLJETTY"
-}
-
-task startUpJettyHere << { 
-//  jettyRunWar.daemon=true;
-//  jettyRunWar.execute();
-  jettyRun.daemon=true;
-  jettyRun.execute();
-}
-
-task startupJetty << {
-    project(":aem-webapp").jettyRun.daemon=true;
-    project(":aem-webapp").jettyRun.execute();
-}
-
-
-
-task applicationCodeCoverageReport(type:JacocoReport){
-    executionData file('../aem-build/jacoco.exec')
-    sourceSets project(":aem-persistence").sourceSets.main
-}
-
-
-task shutDownJetty(dependsOn: test) << {
-	project(":aem-webapp").jettyStop.execute()
-}
-
-task shutDownJettyHere() << {
-	jettyStop.execute()
-}
-
-test {
-//  dependsOn 'startUpJettyHere'
-// finalizedBy 'shutDownJettyHere'
-  dependsOn 'tomcatRunWar'
-  finalizedBy 'tomcatStop'
-}
-
-//http://issues.gradle.org/browse/GRADLE-2263
-import org.gradle.api.plugins.jetty.internal.Monitor
-[jettyRun, jettyRunWar]*.doLast {
-  /**
-   * THIS IS A WORKAROUND! THE CURRENT VERSION OF THIS TASK DOESN'T START A WATCHER IN DAEMON MODE
-   *
-   * If starting the monitor fails, it may be because the jetty task was updated to fix this issue
-   * When that happens, we shouldn't need the custom task any more
-   *
-   * Copied From: AbstractJettyRunTask
-   */
-   if (getStopPort() != null && getStopPort() > 0 && getStopKey() != null) {
-      Monitor monitor = new Monitor(getStopPort(), getStopKey(), server.getProxiedObject());
-      monitor.start();
-   }
-}
-
-/* Cannot use this, Jetty is in gradle process :( 
-jacoco {
-  applyTo jettyRun
-}*/
+runIntegTests.finalizedBy mergeIntegTestReport

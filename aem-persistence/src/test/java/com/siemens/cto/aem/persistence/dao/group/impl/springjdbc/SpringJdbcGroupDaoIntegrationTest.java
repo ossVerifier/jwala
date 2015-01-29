@@ -59,7 +59,7 @@ public class SpringJdbcGroupDaoIntegrationTest extends AbstractGroupDaoIntegrati
         @Bean
         public DataSource getDataSource() {
             final SimpleDriverDataSource dataSource = new SimpleDriverDataSource(new Driver(),
-                                                                                 "jdbc:h2:~/test",
+                                                                                 "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
                                                                                  "sa",
                                                                                  "");
             return dataSource;
@@ -73,7 +73,7 @@ public class SpringJdbcGroupDaoIntegrationTest extends AbstractGroupDaoIntegrati
         @Bean
         public DataSource getDataSource() {
             final SimpleDriverDataSource dataSource = new SimpleDriverDataSource(new Driver(),
-                                                                                 "jdbc:h2:~/test",
+                                                                                 "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
                                                                                  "sa",
                                                                                  "");
             return dataSource;
