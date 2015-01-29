@@ -4,11 +4,13 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,12 +42,10 @@ public abstract class AbstractApplicationDaoIntegrationTest {
 
     /** Expected data */
     private JpaApplication jpaApplication;
-
-    /** Expected data */
     private JpaApplication jpaApplicationWithGroup;
-
-    /** Expected data */
     private JpaJvm jpaJvm;
+    private static final Path SVR_ROOT = new Path("./");
+    private static final Path DOC_ROOT = new Path("htdocs");
 
     private PaginationParameter limitNone = new PaginationParameter(1000, 1);
     private PaginationParameter limit10 = new PaginationParameter(0,10);
@@ -204,6 +205,8 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
         jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
+        jpaWebServer.setDocRoot(DOC_ROOT.getPath());
+        jpaWebServer.setSvrRoot(SVR_ROOT.getPath());
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5

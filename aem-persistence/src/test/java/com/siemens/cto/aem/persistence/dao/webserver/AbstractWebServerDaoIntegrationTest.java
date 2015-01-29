@@ -410,6 +410,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
         jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
+        jpaWebServer.setDocRoot(DOC_ROOT.getPath());
+        jpaWebServer.setSvrRoot(SVR_ROOT.getPath());
         entityManager.persist(jpaWebServer);
 
         // Create the applications 1, 2, 3, 4 and 5
@@ -472,6 +474,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setPort(80);
         jpaWebServer.setStatusPath("/jk/status");
         jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
+        jpaWebServer.setDocRoot(DOC_ROOT.getPath());
+        jpaWebServer.setSvrRoot(SVR_ROOT.getPath());
         entityManager.persist(jpaWebServer);
         entityManager.flush();
 
@@ -540,6 +544,8 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         jpaWebServer.setGroups(groups);
         jpaWebServer.setStatusPath("/jk/status");
         jpaWebServer.setHttpConfigFile("d:/some-dir/httpd.conf");
+        jpaWebServer.setDocRoot(DOC_ROOT.getPath());
+        jpaWebServer.setSvrRoot(SVR_ROOT.getPath());
         entityManager.persist(jpaWebServer);
 
         // Create jvm 1, 2, 3, 4 and 5

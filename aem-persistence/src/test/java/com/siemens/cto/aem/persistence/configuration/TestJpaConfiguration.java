@@ -22,7 +22,7 @@ public class TestJpaConfiguration {
     @Bean
     public DataSource getDataSource() {
         return new SimpleDriverDataSource(new Driver(),
-                                          "jdbc:h2:~/test-persistence;MVCC=true",
+                                          "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
                                           "sa",
                                           "");
     }
@@ -36,6 +36,7 @@ public class TestJpaConfiguration {
     public Properties getJpaProperties() {
         final Properties properties = new Properties();
         properties.setProperty("openjpa.jdbc.DBDictionary", "org.apache.openjpa.jdbc.sql.H2Dictionary");
+        properties.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(ForeignKeys=true)");
         return properties;
     }
 
