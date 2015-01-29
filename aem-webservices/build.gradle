@@ -14,7 +14,7 @@ dependencies {
 
 }
 
-apply plugin: 'miredot'
+/*apply plugin: 'miredot'
 
 miredot {
     source = sourceSets.main.allJava
@@ -32,6 +32,7 @@ buildscript {
         classpath 'com.qmino:miredot-plugin:1.5.1'
     }
 }
+*/
 
 publishing {
     publications {
