@@ -36,7 +36,7 @@ public class TestJpaConfiguration {
     public Properties getJpaProperties() {
         final Properties properties = new Properties();
         properties.setProperty("openjpa.jdbc.DBDictionary", "org.apache.openjpa.jdbc.sql.H2Dictionary");
-        properties.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(ForeignKeys=true)");
+        properties.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(schemaAction='drop,add',ForeignKeys=true)");
         properties.setProperty("openjpa.Log", "DefaultLevel=INFO");
         properties.setProperty("openjpa.InitializeEagerly", "true");
         
