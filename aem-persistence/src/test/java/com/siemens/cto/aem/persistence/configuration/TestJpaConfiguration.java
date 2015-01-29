@@ -22,7 +22,7 @@ public class TestJpaConfiguration {
     @Bean
     public DataSource getDataSource() {
         return new SimpleDriverDataSource(new Driver(),
-                                          "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
+                                          "jdbc:h2:~/test-persistence;LOCK_MODE=0;MVCC=true",
                                           "sa",
                                           "");
     }
