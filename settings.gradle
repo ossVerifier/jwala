@@ -9,4 +9,5 @@ include "aem-common",
         "toc-filemanager",
         "aem-config",
         "toc-template",
-        "aem-si"
+        "aem-si",
+        "toc-systest"

@@ -1,15 +1,22 @@
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSession
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
-
 apply plugin: 'java'
+apply plugin: 'stpIntegTest'
+
+import com.siemens.cto.gradle.*
 
 version = '1.0'
+
+configurations { 
+    integTestConf
+
+}
+
+dependencies { 
+     integTestConf group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.6.4.201312101107'
+}
+
+task printJacocoPath() { 
+  println 'Using ' + configurations.integTestConf.asPath
+}
 
 /**
  *  UI integration tests work/task flow
@@ -27,101 +34,14 @@ version = '1.0'
  *        the Jacoco agent when the integration tests were ran.
  */
 
+def ROOT_NAME = "aem";
 def STP_TEMP_PATH = "D:/integ-test-temp";
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def CATALINA_HOME = "${STP_TEMP_PATH}/stp/siemens/apache-tomcat-7.0.55/core"
 def JVM_NAME = "INTEG-TEST-JVM"
-def JACOCO_AGENT = "jacocoagent.jar" // TODO: Refactor so that the Jacoco agent jar comes from Artifactory.
 def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
 def WEB_APP_PATH = "stp/siemens/webapps"
 def TIMEOUT = 300000 // 5 minutes
-
-/**
- * Creates a process to execute an OS command.
- */
-class ProcessExec extends DefaultTask {
-    String command
-    String directory
-    String exitProcessIndicator
-    long timeout
-
-    @TaskAction
-    def spawnProcess() {
-        ProcessBuilder builder = new ProcessBuilder(command.split(" "))
-        builder.directory(new File(directory));
-        def process = builder.start()
-
-        InputStream stdout = process.getInputStream()
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))
-        def line
-
-        def startTime = System.currentTimeMillis()
-        while ((line = reader.readLine()) != null) {
-            println line
-            if (exitProcessIndicator != null && line.contains(exitProcessIndicator)) {
-                break;
-            } else if ((System.currentTimeMillis() - startTime) > timeout) {
-                throw new RuntimeException("${command} has timed out!")
-            }
-        }
-    }
-}
-
-/**
- * REST SSL Get
- */
-class RestGet extends DefaultTask {
-    String url
-
-    static final def TrustManager[] getTrustMgr() {
-        TrustManager[] certs = [
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {return null}
-                    public void checkClientTrusted(X509Certificate[] certs, String t) {}
-                    public void checkServerTrusted(X509Certificate[] certs, String t) {}
-                }
-        ]
-        return certs
-    }
-
-    @TaskAction
-    def spawnProcess() {
-        final SSLContext sslCtx = SSLContext.getInstance("TLS")
-
-        TrustManager [] trustMgr = getTrustMgr();
-        sslCtx.init(null, trustMgr, new SecureRandom())
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslCtx.getSocketFactory())
-
-        final URL url = new URL(url);
-        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection()
-
-        conn.setHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String host, SSLSession sslSession) {
-                return host.equals("localhost")
-            }
-        })
-
-        conn.setRequestMethod("GET")
-        conn.setRequestProperty("Accept", "*/*")
-        conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5")
-        conn.setRequestProperty("Cache-Control", "no-cache")
-        conn.setUseCaches(false)
-        conn.setDoOutput(true)
-        conn.setDoInput(true)
-        println "Rest Get response code: " + conn.getResponseCode()
-        if (conn.getResponseCode() != 200) {
-            conn.disconnect()
-            throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode())
-        }
-
-        final BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())))
-        String reponseText = br.readLine()
-        println "Rest Get reponse text: " + reponseText
-
-        conn.disconnect()
-    }
-}
 
 task removeStp(type: Delete) {
     doFirst {
@@ -135,7 +55,7 @@ task installStpAsAService(type: ProcessExec) {
             "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
             "${CATALINA_HOME} " +
             "${JVM_NAME} " +
-            "${project.projectDir}/resources/${JACOCO_AGENT} " +
+            "${configurations.integTestConf.asPath} " +
             "${project.buildDir}/jacoco/${JACOCO_EXEC_FILE}"
     directory "${project.projectDir}/resources"
     exitProcessIndicator "Finished"
@@ -147,23 +67,22 @@ task deleteDefaultWebApps(type: Delete) {
 }
 
 task activateHctContext(type: Copy) {
-    from "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
+    from "../aem-build/toc-tomcat/conf/Catalina/localhost"
     into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
-    include "hct.xml.NOAUTOSTART"
-    rename "hct.xml.NOAUTOSTART", "hct.xml"
+    include "aem.xml"
 }
 
 task (checkIfHctBuildFileExist) << {
-    def f = new File("${project.parent.childProjects.get('healthcheck-webapp').buildDir.path}/libs/healthcheck-webapp-1.0-SNAPSHOT.war")
+    def f = new File("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/${ROOT_NAME}-webapp-1.0-SNAPSHOT.war")
     if (!f.exists()) {
         throw new RuntimeException("Build file missing! Please run gradle build.")
     }
 }
 
 task installHct(type: Copy) {
-    from file("${project.parent.childProjects.get('healthcheck-webapp').buildDir.path}/libs/")
+    from file("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/")
     into file("${STP_TEMP_PATH}/${WEB_APP_PATH}")
-    include "healthcheck-webapp-1.0-SNAPSHOT.war"
+    include "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
 }
 
 task removeStpAsAService(type: ProcessExec) {
@@ -176,7 +95,7 @@ task removeStpAsAService(type: ProcessExec) {
     timeout TIMEOUT
 }
 
-task startHct(type: ProcessExec) {
+task startApp(type: ProcessExec) {
     doFirst {
         activateHctContext.execute()
     }
@@ -193,14 +112,14 @@ task startHct(type: ProcessExec) {
  * task.
  */
 task (checkIfHctIsAlive) << {
-    sendRestGetToHct.execute()
+    sendConnectTest.execute()
 }
 
-task sendRestGetToHct(type: RestGet) {
-    url "https://localhost:9101/hct/services/rest/v1/health"
+task sendConnectTest(type: RestGet) {
+    url "https://localhost:9101/aem/v1.0/admin/properties/reload"
 }
 
-task stopHct(type: ProcessExec) {
+task stopApp(type: ProcessExec) {
     command "net stop ${JVM_NAME}"
     directory "./"
     exitProcessIndicator "stopped"
@@ -238,6 +157,7 @@ dependencies {
 
 buildscript {
     repositories {
+        mavenLocal()
         maven { url "http://usmlvv1srn464/artifactory/repo/" }
     }
     dependencies {
@@ -252,11 +172,11 @@ task runIntegTests {}
 installStpAsAService.dependsOn installStp
 deleteDefaultWebApps.dependsOn installStpAsAService
 installHct.dependsOn deleteDefaultWebApps, checkIfHctBuildFileExist
-startHct.dependsOn installHct
-checkIfHctIsAlive.dependsOn startHct
+startApp.dependsOn installHct
+checkIfHctIsAlive.dependsOn startApp
 hctIntegTest.dependsOn checkIfHctIsAlive
-stopHct.dependsOn hctIntegTest
-removeStp.dependsOn stopHct
+stopApp.dependsOn hctIntegTest
+removeStp.dependsOn stopApp
 
 runIntegTests.dependsOn removeStp, removeStpAsAService
 
