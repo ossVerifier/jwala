@@ -5,11 +5,14 @@
 <title>Tomcat Operations Center</title>
 <link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/resources-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-grid.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/toc-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/simple-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/anchor.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rsplitter.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rtreelist.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/error-msg-list.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/redmond/jquery-ui-1.10.4.custom.min.css">
