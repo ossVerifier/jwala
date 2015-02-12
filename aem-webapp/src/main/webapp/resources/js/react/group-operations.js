@@ -75,8 +75,23 @@ var GroupOperations = React.createClass({
         this.updateJvmStateData(jvms);
     },
 
+    /**
+     * Set the state without having the React life cycle run afterwards.
+     *
+     * React advises not to mutate the state but since we're using jQuery to update the status display we might as
+     * well mutate the state for optimization purposes (since we don't need the React life cycle to run). In addition
+     * there's no need to merge the group, web server and jvm states into one before calling setState.
+     *
+     * This function will not be ported when the group-operations page is refactored to use a React Data Table component.
+     */
+    mutateStateDirectly: function(object) {
+        for (var key in object) {
+            this.state[key] = object[key];
+        }
+    },
+
     updateGroupsStateData: function(newGroupStates) {
-        this.setState(groupOperationsHelper.processGroupData(this.state.groups,
+        this.mutateStateDirectly(groupOperationsHelper.processGroupData(this.state.groups,
                                                              [],
                                                              this.state.groupStates,
                                                              newGroupStates));
@@ -85,7 +100,7 @@ var GroupOperations = React.createClass({
     },
 
     updateWebServerStateData: function(newWebServerStates) {
-        this.setState(groupOperationsHelper.processWebServerData(this.state.webServers,
+        this.mutateStateDirectly(groupOperationsHelper.processWebServerData(this.state.webServers,
                                                                  [],
                                                                  this.state.webServerStates,
                                                                  newWebServerStates));
@@ -93,19 +108,19 @@ var GroupOperations = React.createClass({
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         webServersToUpdate.forEach(
         function(webServer) {
-            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.stateString);
+            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state.stateString);
         });
     },
 
 
     updateJvmStateData: function(newJvmStates) {
-        this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
+        this.mutateStateDirectly(groupOperationsHelper.processJvmData(this.state.jvms,
                                                            [],
                                                            this.state.jvmStates,
                                                            newJvmStates));
 
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.stateString);});
+        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state.stateString);});
     },
 
     pollStates: function() {
@@ -173,14 +188,6 @@ var GroupOperationsDataTable = React.createClass({
        this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
 
        this.hasNoData = (this.props.data.length === 0);
-
-       // NOTE: This prevents the grid from re rendering every time there's a state change.
-       // We need to prevent re rendering for now since we are using Datatable to
-       // update the DOM instead of REACT.
-       if (!this.hasDrawn) {
-           this.hasDrawn = true;
-           return true;
-       }
 
        return this.hasNoData;
     },

@@ -315,9 +315,7 @@ var groupOperationsHelper = function(){
         },
 
         updateWebServersInDataTables: function(groupId, webServerId, state) {
-            $("table[id*='ws'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
-                                                        .each(function(index, elem) { $(elem).dataTable().fnDraw();});
-
+            $(".ws" + webServerId + "-grp" + groupId + "-state").html(state);
         },
 
         /**
@@ -341,9 +339,7 @@ var groupOperationsHelper = function(){
         },
 
         updateDataTables: function(groupId, jvmId, state) {
-            $("table[id*='jvm'][id$='" + groupId + "']").filter(function(index, elem) { return $.fn.DataTable.fnIsDataTable(elem);})
-                                                        .each(function(index, elem) { $(elem).dataTable().fnDraw();});
-
+            $(".jvm" + jvmId + "-grp" + groupId + "-state").html(state);
         },
 
         // TODO: Make keyGroupsById, keyWebServersById and keyJvmsById into one method
