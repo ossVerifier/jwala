@@ -24,7 +24,7 @@ task printJacocoPath() {
  *  1. Remove old STP
  *  2. Pull new STP
  *  3. Define STP jvm instance as a service
- *  4. Prep STP for HTC (remove default wars and install new HTC)
+ *  4. Prep STP for AEM (remove default wars and install new AEM)
  *  5. Start Tomcat
  *  6. Run integration tests
  *  7. Shutdown Tomcat
@@ -38,10 +38,16 @@ def ROOT_NAME = "aem";
 def STP_TEMP_PATH = "D:/integ-test-temp";
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def CATALINA_HOME = "${STP_TEMP_PATH}/stp/siemens/apache-tomcat-7.0.55/core"
-def JVM_NAME = "INTEG-TEST-JVM"
+def JVM_NAME = "Tomcat7"
 def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
 def WEB_APP_PATH = "stp/siemens/webapps"
 def TIMEOUT = 300000 // 5 minutes
+def JACOCO_AGENT = "jacocoagent.jar"
+
+task unPackJacocoJar (type:Copy) {
+    from(zipTree("${configurations.integTestConf.asPath}")) {include JACOCO_AGENT}
+    into STP_TEMP_PATH
+}
 
 task removeStp(type: Delete) {
     doFirst {
@@ -51,11 +57,14 @@ task removeStp(type: Delete) {
 }
 
 task installStpAsAService(type: ProcessExec) {
+    doFirst {
+        unPackJacocoJar.execute()
+    }
     command "cmd /c ${project.projectDir}/resources/install-service.bat " +
             "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
             "${CATALINA_HOME} " +
             "${JVM_NAME} " +
-            "${configurations.integTestConf.asPath} " +
+            STP_TEMP_PATH + "/" + JACOCO_AGENT + " " +
             "${project.buildDir}/jacoco/${JACOCO_EXEC_FILE}"
     directory "${project.projectDir}/resources"
     exitProcessIndicator "Finished"
@@ -66,20 +75,20 @@ task deleteDefaultWebApps(type: Delete) {
     delete fileTree(dir: "${STP_TEMP_PATH}/${WEB_APP_PATH}")
 }
 
-task activateHctContext(type: Copy) {
+task activateAemContext(type: Copy) {
     from "../aem-build/toc-tomcat/conf/Catalina/localhost"
     into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
     include "aem.xml"
 }
 
-task (checkIfHctBuildFileExist) << {
+task (checkIfAemBuildFileExist) << {
     def f = new File("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/${ROOT_NAME}-webapp-1.0-SNAPSHOT.war")
     if (!f.exists()) {
         throw new RuntimeException("Build file missing! Please run gradle build.")
     }
 }
 
-task installHct(type: Copy) {
+task installAem(type: Copy) {
     from file("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/")
     into file("${STP_TEMP_PATH}/${WEB_APP_PATH}")
     include "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
@@ -97,7 +106,7 @@ task removeStpAsAService(type: ProcessExec) {
 
 task startApp(type: ProcessExec) {
     doFirst {
-        activateHctContext.execute()
+        activateAemContext.execute()
     }
     command "net start ${JVM_NAME}"
     directory "./"
@@ -106,12 +115,12 @@ task startApp(type: ProcessExec) {
 }
 
 /**
- * Checks if HCT is alive for x minutes defined by local var timeout.
+ * Checks if AEM is alive for x minutes defined by local var timeout.
  * If there are no exceptions or if the exception is due to
- * a certificate problem, exit checkIfHctIsAlive and proceed to next
+ * a certificate problem, exit checkIfAemIsAlive and proceed to next
  * task.
  */
-task (checkIfHctIsAlive) << {
+task (checkIfAemIsAlive) << {
     sendConnectTest.execute()
 }
 
@@ -126,10 +135,10 @@ task stopApp(type: ProcessExec) {
     timeout TIMEOUT
 }
 
-task (hctIntegTest) << {
+task (aemIntegTest) << {
     println "Running integ test..."
-    sleep(5000) // Breather before we start testing to make sure HCT is all warmed up.
-    sendRestGetToHct.execute()
+    sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
+    sendConnectTest.execute()
 }
 
 /**
@@ -138,6 +147,9 @@ task (hctIntegTest) << {
 apply plugin: "stpDeploy"
 
 task installStp(type: com.siemens.cto.gradle.StpDeployTask) {
+    doFirst {
+        removeStp.execute()
+    }
     destination STP_TEMP_PATH
 }
 
@@ -171,11 +183,11 @@ task runIntegTests {}
 // TODO If there's a better of way of doing this please refactor.
 installStpAsAService.dependsOn installStp
 deleteDefaultWebApps.dependsOn installStpAsAService
-installHct.dependsOn deleteDefaultWebApps, checkIfHctBuildFileExist
-startApp.dependsOn installHct
-checkIfHctIsAlive.dependsOn startApp
-hctIntegTest.dependsOn checkIfHctIsAlive
-stopApp.dependsOn hctIntegTest
+installAem.dependsOn deleteDefaultWebApps, checkIfAemBuildFileExist
+startApp.dependsOn installAem
+checkIfAemIsAlive.dependsOn startApp
+aemIntegTest.dependsOn checkIfAemIsAlive
+stopApp.dependsOn aemIntegTest
 removeStp.dependsOn stopApp
 
 runIntegTests.dependsOn removeStp, removeStpAsAService
