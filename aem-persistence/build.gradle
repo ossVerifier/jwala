@@ -68,7 +68,7 @@ publishing {
 
 Map<String, String> pm = new HashMap<String, String>()
 pm.put('openjpa.ConnectionDriverName', 'org.h2.Driver')
-pm.put('openjpa.ConnectionURL', 'jdbc:h2:tcp://localhost/~/test')
+pm.put('openjpa.ConnectionURL', 'jdbc:h2:~/test')
 pm.put('openjpa.ConnectionUserName', 'sa')
 pm.put('openjpa.ConnectionPassword', '')
 pm.put('org.apache.openjpa.jdbc.sql.DBDictionary','org.apache.openjpa.jdbc.sql.H2Dictionary')
