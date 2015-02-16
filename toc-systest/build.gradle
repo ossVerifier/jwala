@@ -38,7 +38,7 @@ def ROOT_NAME = "aem";
 def STP_TEMP_PATH = "D:/integ-test-temp";
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def CATALINA_HOME = "${STP_TEMP_PATH}/stp/siemens/apache-tomcat-7.0.55/core"
-def JVM_NAME = "Tomcat7"
+def JVM_NAME = "INTEG-TEST-JVM"
 def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
 def WEB_APP_PATH = "stp/siemens/webapps"
 def TIMEOUT = 300000 // 5 minutes
@@ -53,7 +53,7 @@ task removeStp(type: Delete) {
     doFirst {
         sleep(45000) // sleep for a while to make sure that the JVM has shutdown
     }
-    delete "${STP_TEMP_PATH}/stp"
+    delete "${STP_TEMP_PATH}"
 }
 
 task installStpAsAService(type: ProcessExec) {
@@ -135,7 +135,7 @@ task stopApp(type: ProcessExec) {
     timeout TIMEOUT
 }
 
-task (aemIntegTest) << {
+task (runIntegTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
     sendConnectTest.execute()
@@ -177,20 +177,19 @@ buildscript {
     }
 }
 
-//Empty task that runs the whole inntegration test process
-task runIntegTests {}
-
-// TODO If there's a better of way of doing this please refactor.
+// Startup tasks
 installStpAsAService.dependsOn installStp
 deleteDefaultWebApps.dependsOn installStpAsAService
 installAem.dependsOn deleteDefaultWebApps, checkIfAemBuildFileExist
 startApp.dependsOn installAem
-checkIfAemIsAlive.dependsOn startApp
-aemIntegTest.dependsOn checkIfAemIsAlive
-stopApp.dependsOn aemIntegTest
-removeStp.dependsOn stopApp
 
-runIntegTests.dependsOn removeStp, removeStpAsAService
+// Pre-integration and integration test tasks
+checkIfAemIsAlive.dependsOn startApp
+runIntegTests.dependsOn checkIfAemIsAlive
+
+// Cleanup tasks
+removeStpAsAService.dependsOn stopApp
+removeStp.dependsOn removeStpAsAService
 
 task renameMergedReportToAccumExec (type: Copy) {
     from "${buildDir}/jacoco"
@@ -214,4 +213,4 @@ task mergeIntegTestReport(type: JacocoMerge) {
     }
 }
 
-runIntegTests.finalizedBy mergeIntegTestReport
+runIntegTests.finalizedBy mergeIntegTestReport, removeStp
