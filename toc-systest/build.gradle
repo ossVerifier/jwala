@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'stpIntegTest'
+apply plugin: 'stpJvmControl'
 
 import com.siemens.cto.gradle.*
 
@@ -104,13 +105,12 @@ task removeStpAsAService(type: ProcessExec) {
     timeout TIMEOUT
 }
 
-task startApp(type: ProcessExec) {
+task startApp(type: com.siemens.cto.gradle.StpJvmControlTask) {
     doFirst {
         activateAemContext.execute()
     }
-    command "net start ${JVM_NAME}"
-    directory "./"
-    exitProcessIndicator "started successfully"
+    command StpJvmControlTask.Command.START
+    jvmName JVM_NAME
     timeout TIMEOUT
 }
 
@@ -128,10 +128,9 @@ task sendConnectTest(type: RestGet) {
     url "https://localhost:9101/aem/v1.0/admin/properties/reload"
 }
 
-task stopApp(type: ProcessExec) {
-    command "net stop ${JVM_NAME}"
-    directory "./"
-    exitProcessIndicator "stopped"
+task stopApp(type: com.siemens.cto.gradle.StpJvmControlTask) {
+    command StpJvmControlTask.Command.STOP
+    jvmName JVM_NAME
     timeout TIMEOUT
 }
 
