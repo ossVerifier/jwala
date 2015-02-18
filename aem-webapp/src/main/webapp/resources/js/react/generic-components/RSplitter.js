@@ -118,7 +118,7 @@ var RSplitter = React.createClass({
 
             var relPos = pagePos - (this.props.orientation === RSplitter.VERTICAL_ORIENTATION ? divO.offset().top : divO.offset().left);
 
-            if (relPos < RSplitter.SPLITTER_DRAG_AREA_SIZE && !this.state.mouseOnSplitter) {
+            if (relPos < RSplitter.SPLITTER_DRAG_AREA_SIZE) {
                 this.setState({mousePos: pagePos, splitterIdx: idx, mouseOnSplitter: true});
             } else {
                 this.setState({mouseOnSplitter: false});
