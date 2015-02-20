@@ -3,6 +3,8 @@ apply plugin: 'stpIntegTest'
 apply plugin: 'stpJvmControl'
 
 import com.siemens.cto.gradle.*
+import org.h2.tools.Server
+import groovy.sql.Sql
 
 version = '1.0'
 
@@ -44,6 +46,10 @@ def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scoopin
 def WEB_APP_PATH = "stp/siemens/webapps"
 def TIMEOUT = 300000 // 5 minutes
 def JACOCO_AGENT = "jacocoagent.jar"
+def h2TcpServer
+def DB_NAME = "integ-test-tmp-db"
+def AEM_CONTEXT_FILE = "aem.xml"
+def JDBC_ORIG_URL = "jdbc:h2:tcp://localhost/~/aem"
 
 task unPackJacocoJar (type:Copy) {
     from(zipTree("${configurations.integTestConf.asPath}")) {include JACOCO_AGENT}
@@ -76,10 +82,22 @@ task deleteDefaultWebApps(type: Delete) {
     delete fileTree(dir: "${STP_TEMP_PATH}/${WEB_APP_PATH}")
 }
 
+task ("setAemContextJdbcResourceUrl") << {
+    File f = new File("${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost/${AEM_CONTEXT_FILE}")
+    def fText = f.text
+    fText = fText.replaceFirst("${JDBC_ORIG_URL}",
+                               "jdbc:h2:tcp://localhost/~/${DB_NAME}")
+    f.write(fText)
+}
+
 task activateAemContext(type: Copy) {
     from "../aem-build/toc-tomcat/conf/Catalina/localhost"
     into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
-    include "aem.xml"
+    include "${AEM_CONTEXT_FILE}"
+
+    doLast {
+        setAemContextJdbcResourceUrl.execute()
+    }
 }
 
 task (checkIfAemBuildFileExist) << {
@@ -173,6 +191,64 @@ buildscript {
     }
     dependencies {
         classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
+        classpath group: "com.h2database", name: "h2", version: "$project.versions.h2"
+    }
+}
+
+// H2 setup related tasks.
+task ("startH2") << {
+    h2TcpServer = Server.createTcpServer().start()
+}
+
+task ("stopH2") << {
+    // Although H2 will stop after gradle finishes, we want to do a proper H2 stop hence the reason for this task
+    if (h2TcpServer != null) {
+        h2TcpServer.stop()
+    }
+}
+
+// Setup tables and columns
+configurations {
+    h2database
+}
+
+dependencies {
+    h2database "com.h2database:h2:$project.versions.h2"
+}
+
+configurations.h2database.each {
+    GroovyObject.class.classLoader.addURL(it.toURI().toURL())
+}
+
+/**
+ * Drops existing DDL if there are any and creates a new one.
+ *
+ * NOTE!!! Make sure that create.sql and drop.sql are the latest copies by running aem-persistence's createDdl and dropDdl
+ *         tasks. These tasks should be made to run before the runIntegTests tasks.
+ */
+task ("setupDb") << {
+    @GrabConfig(systemClassLoader = true)
+    @Grab(group="com.h2database", module="h2", version="$project.versions.h2")
+    def sql = Sql.newInstance("jdbc:h2:tcp://localhost/~/${DB_NAME}", "sa", "", "org.h2.Driver")
+
+    def dropScript = new File("$project.rootDir/aem-persistence/drop.sql")
+    dropScript.eachLine {
+        println it
+        try {
+            sql.execute(it)
+        } catch (e) {
+            println e.getMessage()
+        }
+    }
+
+    def createScript = new File("$project.rootDir/aem-persistence/create.sql")
+    createScript.eachLine {
+        println it
+        try {
+            sql.execute(it)
+        } catch (e) {
+            println e.getMessage()
+        }
     }
 }
 
@@ -180,14 +256,17 @@ buildscript {
 installStpAsAService.dependsOn installStp
 deleteDefaultWebApps.dependsOn installStpAsAService
 installAem.dependsOn deleteDefaultWebApps, checkIfAemBuildFileExist
-startApp.dependsOn installAem
+
+startH2.dependsOn installAem
+setupDb.dependsOn startH2
+startApp.dependsOn setupDb
 
 // Pre-integration and integration test tasks
 checkIfAemIsAlive.dependsOn startApp
 runIntegTests.dependsOn checkIfAemIsAlive
 
 // Cleanup tasks
-removeStpAsAService.dependsOn stopApp
+removeStpAsAService.dependsOn stopApp, stopH2
 removeStp.dependsOn removeStpAsAService
 
 task renameMergedReportToAccumExec (type: Copy) {
