@@ -6,6 +6,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
@@ -107,14 +108,12 @@ public class AemServiceConfiguration {
      * System properties are only used if there is no setting in toc.properties.
      */
     @Bean 
-    public static PropertyPlaceholderConfigurer configurer() { 
-         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
+    public static PropertySourcesPlaceholderConfigurer configurer() { 
+         PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
          ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
          ppc.setLocalOverride(true);
          ppc.setProperties(ApplicationProperties.getProperties());
-         ppc.setSearchSystemEnvironment(true);
-         ppc.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
-         return ppc; 
+         return ppc;
     } 
     
     @Bean(name="groupStateMachine")

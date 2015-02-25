@@ -34,6 +34,7 @@ dependencies {
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
+    
 }
 
 test {
@@ -57,4 +58,10 @@ publishing {
             from components.java
         }
     }
+}
+
+test {
+    systemProperty 'com.siemens.cto.infrastructure.keyfile', 'src/test/resources/META-INF/keyfile'
+    systemProperty 'com.siemens.cto.infrastructure.iv', '025f9fbcfa17ea27a7715ab449ee81f9'
+    systemProperty 'com.siemens.cto.infrastructure.bits', '128'
 }

@@ -5,9 +5,9 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
 import com.siemens.cto.toc.files.FilesConfiguration;
@@ -15,9 +15,11 @@ import com.siemens.cto.toc.files.FilesConfiguration;
 public class AdminServiceRestImpl implements AdminServiceRest {
 
     private FilesConfiguration filesConfiguration;
+    private ResourceService resourceService;
     
-    public AdminServiceRestImpl(FilesConfiguration theFilesConfiguration) {
+    public AdminServiceRestImpl(FilesConfiguration theFilesConfiguration, ResourceService resourceService) {
         this.filesConfiguration = theFilesConfiguration;
+        this.resourceService = resourceService;
     }
     
     @Override
@@ -42,5 +44,12 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     @Override
     public Response view() {
         return ResponseBuilder.ok(ApplicationProperties.getProperties());
+    }
+    
+
+    @Override
+    public Response encrypt(String cleartext) {
+        
+        return ResponseBuilder.ok(resourceService.encryptUsingPlatformBean(cleartext));
     }
 }

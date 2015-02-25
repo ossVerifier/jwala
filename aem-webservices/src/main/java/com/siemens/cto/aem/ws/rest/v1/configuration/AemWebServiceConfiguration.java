@@ -126,7 +126,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public AdminServiceRest getV1AdminServiceRest() {
-        return new AdminServiceRestImpl(filesConfiguration);
+        return new AdminServiceRestImpl(filesConfiguration, resourceService);
     }
 
     @Bean

@@ -7,6 +7,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -22,13 +25,19 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final TemplateManager templateManager;
     private final HarmonyTemplateEngine templateEngine;
-
+    private final SpelExpressionParser expressionParser;
+    private final Expression encryptExpression;
+    private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )"; 
+    
     public ResourceServiceImpl(
             final TemplateManager theTemplateManager,
             final HarmonyTemplateEngine harmonyTemplateEngine
             ) {
         templateManager = theTemplateManager;
         templateEngine = harmonyTemplateEngine;
+        
+        expressionParser = new SpelExpressionParser();
+        encryptExpression = expressionParser.parseExpression(encryptExpressionString);
     }
 
     @Override
@@ -53,5 +62,13 @@ public class ResourceServiceImpl implements ResourceService {
             LOGGER.error(errorString, e);
             throw new FaultCodeException(AemFaultType.INVALID_PATH, errorString, e);
         }
+    }
+
+    @Override
+    public String encryptUsingPlatformBean(String cleartext) {
+        StandardEvaluationContext context = new StandardEvaluationContext();
+        context.setVariable("stringToEncrypt", cleartext);        
+        String result = encryptExpression.getValue(context, String.class);
+        return result;
     }
 }

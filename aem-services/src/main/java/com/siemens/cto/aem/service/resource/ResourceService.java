@@ -8,4 +8,6 @@ import com.siemens.cto.aem.domain.model.resource.ResourceType;
 public interface ResourceService {
 
     Collection<ResourceType> getResourceTypes();
+    
+    String  encryptUsingPlatformBean(String cleartext);
 }
