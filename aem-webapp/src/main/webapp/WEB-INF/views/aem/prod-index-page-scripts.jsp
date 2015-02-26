@@ -21,6 +21,7 @@
 <script src="public-resources/js/toc/loading-indicator.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundationUi.js"></script>
+<script src="public-resources/js/toc/v1/service/adminService.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerService.js"></script>
 <script src="public-resources/js/toc/v1/service/webAppService.js"></script>

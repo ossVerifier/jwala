@@ -44,9 +44,9 @@ var serviceFoundation = {
             ajaxParams["complete"] = loadingUiBehavior.hideLoading;
         }
 
-        return Promise.cast($.ajax(ajaxParams)).then(function(){
+        return Promise.cast($.ajax(ajaxParams)).then(function(response){
                                         if ($.isFunction(thenCallback)) {
-                                            thenCallback();
+                                            thenCallback(response);
                                         }
                                    }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {

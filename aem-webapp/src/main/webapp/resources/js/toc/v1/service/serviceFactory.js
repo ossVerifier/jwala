@@ -16,5 +16,8 @@ var ServiceFactory = {
     },
     getStateService: function() {
         return stateService;
+    },
+    getAdminService: function() {
+    	return adminService;
     }
 };
