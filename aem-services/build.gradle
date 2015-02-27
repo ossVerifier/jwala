@@ -35,6 +35,7 @@ dependencies {
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
     
+    testRuntime group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: true
 }
 
 test {
