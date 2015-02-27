@@ -2,7 +2,7 @@
 var GroupConfig = React.createClass({
 
 
-    /**
+    /** -
      * This object is used to let the component know when to update itself.
      * It essentially uses a kind of "toggle switch" pattern wherein when set
      * the flag is set to true then when "checked/viewed" the flag is set to false.

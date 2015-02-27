@@ -1,10 +1,15 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
+import java.net.URL;
+import java.util.Properties;
+
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -13,6 +18,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
 import com.siemens.cto.toc.files.FilesConfiguration;
 
 public class AdminServiceRestImpl implements AdminServiceRest {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(AdminServiceRestImpl.class);
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
@@ -25,20 +32,34 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     @Override
     public Response reload() {
         ApplicationProperties.reload();
+        Properties copyToReturn = ApplicationProperties.getProperties();
+        
         filesConfiguration.reload();
         
         String logProperties = System.getProperty("log4j.configuration","");
         if(logProperties.endsWith(".xml")) {
-            LogManager.resetConfiguration();
-            DOMConfigurator.configure(logProperties);
+            URL logPropsUrl = getClass().getClassLoader().getResource(logProperties);
+            if(logPropsUrl != null) {
+                LOGGER.info("Reloading logging configuration from " + logProperties);
+                copyToReturn.put("logging-reload-state", "failed reload from " + logPropsUrl.toString());
+                LogManager.resetConfiguration();     
+                DOMConfigurator.configure(logPropsUrl);
+                copyToReturn.put("logging-reload-state", "reloaded from " + logPropsUrl.toString());
+            } else {
+                LOGGER.warn("Could not reload logging configuration from " + logProperties);                
+                copyToReturn.put("logging-reload-state", "failed, could not locate: " + logProperties);
+            }
         } else if(logProperties.endsWith(".properties")){ 
             LogManager.resetConfiguration();
             PropertyConfigurator.configure(logProperties);
+            copyToReturn.put("logging-reload-state", "reloaded from " + logProperties);
         } else { 
+            LOGGER.info("Reloading logging configuration from ApplicationProperties...");
             LogManager.resetConfiguration();
             PropertyConfigurator.configure(ApplicationProperties.getProperties());
+            copyToReturn.put("logging-reload-state", "reloaded from properties");
         }
-        return ResponseBuilder.ok(ApplicationProperties.getProperties());
+        return ResponseBuilder.ok(copyToReturn);
     }
 
     @Override

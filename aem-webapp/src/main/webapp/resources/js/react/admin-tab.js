@@ -2,16 +2,33 @@
 var AdminTab = React.createClass({
 
 	getInitialState: function() { 
+		ServiceFactory.getAdminService().viewProperties(
+				this.onPropertiesRx);
+
 		return { toEncrypt:"",
 				 encrypted:"",
 				 encryptLabel:"",
 				 encryptLabelOr:"",
-				 encryptProp:""};
+				 encryptProp:"",
+				 properties:""};
 	},
 	doEncrypt: function() {
 		ServiceFactory.getAdminService().encryptServerSide(
 				this.state.toEncrypt, 
 				this.onEncryption);
+	},
+	doReload: function() {
+		ServiceFactory.getAdminService().reloadProperties(
+				this.onPropertiesRx);
+	},
+	onPropertiesRx: function(e) {
+		var str = "";		
+		$.each( e.applicationResponseContent, function(key, value) {
+			str = str + (key+"="+value+"\n");
+		});
+		this.setState({
+			properties: str
+		});
 	},
 	onChange: function(event) {
 		this.setState({
@@ -43,6 +60,13 @@ var AdminTab = React.createClass({
                     <p><span>{this.state.encrypted}</span> </p>
                     <p><label>{this.state.encryptLabelOr}</label></p>
                     <p><span>{this.state.encryptProp}</span></p>
+                    <br />                    
+                    <h3>Properties Management</h3>   
+                    <p>
+                    <label>Reload toc.properties and logging configuration.</label><br />  
+                    <GenericButton label=">>> Reload >>>" callback={this.doReload} />                   
+                    </p>
+                    <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
                </div>
     }
 
