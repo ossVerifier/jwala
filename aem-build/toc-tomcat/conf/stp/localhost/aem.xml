@@ -16,8 +16,13 @@
   limitations under the License.
 -->
 <!-- The contents of this file will be loaded for each web application -->
-<Context docBase="../../../webapps/aem-webapp-1.0-SNAPSHOT.war">
+<Context>
+    <!--  This version applies to unpacked wars.
+        docBase="${STP_HOME}/siemens/webapps/aem-webapp-1.0-SNAPSHOT.war"> -->
 
+    <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
+            virtualClasspath="${STP_HOME}/siemens/data/toc/conf"/>
+                
     <Environment name="securityProperties"
         value="../../../properties/tocSecurity.properties"
         type="java.lang.String"
@@ -31,15 +36,9 @@
           xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
           xaProperties.user="sa"
           xaProperties.password=""
-          xaProperties.URL="jdbc:h2:tcp://localhost/~/aem"/>
+          xaProperties.URL="jdbc:h2:file:/stp/siemens/data/toc/aem"/>
 
-      <Resource name="jms/toc-cf"
-          auth="Container"
-          factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsConnectionFactory"
-          serverUrl="tcp://localhost:7222"
-          userName="admin"
-          userPassword="Passw0rd"/>
+    <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
 
       <Resource name="jms/toc-state-notification"
               auth="Container"
@@ -47,34 +46,10 @@
               type="com.tibco.tibjms.TibjmsTopic"
               address="tocStateNotification"/>
 
-
-      <Resource name="jms/toc-web-server-state-notification"
-              auth="Container"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
-              address="tocWebServerStateNotification"/>
-
-      <Resource name="jms/toc-jvm-state-notification"
-              auth="Container"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
-              address="tocJvmStateNotification"/>
-
       <Resource name="jms/toc-status"
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsQueue"
+          type="com.tibco.tibjms.TibjmsTopic"
           address="tocStatus"/>
-
-    <Realm className="org.apache.catalina.realm.JNDIRealm"
-          connectionURL="ldap://custldapsrv1.usmlvv1d0a.smshsc.net:389"
-          authentication="simple"
-          referrals="follow"
-          connectionName="CN=N9SFLDAPaccount,OU=N9SF Service Accounts,OU=N9SF - SF Deployment Model Environment,OU=I03 - Soarian Financials,OU=I03,OU=US,dc=usmlvv1d0a,dc=smshsc,dc=net"
-          connectionPassword="Passw0rd"
-          userBase="ou=d1,dc=usmlvv1d0a,dc=smshsc,dc=net"
-          userSubtree="true"
-          userSearch="(sAMAccountName={0})"
-          commonRole="AllAuthenticated"/>
 
 </Context>

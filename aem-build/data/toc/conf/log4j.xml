@@ -124,6 +124,7 @@
     <root>
         <level value="ERROR" />
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="TRACE_TOC" />
     </root>
     
     <!-- Debugging configuration - do not check in -->
@@ -141,6 +142,11 @@
 
     <!-- CTO TCO logger for heartbeat/integration start stop -->
     <logger name="com.siemens.cto.aem.service.configuration.lifecycle.HeartbeatStartupLifecycleListener">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+    
+    <logger name="com.siemens.cto.aem.ws.rest.v1.service">
         <level value="INFO" />
         <appender-ref ref="TRACE_TOC" />
     </logger>

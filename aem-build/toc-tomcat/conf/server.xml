@@ -20,7 +20,7 @@
      define subcomponents such as "Valves" at this level.
      Documentation at /docs/config/server.html
  -->
-<Server port="8093" shutdown="SHUTDOWN">
+<Server port="8005" shutdown="SHUTDOWN">
   <!-- Security listener. Documentation at /docs/config/listeners.html
   <Listener className="org.apache.catalina.security.SecurityListener" />
   -->
@@ -34,19 +34,20 @@
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
   <Listener className="com.siemens.cto.infrastructure.atomikos.AtomikosLifecycleListener" />
   <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="2"
-            instanceId="2"
+            id="1"
+            instanceId="1"
             type="JVM"
-      jmsConnectionFactory="java:/jms/toc-cf"
-      jmsDestination="java:/jms/toc-status"
+            jmsConnectionFactory="java:/jms/toc-cf"
+            jmsDestination="java:/jms/toc-status"
             jmsTtl="60"
             jmsTtlUnit="SECONDS"
             schedulerDelayInitial="30"
             schedulerDelaySubsequent="30"
             schedulerDelayShutdown="30"
             schedulerDelayUnit="SECONDS"
-      schedulerThreadCount="1"
-      schedulerThreadNamePrefix="JMS Reporting Thread"/>
+            schedulerThreadCount="1"
+            schedulerThreadNamePrefix="JMS Reporting Thread"/>
+  <!-- commented out until we have jmx ports in jvm definitions in TOC -->
   <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" />
   
@@ -63,21 +64,28 @@
               factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
               pathname="conf/tomcat-users.xml" />
               
-
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
+              type="com.tibco.tibjms.TibjmsTopic"
               address="tocStatus-localhost"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="tcp://localhost:7222"
+              serverUrl="ssl://localhost:7243"
               userName="admin"
-              userPassword="Passw0rd"/>              
+              userPassword="${encrypted:9hQ4KpxpM8e/VX3KkT2VYg==}"
+              connAttemptCount="100"
+              connAttemptDelay="1000"
+              reconnAttemptCount="100"
+              reconnAttemptDelay="1000"
+              SSLEnableVerifyHost="true"
+              SSLEnableVerifyHostName="false"
+              SSLTrustedCertificate="${STP_HOME}\siemens\data\security\ems\ctorootca.pem" />
   </GlobalNamingResources>
+
 
   <!-- A "Service" is a collection of one or more "Connectors" that share
        a single "Container" Note:  A "Service" is not itself a "Container",
@@ -89,27 +97,24 @@
        Exploded apps: stpapps
        Archived apps: by context.xmls in conf/stp/localhost
        -->
+
   <Service name="stp">
-    <!-- Define a SSL HTTP/1.1 Connector on port 8091
-         This connector uses the JSSE configuration, when using APR, the
-         connector should be using the OpenSSL style configuration
-         described in the APR documentation -->
-    <!--
-    <Connector port="8091" protocol="HTTP/1.1" SSLEnabled="true"
-               maxThreads="150" scheme="https" secure="true"
-               clientAuth="false" sslProtocol="TLS" />
-    -->
-   <!-- Defines Peter's APR + JSSE compatible port 
+    <!-- Define a SSL HTTP/1.1 Connector.  This connector uses the JSSE configuration, when using APR, the
+         connector should be using the OpenSSL style configuration described in the APR documentation 
+
+        Defines Peter's APR + JSSE compatible port 
         STP Features: 
         Compression: Forced on
         Compressable types: text/html,text/xml,text/plain,application/json
         compressionMinSize: 2048 (default)
         threadPriority: 1 above Java NORM_PRIORITY - 6
-        -->
+    -->
+    <!-- SSLCertificateKeyFile="${STP_HOME}\siemens\data\security\id\ct1005kc.key"  -->
+
     <Connector 
-      port="8091" 
-      SSLCertificateFile="${catalina.base}/../../../data/security/id/usmlvv1cto1520.usmlvv1d0a.smshsc.net.cer" 
-      SSLCertificateKeyFile="${catalina.base}/../../../data/security/id/usmlvv1cto1520.usmlvv1d0a.smshsc.net.key" 
+      port="9101" 
+      SSLCertificateFile="${STP_HOME}\siemens\data\security\id\ct1005kc.cer" 
+      SSLCertificateKeyFile="${STP_HOME}${encrypted:FcZDK+G5bD73foneuKdpOZs+ZEwQatKH8h3gxILfTrLxayXR6cXeniR9t93Pavx4}"
       SSLEnabled="true" 
       SSLPassword="" 
       acceptCount="100" 
@@ -137,7 +142,8 @@
      
      <!-- The STP Engine is the normal standalone Tomcat host 
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="tc-2">
+    <Engine name="stp" defaultHost="localhost" jvmRoute="jvm-1">
+
       <!-- Host Features: Standard Host
            AppBase: stpapps/
            Unpacking: no
@@ -145,6 +151,12 @@
            Deploy .war/META-INF/context.xml: no
            Customized Error Reports: no
       -->
+
+      <!-- Use the LockOutRealm to prevent attempts to guess user passwords via a brute-force attack -->
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+         <Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
+      </Realm>
+
       <Host name="localhost"  
             appBase="stpapps"
             unpackWARs="false"
@@ -153,7 +165,7 @@
             errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
 
         <!-- Attempt to ensure we 'could' identify ourselves properly over SSL -->  
-        <Alias>ct1005kc.ww400.siemens.net</Alias>
+        <Alias>CT1005KC</Alias>
         
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
@@ -189,9 +201,9 @@
          APR (HTTP/AJP) Connector: /docs/apr.html
          Define a non-SSL HTTP/1.1 Connector on port 8090
     -->
-    <Connector port="8090" protocol="HTTP/1.1"
+    <Connector port="9100" protocol="HTTP/1.1"
                connectionTimeout="20000"
-               redirectPort="8091" />
+               redirectPort="9101" />
     <!-- A "Connector" using the shared thread pool-->
     <!--
     <Connector executor="tomcatThreadPool"
@@ -200,7 +212,7 @@
                redirectPort="8091" />
     -->
     <!-- Define an AJP 1.3 Connector on port 8094 -->
-    <Connector port="8094" protocol="AJP/1.3" redirectPort="8091" />
+    <Connector port="9103" protocol="AJP/1.3" redirectPort="9101" />
 
 
     <!-- An Engine represents the entry point (within Catalina) that processes
@@ -212,7 +224,7 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="tc-2">
+    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
 
       <!--For clustering, please take a look at documentation at:
           /docs/cluster-howto.html  (simple how to)
