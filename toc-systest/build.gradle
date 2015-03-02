@@ -6,90 +6,71 @@ import com.siemens.cto.gradle.*
 import org.h2.tools.Server
 import groovy.sql.Sql
 
-version = '1.0'
-
-configurations { 
+configurations {
     integTestConf
-
 }
 
-dependencies { 
-     integTestConf group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.6.4.201312101107'
+dependencies {
+    integTestConf "com.siemens.cto:dev-bundle:1.0-SNAPSHOT"
+    integTestConf group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.6.4.201312101107'
+    integTestConf "com.h2database:h2:$project.versions.h2"
 }
 
-task printJacocoPath() { 
-  println 'Using ' + configurations.integTestConf.asPath
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "http://usmlvv1srn464/artifactory/repo/" }
+    }
+    dependencies {
+        // classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
+
+        // Enable for local development and don't forget to disable the classpath definition that also has "infrastructure-gradle"
+        classpath files("D:/view_store/workspace/git/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.0-SNAPSHOT.jar")
+
+        classpath group: "com.h2database", name: "h2", version: "$project.versions.h2"
+    }
+}
+
+def STP_TEMP_PATH = "D:/integ-test-temp"
+def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
+def AEM_CONTEXT_FILE = "aem.xml"
+def DB_NAME = "integ-test-tmp-db"
+def JDBC_ORIG_URL = "jdbc:h2:tcp://localhost/~/aem"
+def ROOT_NAME = "aem"
+
+// Should this be in the plugin as well ?
+def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
+
+configurations.integTestConf.each {
+    GroovyObject.class.classLoader.addURL(it.toURI().toURL())
 }
 
 /**
- *  UI integration tests work/task flow
+ * Creates tables.
  *
- *  1. Remove old STP
- *  2. Pull new STP
- *  3. Define STP jvm instance as a service
- *  4. Prep STP for AEM (remove default wars and install new AEM)
- *  5. Start Tomcat
- *  6. Run integration tests
- *  7. Shutdown Tomcat
- *  8. Remove STP jvm instance as a service
- *
- *  Note: After running tasks above, sonarRunner task can now be executed to merge the exec file created by
- *        the Jacoco agent when the integration tests were ran.
+ * NOTE!!! Make sure that create.sql are the latest copies by running aem-persistence's createDdl
+ *         tasks. These tasks should be made to run before the runIntegTests tasks.
  */
-
-def ROOT_NAME = "aem";
-def STP_TEMP_PATH = "D:/integ-test-temp";
-def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
-def CATALINA_HOME = "${STP_TEMP_PATH}/stp/siemens/apache-tomcat-7.0.55/core"
-def JVM_NAME = "INTEG-TEST-JVM"
-def JACOCO_EXEC_FILE = "test.dat" // Prevent parent merge test task from scooping this up since we want to do our own merging here after our integ tests runs
-def WEB_APP_PATH = "stp/siemens/webapps"
-def TIMEOUT = 300000 // 5 minutes
-def JACOCO_AGENT = "jacocoagent.jar"
-def h2TcpServer
-def DB_NAME = "integ-test-tmp-db"
-def AEM_CONTEXT_FILE = "aem.xml"
-def JDBC_ORIG_URL = "jdbc:h2:tcp://localhost/~/aem"
-
-task unPackJacocoJar (type:Copy) {
-    from(zipTree("${configurations.integTestConf.asPath}")) {include JACOCO_AGENT}
-    into STP_TEMP_PATH
-}
-
-task removeStp(type: Delete) {
-    doFirst {
-        sleep(45000) // sleep for a while to make sure that the JVM has shutdown
+task ("createTables") << {
+    @GrabConfig(systemClassLoader = true)
+    @Grab(group="com.h2database", module="h2", version="$project.versions.h2")
+    def sql = Sql.newInstance("jdbc:h2:tcp://localhost/${STP_TEMP_PATH}/${DB_NAME}", "sa", "", "org.h2.Driver")
+    def createScript = new File("$project.rootDir/aem-persistence/create.sql")
+    createScript.eachLine {
+        println it
+        sql.execute(it)
     }
-    delete "${STP_TEMP_PATH}"
-}
-
-task installStpAsAService(type: ProcessExec) {
-    doFirst {
-        unPackJacocoJar.execute()
-    }
-    command "cmd /c ${project.projectDir}/resources/install-service.bat " +
-            "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
-            "${CATALINA_HOME} " +
-            "${JVM_NAME} " +
-            STP_TEMP_PATH + "/" + JACOCO_AGENT + " " +
-            "${project.buildDir}/jacoco/${JACOCO_EXEC_FILE}"
-    directory "${project.projectDir}/resources"
-    exitProcessIndicator "Finished"
-    timeout TIMEOUT
-}
-
-task deleteDefaultWebApps(type: Delete) {
-    delete fileTree(dir: "${STP_TEMP_PATH}/${WEB_APP_PATH}")
 }
 
 task ("setAemContextJdbcResourceUrl") << {
     File f = new File("${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost/${AEM_CONTEXT_FILE}")
     def fText = f.text
     fText = fText.replaceFirst("${JDBC_ORIG_URL}",
-                               "jdbc:h2:tcp://localhost/~/${DB_NAME}")
+            "jdbc:h2:tcp://localhost/~/${DB_NAME}")
     f.write(fText)
 }
 
+// Configure AEM context
 task activateAemContext(type: Copy) {
     from "../aem-build/toc-tomcat/conf/Catalina/localhost"
     into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
@@ -100,175 +81,28 @@ task activateAemContext(type: Copy) {
     }
 }
 
-task (checkIfAemBuildFileExist) << {
-    def f = new File("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/${ROOT_NAME}-webapp-1.0-SNAPSHOT.war")
-    if (!f.exists()) {
-        throw new RuntimeException("Build file missing! Please run gradle build.")
-    }
+// Stuff to run QTP using a VB script in the QTP host server
+def PS_EXEC_FULL_PATH = "D:/view_store/tools/PSTools"
+def PS_EXEC_TARGET_HOST = "165.226.216.95"
+def PS_EXEC_USER = "ww005\\z003cjrh"
+def PS_EXEC_PWD = "Defgh123"
+def PS_EXEC_SCRIPT = "D:\\DATA\\Manick\\TOCDemo.vbs"
+
+task psExec(type: ProcessExec) {
+    command "${PS_EXEC_FULL_PATH}/PsExec.exe \\\\${PS_EXEC_TARGET_HOST} -u ${PS_EXEC_USER} -p ${PS_EXEC_PWD} Cscript \"${PS_EXEC_SCRIPT}\""
+    directory "${PS_EXEC_FULL_PATH}"
+    exitProcessIndicator "Stopped"
+    timeout 3600000 // timeout in an hour
 }
 
-task installAem(type: Copy) {
-    from file("${project.parent.childProjects.get(ROOT_NAME+'-webapp').buildDir.path}/libs/")
-    into file("${STP_TEMP_PATH}/${WEB_APP_PATH}")
-    include "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
-}
 
-task removeStpAsAService(type: ProcessExec) {
-    command "cmd /c ${project.projectDir}/resources/remove-service.bat " +
-            "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/bin " +
-            "${CATALINA_HOME} " +
-            "${JVM_NAME}"
-    directory "${project.projectDir}/resources"
-    exitProcessIndicator "Finished"
-    timeout TIMEOUT
-}
-
-task startApp(type: com.siemens.cto.gradle.StpJvmControlTask) {
-    doFirst {
-        activateAemContext.execute()
-    }
-    command StpJvmControlTask.Command.START
-    jvmName JVM_NAME
-    timeout TIMEOUT
-}
-
-/**
- * Checks if AEM is alive for x minutes defined by local var timeout.
- * If there are no exceptions or if the exception is due to
- * a certificate problem, exit checkIfAemIsAlive and proceed to next
- * task.
- */
-task (checkIfAemIsAlive) << {
-    sendConnectTest.execute()
-}
-
-task sendConnectTest(type: RestGet) {
-    url "https://localhost:9101/aem/v1.0/admin/properties/reload"
-}
-
-task stopApp(type: com.siemens.cto.gradle.StpJvmControlTask) {
-    command StpJvmControlTask.Command.STOP
-    jvmName JVM_NAME
-    timeout TIMEOUT
-}
-
-task (runIntegTests) << {
+task (integTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
-    sendConnectTest.execute()
+    psExec.execute()
 }
 
-/**
- * Pull STP developer bundle tasks
- */
-apply plugin: "stpDeploy"
-
-task installStp(type: com.siemens.cto.gradle.StpDeployTask) {
-    doFirst {
-        removeStp.execute()
-    }
-    destination STP_TEMP_PATH
-}
-
-repositories {
-    maven {
-        url "http://usmlvv1srn464/artifactory/repo/"
-    }
-}
-
-configurations {
-    stpConfig
-}
-
-dependencies {
-    stpConfig "com.siemens.cto:dev-bundle:1.0-SNAPSHOT"
-}
-
-buildscript {
-    repositories {
-        mavenLocal()
-        maven { url "http://usmlvv1srn464/artifactory/repo/" }
-    }
-    dependencies {
-        classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
-        classpath group: "com.h2database", name: "h2", version: "$project.versions.h2"
-    }
-}
-
-// H2 setup related tasks.
-task ("startH2") << {
-    h2TcpServer = Server.createTcpServer().start()
-}
-
-task ("stopH2") << {
-    // Although H2 will stop after gradle finishes, we want to do a proper H2 stop hence the reason for this task
-    if (h2TcpServer != null) {
-        h2TcpServer.stop()
-    }
-}
-
-// Setup tables and columns
-configurations {
-    h2database
-}
-
-dependencies {
-    h2database "com.h2database:h2:$project.versions.h2"
-}
-
-configurations.h2database.each {
-    GroovyObject.class.classLoader.addURL(it.toURI().toURL())
-}
-
-/**
- * Drops existing DDL if there are any and creates a new one.
- *
- * NOTE!!! Make sure that create.sql and drop.sql are the latest copies by running aem-persistence's createDdl and dropDdl
- *         tasks. These tasks should be made to run before the runIntegTests tasks.
- */
-task ("setupDb") << {
-    @GrabConfig(systemClassLoader = true)
-    @Grab(group="com.h2database", module="h2", version="$project.versions.h2")
-    def sql = Sql.newInstance("jdbc:h2:tcp://localhost/~/${DB_NAME}", "sa", "", "org.h2.Driver")
-
-    def dropScript = new File("$project.rootDir/aem-persistence/drop.sql")
-    dropScript.eachLine {
-        println it
-        try {
-            sql.execute(it)
-        } catch (e) {
-            println e.getMessage()
-        }
-    }
-
-    def createScript = new File("$project.rootDir/aem-persistence/create.sql")
-    createScript.eachLine {
-        println it
-        try {
-            sql.execute(it)
-        } catch (e) {
-            println e.getMessage()
-        }
-    }
-}
-
-// Startup tasks
-installStpAsAService.dependsOn installStp
-deleteDefaultWebApps.dependsOn installStpAsAService
-installAem.dependsOn deleteDefaultWebApps, checkIfAemBuildFileExist
-
-startH2.dependsOn installAem
-setupDb.dependsOn startH2
-startApp.dependsOn setupDb
-
-// Pre-integration and integration test tasks
-checkIfAemIsAlive.dependsOn startApp
-runIntegTests.dependsOn checkIfAemIsAlive
-
-// Cleanup tasks
-removeStpAsAService.dependsOn stopApp, stopH2
-removeStp.dependsOn removeStpAsAService
-
+// Merge Jacoco report
 task renameMergedReportToAccumExec (type: Copy) {
     from "${buildDir}/jacoco"
     into "${project.parent.buildDir}/jacoco"
@@ -283,12 +117,32 @@ task mergeIntegTestReport(type: JacocoMerge) {
     destinationFile = file("${buildDir}/jacoco/accum-merged.exec")
     executionData {
         return files(file("${project.parent.buildDir}/jacoco/accum.exec"),
-                     file("${buildDir}/jacoco/${JACOCO_EXEC_FILE}"))
+                file("${buildDir}/jacoco/${JACOCO_EXEC_FILE}"))
     }
-
     doLast {
         renameMergedReportToAccumExec.execute()
     }
 }
 
-runIntegTests.finalizedBy mergeIntegTestReport, removeStp
+h2TcpServer = null
+task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
+    configName "integTestConf"
+    childProjectName = "${ROOT_NAME}-webapp"
+    warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
+    beforeJvmStart {
+        activateAemContext.execute()
+        h2TcpServer = Server.createTcpServer().start() // start h2
+        createTables.execute()
+    }
+    onJvmStart {
+        integTests.execute()
+    }
+    beforeCleanup {
+        println ">>> Waiting for JVM to stop..."
+        sleep(15000) // Make sure that the JVM has stopped
+        h2TcpServer.stop() // stop h2
+    }
+    doLast {
+        mergeIntegTestReport.execute()
+    }
+}
