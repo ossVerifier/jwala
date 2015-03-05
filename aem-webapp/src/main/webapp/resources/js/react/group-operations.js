@@ -194,16 +194,14 @@ var GroupOperationsDataTable = React.createClass({
     render: function() {
         var groupTableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"14px"},
                              {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                             {sTitle:"Group Name", mData:"name", colWidth:"650px"},
+                             {sTitle:"Group Name", mData:"name", colWidth:"651px"},
                               [{id:"startGroup",
                                 sTitle:"Start Group",
                                 mData:null,
                                 tocType:"button",
-                                btnLabel:"",
+                                btnLabel:"Start",
                                 btnCallback:this.startGroup,
                                 className:"inline-block",
-                                customSpanClassName:"ui-icon ui-icon-play",
-                                clickedStateClassName:"busy-button",
                                 buttonClassName:"ui-button-height",
                                 extraDataToPassOnCallback:"name",
                                },
@@ -212,11 +210,9 @@ var GroupOperationsDataTable = React.createClass({
                                 sTitle:"Stop Group",
                                 mData:null,
                                 tocType:"button",
-                                btnLabel:"",
+                                btnLabel:"Stop",
                                 btnCallback:this.stopGroup,
                                 className:"inline-block",
-                                customSpanClassName:"ui-icon ui-icon-stop",
-                                clickedStateClassName:"busy-button",
                                 buttonClassName:"ui-button-height",
                                 extraDataToPassOnCallback:"name",
                               }],
@@ -224,7 +220,7 @@ var GroupOperationsDataTable = React.createClass({
                               {sTitle:"State",
                                mData:null,
                                mRender: this.getStateForGroup,
-                               colWidth:"117px",
+                               colWidth:"116px",
                                bSortable:true}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
@@ -550,24 +546,32 @@ var GroupOperationsDataTable = React.createClass({
     enableButtonThunk: function(buttonSelector, iconClass) {
         return function() {
             $(buttonSelector).prop('disabled', false);
-            $(buttonSelector).attr("class",
-            "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
-            $(buttonSelector).find("span").attr("class", "ui-icon " + iconClass);
+            if ($(buttonSelector + " span").hasClass("ui-icon")) {
+                $(buttonSelector).attr("class",
+                "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
+                $(buttonSelector).find("span").attr("class", "ui-icon " + iconClass);
+            } else {
+                $(buttonSelector).removeClass("ui-state-disabled");
+            }
         };
     },
     disableButtonThunk: function(buttonSelector) {
         return function() {
             $(buttonSelector).prop('disabled', true);
-            $(buttonSelector).attr("class", "busy-button");
-            $(buttonSelector).find("span").removeClass();
+            if ($(buttonSelector + " span").hasClass("ui-icon")) {
+                $(buttonSelector).attr("class", "busy-button");
+                $(buttonSelector).find("span").removeClass();
+            } else {
+                $(buttonSelector).addClass("ui-state-disabled");
+            }
         };
     },
    enableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
-           $(buttonSelector).prop('disabled', false);
-           $(buttonSelector).attr("class",
-           "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
-           $(buttonSelector).find("span").attr("class", "ui-icon ui-icon-heap-dump");
+            $(buttonSelector).prop('disabled', false);
+            $(buttonSelector).attr("class",
+                                   "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
+            $(buttonSelector).find("span").attr("class", "ui-icon ui-icon-heap-dump");
        };
    },
    disableHeapDumpButtonThunk: function(buttonSelector) {
