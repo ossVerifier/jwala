@@ -22,10 +22,10 @@ var MainArea = React.createClass({
 
 var Banner = React.createClass({
     render: function() {
-        return <div className="banner-container">
-                    <img src="public-resources/img/toc-logo-siemens.jpg"/>
+        return <div className="banner-container ui-widget-header">
+                    <img src="public-resources/img/aem-gears-fade-right.png"/>
                     <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
-                    <span className="banner-title">Tomcat Operations Center</span>
+                    <div className="banner-title">Tomcat Operations Center</div>
                </div>
     },
     handleLogoutClick: function() {

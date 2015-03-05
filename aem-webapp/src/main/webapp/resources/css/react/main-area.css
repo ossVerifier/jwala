@@ -15,19 +15,33 @@ div.main-area {
 }
 
 .banner-container {
-    background-color:#70a399;
     height:99px;
-    display:block
+    display:block;
 }
 
-.banner-title {
+.banner-title-old {
     display: inline-block;
     font-size:45px;
     width:650px;
     margin-top:25px;
-    color:#0d2b88;
+    left:0;
+    color:black;
     font-family: Arial, Helvetica, sans-serif;
     font-weight:bold;
     position:absolute;
     text-align:center;
 }
+
+.banner-title {
+    top:30px;
+    font-size:45px;
+    position:absolute;
+    width:1100px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight:bold;
+    text-align:center;
+}
+
+
+
+

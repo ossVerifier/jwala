@@ -5,12 +5,15 @@ var AdminTab = React.createClass({
 		ServiceFactory.getAdminService().viewProperties(
 				this.onPropertiesRx);
 
+        var theme = AdminTab.getCookie("theme");
+
 		return { toEncrypt:"",
 				 encrypted:"",
 				 encryptLabel:"",
 				 encryptLabelOr:"",
 				 encryptProp:"",
-				 properties:""};
+				 properties:"",
+				 theme:theme === null ? "Redmond" : theme};
 	},
 	doEncrypt: function() {
 		ServiceFactory.getAdminService().encryptServerSide(
@@ -47,6 +50,19 @@ var AdminTab = React.createClass({
 			toEncrypt: ""});
 	},
     render: function() {
+
+        var themes = ["cerner", "cupertino", "darkness", "dotluv", "eggplant", "redmond", "start", "sunny", "vader"];
+        var themeOptions = [];
+        var self = this;
+
+        // <options selected> does not work in Chrome and Firefox, the work around is just to add the selected theme first
+        themeOptions.push(themeOptions.push(React.createElement("option", {value:self.state.theme}, self.state.theme)));
+        themes.forEach(function(theme) {
+             if (theme !== self.state.theme) {
+                themeOptions.push(React.createElement("option", {value:theme}, theme));
+             }
+        });
+
         return <div>
                     <h3>Encryption Tool</h3>
                     <p>
@@ -67,7 +83,32 @@ var AdminTab = React.createClass({
                     <GenericButton label=">>> Reload >>>" callback={this.doReload} />                   
                     </p>
                     <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
+                    <br />
+                    <h3>Themes</h3>
+                    <br/>
+                    <select ref="themeSelection" onChange={this.onSelectTheme}>
+                      {themeOptions}
+                    </select>
                </div>
+    },
+
+    onSelectTheme: function() {
+        document.cookie="theme=" + $(this.refs.themeSelection.getDOMNode()).val() + ";";
+        // this.setState({theme:$(this.refs.themeSelection.getDOMNode()).val()});
+        location.reload();
+    },
+
+    statics: {
+        getCookie:function(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0; i<ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1);
+                if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+            }
+            return null;
+        }
     }
 
 	
