@@ -83,12 +83,16 @@ var AdminTab = React.createClass({
                     <GenericButton label=">>> Reload >>>" callback={this.doReload} />                   
                     </p>
                     <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
+
+                    /* Uncomment code below to enable changeable themes.
                     <br />
-                    <h3>Themes</h3>
+                        <h3>Themes</h3>
                     <br/>
                     <select ref="themeSelection" onChange={this.onSelectTheme}>
                       {themeOptions}
                     </select>
+                    */
+
                </div>
     },
 
