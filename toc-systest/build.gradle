@@ -22,10 +22,10 @@ buildscript {
         maven { url "http://usmlvv1srn464/artifactory/repo/" }
     }
     dependencies {
-        // classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
+        classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"
 
         // Enable for local development and don't forget to disable the classpath definition that also has "infrastructure-gradle"
-        classpath files("D:/view_store/workspace/git/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.0-SNAPSHOT.jar")
+        // classpath files("D:/view_store/workspace/git/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.0-SNAPSHOT.jar")
 
         classpath group: "com.h2database", name: "h2", version: "$project.versions.h2"
     }
