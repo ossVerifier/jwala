@@ -15,6 +15,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rtreelist.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/error-msg-list.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/adjustable-table-col.css">
 
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/${cookie['theme'] == null ? 'redmond' : cookie['theme'].value}/jquery-ui.min.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/${cookie['theme'] == null ? 'redmond' : cookie['theme'].value}/jquery-ui.structure.min.css">
@@ -37,6 +38,7 @@
 <script src="public-resources/js/error-alert.js"></script>
 <script src="public-resources/js/modal-form-decorator.js"></script>
 <script src="public-resources/js/datatable-decorator.js"></script>
+<script src="public-resources/js/resizableTblColPlugin.js"></script>
 
 </head>
 <body>

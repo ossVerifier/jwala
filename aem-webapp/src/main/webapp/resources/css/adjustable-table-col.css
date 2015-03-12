@@ -1,0 +1,23 @@
+.col-resize-cursor {
+    cursor: col-resize;
+}
+
+table.adj-col {
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    width: 1072px !important; /* TODO: Table specific, have it as an option in the plugin. */
+}
+
+th.adj-col {
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
+}
+
+td.adj-col {
+    border-left: 1px solid #C0C0C0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    padding-right: 1px !important;
+}

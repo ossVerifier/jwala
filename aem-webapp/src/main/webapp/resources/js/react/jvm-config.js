@@ -459,39 +459,42 @@ var JvmConfigDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink, colWidth:"380px", maxDisplayTextLen:45},
+                        {sTitle:"Name", mData:"jvmName", tocType:"custom", tocRenderCfgFn:this.renderNameLink, colWidth:"200px"},
                         {sTitle:"Host", mData:"hostName", colWidth:"150px", maxDisplayTextLen:45},
-                        {sTitle:"Sts Path", mData:"statusPath.path", colWidth:"150px", maxDisplayTextLen:20},
+                        {sTitle:"Sts Path", mData:"statusPath.path", colWidth:"100px", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",
                          displayProperty:"name",
-                         colWidth: "220px",
-                         maxDisplayTextLen:20},
-                        {sTitle:"Http", mData:"httpPort", colWidth:"85px"},
-                        {sTitle:"Https", mData:"httpsPort", colWidth:"85px"},
-                        {sTitle:"Redir", mData:"redirectPort", colWidth:"85px"},
-                        {sTitle:"Shutd", mData:"shutdownPort", colWidth:"85px"},
-                        {sTitle:"AJP", mData:"ajpPort", colWidth:"70px"}];
+                         colWidth: "100px",
+                         maxDisplayTextLen:10},
+                        {sTitle:"Http", mData:"httpPort"},
+                        {sTitle:"Https", mData:"httpsPort"},
+                        {sTitle:"Redir", mData:"redirectPort"},
+                        {sTitle:"Shutd", mData:"shutdownPort"},
+                        {sTitle:"AJP", mData:"ajpPort"}];
         return <TocDataTable tableId="jvm-config-datatable"
                              tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}/>
+                             editCallback={this.props.editCallback}
+                             isColResizable={true}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
         aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-            var MAX_VAL_LEN = 50;
-            var val = sData;
-            var title = "";
-            if (val.length > MAX_VAL_LEN) {
-                title = sData;
-                val = val.substring(0, MAX_VAL_LEN) + "...";
-            }
+
+//            var MAX_VAL_LEN = 50;
+//            var val = sData;
+
+//            var title = "";
+//            if (val.length > MAX_VAL_LEN) {
+//                title = sData;
+//                val = val.substring(0, MAX_VAL_LEN) + "...";
+//            }
 
             return React.renderComponent(new React.DOM.button({className:"button-link",
-                                         onClick:self.props.editCallback.bind(this, oData), title:title}, val), nTd);
+                                         onClick:self.props.editCallback.bind(this, oData), title:sData}, sData), nTd);
         }.bind(this);
    }
 });

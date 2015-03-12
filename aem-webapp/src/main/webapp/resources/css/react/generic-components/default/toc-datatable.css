@@ -14,8 +14,7 @@ tr.row_selected > td {
  * Sort arrow icon positioning
  */
 span.DataTables_sort_icon {
-    float: right !important;
-    display: inline !important
+    display: inline-block !important;
 }
 
 table {

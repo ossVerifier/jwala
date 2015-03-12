@@ -55,6 +55,11 @@ var TocDataTable = React.createClass({
             this.dataTable.fnClearTable(this.props.data);
             this.dataTable.fnAddData(this.props.data);
             this.dataTable.fnDraw();
+
+            if (this.props.isColResizable) {
+                this.dataTable.makeColumnsResizable();
+            }
+
             this.dataTable.fnSort(this.props.initialSortColumn);
         }
 
