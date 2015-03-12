@@ -81,25 +81,21 @@ task activateAemContext(type: Copy) {
     }
 }
 
-// Stuff to run QTP using a VB script in the QTP host server
-def PS_EXEC_FULL_PATH = "D:/view_store/tools/PSTools"
-def PS_EXEC_TARGET_HOST = "165.226.216.95"
-def PS_EXEC_USER = "ww005\\z003cjrh"
-def PS_EXEC_PWD = "Defgh123"
-def PS_EXEC_SCRIPT = "D:\\DATA\\Manick\\TOCDemo.vbs"
+// Run QTP Script
+def CSCRIPT_FULL_PATH = "C:\\Windows\\System32"
+def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional Testing\\TOCDemoConf.vbs"
 
-task psExec(type: ProcessExec) {
-    command "${PS_EXEC_FULL_PATH}/PsExec.exe \\\\${PS_EXEC_TARGET_HOST} -u ${PS_EXEC_USER} -p ${PS_EXEC_PWD} Cscript \"${PS_EXEC_SCRIPT}\""
-    directory "${PS_EXEC_FULL_PATH}"
+task runIntegTestQtpScript(type: ProcessExec) {
+    command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
+    directory "${CSCRIPT_FULL_PATH}"
     exitProcessIndicator "Stopped"
     timeout 3600000 // timeout in an hour
 }
 
-
 task (integTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
-    psExec.execute()
+    runIntegTestQtpScript.execute()
 }
 
 // Merge Jacoco report
