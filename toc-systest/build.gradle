@@ -35,7 +35,7 @@ def STP_TEMP_PATH = "D:/integ-test-temp"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
-def JDBC_ORIG_URL = "jdbc:h2:tcp://localhost/~/aem"
+def JDBC_ORIG_URL = "jdbc:h2:file:/stp/siemens/data/toc/aem"
 def ROOT_NAME = "aem"
 
 // Should this be in the plugin as well ?
@@ -72,7 +72,7 @@ task ("setAemContextJdbcResourceUrl") << {
 
 // Configure AEM context
 task activateAemContext(type: Copy) {
-    from "../aem-build/toc-tomcat/conf/Catalina/localhost"
+    from "${project.parent.projectDir}/aem-build/toc-tomcat/conf/stp/localhost"
     into "${STP_TEMP_PATH}/${JVM_INSTANCE_PATH}/conf/stp/localhost"
     include "${AEM_CONTEXT_FILE}"
 

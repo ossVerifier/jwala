@@ -16,7 +16,7 @@
   limitations under the License.
 -->
 <!-- The contents of this file will be loaded for each web application -->
-<Context>
+<Context docBase="../../../webapps/aem-webapp-1.0-SNAPSHOT.war">
     <!--  This version applies to unpacked wars.
         docBase="${STP_HOME}/siemens/webapps/aem-webapp-1.0-SNAPSHOT.war"> -->
 
