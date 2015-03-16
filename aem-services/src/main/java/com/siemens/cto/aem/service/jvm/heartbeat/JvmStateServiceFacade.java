@@ -52,6 +52,7 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
                     switch(newState.getState()) {
                         case STOPPED: 
                             discard = true;
+                            break;
                         default: break;
                     } break;
                 case STOP_REQUESTED:
@@ -62,6 +63,7 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
                     } break;
                 default:
                     discard = false;        
+                    break;
             }
         }
 
@@ -104,8 +106,8 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
                     printer.println(message);
                     return;
                     
-                } catch(Throwable e) { 
-                    e.printStackTrace(printer);
+                } catch(Exception e) { 
+                    LOGGER.error("Could not get JVM information from database", e);
                 }
             }
         } 

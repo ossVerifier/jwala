@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.resource.impl;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +47,8 @@ public class ResourceServiceImpl implements ResourceService {
                     HarmonyTemplate template = templateEngine.getTemplate(rtype);
                     try {
                         template.check();
-                    } catch(Throwable exception) { 
+                    } catch(Exception exception) { 
+                        LOGGER.debug("During getResourceTypes, discovered a bad template", exception);
                         rtype.setValid(false);
                         rtype.addException(exception);
                     }

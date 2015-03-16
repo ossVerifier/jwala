@@ -44,16 +44,19 @@ public class ResourceTypeDeserializer {
 
         try {
             r.setName(parseRootNameFromFile(path));
-        } catch (Throwable t) {
+        } catch (Exception e) {
             r.setName(path.toString());
+            LOGGER.debug("Constructing invalid response with file naming exception", e);
         }
         
         Map<String, String> exceptionProp = r.addException(exception);
         
         try(BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset())) {
             exceptionProp.put("content", exception.toString());
+            LOGGER.debug("exception property set to exception caught.", exception);
         } catch (IOException e) {
             exceptionProp.put("content", "Could not read file.");
+            LOGGER.debug("exception property set to file not found.", e);
         }
         
         return r;

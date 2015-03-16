@@ -7,8 +7,13 @@ import com.siemens.cto.aem.domain.model.path.Path;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StatusPathRule implements Rule {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatusPathRule.class);
+    
     private final Path statusPath;
 
     public StatusPathRule(final Path thePath) {
@@ -21,6 +26,7 @@ public class StatusPathRule implements Rule {
             try {
                 new URI("http", null, "hostName", 8080, statusPath.getPath(), "", "");
             } catch (URISyntaxException e) {
+                LOGGER.trace("Failed test for a valid status path", e);
                 return false;
             }
             return true;

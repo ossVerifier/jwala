@@ -2,6 +2,7 @@ package com.siemens.cto.toc.files;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -92,13 +93,13 @@ public class RepositoryAction implements Iterable<Path> {
     public RepositoryAction(final Type type, final Path path, final Long length, final RepositoryAction[] inResponseTo) {
         this.paths = new Entry[] { new Entry(path, length) };
         this.type = type;
-        this.inResponseTo = inResponseTo;
+        this.inResponseTo = inResponseTo != null ? Arrays.copyOf(inResponseTo, inResponseTo.length) : null;
     }
 
     public RepositoryAction(final Type type, final List<Path> theFoundPaths, final RepositoryAction[] inResponseTo) {
         this.type = type;
         this.paths = new Entry[theFoundPaths.size()];
-        this.inResponseTo = inResponseTo;
+        this.inResponseTo = inResponseTo != null ? Arrays.copyOf(inResponseTo, inResponseTo.length) : null;
         int idx = -1;
         for(Path path : theFoundPaths) { 
             this.paths[++idx] = new Entry(path, path.toFile().length());

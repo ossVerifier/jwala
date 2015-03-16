@@ -6,8 +6,13 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HostNameRule extends ValidNameRule {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostNameRule.class);
+    
     public HostNameRule(final String theName) {
         super(theName);
     }
@@ -28,6 +33,7 @@ public class HostNameRule extends ValidNameRule {
             try {
                 new URI("http", null, name, 8080, "/somePath", "", "");
             } catch (URISyntaxException e) {
+                LOGGER.trace("Failed test for a valid URL", e);
                 return false;
             }
             return true;

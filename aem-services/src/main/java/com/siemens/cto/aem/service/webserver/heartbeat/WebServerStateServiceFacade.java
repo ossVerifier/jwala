@@ -89,8 +89,8 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
                     printer.println(message);
                     return;
                     
-                } catch(Throwable e) { 
-                    e.printStackTrace(printer);
+                } catch(Exception e) { 
+                    LOGGER.error("Could not access web server from database in printCustomizedStateMessageFromException", e);
                 }
             }
         } 

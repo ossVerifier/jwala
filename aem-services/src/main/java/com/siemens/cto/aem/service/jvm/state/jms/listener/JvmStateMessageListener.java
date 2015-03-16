@@ -64,16 +64,19 @@ public class JvmStateMessageListener implements MessageListener {
                     switch(newState.getState()) {
                         case STOPPED: 
                             discard = true;
+                            break;
                         default: break;
                     } break;
                 case STOP_REQUESTED:
                     switch(newState.getState()) {
                         case STARTED: 
                             discard = true;
+                            break;
                         default: break;
                     } break;
                 default:
-                    discard = false;        
+                    discard = false;   
+                    break;
             }
         }
         
