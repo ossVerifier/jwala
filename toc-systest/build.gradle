@@ -88,8 +88,8 @@ def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional 
 task runIntegTestQtpScript(type: ProcessExec) {
     command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
     directory "${CSCRIPT_FULL_PATH}"
-    exitProcessIndicator "Stopped"
-    timeout 3600000 // timeout in an hour
+    exitProcessIndicator "Passed"
+    timeout 900000 // timeout in 15 minutes
 }
 
 task (integTests) << {
