@@ -2,6 +2,12 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" threshold="null">
 
+<!-- This file should be named log4j.xml to be picked up by 
+     Tomcat Operations Center Virtual Webapp Class Loader.
+     If it is not, backup, then swap this file out with the 
+     existing log4j.xml in data\toc\conf\log4j.xml          -->
+     
+
     <!-- Console Appender -->
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
