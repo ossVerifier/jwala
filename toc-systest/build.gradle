@@ -31,7 +31,8 @@ buildscript {
     }
 }
 
-def STP_TEMP_PATH = "D:/integ-test-temp"
+def now = new Date()
+def STP_TEMP_PATH = "D:/integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
@@ -123,6 +124,7 @@ task mergeIntegTestReport(type: JacocoMerge) {
 
 h2TcpServer = null
 task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
+    stpTempPath = STP_TEMP_PATH
     configName "integTestConf"
     childProjectName = "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
