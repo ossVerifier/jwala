@@ -31,7 +31,8 @@ buildscript {
     }
 }
 
-def STP_TEMP_PATH = "D:/integ-test-temp"
+def now = new Date()
+def STP_TEMP_PATH = "D:/integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
@@ -88,7 +89,8 @@ def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional 
 task runIntegTestQtpScript(type: ProcessExec) {
     command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
     directory "${CSCRIPT_FULL_PATH}"
-    exitProcessIndicator "Passed"
+    exitOnSuccessIndicator "Passed"
+    exitOnFailIndicator "Failed"
     timeout 900000 // timeout in 15 minutes
 }
 
@@ -122,6 +124,7 @@ task mergeIntegTestReport(type: JacocoMerge) {
 
 h2TcpServer = null
 task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
+    stpTempPath = STP_TEMP_PATH
     configName "integTestConf"
     childProjectName = "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
@@ -135,7 +138,7 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     }
     beforeCleanup {
         println ">>> Waiting for JVM to stop..."
-        sleep(15000) // Make sure that the JVM has stopped
+        sleep(60000) // Make sure that the JVM has stopped
         h2TcpServer.stop() // stop h2
     }
     doLast {
