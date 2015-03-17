@@ -59,6 +59,7 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
                     switch(newState.getState()) {
                         case STARTED: 
                             discard = true;
+                            break;
                         default: break;
                     } break;
                 default:
