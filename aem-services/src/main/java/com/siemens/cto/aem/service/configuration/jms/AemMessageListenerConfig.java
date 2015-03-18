@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
@@ -40,7 +42,7 @@ public class AemMessageListenerConfig {
         container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
         container.setPubSubDomain(true);
         container.setSubscriptionDurable(true);
-        container.setDurableSubscriptionName("TocJvmStateDurableSubscriber");
+        container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
         container.setConcurrentConsumers(1);
 
         return container;

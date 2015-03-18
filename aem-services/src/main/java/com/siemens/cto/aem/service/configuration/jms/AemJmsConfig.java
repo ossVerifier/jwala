@@ -13,22 +13,23 @@ import com.siemens.cto.aem.service.state.jms.JmsPackageBuilder;
 
 @Configuration
 public class AemJmsConfig {
+    private static final String JNDI_JMS_CONNECTION_FACTORY = "jms/toc-cf";
+    private static final String JNDI_HEARTBEAT_TOPIC_DESTINATION = "jms/toc-status";
+    private static final String JNDI_UI_TOPIC_DESTINATION = "jms/toc-state-notification";
 
     @Bean
     public ConnectionFactory getConnectionFactory() {
-        return lookup("jms/toc-cf", ConnectionFactory.class);
+        return lookup(JNDI_JMS_CONNECTION_FACTORY, ConnectionFactory.class);
     }
 
     @Bean
     public Destination getJvmStateDestination() {
-        //TODO change to a queue specific to JVM states maybe? (Corey) 
-        //TODO change the JNDI name to something better (Corey) 
-        return lookup("jms/toc-status", Destination.class);
+        return lookup(JNDI_HEARTBEAT_TOPIC_DESTINATION, Destination.class);
     }
 
     @Bean
     public Destination getStateNotificationDestination() {
-        return lookup("jms/toc-state-notification", Destination.class);
+        return lookup(JNDI_UI_TOPIC_DESTINATION, Destination.class);
     }
 
     @Bean
