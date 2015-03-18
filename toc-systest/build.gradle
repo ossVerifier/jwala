@@ -137,8 +137,6 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
         integTests.execute()
     }
     beforeCleanup {
-        println ">>> Waiting for JVM to stop..."
-        sleep(60000) // Make sure that the JVM has stopped
         h2TcpServer.stop() // stop h2
     }
     doLast {
