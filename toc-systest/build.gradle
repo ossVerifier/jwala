@@ -32,7 +32,7 @@ buildscript {
 }
 
 def now = new Date()
-def STP_TEMP_PATH = "D:/integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
+def STP_TEMP_PATH = "D:/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
@@ -86,6 +86,7 @@ task activateAemContext(type: Copy) {
 def CSCRIPT_FULL_PATH = "C:\\Windows\\System32"
 def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional Testing\\TOCDemoConf.vbs"
 
+// TODO: Deprecate when we're sure we no longer needs this (e.g. SOAP UI is already being used...)
 task runIntegTestQtpScript(type: ProcessExec) {
     command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
     directory "${CSCRIPT_FULL_PATH}"
@@ -94,10 +95,16 @@ task runIntegTestQtpScript(type: ProcessExec) {
     timeout 900000 // timeout in 15 minutes
 }
 
+task sendRestGetToHct(type: com.siemens.cto.gradle.RestGetTask) {
+    url "https://localhost:9101/aem"
+}
+
 task (integTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
-    runIntegTestQtpScript.execute()
+    // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+
+    sendRestGetToHct.execute() // Do a simple rest test while we don't have the "real thing"
 }
 
 // Merge Jacoco report
@@ -124,24 +131,26 @@ task mergeIntegTestReport(type: JacocoMerge) {
 
 h2TcpServer = null
 task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
-    stpTempPath = STP_TEMP_PATH
+    stpTempPath STP_TEMP_PATH
     configName "integTestConf"
-    childProjectName = "${ROOT_NAME}-webapp"
+    childProjectName "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
+    jvmInstancePath JVM_INSTANCE_PATH
+    jvmShutdownWaitTime 180000 // Make it 3 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
+
     beforeJvmStart {
         activateAemContext.execute()
         h2TcpServer = Server.createTcpServer().start() // start h2
         createTables.execute()
     }
+
     onJvmStart {
         integTests.execute()
     }
+
     beforeCleanup {
-        println ">>> Waiting for JVM to stop..."
-        sleep(60000) // Make sure that the JVM has stopped
         h2TcpServer.stop() // stop h2
     }
-    doLast {
-        mergeIntegTestReport.execute()
-    }
 }
+
+runIntegTests.finalizedBy mergeIntegTestReport
