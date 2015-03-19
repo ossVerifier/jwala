@@ -86,6 +86,7 @@ task activateAemContext(type: Copy) {
 def CSCRIPT_FULL_PATH = "C:\\Windows\\System32"
 def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional Testing\\TOCDemoConf.vbs"
 
+// TODO: Deprecate when we're sure we no longer needs this (e.g. SOAP UI is already being used...)
 task runIntegTestQtpScript(type: ProcessExec) {
     command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
     directory "${CSCRIPT_FULL_PATH}"
@@ -94,10 +95,16 @@ task runIntegTestQtpScript(type: ProcessExec) {
     timeout 900000 // timeout in 15 minutes
 }
 
+task sendRestGetToHct(type: com.siemens.cto.gradle.RestGetTask) {
+    url "https://localhost:9101/aem"
+}
+
 task (integTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
     // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+
+    sendRestGetToHct.execute() // Do a simple rest test while we don't have the "real thing"
 }
 
 // Merge Jacoco report
@@ -129,6 +136,7 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     childProjectName "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
     jvmInstancePath JVM_INSTANCE_PATH
+    jvmShutdownWaitTime 180000 // Make it 3 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
 
     beforeJvmStart {
         activateAemContext.execute()
