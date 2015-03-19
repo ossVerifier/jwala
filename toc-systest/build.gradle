@@ -32,7 +32,7 @@ buildscript {
 }
 
 def now = new Date()
-def STP_TEMP_PATH = "D:/integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
+def STP_TEMP_PATH = "D:/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
@@ -97,7 +97,7 @@ task runIntegTestQtpScript(type: ProcessExec) {
 task (integTests) << {
     println "Running integ test..."
     sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
-    runIntegTestQtpScript.execute()
+    // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
 }
 
 // Merge Jacoco report
@@ -124,22 +124,25 @@ task mergeIntegTestReport(type: JacocoMerge) {
 
 h2TcpServer = null
 task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
-    stpTempPath = STP_TEMP_PATH
+    stpTempPath STP_TEMP_PATH
     configName "integTestConf"
-    childProjectName = "${ROOT_NAME}-webapp"
+    childProjectName "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
+    jvmInstancePath JVM_INSTANCE_PATH
+
     beforeJvmStart {
         activateAemContext.execute()
         h2TcpServer = Server.createTcpServer().start() // start h2
         createTables.execute()
     }
+
     onJvmStart {
         integTests.execute()
     }
+
     beforeCleanup {
         h2TcpServer.stop() // stop h2
     }
-    doLast {
-        mergeIntegTestReport.execute()
-    }
 }
+
+runIntegTests.finalizedBy mergeIntegTestReport
