@@ -3,13 +3,15 @@
  *
  * @author: Jedd Anthony Cuison
  *
- * usage: {@link http://jsfiddle.net/jlkwison/auw373we/14/}
+ * usage: {@link http://jsfiddle.net/jlkwison/auw373we/18/}
  *
- * TODO: Prevent columns from totally collapsing.
- */
+  * @param tableWidth width "value" of the table e.g. 50 (not "50px").
+  * @param minColWidth the allowable minimum column width "value". If set to zero, the column dissappears
+  *                    if the column's width is set to 0. If not specified, min column width is 3.
+  */
 (function($) {
 
-    $.fn.makeColumnsResizable = function() {
+    $.fn.makeColumnsResizable = function(tableWidth, minColWidth) {
         var self = this;
         return this.each(function(idx){
 
@@ -18,12 +20,18 @@
             var COL_RESIZE_CURSOR = "col-resize";
             var origWidths = [0, 0];
 
+            minColWidth = (minColWidth === undefined ? 5 : minColWidth);
+
             var onTdMouseMove = function(e) {
                 if (mouseDrag) {
                     var newWidth = rightCellBorderPagePos - e.pageX;
                     var newWidthDiff = origWidths[1] - newWidth;
-                    $(self[idx]).find("thead th").eq(colIdx - 1).innerWidth(origWidths[0] + newWidthDiff);
-                    $(self[idx]).find("thead th").eq(colIdx).innerWidth(newWidth);
+
+                    if (newWidth > minColWidth && (origWidths[0] + newWidthDiff) > minColWidth) {
+                        $(self[idx]).find("thead th").eq(colIdx - 1).innerWidth(origWidths[0] + newWidthDiff);
+                        $(self[idx]).find("thead th").eq(colIdx).innerWidth(newWidth);
+                    }
+
                 } else {
                     if ($(e.currentTarget).parent().children().index($(e.currentTarget))!==0){
 
@@ -34,6 +42,8 @@
                             $("html,body").css("cursor", "default");
                         }
 
+                    } else {
+                         $("html,body").css("cursor", "default");
                     }
                 }
                 e.preventDefault();
@@ -62,10 +72,13 @@
                 mouseDrag = false;
             }
 
+            if (tableWidth !== undefined) {
+                $(self[idx]).width(tableWidth);
+            }
+
             $(self[idx]).find("tbody td").mousemove(onTdMouseMove);
             $(self[idx]).find("tbody td").mousedown(onTdMouseDown);
             $(self[idx]).find("tbody td").mouseup(onTdMouseUp);
-
             $(self[idx]).find("tbody").mouseleave(onTbodyMouseLeave);
 
             $(self[idx]).addClass("adj-col");
