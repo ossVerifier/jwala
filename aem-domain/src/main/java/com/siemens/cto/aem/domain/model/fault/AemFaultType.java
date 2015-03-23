@@ -102,7 +102,11 @@ public enum AemFaultType implements MessageResponseStatus {
     CANNOT_CONNECT("AEM48", "CannotConnect"),
 
     /**/
-    INVALID_PATH("AEM49", "InvalidPath")
+    INVALID_PATH("AEM49", "InvalidPath"),
+
+    RESOURCE_INSTANCE_NOT_FOUND("AEM50", "ResourceInstanceNotFound"),
+
+    RESOURCE_INSTANCE_MAP_NOT_INCLUDED("AEM51", "ResourceInstanceAttributesNotFound"),
     ;
 
 	private final String faultCode;

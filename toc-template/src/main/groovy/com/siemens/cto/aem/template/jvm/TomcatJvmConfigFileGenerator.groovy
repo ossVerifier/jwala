@@ -30,8 +30,8 @@ public class TomcatJvmConfigFileGenerator {
                                       final Jvm jvm
                                       ) {
         final binding = [webServerName:jvm.getHostName(),
-                         jvms:[jvm],
-                         comments:""]
+                                         jvms:[jvm],
+                                         comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 

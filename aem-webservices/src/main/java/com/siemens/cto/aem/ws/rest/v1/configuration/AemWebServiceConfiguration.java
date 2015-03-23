@@ -7,6 +7,8 @@ import javax.ws.rs.ext.MessageBodyWriter;
 
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
+import com.siemens.cto.aem.ws.rest.v1.service.resourceInstance.ResourceInstanceServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.resourceInstance.impl.ResourceInstanceServiceRestImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -173,6 +175,10 @@ public class AemWebServiceConfiguration {
     @Bean
     public ApplicationServiceRest getV1ApplicationServiceRest() {
         return new ApplicationServiceRestImpl(applicationService);
+    }
+    @Bean
+    public ResourceInstanceServiceRest getV1ResourceInstanceServiceRest() {
+        return new ResourceInstanceServiceRestImpl(resourceService, groupService, jvmService);
     }
 
     @Bean
