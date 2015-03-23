@@ -4,18 +4,15 @@
 
 .tree-list-content {
     width: auto;
-    height: 100%;
-    border: 1px solid rgb(192, 192, 192);
-    overflow: hidden;
+    min-width: 400px;
+    height: 800px;
+    border: 1px solid rgb(195, 195, 195);
+    white-space: nowrap;
 }
 
 .list-style-none {
     list-style-type: none;
     padding: 5px 0 5px 16px;
-}
-
-.li-width {
-    width: 400px;
 }
 
 .li-style.selectable {
@@ -24,10 +21,12 @@
 
 .li-style.selectable:hover {
     background-color: rgb(230, 230, 230);
-    /* color: rgb(0, 86, 172);*/
-    /* font-weight: bold; */
 }
 
 .li-display-none {
     display: none;
+}
+
+img.expand-collapse-padding {
+    padding-right: 5px;
 }
