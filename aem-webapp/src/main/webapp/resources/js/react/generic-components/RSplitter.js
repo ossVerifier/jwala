@@ -59,7 +59,7 @@ var RSplitter = React.createClass({
 
         this.props.components.forEach(function(item) {
             ++i;
-            var ref = RSplitter.getKey(i);
+            var key = RSplitter.getKey(i);
 
             var cursor = "auto";
             if (self.state.mouseOnSplitter || self.state.grabSplitter) {
@@ -68,13 +68,14 @@ var RSplitter = React.createClass({
                 }
             }
 
-            divs.push(React.createElement(RPanel, {ref: ref,
+            divs.push(React.createElement(RPanel, {key: key,
+                                                   ref: key,
                                                    className:(i > 1 ? dividerClassName : "") + " rsplitter childContainer " + orientationClassName,
                                                    style:{width: self.state.panelStates[i - 1].width,
                                                           height: self.state.panelStates[i - 1].height,
                                                           cursor: cursor},
-                                                   mouseMoveHandler: self.mouseMoveHandler.bind(self, ref, i - 1),
-                                                   mouseDownHandler: self.mouseDownHandler.bind(self, ref, i - 1),
+                                                   mouseMoveHandler: self.mouseMoveHandler.bind(self, key, i - 1),
+                                                   mouseDownHandler: self.mouseDownHandler.bind(self, key, i - 1),
                                                    mouseUpHandler: self.mouseUpHandler}, item));
 
         });
