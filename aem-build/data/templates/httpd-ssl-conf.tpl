@@ -34,7 +34,7 @@
 # same ServerRoot for multiple httpd daemons, you will need to change at
 # least PidFile.
 #
-ServerRoot "${webServer.svrRoot.path}"
+ServerRoot ./
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -195,11 +195,26 @@ SSLSessionCache shmcb:logs/ssl_cache_shm
 #Note: we are not password protecting our keys
 #SSLPassPhraseDialog "exec:../siemens/data/security/apache/authorize.bat"
 
-<VirtualHost *:443>
-DocumentRoot "${webServer.docRoot.path}"
-
 #IPINS
 LoadModule rewrite_module modules/mod_rewrite.so
+
+<VirtualHost *:443>
+DocumentRoot "stpdocs"
+
+<Directory "stpdocs">
+    Options Indexes FollowSymLinks
+    AllowOverride None
+    Require all granted
+</Directory>
+
+
+<Files "stp.png">
+    Order Deny,Allow
+    Deny from all
+    Allow from all
+</Files>
+
+#IPINS
 RewriteEngine on      
 RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
 RewriteRule .* - [F]    
@@ -237,8 +252,10 @@ Allow from all
 SSLRequireSSL
 </Directory>
 
-SSLProtocol -all +TLSv1.2
-#SSLProtocol -all +TLSv1.2 -TLSv1.1 -TLSv1 -SSLv3
+# TLS1 is supported because corporate group policy currently disables TLS1.2 and TLS1.1 in IE
+SSLProtocol -all +TLSv1.2 +TLSv1
+# Ideally we would be purely on TLS 1.2:
+#SSLProtocol -all +TLSv1.2 
 
 SSLCipherSuite HIGH:MEDIUM:!aNULL:+SHA1:+MD5:+HIGH:+MEDIUM
 #SSLCipherSuite HIGH all ciphers using 3DES
@@ -277,32 +294,23 @@ AddType application/x-pkcs7-crl.crl
 SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
 
 #mod_proxy load balancing
+ProxyPreserveHost On
 <% apps.each() { %>
-ProxyPass ${it.mount.replaceAll(" ", "")} balancer://lb-${it.name.replaceAll(" ", "")}
+ProxyPass ${it.webAppContext.replaceAll(" ", "")} balancer://lb-${it.name.replaceAll(" ", "")}
 <% } %>
 
 
 </VirtualHost>
 
 <VirtualHost *:80>
-DocumentRoot "${webServer.docRoot.path}"
+DocumentRoot "htdocs"
 
 #IPINS
-LoadModule rewrite_module modules/mod_rewrite.so
 RewriteEngine on      
 RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
 RewriteRule .* - [F]    
 
 SSLEngine off
-
-# Export the two Apache standard status page routes
-<Location /server-status>
-SetHandler server-status
-
-Order Deny,Allow
-Deny from all
-Allow from all
-</Location>
 
 <Location /balancer-manager>
 SetHandler balancer-manager
@@ -312,17 +320,8 @@ Deny from all
 Allow from all
 </Location>
 
-<Location /jk/status>
-SetHandler balancer-manager
-
-Order Deny,Allow
-Deny from all
-Allow from all
-</Location>
-
-#mod_proxy load balancing - not encrypted, just a ping
-
-ProxyPassMatch ^/stp\\.png\$ balancer://PING
+#mod_proxy load balancing - AJP example only. not encrypted, just a ping
+# ProxyPassMatch ^/stp\\.png\$ balancer://PING
 
 </VirtualHost>
 
@@ -330,7 +329,7 @@ ProxyPassMatch ^/stp\\.png\$ balancer://PING
 # ${comments}
 <%
     apps.each {
-        def ctxPath = it.mount.replaceAll(" ", "")
+        def ctxPath = it.webAppContext.replaceAll(" ", "")
 %>
 <Proxy balancer://lb-${it.name.replaceAll(" ", "")}>
 ProxySet lbmethod=bybusyness
@@ -339,7 +338,10 @@ ProxySet scolonpathdelim=On
 ProxySet growth=2
 ProxySet nofailover=On
 <%
-    jvms.each() {
+    def app = it
+    def desiredGroup = 130
+    // app.group.id.id
+    jvms.find { it.groups.find { it.id.id == desiredGroup } != null } each {
         def hostName = it.hostName.replaceAll(" ", "")
         def jvmName = it.jvmName.replaceAll(" ", "")
 %>
@@ -466,8 +468,8 @@ ServerAdmin admin@example.com
 # documents. By default, all requests are taken from this directory, but
 # symbolic links and aliases may be used to point to other locations.
 #
-DocumentRoot "${webServer.docRoot.path}"
-<Directory "${webServer.docRoot.path}">
+DocumentRoot htdocs
+<Directory "htdocs">
     #
     # Possible values for the Options directive are "None", "All",
     # or any combination of:
