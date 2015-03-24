@@ -1,0 +1,18 @@
+div.container {
+    min-width: 270px;
+    min-height: 400px;
+}
+
+/* Resource type drop down */
+div.resource-type-dropdown {
+
+}
+
+select.resource-type-dropdown {
+    vertical-align: top;
+    height: 21px;
+}
+
+option.resource-type-dropdown {
+
+}
