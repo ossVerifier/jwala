@@ -25,10 +25,16 @@ var ResourcesConfig = React.createClass({
                                               selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
+        var resourceTypes = [{name: "Datasource"}, {name: "JMS Connection Factory"}, {name: "JMS Queue"}, {name: "JMS Topic"}];
+
+        var resourcesPane = <RStaticDialog title="Resources" className="">
+                                <AddEditDeleteResources resourceTypes={resourceTypes} />
+                            </RStaticDialog>
+
         var horzComponents = [];
         horzComponents.push(<div className="group-jvms-tree-list-container">{groupJvmTreeList}</div>);
-        horzComponents.push(<div className="group-jvms-tree-list-container"></div>);
-        horzComponents.push(<div className="group-jvms-tree-list-container"></div>);
+        horzComponents.push(<div className="">{resourcesPane}</div>);
+        horzComponents.push(<div className=""></div>);
 
         var horzSplitter = <RSplitter components={horzComponents}
                                       orientation={RSplitter.HORIZONTAL_ORIENTATION}

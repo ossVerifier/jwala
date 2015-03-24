@@ -148,3 +148,8 @@ div .state {
 .ui-tooltip {
     text-align:left;
 }
+
+.default-icon-button-style {
+    padding: 0 0 3px 0;
+    margin-left: 3px;
+}
