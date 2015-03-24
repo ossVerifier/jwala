@@ -114,6 +114,7 @@ var RSplitter = React.createClass({
                 this.state.panelStates[this.state.splitterIdx].width = currentDivWidth - dif;
             }
             this.setState({mousePos: pagePos});
+            e.preventDefault();
         } else if (idx > 0) {
             var divO = $(this.refs[ref].getDOMNode());
 
@@ -125,21 +126,21 @@ var RSplitter = React.createClass({
                 this.setState({mouseOnSplitter: false});
                 return;
             }
+            e.preventDefault();
         }
-
-        e.preventDefault();
     },
 
     mouseDownHandler: function(ref, idx, e) {
         if (idx > 0 && this.state.mouseOnSplitter && !this.state.grabSplitter) {
             this.setState({splitterRef: ref, splitterIdx: idx, grabSplitter: true});
+            e.preventDefault();
         }
-        e.preventDefault();
     },
 
     mouseUpHandler: function() {
         if (this.state.grabSplitter) {
             this.setState({grabSplitter: false});
+            e.preventDefault();
         }
     },
 
