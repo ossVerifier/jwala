@@ -68,7 +68,8 @@ var ResourceList = React.createClass({
                                                                      resource:resource,
                                                                      onClick:self.onClick,
                                                                      isHighlighted:(self.state.currentResourceItemId === resource.id),
-                                                                     onSelect:self.onSelect}));
+                                                                     onSelect:self.onSelect,
+                                                                     editMode:(self.state.currentResourceItemId === resource.id)}));
         });
 
         return React.createElement("div", {className:"resource-list"}, resourceElements);
@@ -81,7 +82,7 @@ var ResourceList = React.createClass({
         var tempId = date.getTime();
         var name = resourceTypeName.replace(/\s/g, '-').toLowerCase() + "-" + tempId;
         this.state.resourceList.push({id:tempId, name:name});
-        this.forceUpdate();
+        this.setState({currentResourceItemId:tempId});
     },
     onSelect: function(id, checked) {
         this.state.selectedResourceIds[id] = checked;
@@ -114,7 +115,13 @@ var ResourceItem = React.createClass({
                                                                       className:"resource-item no-border width-max resource-name-text-field " + highlightClassName,
                                                                       value:this.state.resourceName,
                                                                       onChange:this.onTextFieldChange,
-                                                                      onKeyPress:this.onTextFieldKeyPress}));
+                                                                      onKeyPress:this.onTextFieldKeyPress,
+                                                                      maxLength:40}));
+    },
+    componentDidMount: function() {
+        if (this.props.editMode) {
+            this.refs.textField.getDOMNode().select();
+        }
     },
     onTextFieldChange: function() {
         this.setState({resourceName:$(this.refs.textField.getDOMNode()).val()});
