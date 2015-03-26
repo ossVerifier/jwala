@@ -137,7 +137,7 @@ var RSplitter = React.createClass({
         }
     },
 
-    mouseUpHandler: function() {
+    mouseUpHandler: function(e) {
         if (this.state.grabSplitter) {
             this.setState({grabSplitter: false});
             e.preventDefault();
