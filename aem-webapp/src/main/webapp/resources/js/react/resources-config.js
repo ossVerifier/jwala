@@ -28,7 +28,7 @@ var ResourcesConfig = React.createClass({
         var resourceTypes = [{name: "Datasource"}, {name: "JMS Connection Factory"}, {name: "JMS Queue"}, {name: "JMS Topic"}];
 
         var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <AddEditDeleteResources resourceTypes={resourceTypes} />
+                                <AddEditDeleteResources resourceTypes={resourceTypes} resourceList={[]} />
                             </RStaticDialog>
 
         var horzComponents = [];
