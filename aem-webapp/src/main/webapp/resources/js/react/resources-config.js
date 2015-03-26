@@ -45,7 +45,7 @@ var ResourcesConfig = React.createClass({
         var vertComponents = [];
 
         vertComponents.push(<div className="group-jvms-tree-list-container">{horzSplitter}</div>);
-        vertComponents.push(<div className="group-jvms-tree-list-container"></div>);
+        vertComponents.push(<div className="group-jvms-tree-list-container"><XmlTabs/></div>);
 
         var vertSplitter = <RSplitter components={vertComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
 
@@ -61,3 +61,17 @@ var ResourcesConfig = React.createClass({
     }
 
 })
+
+var XmlTabs = React.createClass({
+    getInitialState: function() {
+        return {
+            tokenizedXml: '<Resource name="jdbc/toc-xa" auth="Container" type="com.atomikos.jdbc.AtomikosDataSourceBean" factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"/>',
+            untokenizedXml: '<Resource name="${name}" auth="${contaner}" type="${type}" factory="${factory}"/>'
+        };
+    },
+    render: function() {
+        var xmlTabItems = [{title: "Tokenized", content:<RXmlEditor content={this.state.tokenizedXml}/>},
+                           {title: "Untokenized", content:<RXmlEditor content={this.state.untokenizedXml}/>}];
+        return <Tabs theme="default" items={xmlTabItems} depth="0"/>
+    }
+});
