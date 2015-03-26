@@ -1,18 +1,46 @@
-div.container {
+.add-edit-delete-resources-container {
     min-width: 270px;
     min-height: 400px;
 }
 
 /* Resource type drop down */
 div.resource-type-dropdown {
-
+    background-color: rgb(242, 242, 242);
+    border: 1px solid rgb(195, 195, 195);
 }
 
 select.resource-type-dropdown {
     vertical-align: top;
     height: 21px;
+    margin-left: 8px;
+    margin-top: 2px;
+    min-width: 214px;
 }
 
 option.resource-type-dropdown {
 
+}
+
+div.resource-list {
+    min-width: 100%;
+    min-height: 390px;
+    border: 1px solid rgb(195, 195, 195);
+    background-color: white;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+input.resource-item {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.no-border {
+    border: 0 !important;
+}
+
+.resource-name-text-field {
+    width: 80%;
+    margin-left: 10px;
 }
