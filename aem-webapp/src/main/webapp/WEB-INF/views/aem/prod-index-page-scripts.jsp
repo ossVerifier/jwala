@@ -41,6 +41,7 @@
 <script src="gen-public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-multi-select-box.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-combobox.js"></script>
+<script src="gen-public-resources/js/react/generic-components/rxmleditor.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RStaticDialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RTreeList.js"></script>

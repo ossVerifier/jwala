@@ -1,0 +1,70 @@
+div.xml-editor {
+    border: 1px solid black;
+    width: 100%;
+    height: 300px;
+    font-family: monospace; /* "Courier New", Courier, monospace; */
+    font-size: 8pt;
+    position: relative;
+    display: block;
+    overflow:auto;
+    background: white;
+}
+
+span.cursor-color1 {
+    color: black;
+}
+
+span.cursor-color2 {
+    color: white;
+}
+
+/* Line number */
+.lineNumberChar {
+    display:inline-block;
+    text-align: right;
+    width: 20px;
+    border: 1px dotted gray;
+    background-color: #F2F2F2;
+}
+
+.lineNumberCursor {
+    margin-left: 5px;
+}
+
+/* For the character component */
+div.character {
+    display: inline-block;
+}
+
+span.cursor {
+    border: 1px solid black;
+}
+
+span.hide-cursor {
+    border-color: transparent !important;
+}
+
+/* XML color schemes */
+.element {
+    color: #66A366;
+}
+
+.attribute {
+    color: #0066FF;
+}
+
+.value{
+    color: #990099;
+}
+
+.text {
+    color: black;
+}
+
+.comment {
+    color: #B2B2B2;
+}
+
+.selected {
+    background-color: #CCEBFF;
+}
