@@ -1,6 +1,6 @@
 .add-edit-delete-resources-container {
-    min-width: 270px;
-    min-height: 400px;
+    min-width: 327px;
+    min-height: 303px;
 }
 
 /* Resource type drop down */
@@ -23,7 +23,7 @@ option.resource-type-dropdown {
 
 div.resource-list {
     min-width: 100%;
-    min-height: 390px;
+    min-height: 275px;
     border: 1px solid rgb(195, 195, 195);
     background-color: white;
     border-left: none;
