@@ -38,9 +38,9 @@ var ResourcesConfig = React.createClass({
 
         var horzSplitter = <RSplitter components={horzComponents}
                                       orientation={RSplitter.HORIZONTAL_ORIENTATION}
-                                      panelDimensions={[{width:"46%", height:"100%"},
-                                                        {width:"27%", height:"100%"},
-                                                        {width:"27%", height:"100%"}]} />
+                                      panelDimensions={[{width:"33.33%", height:"100%"},
+                                                        {width:"33.33%", height:"100%"},
+                                                        {width:"33.33%", height:"100%"}]} />
 
         var vertComponents = [];
 

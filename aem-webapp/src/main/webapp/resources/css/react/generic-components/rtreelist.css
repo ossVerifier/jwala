@@ -3,9 +3,9 @@
 }
 
 .tree-list-content {
+    min-width: 337px;
+    min-height: 303px;
     width: auto;
-    min-width: 400px;
-    height: 800px;
     border: 1px solid rgb(195, 195, 195);
     white-space: nowrap;
 }
