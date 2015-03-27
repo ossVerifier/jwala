@@ -53,7 +53,7 @@ var RTreeList = React.createClass({
                                                       selectedNodeKey: this.state.selectedNodeKey}));
             }
 
-            var ul = React.createElement("ul", {className: "list-style-none "}, nodes);
+            var ul = React.createElement("ul", {className: "tree-list-style"}, nodes);
             return React.createElement("div", {className: "tree-list-content"}, ul);
         }
         return React.createElement("div", {className: "tree-list-content"}, "The tree is empty...");
@@ -108,11 +108,11 @@ var Node = React.createClass({
         if (childNodes.length > 0) {
             return React.createElement("li", {className: "li-style"},
                        React.createElement("img", {ref: "expandCollapseIcon", src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon), onClick:this.onClickIconHandler, className: "expand-collapse-padding"}),
-                       React.createElement("span", {ref: "nodeLabel", className: selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
-                       React.createElement("li", {className: "list-style-none " + (this.state.isCollapsed ? "li-display-none" : "")},
-                           React.createElement("ul", {className: "list-style-none"}, childNodes)));
+                       React.createElement("span", {ref: "nodeLabel", className: "tree-list-style " + selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
+                       React.createElement("li", {className: "tree-list-style " + (this.state.isCollapsed ? "li-display-none" : "")},
+                           React.createElement("ul", {className: "tree-list-style"}, childNodes)));
         }
-        return React.createElement("li", {className: "li-style" + selectableClassName, onClick:this.onClickIconHandler},
+        return React.createElement("li", {className: "tree-list-style li-style " + selectableClassName, onClick:this.onClickIconHandler},
                    React.createElement("span", {ref: "nodeLabel", className: selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel));
     },
     onClickNodeHandler: function(isSelectable, data) {
