@@ -106,7 +106,7 @@ var Node = React.createClass({
         var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
 
         if (childNodes.length > 0) {
-            return React.createElement("li", {className: "li-style"},
+            return React.createElement("li", {className: "li-style " + selectableClassName},
                        React.createElement("img", {ref: "expandCollapseIcon", src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon), onClick:this.onClickIconHandler, className: "expand-collapse-padding"}),
                        React.createElement("span", {ref: "nodeLabel", className: "tree-list-style " + selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
                        React.createElement("li", {className: "tree-list-style " + (this.state.isCollapsed ? "li-display-none" : "")},
