@@ -3,6 +3,7 @@ var ResourcesConfig = React.createClass({
 
     getInitialState: function() {
         return {
+            resourceTypes:[],
             groupJvmData: null
         }
     },
@@ -25,10 +26,8 @@ var ResourcesConfig = React.createClass({
                                               selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
-        var resourceTypes = [{name: "Datasource"}, {name: "JMS Connection Factory"}, {name: "JMS Queue"}, {name: "JMS Topic"}];
-
         var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <AddEditDeleteResources resourceTypes={resourceTypes} resourceList={[]} />
+                                <AddEditDeleteResources resourceTypes={this.state.resourceTypes} resourceList={[]} />
                             </RStaticDialog>
 
         var horzComponents = [];
@@ -54,10 +53,15 @@ var ResourcesConfig = React.createClass({
 
     componentDidMount: function() {
         ServiceFactory.getGroupService().getGroups(this.getGroupJvmCallback);
+        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
     },
 
     getGroupJvmCallback: function(response) {
         this.setState({groupJvmData:response.applicationResponseContent});
+    },
+
+    getResourceTypesCallback: function(response) {
+        this.setState({resourceTypes: response.applicationResponseContent});
     }
 
 })
