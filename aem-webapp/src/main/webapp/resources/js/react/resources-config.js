@@ -16,7 +16,7 @@ var ResourcesConfig = React.createClass({
             return <div>Loading groups and JVMs...</div>
         }
 
-        var treeMetaData = [{propKey: "name"}, {entity: "jvms", propKey: "jvmName", selectable: true}];
+        var treeMetaData = [{propKey: "name", selectable: true}, {entity: "jvms", propKey: "jvmName", selectable: true}];
         var groupJvmTreeList = <RStaticDialog title="JVMs" className="group-jvms-tree-list-dialog">
                                    <RTreeList data={this.state.groupJvmData}
                                               treeMetaData={treeMetaData}
