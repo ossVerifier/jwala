@@ -19,5 +19,8 @@ var ServiceFactory = {
     },
     getAdminService: function() {
     	return adminService;
+    },
+    getResourceService: function() {
+        return resourceService;
     }
 };
