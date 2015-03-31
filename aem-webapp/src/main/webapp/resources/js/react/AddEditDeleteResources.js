@@ -131,6 +131,9 @@ var ResourceItem = React.createClass({
     render: function() {
         var highlightClassName = this.props.isHighlighted ? "ui-state-highlight" : "";
         return React.createElement("div", {className:highlightClassName, onClick:this.onDivClick},
+                                        React.createElement(PopUpAndGo, {ref:"errorMsg",
+                                                                         timeout:5000,
+                                                                         className:"ui-state-error ui-corner-all"}, "Invalid name!"),
                                         React.createElement("input", {ref:"checkBox",
                                                                       type:"checkbox",
                                                                       className:"resource-item",
@@ -156,6 +159,8 @@ var ResourceItem = React.createClass({
             if (ResourceItem.isValidResourceName(this.state.resourceName)) {
                 $(this.refs.textField.getDOMNode()).blur();
                 ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
+            } else {
+                this.refs.errorMsg.show();
             }
         }
     },
@@ -173,5 +178,34 @@ var ResourceItem = React.createClass({
         isValidResourceName: function(resourceName) {
             return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_.]+$/i) !== null);
         }
+    }
+});
+
+/**
+ * Shows up to display it's content e.g. a message then disappears on timeout.
+ *
+ * Properties:
+ *
+ * 1. timeout - the timeout in milliseconds.
+ * 2. className - the div container's className.
+ */
+var PopUpAndGo = React.createClass({
+    timeoutEvent: null,
+    getInitialState: function() {
+        return {showThySelf:false};
+    },
+    render: function() {
+        var theStyle = {display:(this.state.showThySelf ? "" : "none")};
+        return React.createElement("div", {style:theStyle, className:this.props.className}, this.props.children);
+    },
+    show: function() {
+        this.timeoutEvent = setTimeout(this.beGone, this.props.timeout);
+        this.setState({showThySelf:true});
+    },
+    beGone: function() {
+        if (this.timeoutEvent !== null) {
+            clearTimeout(this.timeoutEvent);
+        }
+        this.setState({showThySelf:false});
     }
 });
