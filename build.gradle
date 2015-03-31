@@ -22,11 +22,16 @@ ext {
                  jms : "1.1",
                  infrastructureProvided : "1.0-SNAPSHOT",
                  infrastructureSecurity : "1.0-SNAPSHOT",
+                 infrastructureGradle : "1.0-SNAPSHOT",
                  commons_lang : "3.3.2",
                  commons_logging : "1.1.1",
                  httpcomponents_core : "4.2.2",
                  httpcomponents_client : "4.2.3",
-                 tomcat : '7.0.55'
+                 tomcat : '7.0.55',
+                 ant: '1.8.2',
+                 groovy: '2.2.0',
+                 jacoco: '0.6.5.201403032054',
+                 devbundle: '1.0-SNAPSHOT'
                 ]
 }
 
@@ -117,7 +122,7 @@ subprojects {
     }
 
     jacoco {
-        toolVersion = "0.6.3.201306030806"
+        toolVersion = "$project.versions.jacoco"
     }
 
     jacocoTestReport {

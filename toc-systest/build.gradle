@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'stpIntegTest'
 apply plugin: 'stpJvmControl'
 
@@ -8,12 +8,28 @@ import groovy.sql.Sql
 
 configurations {
     integTestConf
+    integTestSuite
+}
+
+sourceSets { 
+    integTestSuite {
+        groovy {
+            srcDir 'src/integ-test/groovy'
+        }
+    }
 }
 
 dependencies {
-    integTestConf "com.siemens.cto:dev-bundle:1.0-SNAPSHOT"
-    integTestConf group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.6.4.201312101107'
-    integTestConf "com.h2database:h2:$project.versions.h2"
+
+    integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"    
+    integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
+    integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
+    
+    integTestSuiteCompile configurations.testCompile
+    integTestSuiteCompile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
+    integTestSuiteCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
+    integTestSuiteCompile files(fileTree(dir: 'lib', includes: ['*.jar']))
+        
 }
 
 buildscript {
@@ -95,17 +111,11 @@ task runIntegTestQtpScript(type: ProcessExec) {
     timeout 900000 // timeout in 15 minutes
 }
 
-task sendRestGetToHct(type: com.siemens.cto.gradle.RestGetTask) {
-    url "https://localhost:9101/aem"
+task integTestSuiteRunner(type: Test) {
+    testClassesDir = sourceSets.integTestSuite.output.classesDir
+    classpath = sourceSets.integTestSuite.runtimeClasspath
 }
 
-task (integTests) << {
-    println "Running integ test..."
-    sleep(5000) // Breather before we start testing to make sure AEM is all warmed up.
-    // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
-
-    sendRestGetToHct.execute() // Do a simple rest test while we don't have the "real thing"
-}
 
 // Merge Jacoco report
 task renameMergedReportToAccumExec (type: Copy) {
@@ -129,14 +139,15 @@ task mergeIntegTestReport(type: JacocoMerge) {
     }
 }
 
-h2TcpServer = null
+def h2TcpServer = null
 task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     stpTempPath STP_TEMP_PATH
     configName "integTestConf"
     childProjectName "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
     jvmInstancePath JVM_INSTANCE_PATH
-    jvmShutdownWaitTime 180000 // Make it 3 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
+    jvmShutdownWaitTime 60000 // Make it 1 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
+    pingUrl "https://localhost:9101/stp.png"
 
     beforeJvmStart {
         activateAemContext.execute()
@@ -145,7 +156,14 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     }
 
     onJvmStart {
-        integTests.execute()
+    
+        println "Server ready, running tests..."
+
+        integTestSuiteRunner.execute()
+
+        println "NOT Running QTP test suite... - commented out"
+        // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+
     }
 
     beforeCleanup {
@@ -153,4 +171,5 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     }
 }
 
-runIntegTests.finalizedBy mergeIntegTestReport
+runIntegTests.dependsOn     compileIntegTestSuiteGroovy
+runIntegTests.finalizedBy   mergeIntegTestReport
