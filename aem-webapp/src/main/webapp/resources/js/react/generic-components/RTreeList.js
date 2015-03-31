@@ -29,7 +29,7 @@
 var RTreeList = React.createClass({
     getInitialState: function() {
         return {
-            selectedNodeKey: ""
+            selectedNodeKey: null
         }
     },
     render: function() {
@@ -57,6 +57,23 @@ var RTreeList = React.createClass({
             return React.createElement("div", {className: "tree-list-content"}, ul);
         }
         return React.createElement("div", {className: "tree-list-content"}, "The tree is empty...");
+    },
+    selectNode: function(name) {
+        var self = this;
+        if (this.props.treeMetaData !== null) {
+            for (var i = 0; i < this.props.data.length; i++) {
+            var level = 0;
+                this.props.treeMetaData.forEach(function(metaDataItem){
+                    if (self.props.data[i][metaDataItem["propKey"]] === name) {
+                        var parent = (level === 0 ? "na" : metaDataItem[level - 1]);
+                        var key = Node.createKey(parent, level, i);
+                        self.setState({selectedNodeKey:key});
+                        return;
+                    }
+                    level++;
+                });
+            }
+        }
     }
 });
 

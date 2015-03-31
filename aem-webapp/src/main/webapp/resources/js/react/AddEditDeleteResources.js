@@ -47,17 +47,14 @@ var ResourceTypeOption = React.createClass({
     }
 });
 
-
 var ResourceList = React.createClass({
     getInitialState: function() {
-        var resourceList = [];
-
-        // Let's not assume that this.props.data is this class' definition of a resource.
-        this.props.data.forEach(function(item){
-            resourceList.push({id:item.id, name:item.name});
-        });
-
-        return {resourceList:resourceList, currentResourceItemId:null, selectedResourceIds:{}}
+        return {resourceList:ResourceList.getResourceList(this.props.data),
+                currentResourceItemId:null,
+                selectedResourceIds:{}};
+    },
+    componentWillReceiveProps : function(nextProps) {
+        this.setState({resourceList:ResourceList.getResourceList(nextProps.data)});
     },
     render: function() {
         var resourceElements = [];
@@ -96,6 +93,18 @@ var ResourceList = React.createClass({
             }
         });
         this.setState({resourceList:newResourceList});
+    },
+    statics: {
+        getResourceList: function(data) {
+            var resourceList = [];
+
+            // Let's not assume that this.props.data is this class' definition of a resource.
+           data.forEach(function(item){
+               resourceList.push({id:item.id, name:item.name});
+           });
+
+           return resourceList;
+        }
     }
 });
 
@@ -128,7 +137,10 @@ var ResourceItem = React.createClass({
     },
     onTextFieldKeyPress: function(e) {
         if (e.key === ResourceItem.ENTER_KEY) {
-            $(this.refs.textField.getDOMNode()).blur();
+            if (ResourceItem.isValidResourceName(this.state.resourceName)) {
+                $(this.refs.textField.getDOMNode()).blur();
+                ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
+            }
         }
     },
     onDivClick: function() {
@@ -141,6 +153,9 @@ var ResourceItem = React.createClass({
         this.setState({isHighlighted:val});
     },
     statics: {
-        ENTER_KEY: "Enter"
+        ENTER_KEY: "Enter",
+        isValidResourceName: function(resourceName) {
+            return (resourceName !== "");
+        }
     }
 });

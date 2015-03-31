@@ -4,22 +4,29 @@ var ResourcesConfig = React.createClass({
     getInitialState: function() {
         return {
             resourceTypes:[],
-            groupJvmData: null
+            groupJvmData: null,
+            groupName: null,
+            resourceList: []
         }
     },
-
-    selectNodeCallback: function() {
+    selectNodeCallback: function(data) {
+        ServiceFactory.getResourceService().getResources(data.name, this.getResourcesCallback);
     },
-
+    getResourcesCallback: function(groupName, data) {
+        this.setState({groupName:groupName, resourceList:data.applicationResponseContent});
+    },
     render: function() {
 
         if (this.state.groupJvmData === null) {
             return <div>Loading groups and JVMs...</div>
         }
 
-        var treeMetaData = [{propKey: "name", selectable: true}, {entity: "jvms", propKey: "jvmName", selectable: true}];
-        var groupJvmTreeList = <RStaticDialog title="JVMs" className="group-jvms-tree-list-dialog">
-                                   <RTreeList data={this.state.groupJvmData}
+        var treeMetaData = [{propKey: "name", selectable: true}];
+        var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
+                                              title="Groups"
+                                              className="group-jvms-tree-list-dialog">
+                                   <RTreeList ref="treeList"
+                                              data={this.state.groupJvmData}
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
@@ -27,7 +34,8 @@ var ResourcesConfig = React.createClass({
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <AddEditDeleteResources resourceTypes={this.state.resourceTypes} resourceList={[]} />
+                                <AddEditDeleteResources resourceTypes={this.state.resourceTypes}
+                                                        resourceList={this.state.resourceList} />
                             </RStaticDialog>
 
         var horzComponents = [];
@@ -62,8 +70,15 @@ var ResourcesConfig = React.createClass({
 
     getResourceTypesCallback: function(response) {
         this.setState({resourceTypes: response.applicationResponseContent});
+    },
+    componentDidUpdate: function() {
+        if (this.state.groupName === null && this.state.groupJvmData !== null && this.state.groupJvmData.length > 0) {
+            // Select the first group
+            this.refs.treeList.selectNode(this.state.groupJvmData[0].name);
+            this.setState({groupName:this.state.groupJvmData[0].name});
+            ServiceFactory.getResourceService().getResources(this.state.groupJvmData[0].name, this.getResourcesCallback);
+        }
     }
-
 })
 
 var XmlTabs = React.createClass({
