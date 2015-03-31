@@ -1,3 +1,4 @@
+/** @jsx React.DOM */
 var AddEditDeleteResources = React.createClass({
     render: function() {
         var resourceTypeDropDownArea = React.createElement("div", {className:"resource-type-dropdown"},
@@ -51,7 +52,8 @@ var ResourceList = React.createClass({
     getInitialState: function() {
         return {resourceList:ResourceList.getResourceList(this.props.data),
                 currentResourceItemId:null,
-                selectedResourceIds:{}};
+                selectedResourceIds:{},
+                showDeleteConfirmDialog:false};
     },
     componentWillReceiveProps : function(nextProps) {
         this.setState({resourceList:ResourceList.getResourceList(nextProps.data)});
@@ -69,7 +71,15 @@ var ResourceList = React.createClass({
                                                                      editMode:(self.state.currentResourceItemId === resource.id)}));
         });
 
-        return React.createElement("div", {className:"resource-list"}, resourceElements);
+        var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
+                                                                   show:this.state.showDeleteConfirmDialog,
+                                                                   okCallback:this.confirmDeleteCallback,
+                                                                   cancelCallback:this.cancelDeleteCallback,
+                                                                   content:<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>,
+                                                                   okLabel:"Yes",
+                                                                   cancelLabel:"No"});
+
+        return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
     },
     onClick: function(id) {
         this.setState({currentResourceItemId:id});
@@ -85,6 +95,9 @@ var ResourceList = React.createClass({
         this.state.selectedResourceIds[id] = checked;
     },
     deleteSelectedItems: function() {
+        this.setState({showDeleteConfirmDialog:true});
+    },
+    confirmDeleteCallback: function() {
         var newResourceList = [];
         var self = this;
         this.state.resourceList.forEach(function(resource) {
@@ -92,7 +105,10 @@ var ResourceList = React.createClass({
                 newResourceList.push({id:resource.id, name:resource.name});
             }
         });
-        this.setState({resourceList:newResourceList});
+        this.setState({resourceList:newResourceList, showDeleteConfirmDialog:false});
+    },
+    cancelDeleteCallback: function() {
+        this.setState({showDeleteConfirmDialog:false});
     },
     statics: {
         getResourceList: function(data) {
