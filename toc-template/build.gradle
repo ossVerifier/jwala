@@ -4,5 +4,5 @@ dependencies {
     compile project(":aem-domain")
     compile project(":toc-filemanager")
     
-    compile 'org.codehaus.groovy:groovy-all:2.2.0'
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: "$project.versions.groovy"
 }
