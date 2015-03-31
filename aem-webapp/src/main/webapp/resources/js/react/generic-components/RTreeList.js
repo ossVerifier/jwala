@@ -29,7 +29,7 @@
 var RTreeList = React.createClass({
     getInitialState: function() {
         return {
-            selectedNodeKey: ""
+            selectedNodeKey: null
         }
     },
     render: function() {
@@ -53,10 +53,27 @@ var RTreeList = React.createClass({
                                                       selectedNodeKey: this.state.selectedNodeKey}));
             }
 
-            var ul = React.createElement("ul", {className: "list-style-none "}, nodes);
+            var ul = React.createElement("ul", {className: "tree-list-style"}, nodes);
             return React.createElement("div", {className: "tree-list-content"}, ul);
         }
         return React.createElement("div", {className: "tree-list-content"}, "The tree is empty...");
+    },
+    selectNode: function(name) {
+        var self = this;
+        if (this.props.treeMetaData !== null) {
+            for (var i = 0; i < this.props.data.length; i++) {
+            var level = 0;
+                this.props.treeMetaData.forEach(function(metaDataItem){
+                    if (self.props.data[i][metaDataItem["propKey"]] === name) {
+                        var parent = (level === 0 ? "na" : metaDataItem[level - 1]);
+                        var key = Node.createKey(parent, level, i);
+                        self.setState({selectedNodeKey:key});
+                        return;
+                    }
+                    level++;
+                });
+            }
+        }
     }
 });
 
@@ -106,13 +123,13 @@ var Node = React.createClass({
         var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
 
         if (childNodes.length > 0) {
-            return React.createElement("li", {className: "li-style"},
+            return React.createElement("li", {className: "li-style " + selectableClassName},
                        React.createElement("img", {ref: "expandCollapseIcon", src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon), onClick:this.onClickIconHandler, className: "expand-collapse-padding"}),
-                       React.createElement("span", {ref: "nodeLabel", className: selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
-                       React.createElement("li", {className: "list-style-none " + (this.state.isCollapsed ? "li-display-none" : "")},
-                           React.createElement("ul", {className: "list-style-none"}, childNodes)));
+                       React.createElement("span", {ref: "nodeLabel", className: "tree-list-style " + selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
+                       React.createElement("li", {className: "tree-list-style " + (this.state.isCollapsed ? "li-display-none" : "")},
+                           React.createElement("ul", {className: "tree-list-style"}, childNodes)));
         }
-        return React.createElement("li", {className: "li-style" + selectableClassName, onClick:this.onClickIconHandler},
+        return React.createElement("li", {className: "tree-list-style li-style " + selectableClassName, onClick:this.onClickIconHandler},
                    React.createElement("span", {ref: "nodeLabel", className: selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel));
     },
     onClickNodeHandler: function(isSelectable, data) {

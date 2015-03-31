@@ -3,16 +3,26 @@
 }
 
 .tree-list-content {
+    min-width: 337px;
+    min-height: 303px;
     width: auto;
-    min-width: 400px;
-    height: 800px;
     border: 1px solid rgb(195, 195, 195);
     white-space: nowrap;
 }
 
-.list-style-none {
+ul.tree-list-style {
     list-style-type: none;
-    padding: 5px 0 5px 16px;
+    padding: 0 0 0 0;
+    margin: 3px 0 0 3px;
+}
+
+li.tree-list-style {
+    list-style-type: none;
+    margin: 4px 0 4px 11px;
+}
+
+span.tree-list-style {
+    margin: 4px 0 4px 0;
 }
 
 .li-style.selectable {

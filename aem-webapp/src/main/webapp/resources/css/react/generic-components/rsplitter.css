@@ -14,7 +14,7 @@
 
 .rsplitter.childContainer.horz {
     display: table-cell;
-    overflow: auto;
+    overflow: hidden;
 }
 
 /* Divider for horizontal oriented RSplitter component */

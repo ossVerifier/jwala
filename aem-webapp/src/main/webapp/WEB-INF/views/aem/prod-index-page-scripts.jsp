@@ -16,7 +16,7 @@
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 
 <!-- Services -->
-<!-- TODO: minimize -->
+<!-- TODO: minify -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
 <script src="public-resources/js/toc/loading-indicator.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
@@ -32,6 +32,7 @@
 <script src="public-resources/js/toc/v1/service/webServerControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/userService.js"></script>
 <script src="public-resources/js/toc/v1/service/stateService.js"></script>
+<script src="public-resources/js/toc/v1/service/resourceService.js"></script>
 <script src="public-resources/js/toc/group-operations-helper.js"></script>
 
 <!-- React UI -->
@@ -41,6 +42,7 @@
 <script src="gen-public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-multi-select-box.js"></script>
 <script src="gen-public-resources/js/react/generic-components/data-combobox.js"></script>
+<script src="gen-public-resources/js/react/generic-components/rxmleditor.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RStaticDialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RTreeList.js"></script>
