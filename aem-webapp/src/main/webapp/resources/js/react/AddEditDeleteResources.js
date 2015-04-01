@@ -93,7 +93,17 @@ var ResourceList = React.createClass({
     add: function(resourceTypeName) {
         var date = new Date();
         var tempId = date.getTime();
-        var name = resourceTypeName.replace(/\s/g, '-').toLowerCase() + "-" + tempId;
+        var largestNumber = 0;
+
+        this.state.resourceList.forEach(function(resourceItem){
+            var num = parseInt(resourceItem.name.substring(resourceTypeName.length + 1), 10);
+            if (!isNaN(num)) {
+                largestNumber = (largestNumber < num) ? num : largestNumber;
+            };
+        });
+
+        var name = resourceTypeName.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
+
         this.state.resourceList.push({id:tempId, name:name});
         this.setState({currentResourceItemId:tempId});
     },
