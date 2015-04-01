@@ -34,8 +34,8 @@ var ResourcesConfig = React.createClass({
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <AddEditDeleteResources resourceTypes={this.state.resourceTypes}
-                                                        resourceList={this.state.resourceList} />
+                                <ResourceEditor resourceTypes={this.state.resourceTypes}
+                                                resourceList={this.state.resourceList} />
                             </RStaticDialog>
 
         var horzComponents = [];

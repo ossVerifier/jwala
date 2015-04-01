@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-var AddEditDeleteResources = React.createClass({
+var ResourceEditor = React.createClass({
     render: function() {
         var resourceTypeDropDownArea = React.createElement("div", {className:"resource-type-dropdown"},
                                            React.createElement(RButton, {title:"Delete Resource",
