@@ -36,11 +36,11 @@ input.resource-item {
     vertical-align: middle;
 }
 
-.no-border {
-    border: 0 !important;
-}
-
 .resource-name-text-field {
     width:90%;
     margin-left: 10px;
+}
+
+.error-msg-div-margin {
+    margin-left: 30px !important;
 }

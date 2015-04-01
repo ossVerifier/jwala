@@ -126,14 +126,19 @@ var ResourceList = React.createClass({
 
 var ResourceItem = React.createClass({
     getInitialState: function() {
-        return {resourceName:this.props.resource.name};
+        return {
+            resourceName:this.props.resource.name,
+            resourceNameCopy:this.props.resource.name,
+            isValidResourceName:true
+        };
     },
     render: function() {
-        var highlightClassName = this.props.isHighlighted ? "ui-state-highlight" : "";
+        var highlightClassName = this.props.isHighlighted ?
+                            (this.state.isValidResourceName ? "ui-state-highlight" : "ui-state-error no-border") : "";
         return React.createElement("div", {className:highlightClassName, onClick:this.onDivClick},
-                                        React.createElement(PopUpAndGo, {ref:"errorMsg",
-                                                                         timeout:5000,
-                                                                         className:"ui-state-error ui-corner-all"}, "Invalid name!"),
+                                        React.createElement("div",
+                                            {style:{display:(this.state.isValidResourceName ? "none" : "")},
+                                             className:"error-msg-div-margin"}, "Invalid name!"),
                                         React.createElement("input", {ref:"checkBox",
                                                                       type:"checkbox",
                                                                       className:"resource-item",
@@ -143,7 +148,8 @@ var ResourceItem = React.createClass({
                                                                       className:"resource-item no-border width-max resource-name-text-field " + highlightClassName,
                                                                       value:this.state.resourceName,
                                                                       onChange:this.onTextFieldChange,
-                                                                      onKeyPress:this.onTextFieldKeyPress,
+                                                                      onKeyDown:this.onTextFieldKeyDown,
+                                                                      onBlur:this.onTextFieldBlur,
                                                                       maxLength:40}));
     },
     componentDidMount: function() {
@@ -152,16 +158,30 @@ var ResourceItem = React.createClass({
         }
     },
     onTextFieldChange: function() {
-        this.setState({resourceName:$(this.refs.textField.getDOMNode()).val()});
+        var resourceName = $(this.refs.textField.getDOMNode()).val();
+        if (resourceName.trim() === "") {
+            resourceName = "";
+        }
+        var newState = {resourceName:resourceName};
+
+        if (resourceName !== "") {
+            newState["isValidResourceName"] = ResourceItem.isValidResourceName(resourceName);
+        }
+        this.setState(newState);
     },
-    onTextFieldKeyPress: function(e) {
-        if (e.key === ResourceItem.ENTER_KEY) {
-            if (ResourceItem.isValidResourceName(this.state.resourceName)) {
-                $(this.refs.textField.getDOMNode()).blur();
-                ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
-            } else {
-                this.refs.errorMsg.show();
-            }
+    onTextFieldBlur: function(e) {
+        if (!ResourceItem.isValidResourceName(this.state.resourceName)) {
+            this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
+        } else {
+            this.setState({resourceNameCopy:this.state.resourceName});
+            ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
+        }
+    },
+    onTextFieldKeyDown: function(e) {
+        if (e.key === ResourceItem.ENTER_KEY && ResourceItem.isValidResourceName(this.state.resourceName)) {
+            $(this.refs.textField.getDOMNode()).blur();
+        } else if (e.key === ResourceItem.ESCAPE_KEY) {
+            this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
         }
     },
     onDivClick: function() {
@@ -175,37 +195,9 @@ var ResourceItem = React.createClass({
     },
     statics: {
         ENTER_KEY: "Enter",
+        ESCAPE_KEY: "Escape",
         isValidResourceName: function(resourceName) {
             return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_. ]+$/i) !== null);
         }
-    }
-});
-
-/**
- * Shows up to display it's content e.g. a message then disappears on timeout.
- *
- * Properties:
- *
- * 1. timeout - the timeout in milliseconds.
- * 2. className - the div container's className.
- */
-var PopUpAndGo = React.createClass({
-    timeoutEvent: null,
-    getInitialState: function() {
-        return {showThySelf:false};
-    },
-    render: function() {
-        var theStyle = {display:(this.state.showThySelf ? "" : "none")};
-        return React.createElement("div", {style:theStyle, className:this.props.className}, this.props.children);
-    },
-    show: function() {
-        this.timeoutEvent = setTimeout(this.beGone, this.props.timeout);
-        this.setState({showThySelf:true});
-    },
-    beGone: function() {
-        if (this.timeoutEvent !== null) {
-            clearTimeout(this.timeoutEvent);
-        }
-        this.setState({showThySelf:false});
     }
 });
