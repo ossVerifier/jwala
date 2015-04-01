@@ -62,13 +62,16 @@ var ResourceList = React.createClass({
         var resourceElements = [];
         var self = this;
 
+        var i = 0;
         this.state.resourceList.forEach(function(resource){
             resourceElements.push(React.createElement(ResourceItem, {key:resource.id,
+                                                                     idx:i++,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
                                                                      isHighlighted:(self.state.currentResourceItemId === resource.id),
                                                                      onSelect:self.onSelect,
-                                                                     editMode:(self.state.currentResourceItemId === resource.id)}));
+                                                                     editMode:(self.state.currentResourceItemId === resource.id),
+                                                                     onChange:self.onChangeResourceListItem}));
         });
 
         var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
@@ -80,6 +83,9 @@ var ResourceList = React.createClass({
                                                                    cancelLabel:"No"});
 
         return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
+    },
+    onChangeResourceListItem: function(idx, resourceItemName) {
+        this.state.resourceList[idx].name = resourceItemName;
     },
     onClick: function(id) {
         this.setState({currentResourceItemId:id});
@@ -175,6 +181,7 @@ var ResourceItem = React.createClass({
         } else {
             this.setState({resourceNameCopy:this.state.resourceName});
             ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
+            this.props.onChange(this.props.idx, this.state.resourceName);
         }
     },
     onTextFieldKeyDown: function(e) {
