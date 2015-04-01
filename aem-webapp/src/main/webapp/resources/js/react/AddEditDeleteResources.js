@@ -176,7 +176,7 @@ var ResourceItem = React.createClass({
     statics: {
         ENTER_KEY: "Enter",
         isValidResourceName: function(resourceName) {
-            return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_.]+$/i) !== null);
+            return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_. ]+$/i) !== null);
         }
     }
 });
