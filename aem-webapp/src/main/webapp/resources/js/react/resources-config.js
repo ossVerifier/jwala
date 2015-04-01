@@ -38,10 +38,14 @@ var ResourcesConfig = React.createClass({
                                                 resourceList={this.state.resourceList} />
                             </RStaticDialog>
 
+        var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="">
+                                   <ResourceAttrEditor />
+                               </RStaticDialog>
+
         var horzComponents = [];
         horzComponents.push(<div className="group-jvms-tree-list-container">{groupJvmTreeList}</div>);
         horzComponents.push(<div className="">{resourcesPane}</div>);
-        horzComponents.push(<div className=""></div>);
+        horzComponents.push(<div className="">{resourceAttrPane}</div>);
 
         var horzSplitter = <RSplitter components={horzComponents}
                                       orientation={RSplitter.HORIZONTAL_ORIENTATION}

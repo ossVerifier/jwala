@@ -1,0 +1,22 @@
+.attr-values-container {
+    min-width: 327px;
+    min-height: 303px;
+    border: 1px solid rgb(195, 195, 195);
+}
+
+.resource-attr-toolbar {
+    background-color: rgb(242, 242, 242);
+    border-bottom: 1px solid rgb(195, 195, 195);
+}
+
+.attr-val-table-container {
+    margin: 5px 5px 5px 5px;
+}
+
+.attr-val-table {
+    width: 100%;
+}
+
+.val-text-field {
+    width: 100%;
+}
