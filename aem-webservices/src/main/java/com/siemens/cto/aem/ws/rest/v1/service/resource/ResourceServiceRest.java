@@ -27,11 +27,10 @@ public interface ResourceServiceRest {
     /**
      * /aem/v1.0/resources;groupName=[your group name]
      * @param groupName
-     * @param paginationParamProvider
      * @return
      */
     @GET
-    Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName, final PaginationParamProvider paginationParamProvider);
+    Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName);
 
     /**
      * /aem/v1.0/resources/[your resource instance name];groupName=[your group name]

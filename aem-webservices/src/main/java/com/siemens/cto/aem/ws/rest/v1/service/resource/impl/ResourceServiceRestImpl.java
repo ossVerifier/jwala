@@ -41,8 +41,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response findResourceInstanceByGroup(@MatrixParam("groupName") String groupName, PaginationParamProvider paginationParamProvider) {
-        return null;
+    public Response findResourceInstanceByGroup(String groupName) {
+        return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
     }
 
     @Override
