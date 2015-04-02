@@ -24,26 +24,56 @@ public interface ResourceServiceRest {
     @Path("/types")
     Response getAll();
 
+    /**
+     * /aem/v1.0/resources;groupName=[your group name]
+     * @param groupName
+     * @param paginationParamProvider
+     * @return
+     */
+    @GET
+    Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName, final PaginationParamProvider paginationParamProvider);
+
+    /**
+     * /aem/v1.0/resources/[your resource instance name];groupName=[your group name]
+     * @param name
+     * @param groupName
+     * @param resourceTypeName
+     * @param paginationParamProvider
+     * @return
+     */
     @GET
     @Path("/{name}")
     Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName, final PaginationParamProvider paginationParamProvider);
 
+    /**
+     * /aem/v1.0/resources
+     * JSON POST data
+     * @param aResourceInstanceToCreate
+     * @param aUser
+     * @return
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createResourceInstance(final JsonCreateResourceInstance aResourceInstanceToCreate,
-                                    @BeanParam final AuthenticatedUser aUser);
+    Response createResourceInstance(final JsonCreateResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
 
-    @POST
-    @Path("/updateAttributes")
+    /**
+     * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
+     * JSON PUT conttaining the same object as create, but empty attributes will remain the same
+     * @param aResourceInstanceToUpdate
+     * @param aUser
+     * @return
+     */
+    @PUT
+    @Path("/{name}")
     @Consumes(MediaType.APPLICATION_JSON)
     Response updateResourceInstanceAttributes(final JsonUpdateResourceInstanceAttributes aResourceInstanceToUpdate,
                                               @BeanParam final AuthenticatedUser aUser);
 
-    @POST
-    @Path("/updateFriendlyName")
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response updateResourceInstanceFriendlyName(final JsonUpdateResourceInstanceFriendlyName jsonUpdateResourceInstanceFriendlyName, @BeanParam final AuthenticatedUser aUser);
-
+    /**
+     * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
+     * @param aResourceInstanceId
+     * @return
+     */
     @DELETE
     @Path("/{resourceInstanceId}")
     Response removeResourceInstance(@PathParam("resourceInstanceId") final Identifier<ResourceInstance> aResourceInstanceId);
