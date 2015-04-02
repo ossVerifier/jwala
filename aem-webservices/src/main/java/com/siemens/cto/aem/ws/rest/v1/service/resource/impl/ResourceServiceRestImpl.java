@@ -57,9 +57,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response createResourceInstance(JsonCreateResourceInstance aResourceInstanceToCreate, @BeanParam AuthenticatedUser aUser) {
-        String groupId = aResourceInstanceToCreate.getGroupId();
-        groupService.getGroup(new Identifier<Group>(groupId));
+    public Response createResourceInstance(JsonCreateResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
+        groupService.getGroup(aResourceInstanceToCreate.getGroupName());
         return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
     }
 

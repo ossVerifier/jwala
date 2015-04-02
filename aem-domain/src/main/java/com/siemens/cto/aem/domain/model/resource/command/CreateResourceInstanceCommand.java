@@ -13,7 +13,7 @@ public class CreateResourceInstanceCommand implements Serializable, Command {
 
     private final String resourceTypeName;
     private final String name;
-    private final Long groupId;
+    private final String groupName;
     private final Map<String, String> attributes;
 
     @Override
@@ -21,18 +21,18 @@ public class CreateResourceInstanceCommand implements Serializable, Command {
 
     }
 
-    public CreateResourceInstanceCommand(String resourceTypeName, String name, Long groupId, Map<String, String> attributes) {
+    public CreateResourceInstanceCommand(String resourceTypeName, String name, String groupName, Map<String, String> attributes) {
         this.name = name;
         this.resourceTypeName = resourceTypeName;
-        this.groupId = groupId;
+        this.groupName = groupName;
         this.attributes = attributes;
     }
 
     public String getName() {
         return this.name;
     }
-    public Long getGroupId() {
-        return this.groupId;
+    public String getGroupName() {
+        return this.groupName;
     }
 
     public Map<String, String> getAttributes() {

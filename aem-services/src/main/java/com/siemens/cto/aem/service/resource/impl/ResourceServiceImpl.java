@@ -28,6 +28,7 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.TemplateManager;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -105,6 +106,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public ResourceInstance createResourceInstance(CreateResourceInstanceCommand createResourceInstanceCommand, User creatingUser) {
         return this.resourcePersistenceService.createResourceInstance(new Event<CreateResourceInstanceCommand>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
     }

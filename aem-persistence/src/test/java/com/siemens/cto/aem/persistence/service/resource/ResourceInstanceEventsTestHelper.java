@@ -16,8 +16,8 @@ import java.util.Map;
  */
 public class ResourceInstanceEventsTestHelper {
 
-    public static Event<CreateResourceInstanceCommand> createCreateResourceInstanceCommand(final String resourceTypeName, String friendlyName, final Long groupId, final Map<String, String> attributes, final String userName) {
-       return new Event<>(new CreateResourceInstanceCommand(resourceTypeName, friendlyName, groupId, attributes), AuditEvent.now(new User(userName)));
+    public static Event<CreateResourceInstanceCommand> createCreateResourceInstanceCommand(final String resourceTypeName, String friendlyName, final String groupName, final Map<String, String> attributes, final String userName) {
+       return new Event<>(new CreateResourceInstanceCommand(resourceTypeName, friendlyName, groupName, attributes), AuditEvent.now(new User(userName)));
     }
     public static Event<UpdateResourceInstanceAttributesCommand> createUpdateResourceInstanceAttributesCommand(final Identifier<ResourceInstance> aResourceInstanceId, final Map<String, String> attributes, String userName) {
         return new Event<>(new UpdateResourceInstanceAttributesCommand(aResourceInstanceId, attributes), AuditEvent.now(new User(userName)));

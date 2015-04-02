@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.exception.NotUniqueException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
@@ -44,7 +43,7 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         final String userId = auditEvent.getUser().getUserId();
         CreateResourceInstanceCommand command = aResourceInstanceToCreate.getCommand();
 
-        final JpaGroup group = groupCrudService.getGroup(new Identifier<Group>(command.getGroupId()));
+        final JpaGroup group = groupCrudService.getGroup(command.getGroupName());
 
         jpaResourceInstance.setName(command.getName());
         jpaResourceInstance.setGroup(group);

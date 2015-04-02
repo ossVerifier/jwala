@@ -24,7 +24,7 @@ public class JsonCreateResourceInstance {
     private static final Logger LOGGER = Logger.getLogger(JsonCreateResourceInstance.class);
 
     private final String resourceTypeName;
-    private final String groupId;
+    private final String groupName;
     private final String friendlyName;
     private final Map<String, String> attributes;
 
@@ -34,8 +34,8 @@ public class JsonCreateResourceInstance {
             final ObjectCodec obj = jp.getCodec();
             final JsonNode rootNode = obj.readTree(jp);
             final JsonNode resourceTypeNameNode = rootNode.get("resourceTypeName");
-            final JsonNode groupIdNode = rootNode.get("groupId");
-            final JsonNode friendlyNameNode = rootNode.get("friendlyName");
+            final JsonNode groupNameNode = rootNode.get("groupName");
+            final JsonNode friendlyNameNode = rootNode.get("resourceName");
             final JsonNode attributesNode = rootNode.get("attributes");
             Iterator<JsonNode> attributesIt = attributesNode.getElements();
             Map<String, String> attributes = new HashMap<>();
@@ -43,13 +43,13 @@ public class JsonCreateResourceInstance {
                 JsonNode attributesEntry = attributesIt.next();
                 attributes.put((attributesEntry.get("key")).getTextValue(), (attributesEntry.get("value")).getTextValue());
             }
-            JsonCreateResourceInstance results = new JsonCreateResourceInstance(resourceTypeNameNode.getTextValue(), friendlyNameNode.getTextValue(), groupIdNode.getTextValue(), attributes);
+            JsonCreateResourceInstance results = new JsonCreateResourceInstance(resourceTypeNameNode.getTextValue(), friendlyNameNode.getTextValue(), groupNameNode.getTextValue(), attributes);
             return results;
         }
     }
-    public JsonCreateResourceInstance(final String resourceTypeName, final String friendlyName, final String groupId, final Map<String, String> attributes) {
+    public JsonCreateResourceInstance(final String resourceTypeName, final String friendlyName, final String groupName, final Map<String, String> attributes) {
         this.resourceTypeName = resourceTypeName;
-        this.groupId = groupId;
+        this.groupName = groupName;
         this.friendlyName = friendlyName;
         this.attributes = attributes;
     }
@@ -57,17 +57,11 @@ public class JsonCreateResourceInstance {
         return resourceTypeName;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getGroupName() {
+        return groupName;
     }
 
     public CreateResourceInstanceCommand getCommand() {
-        Long groupId = null;
-        try {
-            groupId =  Long.valueOf(this.getGroupId());
-        } catch (NumberFormatException nfe) {
-            LOGGER.info("Unable to convert String to Long", nfe);
-        }
-        return new CreateResourceInstanceCommand(this.resourceTypeName, this.friendlyName, groupId, attributes);
+        return new CreateResourceInstanceCommand(this.resourceTypeName, this.friendlyName, this.groupName, attributes);
     }
 }
