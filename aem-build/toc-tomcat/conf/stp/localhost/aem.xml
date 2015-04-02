@@ -36,7 +36,7 @@
           xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
           xaProperties.user="sa"
           xaProperties.password=""
-          xaProperties.URL="jdbc:h2:file:/stp/siemens/data/toc/aem"/>
+          xaProperties.URL="jdbc:h2:file:/stp/siemens/data/h2/toc"/>
 
     <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
 

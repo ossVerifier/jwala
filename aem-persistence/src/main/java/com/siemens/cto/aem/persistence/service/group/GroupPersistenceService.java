@@ -23,6 +23,8 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
+    Group getGroup(final String name) throws NotFoundException;
+
     List<Group> getGroups(final PaginationParameter somePagination);
 
     List<Group> findGroups(final String aName,

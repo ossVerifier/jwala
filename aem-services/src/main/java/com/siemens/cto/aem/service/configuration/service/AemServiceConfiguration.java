@@ -250,6 +250,6 @@ public class AemServiceConfiguration {
     
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
-        return new ResourceServiceImpl(templateManager, harmonyTemplateEngine);
+        return new ResourceServiceImpl(templateManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
     }
 }

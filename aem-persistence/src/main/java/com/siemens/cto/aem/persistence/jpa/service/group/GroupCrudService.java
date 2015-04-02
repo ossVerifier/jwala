@@ -21,6 +21,8 @@ public interface GroupCrudService {
 
     JpaGroup getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
+    JpaGroup getGroup(final String name) throws NotFoundException;
+
     List<JpaGroup> getGroups(final PaginationParameter somePagination);
 
     List<JpaGroup> findGroups(final String aName,

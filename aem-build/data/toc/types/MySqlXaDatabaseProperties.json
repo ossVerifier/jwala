@@ -1,1 +1,1 @@
-{"name":"MySql XA Database","contentType":"application/xml", "properties":[{"name":"\u0032", "meta1":"meta1"},{"name":"name two", "meta2"	:"meta two"}]}
+{"name":"MySql XA Database","contentType":"application/xml", "attributes":[{"name":"\u0032", "meta1":"meta1"},{"name":"name two", "meta2"	:"meta two"}]}

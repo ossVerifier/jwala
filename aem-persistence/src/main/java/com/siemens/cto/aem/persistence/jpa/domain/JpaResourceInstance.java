@@ -17,17 +17,18 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
     @Column(name = "RESOURCE_INSTANCE_ID")
     private Long resourceInstanceId;
 
+    @Column(name = "NAME")
+    private String name;
+
     @Column(name = "RESOURCE_TYPE_NAME")
     private String resourceTypeName;
 
-    @Column(name = "PARENT_ID")
-    private Long parentId;
-
-    @Column(name = "PARENT_TYPE")
-    private String parentType;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")
+    private JpaGroup group;
 
     @ElementCollection
-    @JoinTable(name="RESOURCE_INSTANCE_ATTRIBUTES", joinColumns = @JoinColumn(name = "RESOURCE_INSTANCE_ID"))
+    @JoinTable(name="RESOURCE_INSTANCE_ATTRIBUTES", joinColumns = @JoinColumn(name = "RESOURCE_INSTANCE_ID", referencedColumnName = "RESOURCE_INSTANCE_ID"))
     @MapKeyColumn (name = "ATTRIBUTE_KEY")
     @Column(name = "ATTRIBUTE_VALUE")
     private Map<String, String> attributes;
@@ -42,6 +43,28 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
         this.resourceInstanceId = resourceInstanceId;
     }
 
+    public String getName() {
+        return this.name;
+    }
+    public JpaGroup getGroup() {
+        return group;
+    }
+
+    public void setGroup(JpaGroup group) {
+        this.group = group;
+    }
+
+    public Long getResourceInstanceId() {
+        return resourceInstanceId;
+    }
+
+    public void setResourceInstanceId(Long resourceInstanceId) {
+        this.resourceInstanceId = resourceInstanceId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
     public String getResourceTypeName() {
         return resourceTypeName;
     }
@@ -49,21 +72,6 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
         this.resourceTypeName = resourceTypeName;
     }
 
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getParentType() {
-        return parentType;
-    }
-
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
-    }
     public Map<String, String> getAttributes() {
         return attributes;
     }

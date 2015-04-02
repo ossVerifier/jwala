@@ -105,6 +105,19 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
         return jpaGroup;
     }
+    @Override
+    public JpaGroup getGroup(final String name) throws NotFoundException {
+        final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name = :groupName");
+        query.setParameter("groupName", name);
+        List<JpaGroup> jpaGroups = query.getResultList();
+        if (jpaGroups == null || jpaGroups.size() < 1) {
+            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + name);
+        }
+        else if (jpaGroups.size() > 1) {
+            throw new NotFoundException(AemFaultType.DATA_CONTROL_ERROR, "Too many groups found for " + name + " code is set to only use one");
+        }
+        return jpaGroups.get(0);
+    }
 
     @Override
     public List<JpaGroup> getGroups(final PaginationParameter somePagination) {

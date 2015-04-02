@@ -16,7 +16,14 @@ public class JpaResourceInstanceBuilder  {
     }
 
     public ResourceInstance build() {
-        return new     ResourceInstance(new Identifier<ResourceInstance>(jpaResourceInstance.getId()), jpaResourceInstance.getResourceTypeName(), jpaResourceInstance.getParentId(), jpaResourceInstance.getParentType(), jpaResourceInstance.getAttributes());
-        }
+        JpaLiteGroupBuilder jpaGroupBuilder = new JpaLiteGroupBuilder(jpaResourceInstance.getGroup());
+        return new ResourceInstance(
+                new Identifier<ResourceInstance>(jpaResourceInstance.getId()),
+                jpaResourceInstance.getName(),
+                jpaResourceInstance.getResourceTypeName(),
+                jpaGroupBuilder.build(),
+                jpaResourceInstance.getAttributes()
+        );
+    }
 
-        }
+}

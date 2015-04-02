@@ -7,8 +7,8 @@ import javax.ws.rs.ext.MessageBodyWriter;
 
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
-import com.siemens.cto.aem.ws.rest.v1.service.resourceInstance.ResourceInstanceServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.resourceInstance.impl.ResourceInstanceServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -34,8 +34,6 @@ import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
-import com.siemens.cto.aem.ws.rest.v1.resource.ResourceServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.resource.impl.ResourceServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -147,11 +145,6 @@ public class AemWebServiceConfiguration {
                                       jvmControlService,
                                       jvmStateService);
     }
-    
-    @Bean
-    public ResourceServiceRest getV1ResourceServiceRest() { 
-        return new ResourceServiceRestImpl(resourceService);
-    }
 
     @Bean
     public StateConsumerManager getStateConsumerManager() {
@@ -177,8 +170,8 @@ public class AemWebServiceConfiguration {
         return new ApplicationServiceRestImpl(applicationService);
     }
     @Bean
-    public ResourceInstanceServiceRest getV1ResourceInstanceServiceRest() {
-        return new ResourceInstanceServiceRestImpl(resourceService, groupService, jvmService);
+    public ResourceServiceRest getV1ResourceServiceRest() {
+        return new ResourceServiceRestImpl(resourceService, groupService, jvmService);
     }
 
     @Bean

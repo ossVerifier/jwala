@@ -4,10 +4,7 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.rule.EnumDeserializationRule;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
-import com.siemens.cto.aem.domain.model.rule.resource.ResourceInstanceParentRule;
-import com.siemens.cto.aem.domain.model.state.StateType;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -15,7 +12,7 @@ import java.util.Map;
 /**
  * Created by z003e5zv on 3/16/2015.
  */
-public class UpdateResourceInstanceCommand implements Serializable, Command {
+public class UpdateResourceInstanceAttributesCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<ResourceInstance> resourceInstanceId;
@@ -27,7 +24,7 @@ public class UpdateResourceInstanceCommand implements Serializable, Command {
         new MultipleRules(
         );
     }
-    public UpdateResourceInstanceCommand(Identifier<ResourceInstance> resourceInstanceId, Map<String, String> attributes) {
+    public UpdateResourceInstanceAttributesCommand(Identifier<ResourceInstance> resourceInstanceId, Map<String, String> attributes) {
         this.resourceInstanceId = resourceInstanceId;
         this.attributes = attributes;
     }

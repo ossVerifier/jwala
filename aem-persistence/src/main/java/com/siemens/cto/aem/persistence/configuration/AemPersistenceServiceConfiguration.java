@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.resource.impl.ResourceInstanceCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
+import com.siemens.cto.aem.persistence.service.resource.impl.JpaResourcePersistenceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +52,11 @@ public class AemPersistenceServiceConfiguration {
     @Autowired
     private SharedEntityManagerBean sharedEntityManager;
 
+    @Bean
+    public ResourcePersistenceService getResourcePersistenceService() {
+        return new JpaResourcePersistenceServiceImpl(getResourceInstanceCrudService());
+    }
+
     @Bean(name="jvmPersistenceService")
     public JvmPersistenceService getJvmPersistenceService() {
         return new JpaJvmPersistenceServiceImpl(getJvmCrudService(),
@@ -84,6 +93,11 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected JvmCrudService getJvmCrudService() {
         return new JvmCrudServiceImpl();
+    }
+
+    @Bean
+    protected ResourceInstanceCrudService getResourceInstanceCrudService() {
+        return new ResourceInstanceCrudServiceImpl(getGroupCrudService());
     }
 
     @Bean

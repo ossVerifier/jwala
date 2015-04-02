@@ -21,6 +21,8 @@ public interface GroupService {
 
     Group getGroup(final Identifier<Group> aGroupId);
 
+    Group getGroup(final String name);
+
     List<Group> getGroups(final PaginationParameter aPaginationParam);
 
     List<Group> findGroups(final String aGroupNameFragment,

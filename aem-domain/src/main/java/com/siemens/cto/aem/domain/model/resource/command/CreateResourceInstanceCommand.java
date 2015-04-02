@@ -1,14 +1,7 @@
 package com.siemens.cto.aem.domain.model.resource.command;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.rule.EnumDeserializationRule;
-import com.siemens.cto.aem.domain.model.rule.MultipleRules;
-import com.siemens.cto.aem.domain.model.rule.resource.ResourceInstanceParentRule;
-import com.siemens.cto.aem.domain.model.state.StateType;
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -19,36 +12,32 @@ public class CreateResourceInstanceCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final String resourceTypeName;
-    private final Long parentId;
-    private final String parentType;
+    private final String name;
+    private final Long groupId;
     private final Map<String, String> attributes;
 
     @Override
     public void validateCommand() throws BadRequestException {
-        new MultipleRules(
-                new EnumDeserializationRule<StateType>(this.parentType, new StateType[]{StateType.GROUP, StateType.JVM}),
-                new ResourceInstanceParentRule(this.parentId, this.parentType));
+
     }
 
-    public CreateResourceInstanceCommand(String resourceTypeName, Long parentId, String parentType, Map<String, String> attributes) {
+    public CreateResourceInstanceCommand(String resourceTypeName, String name, Long groupId, Map<String, String> attributes) {
+        this.name = name;
         this.resourceTypeName = resourceTypeName;
-        this.parentId = parentId;
-        this.parentType = parentType;
+        this.groupId = groupId;
         this.attributes = attributes;
     }
 
-    public String getParentType() {
-        return parentType;
+    public String getName() {
+        return this.name;
+    }
+    public Long getGroupId() {
+        return this.groupId;
     }
 
     public Map<String, String> getAttributes() {
         return attributes;
     }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
     public String getResourceTypeName() {
         return resourceTypeName;
     }

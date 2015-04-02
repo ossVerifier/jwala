@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.resource.impl.ResourceInstanceCrudServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +32,7 @@ public class AemDaoConfiguration {
     }
 
     @Deprecated // TODO (Peter) Needs replacing with a PersistenceService
-    @Bean(name="webServerDao")
+    @Bean(name = "webServerDao")
     public WebServerDao getWebServerDao() {
         return new JpaWebServerDaoImpl();
     }
@@ -39,4 +41,5 @@ public class AemDaoConfiguration {
     public ApplicationDao getApplicationDao() {
         return new JpaApplicationDaoImpl();
     }
+
 }

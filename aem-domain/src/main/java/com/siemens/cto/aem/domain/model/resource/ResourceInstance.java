@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.domain.model.resource;
 
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -14,16 +16,16 @@ public class ResourceInstance {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<ResourceInstance> resourceInstanceId;
+    private final String friendlyName;
     private final String resourceTypeName;
     private final Map<String, String> attributes;
-    private final Long parentId;
-    private final String parentType;
+    private final LiteGroup group;
 
-    public ResourceInstance(Identifier<ResourceInstance> resourceInstanceId, String resourceTypeName, Long parentId, String parentType, Map<String, String> attributes) {
+    public ResourceInstance(final Identifier<ResourceInstance> resourceInstanceId, final String friendlyName, final String resourceTypeName, final LiteGroup group, final Map<String, String> attributes) {
         this.resourceInstanceId = resourceInstanceId;
+        this.friendlyName = friendlyName;
         this.resourceTypeName = resourceTypeName;
-        this.parentId = parentId;
-        this.parentType = parentType;
+        this.group = group;
         this.attributes = attributes;
 
     }
@@ -36,14 +38,13 @@ public class ResourceInstance {
         return resourceTypeName;
     }
 
-    public Long getParentId() {
-        return this.parentId;
+    public String getFriendlyName() {
+        return this.friendlyName;
     }
 
-    public String getParentType() {
-        return this.parentType;
+    public LiteGroup getGroup() {
+        return this.group;
     }
-
     public Map<String, String> getAttributes() {
         return attributes;
     }
@@ -63,8 +64,7 @@ public class ResourceInstance {
         return new EqualsBuilder()
                 .append(this.getResourceInstanceId(), that.getResourceInstanceId())
                 .append(this.getResourceTypeName(), that.getResourceTypeName())
-                .append(this.getParentId(), that.getParentId())
-                .append(this.getParentType(), that.getParentType())
+                .append(this.getGroup(), that.getGroup())
                 .isEquals();
     }
     @Override
@@ -72,8 +72,7 @@ public class ResourceInstance {
         return new HashCodeBuilder()
                 .append(this.getResourceInstanceId())
                 .append(this.getResourceTypeName())
-                .append(this.getParentId())
-                .append(this.getParentType())
+                .append(this.getGroup())
                 .toHashCode();
     }
 

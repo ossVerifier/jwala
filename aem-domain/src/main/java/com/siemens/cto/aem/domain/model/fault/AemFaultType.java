@@ -107,6 +107,8 @@ public enum AemFaultType implements MessageResponseStatus {
     RESOURCE_INSTANCE_NOT_FOUND("AEM50", "ResourceInstanceNotFound"),
 
     RESOURCE_INSTANCE_MAP_NOT_INCLUDED("AEM51", "ResourceInstanceAttributesNotFound"),
+
+    DATA_CONTROL_ERROR("AEM52", "MoreThanOneObjectFound"),
     ;
 
 	private final String faultCode;

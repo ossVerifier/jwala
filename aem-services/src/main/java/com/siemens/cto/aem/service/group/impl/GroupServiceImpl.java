@@ -46,6 +46,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
+    public Group getGroup(final String name) {
+        return groupPersistenceService.getGroup(name);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Group> getGroups(final PaginationParameter aPaginationParam) {
         return groupPersistenceService.getGroups(aPaginationParam);
     }
