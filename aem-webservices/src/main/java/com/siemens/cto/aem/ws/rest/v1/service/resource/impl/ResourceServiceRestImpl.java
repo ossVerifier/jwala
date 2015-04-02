@@ -41,6 +41,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response findResourceInstanceByGroup(@MatrixParam("groupName") String groupName, PaginationParamProvider paginationParamProvider) {
+        return null;
+    }
+
+    @Override
     public Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName")String resourceTypeName, final PaginationParamProvider paginationParamProvider) {
         if (name != null && !"".equals(name)) {
             return ResponseBuilder.ok(resourceService.getResourceInstanceByGroupNameAndName(groupName, name));
@@ -61,10 +66,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public Response updateResourceInstanceAttributes(JsonUpdateResourceInstanceAttributes aResourceInstanceToUpdate, @BeanParam AuthenticatedUser aUser) {
         return ResponseBuilder.ok(this.resourceService.updateResourceInstanceAttributes(aResourceInstanceToUpdate.getComand(), aUser.getUser()));
-    }
-    @Override
-    public Response updateResourceInstanceFriendlyName(JsonUpdateResourceInstanceFriendlyName jsonUpdateResourceInstanceFriendlyName, @BeanParam AuthenticatedUser aUser) {
-        return ResponseBuilder.ok(this.resourceService.updateResourceInstanceFriendlyName(jsonUpdateResourceInstanceFriendlyName.parseCommand(), aUser.getUser()));
     }
 
     @Override
