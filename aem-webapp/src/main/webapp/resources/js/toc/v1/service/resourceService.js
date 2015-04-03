@@ -3,20 +3,27 @@ var resourceService = {
         return serviceFoundation.get("v1.0/resources/types", "json", responseCallback);
     },
     getResources: function(groupName, responseCallback) {
-        return serviceFoundation.get("v1.0/resources;groupName=" + groupName, "json", responseCallback);
+        return serviceFoundation.get("v1.0/resources;groupName=" + groupName.replace(/%20/g, " "), "json", responseCallback);
     },
     insertNewResource: function(groupName, resourceTypeName, resourceName, attributes, successCallback, errorCallback) {
         return serviceFoundation.post("v1.0/resources",
                                       "json",
                                       JSON.stringify({groupName:groupName,
                                                       resourceTypeName:resourceTypeName,
-                                                      resourceName:resourceName,
+                                                      name:resourceName,
                                                       attributes:attributes}),
                                                       successCallback,
                                                       errorCallback);
     },
-    updateResource: function(resource) {
-        // console.log("Update resource...");
+    updateResourceName: function(groupName, resourceTypeName, resourceName, newResourceName, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") + ";groupName=" + groupName.replace(/%20/g, " "),
+                                     "json",
+                                     JSON.stringify({groupName:groupName,
+                                                     resourceTypeName:resourceTypeName,
+                                                     name:newResourceName,
+                                                     attributes:null}),
+                                     successCallback,
+                                     errorCallback);
     },
     deleteResource: function(resource) {
         // console.log("Delete resource...");

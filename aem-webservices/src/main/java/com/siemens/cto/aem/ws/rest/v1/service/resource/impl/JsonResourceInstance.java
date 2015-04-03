@@ -36,12 +36,16 @@ public class JsonResourceInstance {
             final JsonNode groupNameNode = rootNode.get("groupName");
             final JsonNode nameNode = rootNode.get("name");
             final JsonNode attributesNode = rootNode.get("attributes");
-            Iterator<JsonNode> attributesIt = attributesNode.getElements();
-            Map<String, String> attributes = new HashMap<>();
-            while (attributesIt.hasNext()) {
-                JsonNode attributesEntry = attributesIt.next();
-                attributes.put((attributesEntry.get("key")).getTextValue(), (attributesEntry.get("value")).getTextValue());
+
+            final Map<String, String> attributes = null;
+            if (!attributesNode.isNull()) {
+                final Iterator<JsonNode> attributesIt = attributesNode.getElements();
+                while (attributesIt.hasNext()) {
+                    JsonNode attributesEntry = attributesIt.next();
+                    attributes.put((attributesEntry.get("key")).getTextValue(), (attributesEntry.get("value")).getTextValue());
+                }
             }
+
             JsonResourceInstance results = new JsonResourceInstance(resourceTypeNameNode.getTextValue(), nameNode.getTextValue(), groupNameNode.getTextValue(), attributes);
             return results;
         }

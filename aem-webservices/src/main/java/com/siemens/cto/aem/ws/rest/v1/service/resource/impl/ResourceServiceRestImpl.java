@@ -55,7 +55,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, JsonResourceInstance aResourceInstanceToUpdate, @BeanParam AuthenticatedUser aUser) {
+    public Response updateResourceInstanceAttributes(final String name, final String groupName, JsonResourceInstance aResourceInstanceToUpdate, AuthenticatedUser aUser) {
         return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
     }
 

@@ -99,7 +99,8 @@ var ResourceList = React.createClass({
                                                                      isHighlighted:(self.state.currentResourceItemId === resource.name),
                                                                      onSelect:self.onSelect,
                                                                      editMode:(self.state.currentResourceItemId === resource.name),
-                                                                     onChange:self.onChangeResourceListItem}));
+                                                                     onChange:self.onChangeResourceListItem,
+                                                                     resourceTypeName:resource.resourceTypeName}));
         });
 
         var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
@@ -112,8 +113,19 @@ var ResourceList = React.createClass({
 
         return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
     },
-    onChangeResourceListItem: function(idx, resourceItemName) {
-        this.state.resourceList[idx].name = resourceItemName;
+    onChangeResourceListItem: function(resourceTypeName, resourceName, newResourceName) {
+        ServiceFactory.getResourceService().updateResourceName(this.state.groupName,
+                                                               resourceTypeName,
+                                                               resourceName,
+                                                               newResourceName,
+                                                               this.updateResourceSuccessCallback.bind(resourceName),
+                                                               this.updateResourceErrorCallback);
+    },
+    updateResourceSuccessCallback: function(resourceName) {
+        this.refresh(this.state.groupName, resourceName);
+    },
+    updateResourceErrorCallback: function(errMsg) {
+         $.errorAlert(errMsg, "Error");
     },
     onClick: function(name) {
         this.setState({currentResourceItemId:name});
@@ -214,8 +226,8 @@ var ResourceItem = React.createClass({
         if (!ResourceItem.isValidResourceName(this.state.resourceName)) {
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
         } else {
+            this.props.onChange(this.props.resourceTypeName, this.state.resourceNameCopy, this.state.resourceName);
             this.setState({resourceNameCopy:this.state.resourceName});
-            this.props.onChange(this.props.idx, this.state.resourceName);
         }
     },
     onTextFieldKeyDown: function(e) {

@@ -111,6 +111,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceCommand, final User updatingUser) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
         return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceCommand>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));
