@@ -15,7 +15,7 @@ var resourceService = {
                                                       successCallback,
                                                       errorCallback);
     },
-    updateRsource: function(resource) {
+    updateResource: function(resource) {
         // console.log("Update resource...");
     },
     deleteResource: function(resource) {
