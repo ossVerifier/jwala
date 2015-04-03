@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Created by z003e5zv on 3/13/2015.
  */
-public class CreateResourceInstanceCommand implements Serializable, Command {
+public class ResourceInstanceCommand implements Serializable, Command {
     private static final long serialVersionUID = 1L;
 
     private final String resourceTypeName;
@@ -21,7 +21,7 @@ public class CreateResourceInstanceCommand implements Serializable, Command {
 
     }
 
-    public CreateResourceInstanceCommand(String resourceTypeName, String name, String groupName, Map<String, String> attributes) {
+    public ResourceInstanceCommand(String resourceTypeName, String name, String groupName, Map<String, String> attributes) {
         this.name = name;
         this.resourceTypeName = resourceTypeName;
         this.groupName = groupName;

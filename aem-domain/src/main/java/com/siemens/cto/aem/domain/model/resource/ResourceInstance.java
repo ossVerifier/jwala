@@ -16,14 +16,14 @@ public class ResourceInstance {
     private static final long serialVersionUID = 1L;
 
     private final Identifier<ResourceInstance> resourceInstanceId;
-    private final String friendlyName;
+    private final String name;
     private final String resourceTypeName;
     private final Map<String, String> attributes;
     private final LiteGroup group;
 
-    public ResourceInstance(final Identifier<ResourceInstance> resourceInstanceId, final String friendlyName, final String resourceTypeName, final LiteGroup group, final Map<String, String> attributes) {
+    public ResourceInstance(final Identifier<ResourceInstance> resourceInstanceId, final String name, final String resourceTypeName, final LiteGroup group, final Map<String, String> attributes) {
         this.resourceInstanceId = resourceInstanceId;
-        this.friendlyName = friendlyName;
+        this.name = name;
         this.resourceTypeName = resourceTypeName;
         this.group = group;
         this.attributes = attributes;
@@ -38,8 +38,8 @@ public class ResourceInstance {
         return resourceTypeName;
     }
 
-    public String getFriendlyName() {
-        return this.friendlyName;
+    public String getName() {
+        return this.name;
     }
 
     public LiteGroup getGroup() {

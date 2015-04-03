@@ -7,11 +7,11 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceAttributesCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceNameCommand;
+import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
+import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
 
@@ -35,13 +35,13 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
     }
 
     @Override
-    public JpaResourceInstance createResourceInstance(Event<CreateResourceInstanceCommand> aResourceInstanceToCreate) throws NotUniqueException {
+    public JpaResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> aResourceInstanceToCreate) throws NotUniqueException {
 
         JpaResourceInstance jpaResourceInstance = new JpaResourceInstance();
         final AuditEvent auditEvent = aResourceInstanceToCreate.getAuditEvent();
         final Calendar updateTime = auditEvent.getDateTime().getCalendar();
         final String userId = auditEvent.getUser().getUserId();
-        CreateResourceInstanceCommand command = aResourceInstanceToCreate.getCommand();
+        ResourceInstanceCommand command = aResourceInstanceToCreate.getCommand();
 
         final JpaGroup group = groupCrudService.getGroup(command.getGroupName());
 
@@ -61,20 +61,20 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
     }
 
     @Override
-    public JpaResourceInstance updateResourceInstanceAttributes(Event<UpdateResourceInstanceAttributesCommand> aResourceInstanceToUpdate) {
-        UpdateResourceInstanceAttributesCommand command = aResourceInstanceToUpdate.getCommand();
+    public JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> aResourceInstanceToUpdate) {
+        ResourceInstanceCommand command = aResourceInstanceToUpdate.getCommand();
 
-        JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(command.getResourceInstanceId());
+        JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setAttributes(command.getAttributes());
         entityManager.persist(jpaResourceInstance);
         entityManager.flush();
         return jpaResourceInstance;
     }
     @Override
-    public JpaResourceInstance updateResourceInstanceName(Event<UpdateResourceInstanceNameCommand> updateResourceInstanceNameCommandEvent) {
-        UpdateResourceInstanceNameCommand command = updateResourceInstanceNameCommandEvent.getCommand();
+    public JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceNameCommandEvent) {
+        ResourceInstanceCommand command = updateResourceInstanceNameCommandEvent.getCommand();
 
-        JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(command.getResourceInstanceIdentifier());
+        JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setName(command.getName());
         entityManager.persist(jpaResourceInstance);
         entityManager.flush();
@@ -83,12 +83,12 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
 
 
     @Override
-    public JpaResourceInstance getResourceInstance(Identifier<ResourceInstance> aResourceInstanceId) throws NotFoundException {
+    public JpaResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) throws NotFoundException {
         return getJpaResourceInstance(aResourceInstanceId);
     }
 
     @Override
-    public List<JpaResourceInstance> getResourceInstancesByGroupId(Long groupId) {
+    public List<JpaResourceInstance> getResourceInstancesByGroupId(final Long groupId) {
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.group.id = :groupId");
         query.setParameter("groupId", groupId);
         return query.getResultList();
@@ -96,7 +96,7 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
 
 
     @Override
-    public JpaResourceInstance getResourceInstanceByGroupIdAndName(Long groupId, String name) throws NotFoundException, NotUniqueException {
+    public JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, final String name) throws NotFoundException, NotUniqueException {
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.name = :name and r.group.id = :groupId");
         query.setParameter("name", name);
         query.setParameter("groupId", groupId);
@@ -109,7 +109,7 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         return list.get(0);
     }
     @Override
-    public List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(Long groupId, String resourceTypeName) {
+    public List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String resourceTypeName) {
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.resourceTypeName = :resourceTypeName and r.group.id = :groupId");
         query.setParameter("resourceTypeName", resourceTypeName);
         query.setParameter("groupId", groupId);
@@ -117,7 +117,7 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
     }
 
     @Override
-    public void deleteResourceInstance(Identifier<ResourceInstance> aResourceInstanceId) {
+    public void deleteResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
         try {
             JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(aResourceInstanceId);
             entityManager.remove(jpaResourceInstance);

@@ -6,9 +6,8 @@ import java.util.List;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceAttributesCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceNameCommand;
+import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 
 
@@ -16,21 +15,19 @@ public interface ResourceService {
 
     Collection<ResourceType> getResourceTypes();
 
-    ResourceInstance getResourceInstance(Identifier<ResourceInstance> aResourceInstanceId);
+    ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId);
 
-    List<ResourceInstance> getResourceInstancesByGroupName(String groupName);
+    List<ResourceInstance> getResourceInstancesByGroupName(final String groupName);
 
-    ResourceInstance getResourceInstanceByGroupNameAndName(String groupName, String name);
+    ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name);
 
-    List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(String groupName, String resourceTypeName);
+    List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
 
-    ResourceInstance createResourceInstance(CreateResourceInstanceCommand createResourceInstanceCommand, User creatingUser);
+    ResourceInstance createResourceInstance(final ResourceInstanceCommand createResourceInstanceCommand, final User creatingUser);
 
-    ResourceInstance updateResourceInstanceAttributes(UpdateResourceInstanceAttributesCommand updateResourceInstanceAttributesCommand, User updatingUser);
+    ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceAttributesCommand, final User updatingUser);
 
-    ResourceInstance updateResourceInstanceFriendlyName(UpdateResourceInstanceNameCommand updateResourceInstanceFriendlyNameCommand, User updatingUser);
-
-    void deleteResourceInstance(Identifier<ResourceInstance> aResourceInstanceId);
+    void deleteResourceInstance(final String name, final String groupName);
     
     String  encryptUsingPlatformBean(String cleartext);
 }

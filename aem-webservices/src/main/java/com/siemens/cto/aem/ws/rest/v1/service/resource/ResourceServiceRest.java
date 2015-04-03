@@ -1,13 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonCreateResourceInstance;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonUpdateResourceInstanceAttributes;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonUpdateResourceInstanceFriendlyName;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -20,13 +14,21 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public interface ResourceServiceRest {
 
+    /**
+     * /aem/v1.0/resources/types
+     * @PathParam name
+     * @MatrixParam groupName
+     * @BeanParam AuthenticatedUser
+     * @return
+     */
     @GET
     @Path("/types")
-    Response getAll();
+    Response getTypes();
 
     /**
      * /aem/v1.0/resources;groupName=[your group name]
-     * @param groupName
+     * @PathParam name
+     * @MatrixParam groupName
      * @return
      */
     @GET
@@ -42,7 +44,7 @@ public interface ResourceServiceRest {
      */
     @GET
     @Path("/{name}")
-    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName, final PaginationParamProvider paginationParamProvider);
+    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName);
 
     /**
      * /aem/v1.0/resources
@@ -53,28 +55,30 @@ public interface ResourceServiceRest {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createResourceInstance(final JsonCreateResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
+    Response createResourceInstance(final JsonResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
 
     /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
      * JSON PUT conttaining the same object as create, but empty attributes will remain the same
-     * @param aResourceInstanceToUpdate
-     * @param aUser
+     * @PathParam name
+     * @MatrixParam groupName
+     * @BeanParam AuthenticatedUser
      * @return
      */
     @PUT
     @Path("/{name}")
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateResourceInstanceAttributes(final JsonUpdateResourceInstanceAttributes aResourceInstanceToUpdate,
-                                              @BeanParam final AuthenticatedUser aUser);
+    Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, final JsonResourceInstance aResourceInstanceToUpdate, @BeanParam final AuthenticatedUser aUser);
 
     /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * @param aResourceInstanceId
+     * @PathParam name
+     * @MatrixParam groupName
+     * @BeanParam AuthenticatedUser
      * @return
      */
     @DELETE
-    @Path("/{resourceInstanceId}")
-    Response removeResourceInstance(@PathParam("resourceInstanceId") final Identifier<ResourceInstance> aResourceInstanceId);
+    @Path("/{name}")
+    Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
 
 }

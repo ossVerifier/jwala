@@ -3,9 +3,8 @@ package com.siemens.cto.aem.persistence.jpa.service.resource;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceAttributesCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceNameCommand;
+import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 
 import java.util.List;
@@ -15,12 +14,12 @@ import java.util.List;
  */
 public interface ResourceInstanceCrudService {
 
-    JpaResourceInstance createResourceInstance(Event<CreateResourceInstanceCommand> createResourceInstanceCommandEvent);
-    JpaResourceInstance updateResourceInstanceAttributes(Event<UpdateResourceInstanceAttributesCommand> updateResourceInstanceCommandEvent);
-    JpaResourceInstance updateResourceInstanceName(Event<UpdateResourceInstanceNameCommand> updateResourceInstanceNameCommandEvent);
-    JpaResourceInstance getResourceInstance(Identifier<ResourceInstance> resourceInstanceId);
-    List<JpaResourceInstance> getResourceInstancesByGroupId(Long groupId);
-    JpaResourceInstance getResourceInstanceByGroupIdAndName(Long groupId, String name);
-    List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(Long groupId, String typeName);
-    void deleteResourceInstance(Identifier<ResourceInstance> resourceInstanceId);
+    JpaResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> createResourceInstanceCommandEvent);
+    JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceCommandEvent);
+    JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceNameCommandEvent);
+    JpaResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
+    List<JpaResourceInstance> getResourceInstancesByGroupId(final Long groupId);
+    JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, String name);
+    List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);
+    void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
 }

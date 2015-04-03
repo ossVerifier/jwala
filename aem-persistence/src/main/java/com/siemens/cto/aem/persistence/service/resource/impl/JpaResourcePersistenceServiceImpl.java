@@ -3,9 +3,8 @@ package com.siemens.cto.aem.persistence.service.resource.impl;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceAttributesCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceNameCommand;
+import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaResourceInstanceBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
@@ -26,42 +25,43 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance createResourceInstance(Event<CreateResourceInstanceCommand> resourceInstanceCreateEvent) {
+    public ResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> resourceInstanceCreateEvent) {
         return parseFromJpa(this.resourceInstanceCrudService.createResourceInstance(resourceInstanceCreateEvent));
     }
 
     @Override
-    public List<ResourceInstance> getResourceInstancesByGroupId(Long groupId) {
+    public List<ResourceInstance> getResourceInstancesByGroupId(final Long groupId) {
         return this.parseFromJpa(this.resourceInstanceCrudService.getResourceInstancesByGroupId(groupId));
     }
 
     @Override
-    public ResourceInstance getResourceInstanceByGroupIdAndName(Long groupId, String name) {
+    public ResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, final String name) {
         return this.parseFromJpa(this.resourceInstanceCrudService.getResourceInstanceByGroupIdAndName(groupId, name));
     }
 
     @Override
-    public List<ResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(Long groupId, String resourceTypeName) {
+    public List<ResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String resourceTypeName) {
         return this.parseFromJpa(this.resourceInstanceCrudService.getResourceInstancesByGroupIdAndResourceTypeName(groupId, resourceTypeName));
     }
 
     @Override
-    public ResourceInstance updateResourceInstanceAttributes(Event<UpdateResourceInstanceAttributesCommand> resourceInstanceUpdateEvent) {
-        return parseFromJpa(this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstanceUpdateEvent));
+    public ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final Event<ResourceInstanceCommand> resourceInstanceUpdateEvent) {
+        if (resourceInstanceUpdateEvent.getCommand().getAttributes() != null) {
+            this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
+        }
+        else if (!resourceInstanceUpdateEvent.getCommand().getName().equals(resourceInstance.getName())){
+            return parseFromJpa(this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent));
+        }
+        return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstance.getResourceInstanceId()));
     }
 
     @Override
-    public ResourceInstance updateResourceInstanceFriendlyName(Event<UpdateResourceInstanceNameCommand> resourceInstanceNameCommandEvent) {
-        return parseFromJpa(this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstanceNameCommandEvent));
-    }
-
-    @Override
-    public ResourceInstance getResourceInstance(Identifier<ResourceInstance> resourceInstanceId) {
+    public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId) {
         return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstanceId));
     }
 
     @Override
-    public void deleteResourceInstance(Identifier<ResourceInstance> resourceInstanceId) {
+    public void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId) {
         this.resourceInstanceCrudService.deleteResourceInstance(resourceInstanceId);
     }
 

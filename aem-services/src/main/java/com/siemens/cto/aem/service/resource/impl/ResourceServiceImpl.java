@@ -9,9 +9,7 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.command.CreateResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceAttributesCommand;
-import com.siemens.cto.aem.domain.model.resource.command.UpdateResourceInstanceNameCommand;
+import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
@@ -83,47 +81,45 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public ResourceInstance getResourceInstance(Identifier<ResourceInstance> aResourceInstanceId) {
+    public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
         return this.resourcePersistenceService.getResourceInstance(aResourceInstanceId);
     }
 
     @Override
-    public List<ResourceInstance> getResourceInstancesByGroupName(String groupName) {
+    public List<ResourceInstance> getResourceInstancesByGroupName(final String groupName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupId(group.getId().getId());
     }
 
     @Override
-    public ResourceInstance getResourceInstanceByGroupNameAndName(String groupName, String name) {
+    public ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstanceByGroupIdAndName(group.getId().getId(), name);
     }
 
     @Override
-    public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(String groupName, String resourceTypeName) {
+    public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(group.getId().getId(), resourceTypeName);
     }
 
     @Override
     @Transactional
-    public ResourceInstance createResourceInstance(CreateResourceInstanceCommand createResourceInstanceCommand, User creatingUser) {
-        return this.resourcePersistenceService.createResourceInstance(new Event<CreateResourceInstanceCommand>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
+    public ResourceInstance createResourceInstance(final ResourceInstanceCommand createResourceInstanceCommand, final User creatingUser) {
+        this.groupPersistenceService.getGroup(createResourceInstanceCommand.getGroupName());
+        return this.resourcePersistenceService.createResourceInstance(new Event<ResourceInstanceCommand>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
     }
 
     @Override
-    public ResourceInstance updateResourceInstanceAttributes(UpdateResourceInstanceAttributesCommand updateResourceInstanceAttributesCommand, User updatingUser) {
-        return this.resourcePersistenceService.updateResourceInstanceAttributes(new Event<UpdateResourceInstanceAttributesCommand>(updateResourceInstanceAttributesCommand, AuditEvent.now(updatingUser)));
+    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceCommand, final User updatingUser) {
+        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
+        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceCommand>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));
     }
 
     @Override
-    public ResourceInstance updateResourceInstanceFriendlyName(UpdateResourceInstanceNameCommand updateResourceInstanceFriendlyNameCommand, User updatingUser) {
-        return this.resourcePersistenceService.updateResourceInstanceFriendlyName(new Event<UpdateResourceInstanceNameCommand>(updateResourceInstanceFriendlyNameCommand, AuditEvent.now(updatingUser)));
-    }
-
-    @Override
-    public void deleteResourceInstance(Identifier<ResourceInstance> aResourceInstanceId) {
-        this.resourcePersistenceService.deleteResourceInstance(aResourceInstanceId);
+    public void deleteResourceInstance(final String groupName, final String name) {
+        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
+        this.resourcePersistenceService.deleteResourceInstance(resourceInstance.getResourceInstanceId());
     }
 
     @Override

@@ -1,14 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import org.slf4j.Logger;
@@ -35,7 +30,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response getAll() {
+    public Response getTypes() {
         LOGGER.debug("Get All Resource Types requested." );
         return ResponseBuilder.ok(resourceService.getResourceTypes());
     }
@@ -46,30 +41,27 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName")String resourceTypeName, final PaginationParamProvider paginationParamProvider) {
-        if (name != null && !"".equals(name)) {
-            return ResponseBuilder.ok(resourceService.getResourceInstanceByGroupNameAndName(groupName, name));
-        }
-        else if (resourceTypeName != null && !"".equals(resourceTypeName)) {
+    public Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName")String resourceTypeName) {
+        if (resourceTypeName != null && !"".equals(resourceTypeName)) {
             return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupNameAndResourceTypeName(groupName, resourceTypeName));
         }
         return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
     }
 
     @Override
-    public Response createResourceInstance(JsonCreateResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
+    public Response createResourceInstance(JsonResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
         groupService.getGroup(aResourceInstanceToCreate.getGroupName());
         return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
     }
 
     @Override
-    public Response updateResourceInstanceAttributes(JsonUpdateResourceInstanceAttributes aResourceInstanceToUpdate, @BeanParam AuthenticatedUser aUser) {
-        return ResponseBuilder.ok(this.resourceService.updateResourceInstanceAttributes(aResourceInstanceToUpdate.getComand(), aUser.getUser()));
+    public Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, JsonResourceInstance aResourceInstanceToUpdate, @BeanParam AuthenticatedUser aUser) {
+        return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
     }
 
     @Override
-    public Response removeResourceInstance(Identifier<ResourceInstance> aResourceInstanceId) {
-        this.resourceService.deleteResourceInstance(aResourceInstanceId);
+    public Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName) {
+        this.resourceService.deleteResourceInstance(groupName, name);
         return ResponseBuilder.ok();
     }
 }
