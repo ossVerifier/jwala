@@ -9,11 +9,11 @@ var ResourcesConfig = React.createClass({
             resourceList: []
         }
     },
-    selectNodeCallback: function(data) {
-        ServiceFactory.getResourceService().getResources(data.name, this.getResourcesCallback);
+    selectNodeCallback: function(group) {
+        this.refs.resourceEditor.refreshResourceList(group.name);
     },
-    getResourcesCallback: function(groupName, data) {
-        this.setState({groupName:groupName, resourceList:data.applicationResponseContent});
+    getResourcesCallback: function(data) {
+        this.setState({groupName:this.state.groupName, resourceList:data.applicationResponseContent});
     },
     render: function() {
 
@@ -34,8 +34,7 @@ var ResourcesConfig = React.createClass({
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <ResourceEditor resourceTypes={this.state.resourceTypes}
-                                                resourceList={this.state.resourceList} />
+                                <ResourceEditor ref="resourceEditor" />
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="">
@@ -62,18 +61,11 @@ var ResourcesConfig = React.createClass({
 
         return <div className="resource-container">{vertSplitter}</div>
     },
-
     componentDidMount: function() {
         ServiceFactory.getGroupService().getGroups(this.getGroupJvmCallback);
-        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
     },
-
     getGroupJvmCallback: function(response) {
         this.setState({groupJvmData:response.applicationResponseContent});
-    },
-
-    getResourceTypesCallback: function(response) {
-        this.setState({resourceTypes: response.applicationResponseContent});
     },
     componentDidUpdate: function() {
         if (this.state.groupName === null && this.state.groupJvmData !== null && this.state.groupJvmData.length > 0) {

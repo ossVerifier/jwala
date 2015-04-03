@@ -1,41 +1,63 @@
 /** @jsx React.DOM */
 var ResourceEditor = React.createClass({
     render: function() {
-        var resourceTypeDropDownArea = React.createElement("div", {className:"resource-type-dropdown"},
+        var resourceTypeDropDownToolbar = React.createElement("div", {className:"resource-type-toolbar"},
                                            React.createElement(RButton, {title:"Delete Resource",
                                                                           className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                           spanClassName:"ui-icon ui-icon-trash",
                                                                           onClick:this.onClickDel}),
-                                           React.createElement(ResourceTypeDropDown, {ref:"resourceTypeDropdown",
-                                                                                      resourceTypes:this.props.resourceTypes}),
-                                           React.createElement(RButton, {title:"Add Resource",
-                                                                         className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                         spanClassName:"ui-icon ui-icon-plus",
-                                                                         onClick:this.onClickAdd}),
-                                           React.createElement(ResourceList, {ref:"resourceList", data:this.props.resourceList}));
+                                           React.createElement(ResourceTypeDropDown, {resourceTypes:this.props.resourceTypes,
+                                                                                      onClickAdd:this.onClickAdd}),
+                                           React.createElement(ResourceList, {ref:"resourceList",
+                                                                              data:this.props.resourceList,
+                                                                              groupName:this.props.groupName}));
 
-        return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownArea);
+        return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
     },
-    onClickAdd: function() {
-        this.refs.resourceList.add(this.refs.resourceTypeDropdown.getSelectedResourceType());
+    onClickAdd: function(resourceType) {
+        this.refs.resourceList.add(resourceType);
     },
     onClickDel: function() {
         this.refs.resourceList.deleteSelectedItems();
+    },
+    refreshResourceList: function(groupName) {
+        this.refs.resourceList.refresh(groupName);
     }
 });
 
 var ResourceTypeDropDown = React.createClass({
+    getInitialState: function() {
+        return {resourceTypes:[]}
+    },
     render: function() {
         var options = [];
         var self = this;
-        this.props.resourceTypes.forEach(function(resourceType){
-            var key = resourceType.name.replace(/\s/g, '');
-            options.push(React.createElement(ResourceTypeOption, {key:key, resourceType:resourceType}));
-        });
-        return React.createElement("select", {ref:"select", className:"resource-type-dropdown"}, options);
+
+        if (this.state.resourceTypes.length > 0) {
+            this.state.resourceTypes.forEach(function(resourceType){
+                var key = resourceType.name.replace(/\s/g, '');
+                options.push(React.createElement(ResourceTypeOption, {key:key, resourceType:resourceType}));
+            });
+            return React.createElement("div", {className:"resource-type-dropdown"},
+                       React.createElement("select", {ref:"select", className:"resource-type-dropdown"}, options),
+                       React.createElement(RButton, {title:"Add Resource",
+                                                     className:"ui-state-default ui-corner-all default-icon-button-style",
+                                                     spanClassName:"ui-icon ui-icon-plus",
+                                                     onClick:this.onClickAdd}));
+        }
+        return React.createElement("span", null, "Loading resource types...");
+    },
+    componentDidMount: function() {
+        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
+    },
+    getResourceTypesCallback: function(response) {
+        this.setState({resourceTypes:response.applicationResponseContent});
     },
     getSelectedResourceType: function() {
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
+    },
+    onClickAdd: function() {
+        this.props.onClickAdd(this.getSelectedResourceType());
     }
 });
 
@@ -50,13 +72,19 @@ var ResourceTypeOption = React.createClass({
 
 var ResourceList = React.createClass({
     getInitialState: function() {
-        return {resourceList:ResourceList.getResourceList(this.props.data),
-                currentResourceItemId:null,
-                selectedResourceIds:{},
-                showDeleteConfirmDialog:false};
+        return {
+            groupName:null,
+            resourceList:[],
+            currentResourceItemId:null,
+            selectedResourceIds:{},
+            showDeleteConfirmDialog:false
+        };
     },
-    componentWillReceiveProps : function(nextProps) {
-        this.setState({resourceList:ResourceList.getResourceList(nextProps.data)});
+    refresh: function(groupName, resourceName) {
+        ServiceFactory.getResourceService().getResources(groupName, this.refreshListCallback.bind(this, groupName, resourceName));
+    },
+    refreshListCallback: function(groupName, resourceName, response) {
+          this.setState({groupName:groupName, resourceList:response.applicationResponseContent, currentResourceItemId:resourceName});
     },
     render: function() {
         var resourceElements = [];
@@ -64,13 +92,13 @@ var ResourceList = React.createClass({
 
         var i = 0;
         this.state.resourceList.forEach(function(resource){
-            resourceElements.push(React.createElement(ResourceItem, {key:resource.id,
+            resourceElements.push(React.createElement(ResourceItem, {key:resource.friendlyName,
                                                                      idx:i++,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
-                                                                     isHighlighted:(self.state.currentResourceItemId === resource.id),
+                                                                     isHighlighted:(self.state.currentResourceItemId === resource.friendlyName),
                                                                      onSelect:self.onSelect,
-                                                                     editMode:(self.state.currentResourceItemId === resource.id),
+                                                                     editMode:(self.state.currentResourceItemId === resource.friendlyName),
                                                                      onChange:self.onChangeResourceListItem}));
         });
 
@@ -87,16 +115,15 @@ var ResourceList = React.createClass({
     onChangeResourceListItem: function(idx, resourceItemName) {
         this.state.resourceList[idx].name = resourceItemName;
     },
-    onClick: function(id) {
-        this.setState({currentResourceItemId:id});
+    onClick: function(name) {
+        this.setState({currentResourceItemId:name});
     },
     add: function(resourceTypeName) {
-        var date = new Date();
-        var tempId = date.getTime();
         var largestNumber = 0;
 
+        // Get next sequence number for the generated name
         this.state.resourceList.forEach(function(resourceItem){
-            var num = parseInt(resourceItem.name.substring(resourceTypeName.length + 1), 10);
+            var num = parseInt(resourceItem.friendlyName.substring(resourceTypeName.length + 1), 10);
             if (!isNaN(num)) {
                 largestNumber = (largestNumber < num) ? num : largestNumber;
             };
@@ -104,8 +131,18 @@ var ResourceList = React.createClass({
 
         var name = resourceTypeName.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
 
-        this.state.resourceList.push({id:tempId, name:name});
-        this.setState({currentResourceItemId:tempId});
+        ServiceFactory.getResourceService().insertNewResource(this.state.groupName,
+                                                              resourceTypeName,
+                                                              name,
+                                                              {},
+                                                              this.insertNewResourceSuccessCallback.bind(this, name),
+                                                              this.insertNewResourceErrorCallback);
+    },
+    insertNewResourceSuccessCallback: function(resourceName) {
+        this.refresh(this.state.groupName, resourceName);
+    },
+    insertNewResourceErrorCallback: function(errMsg) {
+        $.errorAlert(errMsg, "Error");
     },
     onSelect: function(id, checked) {
         this.state.selectedResourceIds[id] = checked;
@@ -125,26 +162,14 @@ var ResourceList = React.createClass({
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
-    },
-    statics: {
-        getResourceList: function(data) {
-            var resourceList = [];
-
-            // Let's not assume that this.props.data is this class' definition of a resource.
-           data.forEach(function(item){
-               resourceList.push({id:item.id, name:item.name});
-           });
-
-           return resourceList;
-        }
     }
 });
 
 var ResourceItem = React.createClass({
     getInitialState: function() {
         return {
-            resourceName:this.props.resource.name,
-            resourceNameCopy:this.props.resource.name,
+            resourceName:this.props.resource.friendlyName,
+            resourceNameCopy:this.props.resource.friendlyName,
             isValidResourceName:true
         };
     },
@@ -190,7 +215,6 @@ var ResourceItem = React.createClass({
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
         } else {
             this.setState({resourceNameCopy:this.state.resourceName});
-            ServiceFactory.getResourceService().saveResource("", this.state.resourceName);
             this.props.onChange(this.props.idx, this.state.resourceName);
         }
     },
@@ -202,7 +226,7 @@ var ResourceItem = React.createClass({
         }
     },
     onDivClick: function() {
-        this.props.onClick(this.props.resource.id);
+        this.props.onClick(this.props.resource.friendlyName);
     },
     onCheckBoxChange: function(e) {
         this.props.onSelect(this.props.resource.id, this.refs.checkBox.getDOMNode().checked);

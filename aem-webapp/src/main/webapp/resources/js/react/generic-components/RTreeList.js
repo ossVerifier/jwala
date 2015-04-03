@@ -119,7 +119,13 @@ var Node = React.createClass({
         }
 
         var selectableClassName = this.props.treeMetaData[level].selectable === true ? "selectable" : "";
-        var selectedClassName = this.isSelected() ? Node.HIGHLIGHT_CLASS_NAME : "";
+
+        var selectedClassName = "";
+        if (this.isSelected()) {
+            selectedClassName = Node.HIGHLIGHT_CLASS_NAME;
+            this.props.selectNodeCallback(this.props.data);
+        }
+
         var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
 
         if (childNodes.length > 0) {
@@ -134,7 +140,6 @@ var Node = React.createClass({
     },
     onClickNodeHandler: function(isSelectable, data) {
         if (isSelectable) {
-            this.props.selectNodeCallback(data);
             this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
         }
     },

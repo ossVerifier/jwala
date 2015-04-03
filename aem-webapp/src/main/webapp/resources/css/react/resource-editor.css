@@ -4,9 +4,13 @@
 }
 
 /* Resource type drop down */
-div.resource-type-dropdown {
+div.resource-type-toolbar {
     background-color: rgb(242, 242, 242);
     border: 1px solid rgb(195, 195, 195);
+}
+
+div.resource-type-dropdown {
+    display: inline-block;
 }
 
 select.resource-type-dropdown {
@@ -15,10 +19,6 @@ select.resource-type-dropdown {
     margin-left: 8px;
     margin-top: 2px;
     min-width: 214px;
-}
-
-option.resource-type-dropdown {
-
 }
 
 div.resource-list {
