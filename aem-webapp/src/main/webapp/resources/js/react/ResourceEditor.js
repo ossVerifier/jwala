@@ -96,9 +96,9 @@ var ResourceList = React.createClass({
                                                                      idx:i++,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
-                                                                     isHighlighted:(self.state.currentResourceItemId === resource.friendlyName),
+                                                                     isHighlighted:(self.state.currentResourceItemId === resource.name),
                                                                      onSelect:self.onSelect,
-                                                                     editMode:(self.state.currentResourceItemId === resource.friendlyName),
+                                                                     editMode:(self.state.currentResourceItemId === resource.name),
                                                                      onChange:self.onChangeResourceListItem}));
         });
 
@@ -123,7 +123,7 @@ var ResourceList = React.createClass({
 
         // Get next sequence number for the generated name
         this.state.resourceList.forEach(function(resourceItem){
-            var num = parseInt(resourceItem.friendlyName.substring(resourceTypeName.length + 1), 10);
+            var num = parseInt(resourceItem.name.substring(resourceTypeName.length + 1), 10);
             if (!isNaN(num)) {
                 largestNumber = (largestNumber < num) ? num : largestNumber;
             };
@@ -168,8 +168,8 @@ var ResourceList = React.createClass({
 var ResourceItem = React.createClass({
     getInitialState: function() {
         return {
-            resourceName:this.props.resource.friendlyName,
-            resourceNameCopy:this.props.resource.friendlyName,
+            resourceName:this.props.resource.name,
+            resourceNameCopy:this.props.resource.name,
             isValidResourceName:true
         };
     },
@@ -226,7 +226,7 @@ var ResourceItem = React.createClass({
         }
     },
     onDivClick: function() {
-        this.props.onClick(this.props.resource.friendlyName);
+        this.props.onClick(this.props.resource.name);
     },
     onCheckBoxChange: function(e) {
         this.props.onSelect(this.props.resource.id, this.refs.checkBox.getDOMNode().checked);
