@@ -10,7 +10,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name = "RESOURCE_INSTANCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"RESOURCE_INSTANCE_ID", "NAME", "GROUP_ID"})})
-@NamedQueries({@NamedQuery(name=JpaResourceInstance.DELETE_RESOURCES_QUERY, query="DELETE FROM JpaResourceInstance resource WHERE resource.group.name = :groupName and resource.name IN :resourceNames")})
+@NamedQueries({@NamedQuery(name=JpaResourceInstance.DELETE_RESOURCES_QUERY, query="DELETE FROM JpaResourceInstance resource WHERE resource.group.name = :groupName and resource.resourceInstanceName IN :resourceNames")})
 public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, ResourceInstance> {
 
     public final static String DELETE_RESOURCES_QUERY = "deleteResourcesQuery";
@@ -20,7 +20,8 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
     @Column(name = "RESOURCE_INSTANCE_ID")
     private Long resourceInstanceId;
 
-    private String name;
+    @Column(name = "RESOURCE_INSTANCE_NAME", nullable = false)
+    private String resourceInstanceName;
 
     @Column(name = "RESOURCE_TYPE_NAME")
     private String resourceTypeName;
@@ -35,7 +36,6 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
     @Column(name = "ATTRIBUTE_VALUE")
     private Map<String, String> attributes;
 
-
     @Override
     public Long getId() {
         return resourceInstanceId;
@@ -45,14 +45,12 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
         this.resourceInstanceId = resourceInstanceId;
     }
 
-    public String getName() {
-        return this.name;
-    }
     public JpaGroup getGroup() {
         return group;
     }
 
     public void setGroup(JpaGroup group) {
+        name = group.getName() + name;
         this.group = group;
     }
 
@@ -64,9 +62,6 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
         this.resourceInstanceId = resourceInstanceId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
     public String getResourceTypeName() {
         return resourceTypeName;
     }
@@ -80,6 +75,17 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public String getName() {
+        return resourceInstanceName;
+    }
+
+    @Override
+    public void setName(String theName) {
+        name =  group != null ? group.getName() + theName : theName;
+        resourceInstanceName = theName;
     }
 
 }

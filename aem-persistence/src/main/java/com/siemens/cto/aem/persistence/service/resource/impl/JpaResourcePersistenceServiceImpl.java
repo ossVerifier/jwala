@@ -85,7 +85,7 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
             sb.append("'").append(resourceName).append("'");
         }
         Query nativeQry = em.createNativeQuery("DELETE FROM RESOURCE_INSTANCE_ATTRIBUTES WHERE RESOURCE_INSTANCE_ID IN " +
-                "(SELECT r.RESOURCE_INSTANCE_ID FROM RESOURCE_INSTANCE r WHERE r.NAME IN (" + sb.toString() + "))");
+                "(SELECT r.RESOURCE_INSTANCE_ID FROM RESOURCE_INSTANCE r WHERE r.RESOURCE_INSTANCE_NAME IN (" + sb.toString() + "))");
         nativeQry.executeUpdate();
         em.flush();
 
