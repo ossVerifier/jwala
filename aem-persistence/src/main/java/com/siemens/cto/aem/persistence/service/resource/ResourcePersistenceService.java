@@ -20,5 +20,6 @@ public interface ResourcePersistenceService {
     ResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
     ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final Event<ResourceInstanceCommand> resourceInstanceUpdateEvent);
     void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
+    void deleteResources(final String groupName, final List<String> resourceNames);
 
 }

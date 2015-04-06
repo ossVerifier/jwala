@@ -9,15 +9,17 @@ import java.util.Map;
  * Created by z003e5zv on 3/20/2015.
  */
 @Entity
-@Table(name = "RESOURCE_INSTANCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"RESOURCE_INSTANCE_ID"})})
+@Table(name = "RESOURCE_INSTANCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"RESOURCE_INSTANCE_ID", "NAME", "GROUP_ID"})})
+@NamedQueries({@NamedQuery(name=JpaResourceInstance.DELETE_RESOURCES_QUERY, query="DELETE FROM JpaResourceInstance resource WHERE resource.group.name = :groupName and resource.name IN :resourceNames")})
 public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, ResourceInstance> {
+
+    public final static String DELETE_RESOURCES_QUERY = "deleteResourcesQuery";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RESOURCE_INSTANCE_ID")
     private Long resourceInstanceId;
 
-    @Column(name = "NAME")
     private String name;
 
     @Column(name = "RESOURCE_TYPE_NAME")

@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by z003e5zv on 3/16/2015.
@@ -63,5 +66,16 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName) {
         this.resourceService.deleteResourceInstance(groupName, name);
         return ResponseBuilder.ok();
+    }
+
+    @Override
+    public Response removeResources(String groupName, List<String> resourceNames) {
+        try {
+            resourceService.deleteResources(groupName, resourceNames);
+            return ResponseBuilder.ok();
+        } catch (RuntimeException e) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                                         new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        }
     }
 }

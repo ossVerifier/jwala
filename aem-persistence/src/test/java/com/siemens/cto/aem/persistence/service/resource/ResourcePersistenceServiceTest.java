@@ -2,7 +2,6 @@ package com.siemens.cto.aem.persistence.service.resource;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
@@ -10,9 +9,11 @@ import com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,35 @@ public abstract class ResourcePersistenceServiceTest {
 
         this.getResourcePersistenceService().getResourceInstance(resourceInstanceId);
     }
+
+    @Test
+    public void testRemoveResources() {
+        final String RESOURCE1 = "resource1";
+        final String RESOURCE2 = "resource2";
+
+        final String testGroupName = "testRemoveResources_Group";
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+
+        Map<String, String> map = new HashMap<>();
+        map.put("Attribute_key", "attribute_value");
+        map.put("Attribute_key1", "attribute_value1");
+        map.put("Attribute_key2", "attribute_value2");
+
+        getResourcePersistenceService().createResourceInstance(ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", RESOURCE1, jpaGroup.getName(), map, userName));
+        getResourcePersistenceService().createResourceInstance(ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", RESOURCE2, jpaGroup.getName(), map, userName));
+
+        List<ResourceInstance> resources = getResourcePersistenceService().getResourceInstancesByGroupId(jpaGroup.getId());
+
+        assertEquals(2, resources.size());
+
+        final String [] resourceNames = {RESOURCE1, RESOURCE2};
+        getResourcePersistenceService().deleteResources(testGroupName, Arrays.asList(resourceNames));
+        resources = getResourcePersistenceService().getResourceInstancesByGroupId(jpaGroup.getId());
+
+        assertEquals(0, resources.size());
+    }
+
+
     @Test
     public void TestGetByGroupName() throws Exception {
 
