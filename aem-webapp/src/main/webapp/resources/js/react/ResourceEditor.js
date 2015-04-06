@@ -90,10 +90,8 @@ var ResourceList = React.createClass({
         var resourceElements = [];
         var self = this;
 
-        var i = 0;
         this.state.resourceList.forEach(function(resource){
-            resourceElements.push(React.createElement(ResourceItem, {key:resource.friendlyName,
-                                                                     idx:i++,
+            resourceElements.push(React.createElement(ResourceItem, {key:resource.name,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
                                                                      isHighlighted:(self.state.currentResourceItemId === resource.name),
@@ -160,20 +158,35 @@ var ResourceList = React.createClass({
         this.state.selectedResourceIds[id] = checked;
     },
     deleteSelectedItems: function() {
-        this.setState({showDeleteConfirmDialog:true});
+        if (!$.isEmptyObject(this.state.selectedResourceIds)) {
+            this.setState({showDeleteConfirmDialog:true});
+        }
     },
     confirmDeleteCallback: function() {
-        var newResourceList = [];
+        var selectedResourceNames = [];
         var self = this;
         this.state.resourceList.forEach(function(resource) {
-            if (self.state.selectedResourceIds[resource.id] === undefined || !self.state.selectedResourceIds[resource.id]) {
-                newResourceList.push({id:resource.id, name:resource.name});
+            if (self.state.selectedResourceIds[resource.name] === true) {
+                selectedResourceNames.push(resource.name);
             }
         });
-        this.setState({resourceList:newResourceList, showDeleteConfirmDialog:false});
+        ServiceFactory.getResourceService().deleteResources(this.state.groupName,
+                                                            selectedResourceNames,
+                                                            this.deleteSuccessCallback,
+                                                            this.deleteErrorCallback);
+        this.setState({showDeleteConfirmDialog:false, selectedResourceIds:{}});
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
+    },
+    deleteSuccessCallback: function() {
+        this.refresh(this.state.groupName, null);
+    },
+    deleteErrorCallback: function(errMsg) {
+        // TODO: Delete should not throw an exception with an empty error message. Check why!
+        if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
+            $.errorAlert(errMsg, "Error");
+        }
     }
 });
 
@@ -241,7 +254,7 @@ var ResourceItem = React.createClass({
         this.props.onClick(this.props.resource.name);
     },
     onCheckBoxChange: function(e) {
-        this.props.onSelect(this.props.resource.id, this.refs.checkBox.getDOMNode().checked);
+        this.props.onSelect(this.props.resource.name, this.refs.checkBox.getDOMNode().checked);
     },
     setHighlight: function(val) {
         this.setState({isHighlighted:val});

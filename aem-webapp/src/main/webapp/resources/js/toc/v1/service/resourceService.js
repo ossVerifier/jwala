@@ -25,7 +25,11 @@ var resourceService = {
                                      successCallback,
                                      errorCallback);
     },
-    deleteResource: function(resource) {
-        // console.log("Delete resource...");
+    deleteResources: function(groupName, resourceNames, successCallback, errorCallback) {
+        var resourceNamesMatrix = "";
+        resourceNames.forEach(function(name){
+            resourceNamesMatrix = resourceNamesMatrix + "resourceName=" + name.replace(/%20/g, " ") + ";";
+        });
+        return serviceFoundation.del("v1.0/resources;groupName=" + groupName + ";" + resourceNamesMatrix, "json", errorCallback).then(successCallback);
     }
 };
