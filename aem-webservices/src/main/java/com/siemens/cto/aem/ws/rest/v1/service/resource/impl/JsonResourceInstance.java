@@ -37,12 +37,11 @@ public class JsonResourceInstance {
             final JsonNode nameNode = rootNode.get("name");
             final JsonNode attributesNode = rootNode.get("attributes");
 
-            final Map<String, String> attributes = null;
+            Map<String, String> attributes = null;
             if (!attributesNode.isNull()) {
-                final Iterator<JsonNode> attributesIt = attributesNode.getElements();
-                while (attributesIt.hasNext()) {
-                    JsonNode attributesEntry = attributesIt.next();
-                    attributes.put((attributesEntry.get("key")).getTextValue(), (attributesEntry.get("value")).getTextValue());
+                attributes = new HashMap<>();
+                for (JsonNode node: attributesNode) {
+                    attributes.put(node.get("key").getTextValue(), node.get("value").getTextValue());
                 }
             }
 

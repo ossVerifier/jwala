@@ -57,7 +57,15 @@ var ResourceTypeDropDown = React.createClass({
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
     },
     onClickAdd: function() {
-        this.props.onClickAdd(this.getSelectedResourceType());
+        this.props.onClickAdd(this.getResourceType(this.getSelectedResourceType()));
+    },
+    getResourceType: function(name) {
+        for (var i = 0; i < this.state.resourceTypes.length; i++) {
+            if (this.state.resourceTypes[i].name === name) {
+                return this.state.resourceTypes[i];
+            }
+        }
+        return null;
     }
 });
 
@@ -128,25 +136,35 @@ var ResourceList = React.createClass({
     onClick: function(name) {
         this.setState({currentResourceItemId:name});
     },
-    add: function(resourceTypeName) {
+    add: function(resourceType) {
         var largestNumber = 0;
 
         // Get next sequence number for the generated name
         this.state.resourceList.forEach(function(resourceItem){
-            var num = parseInt(resourceItem.name.substring(resourceTypeName.length + 1), 10);
+            var num = parseInt(resourceItem.name.substring(resourceType.name.length + 1), 10);
             if (!isNaN(num)) {
                 largestNumber = (largestNumber < num) ? num : largestNumber;
             };
         });
 
-        var name = resourceTypeName.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
+        var name = resourceType.name.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
 
         ServiceFactory.getResourceService().insertNewResource(this.state.groupName,
-                                                              resourceTypeName,
+                                                              resourceType.name,
                                                               name,
-                                                              {},
+                                                              this.getAttributes(resourceType),
                                                               this.insertNewResourceSuccessCallback.bind(this, name),
                                                               this.insertNewResourceErrorCallback);
+    },
+    getAttributes: function(resourceType) {
+        var attributes = [];
+        resourceType.properties.forEach(function(type){
+            var attribute = {};
+            attribute["key"] = type.name;
+            attribute["value"] = type.value !== undefined ? type.value : null;
+            attributes.push(attribute);
+        });
+        return attributes;
     },
     insertNewResourceSuccessCallback: function(resourceName) {
         this.refresh(this.state.groupName, resourceName);
