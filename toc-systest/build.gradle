@@ -52,7 +52,7 @@ def STP_TEMP_PATH = "D:/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
-def JDBC_ORIG_URL = "jdbc:h2:file:/${DB_NAME}"
+def JDBC_ORIG_URL = "jdbc:h2:file:/stp/siemens/data/h2/toc"
 def ROOT_NAME = "aem"
 
 // Should this be in the plugin as well ?
@@ -159,12 +159,12 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     
         println "Server ready, running tests..."
 
-        integTestSuiteRunner.execute()
+    integTestSuiteRunner.execute()
 
-        println "NOT Running QTP test suite... - commented out"
-        // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+    println "NOT Running QTP test suite... - commented out"
+    // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
 
-    }
+}
 
     beforeCleanup {
         h2TcpServer.stop() // stop h2
