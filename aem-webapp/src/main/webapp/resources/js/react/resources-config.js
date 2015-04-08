@@ -3,42 +3,39 @@ var ResourcesConfig = React.createClass({
 
     getInitialState: function() {
         return {
-            resourceTypes:[],
-            groupJvmData: null,
-            groupName: null,
-            resourceList: []
+            groupData: null,
+            currentGroupName: null
         }
     },
     selectNodeCallback: function(group) {
         this.refs.resourceEditor.refreshResourceList(group.name);
     },
-    getResourcesCallback: function(data) {
-        this.setState({groupName:this.state.groupName, resourceList:data.applicationResponseContent});
-    },
     render: function() {
 
-        if (this.state.groupJvmData === null) {
-            return <div>Loading groups and JVMs...</div>
+        if (this.state.groupData === null) {
+            return <div>Loading group data...</div>
         }
 
         var treeMetaData = [{propKey: "name", selectable: true}];
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
                                               title="Groups"
-                                              className="group-jvms-tree-list-dialog">
+                                              className="splitter-top-component-child">
                                    <RTreeList ref="treeList"
-                                              data={this.state.groupJvmData}
+                                              data={this.state.groupData}
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
                                               selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
-        var resourcesPane = <RStaticDialog title="Resources" className="">
-                                <ResourceEditor ref="resourceEditor" />
+        var resourcesPane = <RStaticDialog title="Resources" className="splitter-top-component-child">
+                                <ResourceEditor ref="resourceEditor"
+                                                selectResourceCallback={this.selectResourceCallback}
+                                                refreshResourceListResponseCallback={this.refreshResourceListResponseCallback} />
                             </RStaticDialog>
 
-        var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="">
-                                   <ResourceAttrEditor />
+        var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="splitter-top-component-child">
+                                   <ResourceAttrEditor ref="resourceAttrEditor" />
                                </RStaticDialog>
 
         var horzComponents = [];
@@ -54,26 +51,33 @@ var ResourcesConfig = React.createClass({
 
         var vertComponents = [];
 
-        vertComponents.push(<div className="group-jvms-tree-list-container">{horzSplitter}</div>);
-        vertComponents.push(<div className="group-jvms-tree-list-container"><XmlTabs/></div>);
+        vertComponents.push(<div>{horzSplitter}</div>);
+        vertComponents.push(<div><XmlTabs/></div>);
 
         var vertSplitter = <RSplitter components={vertComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
 
         return <div className="resource-container">{vertSplitter}</div>
     },
-    componentDidMount: function() {
-        ServiceFactory.getGroupService().getGroups(this.getGroupJvmCallback);
+
+    selectResourceCallback: function(resource) {
+        this.refs.resourceAttrEditor.refresh(resource);
     },
-    getGroupJvmCallback: function(response) {
-        this.setState({groupJvmData:response.applicationResponseContent});
+
+    componentDidMount: function() {
+        ServiceFactory.getGroupService().getGroups(this.getGroupDataCallback);
+    },
+    getGroupDataCallback: function(response) {
+        this.setState({groupData:response.applicationResponseContent});
     },
     componentDidUpdate: function() {
-        if (this.state.groupName === null && this.state.groupJvmData !== null && this.state.groupJvmData.length > 0) {
+        if (this.state.currentGroupName === null && this.state.groupData !== null && this.state.groupData.length > 0) {
             // Select the first group
-            this.refs.treeList.selectNode(this.state.groupJvmData[0].name);
-            this.setState({groupName:this.state.groupJvmData[0].name});
-            ServiceFactory.getResourceService().getResources(this.state.groupJvmData[0].name, this.getResourcesCallback);
+            this.refs.treeList.selectNode(this.state.groupData[0].name);
+            this.setState({currentGroupName:this.state.groupData[0].name});
+            ServiceFactory.getResourceService().getResources(this.state.groupData[0].name, this.getResourcesCallback);
         }
+    },
+    refreshResourceListResponseCallback: function(resource) {
     }
 })
 

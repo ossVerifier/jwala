@@ -74,6 +74,12 @@ var RTreeList = React.createClass({
                 });
             }
         }
+    },
+    getSelectedNode: function() {
+        if (this.state.selectedNodeKey !== null) {
+            return this.refs[this.state.selectedNodeKey];
+        }
+        return null;
     }
 });
 

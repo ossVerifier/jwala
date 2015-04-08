@@ -6,11 +6,12 @@ var ResourceEditor = React.createClass({
                                                                           className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                           spanClassName:"ui-icon ui-icon-trash",
                                                                           onClick:this.onClickDel}),
-                                           React.createElement(ResourceTypeDropDown, {resourceTypes:this.props.resourceTypes,
-                                                                                      onClickAdd:this.onClickAdd}),
+                                           React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd}),
                                            React.createElement(ResourceList, {ref:"resourceList",
                                                                               data:this.props.resourceList,
-                                                                              groupName:this.props.groupName}));
+                                                                              groupName:this.props.groupName,
+                                                                              selectResourceCallback:this.props.selectResourceCallback,
+                                                                              refreshListResponseCallback:this.props.refreshResourceListResponseCallback}));
 
         return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
     },
@@ -89,10 +90,11 @@ var ResourceList = React.createClass({
         };
     },
     refresh: function(groupName, resourceName) {
-        ServiceFactory.getResourceService().getResources(groupName, this.refreshListCallback.bind(this, groupName, resourceName));
+        ServiceFactory.getResourceService().getResources(groupName, this.refreshListResponseCallback.bind(this, groupName, resourceName));
     },
-    refreshListCallback: function(groupName, resourceName, response) {
-          this.setState({groupName:groupName, resourceList:response.applicationResponseContent, currentResourceItemId:resourceName});
+    refreshListResponseCallback: function(groupName, resourceName, response) {
+        this.setState({groupName:groupName, resourceList:response.applicationResponseContent, currentResourceItemId:resourceName});
+        this.props.refreshListResponseCallback(ResourceList.getResourceByName(resourceName, response.applicationResponseContent));
     },
     render: function() {
         var resourceElements = [];
@@ -133,8 +135,9 @@ var ResourceList = React.createClass({
     updateResourceErrorCallback: function(errMsg) {
          $.errorAlert(errMsg, "Error");
     },
-    onClick: function(name) {
-        this.setState({currentResourceItemId:name});
+    onClick: function(resource) {
+        this.props.selectResourceCallback(resource);
+        this.setState({currentResourceItemId:resource.name});
     },
     add: function(resourceType) {
         var largestNumber = 0;
@@ -205,6 +208,17 @@ var ResourceList = React.createClass({
         if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
             $.errorAlert(errMsg, "Error");
         }
+    },
+
+    statics: {
+        getResourceByName: function(name, resourceList) {
+            for (var i = 0; i < resourceList.length; i++) {
+                if (name === resourceList[i].name) {
+                    return resourceList[i];
+                }
+            }
+            return null;
+        }
     }
 });
 
@@ -269,7 +283,7 @@ var ResourceItem = React.createClass({
         }
     },
     onDivClick: function() {
-        this.props.onClick(this.props.resource.name);
+        this.props.onClick(this.props.resource);
     },
     onCheckBoxChange: function(e) {
         this.props.onSelect(this.props.resource.name, this.refs.checkBox.getDOMNode().checked);

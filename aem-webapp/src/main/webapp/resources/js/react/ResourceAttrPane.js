@@ -1,7 +1,14 @@
 // Sample data
-var attrTemplateList = [{name:"name", required:true}, {name:"type", required:false}, {name:"url", required:false}];
+// var attrTemplateList = [{name:"name", required:true}, {name:"type", required:false}, {name:"url", required:false}];
 
 var ResourceAttrEditor = React.createClass({
+
+    getInitialState: function() {
+        return {
+            resource: null
+        }
+    },
+
     render: function() {
         var toolbar = React.createElement("div", {className:"resource-attr-toolbar"},
                                                           React.createElement(RButton, {title:"Delete attribute",
@@ -15,27 +22,33 @@ var ResourceAttrEditor = React.createClass({
                                                           React.createElement(RButton, {title:"Generate XML",
                                                                                         className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                                         spanClassName:"ui-icon ui-icon-play",
-                                                                                        onClick:this.onClickGenerateXml})
-        );
+                                                                                        onClick:this.onClickGenerateXml}));
 
-        var attrValTable = React.createElement(AttrValTable, {attrTemplateList:attrTemplateList});
 
-        return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable);
+        if (this.state.resource !== null) {
+            var attrValTable = React.createElement(AttrValTable, {attributes:this.state.resource.attributes});
+            return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable);
+        }
+        return React.createElement("div", {className:"attr-values-container"}, toolbar, "Please select a resource to view it's attributes");
     },
     onClickDel: function() {
     },
     onClickAdd: function() {
     },
     onClickGenerateXml: function() {
+    },
+    refresh: function(resource) {
+        this.setState({resource:resource});
     }
 });
 
 var AttrValTable = React.createClass({
     render: function() {
         var attrElements = [];
-        this.props.attrTemplateList.forEach(function(attrMeta){
-            attrElements.push(React.createElement(AttrValRow, {key:attrMeta.name, attrName:attrMeta.name}));
-        });
+
+        for (key in this.props.attributes) {
+            attrElements.push(React.createElement(AttrValRow, {key:key, attrName:key}));
+        }
 
         return React.createElement("div", {className:"attr-val-table-container"},
                    React.createElement("table", {className:"attr-val-table"},
