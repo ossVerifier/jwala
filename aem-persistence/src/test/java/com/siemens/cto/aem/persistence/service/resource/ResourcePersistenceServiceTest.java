@@ -40,10 +40,13 @@ public abstract class ResourcePersistenceServiceTest {
         final Event<ResourceInstanceCommand> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("TestResourceTypeName", "TestFriendlyName", jpaGroup.getName(), map, userName);
         final ResourceInstance storedResourceInstance = getResourcePersistenceService().createResourceInstance(resourceInstanceEvent);
 
-       // Assert.assertEquals(resourceInstanceEvent.getCommand().getGroupId(), storedResourceInstance.getGroup().getId());
-       // Assert.assertEquals(resourceInstanceEvent.getCommand().getAttributes(), storedResourceInstance.getAttributes());
-        //Assert.assertEquals(resourceInstanceEvent.getCommand().getResourceTypeName(), storedResourceInstance.getResourceTypeName());
-       // Assert.assertNotNull(storedResourceInstance.getResourceInstanceId());
+        assertEquals(storedResourceInstance.getName(), "TestFriendlyName");
+        assertEquals(3, storedResourceInstance.getAttributes().size());
+
+        final ResourceInstance persistedResourceInstance = getResourcePersistenceService().getResourceInstanceByGroupIdAndName(jpaGroup.getId(), "TestFriendlyName");
+
+        assertEquals(persistedResourceInstance.getName(), "TestFriendlyName");
+        assertEquals(3, persistedResourceInstance.getAttributes().size());
     }
 
     @Test
