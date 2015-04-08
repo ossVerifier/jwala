@@ -30,7 +30,7 @@ public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, Res
     @JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")
     private JpaGroup group;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable(name="RESOURCE_INSTANCE_ATTRIBUTES", joinColumns = @JoinColumn(name = "RESOURCE_INSTANCE_ID", referencedColumnName = "RESOURCE_INSTANCE_ID"))
     @MapKeyColumn (name = "ATTRIBUTE_KEY")
     @Column(name = "ATTRIBUTE_VALUE")
