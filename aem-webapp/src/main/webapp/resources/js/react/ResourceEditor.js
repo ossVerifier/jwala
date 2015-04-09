@@ -5,7 +5,8 @@ var ResourceEditor = React.createClass({
             groupData: null,
             currentGroupName: null,
             resourceData:null,
-            currentResourceName: null
+            currentResourceName: null,
+            resourceEditMode: false
         }
     },
     render: function() {
@@ -30,7 +31,10 @@ var ResourceEditor = React.createClass({
                                               data={this.state.resourceData}
                                               insertNewResourceCallback={this.insertNewResourceCallback}
                                               deleteResourcesCallback={this.deleteResourcesCallback}
-                                              updateResourceCallback={this.updateResourceCallback}/>
+                                              updateResourceCallback={this.updateResourceCallback}
+                                              currentResourceName={this.state.currentResourceName}
+                                              editMode={this.state.resourceEditMode}
+                                              selectResourceCallback={this.selectResourceCallback}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
@@ -79,12 +83,22 @@ var ResourceEditor = React.createClass({
         this.setState({resourceData:response.applicationResponseContent});
     },
     insertNewResourceCallback: function(resourceName) {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName,
+            this.getResourceDataCallbackExt.bind(this, resourceName, true));
     },
     deleteResourcesCallback: function() {
         ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
     },
     updateResourceCallback: function(newResourceName) {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName,
+            this.getResourceDataCallbackExt.bind(this, newResourceName, false));
+    },
+    getResourceDataCallbackExt: function(resourceName, editMode, response) {
+        this.setState({currentResourceName:resourceName,
+                       resourceEditMode:editMode,
+                       resourceData:response.applicationResponseContent});
+    },
+    selectResourceCallback: function(resource) {
+        this.setState({currentResourceName:resource.name});
     }
 });

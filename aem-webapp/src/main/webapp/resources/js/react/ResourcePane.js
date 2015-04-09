@@ -14,9 +14,9 @@ var ResourcePane = React.createClass({
                                                                                   insertNewResourceCallback:this.props.insertNewResourceCallback,
                                                                                   deleteResourcesCallback:this.props.deleteResourcesCallback,
                                                                                   updateResourceCallback:this.props.updateResourceCallback,
-
-                                                                                  selectResourceCallback:this.props.selectResourceCallback,
-                                                                                  refreshListResponseCallback:this.props.refreshResourceListResponseCallback}));
+                                                                                  currentResourceName:this.props.currentResourceName,
+                                                                                  editMode:this.props.editMode,
+                                                                                  selectResourceCallback:this.props.selectResourceCallback}));
 
             return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
         }
@@ -86,13 +86,8 @@ var ResourceTypeOption = React.createClass({
 var ResourceList = React.createClass({
     getInitialState: function() {
         return {
-            // groupName:null,
-            // resourceList:[],
-            // currentResourceItemId:null,
             selectedResourceNames:{},
-            showDeleteConfirmDialog:false,
-
-            currentResourceName:null
+            showDeleteConfirmDialog:false
         };
     },
     render: function() {
@@ -103,9 +98,9 @@ var ResourceList = React.createClass({
             resourceElements.push(React.createElement(ResourceItem, {key:resource.name,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
-                                                                     isHighlighted:(self.state.currentResourceName === resource.name),
+                                                                     isHighlighted:(self.props.currentResourceName === resource.name),
                                                                      onSelect:self.onSelect,
-                                                                     editMode:(self.state.currentResourceName === resource.name),
+                                                                     editMode:(self.props.currentResourceName === resource.name ? self.props.editMode : false),
                                                                      onChange:self.onChangeResourceListItem,
                                                                      resourceTypeName:resource.resourceTypeName}));
         });
@@ -135,8 +130,7 @@ var ResourceList = React.createClass({
          $.errorAlert(errMsg, "Error");
     },
     onClick: function(resource) {
-        // this.props.selectResourceCallback(resource);
-        this.setState({currentResourceName:resource.name});
+        this.props.selectResourceCallback(resource);
     },
     add: function(resourceType) {
         var largestNumber = 0;
@@ -238,19 +232,12 @@ var ResourceItem = React.createClass({
                                                                       onBlur:this.onTextFieldBlur,
                                                                       maxLength:40}));
     },
-
-
-
-
-
-
-//    componentDidMount: function() {
-//        if (this.props.editMode) {
-//            this.refs.textField.getDOMNode().select();
-//        }
-//    },
-
-
+    componentDidMount: function() {
+        if (this.props.editMode) {
+            this.refs.textField.getDOMNode().focus();
+            this.refs.textField.getDOMNode().select();
+        }
+    },
     onTextFieldChange: function() {
         var resourceName = $(this.refs.textField.getDOMNode()).val();
         if (resourceName.trim() === "") {
@@ -263,7 +250,6 @@ var ResourceItem = React.createClass({
         }
         this.setState(newState);
     },
-
     onTextFieldBlur: function(e) {
         if (!ResourceItem.isValidResourceName(this.state.resourceName)) {
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
@@ -279,18 +265,12 @@ var ResourceItem = React.createClass({
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
         }
     },
-
     onDivClick: function() {
         this.props.onClick(this.props.resource);
     },
     onCheckBoxChange: function(e) {
         this.props.onSelect(this.props.resource.name, this.refs.checkBox.getDOMNode().checked);
     },
-
-//    setHighlight: function(val) {
-//        this.setState({isHighlighted:val});
-//    },
-
     statics: {
         ENTER_KEY: "Enter",
         ESCAPE_KEY: "Escape",
@@ -298,9 +278,4 @@ var ResourceItem = React.createClass({
             return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_. ]+$/i) !== null);
         }
     }
-
-
-
-
-
 });
