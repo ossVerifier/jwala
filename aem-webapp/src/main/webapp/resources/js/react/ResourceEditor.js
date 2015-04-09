@@ -16,7 +16,7 @@ var ResourceEditor = React.createClass({
         var treeMetaData = [{propKey: "name", selectable: true}];
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
                                               title="Groups"
-                                              className="splitter-top-component-child">
+                                              contentClassName="resource-static-dialog-content">
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -25,7 +25,7 @@ var ResourceEditor = React.createClass({
                                               selectNodeCallback={this.selectGroupNodeCallback} />
                                </RStaticDialog>
 
-        var resourcesPane = <RStaticDialog title="Resources" className="splitter-top-component-child">
+        var resourcesPane = <RStaticDialog title="Resources" contentClassName="resource-static-dialog-content">
                                 <ResourcePane groupName={this.state.currentGroupName}
                                               data={this.state.resourceData}
                                               insertNewResourceCallback={this.insertNewResourceCallback}
@@ -33,14 +33,14 @@ var ResourceEditor = React.createClass({
                                               updateResourceCallback={this.updateResourceCallback}/>
                             </RStaticDialog>
 
-        var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="splitter-top-component-child">
+        var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
                                    <ResourceAttrPane ref="resourceAttrEditor" />
                                </RStaticDialog>
 
         var splitterComponents = [];
-        splitterComponents.push(<div className="group-jvms-tree-list-container">{groupJvmTreeList}</div>);
-        splitterComponents.push(<div className="">{resourcesPane}</div>);
-        splitterComponents.push(<div className="">{resourceAttrPane}</div>);
+        splitterComponents.push(<div className="resource-pane">{groupJvmTreeList}</div>);
+        splitterComponents.push(<div className="resource-pane">{resourcesPane}</div>);
+        splitterComponents.push(<div className="resource-pane">{resourceAttrPane}</div>);
 
         return <RSplitter components={splitterComponents}
                           orientation={RSplitter.HORIZONTAL_ORIENTATION}
