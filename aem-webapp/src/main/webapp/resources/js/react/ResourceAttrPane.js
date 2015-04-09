@@ -1,7 +1,4 @@
-// Sample data
-// var attrTemplateList = [{name:"name", required:true}, {name:"type", required:false}, {name:"url", required:false}];
-
-var ResourceAttrEditor = React.createClass({
+var ResourceAttrPane = React.createClass({
 
     getInitialState: function() {
         return {

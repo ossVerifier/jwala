@@ -31,6 +31,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-multi-select-box.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/accordion.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/button.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-editor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-pane.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-attr-pane.css">
 

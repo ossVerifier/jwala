@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-var ResourceEditor = React.createClass({
+var ResourcePane = React.createClass({
     render: function() {
         var resourceTypeDropDownToolbar = React.createElement("div", {className:"resource-type-toolbar"},
                                            React.createElement(RButton, {title:"Delete Resource",

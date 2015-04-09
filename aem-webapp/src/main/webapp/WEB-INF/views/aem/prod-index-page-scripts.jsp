@@ -64,6 +64,7 @@
 <script src="gen-public-resources/js/react/webserver-config.js"></script>
 <script src="gen-public-resources/js/react/webapp-config.js"></script>
 <script src="gen-public-resources/js/react/resources-config.js"></script>
+<script src="gen-public-resources/js/react/ResourceEditor.js"></script>
 <script src="gen-public-resources/js/react/ResourcePane.js"></script>
 <script src="gen-public-resources/js/react/ResourceAttrPane.js"></script>
 <script src="gen-public-resources/js/react/main-area.js"></script>
