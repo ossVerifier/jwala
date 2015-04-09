@@ -129,7 +129,6 @@ var Node = React.createClass({
         var selectedClassName = "";
         if (this.isSelected()) {
             selectedClassName = Node.HIGHLIGHT_CLASS_NAME;
-            this.props.selectNodeCallback(this.props.data);
         }
 
         var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
@@ -147,6 +146,7 @@ var Node = React.createClass({
     onClickNodeHandler: function(isSelectable, data) {
         if (isSelectable) {
             this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
+            this.props.selectNodeCallback(this.props.data);
         }
     },
     onClickIconHandler: function() {

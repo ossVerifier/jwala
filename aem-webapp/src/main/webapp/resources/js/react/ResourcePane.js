@@ -1,28 +1,32 @@
 /** @jsx React.DOM */
 var ResourcePane = React.createClass({
     render: function() {
-        var resourceTypeDropDownToolbar = React.createElement("div", {className:"resource-type-toolbar"},
-                                           React.createElement(RButton, {title:"Delete Resource",
-                                                                          className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                          spanClassName:"ui-icon ui-icon-trash",
-                                                                          onClick:this.onClickDel}),
-                                           React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd}),
-                                           React.createElement(ResourceList, {ref:"resourceList",
-                                                                              data:this.props.resourceList,
-                                                                              groupName:this.props.groupName,
-                                                                              selectResourceCallback:this.props.selectResourceCallback,
-                                                                              refreshListResponseCallback:this.props.refreshResourceListResponseCallback}));
+        if (this.props.data !== null) {
+            var resourceTypeDropDownToolbar = React.createElement("div", {className:"resource-type-toolbar"},
+                                               React.createElement(RButton, {title:"Delete Resource",
+                                                                              className:"ui-state-default ui-corner-all default-icon-button-style",
+                                                                              spanClassName:"ui-icon ui-icon-trash",
+                                                                              onClick:this.onClickDel}),
+                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd}),
+                                               React.createElement(ResourceList, {ref:"resourceList",
+                                                                                  groupName:this.props.groupName,
+                                                                                  data:this.props.data,
+                                                                                  insertNewResourceCallback:this.props.insertNewResourceCallback,
+                                                                                  deleteResourcesCallback:this.props.deleteResourcesCallback,
+                                                                                  updateResourceCallback:this.props.updateResourceCallback,
 
-        return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
+                                                                                  selectResourceCallback:this.props.selectResourceCallback,
+                                                                                  refreshListResponseCallback:this.props.refreshResourceListResponseCallback}));
+
+            return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
+        }
+        return React.createElement("div", {className:"add-edit-delete-resources-container"});
     },
     onClickAdd: function(resourceType) {
         this.refs.resourceList.add(resourceType);
     },
     onClickDel: function() {
         this.refs.resourceList.deleteSelectedItems();
-    },
-    refreshResourceList: function(groupName) {
-        this.refs.resourceList.refresh(groupName);
     }
 });
 
@@ -82,31 +86,26 @@ var ResourceTypeOption = React.createClass({
 var ResourceList = React.createClass({
     getInitialState: function() {
         return {
-            groupName:null,
-            resourceList:[],
-            currentResourceItemId:null,
-            selectedResourceIds:{},
-            showDeleteConfirmDialog:false
+            // groupName:null,
+            // resourceList:[],
+            // currentResourceItemId:null,
+            selectedResourceNames:{},
+            showDeleteConfirmDialog:false,
+
+            currentResourceName:null
         };
-    },
-    refresh: function(groupName, resourceName) {
-        ServiceFactory.getResourceService().getResources(groupName, this.refreshListResponseCallback.bind(this, groupName, resourceName));
-    },
-    refreshListResponseCallback: function(groupName, resourceName, response) {
-        this.setState({groupName:groupName, resourceList:response.applicationResponseContent, currentResourceItemId:resourceName});
-        this.props.refreshListResponseCallback(ResourceList.getResourceByName(resourceName, response.applicationResponseContent));
     },
     render: function() {
         var resourceElements = [];
         var self = this;
 
-        this.state.resourceList.forEach(function(resource){
+        this.props.data.forEach(function(resource){
             resourceElements.push(React.createElement(ResourceItem, {key:resource.name,
                                                                      resource:resource,
                                                                      onClick:self.onClick,
-                                                                     isHighlighted:(self.state.currentResourceItemId === resource.name),
+                                                                     isHighlighted:(self.state.currentResourceName === resource.name),
                                                                      onSelect:self.onSelect,
-                                                                     editMode:(self.state.currentResourceItemId === resource.name),
+                                                                     editMode:(self.state.currentResourceName === resource.name),
                                                                      onChange:self.onChangeResourceListItem,
                                                                      resourceTypeName:resource.resourceTypeName}));
         });
@@ -122,41 +121,41 @@ var ResourceList = React.createClass({
         return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
     },
     onChangeResourceListItem: function(resourceTypeName, resourceName, newResourceName) {
-        ServiceFactory.getResourceService().updateResourceName(this.state.groupName,
+        ServiceFactory.getResourceService().updateResourceName(this.props.groupName,
                                                                resourceTypeName,
                                                                resourceName,
                                                                newResourceName,
-                                                               this.updateResourceSuccessCallback.bind(resourceName),
+                                                               this.updateResourceSuccessCallback.bind(this, newResourceName),
                                                                this.updateResourceErrorCallback);
     },
-    updateResourceSuccessCallback: function(resourceName) {
-        this.refresh(this.state.groupName, resourceName);
+    updateResourceSuccessCallback: function(newResourceName) {
+        this.props.updateResourceCallback(newResourceName);
     },
     updateResourceErrorCallback: function(errMsg) {
          $.errorAlert(errMsg, "Error");
     },
     onClick: function(resource) {
-        this.props.selectResourceCallback(resource);
-        this.setState({currentResourceItemId:resource.name});
+        // this.props.selectResourceCallback(resource);
+        this.setState({currentResourceName:resource.name});
     },
     add: function(resourceType) {
         var largestNumber = 0;
 
         // Get next sequence number for the generated name
-        this.state.resourceList.forEach(function(resourceItem){
+        this.props.data.forEach(function(resourceItem){
             var num = parseInt(resourceItem.name.substring(resourceType.name.length + 1), 10);
             if (!isNaN(num)) {
                 largestNumber = (largestNumber < num) ? num : largestNumber;
             };
         });
 
-        var name = resourceType.name.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
+        var resourceName = resourceType.name.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
 
-        ServiceFactory.getResourceService().insertNewResource(this.state.groupName,
+        ServiceFactory.getResourceService().insertNewResource(this.props.groupName,
                                                               resourceType.name,
-                                                              name,
+                                                              resourceName,
                                                               this.getAttributes(resourceType),
-                                                              this.insertNewResourceSuccessCallback.bind(this, name),
+                                                              this.insertNewResourceSuccessCallback.bind(this, resourceName),
                                                               this.insertNewResourceErrorCallback);
     },
     getAttributes: function(resourceType) {
@@ -170,54 +169,43 @@ var ResourceList = React.createClass({
         return attributes;
     },
     insertNewResourceSuccessCallback: function(resourceName) {
-        this.refresh(this.state.groupName, resourceName);
+        this.props.insertNewResourceCallback(resourceName);
     },
     insertNewResourceErrorCallback: function(errMsg) {
         $.errorAlert(errMsg, "Error");
     },
     onSelect: function(id, checked) {
-        this.state.selectedResourceIds[id] = checked;
+        this.state.selectedResourceNames[id] = checked;
     },
     deleteSelectedItems: function() {
-        if (!$.isEmptyObject(this.state.selectedResourceIds)) {
+        if (!$.isEmptyObject(this.state.selectedResourceNames)) {
             this.setState({showDeleteConfirmDialog:true});
         }
     },
     confirmDeleteCallback: function() {
         var selectedResourceNames = [];
         var self = this;
-        this.state.resourceList.forEach(function(resource) {
-            if (self.state.selectedResourceIds[resource.name] === true) {
+        this.props.data.forEach(function(resource) {
+            if (self.state.selectedResourceNames[resource.name] === true) {
                 selectedResourceNames.push(resource.name);
             }
         });
-        ServiceFactory.getResourceService().deleteResources(this.state.groupName,
+        ServiceFactory.getResourceService().deleteResources(this.props.groupName,
                                                             selectedResourceNames,
                                                             this.deleteSuccessCallback,
                                                             this.deleteErrorCallback);
-        this.setState({showDeleteConfirmDialog:false, selectedResourceIds:{}});
+        this.setState({showDeleteConfirmDialog:false, selectedResourceNames:{}});
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
     },
     deleteSuccessCallback: function() {
-        this.refresh(this.state.groupName, null);
+        this.props.deleteResourcesCallback();
     },
     deleteErrorCallback: function(errMsg) {
         // TODO: Delete should not throw an exception with an empty error message. Check why!
         if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
             $.errorAlert(errMsg, "Error");
-        }
-    },
-
-    statics: {
-        getResourceByName: function(name, resourceList) {
-            for (var i = 0; i < resourceList.length; i++) {
-                if (name === resourceList[i].name) {
-                    return resourceList[i];
-                }
-            }
-            return null;
         }
     }
 });
@@ -250,11 +238,19 @@ var ResourceItem = React.createClass({
                                                                       onBlur:this.onTextFieldBlur,
                                                                       maxLength:40}));
     },
-    componentDidMount: function() {
-        if (this.props.editMode) {
-            this.refs.textField.getDOMNode().select();
-        }
-    },
+
+
+
+
+
+
+//    componentDidMount: function() {
+//        if (this.props.editMode) {
+//            this.refs.textField.getDOMNode().select();
+//        }
+//    },
+
+
     onTextFieldChange: function() {
         var resourceName = $(this.refs.textField.getDOMNode()).val();
         if (resourceName.trim() === "") {
@@ -267,6 +263,7 @@ var ResourceItem = React.createClass({
         }
         this.setState(newState);
     },
+
     onTextFieldBlur: function(e) {
         if (!ResourceItem.isValidResourceName(this.state.resourceName)) {
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
@@ -282,15 +279,18 @@ var ResourceItem = React.createClass({
             this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
         }
     },
+
     onDivClick: function() {
         this.props.onClick(this.props.resource);
     },
     onCheckBoxChange: function(e) {
         this.props.onSelect(this.props.resource.name, this.refs.checkBox.getDOMNode().checked);
     },
-    setHighlight: function(val) {
-        this.setState({isHighlighted:val});
-    },
+
+//    setHighlight: function(val) {
+//        this.setState({isHighlighted:val});
+//    },
+
     statics: {
         ENTER_KEY: "Enter",
         ESCAPE_KEY: "Escape",
@@ -298,4 +298,9 @@ var ResourceItem = React.createClass({
             return ((resourceName !== "") && resourceName.match(/^[a-zA-Z0-9-_. ]+$/i) !== null);
         }
     }
+
+
+
+
+
 });

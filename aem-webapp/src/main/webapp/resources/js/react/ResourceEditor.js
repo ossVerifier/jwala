@@ -3,7 +3,9 @@ var ResourceEditor = React.createClass({
     getInitialState: function() {
         return {
             groupData: null,
-            currentGroupName: null
+            currentGroupName: null,
+            resourceData:null,
+            currentResourceName: null
         }
     },
     render: function() {
@@ -20,13 +22,15 @@ var ResourceEditor = React.createClass({
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
-                                              selectNodeCallback={this.selectNodeCallback} />
+                                              selectNodeCallback={this.selectGroupNodeCallback} />
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog title="Resources" className="splitter-top-component-child">
-                                <ResourcePane ref="resourceEditor"
-                                                selectResourceCallback={this.selectResourceCallback}
-                                                refreshResourceListResponseCallback={this.refreshResourceListResponseCallback} />
+                                <ResourcePane groupName={this.state.currentGroupName}
+                                              data={this.state.resourceData}
+                                              insertNewResourceCallback={this.insertNewResourceCallback}
+                                              deleteResourcesCallback={this.deleteResourcesCallback}
+                                              updateResourceCallback={this.updateResourceCallback}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" className="splitter-top-component-child">
@@ -51,19 +55,36 @@ var ResourceEditor = React.createClass({
         this.setState({groupData:response.applicationResponseContent});
     },
     selectResourceCallback: function(resource) {
-        this.refs.resourceAttrEditor.refresh(resource);
+        // this.refs.resourceAttrEditor.refresh(resource);
     },
     componentDidUpdate: function() {
         if (this.state.currentGroupName === null && this.state.groupData !== null && this.state.groupData.length > 0) {
             // Select the first group
             this.refs.treeList.selectNode(this.state.groupData[0].name);
             this.setState({currentGroupName:this.state.groupData[0].name});
-            ServiceFactory.getResourceService().getResources(this.state.groupData[0].name, this.getResourcesCallback);
         }
     },
     refreshResourceListResponseCallback: function(resource) {
     },
-    selectNodeCallback: function(group) {
-        this.refs.resourceEditor.refreshResourceList(group.name);
+    selectGroupNodeCallback: function(group) {
+        this.setState({currentGroupName:group.name});
+    },
+    componentWillUpdate: function(nextProps, nextState) {
+        if (this.state.currentGroupName != nextState.currentGroupName) {
+            // Retrieve resources
+            ServiceFactory.getResourceService().getResources(nextState.currentGroupName, this.getResourceDataCallback);
+        }
+    },
+    getResourceDataCallback: function(response) {
+        this.setState({resourceData:response.applicationResponseContent});
+    },
+    insertNewResourceCallback: function(resourceName) {
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+    },
+    deleteResourcesCallback: function() {
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+    },
+    updateResourceCallback: function(newResourceName) {
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
     }
 });
