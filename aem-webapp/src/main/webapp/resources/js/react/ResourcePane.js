@@ -148,19 +148,9 @@ var ResourceList = React.createClass({
         ServiceFactory.getResourceService().insertNewResource(this.props.groupName,
                                                               resourceType.name,
                                                               resourceName,
-                                                              this.getAttributes(resourceType),
+                                                              ResourceList.getAttributes(resourceType),
                                                               this.insertNewResourceSuccessCallback.bind(this, resourceName),
                                                               this.insertNewResourceErrorCallback);
-    },
-    getAttributes: function(resourceType) {
-        var attributes = [];
-        resourceType.properties.forEach(function(type){
-            var attribute = {};
-            attribute["key"] = type.name;
-            attribute["value"] = type.value !== undefined ? type.value : null;
-            attributes.push(attribute);
-        });
-        return attributes;
     },
     insertNewResourceSuccessCallback: function(resourceName) {
         this.props.insertNewResourceCallback(resourceName);
@@ -198,8 +188,21 @@ var ResourceList = React.createClass({
     },
     deleteErrorCallback: function(errMsg) {
         // TODO: Delete should not throw an exception with an empty error message. Check why!
+        // This is called when a new resources is added.
         if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
             $.errorAlert(errMsg, "Error");
+        }
+    },
+    statics: {
+        getAttributes: function(resourceType) {
+            var attributes = [];
+            resourceType.properties.forEach(function(type){
+                var attribute = {};
+                attribute["key"] = type.name;
+                attribute["value"] = type.value !== undefined ? type.value : null;
+                attributes.push(attribute);
+            });
+            return attributes;
         }
     }
 });

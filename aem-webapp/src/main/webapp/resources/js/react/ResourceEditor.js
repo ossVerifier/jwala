@@ -38,7 +38,9 @@ var ResourceEditor = React.createClass({
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
-                                   <ResourceAttrPane ref="resourceAttrEditor" resourceData={this.getCurrentResource()}/>
+                                   <ResourceAttrPane ref="resourceAttrEditor"
+                                                     resourceData={this.getCurrentResource()}
+                                                     updateCallback={this.updateAttrCallback}/>
                                </RStaticDialog>
 
         var splitterComponents = [];
@@ -57,9 +59,6 @@ var ResourceEditor = React.createClass({
     },
     getGroupDataCallback: function(response) {
         this.setState({groupData:response.applicationResponseContent});
-    },
-    selectResourceCallback: function(resource) {
-        // this.refs.resourceAttrEditor.refresh(resource);
     },
     componentDidUpdate: function() {
         if (this.state.currentGroupName === null && this.state.groupData !== null && this.state.groupData.length > 0) {
@@ -91,12 +90,22 @@ var ResourceEditor = React.createClass({
     },
     updateResourceCallback: function(newResourceName) {
         ServiceFactory.getResourceService().getResources(this.state.currentGroupName,
-            this.getResourceDataCallbackExt.bind(this, newResourceName, false));
+              this.getResourceDataCallbackExt.bind(this, newResourceName, false));
     },
     getResourceDataCallbackExt: function(resourceName, editMode, response) {
-        this.setState({currentResourceName:resourceName,
-                       resourceEditMode:editMode,
-                       resourceData:response.applicationResponseContent});
+        if (editMode) {
+            // Adding of a new resource sets the edit mode to true. The requirement is that the recently added
+            // resources should be selected and is in edit mode thus we set edit mode to true and set the current
+            // resource to the newly added resource.
+            this.setState({currentResourceName:resourceName,
+                           resourceEditMode:editMode,
+                           resourceData:response.applicationResponseContent});
+        } else {
+            // Don't set current resource here since it will interfere with the select event!
+            // The code goes here when there's an update triggered by a blur event (e.g. another resource was selected).
+            this.setState({resourceEditMode:editMode,
+                           resourceData:response.applicationResponseContent});
+        }
     },
     selectResourceCallback: function(resource) {
         this.setState({currentResourceName:resource.name});
@@ -110,5 +119,8 @@ var ResourceEditor = React.createClass({
             }
         }
         return null;
+    },
+    updateAttrCallback: function() {
+        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
     }
 });
