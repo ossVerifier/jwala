@@ -1,11 +1,4 @@
 var ResourceAttrPane = React.createClass({
-
-    getInitialState: function() {
-        return {
-            resource: null
-        }
-    },
-
     render: function() {
         var toolbar = React.createElement("div", {className:"resource-attr-toolbar"},
                                                           React.createElement(RButton, {title:"Delete attribute",
@@ -22,8 +15,8 @@ var ResourceAttrPane = React.createClass({
                                                                                         onClick:this.onClickGenerateXml}));
 
 
-        if (this.state.resource !== null) {
-            var attrValTable = React.createElement(AttrValTable, {attributes:this.state.resource.attributes});
+        if (this.props.resourceData !== null) {
+            var attrValTable = React.createElement(AttrValTable, {attributes:this.props.resourceData.attributes});
             return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable);
         }
         return React.createElement("div", {className:"attr-values-container"}, toolbar, "Please select a resource to view it's attributes");

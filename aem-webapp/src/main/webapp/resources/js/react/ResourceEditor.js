@@ -38,7 +38,7 @@ var ResourceEditor = React.createClass({
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
-                                   <ResourceAttrPane ref="resourceAttrEditor" />
+                                   <ResourceAttrPane ref="resourceAttrEditor" resourceData={this.getCurrentResource()}/>
                                </RStaticDialog>
 
         var splitterComponents = [];
@@ -100,5 +100,15 @@ var ResourceEditor = React.createClass({
     },
     selectResourceCallback: function(resource) {
         this.setState({currentResourceName:resource.name});
+    },
+    getCurrentResource: function() {
+        if (this.state.resourceData !== null) {
+            for (var i = 0;i < this.state.resourceData.length;i++) {
+                if (this.state.resourceData[i].name === this.state.currentResourceName) {
+                    return this.state.resourceData[i];
+                }
+            }
+        }
+        return null;
     }
 });
