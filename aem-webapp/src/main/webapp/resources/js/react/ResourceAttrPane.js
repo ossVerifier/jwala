@@ -1,4 +1,8 @@
+/** @jsx React.DOM */
 var ResourceAttrPane = React.createClass({
+    getInitialState: function() {
+        return {showDeleteConfirmDialog:false};
+    },
     render: function() {
         var toolbar = React.createElement("div", {className:"resource-attr-toolbar"},
                                                           React.createElement(RButton, {title:"Delete attribute",
@@ -14,15 +18,59 @@ var ResourceAttrPane = React.createClass({
                                                                                         spanClassName:"ui-icon ui-icon-play",
                                                                                         onClick:this.onClickGenerateXml}));
 
+        var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
+                                                                   show:this.state.showDeleteConfirmDialog,
+                                                                   okCallback:this.confirmDeleteCallback,
+                                                                   cancelCallback:this.cancelDeleteCallback,
+                                                                   content:<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>,
+                                                                   okLabel:"Yes",
+                                                                   cancelLabel:"No"});
 
         if (this.props.resourceData !== null) {
-            var attrValTable = React.createElement(AttrValTable, {attributes:this.props.resourceData.attributes,
+            var attrValTable = React.createElement(AttrValTable, {ref:"attrTable",
+                                                                  attributes:this.props.resourceData.attributes,
                                                                   updateCallback:this.updateCallback});
-            return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable);
+            return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable, confirmationDlg);
         }
-        return React.createElement("div", {className:"attr-values-container"}, toolbar, "Please select a resource to view it's attributes");
+
+        return React.createElement("div", {className:"attr-values-container"},
+                                   toolbar, "Please select a resource to view it's attributes");
+    },
+    confirmDeleteCallback: function() {
+        var selectedAttributes = this.refs.attrTable.getSelectedAttributes();
+        var tempAttrArray = [];
+        for (key in this.props.resourceData.attributes) {
+            if (selectedAttributes.indexOf(key) === -1) {
+                var attributesForRestConsumption = {};
+                attributesForRestConsumption["key"] = key;
+                attributesForRestConsumption["value"] = this.props.resourceData.attributes[key];
+                tempAttrArray.push(attributesForRestConsumption);
+           }
+        }
+
+        this.setState({showDeleteConfirmDialog:false});
+
+        var resourceData = {resourceTypeName:this.props.resourceData.resourceTypeName,
+                            groupName:this.props.resourceData.group.name,
+                            name:this.props.resourceData.name,
+                            attributes:tempAttrArray};
+
+        ServiceFactory.getResourceService().updateResourceAttributes(this.props.resourceData.name,
+                                                                     this.props.resourceData.group.name,
+                                                                     resourceData,
+                                                                     this.updateAttrSuccessCallback,
+                                                                     this.updateAttrErrorCallback);
+    },
+    cancelDeleteCallback: function() {
+        this.setState({showDeleteConfirmDialog:false});
     },
     onClickDel: function() {
+        if (this.refs["attrTable"] !== undefined) {
+            var selectedAttributes = this.refs.attrTable.getSelectedAttributes();
+            if (selectedAttributes.length > 0) {
+                this.setState({showDeleteConfirmDialog:true});
+            }
+        }
     },
     onClickAdd: function() {
     },
@@ -72,7 +120,9 @@ var ResourceAttrPane = React.createClass({
         var attrElements = [];
 
         for (key in this.props.attributes) {
-            attrElements.push(React.createElement(AttrValRow, {key:key, attrName:key,
+            attrElements.push(React.createElement(AttrValRow, {key:key,
+                                                               ref:key,
+                                                               attrName:key,
                                                                attrValue:this.props.attributes[key],
                                                                updateCallback:this.props.updateCallback}));
         }
@@ -80,19 +130,31 @@ var ResourceAttrPane = React.createClass({
         return React.createElement("div", {className:"attr-val-table-container"},
                    React.createElement("table", {className:"attr-val-table"},
                        React.createElement("tbody", {}, attrElements)));
+    },
+    getSelectedAttributes: function() {
+        var selectedAttributes = [];
+        for (key in this.props.attributes) {
+            if (this.refs[key].isSelected()) {
+                selectedAttributes.push(key);
+            }
+        }
+        return selectedAttributes;
     }
 });
 
 var AttrValRow = React.createClass({
     getInitialState:function() {
         return {
+            selected:false,
             attrName:this.props.attrName,
             attrValue:this.props.attrValue
         };
     },
     mixins: [React.addons.LinkedStateMixin],
     render: function() {
-        var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox"}));
+        var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox",
+                                                                                     onChange:this.onCheckboxChange,
+                                                                                     checked:this.state.selected}));
         var attrNameTd = React.createElement("td", {}, React.createElement("input", {className:"name-text-field",
                                                                                      valueLink:this.linkState("attrName"),
                                                                                      onBlur:this.onAttrNameTextBoxBlur}));
@@ -101,6 +163,9 @@ var AttrValRow = React.createClass({
                                           valueLink:this.linkState("attrValue"),
                                           onBlur:this.onAttrTextBoxBlur}));
         return React.createElement("tr", {}, checkBoxTd, attrNameTd, attrValueInputTd);
+    },
+    onCheckboxChange: function() {
+        this.setState({"selected":this.state.selected ? false : true});
     },
     onAttrNameTextBoxBlur: function() {
         this.props.updateCallback(this.props.attrName, this.getAttributeState());
@@ -113,5 +178,8 @@ var AttrValRow = React.createClass({
     },
     getAttributeState: function() {
         return {attrName:this.state.attrName, attrValue:this.state.attrValue};
+    },
+    isSelected: function() {
+        return this.state.selected;
     }
 });
