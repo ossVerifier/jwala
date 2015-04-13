@@ -103,12 +103,15 @@ var AttrValRow = React.createClass({
         return React.createElement("tr", {}, checkBoxTd, attrNameTd, attrValueInputTd);
     },
     onAttrNameTextBoxBlur: function() {
-        this.props.updateCallback(this.props.attrName, this.state);
+        this.props.updateCallback(this.props.attrName, this.getAttributeState());
     },
     onAttrTextBoxBlur: function() {
-        this.props.updateCallback(this.props.attrName, this.state);
+        this.props.updateCallback(this.props.attrName, this.getAttributeState());
     },
     componentWillReceiveProps: function(nextProps) {
         this.setState({attrName:nextProps.attrName, attrValue:nextProps.attrValue});
+    },
+    getAttributeState: function() {
+        return {attrName:this.state.attrName, attrValue:this.state.attrValue};
     }
 });
