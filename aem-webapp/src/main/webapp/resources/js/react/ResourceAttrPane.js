@@ -34,7 +34,7 @@ var ResourceAttrPane = React.createClass({
         }
 
         return React.createElement("div", {className:"attr-values-container"},
-                                   toolbar, "Please select a resource to view it's attributes");
+                                   "Please select a resource to view it's attributes");
     },
     confirmDeleteCallback: function() {
         var selectedAttributes = this.refs.attrTable.getSelectedAttributes();
@@ -64,6 +64,19 @@ var ResourceAttrPane = React.createClass({
         }
     },
     onClickAdd: function() {
+        // the required attribute data transformation process to pass to the rest service
+        var tempAttrArray = [];
+
+        for (key in this.props.resourceData.attributes) {
+            var attributesForRestConsumption = {};
+            attributesForRestConsumption["key"] = key;
+            attributesForRestConsumption["value"] = this.props.resourceData.attributes[key];
+            tempAttrArray.push(attributesForRestConsumption);
+        }
+
+        // the new attribute
+        tempAttrArray.push({key:"key-1", value:null});
+        this.updateAttributes(tempAttrArray);
     },
     onClickGenerateXml: function() {
     },
