@@ -16,6 +16,11 @@
     width: 100%;
 }
 
+.name-text-field {
+    min-width: 100%;
+    border: none;
+}
+
 .val-text-field {
-    width: 100%;
+    min-width: 100%;
 }

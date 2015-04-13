@@ -31,16 +31,17 @@ var ResourceAttrPane = React.createClass({
     refresh: function(resource) {
         this.setState({resource:resource});
     },
-    updateCallback: function(attribute) {
+    updateCallback: function(attrKey, attribute) {
         // We have to transform the attributes first to a format that the Rest API understands.
         // We might need to change the REST API to do away with this! This would do for now.
         var tempAttrArray = [];
         for (key in this.props.resourceData.attributes) {
             var attributesForRestConsumption = {};
-            attributesForRestConsumption["key"] = key;
-            if (attribute[key] !== undefined) {
-                attributesForRestConsumption["value"] = attribute[key];
+            if (key === attrKey) {
+                attributesForRestConsumption["key"] = attribute["attrName"];
+                attributesForRestConsumption["value"] = attribute["attrValue"];
             } else {
+                attributesForRestConsumption["key"] = key;
                 attributesForRestConsumption["value"] = this.props.resourceData.attributes[key];
             }
             tempAttrArray.push(attributesForRestConsumption);
@@ -84,32 +85,30 @@ var ResourceAttrPane = React.createClass({
 
 var AttrValRow = React.createClass({
     getInitialState:function() {
-        var states = {};
-        states[this.props.attrName] = this.props.attrValue;
-        return states;
+        return {
+            attrName:this.props.attrName,
+            attrValue:this.props.attrValue
+        };
     },
+    mixins: [React.addons.LinkedStateMixin],
     render: function() {
         var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox"}));
-        var attrNameTd = React.createElement("td", {}, this.props.attrName);
+        var attrNameTd = React.createElement("td", {}, React.createElement("input", {className:"name-text-field",
+                                                                                     valueLink:this.linkState("attrName"),
+                                                                                     onBlur:this.onAttrNameTextBoxBlur}));
         var attrValueInputTd = React.createElement("td", {},
-            React.createElement("input", {ref:"attrTextBox",
-                                          className:"val-text-field",
-                                          onChange:this.onAttrValChange,
-                                          onBlur:this.onAttrTextBoxBlur,
-                                          value:this.state[this.props.attrName]}));
+            React.createElement("input", {className:"val-text-field",
+                                          valueLink:this.linkState("attrValue"),
+                                          onBlur:this.onAttrTextBoxBlur}));
         return React.createElement("tr", {}, checkBoxTd, attrNameTd, attrValueInputTd);
     },
-    onAttrValChange: function() {
-        var theState = {};
-        theState[this.props.attrName] = $(this.refs.attrTextBox.getDOMNode()).val();
-        this.setState(theState);
+    onAttrNameTextBoxBlur: function() {
+        this.props.updateCallback(this.props.attrName, this.state);
     },
     onAttrTextBoxBlur: function() {
-        this.props.updateCallback(this.state);
+        this.props.updateCallback(this.props.attrName, this.state);
     },
     componentWillReceiveProps: function(nextProps) {
-        var theState = {};
-        theState[this.props.attrName] = nextProps.attrValue;
-        this.setState(theState);
+        this.setState({attrName:nextProps.attrName, attrValue:nextProps.attrValue});
     }
 });
