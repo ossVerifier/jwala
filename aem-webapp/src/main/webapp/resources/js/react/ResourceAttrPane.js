@@ -50,16 +50,7 @@ var ResourceAttrPane = React.createClass({
 
         this.setState({showDeleteConfirmDialog:false});
 
-        var resourceData = {resourceTypeName:this.props.resourceData.resourceTypeName,
-                            groupName:this.props.resourceData.group.name,
-                            name:this.props.resourceData.name,
-                            attributes:tempAttrArray};
-
-        ServiceFactory.getResourceService().updateResourceAttributes(this.props.resourceData.name,
-                                                                     this.props.resourceData.group.name,
-                                                                     resourceData,
-                                                                     this.updateAttrSuccessCallback,
-                                                                     this.updateAttrErrorCallback);
+        this.updateAttributes(tempAttrArray);
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
@@ -95,23 +86,25 @@ var ResourceAttrPane = React.createClass({
             tempAttrArray.push(attributesForRestConsumption);
         }
 
-        var resourceData = {resourceTypeName:this.props.resourceData.resourceTypeName,
-                            groupName:this.props.resourceData.group.name,
-                            name:this.props.resourceData.name,
-                            attributes:tempAttrArray};
-
-        ServiceFactory.getResourceService().updateResourceAttributes(this.props.resourceData.name,
-                                                                     this.props.resourceData.group.name,
-                                                                     resourceData,
-                                                                     this.updateAttrSuccessCallback,
-                                                                     this.updateAttrErrorCallback);
-
+        this.updateAttributes(tempAttrArray);
     },
     updateAttrSuccessCallback: function() {
         this.props.updateCallback();
     },
     updateAttrErrorCallback: function(errMsg) {
         $.errorAlert(errMsg, "Error");
+    },
+    updateAttributes: function(attrArray) {
+        var resourceData = {resourceTypeName:this.props.resourceData.resourceTypeName,
+                                    groupName:this.props.resourceData.group.name,
+                                    name:this.props.resourceData.name,
+                                    attributes:attrArray};
+
+        ServiceFactory.getResourceService().updateResourceAttributes(this.props.resourceData.name,
+                                                                     this.props.resourceData.group.name,
+                                                                     resourceData,
+                                                                     this.updateAttrSuccessCallback,
+                                                                     this.updateAttrErrorCallback);
     }
  });
 
