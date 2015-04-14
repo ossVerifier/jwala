@@ -111,6 +111,20 @@ task runIntegTestQtpScript(type: ProcessExec) {
     timeout 900000 // timeout in 15 minutes
 }
 
+// This is the QTP replacement so remove the QTP codes above once this is tested.
+def PS_EXEC_TARGET_HOST = "165.226.228.183"
+def PS_EXEC_USER = "ww005\\z003cjrh"
+def PS_EXEC_PWD = "Efghi123"
+def PS_EXEC_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\SOAP\\soapTOC3-inbatch.bat"
+
+task psExec(type: ProcessExec) {
+    command "PsExec.exe \\\\${PS_EXEC_TARGET_HOST} -u ${PS_EXEC_USER} -p ${PS_EXEC_PWD} ${PS_EXEC_SCRIPT}"
+    directory ""
+    exitOnSuccessIndicator "Passed"
+    exitOnFailIndicator "Failed"
+    timeout 3600000 // timeout in an hour
+}
+
 task integTestSuiteRunner(type: Test) {
     testClassesDir = sourceSets.integTestSuite.output.classesDir
     classpath = sourceSets.integTestSuite.runtimeClasspath
@@ -161,8 +175,7 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
 
     integTestSuiteRunner.execute()
 
-    println "NOT Running QTP test suite... - commented out"
-    // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+    psExec.execute()
 
 }
 
