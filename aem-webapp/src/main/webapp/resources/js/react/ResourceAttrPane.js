@@ -167,14 +167,32 @@ var AttrValRow = React.createClass({
         var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox",
                                                                                      onChange:this.onCheckboxChange,
                                                                                      checked:this.state.selected}));
-        var attrNameTd = React.createElement("td", {}, React.createElement("input", {className:"name-text-field",
+        var attrNameTd = React.createElement("td", {}, React.createElement("input", {ref:"attrNameTextField",
+                                                                                     className:"name-text-field",
                                                                                      valueLink:this.linkState("attrName"),
-                                                                                     onBlur:this.onAttrNameTextBoxBlur}));
+                                                                                     onBlur:this.onAttrNameTextBoxBlur,
+                                                                                     onKeyDown:this.onAttrNameTextFieldKeyDown}));
         var attrValueInputTd = React.createElement("td", {},
-            React.createElement("input", {className:"val-text-field",
+            React.createElement("input", {ref:"attrValTextField",
+                                          className:"val-text-field",
                                           valueLink:this.linkState("attrValue"),
-                                          onBlur:this.onAttrTextBoxBlur}));
+                                          onBlur:this.onAttrTextBoxBlur,
+                                          onKeyDown:this.onAttrValTextFieldKeyDown}));
         return React.createElement("tr", {}, checkBoxTd, attrNameTd, attrValueInputTd);
+    },
+    onAttrNameTextFieldKeyDown: function(e) {
+        if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrName) */) {
+            $(this.refs.attrNameTextField.getDOMNode()).blur();
+        } else if (e.key === ResourceItem.ESCAPE_KEY) {
+            // this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
+        }
+    },
+    onAttrValTextFieldKeyDown: function(e) {
+        if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrValue) */) {
+            $(this.refs.attrValTextField.getDOMNode()).blur();
+        } else if (e.key === ResourceItem.ESCAPE_KEY) {
+            // this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
+        }
     },
     onCheckboxChange: function() {
         this.setState({"selected":this.state.selected ? false : true});
@@ -193,5 +211,9 @@ var AttrValRow = React.createClass({
     },
     isSelected: function() {
         return this.state.selected;
+    },
+    statics: {
+        ENTER_KEY: "Enter",
+        ESCAPE_KEY: "Escape"
     }
 });
