@@ -119,7 +119,7 @@ def PS_EXEC_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\SOAP\\soapTOC3-inbatch.bat
 
 task psExec(type: ProcessExec) {
     command "PsExec.exe \\\\${PS_EXEC_TARGET_HOST} -u ${PS_EXEC_USER} -p ${PS_EXEC_PWD} ${PS_EXEC_SCRIPT}"
-    directory ""
+    directory "D:\\tools\\PSTools"
     exitOnSuccessIndicator "Passed"
     exitOnFailIndicator "Failed"
     timeout 3600000 // timeout in an hour
