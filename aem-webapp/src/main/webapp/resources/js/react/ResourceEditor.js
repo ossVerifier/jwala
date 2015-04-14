@@ -6,7 +6,8 @@ var ResourceEditor = React.createClass({
             currentGroupName: null,
             resourceData:null,
             currentResourceName: null,
-            resourceEditMode: false
+            resourceEditMode: false,
+            resourceTypes:[]
         }
     },
     render: function() {
@@ -34,13 +35,15 @@ var ResourceEditor = React.createClass({
                                               updateResourceCallback={this.updateResourceCallback}
                                               currentResourceName={this.state.currentResourceName}
                                               editMode={this.state.resourceEditMode}
-                                              selectResourceCallback={this.selectResourceCallback}/>
+                                              selectResourceCallback={this.selectResourceCallback}
+                                              resourceTypes={this.state.resourceTypes}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
                                    <ResourceAttrPane ref="resourceAttrEditor"
                                                      resourceData={this.getCurrentResource()}
-                                                     updateCallback={this.updateAttrCallback}/>
+                                                     updateCallback={this.updateAttrCallback}
+                                                     requiredAttributes={this.getRequiredAttributes()}/>
                                </RStaticDialog>
 
         var splitterComponents = [];
@@ -54,11 +57,32 @@ var ResourceEditor = React.createClass({
                                             {width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"}]} />
     },
+    getRequiredAttributes: function() {
+        var requiredAttributes = [];
+        if (this.state.currentResourceName !== null) {
+            var currentResource = this.getCurrentResource();
+            for (var i = 0; i < this.state.resourceTypes.length; i++) {
+                if (this.state.resourceTypes[i].name === currentResource.resourceTypeName) {
+                    for (var ii = 0; ii < this.state.resourceTypes[i].properties.length; ii++) {
+                        if (this.state.resourceTypes[i].properties[ii].required === "true") {
+                            requiredAttributes.push(this.state.resourceTypes[i].properties[ii].name);
+                        }
+                    }
+                    return requiredAttributes;
+                }
+            }
+        }
+        return [];
+    },
     componentDidMount: function() {
         ServiceFactory.getGroupService().getGroups(this.getGroupDataCallback);
+        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
     },
     getGroupDataCallback: function(response) {
         this.setState({groupData:response.applicationResponseContent});
+    },
+    getResourceTypesCallback: function(response) {
+        this.setState({resourceTypes:response.applicationResponseContent});
     },
     componentDidUpdate: function() {
         if (this.state.currentGroupName === null && this.state.groupData !== null && this.state.groupData.length > 0) {

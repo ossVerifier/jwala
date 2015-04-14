@@ -24,3 +24,13 @@
 .val-text-field {
     min-width: 100%;
 }
+
+.required-symbol {
+    text-align: center;
+    font-weight: bold;
+    color: #4297d7;
+}
+.required-name {
+    font-weight: bold;
+    color: #4297d7;
+}

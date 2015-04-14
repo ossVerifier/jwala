@@ -29,7 +29,8 @@ var ResourceAttrPane = React.createClass({
         if (this.props.resourceData !== null) {
             var attrValTable = React.createElement(AttrValTable, {ref:"attrTable",
                                                                   attributes:this.props.resourceData.attributes,
-                                                                  updateCallback:this.updateCallback});
+                                                                  updateCallback:this.updateCallback,
+                                                                  requiredAttributes:this.props.requiredAttributes});
             return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable, confirmationDlg);
         }
 
@@ -132,11 +133,13 @@ var ResourceAttrPane = React.createClass({
         var attrElements = [];
 
         for (key in this.props.attributes) {
+            var required = (this.props.requiredAttributes.indexOf(key) > -1);
             attrElements.push(React.createElement(AttrValRow, {key:key,
                                                                ref:key,
                                                                attrName:key,
                                                                attrValue:this.props.attributes[key],
-                                                               updateCallback:this.props.updateCallback}));
+                                                               updateCallback:this.props.updateCallback,
+                                                               required:required}));
         }
 
         return React.createElement("div", {className:"attr-val-table-container"},
@@ -167,18 +170,23 @@ var AttrValRow = React.createClass({
         var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox",
                                                                                      onChange:this.onCheckboxChange,
                                                                                      checked:this.state.selected}));
+
         var attrNameTd = React.createElement("td", {}, React.createElement("input", {ref:"attrNameTextField",
-                                                                                     className:"name-text-field",
-                                                                                     valueLink:this.linkState("attrName"),
-                                                                                     onBlur:this.onAttrNameTextBoxBlur,
-                                                                                     onKeyDown:this.onAttrNameTextFieldKeyDown}));
+                                 className:"name-text-field " + (this.props.required ? "required-name" : ""),
+                                 valueLink:this.linkState("attrName"),
+                                 onBlur:this.onAttrNameTextBoxBlur,
+                                 onKeyDown:this.onAttrNameTextFieldKeyDown}));
+
         var attrValueInputTd = React.createElement("td", {},
             React.createElement("input", {ref:"attrValTextField",
                                           className:"val-text-field",
                                           valueLink:this.linkState("attrValue"),
                                           onBlur:this.onAttrTextBoxBlur,
                                           onKeyDown:this.onAttrValTextFieldKeyDown}));
-        return React.createElement("tr", {}, checkBoxTd, attrNameTd, attrValueInputTd);
+
+        return React.createElement("tr", {}, this.props.required ? <td className="required-symbol"><span title="Required">*</span></td> : checkBoxTd,
+                                             attrNameTd,
+                                             attrValueInputTd);
     },
     onAttrNameTextFieldKeyDown: function(e) {
         if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrName) */) {

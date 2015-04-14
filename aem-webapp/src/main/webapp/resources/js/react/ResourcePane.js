@@ -7,7 +7,8 @@ var ResourcePane = React.createClass({
                                                                               className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                               spanClassName:"ui-icon ui-icon-trash",
                                                                               onClick:this.onClickDel}),
-                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd}),
+                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd,
+                                                                                          resourceTypes:this.props.resourceTypes}),
                                                React.createElement(ResourceList, {ref:"resourceList",
                                                                                   groupName:this.props.groupName,
                                                                                   data:this.props.data,
@@ -31,15 +32,12 @@ var ResourcePane = React.createClass({
 });
 
 var ResourceTypeDropDown = React.createClass({
-    getInitialState: function() {
-        return {resourceTypes:[]}
-    },
     render: function() {
         var options = [];
         var self = this;
 
-        if (this.state.resourceTypes.length > 0) {
-            this.state.resourceTypes.forEach(function(resourceType){
+        if (this.props.resourceTypes.length > 0) {
+            this.props.resourceTypes.forEach(function(resourceType){
                 var key = resourceType.name.replace(/\s/g, '');
                 options.push(React.createElement(ResourceTypeOption, {key:key, resourceType:resourceType}));
             });
@@ -52,12 +50,6 @@ var ResourceTypeDropDown = React.createClass({
         }
         return React.createElement("span", null, "Loading resource types...");
     },
-    componentDidMount: function() {
-        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
-    },
-    getResourceTypesCallback: function(response) {
-        this.setState({resourceTypes:response.applicationResponseContent});
-    },
     getSelectedResourceType: function() {
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
     },
@@ -65,9 +57,9 @@ var ResourceTypeDropDown = React.createClass({
         this.props.onClickAdd(this.getResourceType(this.getSelectedResourceType()));
     },
     getResourceType: function(name) {
-        for (var i = 0; i < this.state.resourceTypes.length; i++) {
-            if (this.state.resourceTypes[i].name === name) {
-                return this.state.resourceTypes[i];
+        for (var i = 0; i < this.props.resourceTypes.length; i++) {
+            if (this.props.resourceTypes[i].name === name) {
+                return this.props.resourceTypes[i];
             }
         }
         return null;
