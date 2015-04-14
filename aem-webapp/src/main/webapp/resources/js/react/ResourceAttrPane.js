@@ -66,16 +66,22 @@ var ResourceAttrPane = React.createClass({
     onClickAdd: function() {
         // the required attribute data transformation process to pass to the rest service
         var tempAttrArray = [];
+        var largestNumber = 0;
 
         for (key in this.props.resourceData.attributes) {
             var attributesForRestConsumption = {};
             attributesForRestConsumption["key"] = key;
             attributesForRestConsumption["value"] = this.props.resourceData.attributes[key];
             tempAttrArray.push(attributesForRestConsumption);
+
+            var num = parseInt(key.substring("key".length + 1), 10);
+            if (!isNaN(num)) {
+                largestNumber = (largestNumber < num) ? num : largestNumber;
+            };
         }
 
         // the new attribute
-        tempAttrArray.push({key:"key-1", value:null});
+        tempAttrArray.push({key:"key-" + ++largestNumber, value:null});
         this.updateAttributes(tempAttrArray);
     },
     onClickGenerateXml: function() {
