@@ -17,7 +17,7 @@ ul.tree-list-style {
 
 li.tree-list-style {
     list-style-type: none;
-    margin: 4px 0 4px 11px;
+    margin: 4px 0 4px 0px;
 }
 
 span.tree-list-style {
