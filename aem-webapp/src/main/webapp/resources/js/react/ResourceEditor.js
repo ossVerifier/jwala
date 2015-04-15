@@ -61,14 +61,16 @@ var ResourceEditor = React.createClass({
         var requiredAttributes = [];
         if (this.state.currentResourceName !== null) {
             var currentResource = this.getCurrentResource();
-            for (var i = 0; i < this.state.resourceTypes.length; i++) {
-                if (this.state.resourceTypes[i].name === currentResource.resourceTypeName) {
-                    for (var ii = 0; ii < this.state.resourceTypes[i].properties.length; ii++) {
-                        if (this.state.resourceTypes[i].properties[ii].required === "true") {
-                            requiredAttributes.push(this.state.resourceTypes[i].properties[ii].name);
+            if (currentResource !== null) {
+                for (var i = 0; i < this.state.resourceTypes.length; i++) {
+                    if (this.state.resourceTypes[i].name === currentResource.resourceTypeName) {
+                        for (var ii = 0; ii < this.state.resourceTypes[i].properties.length; ii++) {
+                            if (this.state.resourceTypes[i].properties[ii].required === "true") {
+                                requiredAttributes.push(this.state.resourceTypes[i].properties[ii].name);
+                            }
                         }
+                        return requiredAttributes;
                     }
-                    return requiredAttributes;
                 }
             }
         }
