@@ -12,7 +12,8 @@ public class JpaAppBuilder {
                 jpaApp.getName(), 
                 jpaApp.getWarPath(), 
                 jpaApp.getWebAppContext(), 
-                jpaApp.getGroup() != null ? new JpaGroupBuilder(jpaApp.getGroup()).build() : null );        
+                jpaApp.getGroup() != null ? new JpaGroupBuilder(jpaApp.getGroup()).build() : null,
+                jpaApp.isSecure());
 
     }
 }

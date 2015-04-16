@@ -20,17 +20,19 @@ public class UpdateApplicationCommand implements Serializable, Command {
     private final Identifier<Group> newGroupId;
     private final String newWebAppContext;
     private final String newName;
+    private final boolean newSecure;
 
     public UpdateApplicationCommand(
             final Identifier<Application> theId,
             final Identifier<Group> theGroupId,
             final String theNewWebAppContext,
-            final String theNewName
-            ) {
+            final String theNewName,
+            boolean theNewSecure) {
         id = theId;
         newGroupId = theGroupId;
         newName = theNewName;
         newWebAppContext = theNewWebAppContext;
+        newSecure = theNewSecure;
     }
 
     public Identifier<Application> getId() {
@@ -46,6 +48,10 @@ public class UpdateApplicationCommand implements Serializable, Command {
     }
     public String getNewName() {
         return newName;
+    }
+
+    public boolean isNewSecure() {
+        return newSecure;
     }
 
     @Override

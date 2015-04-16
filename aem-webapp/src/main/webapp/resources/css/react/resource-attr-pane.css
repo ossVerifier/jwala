@@ -1,5 +1,4 @@
 .attr-values-container {
-    min-width: 327px;
     min-height: 303px;
     border: 1px solid rgb(195, 195, 195);
 }
@@ -17,6 +16,21 @@
     width: 100%;
 }
 
+.name-text-field {
+    min-width: 170px;
+    border: none;
+}
+
 .val-text-field {
-    width: 100%;
+    min-width: 100%;
+}
+
+.required-symbol {
+    text-align: center;
+    font-weight: bold;
+    color: #4297d7;
+}
+.required-name {
+    font-weight: bold;
+    color: #4297d7;
 }

@@ -63,7 +63,7 @@ def STP_TEMP_PATH = "D:/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/siemens/instances/jvm-1"
 def AEM_CONTEXT_FILE = "aem.xml"
 def DB_NAME = "integ-test-tmp-db"
-def JDBC_ORIG_URL = "jdbc:h2:file:/stp/siemens/data/toc/aem"
+def JDBC_ORIG_URL = "jdbc:h2:file:/stp/siemens/data/h2/toc"
 def ROOT_NAME = "aem"
 
 // Should this be in the plugin as well ?
@@ -117,9 +117,23 @@ def INTEG_TEST_QTP_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\Unified Functional 
 task runIntegTestQtpScript(type: ProcessExec) {
     command "Cscript \"${INTEG_TEST_QTP_SCRIPT}\""
     directory "${CSCRIPT_FULL_PATH}"
+    exitOnSuccessIndicator "SUCCESS"
+    exitOnFailIndicator "FAIL"
+    timeout 900000 // timeout in 15 minutes
+}
+
+// This is the QTP replacement so remove the QTP codes above once this is tested.
+def PS_EXEC_TARGET_HOST = "165.226.228.183"
+def PS_EXEC_USER = "ww005\\z003cjrh"
+def PS_EXEC_PWD = "Efghi123"
+def PS_EXEC_SCRIPT = "C:\\Users\\z003cjrh\\Documents\\SOAP\\soapTOC3-inbatch.bat"
+
+task psExec(type: ProcessExec) {
+    command "PsExec.exe \\\\${PS_EXEC_TARGET_HOST} -u ${PS_EXEC_USER} -p ${PS_EXEC_PWD} ${PS_EXEC_SCRIPT}"
+    directory "D:\\tools\\PSTools"
     exitOnSuccessIndicator "Passed"
     exitOnFailIndicator "Failed"
-    timeout 900000 // timeout in 15 minutes
+    timeout 3600000 // timeout in an hour
 }
 
 task integTestSuiteRunner(type: Test) {
@@ -170,12 +184,11 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     
         println "Server ready, running tests..."
 
-        integTestSuiteRunner.execute()
+    integTestSuiteRunner.execute()
 
-        println "NOT Running QTP test suite... - commented out"
-        // runIntegTestQtpScript.execute() --- disabled for now since this is going to be replaced by SOAP UI.
+    psExec.execute()
 
-    }
+}
 
     beforeCleanup {
         h2TcpServer.stop() // stop h2

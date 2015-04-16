@@ -86,6 +86,9 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @Column(nullable = true)
     private String documentRoot; // potential addition to track the static content files TODO - coverage, et al.
 
+
+    private boolean secure;
+
     public void setWarPath(String aWarPath) {
         warPath = aWarPath;
     }
@@ -113,6 +116,14 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @Override
     public Long getId() {
         return this.id;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
     }
 
 }

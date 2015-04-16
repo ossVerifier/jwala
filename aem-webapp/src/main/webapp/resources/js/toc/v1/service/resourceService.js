@@ -3,15 +3,40 @@ var resourceService = {
         return serviceFoundation.get("v1.0/resources/types", "json", responseCallback);
     },
     getResources: function(groupName, responseCallback) {
-        responseCallback(groupName, {"message":"SUCCESS","applicationResponseContent":[],"msgCode":"0"});
+        return serviceFoundation.get("v1.0/resources;groupName=" + groupName.replace(/%20/g, " "), "json", responseCallback);
     },
-    saveResource: function(groupName, resourceName) {
-        // console.log("Saving " + groupName + "  " + resourceName);
+    insertNewResource: function(groupName, resourceTypeName, resourceName, attributes, successCallback, errorCallback) {
+        return serviceFoundation.post("v1.0/resources",
+                                      "json",
+                                      JSON.stringify({groupName:groupName,
+                                                      resourceTypeName:resourceTypeName,
+                                                      name:resourceName,
+                                                      attributes:attributes}),
+                                                      successCallback,
+                                                      errorCallback);
     },
-    updateRsource: function(resource) {
-        // console.log("Update resource...");
+    updateResourceName: function(groupName, resourceTypeName, resourceName, newResourceName, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") + ";groupName=" + groupName.replace(/%20/g, " "),
+                                     "json",
+                                     JSON.stringify({groupName:groupName,
+                                                     resourceTypeName:resourceTypeName,
+                                                     name:newResourceName,
+                                                     attributes:null}),
+                                     successCallback,
+                                     errorCallback);
     },
-    deleteResource: function(resource) {
-        // console.log("Delete resource...");
+    deleteResources: function(groupName, resourceNames, successCallback, errorCallback) {
+        var resourceNamesMatrix = "";
+        resourceNames.forEach(function(name){
+            resourceNamesMatrix = resourceNamesMatrix + "resourceName=" + name.replace(/%20/g, " ") + ";";
+        });
+        return serviceFoundation.del("v1.0/resources;groupName=" + groupName + ";" + resourceNamesMatrix, "json", errorCallback).then(successCallback);
+    },
+    updateResourceAttributes: function(resourceName, groupName, resource, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") +  ";groupName=" + groupName.replace(/%20/g, " "),
+                                     "json",
+                                     JSON.stringify(resource),
+                                     successCallback,
+                                     errorCallback);
     }
 };

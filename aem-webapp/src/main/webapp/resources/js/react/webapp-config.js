@@ -149,6 +149,7 @@ var WebAppConfigForm = React.createClass({
             WebAppContext: "",
             GroupId: "",
             groupIds: [],
+            secure:true
         }
     },
     getWebAppIdProp: function(props) {
@@ -157,11 +158,11 @@ var WebAppConfigForm = React.createClass({
         }
         return "";
     },
-    getWebAppProp: function(props, name) {
+    getWebAppProp: function(props, name, defaultVal) {
         if (props.data !== undefined) {
             return props.data[name];
         }
-        return "";
+        return defaultVal;
     },
     getWebAppGroupIdProp: function(props) {
         if (props.data !== undefined && props.data.group !== undefined && props.data.group.id !== undefined) {
@@ -178,14 +179,14 @@ var WebAppConfigForm = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         this.setState(
           { WebAppId:this.getWebAppIdProp(nextProps), 
-            WebAppName:this.getWebAppProp(nextProps, "name"),
-            WebAppContext:this.getWebAppProp(nextProps, "webAppContext"),
+            WebAppName:this.getWebAppProp(nextProps, "name", ""),
+            WebAppContext:this.getWebAppProp(nextProps, "webAppContext", ""),
             GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
             GroupName:this.getWebAppGroupProp(nextProps, "name"),
+            secure:this.getWebAppProp(nextProps, "secure", true)
           });
     },
     render: function() {
-      
         return <div className={this.props.className} style={{display:"none"}}>
                     <form>
                         <input name="webappId" type="hidden" value={this.state.WebAppId} />
@@ -239,10 +240,22 @@ var WebAppConfigForm = React.createClass({
                                                         onChange={this.onSelectGroup}/>
                                 </td>
                             </tr>
+
+                            <tr>
+                                <td colspan="2">
+                                    {React.createElement("input", {name:"secure", type:"checkbox", checked:this.state.secure, onChange:this.onSecureCheckboxChanged}, "Secured")}
+                                </td>
+                            </tr>
+
                         </table>
                     </form>
                </div>
     },
+
+    onSecureCheckboxChanged: function() {
+        this.setState({secure:!this.state.secure});
+    },
+
     /*                                    <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.props.groupSelectData}
                                                         selectedValIds={this.state.groupIds}
@@ -340,6 +353,7 @@ var WebAppDataTable = React.createClass({
     render: function() {
         var tableDef = [
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
+                         {sTitle:"", mData:"secure", tocType:"custom", tocRenderCfgFn: this.renderSecureCol},
                          {sTitle:"WebApp Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                          {sTitle:"Context", mData:"webAppContext"},
                          {sTitle:"Web Archive", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderRowData },
@@ -383,6 +397,19 @@ var WebAppDataTable = React.createClass({
                   return "<div />";
                 }.bind(this);
     },
+
+    renderSecureCol: function(dataTable, data, aoColumnDefs, itemIndex) {
+        aoColumnDefs[itemIndex].mDataProp = null;
+        aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
+        aoColumnDefs[itemIndex].bSortable = false;
+        aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+            if (data) {
+                return "<span class='ui-icon ui-icon-locked'></span>";
+            }
+            return "<span class='ui-icon ui-icon-unlocked'></span>";
+        }.bind(this);
+    },
+
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
             aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {

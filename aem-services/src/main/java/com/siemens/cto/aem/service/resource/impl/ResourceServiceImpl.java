@@ -143,6 +143,12 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
+    public void deleteResources(final String groupName, final List<String> resourceNames) {
+        resourcePersistenceService.deleteResources(groupName, resourceNames);
+    }
+
+    @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("stringToEncrypt", cleartext);        

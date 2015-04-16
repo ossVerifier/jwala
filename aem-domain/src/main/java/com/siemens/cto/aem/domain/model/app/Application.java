@@ -15,12 +15,15 @@ public class Application {
 
     private String warPath;
 
-    public Application(Identifier<Application> anId, String aName, String aWarPath, String aWebAppContext, Group aGroup) {
+    private boolean secure;
+
+    public Application(Identifier<Application> anId, String aName, String aWarPath, String aWebAppContext, Group aGroup, boolean secure) {
         group = aGroup;
         id = anId;
         webAppContext = aWebAppContext;
         warPath = aWarPath;
         name = aName;
+        this.secure = secure;
     }
 
     public Group getGroup() {
@@ -61,6 +64,14 @@ public class Application {
 
     public void setId(Identifier<Application> id) {
         this.id = id;
-    }    
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
 
 }

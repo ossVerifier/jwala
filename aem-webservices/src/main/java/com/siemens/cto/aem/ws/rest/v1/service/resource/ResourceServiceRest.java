@@ -6,6 +6,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Created by z003e5zv on 3/16/2015.
@@ -83,5 +84,20 @@ public interface ResourceServiceRest {
     @DELETE
     @Path("/{name}")
     Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
+
+    /**
+     * Removes a list of resources.
+     *
+     * usage: /aem/v1.0/resources;groupName=[group name];resourceName=[resourceName1];resourceName=[resourceName2]
+     *
+     * @param groupName the group where the resources to be removed belong to.
+     * @param resourceNames the names of the resources to remove.
+     *
+     * @return
+     */
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    Response removeResources(@MatrixParam("groupName") final String groupName,
+                             @MatrixParam("resourceName") final List<String> resourceNames);
 
 }

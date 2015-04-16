@@ -1,0 +1,45 @@
+.add-edit-delete-resources-container {
+    min-height: 303px;
+}
+
+/* Resource type drop down */
+div.resource-type-toolbar {
+    background-color: rgb(242, 242, 242);
+    border: 1px solid rgb(195, 195, 195);
+}
+
+div.resource-type-dropdown {
+    display: inline-block;
+}
+
+select.resource-type-dropdown {
+    vertical-align: top;
+    height: 21px;
+    margin-left: 8px;
+    margin-top: 2px;
+    min-width: 214px;
+}
+
+div.resource-list {
+    min-width: 100%;
+    min-height: 276px;
+    border: 1px solid rgb(195, 195, 195);
+    background-color: white;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+input.resource-item {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.resource-name-text-field {
+    width:90%;
+    margin-left: 10px;
+}
+
+.error-msg-div-margin {
+    margin-left: 30px !important;
+}

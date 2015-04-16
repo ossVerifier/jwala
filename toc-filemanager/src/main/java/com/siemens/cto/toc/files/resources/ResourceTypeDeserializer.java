@@ -64,6 +64,11 @@ public class ResourceTypeDeserializer {
     
     public static String parseRootNameFromFile(Path path) {
         String prefix = path.getFileName().toString().split(Pattern.quote("."))[0];
+
+        // TODO: Discuss whether we need to have "Properties" appended to the properties file name.
+        // The problem with the above convention is that the creator of the file
+        // should be "aware" of the naming convention or else an exception will occur in case
+        // the prefix is shorter than the word "Properties".
         String name = prefix.substring(0, prefix.length()-"Properties".length());
         return name;
     }

@@ -97,7 +97,7 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
 
     @Override
     public JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, final String name) throws NotFoundException, NotUniqueException {
-        final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.name = :name and r.group.id = :groupId");
+        final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.resourceInstanceName = :name and r.group.id = :groupId");
         query.setParameter("name", name);
         query.setParameter("groupId", groupId);
         List<JpaResourceInstance> list = query.getResultList();

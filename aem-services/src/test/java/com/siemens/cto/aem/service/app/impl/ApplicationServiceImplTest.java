@@ -164,7 +164,7 @@ public class ApplicationServiceImplTest {
     public void testCreateBadRequest() {
         when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
         
-        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "");
+        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "", true);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -175,7 +175,7 @@ public class ApplicationServiceImplTest {
     public void testCreate() {
         when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
         
-        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan");
+        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan", true);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -187,7 +187,7 @@ public class ApplicationServiceImplTest {
     public void testUpdate() {
         when(applicationPersistenceService.updateApplication(any(Event.class))).thenReturn(mockApplication2);
         
-        UpdateApplicationCommand cac = new UpdateApplicationCommand(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan");
+        UpdateApplicationCommand cac = new UpdateApplicationCommand(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true);
         Application created = applicationService.updateApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);

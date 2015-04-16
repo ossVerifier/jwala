@@ -1,46 +1,9 @@
-.add-edit-delete-resources-container {
-    min-width: 327px;
-    min-height: 303px;
+.resource-pane {
+    min-height: 354px;
 }
 
-/* Resource type drop down */
-div.resource-type-dropdown {
-    background-color: rgb(242, 242, 242);
-    border: 1px solid rgb(195, 195, 195);
-}
-
-select.resource-type-dropdown {
-    vertical-align: top;
-    height: 21px;
-    margin-left: 8px;
-    margin-top: 2px;
-    min-width: 214px;
-}
-
-option.resource-type-dropdown {
-
-}
-
-div.resource-list {
-    min-width: 100%;
-    min-height: 275px;
-    border: 1px solid rgb(195, 195, 195);
-    background-color: white;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-}
-
-input.resource-item {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.resource-name-text-field {
-    width:90%;
-    margin-left: 10px;
-}
-
-.error-msg-div-margin {
-    margin-left: 30px !important;
+.resource-static-dialog-content {
+    min-width: 341px;
+    min-height: 305px;
+    padding: 5px 5px 5px 5px !important;
 }

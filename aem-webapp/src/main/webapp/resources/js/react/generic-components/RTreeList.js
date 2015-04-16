@@ -74,6 +74,12 @@ var RTreeList = React.createClass({
                 });
             }
         }
+    },
+    getSelectedNode: function() {
+        if (this.state.selectedNodeKey !== null) {
+            return this.refs[this.state.selectedNodeKey];
+        }
+        return null;
     }
 });
 
@@ -119,7 +125,12 @@ var Node = React.createClass({
         }
 
         var selectableClassName = this.props.treeMetaData[level].selectable === true ? "selectable" : "";
-        var selectedClassName = this.isSelected() ? Node.HIGHLIGHT_CLASS_NAME : "";
+
+        var selectedClassName = "";
+        if (this.isSelected()) {
+            selectedClassName = Node.HIGHLIGHT_CLASS_NAME;
+        }
+
         var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
 
         if (childNodes.length > 0) {
@@ -134,8 +145,8 @@ var Node = React.createClass({
     },
     onClickNodeHandler: function(isSelectable, data) {
         if (isSelectable) {
-            this.props.selectNodeCallback(data);
             this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
+            this.props.selectNodeCallback(this.props.data);
         }
     },
     onClickIconHandler: function() {

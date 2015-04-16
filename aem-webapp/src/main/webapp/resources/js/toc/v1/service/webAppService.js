@@ -25,23 +25,27 @@ var webAppService = {
                 json[this.name] = this.value;
             }
 
+            if (this.name === "secure") {
+                json[this.name] = this.value === "on" ? true : false;
+            }
         });
+
         return JSON.stringify(json);
     },
 	  deleteWar : function(id, caughtCallback) {
         return serviceFoundation.del("v1.0/applications/" + id + "/war", "json", caughtCallback);
     },
-	 insertNewWebApp : function(webserverFormArray, successCallback, errorCallback) {
+	 insertNewWebApp : function(webAppFromArray, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/applications",
 		                              "json",
-		                              this.serializedWebAppFormToJson(webserverFormArray, false),
+		                              this.serializedWebAppFormToJson(webAppFromArray, false),
 		                                                successCallback,
 		                                                errorCallback);
 	},
-	updateWebApp : function(webserverFormArray, successCallback, errorCallback) {
+	updateWebApp : function(webAppFromArray, successCallback, errorCallback) {
 		return serviceFoundation.put("v1.0/applications/",
 		                             "json",
-				                     this.serializedWebAppFormToJson(webserverFormArray, true),
+				                     this.serializedWebAppFormToJson(webAppFromArray, true),
 				                     successCallback,
 				                     errorCallback);
 	},

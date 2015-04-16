@@ -65,6 +65,7 @@
 <script type="text/jsx" src="public-resources/js/react/webapp-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/resources-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourceEditor.js"></script>
-<script type="text/jsx" src="public-resources/js/react/ResourceAttrEditor.js"></script>
+<script type="text/jsx" src="public-resources/js/react/ResourcePane.js"></script>
+<script type="text/jsx" src="public-resources/js/react/ResourceAttrPane.js"></script>
 <script type="text/jsx" src="public-resources/js/react/main-area.js"></script>
 <script type="text/jsx" src="public-resources/js/react/error-msg-list.js"></script>
