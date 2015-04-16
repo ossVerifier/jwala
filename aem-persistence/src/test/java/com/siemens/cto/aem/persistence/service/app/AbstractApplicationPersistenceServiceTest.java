@@ -1,10 +1,7 @@
 package com.siemens.cto.aem.persistence.service.app;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.apache.commons.lang.RandomStringUtils;
+import org.h2.command.dml.Update;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +23,8 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractApplicationPersistenceServiceTest {
@@ -86,14 +85,29 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     
     @Test
     public void testCreateApp() {
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.createApplication(anAppToCreate);
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
         assertEquals(textContext, created.getWebAppContext());
+        assertTrue(created.isSecure());
         updateAppId = created.getId(); 
+        deleteAppId = created.getId();
+    }
+
+    @Test
+    public void testCreateNonSecureApp() {
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, false);
+        Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
+        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        assertNotNull(created.getGroup());
+        assertEquals(expGroupId, created.getGroup().getId());
+        assertEquals(textName, created.getName());
+        assertEquals(textContext, created.getWebAppContext());
+        assertTrue(!created.isSecure());
+        updateAppId = created.getId();
         deleteAppId = created.getId();
     }
     
@@ -103,7 +117,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
             testCreateApp();
         }
         
-        UpdateApplicationCommand cmd = new UpdateApplicationCommand(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName);
+        UpdateApplicationCommand cmd = new UpdateApplicationCommand(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName, true);
         Event<UpdateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.updateApplication(anAppToCreate);
         assertEquals(updateAppId, created.getId());
@@ -111,7 +125,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         assertEquals(expUpdatedGroupId, created.getGroup().getId());
         assertEquals(textUpdatedName, created.getName());
         assertEquals(textUpdatedContext, created.getWebAppContext());
-        
+
     }
     
     @Test
@@ -129,7 +143,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     
     @Test
     public void testUpdateWARPath() { 
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.createApplication(anAppToCreate);
         
@@ -142,7 +156,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     
     @Test
     public void testRemoveWARPath() {        
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.createApplication(anAppToCreate);
         
@@ -157,5 +171,21 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         
         Application noWarApp = applicationPersistenceService.removeWARPath(removeEvent);
         assertNull(noWarApp.getWarPath());
+    }
+
+    @Test
+    public void testUpdateSecureFlag() {
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
+        Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
+        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        assertTrue(created.isSecure());
+
+        final Event<UpdateApplicationCommand> updateEvent =
+                new Event<>(new UpdateApplicationCommand(created.getId(),
+                                                         created.getGroup().getId(),
+                                                         created.getWebAppContext(),
+                                                         created.getName(), false), AuditEvent.now(new User(aUser)));
+        Application updatedApplication = applicationPersistenceService.updateApplication(updateEvent);
+        assertTrue(!updatedApplication.isSecure());
     }
 }

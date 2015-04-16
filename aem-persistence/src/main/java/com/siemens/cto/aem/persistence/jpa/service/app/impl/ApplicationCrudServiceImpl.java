@@ -39,6 +39,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             jpaApp.setName(createAppCommand.getName());
             jpaApp.setGroup(jpaGroup);
             jpaApp.setWebAppContext(createAppCommand.getWebAppContext());
+            jpaApp.setSecure(createAppCommand.isSecure());
 
             jpaApp.setCreateBy(userId);
             jpaApp.setCreateDate(updateDate);
@@ -78,6 +79,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             jpaApp.setWebAppContext(updateApplicationCommand.getNewWebAppContext());
             jpaApp.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
             jpaApp.setGroup(jpaGroup);
+            jpaApp.setSecure(updateApplicationCommand.isNewSecure());
 
             entityManager.flush();
             

@@ -149,6 +149,7 @@ var WebAppConfigForm = React.createClass({
             WebAppContext: "",
             GroupId: "",
             groupIds: [],
+            secure:true
         }
     },
     getWebAppIdProp: function(props) {
@@ -157,11 +158,11 @@ var WebAppConfigForm = React.createClass({
         }
         return "";
     },
-    getWebAppProp: function(props, name) {
+    getWebAppProp: function(props, name, defaultVal) {
         if (props.data !== undefined) {
             return props.data[name];
         }
-        return "";
+        return defaultVal;
     },
     getWebAppGroupIdProp: function(props) {
         if (props.data !== undefined && props.data.group !== undefined && props.data.group.id !== undefined) {
@@ -178,14 +179,14 @@ var WebAppConfigForm = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         this.setState(
           { WebAppId:this.getWebAppIdProp(nextProps), 
-            WebAppName:this.getWebAppProp(nextProps, "name"),
-            WebAppContext:this.getWebAppProp(nextProps, "webAppContext"),
+            WebAppName:this.getWebAppProp(nextProps, "name", ""),
+            WebAppContext:this.getWebAppProp(nextProps, "webAppContext", ""),
             GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
             GroupName:this.getWebAppGroupProp(nextProps, "name"),
+            secure:this.getWebAppProp(nextProps, "secure", true)
           });
     },
     render: function() {
-      
         return <div className={this.props.className} style={{display:"none"}}>
                     <form>
                         <input name="webappId" type="hidden" value={this.state.WebAppId} />
@@ -239,10 +240,22 @@ var WebAppConfigForm = React.createClass({
                                                         onChange={this.onSelectGroup}/>
                                 </td>
                             </tr>
+
+                            <tr>
+                                <td colspan="2">
+                                    {React.createElement("input", {name:"secure", type:"checkbox", checked:this.state.secure, onChange:this.onSecureCheckboxChanged}, "Secured")}
+                                </td>
+                            </tr>
+
                         </table>
                     </form>
                </div>
     },
+
+    onSecureCheckboxChanged: function() {
+        this.setState({secure:!this.state.secure});
+    },
+
     /*                                    <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.props.groupSelectData}
                                                         selectedValIds={this.state.groupIds}

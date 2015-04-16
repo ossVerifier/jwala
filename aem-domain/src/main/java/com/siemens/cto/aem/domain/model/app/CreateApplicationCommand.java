@@ -18,11 +18,13 @@ public class CreateApplicationCommand implements Serializable, Command {
     private String name;
     private String webAppContext;
     private Identifier<Group> groupId;
+    private boolean secure;
     
-    public CreateApplicationCommand(Identifier<Group> groupId, String name, String webAppContext) {
+    public CreateApplicationCommand(Identifier<Group> groupId, String name, String webAppContext, boolean secure) {
         this.name = name;
         this.webAppContext = webAppContext;
         this.groupId = groupId;
+        this.secure = secure;
     }
 
     public Identifier<Group> getGroupId() {
@@ -34,6 +36,10 @@ public class CreateApplicationCommand implements Serializable, Command {
     }
     public String getWebAppContext() {
         return webAppContext;
+    }
+
+    public boolean isSecure() {
+        return secure;
     }
 
     @Override

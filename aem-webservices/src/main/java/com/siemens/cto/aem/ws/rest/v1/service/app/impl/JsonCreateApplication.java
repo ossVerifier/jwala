@@ -13,18 +13,20 @@ public class JsonCreateApplication {
     public String name;
     public Long   groupId;
     public String webappContext;
+    public boolean secure;
     
     public JsonCreateApplication() {  }
 
-    public JsonCreateApplication(Long groupId2, String name2, String webappContext2) {
+    public JsonCreateApplication(Long groupId2, String name2, String webappContext2, boolean secure) {
         setGroupId(groupId2);
         setName(name2);
         setWebappContext(webappContext2);
+        setSecure(secure);
     }
 
     public CreateApplicationCommand toCreateCommand() throws BadRequestException {
         return  new CreateApplicationCommand(
-                    Identifier.id(groupId, Group.class),name,webappContext);
+                    Identifier.id(groupId, Group.class),name,webappContext, secure);
     }
 
     
@@ -33,13 +35,16 @@ public class JsonCreateApplication {
         return new JsonCreateApplication(
                 getGroupId(),
                 getName(),
-                getWebappContext()
-                );
+                getWebappContext(),
+                isSecure());
     }
     
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getGroupId()).append(getName()).append(getWebappContext()).toHashCode();
+        return new HashCodeBuilder().append(getGroupId())
+                                    .append(getName())
+                                    .append(getWebappContext())
+                                    .append(isSecure()).toHashCode();
     }
     
     @Override
@@ -75,5 +80,13 @@ public class JsonCreateApplication {
      * assertEquals(testJca,testJca.clone())
      * assertEquals(testJca.hashCode(),testJca.clone().hashCode())
      */
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
 
 }

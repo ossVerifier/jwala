@@ -48,7 +48,7 @@ public class WorkersPropertiesTest {
         Group group = new Group(id(0L, Group.class),"grp");
         Set<LiteGroup> groups = new HashSet<LiteGroup>();
         groups.add(new LiteGroup(group.getId(), group.getName()));
-        Application app = new Application(Identifier.id(0L, Application.class), "", "", "/abc", group);
+        Application app = new Application(Identifier.id(0L, Application.class), "", "", "/abc", group, true);
         List<Application> apps = new ArrayList<>();
         apps.add(app);
         Jvm jvm = new Jvm(id(0L, Jvm.class), "jvm", "localhost", groups, 8080, 8081, 8082, 8083, 8084, new Path("/abc"),

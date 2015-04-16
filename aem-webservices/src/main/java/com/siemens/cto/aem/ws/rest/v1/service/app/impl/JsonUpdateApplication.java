@@ -14,21 +14,23 @@ public class JsonUpdateApplication {
     private String name;
     private Long   groupId;
     private String webappContext;
+    private boolean secure;
     
     public JsonUpdateApplication() {  
     }
 
-    public JsonUpdateApplication(Long groupId, String name, String webappContext, Long webappId) {
+    public JsonUpdateApplication(Long groupId, String name, String webappContext, Long webappId, boolean secure) {
         this.groupId = groupId;
         this.webappId = webappId;
         this.name = name;
         this.webappContext = webappContext;
+        this.secure = secure;
     }
 
     public UpdateApplicationCommand toUpdateCommand() {
         return  new UpdateApplicationCommand(
                     Identifier.id(webappId, Application.class),
-                    Identifier.id(groupId, Group.class), webappContext, name);
+                    Identifier.id(groupId, Group.class), webappContext, name, secure);
     }
 
     public Long getWebappId() {
@@ -62,10 +64,22 @@ public class JsonUpdateApplication {
     public void setWebappContext(String webappContext) {
         this.webappContext = webappContext;
     }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
     
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getGroupId()).append(getName()).append(getWebappContext()).append(getWebappId()).toHashCode();
+        return new HashCodeBuilder().append(getGroupId())
+                                    .append(getName())
+                                    .append(getWebappContext())
+                                    .append(getWebappId())
+                                    .append(isSecure()).toHashCode();
     }
 
     @Override
@@ -74,7 +88,8 @@ public class JsonUpdateApplication {
                 getGroupId(),
                 getName(),
                 getWebappContext(),
-                getWebappId() );
+                getWebappId(),
+                isSecure());
     }
     
     @Override

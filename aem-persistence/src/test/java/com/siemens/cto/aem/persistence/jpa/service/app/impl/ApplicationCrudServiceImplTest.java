@@ -134,7 +134,7 @@ public class ApplicationCrudServiceImplTest {
     
     @Test(expected = BadRequestException.class)
     public void testApplicationCrudServiceEEE() {
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
 
         JpaApplication created = applicationCrudService.createApplication(anAppToCreate, jpaGroup);  
@@ -155,7 +155,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testDuplicateContextsOk() {
-        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext);
+        CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
 
         JpaApplication created2 = null;
@@ -164,7 +164,7 @@ public class ApplicationCrudServiceImplTest {
         assertNotNull(created);
 
         try {
-            CreateApplicationCommand cmd2 = new CreateApplicationCommand(expGroupId,  textName + "-another", textContext);
+            CreateApplicationCommand cmd2 = new CreateApplicationCommand(expGroupId,  textName + "-another", textContext, true);
             Event<CreateApplicationCommand> anAppToCreate2 = new Event<>(cmd2, AuditEvent.now(new User(aUser)));
     
             created2 = applicationCrudService.createApplication(anAppToCreate2, jpaGroup);  
