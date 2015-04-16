@@ -37,7 +37,7 @@ import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
-import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -220,18 +220,18 @@ public class ApplicationServiceImplTest {
     public void testUploadWebArchive() throws IOException { 
         UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);
 
-        when(webArchiveManager.store(any(Event.class))).thenReturn(RepositoryAction.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        when(webArchiveManager.store(any(Event.class))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
         
         applicationService.uploadWebArchive(uwac, testUser);
 
         Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(argThat(new IsValidUploadEvent()));        
-        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryAction.class));        
+        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryFileInformation.class));
     }
     
     @SuppressWarnings("unchecked")
     @Test
     public void testDeleteWebArchive() throws IOException { 
-        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryAction.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
+        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
         
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 

@@ -1,8 +1,11 @@
-package com.siemens.cto.aem.template;
+package com.siemens.cto.aem.template
 
+import com.siemens.cto.aem.domain.model.group.Group
+import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 import com.siemens.cto.toc.files.TemplateManager
+import com.siemens.cto.toc.files.TocPath
 import groovy.text.GStringTemplateEngine
 import java.nio.file.Path
 
@@ -47,5 +50,24 @@ public class HarmonyTemplateEngine {
         
         return engine.createTemplate(text)
     }
-    
+    public String populateMasterTemplate(String masterTempateName, Group group, Map<String, String> additionalBindings) {
+
+    }
+
+    public String populateResourceInstanceTemplate(ResourceInstance resourceInstance, Map<String, String> additionalBindings, Map<String, String> mockedValues) {
+        String template = templateManager.getResourceTypeTemplate(resourceInstance.getResourceTypeName());
+
+        Map<String, String> resouceInstanceAttributes = resourceInstance.getAttributes();
+        if (additionalBindings != null) {
+            resouceInstanceAttributes.putAll(additionalBindings);
+        }
+        if (mockedValues != null && !mockedValues.isEmpty()) {
+            for (String key: mockedValues.keySet()) {
+                if (template.contains(key)) {
+                    resouceInstanceAttributes.put(key, mockedValues.get(key));
+                }
+            }
+        }
+        return engine.createTemplate(template).make(resouceInstanceAttributes);
+    }
 }

@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 import java.util.List;
 import java.util.Set;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -132,6 +133,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                                              e.getMessage(),
                                              e);
         }
+    }
+
+    @Override
+    public Response generateGetEnvironment(@PathParam("jvmName") final String jvmName) {
+
+        return ResponseBuilder.ok();
     }
     
     

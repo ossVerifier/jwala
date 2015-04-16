@@ -2,8 +2,10 @@ package com.siemens.cto.toc.files.impl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,9 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.toc.files.Repository;
-import com.siemens.cto.toc.files.RepositoryAction;
-import com.siemens.cto.toc.files.RepositoryAction.Type;
+import com.siemens.cto.toc.files.RepositoryService;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.TemplateManager;
 import com.siemens.cto.toc.files.TocFile;
 import com.siemens.cto.toc.files.TocPath;
@@ -26,7 +28,7 @@ public class TemplateManagerImpl implements TemplateManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateManagerImpl.class);
 
     @Autowired
-    private Repository fileSystemStorage;
+    private RepositoryService fileSystemStorage;
 
     @Autowired 
     private ResourceTypeDeserializer resourceTypeDeserializer;
@@ -40,7 +42,7 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override 
     public Collection<ResourceType> getResourceTypes() throws IOException {
         
-        RepositoryAction action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
+        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
         if(action.getType() == Type.FOUND) {
             Collection<ResourceType> results = new ArrayList<ResourceType>();
             for(Path path : action) {
@@ -55,10 +57,24 @@ public class TemplateManagerImpl implements TemplateManager {
         
     }
 
+    @Override
+    public String getResourceTypeTemplate(String resourceTypeName) {
+        try {
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeName + "Template.tpl"));
+            if (fileInformation.getType().equals(Type.FOUND)) {
+                return fileInformation.readFile();
+            }
+        }
+        catch (IOException ioe) {
+            System.out.println(ioe);
+        }
+        return null;
+    }
+
 
     @Override
     public Path getTemplatePathForResourceType(ResourceType template) throws IOException {
-        RepositoryAction action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
+        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
         if(action.getType() == Type.FOUND) {
             for(Path path : action) {
                 ResourceType type = resourceTypeDeserializer.loadResourceType(path);
@@ -69,5 +85,19 @@ public class TemplateManagerImpl implements TemplateManager {
             }            
         }
         throw new FileNotFoundException("xxxTemplate.tpl file for " + template.getName());
+    }
+
+    @Override
+    public String getMasterTemplate(String masterTemplateName) {
+        try {
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.TEMPLATES, Paths.get(masterTemplateName + ".tpl"));
+            if (fileInformation.getType().equals(Type.FOUND)) {
+                return fileInformation.readFile();
+            }
+        }
+        catch (IOException ioe) {
+            System.out.println(ioe);
+        }
+        return null;
     }
 }

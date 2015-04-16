@@ -1,11 +1,12 @@
-package com.siemens.cto.deploy.http;
+package com.siemens.cto.deploy.http
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.conn.ssl.SSLContextBuilder
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.conn.ssl.*
 import org.apache.http.impl.client.HttpClients
+import sun.net.www.http.HttpClient
 
 /**
  * Created by z002xuvs on 8/22/2014.
@@ -15,23 +16,25 @@ public class TocContext {
     protected HttpClient httpClient;
     protected HttpContext httpContext = new BasicHttpContext();
 
-    protected Urls urls;
+    protected String v1BaseUrl;
     protected String username;
     protected String password;
     protected String groupId;
 
     public TocContext(String protocol, String host, String port, String username, String password) {
-        urls = new Urls(protocol, host, port);
         this.username = username;
         this.password = password;
 
-	SSLContextBuilder builder = new SSLContextBuilder();
-	builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-	SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+	    SSLContextBuilder builder = new SSLContextBuilder();
+	    builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+	    SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
             builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
     	
-	httpClient = HttpClients.custom().setSSLSocketFactory(
-            sslsf).build();
+	    httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        String url = "${protocol}://${host}:${port}/aem/v1.0";
 
+    }
+    public String getV1BaseUrl() {
+        return this.v1BaseUrl;
     }
 }

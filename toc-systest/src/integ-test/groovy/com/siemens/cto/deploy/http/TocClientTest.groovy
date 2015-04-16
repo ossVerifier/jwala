@@ -5,10 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
-
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
+import org.junit.Ignore
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper
 
@@ -25,7 +22,7 @@ import groovy.json.JsonSlurper
  */
 class TocClientTest {
 
-    TocClient tocHttpClient = new TocClient("https","localhost", "9101", "N9SFTomcatAdmin", "Healthcare@14");
+    AbstractTocClient tocHttpClient = new TocClient("https","localhost", "9101", "N9SFTomcatAdmin", "Healthcare@14");
 
     def wsId = -1;
     def wsId2 = -1;

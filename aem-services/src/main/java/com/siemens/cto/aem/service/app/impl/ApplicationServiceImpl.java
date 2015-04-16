@@ -26,8 +26,8 @@ import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
-import com.siemens.cto.toc.files.RepositoryAction;
-import com.siemens.cto.toc.files.RepositoryAction.Type;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
 public class ApplicationServiceImpl implements ApplicationService {
@@ -123,7 +123,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
         Event<RemoveWebArchiveCommand> event = Event.create(rwac, AuditEvent.now(user));
         
-        RepositoryAction result = RepositoryAction.none();
+        RepositoryFileInformation result = RepositoryFileInformation.none();
         
         try {
             result = webArchiveManager.remove(event);

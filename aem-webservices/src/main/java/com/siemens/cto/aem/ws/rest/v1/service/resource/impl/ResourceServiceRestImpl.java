@@ -41,6 +41,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response generateResourceInstanceByNameGroup(String name, @MatrixParam("groupName") String groupName, @MatrixParam("resourceTypeName") String resourceTypeName) {
+        return ResponseBuilder.ok(resourceService.generateResourceInstanceFragment(groupName, name));
+    }
+    @Override
     public Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName")String resourceTypeName) {
         if (resourceTypeName != null && !"".equals(resourceTypeName)) {
             return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupNameAndResourceTypeName(groupName, resourceTypeName));
@@ -50,7 +54,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response createResourceInstance(JsonResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
-        groupService.getGroup(aResourceInstanceToCreate.getGroupName());
         return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
     }
 

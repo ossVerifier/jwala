@@ -11,11 +11,11 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.NameSynthesizer;
-import com.siemens.cto.toc.files.Repository;
+import com.siemens.cto.toc.files.RepositoryService;
 import com.siemens.cto.toc.files.TemplateManager;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
 import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
 import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
@@ -42,8 +42,9 @@ public class TocFileManagerConfiguration {
         return new WebArchiveManagerImpl();
     }
     
-    @Bean Repository getFileSystemStorage() throws IOException {
-        return new LocalFileSystemRepositoryImpl();
+    @Bean
+    RepositoryService getFileSystemStorage() throws IOException {
+        return new LocalFileSystemRepositoryServiceImpl();
     }
 
     @Bean

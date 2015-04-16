@@ -1,6 +1,8 @@
 package com.siemens.cto.toc.files;
 
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -15,7 +17,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Intended for chain-of-responsibilities pattern
  * @author horspe00
  */
-public class RepositoryAction implements Iterable<Path> {
+public class RepositoryFileInformation implements Iterable<Path> {
 
     public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
@@ -69,13 +71,13 @@ public class RepositoryAction implements Iterable<Path> {
 
         @Override
         public boolean hasNext() {
-            return index < RepositoryAction.this.paths.length;
+            return index < RepositoryFileInformation.this.paths.length;
         }
 
         @Override
         public Path next() {
-            if(index < RepositoryAction.this.paths.length) {
-                return RepositoryAction.this.paths[index++].path;
+            if(index < RepositoryFileInformation.this.paths.length) {
+                return RepositoryFileInformation.this.paths[index++].path;
             } 
             throw new NoSuchElementException();
         }
@@ -88,18 +90,18 @@ public class RepositoryAction implements Iterable<Path> {
 
     private final Type type;
     private final Entry[] paths;
-    private final RepositoryAction[] inResponseTo;
+    private final RepositoryFileInformation[] relatedHistory;
 
-    public RepositoryAction(final Type type, final Path path, final Long length, final RepositoryAction[] inResponseTo) {
+    public RepositoryFileInformation(final Type type, final Path path, final Long length, final RepositoryFileInformation[] relatedHistory) {
         this.paths = new Entry[] { new Entry(path, length) };
         this.type = type;
-        this.inResponseTo = inResponseTo != null ? Arrays.copyOf(inResponseTo, inResponseTo.length) : null;
+        this.relatedHistory = relatedHistory != null ? Arrays.copyOf(relatedHistory, relatedHistory.length) : null;
     }
 
-    public RepositoryAction(final Type type, final List<Path> theFoundPaths, final RepositoryAction[] inResponseTo) {
+    public RepositoryFileInformation(final Type type, final List<Path> theFoundPaths, final RepositoryFileInformation[] relatedHistory) {
         this.type = type;
         this.paths = new Entry[theFoundPaths.size()];
-        this.inResponseTo = inResponseTo != null ? Arrays.copyOf(inResponseTo, inResponseTo.length) : null;
+        this.relatedHistory = relatedHistory != null ? Arrays.copyOf(relatedHistory, relatedHistory.length) : null;
         int idx = -1;
         for(Path path : theFoundPaths) { 
             this.paths[++idx] = new Entry(path, path.toFile().length());
@@ -126,27 +128,27 @@ public class RepositoryAction implements Iterable<Path> {
         return paths[0].length;
     }
 
-    public RepositoryAction[] getCauses() {
-        return inResponseTo;
+    public RepositoryFileInformation[] getCauses() {
+        return relatedHistory;
     }
 
-    public static RepositoryAction deleted(Path resolvedPath, RepositoryAction... inResponseTo) {
-        return new RepositoryAction(Type.DELETED, resolvedPath, null, inResponseTo);
+    public static RepositoryFileInformation deleted(Path resolvedPath, RepositoryFileInformation... inResponseTo) {
+        return new RepositoryFileInformation(Type.DELETED, resolvedPath, null, inResponseTo);
     }
 
-    public static RepositoryAction stored(Path resolvedPath, Long copied, RepositoryAction... inResponseTo) {
-        return new RepositoryAction(Type.STORED, resolvedPath, copied, inResponseTo);
+    public static RepositoryFileInformation stored(Path resolvedPath, Long copied, RepositoryFileInformation... inResponseTo) {
+        return new RepositoryFileInformation(Type.STORED, resolvedPath, copied, inResponseTo);
     }
 
-    public static RepositoryAction found(List<Path> paths, RepositoryAction... inResponseTo) {
-        return new RepositoryAction(Type.FOUND, paths, inResponseTo);
+    public static RepositoryFileInformation found(List<Path> paths, RepositoryFileInformation... inResponseTo) {
+        return new RepositoryFileInformation(Type.FOUND, paths, inResponseTo);
     }
-    public static RepositoryAction found(Path resolvedPath, RepositoryAction... inResponseTo) {
-        return new RepositoryAction(Type.FOUND, resolvedPath, null, inResponseTo);
+    public static RepositoryFileInformation found(Path resolvedPath, RepositoryFileInformation... inResponseTo) {
+        return new RepositoryFileInformation(Type.FOUND, resolvedPath, null, inResponseTo);
     }
 
-    public static RepositoryAction none(RepositoryAction... inResponseTo) {
-        return new RepositoryAction(Type.NONE, null, null, inResponseTo);
+    public static RepositoryFileInformation none(RepositoryFileInformation... inResponseTo) {
+        return new RepositoryFileInformation(Type.NONE, null, null, inResponseTo);
     }
 
     @Override
@@ -160,8 +162,8 @@ public class RepositoryAction implements Iterable<Path> {
         msg = msg + " ]";
         csep=" -> ";
 
-        if(inResponseTo != null) {
-            for(RepositoryAction action : inResponseTo) {
+        if(relatedHistory != null) {
+            for(RepositoryFileInformation action : relatedHistory) {
                 if(action != null && action.getType() != Type.NONE) {
                     msg = msg + csep + action.toString();
                     csep = ", ";
@@ -183,11 +185,11 @@ public class RepositoryAction implements Iterable<Path> {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        RepositoryAction rhs = (RepositoryAction) obj;
+        RepositoryFileInformation rhs = (RepositoryFileInformation) obj;
         return new EqualsBuilder()
                 .append(this.type, rhs.type)
                 .append(this.paths, rhs.paths)
-                .append(this.inResponseTo, rhs.inResponseTo)
+                .append(this.relatedHistory, rhs.relatedHistory)
                 .isEquals();
     }
 
@@ -196,13 +198,34 @@ public class RepositoryAction implements Iterable<Path> {
         return new HashCodeBuilder()
                 .append(type)
                 .append(paths)
-                .append(inResponseTo)
+                .append(relatedHistory)
                 .toHashCode();
     }
 
     @Override
     public Iterator<Path> iterator() {        
         return new EntryIterator();
+    }
+
+    public String readFile() {
+        return this.readFile(this.paths[0].path);
+    }
+    private String readFile(Path path) {
+       if (this.type.equals(Type.FOUND) || this.type.equals(Type.STORED)) {
+           try {
+               BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
+               StringBuilder sb = new StringBuilder();
+               String line;
+               while ((line = reader.readLine()) != null) {
+                   sb.append(line);
+               }
+               return sb.toString();
+           }
+           catch (IOException ioe) {
+               System.out.println(ioe);
+           }
+       }
+       return null;
     }
 
 }

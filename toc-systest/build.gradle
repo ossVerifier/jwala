@@ -17,19 +17,30 @@ sourceSets {
             srcDir 'src/integ-test/groovy'
         }
     }
+    main {
+        groovy {
+            srcDirs = ["src/integ-test/groovy"]
+        }
+    }
 }
 
 dependencies {
+    compile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
+    compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
+    compile group: 'junit', name:'junit', version: '4.11'
 
-    integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"    
+    integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"
     integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
-    
-    integTestSuiteCompile configurations.testCompile
-    integTestSuiteCompile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
-    integTestSuiteCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
-    integTestSuiteCompile files(fileTree(dir: 'lib', includes: ['*.jar']))
-        
+
+    integTestSuite configurations.testCompile
+    integTestSuite group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
+    integTestSuite group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
+    integTestSuite group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
+    integTestSuite group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
+    integTestSuite files(fileTree(dir: 'lib', includes: ['*.jar']))
+
 }
 
 buildscript {

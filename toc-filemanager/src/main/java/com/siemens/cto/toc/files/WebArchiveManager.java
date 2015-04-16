@@ -8,8 +8,8 @@ import com.siemens.cto.aem.domain.model.event.Event;
 
 public interface WebArchiveManager {
 
-    RepositoryAction store(Event<UploadWebArchiveCommand> event) throws IOException;
+    RepositoryFileInformation store(Event<UploadWebArchiveCommand> event) throws IOException;
 
-    RepositoryAction remove(Event<RemoveWebArchiveCommand> event) throws IOException;
+    RepositoryFileInformation remove(Event<RemoveWebArchiveCommand> event) throws IOException;
 
 }

@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.resource;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
@@ -20,6 +21,10 @@ public interface ResourceService {
     List<ResourceInstance> getResourceInstancesByGroupName(final String groupName);
 
     ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name);
+
+    String generateResourceInstanceFragment(final String groupName, final String name);
+
+    String generateResourceInstanceFragment(String groupName, String resourceInstanceName, Map<String, String> mockedValues);
 
     List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
 

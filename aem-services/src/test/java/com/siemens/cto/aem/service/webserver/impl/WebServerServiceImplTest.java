@@ -39,7 +39,7 @@ import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.TemplateManager;
 import com.siemens.cto.toc.files.TocFile;
 
@@ -63,7 +63,7 @@ public class WebServerServiceImplTest {
     private TemplateManager templateManager;
 
     @Mock
-    private RepositoryAction repositoryAction;
+    private RepositoryFileInformation repositoryFileInformation;
 
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
@@ -127,7 +127,7 @@ public class WebServerServiceImplTest {
 
         wsService = new WebServerServiceImpl(wsDao, templateManager);
 
-        when(repositoryAction.getType()).thenReturn(RepositoryAction.Type.NONE);
+        when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
         when(templateManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
 
             @Override

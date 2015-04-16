@@ -18,22 +18,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.siemens.cto.toc.files.FilesConfiguration;
-import com.siemens.cto.toc.files.Repository;
-import com.siemens.cto.toc.files.RepositoryAction;
-import com.siemens.cto.toc.files.RepositoryAction.Type;
+import com.siemens.cto.toc.files.RepositoryService;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.TocPath;
 
-public class LocalFileSystemRepositoryImpl implements Repository {
+public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileSystemRepositoryImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocalFileSystemRepositoryServiceImpl.class);
 
     @Autowired
     FilesConfiguration filesConfiguration;
     
     @Override
-    public RepositoryAction writeStream(TocPath refPlace, Path file, InputStream transientData, RepositoryAction... inResponseTo) throws IOException {
+    public RepositoryFileInformation writeStream(TocPath refPlace, Path partialPath, InputStream transientData, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
-        Path resolvedPath = place.resolve(file).toAbsolutePath().normalize();
+        Path resolvedPath = place.resolve(partialPath).toAbsolutePath().normalize();
         long copied = 0;
         try(
                 FileChannel out = FileChannel.open(resolvedPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
@@ -51,53 +51,52 @@ public class LocalFileSystemRepositoryImpl implements Repository {
               buffer.clear();
             }
         }        
-        return RepositoryAction.stored(resolvedPath, (Long)copied, inResponseTo);
+        return RepositoryFileInformation.stored(resolvedPath, (Long) copied, relatedHistory);
         
     }
 
     @Override
-    public RepositoryAction deleteIfExisting(TocPath refPlace, Path file, RepositoryAction... inResponseTo) throws IOException {
-        RepositoryAction res1 = find(refPlace, file, inResponseTo);
+    public RepositoryFileInformation deleteIfExisting(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
+        RepositoryFileInformation res1 = find(refPlace, partialPath, relatedHistory);
         if(res1.getType() == Type.FOUND) {
             Files.delete(res1.getPath());
-            return RepositoryAction.deleted(res1.getPath(), res1);
+            return RepositoryFileInformation.deleted(res1.getPath(), res1);
         } else {
             return res1;
         }
     }
 
     @Override
-    public RepositoryAction find(TocPath refPlace, Path filename, RepositoryAction... inResponseTo) throws IOException {
+    public RepositoryFileInformation find(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
-        Path resolvedPath = place.resolve(filename);
+        Path resolvedPath = place.resolve(partialPath);
         if(Files.exists(resolvedPath)) {
-            return RepositoryAction.found(resolvedPath, inResponseTo);
+            return RepositoryFileInformation.found(resolvedPath, relatedHistory);
         }
-        return RepositoryAction.none(inResponseTo);
+        return RepositoryFileInformation.none(relatedHistory);
     }
 
     @Override
-    public RepositoryAction findAll(TocPath refPlace, String filter, RepositoryAction... inResponseTo) throws IOException {
+    public RepositoryFileInformation findAll(TocPath refPlace, String pattern, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
         List<Path> results = new LinkedList<Path>();
 
-        try(DirectoryStream<Path> directory = Files.newDirectoryStream(place, filter)) {
+        try(DirectoryStream<Path> directory = Files.newDirectoryStream(place, pattern)) {
             
             if(LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Inspecting path '"+place.toAbsolutePath().toString()+"' for children matching '"+filter+"'"); 
+                LOGGER.debug("Inspecting path '"+place.toAbsolutePath().toString()+"' for children matching '"+ pattern +"'");
             }
             
             for(Path p : directory) { 
 
-                LOGGER.debug("Found file: '"+p.toAbsolutePath().toString()+"'"); 
+                LOGGER.debug("Found partialPath: '"+p.toAbsolutePath().toString()+"'");
                 results.add(p); 
             }
                 
             if(results.size() > 0) {
-                return RepositoryAction.found(results, inResponseTo);
+                return RepositoryFileInformation.found(results, relatedHistory);
             }
         }
-
-        return RepositoryAction.none(inResponseTo);
+        return RepositoryFileInformation.none(relatedHistory);
     }
 }

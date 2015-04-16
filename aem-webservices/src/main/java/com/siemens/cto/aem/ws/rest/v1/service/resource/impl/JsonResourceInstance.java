@@ -24,7 +24,7 @@ public class JsonResourceInstance {
 
     private final String resourceTypeName;
     private final String groupName;
-    private final String friendlyName;
+    private final String name;
     private final Map<String, String> attributes;
 
     static final class CreateResourceInstanceJSONDeserializer extends AbstractJsonDeserializer<JsonResourceInstance> {
@@ -46,11 +46,14 @@ public class JsonResourceInstance {
             return results;
         }
     }
-    public JsonResourceInstance(final String resourceTypeName, final String friendlyName, final String groupName, final Map<String, String> attributes) {
+    public JsonResourceInstance(final String resourceTypeName, final String name, final String groupName, final Map<String, String> attributes) {
         this.resourceTypeName = resourceTypeName;
         this.groupName = groupName;
-        this.friendlyName = friendlyName;
+        this.name = name;
         this.attributes = attributes;
+    }
+    public String getName() {
+        return this.name;
     }
     public String getResourceTypeName() {
         return resourceTypeName;
@@ -61,6 +64,6 @@ public class JsonResourceInstance {
     }
 
     public ResourceInstanceCommand getCommand() {
-        return new ResourceInstanceCommand(this.resourceTypeName, this.friendlyName, this.groupName, attributes);
+        return new ResourceInstanceCommand(this.resourceTypeName, this.name, this.groupName, attributes);
     }
 }

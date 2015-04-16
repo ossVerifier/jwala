@@ -1,6 +1,7 @@
 package com.siemens.cto.toc.files;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
 import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
@@ -45,8 +46,9 @@ public class TemplateManagerTest {
             return new TemplateManagerImpl();
         }
 
-        @Bean Repository getFileSystemStorage() throws IOException {
-            return new LocalFileSystemRepositoryImpl();
+        @Bean
+        RepositoryService getFileSystemStorage() throws IOException {
+            return new LocalFileSystemRepositoryServiceImpl();
         }
         
         @Bean FilesConfiguration getFilesConfiguration() throws IOException {
@@ -68,8 +70,8 @@ public class TemplateManagerTest {
     @Autowired 
     TemplateManager templateManager;
 
-    @Autowired 
-    Repository fsRepository;
+    @Autowired
+    RepositoryService fsRepositoryService;
     
     @Autowired
     FilesConfiguration filesConfiguration;
@@ -81,21 +83,33 @@ public class TemplateManagerTest {
     ByteArrayInputStream uploadedFile;
     Application app;
 
+    @Test
     public void testGetResourceTypes() throws IOException { 
        
-       Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
-       try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("ResourceProperties.json"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
-           
-        writer.write("{\"name\":\"MySql XA Database\",\"contentType\":\"application/xml\", \"properties\":[{\"name\":\"\u0032\", \"meta1\":\"meta1\"},{\"name\":\"name two\", \"meta2\" :\"meta two\"}]}");
-
-        Collection<ResourceType> rtypes = templateManager.getResourceTypes();
-        assertEquals(1, rtypes.size());
-        assertEquals("MySql XA Database", rtypes.iterator().next().getName());
-        
+       Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TYPES);
+       try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("MySql XA Database.json"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
+           writer.write("{\"name\":\"MySql XA Database\",\"contentType\":\"application/xml\", \"properties\":[{\"name\":\"\u0032\", \"meta1\":\"meta1\"},{\"name\":\"name two\", \"meta2\" :\"meta two\"}]}");
+           writer.flush();
+           writer.close();
+           Collection<ResourceType> rtypes = templateManager.getResourceTypes();
+           assertEquals(1, rtypes.size());
+           assertEquals("MySql XA Database", rtypes.iterator().next().getName());
        }
        
     }
-    
+    @Test
+    public void testGetResourceTypeTemplate() throws IOException {
+        Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TYPES);
+        try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("ResourceInstanceTestTemplate.tpl"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
+
+            writer.write("${replacementTest}");
+            writer.flush();
+            writer.close();
+
+            String testTemplate = templateManager.getResourceTypeTemplate("ResourceInstanceTest");
+            assertNotNull(testTemplate);
+        }
+    }
     @Test
     public void testFindCurrent() throws IOException {
         String  result = templateManager.getAbsoluteLocation(new TocFile()  {

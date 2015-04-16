@@ -38,8 +38,8 @@ import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.toc.files.RepositoryAction.Type;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
 import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
 
@@ -77,8 +77,9 @@ public class WebArchiveManagerTest {
             return new WebArchiveManagerImpl();
         }
         
-        @Bean Repository getFileSystemStorage() throws IOException {
-            return new LocalFileSystemRepositoryImpl();
+        @Bean
+        RepositoryService getFileSystemStorage() throws IOException {
+            return new LocalFileSystemRepositoryServiceImpl();
         }
         
         @Bean FilesConfiguration getFilesConfiguration() throws IOException {
@@ -94,8 +95,8 @@ public class WebArchiveManagerTest {
     @Autowired 
     WebArchiveManager webArchiveManager;
 
-    @Autowired 
-    Repository fsRepository;
+    @Autowired
+    RepositoryService fsRepositoryService;
     
     @Autowired
     FilesConfiguration filesConfiguration;
@@ -161,10 +162,10 @@ public class WebArchiveManagerTest {
         cleanupPath = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
     }
     
-    private void testResults(long expectedSize, RepositoryAction result) throws IOException {
+    private void testResults(long expectedSize, RepositoryFileInformation result) throws IOException {
         testResults(expectedSize, result, false);
     }
-    private Path testResults(long expectedSize, RepositoryAction result, boolean preserve) throws IOException {
+    private Path testResults(long expectedSize, RepositoryFileInformation result, boolean preserve) throws IOException {
         assertEquals("Size mismatch after store of file.", expectedSize, (long)result.getLength());
         
         Path storedPath = ((MemoryNameSynthesizer)nameSynthesizer).pop();
@@ -201,7 +202,7 @@ public class WebArchiveManagerTest {
                 
         UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
         cmd.validateCommand();        
-        RepositoryAction result1 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER)));
+        RepositoryFileInformation result1 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER)));
 
         app.setWarPath(result1.getPath().toAbsolutePath().toString());
         
@@ -210,7 +211,7 @@ public class WebArchiveManagerTest {
         
         UploadWebArchiveCommand cmd2 = new UploadWebArchiveCommand(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
         cmd2.validateCommand();        
-        RepositoryAction result2 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd2, AuditEvent.now(TEST_USER)));
+        RepositoryFileInformation result2 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd2, AuditEvent.now(TEST_USER)));
 
         assertNotNull(result2.getCauses());
         assertEquals(1, result2.getCauses().length);
@@ -243,8 +244,8 @@ public class WebArchiveManagerTest {
         RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
         rwac.validateCommand();
         
-        RepositoryAction result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
+        RepositoryFileInformation result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
         
-        assertEquals(RepositoryAction.deleted(expectedPath, RepositoryAction.found(expectedPath, RepositoryAction.none())), result);
+        assertEquals(RepositoryFileInformation.deleted(expectedPath, RepositoryFileInformation.found(expectedPath, RepositoryFileInformation.none())), result);
     }
 }

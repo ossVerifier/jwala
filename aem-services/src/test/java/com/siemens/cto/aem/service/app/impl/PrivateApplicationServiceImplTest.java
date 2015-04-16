@@ -30,7 +30,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
-import com.siemens.cto.toc.files.RepositoryAction;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -115,7 +115,7 @@ public class PrivateApplicationServiceImplTest {
         UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);
         Event<UploadWebArchiveCommand> event = Event.create(uwac, AuditEvent.now(testUser));
 
-        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryAction.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));        
+        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
 
         privateApplicationService.uploadWebArchiveData(event);
 
@@ -128,9 +128,9 @@ public class PrivateApplicationServiceImplTest {
         UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);        
         Event<UploadWebArchiveCommand> event = Event.create(uwac, AuditEvent.now(testUser));
         
-        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryAction.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
         
-        privateApplicationService.uploadWebArchiveUpdateDB(event, RepositoryAction.stored(FileSystems.getDefault().getPath("test.txt"), 0L));
+        privateApplicationService.uploadWebArchiveUpdateDB(event, RepositoryFileInformation.stored(FileSystems.getDefault().getPath("test.txt"), 0L));
 
         Mockito.verify(applicationPersistenceService, Mockito.times(1)).updateWARPath(any(Event.class), any(String.class));        
     }

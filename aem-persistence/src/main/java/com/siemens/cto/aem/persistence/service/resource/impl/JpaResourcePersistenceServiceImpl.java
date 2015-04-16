@@ -49,8 +49,8 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
         if (resourceInstanceUpdateEvent.getCommand().getAttributes() != null) {
             this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
         }
-        else if (!resourceInstanceUpdateEvent.getCommand().getName().equals(resourceInstance.getName())){
-            return parseFromJpa(this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent));
+        if (!resourceInstanceUpdateEvent.getCommand().getName().equals(resourceInstance.getName())){
+            this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
         }
         return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstance.getResourceInstanceId()));
     }

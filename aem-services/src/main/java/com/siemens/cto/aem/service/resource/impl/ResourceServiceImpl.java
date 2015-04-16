@@ -1,8 +1,11 @@
 package com.siemens.cto.aem.service.resource.impl;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -13,6 +16,7 @@ import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
+import com.siemens.cto.toc.files.TocPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.Expression;
@@ -98,6 +102,21 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public String generateResourceInstanceFragment(String groupName, String resourceInstanceName) {
+        final Map<String, String> mockedValues = new HashMap<>();
+        mockedValues.put("jvm.id", "[jvm.id of instance]");
+        mockedValues.put("jvm.name", "[jvm.name of instance]");
+        mockedValues.put("app.name", "[app.name of Web App]");
+        return generateResourceInstanceFragment(groupName, resourceInstanceName, mockedValues);
+    }
+
+    @Override
+    public String generateResourceInstanceFragment(String groupName, String resourceInstanceName, Map<String, String> mockedValues) {
+        ResourceInstance resourceInstance =  this.getResourceInstanceByGroupNameAndName(groupName, resourceInstanceName);
+        return templateEngine.populateResourceInstanceTemplate(resourceInstance, null, mockedValues);
+    }
+
+    @Override
     public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(group.getId().getId(), resourceTypeName);
@@ -111,6 +130,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceCommand, final User updatingUser) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
         return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceCommand>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));

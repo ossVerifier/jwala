@@ -16,10 +16,8 @@ public interface ResourceServiceRest {
 
     /**
      * /aem/v1.0/resources/types
-     * @PathParam name
-     * @MatrixParam groupName
-     * @BeanParam AuthenticatedUser
-     * @return
+     *
+     * @return a list of resourceTypes from the file system
      */
     @GET
     @Path("/types")
@@ -27,43 +25,48 @@ public interface ResourceServiceRest {
 
     /**
      * /aem/v1.0/resources;groupName=[your group name]
-     * @PathParam name
-     * @MatrixParam groupName
-     * @return
+     *
+     * @PathParam name  the name of the resource instance
+     * @MatrixParam groupName the name of the previously created group
+     * @return a list of ResourceInstance objects associated with a group
      */
     @GET
     Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName);
 
     /**
      * /aem/v1.0/resources/[your resource instance name];groupName=[your group name]
-     * @param name
-     * @param groupName
+     *
+     * @param name the name of an existing resource instance
+     * @param groupName the name of an existing group
      * @param resourceTypeName
-     * @param paginationParamProvider
-     * @return
+     * @return a specific resourceInstance object if present
      */
     @GET
     @Path("/{name}")
     Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName);
 
+    @GET
+    @Path("/{name}/generate")
+    Response generateResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName);
+
     /**
-     * /aem/v1.0/resources
-     * JSON POST data
+     * /aem/v1.0/resources <br/>
+     * JSON POST data of JsonResourceInstance
      * @param aResourceInstanceToCreate
-     * @param aUser
-     * @return
+     * @param aUser the authenticated user who is creating the ResourceInstance
+     * @return the newly created ResourceInstance object
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     Response createResourceInstance(final JsonResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
 
     /**
-     * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * JSON PUT conttaining the same object as create, but empty attributes will remain the same
-     * @PathParam name
-     * @MatrixParam groupName
-     * @BeanParam AuthenticatedUser
-     * @return
+     * /aem/v1.0/resources/[resource instance name];groupName=[your group name] <br/>
+     * JSON PUT conttaining the same object as create, but empty attributes will remain the same and it will detect changes in the name within the JsonResourceInstance object
+     * @PathParam name the name of an existing resource instance for updating
+     * @MatrixParam groupName the name of an existing group which is associcated with the resource instance to be updated.
+     * @BeanParam AuthenticatedUser  the authenticated user who is updating the resource instance
+     * @return the updated ResourceInstance object
      */
     @PUT
     @Path("/{name}")
@@ -72,10 +75,10 @@ public interface ResourceServiceRest {
 
     /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * @PathParam name
-     * @MatrixParam groupName
-     * @BeanParam AuthenticatedUser
-     * @return
+     * @PathParam name the name of a the existing ResourceInstance to be deleted
+     * @MatrixParam groupName the group name of the resource instance to be deleted
+     * @BeanParam AuthenticatedUser the user which is doing the deletion
+     * @return  If successful nothing.
      */
     @DELETE
     @Path("/{name}")
