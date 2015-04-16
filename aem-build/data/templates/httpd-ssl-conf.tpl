@@ -215,9 +215,9 @@ DocumentRoot "stpdocs"
 </Files>
 
 #IPINS
-RewriteEngine on      
-RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
-RewriteRule .* - [F]    
+RewriteEngine on
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
 
 SSLEngine on
 SSLOptions +StrictRequire
@@ -255,7 +255,7 @@ SSLRequireSSL
 # TLS1 is supported because corporate group policy currently disables TLS1.2 and TLS1.1 in IE
 SSLProtocol -all +TLSv1.2 +TLSv1
 # Ideally we would be purely on TLS 1.2:
-#SSLProtocol -all +TLSv1.2 
+#SSLProtocol -all +TLSv1.2
 
 SSLCipherSuite HIGH:MEDIUM:!aNULL:+SHA1:+MD5:+HIGH:+MEDIUM
 #SSLCipherSuite HIGH all ciphers using 3DES
@@ -306,9 +306,9 @@ ProxyPass ${it.webAppContext.replaceAll(" ", "")} balancer://lb-${it.name.replac
 DocumentRoot "htdocs"
 
 #IPINS
-RewriteEngine on      
-RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
-RewriteRule .* - [F]    
+RewriteEngine on
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+RewriteRule .* - [F]
 
 SSLEngine off
 
@@ -329,6 +329,7 @@ Allow from all
 # ${comments}
 <%
     apps.each {
+        def protocol = it.secure ? "https" : "http"
         def ctxPath = it.webAppContext.replaceAll(" ", "")
 %>
 <Proxy balancer://lb-${it.name.replaceAll(" ", "")}>
@@ -339,13 +340,13 @@ ProxySet growth=2
 ProxySet nofailover=On
 <%
     def app = it
-    def desiredGroup = 130
-    // app.group.id.id
-    jvms.find { it.groups.find { it.id.id == desiredGroup } != null } each {
+    def desiredGroup = app.group.id.id
+    jvms.findAll { it.groups.find { it.id.id == desiredGroup } != null } each {
         def hostName = it.hostName.replaceAll(" ", "")
+        def port = (protocol == "https" ? it.httpsPort : it.httpPort)
         def jvmName = it.jvmName.replaceAll(" ", "")
 %>
-BalancerMember https://${hostName}:${it.httpsPort}${ctxPath} route=${jvmName} ping=250ms
+BalancerMember ${protocol}://${hostName}:${port}${ctxPath} route=${jvmName} ping=250ms
 <%  } %>
 </Proxy>
 <% } %>
@@ -385,19 +386,19 @@ LoadModule deflate_module modules/mod_deflate.so
         AddOutputFilterByType DEFLATE application/json
         AddOutputFilterByType DEFLATE application/javascript
         AddOutputFilterByType DEFLATE application/x-javascript
- 
+
         AddOutputFilterByType DEFLATE application/x-httpd-php
         AddOutputFilterByType DEFLATE application/x-httpd-fastphp
         AddOutputFilterByType DEFLATE application/x-httpd-eruby
- 
+
         DeflateCompressionLevel 9
- 
+
 # Netscape 4.X has some problems
         BrowserMatch ^Mozilla/4 gzip-only-text/html
- 
+
 # Netscape 4.06-4.08 have some more problems
         BrowserMatch ^Mozilla/4\\.0[678] no-gzip
- 
+
 # MSIE masquerades as Netscape, but it is fine
         BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
 </IfModule>
