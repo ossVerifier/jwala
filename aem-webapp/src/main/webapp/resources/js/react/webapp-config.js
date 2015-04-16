@@ -353,6 +353,7 @@ var WebAppDataTable = React.createClass({
     render: function() {
         var tableDef = [
                          {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
+                         {sTitle:"", mData:"secure", tocType:"custom", tocRenderCfgFn: this.renderSecureCol},
                          {sTitle:"WebApp Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                          {sTitle:"Context", mData:"webAppContext"},
                          {sTitle:"Web Archive", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderRowData },
@@ -396,6 +397,19 @@ var WebAppDataTable = React.createClass({
                   return "<div />";
                 }.bind(this);
     },
+
+    renderSecureCol: function(dataTable, data, aoColumnDefs, itemIndex) {
+        aoColumnDefs[itemIndex].mDataProp = null;
+        aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
+        aoColumnDefs[itemIndex].bSortable = false;
+        aoColumnDefs[itemIndex].mRender = function (data, type, full) {
+            if (data) {
+                return "<span class='ui-icon ui-icon-locked'></span>";
+            }
+            return "<span class='ui-icon ui-icon-unlocked'></span>";
+        }.bind(this);
+    },
+
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
             aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
