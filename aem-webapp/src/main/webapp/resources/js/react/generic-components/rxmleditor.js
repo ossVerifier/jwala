@@ -20,6 +20,12 @@ var RXmlEditor = React.createClass({
         }
         return true;
     },
+    refresh: function(content) {
+        if (content !== undefined) {
+            var contentArray = content === undefined ? [null] : content.split('');
+            this.setState({content:contentArray});
+        }
+    },
     render: function() {
         var elements = [];
 

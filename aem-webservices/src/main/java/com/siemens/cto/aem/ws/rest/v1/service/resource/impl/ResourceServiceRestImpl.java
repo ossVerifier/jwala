@@ -44,7 +44,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response generateResourceInstanceByNameGroup(String name, @MatrixParam("groupName") String groupName, @MatrixParam("resourceTypeName") String resourceTypeName) {
+    public Response generateResourceInstanceByNameGroup(String name, String groupName, String resourceTypeName) {
         return ResponseBuilder.ok(resourceService.generateResourceInstanceFragment(groupName, name));
     }
     @Override

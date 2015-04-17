@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,8 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override
     public String getResourceTypeTemplate(String resourceTypeName) {
         try {
+            // TODO: Figure out if this the best way to derive at the template name (by getting the resource type name and removing the spaces and assuming that the they would be the same as that of the file name).
+            resourceTypeName = StringUtils.replace(resourceTypeName, " ", "");
             RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeName + "Template.tpl"));
             if (fileInformation.getType().equals(Type.FOUND)) {
                 return fileInformation.readFile();

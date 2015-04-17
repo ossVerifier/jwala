@@ -86,6 +86,10 @@ var ResourceAttrPane = React.createClass({
         this.updateAttributes(tempAttrArray);
     },
     onClickGenerateXml: function() {
+        ServiceFactory.getResourceService().getXmlSnippet(this.props.resourceData.name, this.props.resourceData.group.name, this.generateXmlSnippetResponseCallback)
+    },
+    generateXmlSnippetResponseCallback: function(response) {
+        this.props.generateXmlSnippetCallback(response.applicationResponseContent);
     },
     refresh: function(resource) {
         this.setState({resource:resource});
