@@ -1,0 +1,7 @@
+{"name":"JMS Topic","contentType":"application/xml", 
+	"properties":[{"name":"name", "required":"true"},
+				  {"name":"auth"},	
+				  {"name":"type", "required":"true"}, 
+				  {"name":"description"}, 
+				  {"name":"factory"}, 
+				  {"name":"physicalName"}]}
