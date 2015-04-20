@@ -140,6 +140,9 @@ var RXmlEditor = React.createClass({
                     if (!inQuote) {
                         if (ch === "<") {
                             inElement = true;
+                        } else if (ch === "%") { // TODO: Make a better way to identify groovy code inserts
+                            // Don't format groovy code
+                            inElement = !inElement;
                         }
 
                         if (inElement) {
