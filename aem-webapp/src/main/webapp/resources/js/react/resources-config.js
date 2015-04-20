@@ -29,18 +29,18 @@ var XmlTabs = React.createClass({
     },
     refreshXmlDisplay: function(xmlSnippet) {
         if (this.refs.tokenizedXmlPreview !== undefined) {
-            this.refs.tokenizedXmlPreview.refresh(xmlSnippet);
+            this.refs.tokenizedXmlPreview.refresh(xmlSnippet, xmlSnippet.length - 1);
         }
     },
     refreshTemplateDisplay: function(template) {
         if (this.refs.untokenizedXmlPreview !== undefined) {
-            this.refs.untokenizedXmlPreview.refresh(template);
+            this.refs.untokenizedXmlPreview.refresh(template, template.length - 1);
         }
         this.setState({template: template});
     },
     onSelectTab: function(index) {
         if (index === 1) {
-            this.refs.untokenizedXmlPreview.refresh(this.state.template);
+            this.refs.untokenizedXmlPreview.refresh(this.state.template, this.state.template.length - 1);
         }
     }
 });

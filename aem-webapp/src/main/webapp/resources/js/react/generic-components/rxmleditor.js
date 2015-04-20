@@ -20,10 +20,13 @@ var RXmlEditor = React.createClass({
         }
         return true;
     },
-    refresh: function(content) {
+    refresh: function(content, cursorPosition) {
         if (content !== undefined) {
             var contentArray = content === undefined ? [null] : content.split('');
-            this.setState({content:contentArray});
+            if (cursorPosition === undefined) {
+                cursorPosition = 0;
+            }
+            this.setState({content:contentArray, cursorIdx:cursorPosition});
         }
     },
     render: function() {
