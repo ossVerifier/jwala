@@ -155,4 +155,9 @@ public class ResourceServiceImpl implements ResourceService {
         String result = encryptExpression.getValue(context, String.class);
         return result;
     }
+
+    @Override
+    public String getTemplate(final String resourceTypeName) {
+        return templateEngine.getTemplate(resourceTypeName);
+    }
 }

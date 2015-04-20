@@ -3,7 +3,7 @@ var ResourcesConfig = React.createClass({
     render: function() {
         var splitterComponents = [];
 
-        splitterComponents.push(<div><ResourceEditor generateXmlSnippetCallback={this.generateXmlSnippetCallback}/></div>);
+        splitterComponents.push(<div><ResourceEditor generateXmlSnippetCallback={this.generateXmlSnippetCallback} getTemplateCallback={this.getTemplateCallback}/></div>);
         splitterComponents.push(<div><XmlTabs ref="xmlTabs"/></div>);
 
         var splitter = <RSplitter components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
@@ -11,23 +11,37 @@ var ResourcesConfig = React.createClass({
         return <div className="resource-container">{splitter}</div>
     },
     generateXmlSnippetCallback: function(xml) {
-        this.refs.xmlTabs.refresh(xml);
+        this.refs.xmlTabs.refreshXmlDisplay(xml);
+    },
+    getTemplateCallback: function(template) {
+        this.refs.xmlTabs.refreshTemplateDisplay(template);
     }
 })
 
 var XmlTabs = React.createClass({
     getInitialState: function() {
-        return {
-            tokenizedXml: "",
-            untokenizedXml: ""
-        };
+        return {template: ""}
     },
     render: function() {
-        var xmlTabItems = [{title: "Tokenized", content:<RXmlEditor ref="tokenizedXmlPreview" content={this.state.tokenizedXml}/>},
-                           {title: "Untokenized", content:<RXmlEditor content={this.state.untokenizedXml}/>}];
-        return <Tabs theme="default" items={xmlTabItems} depth="0"/>
+        var xmlTabItems = [{title: "Tokenized", content:<RXmlEditor ref="tokenizedXmlPreview" content=""/>},
+                           {title: "Untokenized", content:<RXmlEditor ref="untokenizedXmlPreview" content={this.state.template}/>}];
+        return <Tabs theme="default" items={xmlTabItems} depth="0" onSelectTab={this.onSelectTab}/>
     },
-    refresh: function(xmlSnippet) {
-        this.refs.tokenizedXmlPreview.refresh(xmlSnippet);
+    refreshXmlDisplay: function(xmlSnippet) {
+        if (this.refs.tokenizedXmlPreview !== undefined) {
+            this.refs.tokenizedXmlPreview.refresh(xmlSnippet);
+        }
+    },
+    refreshTemplateDisplay: function(template) {
+        if (this.refs.untokenizedXmlPreview !== undefined) {
+            this.refs.untokenizedXmlPreview.refresh(template);
+        } else {
+            this.setState({template: template});
+        }
+    },
+    onSelectTab: function(index) {
+        if (index === 1) {
+            this.refs.untokenizedXmlPreview.refresh(this.state.template);
+        }
     }
 });

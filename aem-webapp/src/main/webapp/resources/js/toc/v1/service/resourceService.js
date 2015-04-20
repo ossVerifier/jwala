@@ -41,5 +41,8 @@ var resourceService = {
     },
     getXmlSnippet: function(resourceName, groupName, responseCallback) {
         return serviceFoundation.get("v1.0/resources/" + resourceName + "/generate;groupName=" + groupName, "json", responseCallback);
+    },
+    getTemplate: function(resourceTypeName, responseCallback) {
+        return serviceFoundation.get("v1.0/resources/types/" + resourceTypeName + "/template", "json", responseCallback);
     }
 };

@@ -37,4 +37,7 @@ public interface ResourceService {
     void deleteResources(final String groupName, final List<String> resourceNames);
     
     String  encryptUsingPlatformBean(String cleartext);
+
+    String getTemplate(final String resourceTypeName);
+
 }

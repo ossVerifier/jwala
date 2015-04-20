@@ -102,4 +102,8 @@ public interface ResourceServiceRest {
     Response removeResources(@MatrixParam("groupName") final String groupName,
                              @MatrixParam("resourceName") final List<String> resourceNames);
 
+    @GET
+    @Path("/types/{resourceTypeName}/template")
+    Response getTemplate(@PathParam("resourceTypeName") final String resourceTypeName);
+
 }

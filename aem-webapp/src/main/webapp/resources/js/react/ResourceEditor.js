@@ -36,7 +36,8 @@ var ResourceEditor = React.createClass({
                                               currentResourceName={this.state.currentResourceName}
                                               editMode={this.state.resourceEditMode}
                                               selectResourceCallback={this.selectResourceCallback}
-                                              resourceTypes={this.state.resourceTypes}/>
+                                              resourceTypes={this.state.resourceTypes}
+                                              selectResourceTypeDropDown={this.selectResourceTypeDropDown}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
@@ -57,6 +58,12 @@ var ResourceEditor = React.createClass({
                           panelDimensions={[{width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"}]} />
+    },
+    selectResourceTypeDropDown: function(resourceTypeName, selectResourceTypeDropDownCallback) {
+        ServiceFactory.getResourceService().getTemplate(resourceTypeName, this.selectResourceTypeDropDownCallback);
+    },
+    selectResourceTypeDropDownCallback: function(response) {
+        this.props.getTemplateCallback(response.applicationResponseContent);
     },
     getRequiredAttributes: function() {
         var requiredAttributes = [];

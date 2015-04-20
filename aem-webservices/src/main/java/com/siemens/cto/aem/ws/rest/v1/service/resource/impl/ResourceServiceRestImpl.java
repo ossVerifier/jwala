@@ -81,4 +81,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                          new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
     }
+
+    @Override
+    public Response getTemplate(final String resourceTypeName) {
+        return ResponseBuilder.ok(resourceService.getTemplate(resourceTypeName));
+    }
 }

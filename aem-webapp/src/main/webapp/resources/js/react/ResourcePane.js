@@ -8,7 +8,8 @@ var ResourcePane = React.createClass({
                                                                               spanClassName:"ui-icon ui-icon-trash",
                                                                               onClick:this.onClickDel}),
                                                React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd,
-                                                                                          resourceTypes:this.props.resourceTypes}),
+                                                                                          resourceTypes:this.props.resourceTypes,
+                                                                                          selectResourceTypeDropDown:this.props.selectResourceTypeDropDown}),
                                                React.createElement(ResourceList, {ref:"resourceList",
                                                                                   groupName:this.props.groupName,
                                                                                   data:this.props.data,
@@ -41,14 +42,22 @@ var ResourceTypeDropDown = React.createClass({
                 var key = resourceType.name.replace(/\s/g, '');
                 options.push(React.createElement(ResourceTypeOption, {key:key, resourceType:resourceType}));
             });
+
+
+
             return React.createElement("div", {className:"resource-type-dropdown"},
-                       React.createElement("select", {ref:"select", className:"resource-type-dropdown"}, options),
+                       React.createElement("select", {ref:"select", className:"resource-type-dropdown", onChange:this.onChangeResourceType}, options),
                        React.createElement(RButton, {title:"Add Resource",
                                                      className:"ui-state-default ui-corner-all default-icon-button-style",
                                                      spanClassName:"ui-icon ui-icon-plus",
                                                      onClick:this.onClickAdd}));
         }
         return React.createElement("span", null, "Loading resource types...");
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.resourceTypes.length > 0) {
+            nextProps.selectResourceTypeDropDown(nextProps.resourceTypes[0].name);
+        }
     },
     getSelectedResourceType: function() {
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
@@ -63,6 +72,9 @@ var ResourceTypeDropDown = React.createClass({
             }
         }
         return null;
+    },
+    onChangeResourceType: function() {
+        this.props.selectResourceTypeDropDown($(this.refs.select.getDOMNode()).find("option:selected").text());
     }
 });
 

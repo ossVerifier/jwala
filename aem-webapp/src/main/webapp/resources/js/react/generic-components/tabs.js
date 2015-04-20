@@ -25,6 +25,10 @@ var Tabs = React.createClass({displayName:"Tabs",
     },
     componentDidUpdate: function(prevProps, prevState) {
        document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
+
+       if (this.props.onSelectTab !== undefined) {
+            this.props.onSelectTab(this.state.active);
+       }
     },
     componentWillUnmount: function() {
        $(window).off('hashchange', this.handleBack.bind(this));

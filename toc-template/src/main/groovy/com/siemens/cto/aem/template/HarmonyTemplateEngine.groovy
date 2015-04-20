@@ -70,4 +70,8 @@ public class HarmonyTemplateEngine {
         }
         return engine.createTemplate(template).make(resouceInstanceAttributes);
     }
+
+    public String getTemplate(final String resourceTypeName) {
+        return templateManager.getResourceTypeTemplate(resourceTypeName);
+    }
 }
