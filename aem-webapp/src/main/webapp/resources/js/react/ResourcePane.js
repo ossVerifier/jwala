@@ -8,8 +8,7 @@ var ResourcePane = React.createClass({
                                                                               spanClassName:"ui-icon ui-icon-trash",
                                                                               onClick:this.onClickDel}),
                                                React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd,
-                                                                                          resourceTypes:this.props.resourceTypes,
-                                                                                          selectResourceTypeDropDown:this.props.selectResourceTypeDropDown}),
+                                                                                          resourceTypes:this.props.resourceTypes}),
                                                React.createElement(ResourceList, {ref:"resourceList",
                                                                                   groupName:this.props.groupName,
                                                                                   data:this.props.data,
@@ -53,11 +52,6 @@ var ResourceTypeDropDown = React.createClass({
                                                      onClick:this.onClickAdd}));
         }
         return React.createElement("span", null, "Loading resource types...");
-    },
-    componentWillReceiveProps: function(nextProps) {
-        if (nextProps.resourceTypes.length > 0) {
-            nextProps.selectResourceTypeDropDown(nextProps.resourceTypes[0].name);
-        }
     },
     getSelectedResourceType: function() {
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
