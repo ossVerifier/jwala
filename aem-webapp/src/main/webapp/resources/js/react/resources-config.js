@@ -35,9 +35,8 @@ var XmlTabs = React.createClass({
     refreshTemplateDisplay: function(template) {
         if (this.refs.untokenizedXmlPreview !== undefined) {
             this.refs.untokenizedXmlPreview.refresh(template);
-        } else {
-            this.setState({template: template});
         }
+        this.setState({template: template});
     },
     onSelectTab: function(index) {
         if (index === 1) {
