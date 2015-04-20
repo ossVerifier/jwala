@@ -64,4 +64,14 @@ public interface JvmServiceRest {
     @Path("/states/current")
 //    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
     Response getCurrentJvmStates(@BeanParam final JvmIdsParameterProvider jvmIdsParameterProvider);
+
+    /**
+     * Initiate a heartbeat followed by an SSH check
+     * @param aJvmId id of the jvm to diagnose
+     * @return A text response indicating whether the diagnose process was initiated.
+     */
+    @GET
+    @Path("/{jvmId}/diagnosis")
+    Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
+
 }

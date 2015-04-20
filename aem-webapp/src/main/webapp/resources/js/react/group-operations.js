@@ -392,6 +392,17 @@ var GroupOperationsDataTable = React.createClass({
                                   customSpanClassName:"ui-icon ui-icon-mgr",
                                   buttonClassName:"ui-button-height",
                                   extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
+                                  {id:"spacediag", tocType:"space"},
+                                  {id:"diagnose",
+                                      sTitle:"Diagnose",
+                                      mData:null,
+                                      tocType:"button",
+                                      btnLabel:"",
+                                      btnCallback:this.jvmDiagnose,
+                                      className:"inline-block",
+                                      customSpanClassName:"ui-icon ui-icon-wrench",
+                                      buttonClassName:"ui-button-height",
+                                      extraDataToPassOnCallback:["jvmName","groups"]},
                                  {tocType:"space"},
                                  {id:"healthCheck",
                                   sTitle:"Health Check",
@@ -836,6 +847,17 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" +
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
+    jvmDiagnose: function(id, buttonSelector, data, parentItemId, cancelCallback) {
+        this.verifyAndConfirmJvmWebServerControlOperation(id,
+                parentItemId,
+                buttonSelector,
+                data.jvmName,
+                data.groups,
+                "diganose",
+                ServiceFactory.getJvmService().diagnoseJvm,
+                cancelCallback,
+                "JVM");
+    },
     onClickMgr: function(unused1, unused2, data) {
         var url = "idp?saml_redirectUrl=" +
                   window.location.protocol + "//" +

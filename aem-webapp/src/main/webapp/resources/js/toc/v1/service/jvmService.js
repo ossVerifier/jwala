@@ -69,6 +69,9 @@
     },
     getJvms : function(responseCallback) {
         return serviceFoundation.get("v1.0/jvms?all", "json", responseCallback);
+    },
+    diagnoseJvm: function(id, responseCallback) {
+    	return serviceFoundation.get("v1.0/jvms/" + id + "/diagnosis", "json", responseCallback);
     }
 
 };

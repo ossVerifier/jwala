@@ -36,4 +36,6 @@ public interface JvmService {
 
     String generateConfig(String aJvmName);
 
+    String performDiagnosis(Identifier<Jvm> aJvmId);
+
 }

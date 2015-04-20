@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.configuration.lifecycle;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -49,11 +50,19 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
         
         if(appCtx != null) {
             msg = msg  + ((event.getSource() != null) ? ("; source=" + event.getSource().toString()) : "");
+            try {
+                SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
+                jvmInitiator.start();
+            } catch(NoSuchBeanDefinitionException e) {
+                msg = msg + ". Not starting JVM reverse heartbeat";
+            }
+            try {
+                SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
+                webServerStateInitiator.start();
+            } catch(NoSuchBeanDefinitionException e) {
+                msg = msg + ". Not starting Web Server reverse heartbeat";
+            }
             LOGGER.info(msg);
-            SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
-            jvmInitiator.start();
-            SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
-            webServerStateInitiator.start();
         }
     }
 }

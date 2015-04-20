@@ -1,15 +1,20 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
+import groovy.lang.GString;
+import groovy.text.SimpleTemplateEngine;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -28,24 +33,29 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.TemplateManager;
 
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
+    
+    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final TemplateManager templateManager;
-
+    private final JvmStateGateway jvmStateGateway;
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService, 
-                          final TemplateManager theTemplateManager) {
+                          final TemplateManager theTemplateManager,
+                          final JvmStateGateway theJvmStateGateway) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         templateManager = theTemplateManager;
+        jvmStateGateway = theJvmStateGateway;
     }
 
     @Override
@@ -163,6 +173,32 @@ public class JvmServiceImpl implements JvmService {
         } else { 
             throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
         }
+    }
+
+    @Override
+    public String performDiagnosis(Identifier<Jvm> aJvmId) {
+        
+        // if the Jvm does not exist, we'll get a 404 NotFoundException
+        Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
+        
+        // this is a fire and forget gateway. There will be no response.
+        jvmStateGateway.initiateJvmStateRequest(jvm);
+                         
+        SimpleTemplateEngine engine = new SimpleTemplateEngine();
+        HashMap<String,Object> binding = new HashMap<String,Object>();
+        binding.put("jvm", jvm);        
+        
+        try {
+            String diagnosis = engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
+            return diagnosis;
+        } catch (CompilationFailedException | ClassNotFoundException | IOException e) {
+            throw new ApplicationException(DIAGNOSIS_INITIATED, e);
+            // why do this? Because if there was a problem with the template that made
+            // it past initial testing, then it is probably due to the jvm in the binding
+            // so just dump out the diagnosis template and the exception so it can be 
+            // debugged.
+        }
+        
     }
 
 }

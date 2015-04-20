@@ -140,6 +140,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         return ResponseBuilder.ok();
     }
+
+    @Override
+    public Response diagnoseJvm(Identifier<Jvm> aJvmId) {
+        
+        String diagnosis = jvmService.performDiagnosis(aJvmId);
+        
+        return Response.ok(diagnosis).build();
+    }
     
     
 }

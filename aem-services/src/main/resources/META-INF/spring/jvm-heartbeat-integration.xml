@@ -8,10 +8,6 @@
 
     <!--  toc-default.propeties, and toc.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
 
-	<bean id="jvmProvider" class="com.siemens.cto.aem.service.jvm.heartbeat.JvmServiceFacade">
-		<constructor-arg ref="jvmService" />
-	</bean>
-
 	<bean id="jvmStateServiceFacade"
 		class="com.siemens.cto.aem.service.jvm.heartbeat.JvmStateServiceFacade">
 		<constructor-arg ref="jvmStateService" />
@@ -58,11 +54,23 @@
 	    <property name="threadFactory" ref="pollingThreadFactory" />
     </bean>
 
+    <!-- For 1.0.3 we are disabling polling from TOC, relying solely on incoming heartbeats    
+
+    <bean id="jvmProvider" class="com.siemens.cto.aem.service.jvm.heartbeat.JvmServiceFacade">
+        <constructor-arg ref="jvmService" />
+    </bean>
+
 	<int:inbound-channel-adapter id="jvmStateInitiator"
 		ref="jvmProvider" method="getAllJvms" channel="unsplitHeartbeatJvms"
 		phase="1000" auto-startup="false">
 		<int:poller fixed-delay="${ping.jvm.period.millis}" time-unit="MILLISECONDS"/>
 	</int:inbound-channel-adapter>
+    
+    --> 
+
+    <!-- With initiation disabled, it is still possible to make a request for analysis. For 
+         using JvmStateGateway.initiateJvmStateRequest -->        
+
 
 	<int:chain id="jvmRequestSplitter" input-channel="unsplitHeartbeatJvms"
 		output-channel="splitHeartbeatJvms">

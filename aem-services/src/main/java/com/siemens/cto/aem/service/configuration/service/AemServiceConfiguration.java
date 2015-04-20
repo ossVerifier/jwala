@@ -41,6 +41,7 @@ import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
@@ -95,6 +96,9 @@ public class AemServiceConfiguration {
     private WebServerStateGateway webServerStateGateway;
 
     @Autowired
+    private JvmStateGateway jvmStateGateway;
+
+    @Autowired
     private CommandExecutor commandExecutor;
 
     @Autowired
@@ -141,7 +145,8 @@ public class AemServiceConfiguration {
     public JvmService getJvmService() {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                                   getGroupService(),
-                                  templateManager);
+                                  templateManager,
+                                  jvmStateGateway);
     }
 
     @Bean(name="webServerService")
