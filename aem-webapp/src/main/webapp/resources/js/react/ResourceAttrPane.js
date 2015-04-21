@@ -195,10 +195,14 @@ var AttrValRow = React.createClass({
                                              attrValueInputTd);
     },
     onAttrNameTextFieldKeyDown: function(e) {
-        if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrName) */) {
-            $(this.refs.attrNameTextField.getDOMNode()).blur();
-        } else if (e.key === ResourceItem.ESCAPE_KEY) {
-            this.setState({attrName:this.state.attrNameCopy});
+        if (!this.props.required) {
+            if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrName) */) {
+                $(this.refs.attrNameTextField.getDOMNode()).blur();
+            } else if (e.key === ResourceItem.ESCAPE_KEY) {
+                this.setState({attrName:this.state.attrNameCopy});
+            }
+        } else {
+            e.preventDefault();
         }
     },
     onAttrValTextFieldKeyDown: function(e) {
