@@ -17,7 +17,8 @@ var ResourcePane = React.createClass({
                                                                                   updateResourceCallback:this.props.updateResourceCallback,
                                                                                   currentResourceName:this.props.currentResourceName,
                                                                                   editMode:this.props.editMode,
-                                                                                  selectResourceCallback:this.props.selectResourceCallback}));
+                                                                                  selectResourceCallback:this.props.selectResourceCallback,
+                                                                                  onChangeResourceListItem:this.props.onChangeResourceListItem}));
 
             return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
         }
@@ -99,7 +100,7 @@ var ResourceList = React.createClass({
                                                                      isHighlighted:(self.props.currentResourceName === resource.name),
                                                                      onSelect:self.onSelect,
                                                                      editMode:(self.props.currentResourceName === resource.name ? self.props.editMode : false),
-                                                                     onChange:self.onChangeResourceListItem,
+                                                                     onChange:self.props.onChangeResourceListItem,
                                                                      resourceTypeName:resource.resourceTypeName}));
         });
 
@@ -112,20 +113,6 @@ var ResourceList = React.createClass({
                                                                    cancelLabel:"No"});
 
         return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
-    },
-    onChangeResourceListItem: function(resourceTypeName, resourceName, newResourceName) {
-        ServiceFactory.getResourceService().updateResourceName(this.props.groupName,
-                                                               resourceTypeName,
-                                                               resourceName,
-                                                               newResourceName,
-                                                               this.updateResourceSuccessCallback.bind(this, newResourceName),
-                                                               this.updateResourceErrorCallback);
-    },
-    updateResourceSuccessCallback: function(newResourceName) {
-        this.props.updateResourceCallback(newResourceName);
-    },
-    updateResourceErrorCallback: function(errMsg) {
-         $.errorAlert(errMsg, "Error");
     },
     onClick: function(resource) {
         this.props.selectResourceCallback(resource);

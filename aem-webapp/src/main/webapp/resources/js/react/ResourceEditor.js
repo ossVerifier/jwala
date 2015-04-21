@@ -36,7 +36,8 @@ var ResourceEditor = React.createClass({
                                               currentResourceName={this.state.currentResourceName}
                                               editMode={this.state.resourceEditMode}
                                               selectResourceCallback={this.selectResourceCallback}
-                                              resourceTypes={this.state.resourceTypes}/>
+                                              resourceTypes={this.state.resourceTypes}
+                                              onChangeResourceListItem={this.onChangeResourceListItem}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
@@ -57,6 +58,20 @@ var ResourceEditor = React.createClass({
                           panelDimensions={[{width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"}]} />
+    },
+    onChangeResourceListItem: function(resourceTypeName, resourceName, newResourceName) {
+        resourceService.updateResourceName(this.state.currentGroupName,
+                                           resourceTypeName,
+                                           resourceName,
+                                           newResourceName,
+                                           this.updateResourceSuccessCallback.bind(this, newResourceName),
+                                           this.updateResourceErrorCallback);
+    },
+    updateResourceSuccessCallback: function(newResourceName) {
+        this.updateResourceCallback(newResourceName);
+    },
+    updateResourceErrorCallback: function(errMsg) {
+         $.errorAlert(errMsg, "Error");
     },
     selectResourceResponseCallback: function(response) {
         this.props.getTemplateCallback(response.applicationResponseContent);
