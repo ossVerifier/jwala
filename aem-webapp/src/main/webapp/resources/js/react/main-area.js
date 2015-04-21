@@ -57,7 +57,8 @@ var ConfigureTabs = React.createClass({
                  {title: "Web Apps", content:<WebAppConfig className="webapp-config"
                                                                 service={ServiceFactory.getWebAppService()}
                                                                 groupService={ServiceFactory.getGroupService()}/>},
-                 {title: "Resources", content:<ResourcesConfig />},
+                 {title: "Resources", content:<ResourcesConfig resourceService={ServiceFactory.getResourceService()}
+                                                               groupService={ServiceFactory.getGroupService()}/>},
                  {title: "Group", content:<GroupConfig className="group-config"
                                                        service={ServiceFactory.getGroupService()}/>}];
         return null;

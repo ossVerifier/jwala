@@ -3,7 +3,10 @@ var ResourcesConfig = React.createClass({
     render: function() {
         var splitterComponents = [];
 
-        splitterComponents.push(<div><ResourceEditor generateXmlSnippetCallback={this.generateXmlSnippetCallback} getTemplateCallback={this.getTemplateCallback}/></div>);
+        splitterComponents.push(<div><ResourceEditor resourceService={this.props.resourceService}
+                                                     groupService={this.props.groupService}
+                                                     generateXmlSnippetCallback={this.generateXmlSnippetCallback}
+                                                     getTemplateCallback={this.getTemplateCallback}/></div>);
         splitterComponents.push(<div><XmlTabs ref="xmlTabs"/></div>);
 
         var splitter = <RSplitter components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>

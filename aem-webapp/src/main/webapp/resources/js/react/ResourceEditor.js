@@ -81,8 +81,8 @@ var ResourceEditor = React.createClass({
         return [];
     },
     componentDidMount: function() {
-        ServiceFactory.getGroupService().getGroups(this.getGroupDataCallback);
-        ServiceFactory.getResourceService().getResourceTypes(this.getResourceTypesCallback);
+        this.props.groupService.getGroups(this.getGroupDataCallback);
+        this.props.resourceService.getResourceTypes(this.getResourceTypesCallback);
     },
     getGroupDataCallback: function(response) {
         this.setState({groupData:response.applicationResponseContent});
@@ -105,21 +105,21 @@ var ResourceEditor = React.createClass({
     componentWillUpdate: function(nextProps, nextState) {
         if (this.state.currentGroupName != nextState.currentGroupName) {
             // Retrieve resources
-            ServiceFactory.getResourceService().getResources(nextState.currentGroupName, this.getResourceDataCallback);
+            this.props.resourceService.getResources(nextState.currentGroupName, this.getResourceDataCallback);
         }
     },
     getResourceDataCallback: function(response) {
         this.setState({resourceData:response.applicationResponseContent});
     },
     insertNewResourceCallback: function(resourceName) {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName,
+        this.props.resourceService.getResources(this.state.currentGroupName,
             this.getResourceDataCallbackExt.bind(this, resourceName, true));
     },
     deleteResourcesCallback: function() {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+        this.props.resourceService.getResources(this.state.currentGroupName, this.getResourceDataCallback);
     },
     updateResourceCallback: function(newResourceName) {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName,
+        this.props.resourceService.getResources(this.state.currentGroupName,
               this.getResourceDataCallbackExt.bind(this, newResourceName, false));
     },
     getResourceDataCallbackExt: function(resourceName, editMode, response) {
@@ -139,7 +139,7 @@ var ResourceEditor = React.createClass({
     },
     selectResourceCallback: function(resource) {
         this.setState({currentResourceName:resource.name});
-        ServiceFactory.getResourceService().getTemplate(resource.resourceTypeName, this.selectResourceResponseCallback);
+        this.props.resourceService.getTemplate(resource.resourceTypeName, this.selectResourceResponseCallback);
     },
     getCurrentResource: function() {
         if (this.state.resourceData !== null) {
@@ -152,6 +152,6 @@ var ResourceEditor = React.createClass({
         return null;
     },
     updateAttrCallback: function() {
-        ServiceFactory.getResourceService().getResources(this.state.currentGroupName, this.getResourceDataCallback);
+        this.props.resourceService.getResources(this.state.currentGroupName, this.getResourceDataCallback);
     }
 });
