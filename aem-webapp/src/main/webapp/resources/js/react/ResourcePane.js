@@ -7,7 +7,7 @@ var ResourcePane = React.createClass({
                                                                               className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                               spanClassName:"ui-icon ui-icon-trash",
                                                                               onClick:this.onClickDel}),
-                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.onClickAdd,
+                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.props.onAddResource,
                                                                                           resourceTypes:this.props.resourceTypes}),
                                                React.createElement(ResourceList, {ref:"resourceList",
                                                                                   groupName:this.props.groupName,
@@ -23,9 +23,6 @@ var ResourcePane = React.createClass({
             return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
         }
         return React.createElement("div", {className:"add-edit-delete-resources-container"});
-    },
-    onClickAdd: function(resourceType) {
-        this.refs.resourceList.add(resourceType);
     },
     onClickDel: function() {
         this.refs.resourceList.deleteSelectedItems();
@@ -67,9 +64,6 @@ var ResourceTypeDropDown = React.createClass({
             }
         }
         return null;
-    },
-    onChangeResourceType: function() {
-        this.props.selectResourceTypeDropDown($(this.refs.select.getDOMNode()).find("option:selected").text());
     }
 });
 
@@ -116,32 +110,6 @@ var ResourceList = React.createClass({
     },
     onClick: function(resource) {
         this.props.selectResourceCallback(resource);
-    },
-    add: function(resourceType) {
-        var largestNumber = 0;
-
-        // Get next sequence number for the generated name
-        this.props.data.forEach(function(resourceItem){
-            var num = parseInt(resourceItem.name.substring(resourceType.name.length + 1), 10);
-            if (!isNaN(num)) {
-                largestNumber = (largestNumber < num) ? num : largestNumber;
-            };
-        });
-
-        var resourceName = resourceType.name.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
-
-        ServiceFactory.getResourceService().insertNewResource(this.props.groupName,
-                                                              resourceType.name,
-                                                              resourceName,
-                                                              ResourceList.getAttributes(resourceType),
-                                                              this.insertNewResourceSuccessCallback.bind(this, resourceName),
-                                                              this.insertNewResourceErrorCallback);
-    },
-    insertNewResourceSuccessCallback: function(resourceName) {
-        this.props.insertNewResourceCallback(resourceName);
-    },
-    insertNewResourceErrorCallback: function(errMsg) {
-        $.errorAlert(errMsg, "Error");
     },
     onSelect: function(id, checked) {
         this.state.selectedResourceNames[id] = checked;

@@ -37,6 +37,7 @@ var ResourceEditor = React.createClass({
                                               editMode={this.state.resourceEditMode}
                                               selectResourceCallback={this.selectResourceCallback}
                                               resourceTypes={this.state.resourceTypes}
+                                              onAddResource={this.onAddResource}
                                               onChangeResourceListItem={this.onChangeResourceListItem}/>
                             </RStaticDialog>
 
@@ -58,6 +59,29 @@ var ResourceEditor = React.createClass({
                           panelDimensions={[{width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"},
                                             {width:"33.33%", height:"100%"}]} />
+    },
+    onAddResource: function(resourceType) {
+        var largestNumber = 0;
+
+        // Get next sequence number for the generated name
+        this.state.resourceData.forEach(function(resourceItem){
+            var num = parseInt(resourceItem.name.substring(resourceType.name.length + 1), 10);
+            if (!isNaN(num)) {
+                largestNumber = (largestNumber < num) ? num : largestNumber;
+            };
+        });
+
+        var resourceName = resourceType.name.replace(/\s/g, '-').toLowerCase() + "-" + ++largestNumber;
+
+        resourceService.insertNewResource(this.state.currentGroupName,
+                                          resourceType.name,
+                                          resourceName,
+                                          ResourceList.getAttributes(resourceType),
+                                          this.insertNewResourceCallback.bind(this, resourceName),
+                                          this.insertNewResourceErrorCallback);
+    },
+    insertNewResourceErrorCallback: function(errMsg) {
+        $.errorAlert(errMsg, "Error");
     },
     onChangeResourceListItem: function(resourceTypeName, resourceName, newResourceName) {
         resourceService.updateResourceName(this.state.currentGroupName,
