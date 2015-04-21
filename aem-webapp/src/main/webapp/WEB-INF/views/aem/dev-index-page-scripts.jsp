@@ -15,6 +15,8 @@
 <script src="public-resources/ext/js/fileupload/jquery.ui.widget.js"></script>
 <script src="public-resources/ext/js/fileupload/jquery.iframe-transport.js"></script>
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
+<script src="public-resources/ext/js/snippet-2.0.0/jquery.snippet.js"></script>
+<script src="public-resources/ext/js/vkbeautify.0.99.00.beta.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
@@ -36,6 +38,7 @@
 <script src="public-resources/js/toc/group-operations-helper.js"></script>
 
 <!-- React UI -->
+<script type="text/jsx" src="public-resources/js/react/XmlPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/dialog-box.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-dialog-box.js"></script>

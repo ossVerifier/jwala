@@ -14,6 +14,11 @@
 <script src="public-resources/ext/js/fileupload/jquery.ui.widget.js"></script>
 <script src="public-resources/ext/js/fileupload/jquery.iframe-transport.js"></script>
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
+<script src="public-resources/ext/js/snippet-2.0.0/jquery.snippet.min.js"></script>
+
+<!-- TODO: Get non beta then minify  -->
+<script src="public-resources/ext/js/vkbeautify.0.99.00.beta.js"></script>
+
 
 <!-- Services -->
 <!-- TODO: minify -->
@@ -69,3 +74,4 @@
 <script src="gen-public-resources/js/react/ResourceAttrPane.js"></script>
 <script src="gen-public-resources/js/react/main-area.js"></script>
 <script src="gen-public-resources/js/react/error-msg-list.js"></script>
+<script src="gen-public-resources/js/react/XmlPreview.js"></script>

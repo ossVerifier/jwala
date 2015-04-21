@@ -23,8 +23,9 @@ var XmlTabs = React.createClass({
         return {template: ""}
     },
     render: function() {
-        var xmlTabItems = [{title: "Tokenized", content:<RXmlEditor ref="tokenizedXmlPreview" content=""/>},
-                           {title: "Untokenized", content:<RXmlEditor ref="untokenizedXmlPreview" content={this.state.template}/>}];
+        var xmlTabItems = [{title: "Tokenized", content:<XmlPreview ref="tokenizedXmlPreview">{this.state.xml}</XmlPreview>},
+                           {title: "Untokenized", content:<XmlPreview ref="untokenizedXmlPreview">{this.state.template}</XmlPreview>}];
+
         return <Tabs theme="default" items={xmlTabItems} depth="0" onSelectTab={this.onSelectTab}/>
     },
     refreshXmlDisplay: function(xmlSnippet) {
