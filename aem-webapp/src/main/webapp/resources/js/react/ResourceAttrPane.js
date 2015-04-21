@@ -164,9 +164,11 @@ var ResourceAttrPane = React.createClass({
 var AttrValRow = React.createClass({
     getInitialState:function() {
         return {
-            selected:false,
-            attrName:this.props.attrName,
-            attrValue:this.props.attrValue
+            selected: false,
+            attrName: this.props.attrName,
+            attrNameCopy: this.props.attrName,
+            attrValue: this.props.attrValue,
+            attrValueCopy: this.props.attrValue
         };
     },
     mixins: [React.addons.LinkedStateMixin],
@@ -196,14 +198,14 @@ var AttrValRow = React.createClass({
         if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrName) */) {
             $(this.refs.attrNameTextField.getDOMNode()).blur();
         } else if (e.key === ResourceItem.ESCAPE_KEY) {
-            // this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
+            this.setState({attrName:this.state.attrNameCopy});
         }
     },
     onAttrValTextFieldKeyDown: function(e) {
         if (e.key === ResourceItem.ENTER_KEY /* && AttrValRow.isValidResourceName(this.state.attrValue) */) {
             $(this.refs.attrValTextField.getDOMNode()).blur();
         } else if (e.key === ResourceItem.ESCAPE_KEY) {
-            // this.setState({resourceName:this.state.resourceNameCopy, isValidResourceName:true});
+            this.setState({attrValue:this.state.attrValueCopy});
         }
     },
     onCheckboxChange: function() {
