@@ -18,7 +18,8 @@ var ResourcePane = React.createClass({
                                                                                   currentResourceName:this.props.currentResourceName,
                                                                                   editMode:this.props.editMode,
                                                                                   selectResourceCallback:this.props.selectResourceCallback,
-                                                                                  onChangeResourceListItem:this.props.onChangeResourceListItem}));
+                                                                                  onChangeResourceListItem:this.props.onChangeResourceListItem,
+                                                                                  deleteResourcesCallback:this.props.deleteResourcesCallback}));
 
             return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
         }
@@ -127,24 +128,11 @@ var ResourceList = React.createClass({
                 selectedResourceNames.push(resource.name);
             }
         });
-        ServiceFactory.getResourceService().deleteResources(this.props.groupName,
-                                                            selectedResourceNames,
-                                                            this.deleteSuccessCallback,
-                                                            this.deleteErrorCallback);
+        this.props.deleteResourcesCallback(selectedResourceNames);
         this.setState({showDeleteConfirmDialog:false, selectedResourceNames:{}});
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
-    },
-    deleteSuccessCallback: function() {
-        this.props.deleteResourcesCallback();
-    },
-    deleteErrorCallback: function(errMsg) {
-        // TODO: Delete should not throw an exception with an empty error message. Check why!
-        // This is called when a new resources is added.
-        if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
-            $.errorAlert(errMsg, "Error");
-        }
     },
     statics: {
         getAttributes: function(resourceType) {

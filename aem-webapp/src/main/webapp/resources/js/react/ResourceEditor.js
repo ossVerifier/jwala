@@ -38,7 +38,8 @@ var ResourceEditor = React.createClass({
                                               selectResourceCallback={this.selectResourceCallback}
                                               resourceTypes={this.state.resourceTypes}
                                               onAddResource={this.onAddResource}
-                                              onChangeResourceListItem={this.onChangeResourceListItem}/>
+                                              onChangeResourceListItem={this.onChangeResourceListItem}
+                                              deleteResourcesCallback={this.deleteResourcesCallback}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
@@ -97,6 +98,22 @@ var ResourceEditor = React.createClass({
     updateResourceErrorCallback: function(errMsg) {
          $.errorAlert(errMsg, "Error");
     },
+    deleteResourcesCallback: function(selectedResourceNames) {
+        this.props.resourceService.deleteResources(this.state.currentGroupName,
+                                                   selectedResourceNames,
+                                                   this.deleteResourcesSuccessCallback,
+                                                   this.deleteResourcesErrorCallback);
+    },
+    deleteResourcesSuccessCallback: function() {
+        this.props.resourceService.getResources(this.state.currentGroupName, this.getResourceDataCallback);
+    },
+    deleteResourcesErrorCallback: function(errMsg) {
+        // TODO: Delete should not throw an exception with an empty error message. Check why!
+        // This is called when a new resources is added.
+        if (errMsg !== undefined && errMsg !== null && errMsg !== "") {
+            $.errorAlert(errMsg, "Error");
+        }
+    },
     selectResourceResponseCallback: function(response) {
         this.props.getTemplateCallback(response.applicationResponseContent);
     },
@@ -153,9 +170,6 @@ var ResourceEditor = React.createClass({
     insertNewResourceCallback: function(resourceName) {
         this.props.resourceService.getResources(this.state.currentGroupName,
             this.getResourceDataCallbackExt.bind(this, resourceName, true));
-    },
-    deleteResourcesCallback: function() {
-        this.props.resourceService.getResources(this.state.currentGroupName, this.getResourceDataCallback);
     },
     updateResourceCallback: function(newResourceName) {
         this.props.resourceService.getResources(this.state.currentGroupName,
