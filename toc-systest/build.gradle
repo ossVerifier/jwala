@@ -11,7 +11,7 @@ configurations {
     integTestSuite
 }
 
-sourceSets { 
+sourceSets {
     integTestSuite {
         groovy {
             srcDir 'src/integ-test/groovy'
@@ -34,14 +34,15 @@ dependencies {
     integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
 
-    integTestSuite configurations.testCompile
-    integTestSuite group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
-    integTestSuite group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
-    integTestSuite group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
-    integTestSuite group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
-    integTestSuite files(fileTree(dir: 'lib', includes: ['*.jar']))
+    integTestSuiteCompile configurations.testCompile
+    integTestSuiteCompile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
+    integTestSuiteCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
+    integTestSuiteCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
+    integTestSuiteCompile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
+    integTestSuiteCompile files(fileTree(dir: 'lib', includes: ['*.jar']))
 
 }
+
 
 buildscript {
     repositories {
