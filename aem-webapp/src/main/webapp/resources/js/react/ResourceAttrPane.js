@@ -51,7 +51,7 @@ var ResourceAttrPane = React.createClass({
 
         this.setState({showDeleteConfirmDialog:false});
 
-        this.updateAttributes(tempAttrArray);
+        this.props.updateAttributes(this.props.resourceData, tempAttrArray);
     },
     cancelDeleteCallback: function() {
         this.setState({showDeleteConfirmDialog:false});
@@ -83,7 +83,7 @@ var ResourceAttrPane = React.createClass({
 
         // the new attribute
         tempAttrArray.push({key:"key-" + ++largestNumber, value:null});
-        this.updateAttributes(tempAttrArray);
+        this.props.updateAttributes(this.props.resourceData, tempAttrArray);
     },
     refresh: function(resource) {
         this.setState({resource:resource});
@@ -104,25 +104,7 @@ var ResourceAttrPane = React.createClass({
             tempAttrArray.push(attributesForRestConsumption);
         }
 
-        this.updateAttributes(tempAttrArray);
-    },
-    updateAttrSuccessCallback: function() {
-        this.props.updateCallback();
-    },
-    updateAttrErrorCallback: function(errMsg) {
-        $.errorAlert(errMsg, "Error");
-    },
-    updateAttributes: function(attrArray) {
-        var resourceData = {resourceTypeName:this.props.resourceData.resourceTypeName,
-                                    groupName:this.props.resourceData.group.name,
-                                    name:this.props.resourceData.name,
-                                    attributes:attrArray};
-
-        ServiceFactory.getResourceService().updateResourceAttributes(this.props.resourceData.name,
-                                                                     this.props.resourceData.group.name,
-                                                                     resourceData,
-                                                                     this.updateAttrSuccessCallback,
-                                                                     this.updateAttrErrorCallback);
+        this.props.updateAttributes(this.props.resourceData, tempAttrArray);
     }
  });
 

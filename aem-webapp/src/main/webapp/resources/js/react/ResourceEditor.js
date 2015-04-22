@@ -45,7 +45,7 @@ var ResourceEditor = React.createClass({
         var resourceAttrPane = <RStaticDialog title="Attributes and Values" contentClassName="resource-static-dialog-content">
                                    <ResourceAttrPane ref="resourceAttrEditor"
                                                      resourceData={this.getCurrentResource()}
-                                                     updateCallback={this.updateAttrCallback}
+                                                     updateAttributes={this.updateAttributes}
                                                      requiredAttributes={this.getRequiredAttributes()}
                                                      generateXmlSnippetCallback=
                                                         {this.props.generateXmlSnippetCallback.bind(this,
@@ -206,7 +206,21 @@ var ResourceEditor = React.createClass({
         }
         return null;
     },
+    updateAttributes: function(resourceData, attrArray) {
+        var newResourceData = {resourceTypeName:resourceData.resourceTypeName,
+                               groupName:resourceData.group.name,
+                               name:resourceData.name,
+                               attributes:attrArray};
+        this.props.resourceService.updateResourceAttributes(newResourceData.name,
+                                                            newResourceData.groupName,
+                                                            newResourceData,
+                                                            this.updateAttrCallback,
+                                                            this.updateAttrErrorCallback);
+    },
     updateAttrCallback: function() {
         this.props.resourceService.getResources(this.state.currentGroupName, this.getResourceDataCallback);
+    },
+    updateAttrErrorCallback: function(errMsg) {
+        $.errorAlert(errMsg, "Error");
     }
 });
