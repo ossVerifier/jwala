@@ -47,7 +47,9 @@ var ResourceEditor = React.createClass({
                                                      resourceData={this.getCurrentResource()}
                                                      updateCallback={this.updateAttrCallback}
                                                      requiredAttributes={this.getRequiredAttributes()}
-                                                     generateXmlSnippetCallback={this.props.generateXmlSnippetCallback}/>
+                                                     generateXmlSnippetCallback=
+                                                        {this.props.generateXmlSnippetCallback.bind(this,
+                                                            this.state.currentResourceName, this.state.currentGroupName)}/>
                                </RStaticDialog>
 
         var splitterComponents = [];

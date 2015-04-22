@@ -13,8 +13,11 @@ var ResourcesConfig = React.createClass({
 
         return <div className="resource-container">{splitter}</div>
     },
-    generateXmlSnippetCallback: function(xml) {
-        this.refs.xmlTabs.refreshXmlDisplay(xml);
+    generateXmlSnippetCallback: function(resourceName, groupName) {
+        this.props.resourceService.getXmlSnippet(resourceName, groupName, this.generateXmlSnippetResponseCallback);
+    },
+    generateXmlSnippetResponseCallback: function(response) {
+        this.refs.xmlTabs.refreshXmlDisplay(response.applicationResponseContent);
     },
     getTemplateCallback: function(template) {
         this.refs.xmlTabs.refreshTemplateDisplay(template);

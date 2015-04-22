@@ -16,7 +16,7 @@ var ResourceAttrPane = React.createClass({
                                                           React.createElement(RButton, {title:"Generate XML",
                                                                                         className:"ui-state-default ui-corner-all default-icon-button-style",
                                                                                         spanClassName:"ui-icon ui-icon-play",
-                                                                                        onClick:this.onClickGenerateXml}));
+                                                                                        onClick:this.props.generateXmlSnippetCallback}));
 
         var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
                                                                    show:this.state.showDeleteConfirmDialog,
@@ -84,12 +84,6 @@ var ResourceAttrPane = React.createClass({
         // the new attribute
         tempAttrArray.push({key:"key-" + ++largestNumber, value:null});
         this.updateAttributes(tempAttrArray);
-    },
-    onClickGenerateXml: function() {
-        ServiceFactory.getResourceService().getXmlSnippet(this.props.resourceData.name, this.props.resourceData.group.name, this.generateXmlSnippetResponseCallback)
-    },
-    generateXmlSnippetResponseCallback: function(response) {
-        this.props.generateXmlSnippetCallback(response.applicationResponseContent);
     },
     refresh: function(resource) {
         this.setState({resource:resource});
