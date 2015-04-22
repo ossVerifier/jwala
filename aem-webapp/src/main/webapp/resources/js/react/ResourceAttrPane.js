@@ -4,38 +4,42 @@ var ResourceAttrPane = React.createClass({
         return {showDeleteConfirmDialog:false};
     },
     render: function() {
-        var toolbar = React.createElement("div", {className:"resource-attr-toolbar"},
-                                                          React.createElement(RButton, {title:"Delete attribute",
-                                                                              className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                              spanClassName:"ui-icon ui-icon-trash",
-                                                                              onClick:this.onClickDel}),
-                                                          React.createElement(RButton, {title:"Add attribute",
-                                                                                        className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                                        spanClassName:"ui-icon ui-icon-plus",
-                                                                                        onClick:this.onClickAdd}),
-                                                          React.createElement(RButton, {title:"Generate XML",
-                                                                                        className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                                        spanClassName:"ui-icon ui-icon-play",
-                                                                                        onClick:this.props.generateXmlSnippetCallback}));
 
-        var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
-                                                                   show:this.state.showDeleteConfirmDialog,
-                                                                   okCallback:this.confirmDeleteCallback,
-                                                                   cancelCallback:this.cancelDeleteCallback,
-                                                                   content:<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>,
-                                                                   okLabel:"Yes",
-                                                                   cancelLabel:"No"});
+        var toolbar = <div className="resource-attr-toolbar">
+                          <RButton title="Delete attribute"
+                                   className="ui-state-default ui-corner-all default-icon-button-style"
+                                   spanClassName="ui-icon ui-icon-trash"
+                                   onClick={this.onClickDel}/>
+                          <RButton title="Add attribute"
+                                   className="ui-state-default ui-corner-all default-icon-button-style"
+                                   spanClassName="ui-icon ui-icon-plus"
+                                   onClick={this.onClickAdd}/>
+                          <RButton title="Generate XML"
+                                   className="ui-state-default ui-corner-all default-icon-button-style"
+                                   spanClassName="ui-icon ui-icon-play"
+                                   onClick={this.props.generateXmlSnippetCallback}/>
+                      </div>
+
+        var msg = <div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>;
+
+        var confirmationDlg = <ModalDialogBox title="Confirmation Dialog Box"
+                                              show={this.state.showDeleteConfirmDialog}
+                                              okCallback={this.confirmDeleteCallback}
+                                              cancelCallback={this.cancelDeleteCallback}
+                                              content={msg}
+                                              okLabel="Yes"
+                                              cancelLabel="No"/>
 
         if (this.props.resourceData !== null) {
-            var attrValTable = React.createElement(AttrValTable, {ref:"attrTable",
-                                                                  attributes:this.props.resourceData.attributes,
-                                                                  updateCallback:this.updateCallback,
-                                                                  requiredAttributes:this.props.requiredAttributes});
-            return React.createElement("div", {className:"attr-values-container"}, toolbar, attrValTable, confirmationDlg);
+            var attrValTable = <AttrValTable ref="attrTable"
+                                             attributes={this.props.resourceData.attributes}
+                                             updateCallback={this.updateCallback}
+                                             requiredAttributes={this.props.requiredAttributes}/>
+
+            return <div className="attr-values-container">{toolbar}{attrValTable}{confirmationDlg}</div>
         }
 
-        return React.createElement("div", {className:"attr-values-container"},
-                                   "Please select a resource to view it's attributes");
+        return <div className="attr-values-container">Please select a resource to view it&apos;s attributes</div>
     },
     confirmDeleteCallback: function() {
         var selectedAttributes = this.refs.attrTable.getSelectedAttributes();
@@ -114,17 +118,21 @@ var ResourceAttrPane = React.createClass({
 
         for (key in this.props.attributes) {
             var required = (this.props.requiredAttributes.indexOf(key) > -1);
-            attrElements.push(React.createElement(AttrValRow, {key:key,
-                                                               ref:key,
-                                                               attrName:key,
-                                                               attrValue:this.props.attributes[key],
-                                                               updateCallback:this.props.updateCallback,
-                                                               required:required}));
+            attrElements.push(<AttrValRow key={key}
+                                          ref={key}
+                                          attrName={key}
+                                          attrValue={this.props.attributes[key]}
+                                          updateCallback={this.props.updateCallback}
+                                          required={required}/>);
         }
 
-        return React.createElement("div", {className:"attr-val-table-container"},
-                   React.createElement("table", {className:"attr-val-table"},
-                       React.createElement("tbody", {}, attrElements)));
+        return <div className="attr-val-table-container">
+                   <table className="attr-val-table">
+                       <tbody>
+                           {attrElements}
+                       </tbody>
+                   </table>
+               </div>
     },
     getSelectedAttributes: function() {
         var selectedAttributes = [];
@@ -149,26 +157,31 @@ var AttrValRow = React.createClass({
     },
     mixins: [React.addons.LinkedStateMixin],
     render: function() {
-        var checkBoxTd = React.createElement("td", {}, React.createElement("input", {type:"checkbox",
-                                                                                     onChange:this.onCheckboxChange,
-                                                                                     checked:this.state.selected}));
 
-        var attrNameTd = React.createElement("td", {}, React.createElement("input", {ref:"attrNameTextField",
-                                 className:"name-text-field " + (this.props.required ? "required-name" : ""),
-                                 valueLink:this.linkState("attrName"),
-                                 onBlur:this.onAttrNameTextBoxBlur,
-                                 onKeyDown:this.onAttrNameTextFieldKeyDown}));
+        var checkBoxTdClassName = "name-text-field " + (this.props.required ? "required-name" : "");
+        var checkBoxTd = <td>
+                             <input type="checkbox" onChange={this.onCheckboxChange} checked={this.state.selected}/>
+                         </td>;
 
-        var attrValueInputTd = React.createElement("td", {},
-            React.createElement("input", {ref:"attrValTextField",
-                                          className:"val-text-field",
-                                          valueLink:this.linkState("attrValue"),
-                                          onBlur:this.onAttrTextBoxBlur,
-                                          onKeyDown:this.onAttrValTextFieldKeyDown}));
-
-        return React.createElement("tr", {}, this.props.required ? <td className="required-symbol"><span title="Required">*</span></td> : checkBoxTd,
-                                             attrNameTd,
-                                             attrValueInputTd);
+        var firstCol = this.props.required ? <td className="required-symbol"><span title="Required">*</span></td> : checkBoxTd;
+        var attrNameTextFieldClassName = "name-text-field " + (this.props.required ? "required-name" : "");
+        return <tr>
+                   {firstCol}
+                   <td>
+                       <input ref="attrNameTextField"
+                              className={attrNameTextFieldClassName}
+                              valueLink={this.linkState("attrName")}
+                              onBlur={this.onAttrNameTextBoxBlur}
+                              onKeyDown={this.onAttrNameTextFieldKeyDown}/>
+                   </td>
+                   <td>
+                       <input ref="attrValTextField"
+                              className="val-text-field"
+                              valueLink={this.linkState("attrValue")}
+                              onBlur={this.onAttrTextBoxBlur}
+                              onKeyDown={this.onAttrValTextFieldKeyDown}/>
+                   </td>
+               </tr>;
     },
     onAttrNameTextFieldKeyDown: function(e) {
         if (!this.props.required) {
