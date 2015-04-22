@@ -1,28 +1,30 @@
 /** @jsx React.DOM */
 var ResourcePane = React.createClass({
     render: function() {
+        var resourceTypeDropDownToolbar;
         if (this.props.data !== null) {
-            var resourceTypeDropDownToolbar = React.createElement("div", {className:"resource-type-toolbar"},
-                                               React.createElement(RButton, {title:"Delete Resource",
-                                                                              className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                                              spanClassName:"ui-icon ui-icon-trash",
-                                                                              onClick:this.onClickDel}),
-                                               React.createElement(ResourceTypeDropDown, {onClickAdd:this.props.onAddResource,
-                                                                                          resourceTypes:this.props.resourceTypes}),
-                                               React.createElement(ResourceList, {ref:"resourceList",
-                                                                                  groupName:this.props.groupName,
-                                                                                  data:this.props.data,
-                                                                                  insertNewResourceCallback:this.props.insertNewResourceCallback,
-                                                                                  deleteResourcesCallback:this.props.deleteResourcesCallback,
-                                                                                  currentResourceName:this.props.currentResourceName,
-                                                                                  editMode:this.props.editMode,
-                                                                                  selectResourceCallback:this.props.selectResourceCallback,
-                                                                                  onChangeResourceListItem:this.props.onChangeResourceListItem,
-                                                                                  deleteResourcesCallback:this.props.deleteResourcesCallback}));
-
-            return React.createElement("div", {className:"add-edit-delete-resources-container"}, resourceTypeDropDownToolbar);
+            var resourceTypeDropDownToolbar = <div className="resource-type-toolbar">
+                                                  <RButton title="Delete Resource"
+                                                           className="ui-state-default ui-corner-all default-icon-button-style"
+                                                           spanClassName="ui-icon ui-icon-trash"
+                                                           onClick={this.onClickDel}/>
+                                                  <ResourceTypeDropDown onClickAdd={this.props.onAddResource}
+                                                                        resourceTypes={this.props.resourceTypes}/>
+                                                  <ResourceList ref="resourceList"
+                                                                groupName={this.props.groupName}
+                                                                data={this.props.data}
+                                                                insertNewResourceCallback={this.props.insertNewResourceCallback}
+                                                                deleteResourcesCallback={this.props.deleteResourcesCallback}
+                                                                currentResourceName={this.props.currentResourceName}
+                                                                editMode={this.props.editMode}
+                                                                selectResourceCallback={this.props.selectResourceCallback}
+                                                                onChangeResourceListItem={this.props.onChangeResourceListItem}
+                                                                deleteResourcesCallback={this.props.deleteResourcesCallback} />
+                                              </div>
+        } else {
+            resourceTypeDropDownToolbar = "There are no resources to display";
         }
-        return React.createElement("div", {className:"add-edit-delete-resources-container"});
+        return <div className="add-edit-delete-resources-container">{resourceTypeDropDownToolbar}</div>
     },
     onClickDel: function() {
         this.refs.resourceList.deleteSelectedItems();
@@ -37,19 +39,20 @@ var ResourceTypeDropDown = React.createClass({
         if (this.props.resourceTypes.length > 0) {
             this.props.resourceTypes.forEach(function(resourceType){
                 var key = resourceType.name.replace(/\s/g, '');
-                options.push(React.createElement(ResourceTypeOption, {key:key, resourceType:resourceType}));
+                options.push(<ResourceTypeOption key={key} resourceType={resourceType}/>);
             });
 
-
-
-            return React.createElement("div", {className:"resource-type-dropdown"},
-                       React.createElement("select", {ref:"select", className:"resource-type-dropdown", onChange:this.onChangeResourceType}, options),
-                       React.createElement(RButton, {title:"Add Resource",
-                                                     className:"ui-state-default ui-corner-all default-icon-button-style",
-                                                     spanClassName:"ui-icon ui-icon-plus",
-                                                     onClick:this.onClickAdd}));
+            return <div className="resource-type-dropdown">
+                       <select ref="select" ref="select" className="resource-type-dropdown" onChange={this.onChangeResourceType}>
+                           {options}
+                       </select>
+                       <RButton title="Add Resource"
+                            className="ui-state-default ui-corner-all default-icon-button-style"
+                            spanClassName="ui-icon ui-icon-plus"
+                            onClick={this.onClickAdd}/>
+                       </div>
         }
-        return React.createElement("span", null, "Loading resource types...");
+        return <span>Loading resource types...</span>
     },
     getSelectedResourceType: function() {
         return $(this.refs.select.getDOMNode()).find("option:selected").text();
@@ -72,7 +75,7 @@ var ResourceTypeOption = React.createClass({
         return {isSelected: false};
     },
     render: function() {
-        return React.createElement("option", {value:this.props.resourceType.name}, this.props.resourceType.name);
+        return <option value={this.props.resourceType.name}>{this.props.resourceType.name}</option>
     }
 });
 
@@ -88,25 +91,25 @@ var ResourceList = React.createClass({
         var self = this;
 
         this.props.data.forEach(function(resource){
-            resourceElements.push(React.createElement(ResourceItem, {key:resource.name,
-                                                                     resource:resource,
-                                                                     onClick:self.onClick,
-                                                                     isHighlighted:(self.props.currentResourceName === resource.name),
-                                                                     onSelect:self.onSelect,
-                                                                     editMode:(self.props.currentResourceName === resource.name ? self.props.editMode : false),
-                                                                     onChange:self.props.onChangeResourceListItem,
-                                                                     resourceTypeName:resource.resourceTypeName}));
+            resourceElements.push(<ResourceItem key={resource.name}
+                                                resource={resource}
+                                                onClick={self.onClick}
+                                                isHighlighted={self.props.currentResourceName === resource.name}
+                                                onSelect={self.onSelect}
+                                                editMode={self.props.currentResourceName === resource.name ? self.props.editMode : false}
+                                                onChange={self.props.onChangeResourceListItem}
+                                                resourceTypeName={resource.resourceTypeName} />);
         });
 
-        var confirmationDlg = React.createElement(ModalDialogBox, {title:"Confirmation Dialog Box",
-                                                                   show:this.state.showDeleteConfirmDialog,
-                                                                   okCallback:this.confirmDeleteCallback,
-                                                                   cancelCallback:this.cancelDeleteCallback,
-                                                                   content:<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>,
-                                                                   okLabel:"Yes",
-                                                                   cancelLabel:"No"});
-
-        return React.createElement("div", {className:"resource-list"}, resourceElements, confirmationDlg);
+        var msg = <div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>;
+        var confirmationDlg = <ModalDialogBox title="Confirmation Dialog Box"
+                                              show={this.state.showDeleteConfirmDialog}
+                                              okCallback={this.confirmDeleteCallback}
+                                              cancelCallback={this.cancelDeleteCallback}
+                                              content={msg}
+                                              okLabel="Yes"
+                                              cancelLabel="No"/>;
+        return <div className="resource-list">{resourceElements}{confirmationDlg}</div>
     },
     onClick: function(resource) {
         this.props.selectResourceCallback(resource);
@@ -158,22 +161,25 @@ var ResourceItem = React.createClass({
     render: function() {
         var highlightClassName = this.props.isHighlighted ?
                             (this.state.isValidResourceName ? "ui-state-highlight" : "ui-state-error no-border") : "";
-        return React.createElement("div", {className:highlightClassName, onClick:this.onDivClick},
-                                        React.createElement("div",
-                                            {style:{display:(this.state.isValidResourceName ? "none" : "")},
-                                             className:"error-msg-div-margin"}, "Invalid name!"),
-                                        React.createElement("input", {ref:"checkBox",
-                                                                      type:"checkbox",
-                                                                      className:"resource-item",
-                                                                      onChange:this.onCheckBoxChange,
-                                                                      selected:this.state.isSelected}),
-                                        React.createElement("input", {ref:"textField",
-                                                                      className:"resource-item no-border width-max resource-name-text-field " + highlightClassName,
-                                                                      value:this.state.resourceName,
-                                                                      onChange:this.onTextFieldChange,
-                                                                      onKeyDown:this.onTextFieldKeyDown,
-                                                                      onBlur:this.onTextFieldBlur,
-                                                                      maxLength:40}));
+
+        var errMsgStyle = {display:(this.state.isValidResourceName ? "none" : "")};
+        var textFieldClassName = "resource-item no-border width-max resource-name-text-field " + highlightClassName;
+        return <div className={highlightClassName} onClick={this.onDivClick}>
+                   <div style={errMsgStyle}
+                        className="error-msg-div-margin">Invalid name!</div>
+                   <input ref="checkBox"
+                          type="checkbox"
+                          className="resource-item"
+                          onChange={this.onCheckBoxChange}
+                          selected={this.state.isSelected}/>
+                   <input ref="textField"
+                          className={textFieldClassName}
+                          value={this.state.resourceName}
+                          onChange={this.onTextFieldChange}
+                          onKeyDown={this.onTextFieldKeyDown}
+                          onBlur={this.onTextFieldBlur}
+                          maxLength="40"/>
+                </div>
     },
     componentDidMount: function() {
         if (this.props.editMode) {
