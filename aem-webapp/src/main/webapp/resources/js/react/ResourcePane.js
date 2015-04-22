@@ -14,7 +14,6 @@ var ResourcePane = React.createClass({
                                                                                   data:this.props.data,
                                                                                   insertNewResourceCallback:this.props.insertNewResourceCallback,
                                                                                   deleteResourcesCallback:this.props.deleteResourcesCallback,
-                                                                                  updateResourceCallback:this.props.updateResourceCallback,
                                                                                   currentResourceName:this.props.currentResourceName,
                                                                                   editMode:this.props.editMode,
                                                                                   selectResourceCallback:this.props.selectResourceCallback,

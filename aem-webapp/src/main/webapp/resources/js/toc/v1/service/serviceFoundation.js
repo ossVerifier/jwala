@@ -101,9 +101,9 @@ var serviceFoundation = {
                                         cache: false,
                                         beforeSend: loadingUiBehavior.showLoading,
                                         complete: loadingUiBehavior.hideLoading
-                                    })).then(function(){
+                                    })).then(function(response){
                                         if ($.isFunction(thenCallback)) {
-                                            thenCallback();
+                                            thenCallback(response);
                                         }
                                     }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {

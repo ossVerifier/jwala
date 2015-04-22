@@ -94,8 +94,8 @@ var ResourceEditor = React.createClass({
                                            this.updateResourceSuccessCallback.bind(this, newResourceName),
                                            this.updateResourceErrorCallback);
     },
-    updateResourceSuccessCallback: function(newResourceName) {
-        this.updateResourceCallback(newResourceName);
+    updateResourceSuccessCallback: function(newResourceName, response) {
+        this.getResourceDataCallbackExt(newResourceName, false, response);
     },
     updateResourceErrorCallback: function(errMsg) {
          $.errorAlert(errMsg, "Error");
@@ -155,13 +155,11 @@ var ResourceEditor = React.createClass({
             this.setState({currentGroupName:this.state.groupData[0].name});
         }
     },
-    refreshResourceListResponseCallback: function(resource) {
-    },
     selectGroupNodeCallback: function(group) {
         this.setState({currentGroupName:group.name});
     },
     componentWillUpdate: function(nextProps, nextState) {
-        if (this.state.currentGroupName != nextState.currentGroupName) {
+        if (this.state.currentGroupName !== nextState.currentGroupName) {
             // Retrieve resources
             this.props.resourceService.getResources(nextState.currentGroupName, this.getResourceDataCallback);
         }
@@ -173,10 +171,6 @@ var ResourceEditor = React.createClass({
         this.props.resourceService.getResources(this.state.currentGroupName,
             this.getResourceDataCallbackExt.bind(this, resourceName, true));
     },
-    updateResourceCallback: function(newResourceName) {
-        this.props.resourceService.getResources(this.state.currentGroupName,
-              this.getResourceDataCallbackExt.bind(this, newResourceName, false));
-    },
     getResourceDataCallbackExt: function(resourceName, editMode, response) {
         if (editMode) {
             // Adding of a new resource sets the edit mode to true. The requirement is that the recently added
@@ -186,10 +180,14 @@ var ResourceEditor = React.createClass({
                            resourceEditMode:editMode,
                            resourceData:response.applicationResponseContent});
         } else {
-            // Don't set current resource here since it will interfere with the select event!
-            // The code goes here when there's an update triggered by a blur event (e.g. another resource was selected).
-            this.setState({resourceEditMode:editMode,
-                           resourceData:response.applicationResponseContent});
+            for (var i = 0; i < this.state.resourceData.length; i++) {
+                if (this.state.resourceData[i].name === this.state.currentResourceName) {
+                    this.state.resourceData[i] = response.applicationResponseContent;
+                    this.setState({resourceEditMode:editMode, currentResourceName:resourceName});
+                    return;
+                }
+            }
+            $.errorAlert("Cannot find updated resource in the list, please refresh the page to make sure that the resource list is in sync.", "Error");
         }
     },
     selectResourceCallback: function(resource) {
