@@ -34,6 +34,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-editor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-pane.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-attr-pane.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/xml-preview.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/snippet-2.0.0/jquery.snippet.min.css" rel="stylesheet" type="text/css">
 
 <jsp:include page="/index-page-scripts?devMode=${devMode}"/>
