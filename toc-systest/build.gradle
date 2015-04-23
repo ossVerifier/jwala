@@ -19,17 +19,20 @@ sourceSets {
     }
     main {
         groovy {
-            srcDirs = ["src/integ-test/groovy"]
+            srcDirs = [/*intentionally empty*/]
         }
     }
 }
 
 dependencies {
-    compile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
-    compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
-    compile group: 'junit', name:'junit', version: '4.11'
 
+    /*
+      compile group: "org.codehaus.groovy", name: "groovy-all", version: "$project.versions.groovy"
+      compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
+      compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
+      No compile dependencies needed. Junit removed from this block and placed below.
+    */ 
+    
     integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"
     integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
@@ -39,6 +42,7 @@ dependencies {
     integTestSuiteCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
     integTestSuiteCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
     integTestSuiteCompile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
+    integTestSuiteCompile group: 'junit', name:'junit', version: '$project.versions.junit'
     integTestSuiteCompile files(fileTree(dir: 'lib', includes: ['*.jar']))
 
 }
@@ -185,11 +189,12 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     
         println "Server ready, running tests..."
 
-    integTestSuiteRunner.execute()
+        integTestSuiteRunner.execute()
 
-    psExec.execute()
+        //  Peter is commenting this out because it prevents things running locally. 
+        //  psExec.execute()
 
-}
+    }
 
     beforeCleanup {
         h2TcpServer.stop() // stop h2
