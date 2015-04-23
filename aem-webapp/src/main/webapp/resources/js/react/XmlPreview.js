@@ -4,7 +4,7 @@ var XmlPreview = React.createClass({
         return {content: this.props.children};
     },
     render: function() {
-        return <div ref="theXmlContainer" style={{width:"1070px", minHeight:"100%"}}><pre className="theXml"></pre></div>
+        return <div ref="theXmlContainer" className="xml-preview-container"><pre className="theXml"></pre></div>
     },
     componentDidUpdate: function() {
         var escaped = this.state.content.replace(/</g, "&lt").replace(/>/g, "&gt");
