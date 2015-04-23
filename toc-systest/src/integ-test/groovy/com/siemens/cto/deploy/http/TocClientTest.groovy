@@ -22,7 +22,7 @@ import groovy.json.JsonSlurper
  */
 class TocClientTest {
 
-    AbstractTocClient tocHttpClient = new TocClient("https","localhost", "9101", "N9SFTomcatAdmin", "Healthcare@14");
+    TocClient tocHttpClient = new TocClient("https","localhost", "9101", "N9SFTomcatAdmin", "Healthcare@14");
 
     def wsId = -1;
     def wsId2 = -1;
@@ -37,7 +37,6 @@ class TocClientTest {
     
     @Before
     public void setUp() throws Exception {
-        tocHttpClient.login()
         randGroupName = "TestGroup" + java.util.UUID.randomUUID().toString();
         randGroupName2 = "TestGroup" + java.util.UUID.randomUUID().toString();
         randJvmName = "TestJvm" + java.util.UUID.randomUUID().toString();

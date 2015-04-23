@@ -121,7 +121,7 @@ public class TocHttpClient {
         params.add(new BasicNameValuePair("userName", httpContext.username));
         params.add(new BasicNameValuePair("password", httpContext.password));
 
-        HttpPost post = new HttpPost(httpContext.urls.loginUrl);
+        HttpPost post = new HttpPost(httpContext.getLoginUrl());
         post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"))
         HttpClient httpClient = httpContext.httpClient;
         HttpResponse response = httpClient.execute(post, httpContext.httpContext);

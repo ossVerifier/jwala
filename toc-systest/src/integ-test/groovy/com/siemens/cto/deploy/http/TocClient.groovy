@@ -90,7 +90,7 @@ class TocClient implements TocClientLegacy {
 
     @Override
     int getOrCreateWebApp(String contextPath, String appName) {
-        return this.connectors.getClientForWebApp().getOrCreateWebApp(contextPath, appName);
+        return this.connectors.getClientForWebApp().getOrCreateWebApp(contextPath, appName, getCachedGroupId());
     }
 
     @Override
@@ -100,12 +100,12 @@ class TocClient implements TocClientLegacy {
 
     @Override
     int addWebServer(String webServerName, String hostName, int httpPort, int httpsPort, String statusPath, String configPath, String svrRoot, String docRoot) {
-        return this.connectors.getClientForWebservers().addWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot);
+        return this.connectors.getClientForWebservers().addWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot, this.getCachedGroupId());
     }
 
     @Override
     int getOrCreateWebServer(String webServerName, String hostName, int httpPort, int httpsPort, String statusPath, String configPath, String svrRoot, String docRoot) {
-        return this.connectors.getClientForWebservers().getOrCreateWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot);
+        return this.connectors.getClientForWebservers().getOrCreateWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot, this.getCachedGroupId());
     }
 
     @Override

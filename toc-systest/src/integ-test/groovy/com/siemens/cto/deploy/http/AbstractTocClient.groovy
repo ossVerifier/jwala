@@ -10,6 +10,7 @@ public abstract class AbstractTocClient {
     public AbstractTocClient(TocHttpClient tocHttpClient, String apiPath) {
         this.tocHttpClient = tocHttpClient;
         this.apiPath = apiPath;
+        this.login();
     }
     public void login() {
         tocHttpClient.login();

@@ -34,18 +34,18 @@ class TocClientForWebServers extends AbstractTocClient {
 
         if(ws.size() == 0)
         {
-            def id = addWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot)
+            def id = addWebServer(webServerName, hostName, httpPort, httpsPort, statusPath, configPath, svrRoot, docRoot, cachedGroupId)
             println("Created web server ${webServerName} exists, id ${id}")
             return id
         } else {
 
             def groupIds = ws[0].groupIds.collect({ [groupId:it.id] })
-            if(groupIds.find({it.groupId == Integer.parseInt(cachedGroupId)}) == null) {
+            if(groupIds.find({it.groupId == cachedGroupId}) == null) {
                 println("Editing web server ${webServerName}, id ${ws[0].id.id}, to add group ${cachedGroupId}")
 
                 def json = new JsonBuilder()
 
-                groupIds.add([groupId:Integer.parseInt(cachedGroupId)])
+                groupIds.add([groupId:cachedGroupId])
 
                 json webserverId: ws[0].id.id,
                         webserverName: ws[0].name,

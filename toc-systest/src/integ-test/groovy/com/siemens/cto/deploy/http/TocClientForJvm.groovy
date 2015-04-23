@@ -13,7 +13,7 @@ class TocClientForJvm extends AbstractTocClient {
         super(httpClient, "jvms");
     }
 
-    public int addJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties, String groupId) {
+    public int addJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties, int groupId) {
         println("Creating jvm ${jvmName}")
 
         def json = new JsonBuilder();
@@ -25,7 +25,7 @@ class TocClientForJvm extends AbstractTocClient {
         return id;
     }
 
-    public int getOrCreateJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties, String groupId) {
+    public int getOrCreateJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties, int groupId) {
         // there is no API for get by name, so will find it ourselves
         def jvms = new JsonSlurper().parseText(tocHttpClient.get(getV1Url() + "?all")).applicationResponseContent.findAll { it.jvmName == jvmName; }
 
@@ -39,7 +39,7 @@ class TocClientForJvm extends AbstractTocClient {
     }
 
     public void deleteJvm(int jvmId) {
-        tocHttpClient.delete(this.tocHttpClient.httpContext.urls.jvmsUrl + "/" + jvmId)
+        tocHttpClient.delete(this.getV1Url() + "/" + jvmId)
     }
 
 

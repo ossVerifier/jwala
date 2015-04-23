@@ -1,12 +1,12 @@
 package com.siemens.cto.deploy.http
 
+import org.apache.http.client.HttpClient
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.conn.ssl.SSLContextBuilder
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.impl.client.HttpClients
-import sun.net.www.http.HttpClient
 
 /**
  * Created by z002xuvs on 8/22/2014.
@@ -31,10 +31,13 @@ public class TocContext {
             builder.build(), SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
     	
 	    httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
-        String url = "${protocol}://${host}:${port}/aem/v1.0";
+        this.v1BaseUrl = "${protocol}://${host}:${port}/aem/v1.0";
 
     }
     public String getV1BaseUrl() {
         return this.v1BaseUrl;
+    }
+    public String getLoginUrl() {
+        return this.v1BaseUrl + "/user/login";
     }
 }

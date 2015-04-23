@@ -28,13 +28,13 @@ class TocClientForWebApp extends AbstractTocClient {
         return -1; // this will never be reached, an error response will be an exception.
     }
 
-    public int getOrCreateWebApp(String contextPath, String appName) {
+    public int getOrCreateWebApp(String contextPath, String appName, int groupId) {
         // there is no API for get by name, so will find it ourselves
         def apps = new JsonSlurper().parseText(tocHttpClient.get(getV1Url() + "?all")).applicationResponseContent.findAll { it.name == appName; }
 
         if(apps.size() == 0)
         {
-            return addWebApp(contextPath, appName)
+            return addWebApp(contextPath, appName, groupId)
         } else {
             println("App ${appName} exists, id ${apps[0].id.id}")
             return apps[0].id.id

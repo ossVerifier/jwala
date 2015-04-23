@@ -16,7 +16,7 @@ class TocClientForGroup extends AbstractTocClient {
     }
 
     public int getOrCreateGroup(String groupName) {
-        def groupsUrl = "${getV1Url()}?name=${groupName}"
+        def groupsUrl = this.getV1Url() + "?name=" + groupName
         println "url = ${groupsUrl}";
         def response = tocHttpClient.get(groupsUrl);
 
