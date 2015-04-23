@@ -15,5 +15,6 @@ pre.sh_sourceCode {
     box-shadow: 0 0 0 #000 !important;
     -moz-box-shadow: 0 0 0 #000 !important;
     -webkit-box-shadow: 0 0 0 #000 !important;
-    height: 70%;
+    height: 100%;
+    word-wrap: break-word;
 }

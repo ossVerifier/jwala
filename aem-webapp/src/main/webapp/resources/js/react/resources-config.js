@@ -7,7 +7,7 @@ var ResourcesConfig = React.createClass({
                                                      groupService={this.props.groupService}
                                                      generateXmlSnippetCallback={this.generateXmlSnippetCallback}
                                                      getTemplateCallback={this.getTemplateCallback}/></div>);
-        splitterComponents.push(<div><XmlTabs ref="xmlTabs"/></div>);
+        splitterComponents.push(<XmlTabs ref="xmlTabs"/>);
 
         var splitter = <RSplitter components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
 
@@ -32,7 +32,7 @@ var XmlTabs = React.createClass({
         var xmlTabItems = [{title: "Tokenized", content:<XmlPreview ref="tokenizedXmlPreview">{this.state.xml}</XmlPreview>},
                            {title: "Untokenized", content:<XmlPreview ref="untokenizedXmlPreview" isPlainText="true">{this.state.template}</XmlPreview>}];
 
-        return <Tabs theme="default" items={xmlTabItems} depth="0" onSelectTab={this.onSelectTab}/>
+        return <Tabs theme="xml-preview" items={xmlTabItems} depth="0" onSelectTab={this.onSelectTab}/>
     },
     refreshXmlDisplay: function(xmlSnippet) {
         if (this.refs.tokenizedXmlPreview !== undefined) {
