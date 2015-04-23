@@ -10,7 +10,11 @@ var XmlPreview = React.createClass({
         var escaped = this.state.content.replace(/</g, "&lt").replace(/>/g, "&gt");
         $(this.refs.theXmlContainer.getDOMNode()).html('<pre class="theXml"></pre>');
         $("pre.theXml").html(escaped);
-        $("pre.theXml").snippet("xml",{style:"acid"});
+        var style = "";
+        if (this.props.isPlainText !== "true") {
+            style = "matlab";
+        }
+        $("pre.theXml").snippet("xml",{style:style, showNum:false});
     },
     refresh: function(content) {
         this.setState({content:vkbeautify.xml(content)});

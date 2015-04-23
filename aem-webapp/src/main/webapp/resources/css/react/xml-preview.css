@@ -1,4 +1,19 @@
 .xml-preview-container {
     width: 1070px;
-    minHeight: 100%;
+    background-color: white;
+}
+
+/* override snippet plugin css */
+pre.sh_sourceCode {
+    padding: 1em !important;
+    line-height: 1.8em !important;
+    overflow: auto !important;
+    position: relative !important;
+    -moz-border-radius: 0 !important;
+    -webkit-border-radius: 0 !important;
+    border-radius: 0px !important;
+    box-shadow: 0 0 0 #000 !important;
+    -moz-box-shadow: 0 0 0 #000 !important;
+    -webkit-box-shadow: 0 0 0 #000 !important;
+    height: 70%;
 }
