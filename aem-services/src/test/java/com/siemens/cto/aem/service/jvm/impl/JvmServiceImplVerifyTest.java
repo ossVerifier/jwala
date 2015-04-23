@@ -24,6 +24,7 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
 import com.siemens.cto.toc.files.TemplateManager;
 
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.when;
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmServiceImpl impl;
+    private JvmStateGateway jvmStateGateway;
     private JvmPersistenceService jvmPersistenceService;
     private GroupService groupService;
     private User user;
@@ -47,12 +49,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void setup() {
         jvmPersistenceService = mock(JvmPersistenceService.class);
         groupService = mock(GroupService.class);
+        jvmStateGateway = mock(JvmStateGateway.class);
         user = new User("unused");
         pagination = new PaginationParameter();
         templateManager = mock(TemplateManager.class);
         impl = new JvmServiceImpl(jvmPersistenceService,
                                   groupService,
-                                  templateManager);
+                                  templateManager,
+                                  jvmStateGateway);
     }
 
     @Test
