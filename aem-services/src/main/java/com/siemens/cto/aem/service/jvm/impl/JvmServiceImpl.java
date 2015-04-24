@@ -1,7 +1,8 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
-import groovy.lang.GString;
+
+import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
 
 import java.io.IOException;
@@ -35,7 +36,6 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
-import com.siemens.cto.toc.files.TemplateManager;
 
 public class JvmServiceImpl implements JvmService {
 
@@ -45,16 +45,16 @@ public class JvmServiceImpl implements JvmService {
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
-    private final TemplateManager templateManager;
+    private final FileManager fileManager;
     private final JvmStateGateway jvmStateGateway;
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService, 
-                          final TemplateManager theTemplateManager,
+                          final FileManager theFileManager,
                           final JvmStateGateway theJvmStateGateway) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
-        templateManager = theTemplateManager;
+        fileManager = theFileManager;
         jvmStateGateway = theJvmStateGateway;
     }
 
@@ -109,7 +109,7 @@ public class JvmServiceImpl implements JvmService {
 
         new JvmNameRule(aJvmNameFragment).validate();
         return jvmPersistenceService.findJvms(aJvmNameFragment,
-                                              aPaginationParam);
+                aPaginationParam);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class JvmServiceImpl implements JvmService {
                               final PaginationParameter aPaginationParam) {
 
         return jvmPersistenceService.findJvmsBelongingTo(aGroupId,
-                                                         aPaginationParam);
+                aPaginationParam);
 
     }
 
@@ -163,7 +163,7 @@ public class JvmServiceImpl implements JvmService {
         if(jvm.size()==1) { 
             try {
                 return TomcatJvmConfigFileGenerator
-                            .getServerXml(templateManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm.get(0));
+                            .getServerXml(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm.get(0));
             } catch(IOException e) {
                 LOGGER.warn("Template not found", e);
                 throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());                

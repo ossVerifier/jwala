@@ -1,11 +1,8 @@
 package com.siemens.cto.toc.files.impl;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,14 +16,14 @@ import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.toc.files.RepositoryService;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.TocFile;
 import com.siemens.cto.toc.files.TocPath;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 
-public class TemplateManagerImpl implements TemplateManager {
+public class FileManagerImpl implements FileManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TemplateManagerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileManagerImpl.class);
 
     @Autowired
     private RepositoryService fileSystemStorage;
@@ -61,11 +58,21 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override
     public String getResourceTypeTemplate(String resourceTypeName) {
         try {
+            return read(this.getResourceTypeTemplateByStream(resourceTypeName));
+        }
+        catch (IOException ioe) {
+            System.out.println(ioe);
+        }
+        return null;
+    }
+    @Override
+    public InputStream getResourceTypeTemplateByStream(String resourceTypeName) {
+        try {
             // TODO: Figure out if this the best way to derive at the template name (by getting the resource type name and removing the spaces and assuming that the they would be the same as that of the file name).
             resourceTypeName = StringUtils.replace(resourceTypeName, " ", "");
             RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeName + "Template.tpl"));
             if (fileInformation.getType().equals(Type.FOUND)) {
-                return fileInformation.readFile();
+                return this.readFile(fileInformation.getPath());
             }
         }
         catch (IOException ioe) {
@@ -73,7 +80,6 @@ public class TemplateManagerImpl implements TemplateManager {
         }
         return null;
     }
-
 
     @Override
     public Path getTemplatePathForResourceType(ResourceType template) throws IOException {
@@ -93,9 +99,19 @@ public class TemplateManagerImpl implements TemplateManager {
     @Override
     public String getMasterTemplate(String masterTemplateName) {
         try {
+            return read(this.getMasterTempateByStream(masterTemplateName));
+        }
+        catch(IOException ioe) {
+            LOGGER.error(ioe.getMessage());
+        }
+        return null;
+    }
+    @Override
+    public InputStream getMasterTempateByStream(String masterTemplateName) {
+        try {
             RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.TEMPLATES, Paths.get(masterTemplateName + ".tpl"));
             if (fileInformation.getType().equals(Type.FOUND)) {
-                return fileInformation.readFile();
+                return readFile(fileInformation.getPath());
             }
         }
         catch (IOException ioe) {
@@ -103,4 +119,19 @@ public class TemplateManagerImpl implements TemplateManager {
         }
         return null;
     }
+
+    private InputStream readFile(Path path) throws IOException {
+        return Files.newInputStream(path, StandardOpenOption.READ);
+    }
+
+    private String read(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        return sb.toString();
+    }
+
 }

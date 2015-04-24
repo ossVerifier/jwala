@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +55,11 @@ public class WebServerServiceImplIntegrationTest {
 	private WebServerService   cut;
 
     @Autowired
-    private TemplateManager templateManager;
+    private FileManager fileManager;
 
     @Before
     public void setup() { 
-        cut = new WebServerServiceImpl(webServerDao, templateManager);
+        cut = new WebServerServiceImpl(webServerDao, fileManager);
     }
 
 	@Test(expected = NotFoundException.class)

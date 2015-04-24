@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.resource.impl;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,6 @@ import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
-import com.siemens.cto.toc.files.TocPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.Expression;
@@ -29,14 +27,14 @@ import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 import org.springframework.transaction.annotation.Transactional;
 
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
 
-    private final TemplateManager templateManager;
+    private final FileManager fileManager;
     private final HarmonyTemplateEngine templateEngine;
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
@@ -46,12 +44,12 @@ public class ResourceServiceImpl implements ResourceService {
     private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )"; 
     
     public ResourceServiceImpl(
-            final TemplateManager theTemplateManager,
+            final FileManager theFileManager,
             final HarmonyTemplateEngine harmonyTemplateEngine,
             final ResourcePersistenceService resourcePersistenceService,
             final GroupPersistenceService groupPersistenceService
             ) {
-        templateManager = theTemplateManager;
+        fileManager = theFileManager;
         templateEngine = harmonyTemplateEngine;
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
@@ -62,7 +60,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Collection<ResourceType> getResourceTypes() {
         try {
-            Collection<ResourceType> resourceTypes = templateManager.getResourceTypes();
+            Collection<ResourceType> resourceTypes = fileManager.getResourceTypes();
             for(ResourceType rtype : resourceTypes) {
                 if(rtype.isValid()) {
                     HarmonyTemplate template = templateEngine.getTemplate(rtype);

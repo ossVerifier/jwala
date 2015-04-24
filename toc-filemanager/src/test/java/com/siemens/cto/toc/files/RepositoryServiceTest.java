@@ -25,7 +25,7 @@ import java.util.Properties;
  * Created by z003e5zv on 4/15/2015.
  */
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
-        TemplateManagerTest.CommonConfiguration.class})
+        FileManagerTest.CommonConfiguration.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class RepositoryServiceTest {
     static class CommonConfiguration {

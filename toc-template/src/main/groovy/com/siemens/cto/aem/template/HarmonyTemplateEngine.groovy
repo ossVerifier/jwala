@@ -4,17 +4,16 @@ import com.siemens.cto.aem.domain.model.group.Group
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
-import com.siemens.cto.toc.files.TemplateManager
-import com.siemens.cto.toc.files.TocPath
+import com.siemens.cto.toc.files.FileManager
 import groovy.text.GStringTemplateEngine
 import java.nio.file.Path
 
 public class HarmonyTemplateEngine {
 
-    TemplateManager templateManager;
+    FileManager templateManager;
     def engine = new GStringTemplateEngine();
     
-    public HarmonyTemplateEngine(TemplateManager theTemplateManager) {
+    public HarmonyTemplateEngine(FileManager theTemplateManager) {
         this.templateManager = theTemplateManager;
     }
     

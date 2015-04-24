@@ -12,12 +12,12 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.NameSynthesizer;
 import com.siemens.cto.toc.files.RepositoryService;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
+import com.siemens.cto.toc.files.impl.FileManagerImpl;
 import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 
@@ -48,8 +48,8 @@ public class TocFileManagerConfiguration {
     }
 
     @Bean
-    public TemplateManager getTemplateManager() {
-        return new TemplateManagerImpl();
+    public FileManager getFileManager() {
+        return new FileManagerImpl();
     }   
     
     @Bean

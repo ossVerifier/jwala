@@ -27,7 +27,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 
 public class WebServerServiceImpl implements WebServerService {
 
@@ -35,11 +35,11 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final WebServerDao dao;
 
-    private final TemplateManager templateManager;
+    private final FileManager fileManager;
 
-    public WebServerServiceImpl(final WebServerDao theDao, final TemplateManager theTemplateManager) {
+    public WebServerServiceImpl(final WebServerDao theDao, final FileManager theFileManager) {
         dao = theDao;
-        templateManager = theTemplateManager;
+        fileManager = theFileManager;
     }
 
     @Override
@@ -124,10 +124,10 @@ public class WebServerServiceImpl implements WebServerService {
         try {
             if (withSsl != null && withSsl) {
                 return ApacheWebServerConfigFileGenerator
-                            .getHttpdConf(aWebServerName, templateManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
+                            .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
             }
             return ApacheWebServerConfigFileGenerator
-                        .getHttpdConf(aWebServerName, templateManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
+                        .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
         } catch(IOException e) { 
             LOGGER.warn("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
@@ -141,7 +141,7 @@ public class WebServerServiceImpl implements WebServerService {
         final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
         try {
             return ApacheWebServerConfigFileGenerator
-                    .getWorkersProperties(aWebServerName, templateManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
+                    .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
         } catch(IOException e) { 
             LOGGER.warn("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());

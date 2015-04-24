@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.log4j.Logger;
 
 /**
  * A chain of file system operations
@@ -18,6 +19,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author horspe00
  */
 public class RepositoryFileInformation implements Iterable<Path> {
+
+    private Logger logger = Logger.getLogger(RepositoryFileInformation.class);
 
     public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
@@ -205,27 +208,6 @@ public class RepositoryFileInformation implements Iterable<Path> {
     @Override
     public Iterator<Path> iterator() {        
         return new EntryIterator();
-    }
-
-    public String readFile() {
-        return this.readFile(this.paths[0].path);
-    }
-    private String readFile(Path path) {
-       if (this.type.equals(Type.FOUND) || this.type.equals(Type.STORED)) {
-           try {
-               BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
-               StringBuilder sb = new StringBuilder();
-               String line;
-               while ((line = reader.readLine()) != null) {
-                   sb.append(line);
-               }
-               return sb.toString();
-           }
-           catch (IOException ioe) {
-               System.out.println(ioe);
-           }
-       }
-       return null;
     }
 
 }

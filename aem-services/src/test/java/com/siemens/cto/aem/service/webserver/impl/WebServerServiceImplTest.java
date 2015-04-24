@@ -40,7 +40,7 @@ import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.TocFile;
 
 /**
@@ -60,7 +60,7 @@ public class WebServerServiceImplTest {
     private WebServer mockWebServer2;
 
     @Mock
-    private TemplateManager templateManager;
+    private FileManager fileManager;
 
     @Mock
     private RepositoryFileInformation repositoryFileInformation;
@@ -125,10 +125,10 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(wsDao, templateManager);
+        wsService = new WebServerServiceImpl(wsDao, fileManager);
 
         when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(templateManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
+        when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {

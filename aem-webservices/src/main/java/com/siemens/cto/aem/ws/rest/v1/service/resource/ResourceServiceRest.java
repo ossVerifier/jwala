@@ -39,18 +39,15 @@ public interface ResourceServiceRest {
      *
      * @param name the name of an existing resource instance
      * @param groupName the name of an existing group
-     * @param resourceTypeName
      * @return a specific resourceInstance object if present
      */
     @GET
     @Path("/{name}")
-    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName);
+    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
 
     @GET
-    @Path("/{name}/generate")
-    // TODO: Replace generate with a noun that "describes" the service e.g. /{name}/xml please see https://blog.apigee.com/detail/restful_api_design_nouns_are_good_verbs_are_bad
-    // TODO: Remove unused parameters.
-    Response generateResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @MatrixParam("resourceTypeName") String resourceTypeName);
+    @Path("/{name}/preview")
+    Response generateResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
 
     /**
      * /aem/v1.0/resources <br/>

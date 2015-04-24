@@ -27,14 +27,14 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.siemens.cto.toc.files.impl.TemplateManagerImpl;
+import com.siemens.cto.toc.files.impl.FileManagerImpl;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
-    TemplateManagerTest.CommonConfiguration.class})
+    FileManagerTest.CommonConfiguration.class})
 @RunWith(SpringJUnit4ClassRunner.class)
-public class TemplateManagerTest {
+public class FileManagerTest {
     
     static class CommonConfiguration { 
         
@@ -42,8 +42,9 @@ public class TemplateManagerTest {
             return FileSystems.getDefault();
         }
 
-        @Bean TemplateManager getTemplateManager() {
-            return new TemplateManagerImpl();
+        @Bean
+        FileManager getTemplateManager() {
+            return new FileManagerImpl();
         }
 
         @Bean
@@ -67,8 +68,8 @@ public class TemplateManagerTest {
         }
     }
     
-    @Autowired 
-    TemplateManager templateManager;
+    @Autowired
+    FileManager fileManager;
 
     @Autowired
     RepositoryService fsRepositoryService;
@@ -91,7 +92,7 @@ public class TemplateManagerTest {
            writer.write("{\"name\":\"MySql XA Database\",\"contentType\":\"application/xml\", \"properties\":[{\"name\":\"\u0032\", \"meta1\":\"meta1\"},{\"name\":\"name two\", \"meta2\" :\"meta two\"}]}");
            writer.flush();
            writer.close();
-           Collection<ResourceType> rtypes = templateManager.getResourceTypes();
+           Collection<ResourceType> rtypes = fileManager.getResourceTypes();
            assertEquals(1, rtypes.size());
            assertEquals("MySql XA Database", rtypes.iterator().next().getName());
        }
@@ -106,13 +107,13 @@ public class TemplateManagerTest {
             writer.flush();
             writer.close();
 
-            String testTemplate = templateManager.getResourceTypeTemplate("ResourceInstanceTest");
+            String testTemplate = fileManager.getResourceTypeTemplate("ResourceInstanceTest");
             assertNotNull(testTemplate);
         }
     }
     @Test
     public void testFindCurrent() throws IOException {
-        String  result = templateManager.getAbsoluteLocation(new TocFile()  {
+        String  result = fileManager.getAbsoluteLocation(new TocFile()  {
 
             @Override
             public String getFileName() {

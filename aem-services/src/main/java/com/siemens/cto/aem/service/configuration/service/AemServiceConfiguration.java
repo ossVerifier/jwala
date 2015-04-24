@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.configuration.service;
 
+import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -66,7 +66,6 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
-import com.siemens.cto.toc.files.TemplateManager;
 
 @Configuration
 public class AemServiceConfiguration {
@@ -87,7 +86,7 @@ public class AemServiceConfiguration {
     private CommandDispatchGateway commandDispatchGateway;
 
     @Autowired
-    private TemplateManager templateManager;
+    private FileManager fileManager;
 
     @Autowired
     private StateNotificationGateway stateNotificationGateway;
@@ -145,13 +144,13 @@ public class AemServiceConfiguration {
     public JvmService getJvmService() {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                                   getGroupService(),
-                                  templateManager,
+                fileManager,
                                   jvmStateGateway);
     }
 
     @Bean(name="webServerService")
     public WebServerService getWebServerService() {
-        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), templateManager);
+        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), fileManager);
     }
 
     @Bean
@@ -255,6 +254,6 @@ public class AemServiceConfiguration {
     
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
-        return new ResourceServiceImpl(templateManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
+        return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
     }
 }

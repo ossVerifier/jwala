@@ -24,9 +24,8 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
-import com.siemens.cto.toc.files.TemplateManager;
+import com.siemens.cto.toc.files.FileManager;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.any;
@@ -38,25 +37,22 @@ import static org.mockito.Mockito.when;
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmServiceImpl impl;
-    private JvmStateGateway jvmStateGateway;
     private JvmPersistenceService jvmPersistenceService;
     private GroupService groupService;
     private User user;
     private PaginationParameter pagination;
-    private TemplateManager templateManager;
+    private FileManager fileManager;
 
     @Before
     public void setup() {
         jvmPersistenceService = mock(JvmPersistenceService.class);
         groupService = mock(GroupService.class);
-        jvmStateGateway = mock(JvmStateGateway.class);
         user = new User("unused");
         pagination = new PaginationParameter();
-        templateManager = mock(TemplateManager.class);
+        fileManager = mock(FileManager.class);
         impl = new JvmServiceImpl(jvmPersistenceService,
                                   groupService,
-                                  templateManager,
-                                  jvmStateGateway);
+                fileManager);
     }
 
     @Test
@@ -176,10 +172,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvms.add(jvm);
         
         when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()), any(PaginationParameter.class))).thenReturn(jvms);
-        when(templateManager.getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE))).thenReturn("/server-xml.tpl");
+        when(fileManager.getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE))).thenReturn("/server-xml.tpl");
         impl.generateConfig(jvm.getJvmName());
 
-        verify(templateManager, times(1)).getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE));
+        verify(fileManager, times(1)).getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE));
     }
 
     @Test
