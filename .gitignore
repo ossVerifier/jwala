@@ -19,3 +19,8 @@ rebel.xml
 rebel.xml
 /aem-webapp/src/main/webapp/gen
 /aem-services/logs/PropertiesStore
+
+.idea/
+*.iml
+*.iws
+
