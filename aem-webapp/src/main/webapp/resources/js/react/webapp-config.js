@@ -242,8 +242,11 @@ var WebAppConfigForm = React.createClass({
                             </tr>
 
                             <tr>
-                                <td colspan="2">
-                                    {React.createElement("input", {name:"secure", type:"checkbox", checked:this.state.secure, onChange:this.onSecureCheckboxChanged}, "Secured")}
+                                <td>Secure</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input name="secure" type="checkbox" checked={this.state.secure} onChange={this.onSecureCheckboxChanged}/>
                                 </td>
                             </tr>
 
