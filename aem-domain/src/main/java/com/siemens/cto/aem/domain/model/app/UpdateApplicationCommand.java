@@ -21,18 +21,20 @@ public class UpdateApplicationCommand implements Serializable, Command {
     private final String newWebAppContext;
     private final String newName;
     private final boolean newSecure;
+    private final boolean newLoadBalanceAcrossServers;
 
     public UpdateApplicationCommand(
             final Identifier<Application> theId,
             final Identifier<Group> theGroupId,
             final String theNewWebAppContext,
             final String theNewName,
-            boolean theNewSecure) {
+            boolean theNewSecure, boolean theNewLoadBalanceAcrossServers) {
         id = theId;
         newGroupId = theGroupId;
         newName = theNewName;
         newWebAppContext = theNewWebAppContext;
         newSecure = theNewSecure;
+        newLoadBalanceAcrossServers = theNewLoadBalanceAcrossServers;
     }
 
     public Identifier<Application> getId() {
@@ -52,6 +54,10 @@ public class UpdateApplicationCommand implements Serializable, Command {
 
     public boolean isNewSecure() {
         return newSecure;
+    }
+
+    public boolean isNewLoadBalanceAcrossServers() {
+        return newLoadBalanceAcrossServers;
     }
 
     @Override

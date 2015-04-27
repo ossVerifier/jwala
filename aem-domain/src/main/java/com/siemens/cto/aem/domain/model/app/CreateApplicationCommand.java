@@ -19,12 +19,18 @@ public class CreateApplicationCommand implements Serializable, Command {
     private String webAppContext;
     private Identifier<Group> groupId;
     private boolean secure;
+    private boolean loadBalanceAcrossServers;
     
-    public CreateApplicationCommand(Identifier<Group> groupId, String name, String webAppContext, boolean secure) {
+    public CreateApplicationCommand(Identifier<Group> groupId,
+                                    String name,
+                                    String webAppContext,
+                                    boolean secure,
+                                    boolean loadBalanceAcrossServers) {
         this.name = name;
         this.webAppContext = webAppContext;
         this.groupId = groupId;
         this.secure = secure;
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
     public Identifier<Group> getGroupId() {
@@ -40,6 +46,10 @@ public class CreateApplicationCommand implements Serializable, Command {
 
     public boolean isSecure() {
         return secure;
+    }
+
+    public boolean isLoadBalanceAcrossServers() {
+        return loadBalanceAcrossServers;
     }
 
     @Override

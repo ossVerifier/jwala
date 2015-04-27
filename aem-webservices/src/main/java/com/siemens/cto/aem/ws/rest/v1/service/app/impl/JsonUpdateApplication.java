@@ -15,22 +15,28 @@ public class JsonUpdateApplication {
     private Long   groupId;
     private String webappContext;
     private boolean secure;
+    private boolean loadBalanceAcrossServers;
     
     public JsonUpdateApplication() {  
     }
 
-    public JsonUpdateApplication(Long groupId, String name, String webappContext, Long webappId, boolean secure) {
+    public JsonUpdateApplication(Long groupId, String name,
+                                 String webappContext,
+                                 Long webappId,
+                                 boolean secure,
+                                 boolean loadBalanceAcrossServers) {
         this.groupId = groupId;
         this.webappId = webappId;
         this.name = name;
         this.webappContext = webappContext;
         this.secure = secure;
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
     public UpdateApplicationCommand toUpdateCommand() {
         return  new UpdateApplicationCommand(
                     Identifier.id(webappId, Application.class),
-                    Identifier.id(groupId, Group.class), webappContext, name, secure);
+                    Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers);
     }
 
     public Long getWebappId() {
@@ -72,6 +78,14 @@ public class JsonUpdateApplication {
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
+
+    public boolean isLoadBalanceAcrossServers() {
+        return loadBalanceAcrossServers;
+    }
+
+    public void setLoadBalanceAcrossServers(boolean loadBalanceAcrossServers) {
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+    }
     
     @Override
     public int hashCode() {
@@ -79,7 +93,8 @@ public class JsonUpdateApplication {
                                     .append(getName())
                                     .append(getWebappContext())
                                     .append(getWebappId())
-                                    .append(isSecure()).toHashCode();
+                                    .append(isSecure())
+                                    .append(isLoadBalanceAcrossServers()).toHashCode();
     }
 
     @Override
@@ -89,7 +104,8 @@ public class JsonUpdateApplication {
                 getName(),
                 getWebappContext(),
                 getWebappId(),
-                isSecure());
+                isSecure(),
+                isLoadBalanceAcrossServers());
     }
     
     @Override

@@ -17,13 +17,22 @@ public class Application {
 
     private boolean secure;
 
-    public Application(Identifier<Application> anId, String aName, String aWarPath, String aWebAppContext, Group aGroup, boolean secure) {
+    private boolean loadBalanceAcrossServers;
+
+    public Application(Identifier<Application> anId,
+                       String aName,
+                       String aWarPath,
+                       String aWebAppContext,
+                       Group aGroup,
+                       boolean secure,
+                       boolean loadBalanceAcrossServers) {
         group = aGroup;
         id = anId;
         webAppContext = aWebAppContext;
         warPath = aWarPath;
         name = aName;
         this.secure = secure;
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
     public Group getGroup() {
@@ -72,6 +81,14 @@ public class Application {
 
     public void setSecure(boolean secure) {
         this.secure = secure;
+    }
+
+    public boolean isLoadBalanceAcrossServers() {
+        return loadBalanceAcrossServers;
+    }
+
+    public void setLoadBalanceAcrossServers(boolean loadBalanceAcrossServers) {
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
 }

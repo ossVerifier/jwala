@@ -14,19 +14,21 @@ public class JsonCreateApplication {
     public Long   groupId;
     public String webappContext;
     public boolean secure;
+    public boolean loadBalanceAcrossServers;
     
     public JsonCreateApplication() {  }
 
-    public JsonCreateApplication(Long groupId2, String name2, String webappContext2, boolean secure) {
+    public JsonCreateApplication(Long groupId2, String name2, String webappContext2, boolean secure, boolean loadBalanceAcrossServers) {
         setGroupId(groupId2);
         setName(name2);
         setWebappContext(webappContext2);
         setSecure(secure);
+        setLoadBalanceAcrossServers(loadBalanceAcrossServers);
     }
 
     public CreateApplicationCommand toCreateCommand() throws BadRequestException {
         return  new CreateApplicationCommand(
-                    Identifier.id(groupId, Group.class),name,webappContext, secure);
+                    Identifier.id(groupId, Group.class),name,webappContext, secure, true);
     }
 
     
@@ -36,7 +38,8 @@ public class JsonCreateApplication {
                 getGroupId(),
                 getName(),
                 getWebappContext(),
-                isSecure());
+                isSecure(),
+                isLoadBalanceAcrossServers());
     }
     
     @Override
@@ -44,7 +47,8 @@ public class JsonCreateApplication {
         return new HashCodeBuilder().append(getGroupId())
                                     .append(getName())
                                     .append(getWebappContext())
-                                    .append(isSecure()).toHashCode();
+                                    .append(isSecure())
+                                    .append(isLoadBalanceAcrossServers()).toHashCode();
     }
     
     @Override
@@ -87,6 +91,14 @@ public class JsonCreateApplication {
 
     public void setSecure(boolean secure) {
         this.secure = secure;
+    }
+
+    public boolean isLoadBalanceAcrossServers() {
+        return loadBalanceAcrossServers;
+    }
+
+    public void setLoadBalanceAcrossServers(boolean loadBalanceAcrossServers) {
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
 }
