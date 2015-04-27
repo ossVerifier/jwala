@@ -14,7 +14,7 @@ public class ApplicationCommandTest {
         CreateApplicationCommand cac = new CreateApplicationCommand(
                 Identifier.id(id, Group.class),
                 name, 
-                ctx, true);
+                ctx, true, true);
         assertEquals(name, cac.getName());
         assertEquals(ctx, cac.getWebAppContext());
         assertEquals(Identifier.id(id, Group.class), cac.getGroupId());
@@ -52,7 +52,7 @@ public class ApplicationCommandTest {
                 Identifier.id(groupId, Group.class),
                 ctx,
                 name,
-                true);
+                true, true);
         assertEquals(name, uac.getNewName());
         assertEquals(ctx, uac.getNewWebAppContext());
         assertEquals(Identifier.id(appId, Application.class), uac.getId());

@@ -13,7 +13,8 @@ public class JpaAppBuilder {
                 jpaApp.getWarPath(), 
                 jpaApp.getWebAppContext(), 
                 jpaApp.getGroup() != null ? new JpaGroupBuilder(jpaApp.getGroup()).build() : null,
-                jpaApp.isSecure());
+                jpaApp.isSecure(),
+                jpaApp.isLoadBalanceAcrossServers());
 
     }
 }

@@ -264,8 +264,8 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGenerateHttpdConfig() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
 
         Application [] appArray = {app1, app2};
 
@@ -280,8 +280,8 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGenerateHttpdConfigWithSsl() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
 
         Application [] appArray = {app1, app2};
 

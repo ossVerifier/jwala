@@ -86,8 +86,9 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @Column(nullable = true)
     private String documentRoot; // potential addition to track the static content files TODO - coverage, et al.
 
-
     private boolean secure;
+
+    private boolean loadBalanceAcrossServers;
 
     public void setWarPath(String aWarPath) {
         warPath = aWarPath;
@@ -124,6 +125,14 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
 
     public void setSecure(boolean secure) {
         this.secure = secure;
+    }
+
+    public boolean isLoadBalanceAcrossServers() {
+        return loadBalanceAcrossServers;
+    }
+
+    public void setLoadBalanceAcrossServers(boolean loadBalanceAcrossServers) {
+        this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
 }
