@@ -28,7 +28,7 @@ public class JsonCreateApplication {
 
     public CreateApplicationCommand toCreateCommand() throws BadRequestException {
         return  new CreateApplicationCommand(
-                    Identifier.id(groupId, Group.class),name,webappContext, secure, true);
+                    Identifier.id(groupId, Group.class),name,webappContext, secure, loadBalanceAcrossServers);
     }
 
     

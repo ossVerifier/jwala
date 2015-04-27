@@ -22,11 +22,13 @@ var webAppService = {
             }
 
             if (excludeProp !== true) {
-                json[this.name] = this.value;
-            }
-
-            if (this.name === "secure") {
-                json[this.name] = this.value === "on" ? true : false;
+                if (this.name === "secure") {
+                    json[this.name] = this.value === "on" ? true : false;
+                } else if (this.name === "loadBalance") {
+                    json["loadBalanceAcrossServers"] = this.value === "acrossServers" ? true : false;
+                } else {
+                    json[this.name] = this.value;
+                }
             }
         });
 

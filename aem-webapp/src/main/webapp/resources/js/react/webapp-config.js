@@ -14,12 +14,12 @@ var WebAppConfig = React.createClass({
     shouldComponentUpdate: function(nextProps, nextState) {
         if(
           (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog) 
+        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
         ){
-          return false; 
+          return false;
         }
         return true;
-    },    
+    },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className}>
@@ -93,7 +93,7 @@ var WebAppConfig = React.createClass({
             function(response){
                 self.setState({groupSelectData:response.applicationResponseContent});
             }
-        );                                     
+        );
     },
     addSuccessCallback: function() {
         this.retrieveData();
@@ -149,7 +149,8 @@ var WebAppConfigForm = React.createClass({
             WebAppContext: "",
             GroupId: "",
             groupIds: [],
-            secure:true
+            secure: true,
+            loadBalanceAcrossServers: true
         }
     },
     getWebAppIdProp: function(props) {
@@ -178,12 +179,13 @@ var WebAppConfigForm = React.createClass({
     },
     componentWillReceiveProps: function(nextProps) {
         this.setState(
-          { WebAppId:this.getWebAppIdProp(nextProps), 
+          { WebAppId:this.getWebAppIdProp(nextProps),
             WebAppName:this.getWebAppProp(nextProps, "name", ""),
             WebAppContext:this.getWebAppProp(nextProps, "webAppContext", ""),
             GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
             GroupName:this.getWebAppGroupProp(nextProps, "name"),
-            secure:this.getWebAppProp(nextProps, "secure", true)
+            secure:this.getWebAppProp(nextProps, "secure", true),
+            loadBalanceAcrossServers:this.getWebAppProp(nextProps, "loadBalanceAcrossServers", true)
           });
     },
     render: function() {
@@ -250,15 +252,37 @@ var WebAppConfigForm = React.createClass({
                                 </td>
                             </tr>
 
+                            <tr>
+                                <td>Load Balance</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="radio"
+                                           name="loadBalance"
+                                           value="acrossServers"
+                                           checked={this.state.loadBalanceAcrossServers}
+                                           onClick={this.onLbAcrossServersCheckboxChanged}>Across Servers</input>
+                                    <input type="radio"
+                                           name="loadBalance"
+                                           value="locally"
+                                           checked={!this.state.loadBalanceAcrossServers}
+                                           onClick={this.onLbLocallyCheckboxChanged}>Local Only</input>
+                                </td>
+                            </tr>
+
                         </table>
                     </form>
                </div>
     },
-
     onSecureCheckboxChanged: function() {
         this.setState({secure:!this.state.secure});
     },
-
+    onLbAcrossServersCheckboxChanged: function() {
+        this.setState({"loadBalanceAcrossServers": true});
+    },
+    onLbLocallyCheckboxChanged: function() {
+        this.setState({"loadBalanceAcrossServers": false});
+    },
     /*                                    <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.props.groupSelectData}
                                                         selectedValIds={this.state.groupIds}
@@ -431,7 +455,7 @@ var WebAppDataTable = React.createClass({
 
 });
 
-var WARUpload = React.createClass({ 
+var WARUpload = React.createClass({
     stripPathRegEx: /(([A-Z]{1}:)?[/\\]?([^/\\]*))(-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(.war)/,
     getInitialState: function() {
         var noArchive = "No Web Archive";
@@ -452,31 +476,31 @@ var WARUpload = React.createClass({
     componentDidMount: function() {
       if(this.state.editable) {
         this.initFileUpload();
-      } 
+      }
     },
     componentDidUpdate: function() {
-  
-      if(this.state.editable) {        
+
+      if(this.state.editable) {
         this.initFileUpload();
-      } 
+      }
 
     },
     shouldComponentUpdate: function(nextProps, nextState) {
-      if( nextState.showDeleteConfirmDialog === true ) { 
+      if( nextState.showDeleteConfirmDialog === true ) {
         return true;
       }
       if( nextState.uploadData !== undefined &&
           nextState.uploadData != null) {
             return false;
-      } else { 
+      } else {
         return true;
       }
     },
-    render: function() { 
-      
-      if(this.props.readOnly ) { 
+    render: function() {
+
+      if(this.props.readOnly ) {
         return <div>
-                <div className="tocTable"> 
+                <div className="tocTable">
                   <div className="tocRowContent">
                     <span title={this.state.warPath}>{this.state.warName}</span>
                   </div>
@@ -485,7 +509,7 @@ var WARUpload = React.createClass({
         ;
       } else if(!this.state.editable) {
         return <div>
-                <div className="tocTable"> 
+                <div className="tocTable">
                   <div className="tocRowContent">
                     <span title={this.state.warPath}>{this.state.warName}</span>
                   </div>
@@ -499,7 +523,7 @@ var WARUpload = React.createClass({
                            className="btnAppsCfgClose"
                            src="public-resources/img/icons/delete.png"
                            title="Remove war file" />
-                      :""}               
+                      :""}
                   </div>
                 </div>
 
@@ -513,8 +537,8 @@ var WARUpload = React.createClass({
 
               </div>
         ;
-      } else { 
-  
+      } else {
+
         var progressStyle = {
            clear: 'left',
            height: '10px',
@@ -527,7 +551,7 @@ var WARUpload = React.createClass({
            width: '0%',
            backgroundColor: 'green'
         };
-        
+
         return <div className="war-upload-component">
                    <div className="archive-file">
                        <span title={this.state.warPath}>{this.state.warName}</span>
@@ -559,16 +583,16 @@ var WARUpload = React.createClass({
           'width' : '0%',
           'background-color' : 'green'
       });
-      
+
       var d = new Date();
 
       thisForm.fileupload({
-        dataType: 'json',  
+        dataType: 'json',
         url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+d.getTime(),
         forceIframeTransport: false,
-        replaceFileInput: false,        
+        replaceFileInput: false,
         add: function(event, data) {
-          self.setState({ 
+          self.setState({
               uploadData: data
              });
           // no submit
@@ -580,7 +604,7 @@ var WARUpload = React.createClass({
               'background-color' : 'green'
           });
         }
-      });      
+      });
     },
     progressClean: function() {
       var thisForm = $('form', this.getDOMNode());
@@ -595,7 +619,7 @@ var WARUpload = React.createClass({
       thisProgress.css({
           'width' : (progress !== undefined ? progress : 100) + '%',
           'background-color' : 'red'
-      });                
+      });
       var thisResult = $('span.uploadResult', thisForm);
       thisResult.addClass('error');
       thisResult.removeClass('ok');
@@ -617,7 +641,7 @@ var WARUpload = React.createClass({
         var self = this;
         if(this.state.uploadData) {
           this.props.service.prepareUploadForm(this.props.full.id.id, thisForm);
-          this.state.uploadData.submit().success(function(result, textStatus, jqXHR) { 
+          this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
             if(result !== undefined && result.applicationResponseContent !== undefined) {
               if(result.msgCode !== undefined && result.msgCode !== '0' /*success*/) {
                 // actually an error
@@ -625,7 +649,7 @@ var WARUpload = React.createClass({
               } else {
                 $(self.getDOMNode()).parent().parent().find("td").removeClass("vertical-align-top");
                 self.setState({
-                  uploadData: undefined, 
+                  uploadData: undefined,
                   editable: false,
                   hasWar: true,
                   warPath: result.applicationResponseContent.warPath,
@@ -637,17 +661,17 @@ var WARUpload = React.createClass({
         		self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
         	} else if( textStatus ) {
         		self.progressError("AEM: " + textStatus.substring(0,100));
-        	} else {         	
+        	} else {
         		self.progressError("AEM: Please retry your upload. ");
         	}
-        	
+
           });
-        } else { 
+        } else {
           var fileInput = $('input[type="file"]', thisForm);
           fileInput.effect("highlight");
           self.progressError("Choose a file first",0);
         }
-        
+
         event.preventDefault();
         return false;
     },
@@ -662,7 +686,7 @@ var WARUpload = React.createClass({
       this.setState({ editable: !this.state.editable, uploadData: undefined });
 
     },
-    postUploadWarForm : function(event, data) { 
+    postUploadWarForm : function(event, data) {
       var thisForm = $('form', this.getDOMNode());
       this.props.service.postUploadWarForm(this.props.full.id.id, thisForm);
       event.preventDefault();
@@ -681,7 +705,7 @@ var WARUpload = React.createClass({
                 warPath: self.state.noArchive
             });
           });
-        } finally { 
+        } finally {
         }
     },
     cancelDeleteCallback: function() {
