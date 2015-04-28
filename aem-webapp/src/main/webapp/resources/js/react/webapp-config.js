@@ -278,10 +278,10 @@ var WebAppConfigForm = React.createClass({
         this.setState({secure:!this.state.secure});
     },
     onLbAcrossServersCheckboxChanged: function() {
-        this.setState({"loadBalanceAcrossServers": true});
+        this.setState({loadBalanceAcrossServers: true});
     },
     onLbLocallyCheckboxChanged: function() {
-        this.setState({"loadBalanceAcrossServers": false});
+        this.setState({loadBalanceAcrossServers: false});
     },
     /*                                    <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.props.groupSelectData}
