@@ -1,30 +1,4 @@
 #
-# This is the main Apache HTTP server configuration file.  It contains the
-# configuration directives that give the server its instructions.
-# See <URL:http://httpd.apache.org/docs/2.4/> for detailed information.
-# In particular, see
-# <URL:http://httpd.apache.org/docs/2.4/mod/directives.html>
-# for a discussion of each configuration directive.
-#
-# Do NOT simply read the instructions in here without understanding
-# what they do.  They're here only as hints or reminders.  If you are unsure
-# consult the online docs. You have been warned.
-#
-# Configuration and logfile names: If the filenames you specify for many
-# of the server's control files begin with "/" (or "drive:/" for Win32), the
-# server will use that explicit path.  If the filenames do *not* begin
-# with "/", the value of ServerRoot is prepended -- so "logs/access_log"
-# with ServerRoot set to "/usr/local/apache2" will be interpreted by the
-# server as "/usr/local/apache2/logs/access_log", whereas "/logs/access_log"
-# will be interpreted as '/logs/access_log'.
-#
-# NOTE: Where filenames are specified, you must use forward slashes
-# instead of backslashes (e.g., "c:/apache" instead of "c:\\apache").
-# If a drive letter is omitted, the drive on which httpd.exe is located
-# will be used by default.  It is recommended that you always supply
-# an explicit drive letter in absolute paths to avoid confusion.
-
-#
 # ServerRoot: The top of the directory tree under which the server's
 # configuration, error, and log files are kept.
 #
@@ -137,15 +111,6 @@ Allow from all
 </Location>
 
 <Location /balancer-manager>
-SetHandler balancer-manager
-
-Order Deny,Allow
-Deny from all
-Allow from all
-</Location>
-
-# Override the jk/status page so TOC uses the same link
-<Location /jk/status>
 SetHandler balancer-manager
 
 Order Deny,Allow
@@ -308,20 +273,7 @@ LoadModule deflate_module modules/mod_deflate.so
 #
 User daemon
 Group daemon
-
 </IfModule>
-
-# 'Main' server configuration
-#
-# The directives in this section set up the values used by the 'main'
-# server, which responds to any requests that aren't handled by a
-# <VirtualHost> definition.  These values also provide defaults for
-# any <VirtualHost> containers you may define later in the file.
-#
-# All of these directives may appear inside <VirtualHost> containers,
-# in which case these default settings will be overridden for the
-# virtual host being defined.
-#
 
 #
 # ServerAdmin: Your address, where problems with the server should be
@@ -434,62 +386,7 @@ LogLevel warn
     # logged therein and *not* in this file.
     #
     CustomLog "logs/access.log" common
-
-    #
-    # If you prefer a logfile with access, agent, and referer information
-    # (Combined Logfile Format) you can use the following directive.
-    #
-    #CustomLog "logs/access.log" combined
 </IfModule>
-
-<IfModule alias_module>
-    #
-    # Redirect: Allows you to tell clients about documents that used to
-    # exist in your server's namespace, but do not anymore. The client
-    # will make a new request for the document at its new location.
-    # Example:
-    # Redirect permanent /foo http://www.example.com/bar
-
-    #
-    # Alias: Maps web paths into filesystem paths and is used to
-    # access content that does not live under the DocumentRoot.
-    # Example:
-    # Alias /webpath /full/filesystem/path
-    #
-    # If you include a trailing / on /webpath then the server will
-    # require it to be present in the URL.  You will also likely
-    # need to provide a <Directory> section to allow access to
-    # the filesystem path.
-
-    #
-    # ScriptAlias: This controls which directories contain server scripts.
-    # ScriptAliases are essentially the same as Aliases, except that
-    # documents in the target directory are treated as applications and
-    # run by the server when requested rather than as documents sent to the
-    # client.  The same rules about trailing "/" apply to ScriptAlias
-    # directives as to Alias.
-    #
-    ScriptAlias /cgi-bin/ "cgi-bin/"
-
-</IfModule>
-
-<IfModule cgid_module>
-    #
-    # ScriptSock: On threaded servers, designate the path to the UNIX
-    # socket used to communicate with the CGI daemon of mod_cgid.
-    #
-    #Scriptsock cgisock
-</IfModule>
-
-#
-# "cgi-bin" should be changed to whatever your ScriptAliased
-# CGI directory exists, if you have that configured.
-#
-<Directory "cgi-bin">
-    AllowOverride None
-    Options None
-    Require all granted
-</Directory>
 
 <IfModule mime_module>
     #
@@ -497,46 +394,12 @@ LogLevel warn
     # filename extension to MIME-type.
     #
     TypesConfig conf/mime.types
-
-    #
-    # AddType allows you to add to or override the MIME configuration
-    # file specified in TypesConfig for specific file types.
-    #
-    #AddType application/x-gzip .tgz
-    #
-    # AddEncoding allows you to have certain browsers uncompress
-    # information on the fly. Note: Not all browsers support this.
-    #
-    #AddEncoding x-compress .Z
-    #AddEncoding x-gzip .gz .tgz
     #
     # If the AddEncoding directives above are commented-out, then you
     # probably should define those extensions to indicate media types:
     #
     AddType application/x-compress .Z
     AddType application/x-gzip .gz .tgz
-
-    #
-    # AddHandler allows you to map certain file extensions to "handlers":
-    # actions unrelated to filetype. These can be either built into the server
-    # or added with the Action directive (see below)
-    #
-    # To use CGI scripts outside of ScriptAliased directories:
-    # (You will also need to add "ExecCGI" to the "Options" directive.)
-    #
-    #AddHandler cgi-script .cgi
-
-    # For type maps (negotiated resources):
-    #AddHandler type-map var
-
-    #
-    # Filters allow you to process content before it is sent to the client.
-    #
-    # To parse .shtml files for server-side includes (SSI):
-    # (You will also need to add "Includes" to the "Options" directive.)
-    #
-    #AddType text/html .shtml
-    #AddOutputFilter INCLUDES .shtml
 </IfModule>
 
 # Configure mod_proxy_html to understand HTML4/XHTML1
