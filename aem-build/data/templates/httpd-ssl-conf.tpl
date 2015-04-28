@@ -328,9 +328,11 @@ Allow from all
 # Balancer configuration
 # ${comments}
 <%
+    Set ajpJvms = new HashSet()
     apps.each {
         def protocol = it.secure ? "https" : "http"
         def ctxPath = it.webAppContext.replaceAll(" ", "")
+        def loadBalanceAcrossServers = it.loadBalanceAcrossServers
 %>
 <Proxy balancer://lb-${it.name.replaceAll(" ", "")}>
 ProxySet lbmethod=bybusyness
@@ -345,9 +347,16 @@ ProxySet nofailover=On
         def hostName = it.hostName.replaceAll(" ", "")
         def port = (protocol == "https" ? it.httpsPort : it.httpPort)
         def jvmName = it.jvmName.replaceAll(" ", "")
+
+        if (loadBalanceAcrossServers || webServer.host.equalsIgnoreCase(hostName)) {
+            ajpJvms.add(it);
 %>
-BalancerMember ${protocol}://${hostName}:${port}${ctxPath} route=${jvmName} ping=250ms
-<%  } %>
+            BalancerMember ${protocol}://${hostName}:${port}${ctxPath} route=${jvmName} ping=250ms
+<%
+        }
+    }
+%>
+
 </Proxy>
 <% } %>
 
@@ -358,7 +367,7 @@ ProxySet scolonpathdelim=On
 ProxySet growth=2
 ProxySet nofailover=On
 <%
-    jvms.each() {
+    ajpJvms.each() {
         def hostName = it.hostName.replaceAll(" ", "")
         def jvmName = it.jvmName.replaceAll(" ", "")
         def jvmAjpPort = it.ajpPort
