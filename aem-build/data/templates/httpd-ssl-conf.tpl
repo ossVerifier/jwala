@@ -37,16 +37,6 @@
 ServerRoot ./
 
 #
-# Mutex: Allows you to set the mutex mechanism and mutex file directory
-# for individual mutexes, or change the global defaults
-#
-# Uncomment and change the directory if mutexes are file-based and the default
-# mutex file directory is not on a local disk or is not appropriate for some
-# other reason.
-#
-# Mutex default:logs
-
-#
 # Listen: Allows you to bind Apache to specific IP addresses and/or
 # ports, instead of the default. See also the <VirtualHost>
 # directive.
@@ -54,7 +44,6 @@ ServerRoot ./
 # Change this to Listen on specific IP addresses as shown below to
 # prevent Apache from glomming onto all bound IP addresses.
 #
-#Listen 12.34.56.78:80
 Listen 80
 Listen 443
 
@@ -236,9 +225,6 @@ Deny from all
 Allow from all
 </Location>
 
-#mod_proxy load balancing - AJP example only. not encrypted, just a ping
-# ProxyPassMatch ^/stp\\.png\$ balancer://PING
-
 </VirtualHost>
 
 # Balancer configuration
@@ -343,15 +329,6 @@ Group daemon
 # as error documents.  e.g. admin@your-domain.com
 #
 ServerAdmin admin@example.com
-
-#
-# ServerName gives the name and port that the server uses to identify itself.
-# This can often be determined automatically, but we recommend you specify
-# it explicitly to prevent problems during startup.
-#
-# If your host doesn't have a registered DNS name, enter its IP address here.
-#
-#ServerName www.example.com:80
 
 #
 # Deny access to the entirety of your server's filesystem. You must
@@ -562,80 +539,6 @@ LogLevel warn
     #AddOutputFilter INCLUDES .shtml
 </IfModule>
 
-#
-# The mod_mime_magic module allows the server to use various hints from the
-# contents of the file itself to determine its type.  The MIMEMagicFile
-# directive tells the module where the hint definitions are located.
-#
-#MIMEMagicFile conf/magic
-
-#
-# Customizable error responses come in three flavors:
-# 1) plain text 2) local redirects 3) external redirects
-#
-# Some examples:
-#ErrorDocument 500 "The server made a boo boo."
-#ErrorDocument 404 /missing.html
-#ErrorDocument 404 "/cgi-bin/missing_handler.pl"
-#ErrorDocument 402 http://www.example.com/subscription_info.html
-#
-
-#
-# MaxRanges: Maximum number of Ranges in a request before
-# returning the entire resource, or one of the special
-# values 'default', 'none' or 'unlimited'.
-# Default setting is to accept 200 Ranges.
-#MaxRanges unlimited
-
-#
-# EnableMMAP and EnableSendfile: On systems that support it,
-# memory-mapping or the sendfile syscall may be used to deliver
-# files.  This usually improves server performance, but must
-# be turned off when serving from networked-mounted
-# filesystems or if support for these functions is otherwise
-# broken on your system.
-# Defaults: EnableMMAP On, EnableSendfile Off
-#
-#EnableMMAP off
-#EnableSendfile on
-
-# Supplemental configuration
-#
-# The configuration files in the conf/extra/ directory can be
-# included to add extra features or to modify the default configuration of
-# the server, or you may simply copy their contents here and change as
-# necessary.
-
-# Server-pool management (MPM specific)
-#Include conf/extra/httpd-mpm.conf
-
-# Multi-language error messages
-#Include conf/extra/httpd-multilang-errordoc.conf
-
-# Fancy directory listings
-#Include conf/extra/httpd-autoindex.conf
-
-# Language settings
-#Include conf/extra/httpd-languages.conf
-
-# User home directories
-#Include conf/extra/httpd-userdir.conf
-
-# Real-time info on requests and configuration
-#Include conf/extra/httpd-info.conf
-
-# Virtual hosts
-#Include conf/extra/httpd-vhosts.conf
-
-# Local access to the Apache HTTP Server Manual
-#Include conf/extra/httpd-manual.conf
-
-# Distributed authoring and versioning (WebDAV)
-#Include conf/extra/httpd-dav.conf
-
-# Various default settings
-#Include conf/extra/httpd-default.conf
-
 # Configure mod_proxy_html to understand HTML4/XHTML1
 <IfModule proxy_html_module>
 Include conf/extra/proxy-html.conf
@@ -652,14 +555,3 @@ Include conf/extra/proxy-html.conf
 SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
-#
-# uncomment out the below to deal with user agents that deliberately
-# violate open standards by misusing DNT (DNT *must* be a specific
-# end-user choice)
-#
-#<IfModule setenvif_module>
-#BrowserMatch "MSIE 10.0;" bad_DNT
-#</IfModule>
-#<IfModule headers_module>
-#RequestHeader unset DNT env=bad_DNT
-#</IfModule>
