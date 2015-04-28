@@ -328,7 +328,6 @@ Allow from all
 # Balancer configuration
 # ${comments}
 <%
-    Set ajpJvms = new HashSet()
     apps.each {
         def protocol = it.secure ? "https" : "http"
         def ctxPath = it.webAppContext.replaceAll(" ", "")
@@ -349,7 +348,6 @@ ProxySet nofailover=On
         def jvmName = it.jvmName.replaceAll(" ", "")
 
         if (loadBalanceAcrossServers || webServer.host.equalsIgnoreCase(hostName)) {
-            ajpJvms.add(it);
 %>
             BalancerMember ${protocol}://${hostName}:${port}${ctxPath} route=${jvmName} ping=250ms
 <%
@@ -359,23 +357,6 @@ ProxySet nofailover=On
 
 </Proxy>
 <% } %>
-
-<Proxy balancer://PING>
-ProxySet lbmethod=bybusyness
-ProxySet stickysession=JSESSIONID|jsessionid
-ProxySet scolonpathdelim=On
-ProxySet growth=2
-ProxySet nofailover=On
-<%
-    ajpJvms.each() {
-        def hostName = it.hostName.replaceAll(" ", "")
-        def jvmName = it.jvmName.replaceAll(" ", "")
-        def jvmAjpPort = it.ajpPort
-%>
-BalancerMember ajp://${hostName}:${jvmAjpPort}/ route=${jvmName} ping=250ms
-<%  } %>
-</Proxy>
-
 
 #Output compression enabled globally for supported types
 LoadModule filter_module modules/mod_filter.so
