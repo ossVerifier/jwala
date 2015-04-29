@@ -426,21 +426,15 @@ var WebServerDataTable = React.createClass({
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}
-                             rowSubComponentContainerClassName="row-sub-component-container"/>
+                             rowSubComponentContainerClassName="row-sub-component-container"
+                             isColResizable={true}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
 
         aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-            var MAX_VAL_LEN = 50;
-            var val = sData;
-            var title = "";
-            if (val.length > MAX_VAL_LEN) {
-                title = sData;
-                val = val.substring(0, MAX_VAL_LEN) + "...";
-            }
             return React.renderComponent(new React.DOM.button({className:"button-link",
-                                         onClick:self.props.editCallback.bind(this, oData), title:title}, val), nTd);
+                                         onClick:self.props.editCallback.bind(this, oData), title:sData}, sData), nTd);
         }.bind(this);
     }
 });
