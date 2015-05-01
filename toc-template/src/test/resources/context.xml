@@ -1,5 +1,7 @@
 <Context docBase="/some-doc-base">
 
-    <Resource name="someTopicName" auth="someAuth" description="someDescription" factory="someFactory" physicalName="somePhysicalName" type="someType"/>
+    <Resource name="someTopicName" auth="someTopicAuth" description="someTopicDescription" factory="someTopicFactory" physicalName="someTopicPhysicalName" type="someTopicType"/>
+
+    <Resource name="someQueueName" auth="someQueueAuth" description="someQueueDescription" factory="someQueueFactory" physicalName="someQueuePhysicalName" type="someQueueType"/>
 
 </Context>

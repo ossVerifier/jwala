@@ -1,0 +1,1 @@
+<Resource name="${name}" auth="${auth}" description="${description}" factory="${factory}" physicalName="${physicalName}" type="${type}"/>

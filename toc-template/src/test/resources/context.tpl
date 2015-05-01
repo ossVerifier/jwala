@@ -1,5 +1,7 @@
 <Context docBase="${docBase}">
 
-    ${jmsTopicResource}
+    ${resourceMap["JMS Topic"]}
+
+    ${resourceMap["JMS Queue"]}
 
 </Context>
