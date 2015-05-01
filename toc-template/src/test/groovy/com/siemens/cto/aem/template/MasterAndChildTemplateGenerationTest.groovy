@@ -16,6 +16,9 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
     private String contextTemplateStr
     private String expectedContextXmlStr
 
+    private String iteritiveContextTemplateStr
+    private String expectedIteritiveContextXmlStr
+
     private final List<ResourceInstance> resourceInstanceList = new ArrayList<>()
     final SimpleTemplateEngine templateEngine = new SimpleTemplateEngine()
 
@@ -42,10 +45,13 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
         contextTemplateStr = this.getClass().getResource("/context.tpl").text
         expectedContextXmlStr = this.getClass().getResource("/context.xml").text
 
+        iteritiveContextTemplateStr = this.getClass().getResource("/iterativeContext.tpl").text
+        expectedIteritiveContextXmlStr = this.getClass().getResource("/iterativeContext.xml").text
+
         final LiteGroup liteGroup = new LiteGroup(new Identifier<Group>("1"), "Test Group")
 
         // Resource 1
-        final Map<String, String> jmsTopicAttributes = new HashMap<>()
+        final Map<String, String> jmsTopicAttributes = new LinkedHashMap<>()
         jmsTopicAttributes.put("name", "someTopicName")
         jmsTopicAttributes.put("auth", "someTopicAuth")
         jmsTopicAttributes.put("description", "someTopicDescription")
@@ -63,7 +69,7 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
         resourceInstanceList.add(jmsTopicResourceInstance)
 
         // Resource 2
-        final Map<String, String> jmsQueueAttributes = new HashMap<>()
+        final Map<String, String> jmsQueueAttributes = new LinkedHashMap<>()
         jmsQueueAttributes.put("name", "someQueueName")
         jmsQueueAttributes.put("auth", "someQueueAuth")
         jmsQueueAttributes.put("description", "someQueueDescription")
@@ -82,14 +88,17 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
     }
 
     void testMasterAndChildTemplateGeneration() {
-        final Map<String, String> resourceMap = new HashMap<>()
+        final Map<String, String> resourceMap = new LinkedHashMap<>()
         for (ResourceInstance resourceInstance : resourceInstanceList) {
             resourceMap.put(resourceInstance.getResourceTypeName(), (new ResourceInstanceTemplateBinding(resourceInstance)).toString())
         }
 
         def contextTemplate = templateEngine.createTemplate(contextTemplateStr)
-        def contextBindings = [docBase:"/some-doc-base", resourceMap:resourceMap]
 
+        def contextBindings = [docBase:"/some-doc-base", resourceMap:resourceMap]
         assertEquals(expectedContextXmlStr, contextTemplate.make(contextBindings).toString())
+
+        contextTemplate = templateEngine.createTemplate(iteritiveContextTemplateStr)
+        assertEquals(expectedIteritiveContextXmlStr,  contextTemplate.make(contextBindings).toString())
     }
 }
