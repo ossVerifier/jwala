@@ -96,9 +96,16 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
         def contextTemplate = templateEngine.createTemplate(contextTemplateStr)
 
         def contextBindings = [docBase:"/some-doc-base", resourceMap:resourceMap]
-        assertEquals(expectedContextXmlStr, contextTemplate.make(contextBindings).toString())
+
+        // Note: indexOfLastXmlClosingBracket is used to make sure that any additional characters e.g. line feed
+        //       after the closing XML bracket are not included in the XML string comparison.
+        int indexOfLastXmlClosingBracket = expectedContextXmlStr.lastIndexOf('>')
+        assertEquals(expectedContextXmlStr.substring(0, indexOfLastXmlClosingBracket + 1),
+                contextTemplate.make(contextBindings).toString().substring(0, indexOfLastXmlClosingBracket + 1))
 
         contextTemplate = templateEngine.createTemplate(iteritiveContextTemplateStr)
-        assertEquals(expectedIteritiveContextXmlStr,  contextTemplate.make(contextBindings).toString())
+        indexOfLastXmlClosingBracket = expectedIteritiveContextXmlStr.lastIndexOf('>')
+        assertEquals(expectedIteritiveContextXmlStr.substring(0, indexOfLastXmlClosingBracket + 1),
+                contextTemplate.make(contextBindings).toString().substring(0, indexOfLastXmlClosingBracket + 1))
     }
 }
