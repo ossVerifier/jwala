@@ -32,12 +32,17 @@ ModalDialogBox = React.createClass({
 
         return {
             top: top,
-            left: left
+            left: left,
+            show: this.props.show,
+            title: this.props.title,
+            content: this.props.content,
+            okCallback: this.props.okCallback,
+            cancelCallback: this.props.cancelCallback
         }
     },
     render: function() {
 
-        if (!this.props.show) {
+        if (!this.state.show) {
             return React.DOM.div();
         }
 
@@ -56,27 +61,27 @@ ModalDialogBox = React.createClass({
                                        React.DOM.div({className:"ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix",
                                                       onMouseDown:this.mouseDownHandler,
                                                       onMouseUp:this.mouseUpHandler},
-                                                     React.DOM.span({className:"ui-dialog-title text-align-center"}, this.props.title),
+                                                     React.DOM.span({className:"ui-dialog-title text-align-center"}, this.state.title),
                                                      RButton({ref:"xBtn",
                                                               title:"close",
                                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
                                                               onClick:this.xBtnClick,
                                                               spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick"})),
-                                       React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.props.content),
+                                       React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.state.content),
                                        React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                                                      React.DOM.div({className:"ui-dialog-buttonset"},
                                                      RButton({ref:"okBtn", onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}),
                                                      RButton({ref:"cancelBtn", onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
 
-        return React.DOM.div({style:this.props.show ? {} : {display:"none"}},
+        return React.DOM.div({style:this.state.show ? {} : {display:"none"}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
 
     },
     keyDownHandler: function(e) {
         if (e.keyCode === 27) {
-            this.props.cancelCallback();
+            this.state.cancelCallback();
         } else if (e.keyCode === 13) {
-            if (this.props.okCallback() !== false) {
+            if (this.state.okCallback() !== false) {
                 e.preventDefault();
             }
         }
@@ -84,7 +89,7 @@ ModalDialogBox = React.createClass({
     componentDidMount: function() {
         // This is for scenario where show is set to true initially.
         // Initiate re-render if top and left is not defined.
-        if (this.props.show && this.state.top < 0) {
+        if (this.state.show && this.state.top < 0) {
             this.setState({show:true}); // Initiates render which computes top and left
         }
     },
@@ -100,13 +105,17 @@ ModalDialogBox = React.createClass({
         }
     },
     xBtnClick: function() {
-        this.props.cancelCallback();
+        if (this.state.cancelCallback !== undefined) {
+            this.state.cancelCallback();
+        } else {
+            this.setState({show:false});
+        }
     },
     okCallback: function() {
-        this.props.okCallback();
+        this.state.okCallback();
     },
     cancelCallback: function() {
-        this.props.cancelCallback();
+        this.xBtnClick();
     },
     mouseDownXDiff: 0,
     mouseDownYDiff: 0,
@@ -124,6 +133,11 @@ ModalDialogBox = React.createClass({
     mouseMoveHandler: function(e) {
         e.preventDefault();
         this.setState({top:e.pageY - this.mouseDownYDiff, left:e.pageX - this.mouseDownXDiff});
+    },
+    show: function(title, content, okCallback, cancelCallback) {
+        this.setState({show:true, title:title, content:content, okCallback:okCallback, cancelCallback:cancelCallback});
+    },
+    close: function() {
+        this.setState({show:false});
     }
-
 });
