@@ -25,11 +25,11 @@ public class Group implements Serializable {
     private final CurrentGroupState currentState;
 
     public Group(final Identifier<Group> theId, final String theName) {
-        this(theId, theName, Collections.<Jvm> emptySet(), GroupState.UNKNOWN, DateTime.now());
+        this(theId, theName, Collections.<Jvm> emptySet(), GroupState.GRP_UNKNOWN, DateTime.now());
     }
 
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms) {
-        this(theId, theName, theJvms, GroupState.UNKNOWN, DateTime.now());
+        this(theId, theName, theJvms, GroupState.GRP_UNKNOWN, DateTime.now());
     }
     public Group(final Identifier<Group> theId, final String theName, final Set<Jvm> theJvms, final GroupState theState, final DateTime theAsOf) {
         id = theId;

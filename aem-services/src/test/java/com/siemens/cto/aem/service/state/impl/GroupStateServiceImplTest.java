@@ -109,7 +109,7 @@ public class GroupStateServiceImplTest {
         });
 
         synchronized(this) {
-            stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.STARTED, DateTime.now(), StateType.JVM));
+            stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
             this.wait(5000);
         }
 
@@ -140,7 +140,7 @@ public class GroupStateServiceImplTest {
         // test
         synchronized(this) {
             for(int i = 0; i< 3; ++i) {
-                stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.STARTED, DateTime.now(), StateType.JVM));
+                stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
             }
             this.wait(250); // for the first one
         }
@@ -224,56 +224,56 @@ public class GroupStateServiceImplTest {
         List<SetGroupStateCommand> updates;
         SetGroupStateCommand sgsc;
         
-        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.INITIALIZED, DateTime.now()));
-        when(groupStateManager.getCurrentState()).thenReturn(GroupState.INITIALIZED);
-        updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.UNKNOWN, DateTime.now(), StateType.JVM));
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.GRP_INITIALIZED, DateTime.now()));
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.GRP_INITIALIZED);
+        updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.JVM_UNKNOWN, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
         groupStateService.groupStateUnlock(sgsc);
          
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
-        updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.INITIALIZED, DateTime.now(), StateType.JVM));
+        assertEquals(GroupState.GRP_INITIALIZED, sgsc.getNewState().getState() );
+        updates = groupStateService.stateUpdateJvm(new CurrentState<>(id(1L, Jvm.class), JvmState.JVM_INITIALIZED, DateTime.now(), StateType.JVM));
 
         sgsc = updates.get(0);
         groupStateService.groupStateUnlock(sgsc);
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
+        assertEquals(GroupState.GRP_INITIALIZED, sgsc.getNewState().getState() );
 
-        updates = updateJvmState(id(1L, Jvm.class), JvmState.START_REQUESTED);
-
-        sgsc = updates.get(0);
-        assertEquals(GroupState.INITIALIZED, sgsc.getNewState().getState() );
-
-        when(groupStateManager.getCurrentState()).thenReturn(GroupState.STARTED);
-        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STARTED, DateTime.now()));
-
-        updates = updateJvmState(id(1L, Jvm.class), JvmState.STARTED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.JVM_STARTING);
 
         sgsc = updates.get(0);
-        assertEquals(GroupState.STARTED, sgsc.getNewState().getState() );
+        assertEquals(GroupState.GRP_INITIALIZED, sgsc.getNewState().getState() );
+
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.GRP_STARTED);
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.GRP_STARTED, DateTime.now()));
+
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.JVM_STARTED);
+
+        sgsc = updates.get(0);
+        assertEquals(GroupState.GRP_STARTED, sgsc.getNewState().getState() );
 
         // In the new GSM, we do not call the trigger methods. The GSM is 
         // evaluated based on current state.
         // verify(groupStateManager, times(1)).jvmStarted(eq(jvm.getId()));
 
-        group = new Group(group.getId(), group.getName(), jvms, GroupState.STARTED, DateTime.now() );
+        group = new Group(group.getId(), group.getName(), jvms, GroupState.GRP_STARTED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
-        updates = updateJvmState(id(1L, Jvm.class), JvmState.STOP_REQUESTED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.JVM_STOPPING);
 
-        when(groupStateManager.getCurrentState()).thenReturn(GroupState.STOPPED);
-        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.STOPPED, DateTime
+        when(groupStateManager.getCurrentState()).thenReturn(GroupState.GRP_STOPPED);
+        when(groupStateManager.getCurrentStateDetail()).thenReturn(new CurrentGroupState(group.getId(), GroupState.GRP_STOPPED, DateTime
                 .now()));
-        updates = updateJvmState(id(1L, Jvm.class), JvmState.STOPPED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.JVM_STOPPED);
 
         // In the new GSM, we do not call the trigger methods. The GSM is 
         // evaluated based on current state.
         // verify(groupStateManager, times(1)).jvmStopped(eq(jvm.getId()));
 
         sgsc = updates.get(0);
-        assertEquals(GroupState.STOPPED, sgsc.getNewState().getState() );
+        assertEquals(GroupState.GRP_STOPPED, sgsc.getNewState().getState() );
 
-        group = new Group(group.getId(), group.getName(), jvms, GroupState.STOPPED, DateTime.now() );
+        group = new Group(group.getId(), group.getName(), jvms, GroupState.GRP_STOPPED, DateTime.now() );
         when(groupPersistenceService.getGroup(eq(group.getId()))).thenReturn(group);
-        updates = updateJvmState(id(1L, Jvm.class), JvmState.FAILED);
+        updates = updateJvmState(id(1L, Jvm.class), JvmState.JVM_FAILED);
 
         // In the new GSM, we do not call the trigger methods. The GSM is 
         // evaluated based on current state.
@@ -282,7 +282,7 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testWebServerStateUnfinished() throws InterruptedException {
-        groupStateService.stateUpdateWebServer(new CurrentState<>(id(0L, WebServer.class), WebServerReachableState.REACHABLE, DateTime
+        groupStateService.stateUpdateWebServer(new CurrentState<>(id(0L, WebServer.class), WebServerReachableState.WS_REACHABLE, DateTime
                 .now(), StateType.WEB_SERVER));
     }
 

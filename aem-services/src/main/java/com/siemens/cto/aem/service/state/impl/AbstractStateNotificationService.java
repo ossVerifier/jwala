@@ -65,7 +65,18 @@ public abstract class AbstractStateNotificationService implements StateNotificat
             return notifications;
         }
 
-        return Collections.emptyList();
+        return Collections.<CurrentState<?,?>>emptyList();
+    }
+
+    @Override
+    public CurrentState<?,?> pollUpdatedState(final StateNotificationConsumerId aConsumerId) {
+        final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
+
+        if (consumer != null) {
+            return consumer.blockingGetNotification();
+        }
+        
+        return null;
     }
 
     protected StateNotificationConsumer createConsumer() {

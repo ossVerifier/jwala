@@ -38,14 +38,14 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
         
         if(currentState != null) {
             switch(currentState.getState()) {
-                case START_REQUESTED:
-                    if(aNewCurrentState.getState() == WebServerReachableState.UNREACHABLE) {
+                case WS_STARTING:
+                    if(aNewCurrentState.getState() == WebServerReachableState.WS_UNREACHABLE) {
                         LOGGER.debug("Discarding reverse heartbeat; Webserver STARTING: {}", aNewCurrentState);                
                         return null; // discard
                     }
                     break;
-                case STOP_REQUESTED:
-                    if(aNewCurrentState.getState() == WebServerReachableState.REACHABLE) {
+                case WS_STOPPING:
+                    if(aNewCurrentState.getState() == WebServerReachableState.WS_REACHABLE) {
                         LOGGER.debug("Discarding reverse heartbeat; Webserver STOPPING: {}", aNewCurrentState);                
                         return null; // discard
                     }

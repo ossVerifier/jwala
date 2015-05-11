@@ -27,7 +27,7 @@ public class AlternateJvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState
     @Override
     protected CurrentState<Jvm, JvmState> createUnknown(final Identifier<Jvm> anId) {
         return new CurrentState<>(anId,
-                                  JvmState.UNKNOWN,
+                                  JvmState.JVM_UNKNOWN,
                                   DateTime.now(),
                                   StateType.JVM);
     }

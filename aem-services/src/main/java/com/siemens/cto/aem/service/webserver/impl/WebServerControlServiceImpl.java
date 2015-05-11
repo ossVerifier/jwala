@@ -75,7 +75,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         } catch (final CommandFailureException cfe) {
             webServerStateService.setCurrentState(createStateCommandWithMessage(aCommand.getWebServerId(),
-                                                                                WebServerReachableState.FAILED,
+                                                                                WebServerReachableState.WS_FAILED,
                                                                                 cfe.getMessage()),
                                                   aUser);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

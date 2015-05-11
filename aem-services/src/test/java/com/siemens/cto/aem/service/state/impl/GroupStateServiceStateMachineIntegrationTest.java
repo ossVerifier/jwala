@@ -91,12 +91,12 @@ public class GroupStateServiceStateMachineIntegrationTest {
     Set<LiteGroup> lgroups = new HashSet<>(), lgroups2 = new HashSet<>(), lgroupsWith3 = new HashSet<>();
     Jvm jvm, jvm2, jvm3, jvm4, jvm5;
     JvmState[] currentJvmStates = new JvmState[] { 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED, 
-        JvmState.INITIALIZED,        
-        JvmState.INITIALIZED        
+        JvmState.JVM_INITIALIZED, 
+        JvmState.JVM_INITIALIZED, 
+        JvmState.JVM_INITIALIZED, 
+        JvmState.JVM_INITIALIZED, 
+        JvmState.JVM_INITIALIZED,        
+        JvmState.JVM_INITIALIZED        
     };
     Set<Jvm> jvms= new HashSet<>(), jvmInTwoGroups = new HashSet<>(), jvmsThree= new HashSet<>();
 
@@ -227,7 +227,7 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
 
         // test configuration.
-        scheduleJvmThread(1L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(1L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
         waitForLocks(1L, "GroupStateServiceStateMachineIntegrationTest.* INIT", 1, System.currentTimeMillis(), 10000, 10000);
         
         settle();
@@ -258,28 +258,28 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
         groupWith3Lock.drainPermits();
 
-        scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STARTED, 5, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STARTED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STARTED, 5, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STARTED, 10, TimeUnit.MILLISECONDS);
 
         waitForLocks(2, "testGroupStateUpdatingSeries", 3, await-10, 5000, 5000);
 
         CurrentGroupState state = groupWith3.getCurrentState();
-        assertEquals(GroupState.STARTED, state.getState());
+        assertEquals(GroupState.GRP_STARTED, state.getState());
         
         settle();
 
-        scheduleJvmThread(2L, JvmState.STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STOPPED, 5, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 5, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
 
         waitForLocks(2, "testGroupStateUpdatingSeries", 3, await-10, 5000, 5000);
        
         state = groupWith3.getCurrentState();
         // I just want consistency at the time we query. Which still might not be enough time for it to take effect
         // but it is more likely to succeed especially if spring integration is configured with direct channels.
-        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf(currentJvmStates[3].toStateString()) : GroupState.PARTIAL, state.getState());
-        assertEquals(GroupState.STOPPED, state.getState());
+        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf(currentJvmStates[3].toStateString()) : GroupState.GRP_PARTIAL, state.getState());
+        assertEquals(GroupState.GRP_STOPPED, state.getState());
     }
     
 
@@ -290,28 +290,28 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
         await = System.currentTimeMillis();
 
-        scheduleJvmThread(5L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(5L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
 
-        waitForState(group2Lock, "testJvmInTwoGroups", await-10, 10000, 3L, GroupState.STARTED);
-        waitForState(group2bLock, "testJvmInTwoGroups", await-10, 10000, 4L, GroupState.STARTED);
+        waitForState(group2Lock, "testJvmInTwoGroups", await-10, 10000, 3L, GroupState.GRP_STARTED);
+        waitForState(group2bLock, "testJvmInTwoGroups", await-10, 10000, 4L, GroupState.GRP_STARTED);
 
         CurrentGroupState state = group2.getCurrentState();
-        assertEquals(GroupState.STARTED, state.getState());
+        assertEquals(GroupState.GRP_STARTED, state.getState());
         state = group2b.getCurrentState();
-        assertEquals(GroupState.STARTED, state.getState());
+        assertEquals(GroupState.GRP_STARTED, state.getState());
 
         group2Lock.drainPermits();
         group2bLock.drainPermits();
         
-        scheduleJvmThread(5L, JvmState.STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(5L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
 
-        waitForState(group2Lock, "testJvmInTwoGroups", await-10, 10000, 3L, GroupState.STOPPED);
-        waitForState(group2bLock, "testJvmInTwoGroups", await-10, 10000, 4L, GroupState.STOPPED);
+        waitForState(group2Lock, "testJvmInTwoGroups", await-10, 10000, 3L, GroupState.GRP_STOPPED);
+        waitForState(group2bLock, "testJvmInTwoGroups", await-10, 10000, 4L, GroupState.GRP_STOPPED);
         
         state = group2.getCurrentState();
-        assertEquals(GroupState.STOPPED, state.getState());
+        assertEquals(GroupState.GRP_STOPPED, state.getState());
         state = group2b.getCurrentState();
-        assertEquals(GroupState.STOPPED, state.getState());
+        assertEquals(GroupState.GRP_STOPPED, state.getState());
 
     }    
     @Test
@@ -328,28 +328,28 @@ public class GroupStateServiceStateMachineIntegrationTest {
         
         groupWith3Lock.drainPermits();
 
-        scheduleJvmThread(2L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STARTED, 0, TimeUnit.MILLISECONDS);
 
-        waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 10000, 2L, GroupState.STARTED);
+        waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 10000, 2L, GroupState.GRP_STARTED);
         
         CurrentGroupState state = groupWith3.getCurrentState();
-        assertEquals(GroupState.STARTED, state.getState());
+        assertEquals(GroupState.GRP_STARTED, state.getState());
         assertTrue(groupStateService.canStop(groupWith3.getId(), User.getSystemUser()));
         groupStateService.signalStopRequested(groupWith3.getId(), User.getSystemUser());
 
         groupWith3Lock.drainPermits();
 
-        scheduleJvmThread(2L, JvmState.STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
 
 
-        waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 10000, 2L, GroupState.STOPPED);
+        waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 10000, 2L, GroupState.GRP_STOPPED);
         
         state = groupWith3.getCurrentState();
-        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf(currentJvmStates[3].toStateString()) : GroupState.PARTIAL, state.getState());
+        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf("GRP_"+currentJvmStates[3].toStateString()) : GroupState.GRP_PARTIAL, state.getState());
         assertTrue(groupStateService.canStart(groupWith3.getId(), User.getSystemUser()));
     }
 
@@ -361,19 +361,19 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
         long await = System.currentTimeMillis();
 
-        scheduleJvmThread(2L, JvmState.STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(2L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
 
-        scheduleJvmThread(3L, JvmState.STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
 
-        scheduleJvmThread(4L, JvmState.STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
         
         waitForLocks(2, "testGroupStateUpdatingInParallel", 6, await-10, 5000, 5000);
 
         CurrentGroupState state = groupWith3.getCurrentState();        
-        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf(currentJvmStates[3].toStateString()) : GroupState.PARTIAL, state.getState());
+        assertEquals(((currentJvmStates[2] == currentJvmStates[3]) && ( currentJvmStates[3] == currentJvmStates[4])) ? GroupState.valueOf(currentJvmStates[3].toStateString()) : GroupState.GRP_PARTIAL, state.getState());
         
         assertTrue(groupStateService.canStart(groupWith3.getId(), User.getSystemUser()));
     }

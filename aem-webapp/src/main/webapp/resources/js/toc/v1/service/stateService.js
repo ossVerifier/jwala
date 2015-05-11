@@ -35,17 +35,33 @@ var stateService = function() {
         }
     };
 
-    var createPollingParameters = function(timeout, clientId) {
+    var createPollingParametersOld = function(timeout, clientId) {
         var params = {};
         addTimeoutParameter(timeout, params);
         addClientIdParameter(clientId, params);
         return "?" + $.param(params);
     };
 
+    var createPollingParameters = function(clientId) {
+        var params = {};
+        addClientIdParameter(clientId, params);
+        return "?" + $.param(params);
+    };
+
     return {
+        pollForUpdatesOld : function(timeout, dataSink) {
+            if (dataSink.shouldContinue()) {
+                return serviceFoundation.promisedGet("v1.0/states" + createPollingParametersOld(timeout, clientId),"json")
+                                        .then(sendToDataSinkThunk(dataSink))
+                                        .then(recurseThunk(timeout, dataSink))
+                                        .caught(
+                                            function(e) {return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
+
+            }
+        },
         pollForUpdates : function(timeout, dataSink) {
             if (dataSink.shouldContinue()) {
-                return serviceFoundation.promisedGet("v1.0/states" + createPollingParameters(timeout, clientId),"json")
+                return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json")
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
                                         .caught(

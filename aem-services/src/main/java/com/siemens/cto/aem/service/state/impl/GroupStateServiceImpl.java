@@ -322,7 +322,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Override
     protected CurrentState<Group, GroupState> createUnknown(Identifier<Group> anId) {
-        return new CurrentGroupState(anId, GroupState.UNKNOWN, DateTime.now());
+        return new CurrentGroupState(anId, GroupState.GRP_UNKNOWN, DateTime.now());
     }
 
     @Override

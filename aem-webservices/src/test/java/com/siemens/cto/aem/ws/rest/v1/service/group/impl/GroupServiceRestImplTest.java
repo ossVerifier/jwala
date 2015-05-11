@@ -277,7 +277,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testSignalReset() {
-        when(this.controlImpl.resetState(eq(Identifier.id(1L, Group.class)), isA(User.class))).thenReturn(new CurrentGroupState(id(1L, Group.class), GroupState.PARTIAL, DateTime.now() ));
+        when(this.controlImpl.resetState(eq(Identifier.id(1L, Group.class)), isA(User.class))).thenReturn(new CurrentGroupState(id(1L, Group.class), GroupState.GRP_PARTIAL, DateTime.now() ));
         final Response response =
                 cut.resetState(Identifier.id(1L, Group.class),
                                authenticatedUser);

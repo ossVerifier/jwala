@@ -92,7 +92,7 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
     @Test
     public void testInterrupted() throws Exception {
         final AtomicReference<CurrentState<?,?>> result = new AtomicReference<CurrentState<?,?>>(new CurrentState<>(new Identifier<Jvm>(123456L),
-                                                                                                                    JvmState.STOPPED,
+                                                                                                                    JvmState.JVM_STOPPED,
                                                                                                                     DateTime.now(),
                                                                                                                     StateType.JVM));
         final CountDownLatch start = new CountDownLatch(1);
@@ -127,7 +127,7 @@ public class InMemoryJvmStateNotificationConsumerImplTest {
                                   final int aNumberOfNotifications) {
         for (int i = 0; i < aNumberOfNotifications; i++) {
             aConsumer.addNotification(new CurrentState<>(new Identifier<Jvm>((long)i),
-                                                         JvmState.STARTED,
+                                                         JvmState.JVM_STARTED,
                                                          DateTime.now(),
                                                          StateType.JVM));
         }

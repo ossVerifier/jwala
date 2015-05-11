@@ -51,7 +51,6 @@ import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -60,7 +59,6 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
@@ -124,7 +122,7 @@ public class WebServerStateIntegrationTest {
         for (final WebServerSetStateCommand command : allValues) {
             final WebServerReachableState expectedState;
 
-            expectedState = WebServerReachableState.UNREACHABLE; // in either case, we already failed the 404
+            expectedState = WebServerReachableState.WS_UNREACHABLE; // in either case, we already failed the 404
 
             assertEquals(expectedState,
                          command.getNewState().getState());
@@ -146,7 +144,7 @@ public class WebServerStateIntegrationTest {
         final List<WebServerSetStateCommand> allValues = commandCaptor.getAllValues();
         assertFalse(allValues.isEmpty());
         for (final WebServerSetStateCommand command : allValues) {
-            assertEquals(WebServerReachableState.FAILED,
+            assertEquals(WebServerReachableState.WS_FAILED,
                          command.getNewState().getState());
         }
     }

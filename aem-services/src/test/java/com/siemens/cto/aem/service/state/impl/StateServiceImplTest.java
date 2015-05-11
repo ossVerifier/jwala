@@ -67,7 +67,7 @@ public class StateServiceImplTest {
     @Test
     public void testSetCurrentStateWithoutMessage() throws Exception {
         final CurrentState<Jvm, JvmState> newCurrentState = new CurrentState<>(new Identifier<Jvm>(123456L),
-                                                                               JvmState.STARTED,
+                                                                               JvmState.JVM_STARTED,
                                                                                DateTime.now(),
                                                                                StateType.JVM);
         verifySetCurrentState(newCurrentState);
@@ -76,7 +76,7 @@ public class StateServiceImplTest {
     @Test
     public void testSetCurrentStateWithMessage() throws Exception {
         final CurrentState<Jvm, JvmState> newCurrentState = new CurrentState<>(new Identifier<Jvm>(123456L),
-                                                                               JvmState.STARTED,
+                                                                               JvmState.JVM_STARTED,
                                                                                DateTime.now(),
                                                                                StateType.JVM,
                                                                                "This is the message to persist along with this state");

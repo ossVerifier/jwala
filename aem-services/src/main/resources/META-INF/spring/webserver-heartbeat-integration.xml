@@ -130,14 +130,14 @@
     <!-- fail with original message -->
     <int:chain id="failedWebServerHttpChain" input-channel="webServerHasServiceResult" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="failedWebServerHttpHeaderEnricher">
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).UNREACHABLE}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).WS_UNREACHABLE}"/>
         </int:header-enricher>
         <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
     </int:chain>
 
     <int:chain id="successfulWebServerHttpChain" input-channel="successfulWebServerStateRequest" output-channel="completedWithoutMessageWebServerStateRequest">
         <int:header-enricher id="successfulWebServerHttpHeaderEnricher">
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).REACHABLE}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).WS_REACHABLE}"/>
         </int:header-enricher>
         <int:transformer id="successfulWebServerHttpTransformer" expression="headers['webServerId']"/>
     </int:chain>
@@ -145,7 +145,7 @@
     <int:chain id="webServerBadHostChain" input-channel="webServerBadHost" output-channel="completedWithMessageWebServerStateRequest">
         <int:header-enricher id="webServerBadHostHeaderEnricher">
             <int:header name="webServerId" expression="payload.getFailedMessage().headers['webServerId']"/>
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).WS_FAILED}"/>
             <int:header name="failureMessage" expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()"/>
             <int:header name="failureException" expression="payload"/>
         </int:header-enricher>
@@ -154,7 +154,7 @@
 
     <int:chain id="webServerNoServiceChain" input-channel="webServerNoService" output-channel="completedWithMessageWebServerStateRequest">
         <int:header-enricher id="webServerNoServiceHeaderEnricher">
-            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).FAILED}"/>
+            <int:header name="reachableState" value="#{T(com.siemens.cto.aem.domain.model.webserver.WebServerReachableState).WS_FAILED}"/>
             <int:header name="failureMessage" expression="payload.standardErrorOrStandardOut()"/>
         </int:header-enricher>
         <int:transformer id="webServerNoServiceTransformer" expression="headers['webServerId']"/>

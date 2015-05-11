@@ -18,7 +18,12 @@ import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;
 public interface StateServiceRest {
 
     @GET
-    Response pollJvmStates(@Context final HttpServletRequest aRequest,
+    Response pollStates(@Context final HttpServletRequest aRequest,
                            @BeanParam final TimeoutParameterProvider aTimeoutParamProvider,
                            @QueryParam("clientId") @DefaultValue("1") final String clientId);
+
+    @Path("/next")
+    @GET
+    Response pollState(@Context final HttpServletRequest aRequest,
+            @QueryParam("clientId") @DefaultValue("1") final String clientId);
 }

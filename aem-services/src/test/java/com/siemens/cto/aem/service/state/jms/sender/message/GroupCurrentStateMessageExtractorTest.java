@@ -32,7 +32,7 @@ public class GroupCurrentStateMessageExtractorTest extends AbstractCurrentStateM
     @Test
     public void testExtract() throws Exception {
         final CurrentState expectedState = new CurrentState<>(new Identifier<Group>(123456L),
-                                                              GroupState.STARTED,
+                                                              GroupState.GRP_STARTED,
                                                               DateTime.now(),
                                                               StateType.GROUP);
 
@@ -54,7 +54,7 @@ public class GroupCurrentStateMessageExtractorTest extends AbstractCurrentStateM
                                                               StateType.GROUP);
         setupMockMapMessage(expectedState);
         final CurrentState actualState = extractor.extract(message);
-        assertEquals(GroupState.UNKNOWN,
+        assertEquals(GroupState.GRP_UNKNOWN,
                      actualState.getState());
     }
 }

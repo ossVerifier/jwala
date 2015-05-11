@@ -14,12 +14,12 @@ import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
 public enum WebServerReachableState implements OperationalState {
 
-    REACHABLE("STARTED", PERMANENT, STABLE),
-    UNREACHABLE("STOPPED", PERMANENT, STABLE),
-    UNKNOWN("UNKNOWN", PERMANENT, UNSTABLE),
-    START_REQUESTED("STARTING", TRANSIENT, UNSTABLE),
-    STOP_REQUESTED("STOPPING", TRANSIENT, UNSTABLE),
-    FAILED("FAILED", PERMANENT, UNSTABLE);
+    WS_REACHABLE        ("STARTED",  PERMANENT, STABLE),
+    WS_UNREACHABLE      ("STOPPED",  PERMANENT, STABLE),
+    WS_UNKNOWN          ("UNKNOWN",  PERMANENT, UNSTABLE),
+    WS_STARTING         ("STARTING", TRANSIENT, UNSTABLE),
+    WS_STOPPING         ("STOPPING", TRANSIENT, UNSTABLE),
+    WS_FAILED           ("FAILED",   PERMANENT, UNSTABLE);
 
     private static final Map<String, WebServerReachableState> LOOKUP_MAP = new HashMap<>(values().length);
 
@@ -33,7 +33,7 @@ public enum WebServerReachableState implements OperationalState {
         if (LOOKUP_MAP.containsKey(anExternalName)) {
             return LOOKUP_MAP.get(anExternalName);
         }
-        return UNKNOWN;
+        return WS_UNKNOWN;
     }
 
     private final Transience transientState;

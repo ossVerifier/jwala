@@ -26,7 +26,7 @@ public class CurrentStateKeyValueStateProviderTest {
     @Test
     public void testProvideStateWithoutMessage() throws Exception {
         final Identifier<WebServer> id = new Identifier<>(123456L);
-        final WebServerReachableState state = WebServerReachableState.REACHABLE;
+        final WebServerReachableState state = WebServerReachableState.WS_REACHABLE;
         final DateTime asOf = DateTime.now();
         final StateType type = StateType.WEB_SERVER;
 
@@ -51,7 +51,7 @@ public class CurrentStateKeyValueStateProviderTest {
     @Test
     public void testProvideStateWithMessage() throws Exception {
         final Identifier<WebServer> id = new Identifier<>(123456L);
-        final WebServerReachableState state = WebServerReachableState.REACHABLE;
+        final WebServerReachableState state = WebServerReachableState.WS_REACHABLE;
         final DateTime asOf = DateTime.now();
         final StateType type = StateType.WEB_SERVER;
         final String message = "This is the state message";

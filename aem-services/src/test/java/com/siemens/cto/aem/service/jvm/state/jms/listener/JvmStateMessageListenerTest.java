@@ -62,9 +62,9 @@ public class JvmStateMessageListenerTest {
 
     @Test
     public void testOnMapMessage() throws Exception {
-        when(currentState.getState()).thenReturn(JvmState.START_REQUESTED);
+        when(currentState.getState()).thenReturn(JvmState.JVM_STARTING);
         when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
-        when(newCurrentState.getState()).thenReturn(JvmState.STARTED);
+        when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
         when(converter.convert(eq(message))).thenReturn(convertedMessage);
@@ -92,9 +92,9 @@ public class JvmStateMessageListenerTest {
 
     @Test
     public void testHeartbeatPreventionStarting() throws Exception {
-        when(currentState.getState()).thenReturn(JvmState.START_REQUESTED);
+        when(currentState.getState()).thenReturn(JvmState.JVM_STARTING);
         when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
-        when(newCurrentState.getState()).thenReturn(JvmState.STOPPED);
+        when(newCurrentState.getState()).thenReturn(JvmState.JVM_STOPPED);
 
         final MapMessage message = mock(MapMessage.class);
         when(converter.convert(eq(message))).thenReturn(convertedMessage);
@@ -106,9 +106,9 @@ public class JvmStateMessageListenerTest {
 
     @Test
     public void testHeartbeatPreventionStopping() throws Exception {
-        when(currentState.getState()).thenReturn(JvmState.STOP_REQUESTED);
+        when(currentState.getState()).thenReturn(JvmState.JVM_STOPPING);
         when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
-        when(newCurrentState.getState()).thenReturn(JvmState.STARTED);
+        when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
         when(converter.convert(eq(message))).thenReturn(convertedMessage);
@@ -121,7 +121,7 @@ public class JvmStateMessageListenerTest {
     @Test
     public void testHeartbeatPreventionNullCurrentState() throws Exception {
         when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(null);
-        when(newCurrentState.getState()).thenReturn(JvmState.STARTED);
+        when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
         when(converter.convert(eq(message))).thenReturn(convertedMessage);

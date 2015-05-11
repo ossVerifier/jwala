@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ public class StateServiceRestImpl implements StateServiceRest {
 
     private final StateNotificationService stateNotificationService;
     private final StateConsumerManager stateConsumerManager;
+    private final Collection<CurrentState<?,?>> noStates = Collections.emptyList(); 
 
     public StateServiceRestImpl(final StateNotificationService theStateNotificationService,
                                 final StateConsumerManager theStateConsumerManager) {
@@ -35,10 +37,10 @@ public class StateServiceRestImpl implements StateServiceRest {
     }
 
     @Override
-    public Response pollJvmStates(final HttpServletRequest aRequest,
+    public Response pollStates(final HttpServletRequest aRequest,
                                   final TimeoutParameterProvider aTimeoutParamProvider,
                                   final String aClientId) {
-        LOGGER.debug("Poll states requested with timeout : {}", aTimeoutParamProvider);
+        LOGGER.debug("Poll states requested with timeout (ms) : {}", aTimeoutParamProvider);
         final StateNotificationConsumerId consumerId = stateConsumerManager.getConsumerId(aRequest,
                                                                                           aClientId);
         final List<CurrentState<?,?>> updates = stateNotificationService.pollUpdatedStates(consumerId,
@@ -48,5 +50,25 @@ public class StateServiceRestImpl implements StateServiceRest {
         final Collection<CurrentState<?,?>> uniqueUpdates = processor.getUniqueStates();
 
         return ResponseBuilder.ok(uniqueUpdates);
+    }
+
+    @Override
+    public Response pollState(final HttpServletRequest aRequest,
+                              final String aClientId) {
+        LOGGER.debug("Poll single state requested.");
+        final StateNotificationConsumerId consumerId = stateConsumerManager.getConsumerId(aRequest,
+                                                                                          aClientId);
+
+        final CurrentState<?,?> update = stateNotificationService.pollUpdatedState(consumerId);
+        Collection<CurrentState<?,?>> updates;
+        
+        if(update != null) { 
+            updates = new ArrayList<>(1);
+            updates.add(update);
+        } else { 
+            updates = noStates;
+        }
+                
+        return ResponseBuilder.ok(updates);
     }
 }

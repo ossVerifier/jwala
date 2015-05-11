@@ -144,7 +144,7 @@ var GroupOperations = React.createClass({
     fetchCurrentGroupStates: function() {
         var self = this;
         this.props.stateService.getCurrentGroupStates().then(function(data) { self.updateGroupsStateData(data.applicationResponseContent);})
-                                                       .caught(function(e) {});
+                                                       .caught(function(e) {console.log(e);});
     },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,

@@ -20,7 +20,7 @@ public class JvmStateMessageTest {
     @Test
     public void test() throws Exception {
         final CurrentState<Jvm, JvmState> expectedState = new CurrentState<>(new Identifier<Jvm>("123456"),
-                                                                             JvmState.STARTED,
+                                                                             JvmState.JVM_STARTED,
                                                                              DateTime.now(),
                                                                              StateType.JVM);
         final JvmSetStateCommand expectedCommand = new JvmSetStateCommand(expectedState);
@@ -28,7 +28,7 @@ public class JvmStateMessageTest {
         final JvmStateMessage message = new JvmStateMessage(expectedId,
                                                             expectedId,
                                                             "unused type",
-                                                            expectedState.getState().name(),
+                                                            expectedState.getState().toStateString(),
                                                             ISODateTimeFormat.dateTime().print(expectedState.getAsOf()));
 
         final SetStateCommand<Jvm, JvmState> actualCommand = message.toCommand();

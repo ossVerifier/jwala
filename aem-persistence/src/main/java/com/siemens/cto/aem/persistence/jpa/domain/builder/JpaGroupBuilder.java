@@ -74,7 +74,7 @@ public class JpaGroupBuilder {
             return group.getState();
         }
 
-        return GroupState.UNKNOWN;
+        return GroupState.GRP_UNKNOWN;
     }
 
     protected Set<Jvm> getJvms() {

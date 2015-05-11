@@ -133,7 +133,7 @@
         
         <int:header-enricher id="jvmFailedHttpHeaderEnricher">
             <int:header name="reachableState"
-                value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STOPPED}" />
+                value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).JVM_STOPPED}" />
         </int:header-enricher>
 
         <int:transformer id="jvmSuccessfulHeaderIdTransformer"
@@ -145,7 +145,7 @@
 		output-channel="jvmCompletedWithoutMessageStateRequest">
 		<int:header-enricher id="jvmSuccessfulHttpHeaderEnricher">
 			<int:header name="reachableState"
-				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).STARTED}" />
+				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).JVM_STARTED}" />
 		</int:header-enricher>
 		<int:transformer id="jvmSuccessfulHeaderIdTransformer"
 			expression="headers['jvmId']" />
@@ -157,7 +157,7 @@
 			<int:header name="jvmId"
 				expression="payload.getFailedMessage().headers['jvmId']" />
 			<int:header name="reachableState"
-				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).FAILED}" />
+				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).JVM_FAILED}" />
 			<int:header name="failureMessage"
 				expression="@exceptionUtilHelper.getPenultimateRootCause(payload).getMessage()" />
 			<int:header name="failureException" expression="payload" />
@@ -170,7 +170,7 @@
 		output-channel="jvmCompletedWithMessageStateRequest">
 		<int:header-enricher id="jvmNoServiceHeaderEnricher">
 			<int:header name="reachableState"
-				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).FAILED}" />
+				value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).JVM_FAILED}" />
 			<int:header name="failureMessage" expression="payload.standardErrorOrStandardOut()" />
 		</int:header-enricher>
 		<int:transformer id="jvmNoServiceHeaderIdTransformer"

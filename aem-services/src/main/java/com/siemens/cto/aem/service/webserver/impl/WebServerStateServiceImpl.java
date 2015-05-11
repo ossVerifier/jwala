@@ -27,7 +27,7 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
     @Override
     protected CurrentState<WebServer, WebServerReachableState> createUnknown(final Identifier<WebServer> anId) {
         return new CurrentState<>(anId,
-                                  WebServerReachableState.UNKNOWN,
+                                  WebServerReachableState.WS_UNKNOWN,
                                   DateTime.now(),
                                   StateType.WEB_SERVER);
     }

@@ -149,8 +149,8 @@ public class MoreGroupStateMachineTest {
                            new Path("./"),
                            new Path("htdocs"));
         wsList.add(ws);
-        mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.INITIALIZED, DateTime.now());
-        wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.REACHABLE, DateTime.now(), StateType.WEB_SERVER));
+        mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.GRP_INITIALIZED, DateTime.now());
+        wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER));
 
         when(webServerDao.getWebServer(eq(ws.getId()))).thenReturn(ws);
 
@@ -215,28 +215,28 @@ public class MoreGroupStateMachineTest {
     @Test
     public void testWebServerTriggers() {
 
-        setWsState(WebServerReachableState.UNREACHABLE);
-        setJvmState(JvmState.STOPPED);
+        setWsState(WebServerReachableState.WS_UNREACHABLE);
+        setJvmState(JvmState.JVM_STOPPED);
         classUnderTest.synchronizedInitializeGroup(mockGroup, testUser);
-        assertEquals(GroupState.STOPPED, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 
-        setWsState(WebServerReachableState.REACHABLE);
-        setJvmState(JvmState.STOPPED);
+        setWsState(WebServerReachableState.WS_REACHABLE);
+        setJvmState(JvmState.JVM_STOPPED);
         classUnderTest.wsUnreachable(ws.getId());
         classUnderTest.refreshState();
-        assertEquals(GroupState.PARTIAL, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_PARTIAL, classUnderTest.getCurrentState());
 
-        setWsState(WebServerReachableState.UNREACHABLE);
-        setJvmState(JvmState.STOPPED);
+        setWsState(WebServerReachableState.WS_UNREACHABLE);
+        setJvmState(JvmState.JVM_STOPPED);
         classUnderTest.wsReachable(ws.getId());
         classUnderTest.refreshState();
-        assertEquals(GroupState.STOPPED, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 
-        setWsState(WebServerReachableState.UNKNOWN);
-        setJvmState(JvmState.FAILED);
+        setWsState(WebServerReachableState.WS_UNKNOWN);
+        setJvmState(JvmState.JVM_FAILED);
         classUnderTest.wsError(ws.getId());
         classUnderTest.refreshState();
-        assertEquals(GroupState.UNKNOWN, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_UNKNOWN, classUnderTest.getCurrentState());
 
     }
 

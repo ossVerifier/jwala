@@ -16,5 +16,7 @@ public interface StateNotificationService {
     void notifyStateUpdated(final CurrentState<?,?> aNotification);
 
     List<CurrentState<?, ?>> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
-                                         final TimeRemainingCalculator aTimeRemaining);
+            final TimeRemainingCalculator aTimeRemaining);
+
+    CurrentState<?, ?> pollUpdatedState(final StateNotificationConsumerId aConsumerId);
 }

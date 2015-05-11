@@ -82,7 +82,7 @@ public class InMemoryStateNotificationServiceImplTest {
                          currentWebServerStates.size());
             for (final CurrentState<?, ?> state : currentWebServerStates) {
                 assertTrue(webServers.contains(state.getId()));
-                assertEquals(WebServerReachableState.REACHABLE,
+                assertEquals(WebServerReachableState.WS_REACHABLE,
                              state.getState());
             }
         }
@@ -147,7 +147,7 @@ public class InMemoryStateNotificationServiceImplTest {
             public CurrentState<WebServer, WebServerReachableState> answer(final InvocationOnMock invocation) throws Throwable {
                 final Identifier<WebServer> webServer = (Identifier<WebServer>)invocation.getArguments()[0];
                 return new CurrentState<>(webServer,
-                                          WebServerReachableState.REACHABLE,
+                                          WebServerReachableState.WS_REACHABLE,
                                           DateTime.now(),
                                           StateType.WEB_SERVER);
             }
@@ -168,7 +168,7 @@ public class InMemoryStateNotificationServiceImplTest {
             final Identifier<WebServer> webServerId = new Identifier<>((long) i);
             webServers.add(webServerId);
             notificationService.notifyStateUpdated(new CurrentState<>(webServerId,
-                                                                      WebServerReachableState.REACHABLE,
+                                                                      WebServerReachableState.WS_REACHABLE,
                                                                       DateTime.now(),
                                                                       StateType.WEB_SERVER));
         }

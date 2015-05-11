@@ -2,8 +2,10 @@ package com.siemens.cto.aem.service.jvm.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -16,6 +18,7 @@ import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -51,11 +54,12 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             final JvmControlHistory incompleteHistory = jvmControlServiceLifecycle.startHistory(aCommand,
                                                                                                 aUser);
-
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
+            JvmState prevState = null;
+            
             if(aCommand.getControlOperation().getOperationState() != null) {
-                jvmControlServiceLifecycle.startState(aCommand,
+                prevState = jvmControlServiceLifecycle.startState(aCommand,
                         aUser);
             }
 
@@ -66,13 +70,22 @@ public class JvmControlServiceImpl implements JvmControlService {
                                                                                                  aCommand,
                                                                                                  execData,
                                                                                                  aUser);
-
-            LOGGER.debug("exiting controlJvm for command {}", aCommand);
+            if(execData.getReturnCode().wasSuccessful()) {
+                LOGGER.debug("exiting controlJvm for command {}", aCommand);
+            } else {
+                LOGGER.error("exiting controlJvm for FAILING command {}\n{}", aCommand, execData.standardErrorOrStandardOut());
+                jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
+                        prevState != null ? prevState : JvmState.JVM_FAILED,
+                        execData.standardErrorOrStandardOut(),
+                        aUser);
+                throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "Error controlling a JVM with id " + aCommand.getJvmId().getId() + ": " + execData.standardErrorOrStandardOut());
+            }
 
             return completeHistory;
         } catch (final CommandFailureException cfe) {
             jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
-                                                             JvmState.FAILED,
+                                                             JvmState.JVM_FAILED,
                                                              cfe.getMessage(),
                                                              aUser);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -92,21 +105,23 @@ public class JvmControlServiceImpl implements JvmControlService {
             persistenceService = thePersistenceService;
         }
 
-        @Transactional
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
         public JvmControlHistory startHistory(final ControlJvmCommand aCommand, final User aUser) {
             return persistenceService.addIncompleteControlHistoryEvent(new Event<>(aCommand,
                                                                                    AuditEvent.now(aUser)));
         }
 
-        @Transactional
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public void startState(final ControlJvmCommand aCommand, final User aUser) {
+        public JvmState startState(final ControlJvmCommand aCommand, final User aUser) {
+            CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(aCommand.getJvmId());
             jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
                                             aUser);
+            return jvmState.getState();
         }
 
-        @Transactional
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
         public void startStateWithMessage(final Identifier<Jvm> aJvmId,
                                           final JvmState aJvmState,
@@ -118,7 +133,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                                             aUser);
         }
 
-        @Transactional
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
         public JvmControlHistory completeHistory(JvmControlHistory incompleteHistory, ControlJvmCommand aCommand, ExecData execData, final User aUser) {
             return persistenceService.completeControlHistoryEvent(new Event<>(new CompleteControlJvmCommand(incompleteHistory.getId(),

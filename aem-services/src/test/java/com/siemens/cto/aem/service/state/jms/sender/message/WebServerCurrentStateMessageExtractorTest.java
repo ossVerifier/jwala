@@ -27,7 +27,7 @@ public class WebServerCurrentStateMessageExtractorTest extends AbstractCurrentSt
     @Test
     public void testExtractWithoutMessage() throws Exception {
         final CurrentState<WebServer, WebServerReachableState> expectedState = new CurrentState<>(new Identifier<WebServer>(123456L),
-                                                                                                  WebServerReachableState.REACHABLE,
+                                                                                                  WebServerReachableState.WS_REACHABLE,
                                                                                                   DateTime.now(),
                                                                                                   StateType.WEB_SERVER);
 
@@ -41,7 +41,7 @@ public class WebServerCurrentStateMessageExtractorTest extends AbstractCurrentSt
     @Test
     public void testExtractWithMessage() throws Exception {
         final CurrentState<WebServer, WebServerReachableState> expectedState = new CurrentState<>(new Identifier<WebServer>(123456L),
-                                                                                                  WebServerReachableState.REACHABLE,
+                                                                                                  WebServerReachableState.WS_REACHABLE,
                                                                                                   DateTime.now(),
                                                                                                   StateType.WEB_SERVER,
                                                                                                   "This is the state message");

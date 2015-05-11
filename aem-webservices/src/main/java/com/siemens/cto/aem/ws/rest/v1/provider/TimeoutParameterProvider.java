@@ -11,6 +11,13 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.ws.rest.v1.fault.RestFaultType;
 
+/**
+ * Timeout provider
+ * Now in milliseconds.
+ * 
+ * @author horspe00
+ *
+ */
 public class TimeoutParameterProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutParameterProvider.class);
@@ -40,7 +47,7 @@ public class TimeoutParameterProvider {
             final Long timeoutValue = Long.valueOf(timeout);
             validate(timeoutValue);
             return new TimeDuration(timeoutValue,
-                                    TimeUnit.SECONDS);
+                                    TimeUnit.MILLISECONDS);
         } catch (final NumberFormatException nfe) {
             //This is logged here instead of included in the BadRequestException because it's a potential CSRF vector
             LOGGER.info("Non-integer value specified for the timeout parameter", nfe);

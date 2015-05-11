@@ -59,7 +59,7 @@ public class WebServerStateCrudServiceImplTest {
     @Test
     public void testUpdateState() throws Exception {
         final Identifier<WebServer> expectedId = new Identifier<>(123456L);
-        final WebServerReachableState expectedState = WebServerReachableState.REACHABLE;
+        final WebServerReachableState expectedState = WebServerReachableState.WS_REACHABLE;
         final DateTime expectedAsOf = DateTime.now();
 
         final JpaCurrentState state = updateState(expectedId,
@@ -77,7 +77,7 @@ public class WebServerStateCrudServiceImplTest {
     @Test
     public void testGetState() throws Exception {
         final Identifier<WebServer> expectedId = new Identifier<>(123456L);
-        final WebServerReachableState expectedState = WebServerReachableState.UNREACHABLE;
+        final WebServerReachableState expectedState = WebServerReachableState.WS_UNREACHABLE;
         final DateTime expectedAsOf = DateTime.now();
 
         updateState(expectedId,
@@ -99,7 +99,7 @@ public class WebServerStateCrudServiceImplTest {
 
         final int numberToCreate = 5;
         final Map<Identifier<WebServer>, WebServerReachableState> expectedData = createData(numberToCreate,
-                                                                                        WebServerReachableState.REACHABLE);
+                                                                                        WebServerReachableState.WS_REACHABLE);
         for (final Map.Entry<Identifier<WebServer>, WebServerReachableState> data : expectedData.entrySet()) {
             updateState(data.getKey(),
                         data.getValue(),

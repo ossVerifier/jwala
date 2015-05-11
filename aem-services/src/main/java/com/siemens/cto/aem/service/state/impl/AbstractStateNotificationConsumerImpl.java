@@ -45,6 +45,13 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
     }
 
     @Override
+    public CurrentState<?,?> blockingGetNotification() {
+        updateLastAccessTime();
+        
+        return getNotificationsHelper(defaultPollDuration);
+    }
+
+    @Override
     public List<CurrentState<?,?>> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
         updateLastAccessTime();
 

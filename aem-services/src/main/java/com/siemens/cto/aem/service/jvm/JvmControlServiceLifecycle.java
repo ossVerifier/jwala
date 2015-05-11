@@ -13,7 +13,10 @@ public interface JvmControlServiceLifecycle {
     JvmControlHistory startHistory(final ControlJvmCommand aCommand,
                                    final User aUser);
 
-    void startState(final ControlJvmCommand aCommand,
+    /**
+     * Set state, return previous state.
+     */
+    JvmState startState(final ControlJvmCommand aCommand,
                     final User aUser);
 
     void startStateWithMessage(final Identifier<Jvm> aJvmId,

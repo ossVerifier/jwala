@@ -1,12 +1,13 @@
 package com.siemens.cto.aem.service.group.impl;
 
 
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.FAILED;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.REACHABLE;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.START_REQUESTED;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.STOP_REQUESTED;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.UNKNOWN;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.UNREACHABLE;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.*;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_FAILED;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_REACHABLE;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_STARTING;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_STOPPING;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_UNKNOWN;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_UNREACHABLE;
 
 import java.util.HashSet;
 import java.util.List;
@@ -77,94 +78,141 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         // Unqualified states are statically imported WebServerReachableStates (for brevity)
 
-        ne.put(GroupState.UNKNOWN, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.STARTING)
-                             .edge(START_REQUESTED,        GroupState.STARTING)
-                             .edge(JvmState.STARTED,    GroupState.STARTED)
-                             .edge(REACHABLE,       GroupState.STARTED)
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.STOPPING)
-                             .edge(STOP_REQUESTED,        GroupState.STOPPING)
-                             .edge(UNREACHABLE,     GroupState.STOPPED)
-                             .edge(JvmState.STOPPED,    GroupState.STOPPED)
-                             .edge(JvmState.FAILED,         GroupState.UNKNOWN) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.UNKNOWN) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.UNKNOWN) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.UNKNOWN) // Web Server states too
-                             .edge(FAILED,                  GroupState.UNKNOWN)
+        ne.put(GroupState.GRP_UNKNOWN, new NodeBuilder()
+                             .edge(WS_STARTING,    GroupState.GRP_STARTING)
+                             .edge(JVM_STARTING,   GroupState.GRP_STARTING)
+                             .edge(JVM_STARTED,    GroupState.GRP_STARTED)
+                             .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
+                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
+                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
+                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPED)
+                             .edge(JVM_FAILED,     GroupState.GRP_UNKNOWN) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
+                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
+                             .edge(JVM_START,      GroupState.GRP_STARTING)
+                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_UNKNOWN)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_UNKNOWN)
+                             .edge(JVM_STALE,      GroupState.GRP_UNKNOWN) 
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_UNKNOWN) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_UNKNOWN) 
+                             .edge(WS_FAILED,      GroupState.GRP_UNKNOWN)
                              .build());
 
-        ne.put(GroupState.STARTING, new NodeBuilder().edge(JvmState.START_REQUESTED,  GroupState.STARTING)
-                             .edge(START_REQUESTED,        GroupState.STARTING)
-                             .edge(JvmState.STARTED,    GroupState.STARTING)    // per 8/20 stay in starting
-                             .edge(REACHABLE,       GroupState.STARTING)        // per 8/20 stay in starting
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.PARTIAL)
-                             .edge(STOP_REQUESTED,        GroupState.PARTIAL)
-                             .edge(UNREACHABLE,     GroupState.PARTIAL)
-                             .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.STARTING) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.STARTING) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.STARTING) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.STARTING) // Web Server states too
-                             .edge(FAILED,                  GroupState.STARTING)
+        ne.put(GroupState.GRP_STARTING, new NodeBuilder()
+                             .edge(JVM_STARTING,   GroupState.GRP_STARTING)
+                             .edge(WS_STARTING,    GroupState.GRP_STARTING)
+                             .edge(JVM_STARTED,    GroupState.GRP_STARTING)    // per 8/20 stay in starting
+                             .edge(WS_REACHABLE,   GroupState.GRP_STARTING)        // per 8/20 stay in starting
+                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)
+                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
+                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_STARTING) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTING) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTING) // Web Server states too
+                             .edge(WS_FAILED,      GroupState.GRP_STARTING)
+                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
+                             .edge(JVM_START,      GroupState.GRP_STARTING)
+                             .edge(JVM_STOP,       GroupState.GRP_STARTING)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_STARTING)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_STARTING)
+                             .edge(JVM_STALE,      GroupState.GRP_STARTING) 
                              .build());
 
-        ne.put(GroupState.STOPPING, new NodeBuilder().edge(JvmState.START_REQUESTED,  GroupState.PARTIAL)
-                             .edge(START_REQUESTED,        GroupState.PARTIAL)
-                             .edge(JvmState.STARTED,    GroupState.PARTIAL)
-                             .edge(REACHABLE,       GroupState.PARTIAL)
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.STOPPING)
-                             .edge(STOP_REQUESTED,        GroupState.STOPPING)
-                             .edge(UNREACHABLE,     GroupState.STOPPING)         // per 8/20 stay in stopping
-                             .edge(JvmState.STOPPED,    GroupState.STOPPING)     // per 8/20 stay in stopping
-                             .edge(JvmState.FAILED,         GroupState.STOPPING) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.STOPPING) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.STOPPING) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.STOPPING) // Web Server states too
-                             .edge(FAILED,                  GroupState.STOPPING) // Web Server states too
+        ne.put(GroupState.GRP_STOPPING, new NodeBuilder()
+                             .edge(JVM_STARTING,   GroupState.GRP_PARTIAL)
+                             .edge(WS_STARTING,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
+                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
+                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
+                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPING)         // per 8/20 stay in stopping
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)     // per 8/20 stay in stopping
+                             .edge(JVM_FAILED,     GroupState.GRP_STOPPING) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STOPPING) // the same state, we do not
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPING) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPING) // Web Server states too
+                             .edge(WS_FAILED,      GroupState.GRP_STOPPING)
+                             .edge(JVM_NEW,        GroupState.GRP_STOPPING)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_STOPPING)
+                             .edge(JVM_START,      GroupState.GRP_STOPPING)
+                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_STOPPING)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_STOPPING)
+                             .edge(JVM_STALE,      GroupState.GRP_STOPPING) 
                              .build());
 
-        ne.put(GroupState.STARTED, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.STARTING) // per 8/20 go to starting
-                             .edge(START_REQUESTED,        GroupState.STARTING)   // per 8/20 go to starting
-                             .edge(JvmState.STARTED,    GroupState.STARTED)
-                             .edge(REACHABLE,       GroupState.STARTED)
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.STOPPING)// per 8/20 go to stopping
-                             .edge(STOP_REQUESTED,        GroupState.STOPPING)    // per 8/20 go to stopping
-                             .edge(UNREACHABLE,     GroupState.PARTIAL)
-                             .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.STARTED) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.STARTED) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.STARTED) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.STARTED) // Web Server states too
-                             .edge(FAILED,                  GroupState.STARTED) // Web Server states too
+        ne.put(GroupState.GRP_STARTED, new NodeBuilder()
+                             .edge(JVM_STARTING,   GroupState.GRP_STARTING) // per 8/20 go to starting
+                             .edge(WS_STARTING,    GroupState.GRP_STARTING)   // per 8/20 go to starting
+                             .edge(JVM_STARTED,    GroupState.GRP_STARTED)
+                             .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
+                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)// per 8/20 go to stopping
+                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)    // per 8/20 go to stopping
+                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_STARTED) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTED) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTED) // Web Server states too
+                             .edge(WS_FAILED,      GroupState.GRP_STARTED)
+                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
+                             .edge(JVM_START,      GroupState.GRP_STARTED)
+                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_STARTED)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_STARTED)
+                             .edge(JVM_STALE,      GroupState.GRP_STARTED)                              .build());
+
+        ne.put(GroupState.GRP_STOPPED, new NodeBuilder()
+                             .edge(JVM_STARTING,   GroupState.GRP_STARTING) // per 8/20 go to starting
+                             .edge(WS_STARTING,    GroupState.GRP_STARTING) // per 8/20 go to starting
+                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
+                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING) // per 8/20 go to stopping
+                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)   // per 8/20 go to stopping
+                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPED)
+                             .edge(JVM_FAILED,     GroupState.GRP_STOPPED) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPED) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPED) // Web Server states too
+                             .edge(WS_FAILED,      GroupState.GRP_STOPPED)
+                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
+                             .edge(JVM_START,      GroupState.GRP_STARTING)
+                             .edge(JVM_STOP,       GroupState.GRP_STOPPED)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_STOPPED)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_STOPPED)
+                             .edge(JVM_STALE,      GroupState.GRP_STOPPED)                              
                              .build());
 
-        ne.put(GroupState.STOPPED, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.STARTING) // per 8/20 go to starting
-                             .edge(START_REQUESTED,        GroupState.STARTING) // per 8/20 go to starting
-                             .edge(JvmState.STARTED,    GroupState.PARTIAL)
-                             .edge(REACHABLE,       GroupState.PARTIAL)
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.STOPPING) // per 8/20 go to stopping
-                             .edge(STOP_REQUESTED,        GroupState.STOPPING)   // per 8/20 go to stopping
-                             .edge(UNREACHABLE,     GroupState.STOPPED)
-                             .edge(JvmState.STOPPED,    GroupState.STOPPED)
-                             .edge(JvmState.FAILED,         GroupState.STOPPED) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.STOPPED) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.STOPPED) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.STOPPED) // Web Server states too
-                             .edge(FAILED,                  GroupState.STOPPED) // Web Server states too
-                             .build());
-
-        ne.put(GroupState.PARTIAL, new NodeBuilder().edge(JvmState.START_REQUESTED,   GroupState.PARTIAL)
-                             .edge(START_REQUESTED,        GroupState.PARTIAL)
-                             .edge(JvmState.STARTED,    GroupState.PARTIAL)
-                             .edge(REACHABLE,       GroupState.PARTIAL)
-                             .edge(JvmState.STOP_REQUESTED,   GroupState.PARTIAL)
-                             .edge(STOP_REQUESTED,        GroupState.PARTIAL)
-                             .edge(UNREACHABLE,     GroupState.PARTIAL)
-                             .edge(JvmState.STOPPED,    GroupState.PARTIAL)
-                             .edge(JvmState.FAILED,         GroupState.PARTIAL) // these will always stay in
-                             .edge(JvmState.INITIALIZED,    GroupState.PARTIAL) // the same state, we do not
-                             .edge(JvmState.UNKNOWN,        GroupState.PARTIAL) // handle bad states.
-                             .edge(UNKNOWN,                 GroupState.PARTIAL) // Web Server states too
-                             .edge(FAILED,                  GroupState.PARTIAL) // Web Server states too
+        ne.put(GroupState.GRP_PARTIAL, new NodeBuilder()
+                             .edge(JVM_STARTING,   GroupState.GRP_PARTIAL)
+                             .edge(WS_STARTING,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
+                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)
+                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
+                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_PARTIAL) // these will always stay in
+                             .edge(JVM_INITIALIZED,GroupState.GRP_PARTIAL) // the same state, we do not
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_PARTIAL) // handle bad states.
+                             .edge(WS_UNKNOWN,     GroupState.GRP_PARTIAL) // Web Server states too
+                             .edge(WS_FAILED,      GroupState.GRP_PARTIAL)
+                             .edge(JVM_NEW,        GroupState.GRP_PARTIAL)
+                             .edge(JVM_INITIALIZING,GroupState.GRP_PARTIAL)
+                             .edge(JVM_START,      GroupState.GRP_PARTIAL)
+                             .edge(JVM_STOP,       GroupState.GRP_PARTIAL)
+                             .edge(JVM_DESTROYING,  GroupState.GRP_PARTIAL)
+                             .edge(JVM_DESTROYED,  GroupState.GRP_PARTIAL)
+                             .edge(JVM_STALE,      GroupState.GRP_PARTIAL)   
                              .build());
 
     }
@@ -195,11 +243,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     /**
      * State transition and counting of jvms and ws active
      * Note that null states coming back from the database
-     * are treated as UNKNOWN.
+     * are treated as JVM_UNKNOWN.
      */
     private synchronized CurrentGroupState refreshState(Group group) {
         currentGroupState = null;
-        GroupState state = GroupState.UNKNOWN;
+        GroupState state = GroupState.GRP_UNKNOWN;
 
         for(AtomicInteger stateCount : counters.values()) {
             stateCount.set(0);
@@ -216,7 +264,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             Set<CurrentState<WebServer,WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
 
             for(CurrentState<WebServer, WebServerReachableState> wsState : results) {
-                WebServerReachableState value = wsState!=null?wsState.getState():WebServerReachableState.UNKNOWN;
+                WebServerReachableState value = wsState!=null?wsState.getState():WebServerReachableState.WS_UNKNOWN;
 
                 counters.get(value).incrementAndGet();
                 state = ne.get(state).transit(value);
@@ -225,7 +273,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         for(Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
-            JvmState value = jvmState!=null?jvmState.getState():JvmState.UNKNOWN;
+            JvmState value = jvmState!=null?jvmState.getState():JvmState.JVM_UNKNOWN;
 
             counters.get(value).incrementAndGet();
             state = ne.get(state).transit(value);
@@ -239,8 +287,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         for(WebServerReachableState eachWsState : WebServerReachableState.values()) {
             wsTotal += counters.get(eachWsState).get();
         }
-        int jvmStarted = counters.get(JvmState.STARTED).get();
-        int wsStarted = counters.get(WebServerReachableState.REACHABLE).get();
+        int jvmStarted = counters.get(JvmState.JVM_STARTED).get();
+        int wsStarted = counters.get(WebServerReachableState.WS_REACHABLE).get();
 
         return currentGroupState = newState(state, jvmStarted, jvmTotal, wsStarted, wsTotal);
     }
@@ -297,13 +345,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     @Transactional
     public CurrentGroupState signalStopRequested(User user) {
-        return newState(GroupState.STOPPING);
+        return newState(GroupState.GRP_STOPPING);
     }
 
     @Override
     @Transactional
     public CurrentGroupState signalStartRequested(User user) {
-        return newState(GroupState.STARTING);
+        return newState(GroupState.GRP_STARTING);
     }
 
     @Override
@@ -351,13 +399,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     @Transactional
     public boolean canStart() {
-        return currentGroupState.getState() != GroupState.STARTED;
+        return currentGroupState.getState() != GroupState.GRP_STARTED;
     }
 
     @Override
     @Transactional
     public boolean canStop() {
-        return currentGroupState.getState() != GroupState.STOPPED;
+        return currentGroupState.getState() != GroupState.GRP_STOPPED;
     }
 
     @Override

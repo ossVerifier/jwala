@@ -15,14 +15,14 @@ import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
 public enum GroupState implements OperationalState {
 
-    INITIALIZED("INITIALIZED", PERMANENT, UNSTABLE),
-    PARTIAL("PARTIAL", PERMANENT, STABLE),
-    ERROR("ERROR", PERMANENT, UNSTABLE),
-    STARTED("STARTED", PERMANENT, STABLE),
-    STOPPED("STOPPED", PERMANENT, STABLE),
-    STARTING("STARTING", TRANSIENT, UNSTABLE),
-    STOPPING("STOPPING", TRANSIENT, UNSTABLE),
-    UNKNOWN("UNKNOWN", PERMANENT, UNSTABLE);
+    GRP_INITIALIZED("INITIALIZED", PERMANENT, UNSTABLE),
+    GRP_PARTIAL( "PARTIAL", PERMANENT, STABLE),
+    GRP_FAILURE( "FAILURE", PERMANENT, UNSTABLE),
+    GRP_STARTED( "STARTED", PERMANENT, STABLE),
+    GRP_STOPPED( "STOPPED", PERMANENT, STABLE),
+    GRP_STARTING("STARTING",TRANSIENT, UNSTABLE),
+    GRP_STOPPING("STOPPING",TRANSIENT, UNSTABLE),
+    GRP_UNKNOWN( "UNKNOWN", PERMANENT, UNSTABLE);
 
     private static final Map<String, GroupState> LOOKUP_MAP = new HashMap<>();
 
@@ -36,7 +36,7 @@ public enum GroupState implements OperationalState {
         if (LOOKUP_MAP.containsKey(aStateName)) {
             return LOOKUP_MAP.get(aStateName);
         }
-        return UNKNOWN;
+        return GRP_UNKNOWN;
     }
 
     private final String stateName;

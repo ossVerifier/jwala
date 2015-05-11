@@ -8,8 +8,8 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public enum JvmControlOperation {
 
-    START("start", JvmState.START_REQUESTED),
-    STOP("stop", JvmState.STOP_REQUESTED),
+    START("start", JvmState.JVM_START),
+    STOP("stop", JvmState.JVM_STOP),
     THREAD_DUMP("threadDump", null),
     HEAP_DUMP("heapDump", null);
 

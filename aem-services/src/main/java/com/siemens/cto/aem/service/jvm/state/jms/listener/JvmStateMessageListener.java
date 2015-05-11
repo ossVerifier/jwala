@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
@@ -50,41 +49,10 @@ public class JvmStateMessageListener implements MessageListener {
     protected void processMessage(final MapMessage aMapMessage) throws JMSException {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.debug("Processing message: {}", message);
+
         SetStateCommand<Jvm, JvmState> setStateCommand = message.toCommand();
-        CurrentState<Jvm, JvmState> newState  = setStateCommand.getNewState();
-        CurrentState<Jvm, JvmState> currentState = jvmStateService.getCurrentState(newState.getId());
 
-        boolean discard = false;
-
-        // if starting, ignore stopped. If stopping, ignore started.
-        // TODO: we rely on started to exit starting. However, we have no way to leave STARTING to STOPPED in case of failure.
-        if(currentState != null) {
-            switch(currentState.getState()) {
-                case START_REQUESTED:
-                    switch(newState.getState()) {
-                        case STOPPED: 
-                            discard = true;
-                            break;
-                        default: break;
-                    } break;
-                case STOP_REQUESTED:
-                    switch(newState.getState()) {
-                        case STARTED: 
-                            discard = true;
-                            break;
-                        default: break;
-                    } break;
-                default:
-                    discard = false;   
-                    break;
-            }
-        }
-        
-        if(discard) { 
-            LOGGER.debug("Discarding message; Jvm starting: {}", message);                
-        } else { 
-            jvmStateService.setCurrentState(message.toCommand(),
-                                            User.getSystemUser());
-        }
+        jvmStateService.setCurrentState(setStateCommand,
+                                        User.getSystemUser());
     }
 }
