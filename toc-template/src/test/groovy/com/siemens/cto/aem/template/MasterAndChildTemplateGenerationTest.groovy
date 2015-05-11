@@ -43,10 +43,10 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
 
     void setUp() {
         contextTemplateStr = this.getClass().getResource("/context.tpl").text
-        expectedContextXmlStr = this.getClass().getResource("/context.xml").text
+        expectedContextXmlStr = removeCarriageReturnsAndNewLines(this.getClass().getResource("/context.xml").text)
 
         iteritiveContextTemplateStr = this.getClass().getResource("/iterativeContext.tpl").text
-        expectedIteritiveContextXmlStr = this.getClass().getResource("/iterativeContext.xml").text
+        expectedIteritiveContextXmlStr = removeCarriageReturnsAndNewLines(this.getClass().getResource("/iterativeContext.xml").text)
 
         final LiteGroup liteGroup = new LiteGroup(new Identifier<Group>("1"), "Test Group")
 
@@ -93,27 +93,19 @@ class MasterAndChildTemplateGenerationTest extends GroovyTestCase {
             resourceMap.put(resourceInstance.getResourceTypeName(), (new ResourceInstanceTemplateBinding(resourceInstance)).toString())
         }
 
-        def contextTemplate = templateEngine.createTemplate(contextTemplateStr)
-
         def contextBindings = [docBase:"/some-doc-base", resourceMap:resourceMap]
 
-        String generatedContext =  contextTemplate.make(contextBindings).toString()
-
-        // Note: indexOfLastXmlClosingBracket is used to make sure that any additional characters e.g. line feed
-        //       after the closing XML bracket are not included in the XML string comparison.
-        int indexOfExpectedLastXmlClosingBracket = expectedContextXmlStr.lastIndexOf('>')
-        int indexOfActualLastXmlClosingBracket = generatedContext.lastIndexOf('>')
-        assertEquals(expectedContextXmlStr.substring(0, indexOfExpectedLastXmlClosingBracket + 1),
-                generatedContext.substring(0, indexOfActualLastXmlClosingBracket + 1))
+        def contextTemplate = templateEngine.createTemplate(contextTemplateStr)
+        String generatedContext =  removeCarriageReturnsAndNewLines(contextTemplate.make(contextBindings).toString())
+        assertEquals(expectedContextXmlStr, generatedContext)
 
         contextTemplate = templateEngine.createTemplate(iteritiveContextTemplateStr)
-
-        generatedContext = contextTemplate.make(contextBindings).toString()
-
-        indexOfExpectedLastXmlClosingBracket = expectedIteritiveContextXmlStr.lastIndexOf('>')
-        indexOfActualLastXmlClosingBracket = generatedContext.lastIndexOf('>')
-
-        assertEquals(expectedIteritiveContextXmlStr.substring(0, indexOfExpectedLastXmlClosingBracket + 1),
-                generatedContext.substring(0, indexOfActualLastXmlClosingBracket + 1))
+        generatedContext = removeCarriageReturnsAndNewLines(contextTemplate.make(contextBindings).toString())
+        assertEquals(expectedIteritiveContextXmlStr, generatedContext)
     }
+
+    private static String removeCarriageReturnsAndNewLines(String s) {
+        return s.replaceAll("\\r", "").replaceAll("\\n", "")
+    }
+
 }
