@@ -6,10 +6,8 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStartedEvent;
-import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 
 /**
@@ -21,53 +19,34 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        ApplicationContext appCtx;
-        String msg;
-        RuntimeException exceptionThrown = null;
         
         if (event instanceof ContextStartedEvent) {
-            msg = "Heartbeat: Context Started - Starting Background Process";
             ContextStartedEvent ctxSE = (ContextStartedEvent)event;
-            appCtx = ctxSE.getApplicationContext();
+            startHeartbeats(ctxSE.getApplicationContext(), "Heartbeat: Context Started - Starting Background Process");
         }  else if (event instanceof ContextRefreshedEvent) {
-            msg = "Heartbeat: Context Refreshed - Starting Background Process";
             ContextRefreshedEvent ctxRE = (ContextRefreshedEvent)event;
-            appCtx = ctxRE.getApplicationContext();
-        } else if (event instanceof ContextStoppedEvent) {
-            msg = "Heartbeat: Context Stopped - Stopping Background Process";
-            ContextStoppedEvent ctxSE = (ContextStoppedEvent)event;
-            appCtx = ctxSE.getApplicationContext();
-        } else if (event instanceof ContextClosedEvent) {
-            msg = "Heartbeat: Context Closed - Stopping Background Process";
-            ContextClosedEvent ctxCE = (ContextClosedEvent)event;
-            appCtx = ctxCE.getApplicationContext();
-        } else { 
-            // not handled.
-            msg = "";
-            appCtx = null;
+            startHeartbeats(ctxRE.getApplicationContext(), "Heartbeat: Context Refreshed - Starting Background Process");
         }
-        
-        if(appCtx != null) {
-            msg = msg  + ((event.getSource() != null) ? ("; source=" + event.getSource().toString()) : "");
-            try {
-                SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
-                jvmInitiator.start();
-            } catch(NoSuchBeanDefinitionException e) {
-                msg = msg + ". Not starting JVM reverse heartbeat";
-                exceptionThrown = e;
-            }
-            try {
-                SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
-                webServerStateInitiator.start();
-            } catch(NoSuchBeanDefinitionException e) {
-                msg = msg + ". Not starting Web Server reverse heartbeat";
-                exceptionThrown = e;                
-            }
-            if(exceptionThrown != null) {
-            	LOGGER.info(msg);
-            } else { 
-            	LOGGER.error(msg, exceptionThrown);
-            }
+    }
+    
+    private void startHeartbeats(ApplicationContext appCtx, String eventMessage) {
+    	boolean failed = false;
+        try {
+            SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
+            jvmInitiator.start();            
+        } catch(NoSuchBeanDefinitionException e) {
+            LOGGER.error("Could not start JVM reverse heartbeat", e);
+            failed = true;
+        }
+        try {
+            SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
+            webServerStateInitiator.start();
+        } catch(NoSuchBeanDefinitionException e) {
+            LOGGER.error("Could not start WebServer reverse heartbeat", e);
+            failed = true;
+        }
+        if(!failed) {
+        	LOGGER.info(eventMessage);
         }
     }
 }
