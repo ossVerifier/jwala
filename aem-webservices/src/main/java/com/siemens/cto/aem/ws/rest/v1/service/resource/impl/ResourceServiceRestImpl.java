@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -8,11 +9,13 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+
 import java.util.List;
 
 /**
@@ -74,8 +77,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             resourceService.deleteResources(groupName, resourceNames);
             return ResponseBuilder.ok();
         } catch (RuntimeException e) {
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                         new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        	throw new InternalErrorException(AemFaultType.PERSISTENCE_ERROR, String.format("Could not remove resources {}", resourceNames), e);
         }
     }
 

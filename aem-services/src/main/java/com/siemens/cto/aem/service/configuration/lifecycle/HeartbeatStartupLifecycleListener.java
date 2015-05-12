@@ -8,11 +8,9 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
-
-import com.siemens.cto.aem.domain.model.uri.UriBuilder;
 
 /**
  * Listen to events and eagerly initialize the heart-beat code
@@ -25,6 +23,7 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
     public void onApplicationEvent(ApplicationEvent event) {
         ApplicationContext appCtx;
         String msg;
+        RuntimeException exceptionThrown = null;
         
         if (event instanceof ContextStartedEvent) {
             msg = "Heartbeat: Context Started - Starting Background Process";
@@ -55,14 +54,20 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
                 jvmInitiator.start();
             } catch(NoSuchBeanDefinitionException e) {
                 msg = msg + ". Not starting JVM reverse heartbeat";
+                exceptionThrown = e;
             }
             try {
                 SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
                 webServerStateInitiator.start();
             } catch(NoSuchBeanDefinitionException e) {
                 msg = msg + ". Not starting Web Server reverse heartbeat";
+                exceptionThrown = e;                
             }
-            LOGGER.info(msg);
+            if(exceptionThrown != null) {
+            	LOGGER.info(msg);
+            } else { 
+            	LOGGER.error(msg, exceptionThrown);
+            }
         }
     }
 }

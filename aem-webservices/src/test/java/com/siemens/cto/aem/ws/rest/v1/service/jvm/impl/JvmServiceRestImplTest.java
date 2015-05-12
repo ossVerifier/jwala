@@ -185,6 +185,13 @@ public class JvmServiceRestImplTest {
                 statusPath.getUriPath(), systemProperties);
         when(impl.updateJvm(any(UpdateJvmCommand.class), any(User.class))).thenReturn(jvm);
 
+        // Check rules for the JVM
+        UpdateJvmCommand updateJvmCommand = jsonUpdateJvm.toUpdateJvmCommand();
+        updateJvmCommand.validateCommand();
+        updateJvmCommand.hashCode();
+        updateJvmCommand.equals(jsonUpdateJvm.toUpdateJvmCommand());
+        String check = updateJvmCommand.toString();
+        
         final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 

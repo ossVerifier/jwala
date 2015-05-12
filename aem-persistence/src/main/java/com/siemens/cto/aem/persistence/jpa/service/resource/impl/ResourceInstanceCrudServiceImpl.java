@@ -1,5 +1,12 @@
 package com.siemens.cto.aem.persistence.jpa.service.resource.impl;
 
+import java.util.Calendar;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.exception.NotUniqueException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -8,18 +15,10 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.util.Calendar;
-import java.util.List;
 
 /**
  * Created by z003e5zv on 3/25/2015.
@@ -87,7 +86,8 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         return getJpaResourceInstance(aResourceInstanceId);
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public List<JpaResourceInstance> getResourceInstancesByGroupId(final Long groupId) {
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.group.id = :groupId");
         query.setParameter("groupId", groupId);
@@ -100,7 +100,8 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.resourceInstanceName = :name and r.group.id = :groupId");
         query.setParameter("name", name);
         query.setParameter("groupId", groupId);
-        List<JpaResourceInstance> list = query.getResultList();
+        @SuppressWarnings("unchecked")
+		List<JpaResourceInstance> list = query.getResultList();
         if (list == null || list.size() < 1) {
             throw new NotFoundException(AemFaultType.RESOURCE_INSTANCE_NOT_FOUND, "ResourceInstance (group: " + groupId + ", name: " + name + ") not found");
         } else if (list.size() > 1){
@@ -108,7 +109,9 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         }
         return list.get(0);
     }
-    @Override
+    
+    @SuppressWarnings("unchecked")
+	@Override
     public List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String resourceTypeName) {
         final Query query = entityManager.createQuery("SELECT r from JpaResourceInstance r where r.resourceTypeName = :resourceTypeName and r.group.id = :groupId");
         query.setParameter("resourceTypeName", resourceTypeName);
@@ -118,14 +121,9 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
 
     @Override
     public void deleteResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
-        try {
-            JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(aResourceInstanceId);
-            entityManager.remove(jpaResourceInstance);
-            entityManager.flush();
-        }
-        catch(NotFoundException nfe) {
-            System.out.println("A resource instance that should be deleted does not exist, the horror!");
-        }
+        JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(aResourceInstanceId);
+        entityManager.remove(jpaResourceInstance);
+        entityManager.flush();
     }
 
     protected JpaResourceInstance getJpaResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) throws NotFoundException {

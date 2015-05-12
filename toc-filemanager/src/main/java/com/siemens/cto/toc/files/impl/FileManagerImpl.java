@@ -61,7 +61,7 @@ public class FileManagerImpl implements FileManager {
             return read(this.getResourceTypeTemplateByStream(resourceTypeName));
         }
         catch (IOException ioe) {
-            System.out.println(ioe);
+        	LOGGER.error("Failed to read {}", resourceTypeName, ioe);
         }
         return null;
     }
@@ -76,7 +76,7 @@ public class FileManagerImpl implements FileManager {
             }
         }
         catch (IOException ioe) {
-            System.out.println(ioe);
+        	LOGGER.error("Failed to read {}", resourceTypeName, ioe);
         }
         return null;
     }
@@ -102,7 +102,7 @@ public class FileManagerImpl implements FileManager {
             return read(this.getMasterTempateByStream(masterTemplateName));
         }
         catch(IOException ioe) {
-            LOGGER.error(ioe.getMessage());
+            LOGGER.error("Failed to read {} " + masterTemplateName, ioe);
         }
         return null;
     }
@@ -115,7 +115,7 @@ public class FileManagerImpl implements FileManager {
             }
         }
         catch (IOException ioe) {
-            System.out.println(ioe);
+        	LOGGER.error("Failed to read {}", masterTemplateName, ioe);
         }
         return null;
     }
