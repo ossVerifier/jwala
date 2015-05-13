@@ -40,8 +40,12 @@ ModalDialogBox = React.createClass({
             cancelCallback: this.props.cancelCallback
         }
     },
+    componentWillReceiveProps: function(nextProps) {
+        if (this.props.show !== nextProps.show) {
+            this.setState({show:nextProps.show});
+        }
+    },
     render: function() {
-
         if (!this.state.show) {
             return React.DOM.div();
         }
