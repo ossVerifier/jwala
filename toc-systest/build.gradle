@@ -51,7 +51,7 @@ dependencies {
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "http://usmlvv1srn464/artifactory/repo/" }
+        maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
     }
     dependencies {
         classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.0-SNAPSHOT"

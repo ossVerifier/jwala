@@ -118,7 +118,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(aCommand.getJvmId());
             jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
                                             aUser);
-            return jvmState.getState();
+            return jvmState != null ? jvmState.getState() : null;
         }
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)

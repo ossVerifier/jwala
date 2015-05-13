@@ -6,6 +6,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -90,6 +91,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
     }
 
+    @Ignore //functionality removed
     @Test
     public void testHeartbeatPreventionStarting() throws Exception {
         when(currentState.getState()).thenReturn(JvmState.JVM_STARTING);
@@ -104,6 +106,7 @@ public class JvmStateMessageListenerTest {
         verify(jvmStateService, times(0)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
     }
 
+    @Ignore //functionality removed
     @Test
     public void testHeartbeatPreventionStopping() throws Exception {
         when(currentState.getState()).thenReturn(JvmState.JVM_STOPPING);
@@ -123,6 +126,24 @@ public class JvmStateMessageListenerTest {
         when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(null);
         when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
+        final MapMessage message = mock(MapMessage.class);
+        when(converter.convert(eq(message))).thenReturn(convertedMessage);
+        listener.onMessage(message);
+        verify(listener, times(1)).handleMessage(eq(message));
+        verify(listener, times(1)).processMessage(eq(message));
+        verify(jvmStateService, times(1)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
+    }
+
+    /**
+     * Test ensures that a started event is not filtered
+     * just because the current state is stopping.
+     */
+    @Test
+    public void testHeartbeatPreventionDeprecated() throws Exception {
+        when(currentState.getState()).thenReturn(JvmState.JVM_STOPPING);
+        when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+        when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
+    
         final MapMessage message = mock(MapMessage.class);
         when(converter.convert(eq(message))).thenReturn(convertedMessage);
         listener.onMessage(message);

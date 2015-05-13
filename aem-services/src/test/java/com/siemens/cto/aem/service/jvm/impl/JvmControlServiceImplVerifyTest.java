@@ -1,5 +1,12 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +18,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
@@ -24,13 +33,6 @@ import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
@@ -69,11 +71,15 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final Identifier<JvmControlHistory> historyId = mock(Identifier.class);
         final JvmControlHistory incompleteHistory = mock(JvmControlHistory.class);
         final JvmControlOperation controlOperation = JvmControlOperation.START;
+        final ExecData mockExecData = mock(ExecData.class);
 
+        when(commandExecutor.controlJvm(controlCommand, jvm)).thenReturn(mockExecData);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(jvmService.getJvm(eq(jvmId))).thenReturn(jvm);
         when(incompleteHistory.getId()).thenReturn(historyId);
+        when(incompleteHistory.getExecData()).thenReturn(mockExecData);
+        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(persistenceService.addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
 
         impl.controlJvm(controlCommand,
