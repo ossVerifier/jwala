@@ -42,7 +42,7 @@ ModalDialogBox = React.createClass({
     },
     componentWillReceiveProps: function(nextProps) {
         if (this.props.show !== nextProps.show) {
-            this.setState({show:nextProps.show});
+            this.setState({show:nextProps.show, content:nextProps.content});
         }
     },
     render: function() {
