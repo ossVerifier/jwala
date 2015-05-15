@@ -1025,17 +1025,18 @@ var StatusWidget = React.createClass({
         return {status:this.props.defaultStatus, errorMessages:[], showErrorBtn:false, newErrorMsg:false};
     },
     render: function() {
-        if (!this.state.showErrorBtn) {
-            return <div className="status-widget-container">{this.state.status}</div>;
+        var errorBtn = null;
+        if (this.state.showErrorBtn) {
+           errorBtn = <FlashingButton className="ui-button-height ui-alert-border ui-state-error error-indicator-button"
+                                      spanClassName="ui-icon ui-icon-alert"
+                                      flashing={this.state.newErrorMsg.toString()}
+                                      flashClass="flash"
+                                      callback={this.showErrorMsgCallback}/>
         }
         return <div className="status-widget-container">
                    <div ref="errorDlg" style={{display:"inline-block"}}/>
                    <span className="status-label">{this.state.status}</span>
-                   <FlashingButton className="ui-button-height ui-alert-border ui-state-error error-indicator-button"
-                                   spanClassName="ui-icon ui-icon-alert"
-                                   flashing={this.state.newErrorMsg.toString()}
-                                   flashClass="flash"
-                                   callback={this.showErrorMsgCallback}/>
+                   {errorBtn}
                </div>;
     },
     setStatus: function(newStatus, dateTime, errorMsg) {
