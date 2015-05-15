@@ -6,6 +6,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 
 public interface JvmControlServiceLifecycle {
@@ -16,8 +17,14 @@ public interface JvmControlServiceLifecycle {
     /**
      * Set state, return previous state.
      */
-    JvmState startState(final ControlJvmCommand aCommand,
+    CurrentState<Jvm, JvmState> startState(final ControlJvmCommand aCommand,
                     final User aUser);
+
+    /**
+     * Set state to previous state; no message.
+     */
+    void revertState(CurrentState<Jvm, JvmState> aJvmState,
+                        final User aUser);
 
     void startStateWithMessage(final Identifier<Jvm> aJvmId,
                                final JvmState aJvmState,
@@ -28,4 +35,6 @@ public interface JvmControlServiceLifecycle {
                                       final ControlJvmCommand aCommand,
                                       final ExecData execData,
                                       final User aUser);
+
+    void notifyMessageOnly(Identifier<Jvm> jvmId, String result, User aUser);
 }

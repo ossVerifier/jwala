@@ -73,4 +73,13 @@ public class ApplicationProperties {
         properties = tempProperties;
         LOG.info("Properties loaded from path " + propertiesFile);
     }
+
+    public static String get(String key, String defaultValue) {
+        String result = getProperties().getProperty(key);
+        if(result == null) { 
+            return defaultValue; 
+        } else  {
+            return result;
+        }
+    }
 }

@@ -9,6 +9,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
@@ -24,7 +25,35 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
-            return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
+            //return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
+            String sleepSecStr = ApplicationProperties.get("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
+            return new ExecCommand(
+                    "export B=`", 
+                        "sc queryex ", quotedServiceName(aServiceName), 
+                            "| grep PID ",
+                            "| awk '{ print $3 }'",
+                        "`;",
+                    "if [ $B -ne 0 ]; then ",
+                        "sc stop ",quotedServiceName(aServiceName),"> /dev/null; ",
+                        "export A=$? ",                 "; ",
+                        "/usr/bin/sleep ",sleepSecStr,  "; ",
+                        "export C=`", 
+                        "sc queryex ", quotedServiceName(aServiceName), 
+                            "| grep PID ",
+                            "| awk '{ print $3 }'",
+                        "`;",
+                        "if [ $C -ne $B ]; then ",
+                            "exit $A ",                 "; ",
+                        "fi",                           "; ",
+                        "echo Service TERMINATED.",     "; ",
+                        "echo ./toc-mcast TERMINATED ", quotedServiceName(aServiceName),"; ",
+                        "( sc query ",quotedServiceName(aServiceName),"| tail -8 )",    "; ",                        
+                        "/usr/bin/kill -9 -f $B ",      "; ",
+                        "exit " + ExecReturnCode.ABNORMAL_SUCCESS,                      "; ",
+                    "else ",
+                        "echo The service has not been started.",                       "; ",
+                        "exit " + ExecReturnCode.NO_OP,                                 "; ",
+                    "fi");
         }
     },
     THREAD_DUMP(JvmControlOperation.THREAD_DUMP) {
@@ -50,6 +79,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         }
     };
 
+    private static final String NET_STOP_SLEEP_TIME_SECONDS_DEFAULT = "60";
+    
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
             JvmControlOperation.class);
 

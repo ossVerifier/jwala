@@ -132,7 +132,7 @@ public class GroupServiceImpl implements GroupService {
                     }
                 }
                 if (!tmpGroup.isEmpty()) {
-                    otherGroupConnectionDetails.add(new Jvm(jvm.getId(), jvm.getHostName(), tmpGroup));
+                    otherGroupConnectionDetails.add(new Jvm(jvm.getId(), jvm.getJvmName(), tmpGroup));
                 }
             }
         }

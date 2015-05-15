@@ -22,22 +22,25 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
         
         if (event instanceof ContextStartedEvent) {
             ContextStartedEvent ctxSE = (ContextStartedEvent)event;
-            startHeartbeats(ctxSE.getApplicationContext(), "Heartbeat: Context Started - Starting Background Process");
+            startHeartbeats(false, ctxSE.getApplicationContext(), "Heartbeat: Context Started - Starting Background Process");
         }  else if (event instanceof ContextRefreshedEvent) {
             ContextRefreshedEvent ctxRE = (ContextRefreshedEvent)event;
-            startHeartbeats(ctxRE.getApplicationContext(), "Heartbeat: Context Refreshed - Starting Background Process");
+            startHeartbeats(false, ctxRE.getApplicationContext(), "Heartbeat: Context Refreshed - Starting Background Process");
         }
     }
     
-    private void startHeartbeats(ApplicationContext appCtx, String eventMessage) {
+    private void startHeartbeats(boolean doJvm, ApplicationContext appCtx, String eventMessage) {
     	boolean failed = false;
-        try {
-            SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
-            jvmInitiator.start();            
-        } catch(NoSuchBeanDefinitionException e) {
-            LOGGER.error("Could not start JVM reverse heartbeat", e);
-            failed = true;
-        }
+    	
+    	if(doJvm) {
+            try {
+                SourcePollingChannelAdapter jvmInitiator = appCtx.getBean("jvmStateInitiator", SourcePollingChannelAdapter.class);
+                jvmInitiator.start();            
+            } catch(NoSuchBeanDefinitionException e) {
+                LOGGER.error("Could not start JVM reverse heartbeat", e);
+                failed = true;
+            }
+    	}
         try {
             SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
             webServerStateInitiator.start();

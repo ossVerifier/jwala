@@ -40,9 +40,13 @@ public class JvmCommandExecutorBean {
             LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmCommand (" + jvmDispatchCommand.toString() + ") failed: ", e);
         }
 
-        JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId(),
-                groupDispatchCommand);
-
-        return result;
+        if(jvmControlHistory != null) {
+            JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId(),
+                    groupDispatchCommand);
+    
+            return result;
+        } else { 
+            return null;
+        }
     }
 }

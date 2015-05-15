@@ -11,6 +11,7 @@ import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -56,7 +57,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                                                                                                 aUser);
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
 
-            JvmState prevState = null;
+            CurrentState<Jvm, JvmState> prevState = null;
             
             if(aCommand.getControlOperation().getOperationState() != null) {
                 prevState = jvmControlServiceLifecycle.startState(aCommand,
@@ -73,13 +74,32 @@ public class JvmControlServiceImpl implements JvmControlService {
             if(execData.getReturnCode().wasSuccessful()) {
                 LOGGER.debug("exiting controlJvm for command {}", aCommand);
             } else {
-                LOGGER.error("exiting controlJvm for FAILING command {}\n{}", aCommand, execData.standardErrorOrStandardOut());
-                jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
-                        prevState != null ? prevState : JvmState.JVM_FAILED,
-                        execData.standardErrorOrStandardOut(),
-                        aUser);
-                throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                        "Error controlling a JVM with id " + aCommand.getJvmId().getId() + ": " + execData.standardErrorOrStandardOut());
+                String result = execData.standardErrorOrStandardOut();
+                switch(execData.getReturnCode().getReturnCode()) {
+                case ExecReturnCode.ABNORMAL_SUCCESS:
+                    LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {}\n{}", aCommand, result);
+                    jvmControlServiceLifecycle.notifyMessageOnly(aCommand.getJvmId(),
+                            result,
+                            aUser);
+                    break;
+                case ExecReturnCode.NO_OP:
+                    LOGGER.debug("exiting controlJvm with result NOOP for command {}: '{}'", aCommand, result);                
+                    jvmControlServiceLifecycle.revertState(prevState, aUser);
+                    break;
+                default: 
+                    if(aCommand.getControlOperation().checkForSuccess(result)) {
+                        LOGGER.debug("exiting controlJvm for command {}: '{}'", aCommand, result);                
+                        jvmControlServiceLifecycle.revertState(prevState, aUser);
+                    } else {
+                        LOGGER.error("exiting controlJvm for FAILING command {}\n{}", aCommand, result);
+                        jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
+                                prevState != null ? prevState.getState() : JvmState.JVM_FAILED,
+                                result,
+                                aUser);
+                        throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                                "Error controlling a JVM with id " + aCommand.getJvmId().getId() + ": " + result);
+                    }
+                }
             }
 
             return completeHistory;
@@ -114,11 +134,11 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public JvmState startState(final ControlJvmCommand aCommand, final User aUser) {
+        public CurrentState<Jvm, JvmState> startState(final ControlJvmCommand aCommand, final User aUser) {
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(aCommand.getJvmId());
             jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
                                             aUser);
-            return jvmState != null ? jvmState.getState() : null;
+            return jvmState;
         }
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -153,6 +173,29 @@ public class JvmControlServiceImpl implements JvmControlService {
                                                   .setJvmState(aJvmState)
                                                   .setMessage(aMessage)
                                                   .build();
+        }
+
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        @Override
+        public void revertState(CurrentState<Jvm, JvmState> aJvmState, User aUser) {
+            JvmSetStateCommand command = new JvmSetStateCommandBuilder()
+            .setJvmId(aJvmState.getId())
+            .setJvmState(aJvmState.getState())
+            .setAsOf(aJvmState.getAsOf())
+            .build();
+            
+            jvmStateService.setCurrentState(command,
+                                            aUser);
+        }
+
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        @Override
+        public void notifyMessageOnly(Identifier<Jvm> aJvmId, String aMessage, User aUser) {
+            
+            CurrentState<Jvm, JvmState> aJvmState = jvmStateService.getCurrentState(aJvmId);
+            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aJvmId,
+                    aJvmState.getState(),
+                    aMessage), aUser);
         }
     }
 }

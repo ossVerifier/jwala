@@ -11,6 +11,8 @@ public class ExecReturnCode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Integer ZERO = 0;
+    public static final int ABNORMAL_SUCCESS = 126;
+    public static final int NO_OP = 127;
 
     private final Integer returnCode;
 
