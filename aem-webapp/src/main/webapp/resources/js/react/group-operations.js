@@ -470,7 +470,7 @@ var GroupOperationsDataTable = React.createClass({
                                 {sTitle:"State",
                                  mData:null,
                                  tocType:"custom",
-                                 tocRenderCfgFn: this.renderRowData.bind(this, "grp", "jvm"),
+                                 tocRenderCfgFn: this.renderJvmStateRowData.bind(this, "grp", "jvm"),
                                  colWidth:"105px"}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
@@ -489,7 +489,7 @@ var GroupOperationsDataTable = React.createClass({
                              initialSortColumn={[[2, "asc"]]}/>
    },
 
-   renderRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+   renderJvmStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
         var self= this;
         aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
              var key = parentPrefix + parentId + type + oData.id.id;
