@@ -9,8 +9,8 @@ DialogBox = React.createClass({
         return {
             width: width,
             height: height,
-            top: (window.innerHeight/2) - (height/2),
-            left: (window.innerWidth/2) - (width/2)
+            top: ($(window).height()/2) - (height/2),
+            left: ($(window).width()/2) - (width/2)
         }
     },
     render: function() {
@@ -30,10 +30,13 @@ DialogBox = React.createClass({
     },
     divOverlay: $('<div class="ui-widget-overlay ui-front"></div>'),
     componentDidMount: function() {
-        $(this.getDOMNode())[0].offsetTop = (window.innerHeight/2) - ($(this.getDOMNode())[0].offsetHeight / 2)
-        
-        this.setState({top:  (window.innerHeight/2) - ($(this.getDOMNode())[0].offsetHeight / 2)});
-        
+        // Note! The comment out code below does not work in IE8
+        // TODO: Find out the reason for the codes below then remove the if possible and do the positioning via set state and rendering.
+        // $(this.getDOMNode())[0].offsetTop = $(this.getDOMNode())[0].offsetTop;
+        // $(this.getDOMNode())[0].offsetTop = ($(window).height()/2) - ($(this.getDOMNode())[0].offsetHeight / 2);
+
+        this.setState({top:  ($(window).height()/2) - ($(this.getDOMNode())[0].offsetHeight / 2)});
+
         if (this.props.modal === true) {
             $(this.getDOMNode()).parent().append(this.divOverlay);
         }
