@@ -1,0 +1,15 @@
+.status-widget-container {
+    width: 100%;
+    float: left;
+}
+
+.status-label {
+    display: inline-block;
+    height: 18px;
+    margin-top: 4px;
+}
+
+.error-indicator-button {
+    float: right;
+    display: inline-block;
+}

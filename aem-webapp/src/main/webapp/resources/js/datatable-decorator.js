@@ -115,7 +115,7 @@ var decorateTableAsDataTable = function(tableId,
             } else if (!isArray(item) && item.tocType === "custom") {
                 if(item.tocRenderer == 'undefined') {
                     alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
-                } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex);
+                } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId);
             } else {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
                    if (!isArray(item)) {

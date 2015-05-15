@@ -24,6 +24,7 @@
 
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/main-area.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/group-operations.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/jvm-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/group-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/webserver-config.css">

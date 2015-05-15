@@ -33,7 +33,8 @@ var GroupOperations = React.createClass({
                                                               webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
                                                               jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}
-                                                              updateWebServerDataCallback={this.updateWebServerDataCallback}/>
+                                                              updateWebServerDataCallback={this.updateWebServerDataCallback}
+                                                              stateService={this.props.stateService}/>
                                 </div>
                             </td>
                         </tr>
@@ -112,15 +113,21 @@ var GroupOperations = React.createClass({
         });
     },
 
-
     updateJvmStateData: function(newJvmStates) {
-        this.mutateStateDirectly(groupOperationsHelper.processJvmData(this.state.jvms,
-                                                           [],
-                                                           this.state.jvmStates,
-                                                           newJvmStates));
-
+        var self = this;
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-        jvmsToUpdate.forEach(function(jvm) {groupOperationsHelper.updateDataTables(jvm.groupId.id, jvm.jvmId.id, jvm.state.stateString);});
+        jvmsToUpdate.forEach(function(jvm) {
+            var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
+            if (jvmStatusWidget !== undefined) {
+                for (var i = 0; i < newJvmStates.length; i++) {
+                    if (newJvmStates[i].id.id === jvm.jvmId.id) {
+                        jvmStatusWidget.setStatus(newJvmStates[i].stateString,
+                                                  newJvmStates[i].asOf,
+                                                  newJvmStates[i].message);
+                    }
+                }
+            }
+        });
     },
 
     pollStates: function() {
@@ -129,12 +136,6 @@ var GroupOperations = React.createClass({
                                                                                     self.updateStateData(data);
                                                                               });
         this.props.stateService.pollForUpdates(this.props.statePollTimeout, this.dataSink);
-    },
-
-    fetchCurrentJvmStates: function() {
-        var self = this;
-        this.props.stateService.getCurrentJvmStates().then(function(data) { self.updateJvmStateData(data.applicationResponseContent);})
-                                                     .caught(function(e) {});
     },
     fetchCurrentWebServerStates: function() {
         var self = this;
@@ -160,7 +161,6 @@ var GroupOperations = React.createClass({
         this.retrieveData();
         this.pollStates();
         this.fetchCurrentGroupStates();
-        this.fetchCurrentJvmStates();
         this.fetchCurrentWebServerStates();
     },
     componentWillUnmount: function() {
@@ -172,11 +172,13 @@ var GroupOperations = React.createClass({
                                                                  this.state.webServerStates,
                                                                  []));
         this.updateWebServerStateData([]);
+    },
+    statics: {
+        jvmStatusWidgetMap: {} // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
     }
 });
 
 var GroupOperationsDataTable = React.createClass({
-   jvmStateErrorMessages: [],
    jvmHasNewMessage: [],
    webServerStateErrorMessages: [],
    webServerHasNewMessage: [],
@@ -467,7 +469,8 @@ var GroupOperationsDataTable = React.createClass({
                                   expectedState:"STOPPED"}],
                                 {sTitle:"State",
                                  mData:null,
-                                 mRender: this.getStateForJvm,
+                                 tocType:"custom",
+                                 tocRenderCfgFn: this.renderRowData.bind(this, "grp", "jvm"),
                                  colWidth:"105px"}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
@@ -485,6 +488,28 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
    },
+
+   renderRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+        var self= this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+             var key = parentPrefix + parentId + type + oData.id.id;
+             return React.render(<StatusWidget key={key} defaultStatus=""
+                                      errorMsgDlgTitle={oData.jvmName + " State Error Messages"} />, nTd, function() {
+                        GroupOperations.jvmStatusWidgetMap[key] = this;
+
+                        // Fetch and set initial state
+                        var statusWidget = this;
+                        self.props.stateService.getCurrentJvmStates(oData.id.id)
+                                               .then(function(data) {
+                                                        statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                               data.applicationResponseContent[0].asOf,
+                                                                               data.applicationResponseContent[0].message);
+                                                     });
+
+                    });
+        }.bind(this);
+   },
+
    isWebServerStartStopInProcess: function(id, expectedState) {
         if (this.webServersById[id] !== undefined) {
             return (expectedState !== this.webServersById[id].state.stateString);
@@ -877,77 +902,7 @@ var GroupOperationsDataTable = React.createClass({
         var url = "jvmCommand?jvmId=" + id + "&operation=threadDump";
         window.open(url)
     },
-    jvmErrorAlertCallback: function(alertDlgDivId, jvm) {
-        this.jvmHasNewMessage[jvm.id.id] = "false";
-        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-        React.renderComponent(<DialogBox title={jvm.jvmName + " State Error Messages"}
-                                         contentDivClassName="maxHeight400px"
-                                         content={<ErrorMsgList msgList={this.jvmStateErrorMessages[jvm.id.id]}/>} />,
-                                         document.getElementById(alertDlgDivId));
 
-    },
-    getStateForJvm: function(mData, type, fullData) {
-        var jvmId = fullData.id.id;
-        var jvmToRender = this.jvmsById[jvmId];
-
-        var colComponentClassName = "jvm" + jvmId + "-grp" + fullData.parentItemId + "-state";
-
-        if (jvmToRender.state !== undefined) {
-
-            if (jvmToRender.state.message !== undefined && jvmToRender.state.message !== "") {
-
-                if (this.jvmStateErrorMessages[jvmId] === undefined) {
-                    this.jvmStateErrorMessages[jvmId] = [];
-                }
-
-                var msgs = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(jvmToRender.state.message);
-                if (!groupOperationsHelper.lastItemEquals(this.jvmStateErrorMessages[jvmId],
-                                                          "msg",
-                                                          msgs[0])) {
-
-                    this.jvmStateErrorMessages[jvmId].push({dateTime:groupOperationsHelper.getCurrentDateTime(jvmToRender.state.asOf),
-                                                            msg:msgs[0],
-                                                            pullDown:msgs[1]});
-                    this.jvmHasNewMessage[jvmId] = "true";
-                }
-
-                if (this.jvmStateErrorMessages[jvmId].length > 0) {
-
-                    var alertBtnDivId = "alert-btn-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
-                    var alertDlgDivId = "alert-dlg-div-jvm" + jvmId + "-grp" + fullData.parentItemId;
-
-                    if ($("." + colComponentClassName).parent().find("#" + alertBtnDivId).size() === 0) {
-                        $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
-                                                                      "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
-                                                                      "<div id='" + alertDlgDivId + "'>");
-                        $("." + colComponentClassName).html(jvmToRender.state.stateString);
-                    }
-
-                    if (document.getElementById(alertBtnDivId) !== null) {
-                        var flashing = this.jvmHasNewMessage[jvmId] !== undefined ? this.jvmHasNewMessage[jvmId] : "true";
-                        React.renderComponent(<FlashingButton className="ui-button-height ui-alert-border ui-state-error"
-                                                              spanClassName="ui-icon ui-icon-alert"
-                                                              callback={this.jvmErrorAlertCallback.bind(this, alertDlgDivId, jvmToRender)}
-                                                              flashing={flashing}
-                                                              flashClass="flash"/>, document.getElementById(alertBtnDivId));
-                    }
-                }
-
-            } else {
-                    this.jvmStateErrorMessages[jvmId] = [];
-                    React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
-                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
-                    $("." + colComponentClassName).html(jvmToRender.state.stateString);
-            }
-
-        } else {
-            $("." + colComponentClassName).html("UNKNOWN");
-        }
-
-        return "<div class='" + colComponentClassName + "'/>"
-
-    },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
         return "https://" + data.host + ":" + data.httpsPort + tocVars.loadBalancerStatusMount;
@@ -1059,5 +1014,50 @@ var GroupOperationsDataTable = React.createClass({
         }
 
         return "<span class='group-state-" + groupId + "'/>"
+    }
+});
+
+/**
+ * Displays the state and an error indicator if there are any errors in the state.
+ */
+var StatusWidget = React.createClass({
+    getInitialState: function() {
+        return {status:this.props.defaultStatus, errorMessages:[], showErrorBtn:false, newErrorMsg:false};
+    },
+    render: function() {
+        if (!this.state.showErrorBtn) {
+            return <div className="status-widget-container">{this.state.status}</div>;
+        }
+        return <div className="status-widget-container">
+                   <div ref="errorDlg" style={{display:"inline-block"}}/>
+                   <span className="status-label">{this.state.status}</span>
+                   <FlashingButton className="ui-button-height ui-alert-border ui-state-error error-indicator-button"
+                                   spanClassName="ui-icon ui-icon-alert"
+                                   flashing={this.state.newErrorMsg.toString()}
+                                   flashClass="flash"
+                                   callback={this.showErrorMsgCallback}/>
+               </div>;
+    },
+    setStatus: function(newStatus, dateTime, errorMsg) {
+        var newState = {status:newStatus};
+        if (errorMsg !== "") {
+            newState["newErrorMsg"] = true;
+            newState["showErrorBtn"] = true;
+            var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(errorMsg);
+            this.state.errorMessages.push({dateTime:groupOperationsHelper.getCurrentDateTime(dateTime),
+                                           msg:errMsg[0],
+                                           pullDown:errMsg[1]});
+        } else {
+            newState["newErrorMsg"] = false;
+            newState["showErrorBtn"] = false;
+        }
+        this.setState(newState);
+    },
+    showErrorMsgCallback: function() {
+        this.setState({newErrorMsg:false});
+        React.render(<DialogBox title={this.props.errorMsgDlgTitle}
+                                contentDivClassName="maxHeight400px"
+                                content={<ErrorMsgList msgList={this.state.errorMessages}/>} />,
+                     this.refs.errorDlg.getDOMNode());
     }
 });
