@@ -75,31 +75,23 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData(webServers);
         this.updateJvmStateData(jvms);
     },
-
-    /**
-     * Set the state without having the React life cycle run afterwards.
-     *
-     * React advises not to mutate the state but since we're using jQuery to update the status display we might as
-     * well mutate the state for optimization purposes (since we don't need the React life cycle to run). In addition
-     * there's no need to merge the group, web server and jvm states into one before calling setState.
-     *
-     * This function will not be ported when the group-operations page is refactored to use a React Data Table component.
-     */
-    mutateStateDirectly: function(object) {
-        for (var key in object) {
-            this.state[key] = object[key];
-        }
-    },
-
     updateGroupsStateData: function(newGroupStates) {
-        this.mutateStateDirectly(groupOperationsHelper.processGroupData(this.state.groups,
-                                                             [],
-                                                             this.state.groupStates,
-                                                             newGroupStates));
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
-        groupOperationsHelper.updateGroupsInDataTables(this.state.groups);
-    },
 
+        groupsToUpdate.forEach(
+        function(group) {
+            var groupStatusWidget = GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id];
+            if (newGroupStates !== undefined) {
+                for (var i = 0; i < newGroupStates.length; i++) {
+                    if (newGroupStates[i].id.id === group.groupId.id) {
+                        groupStatusWidget.setStatus(newGroupStates[i].stateString,
+                                                    newGroupStates[i].asOf,
+                                                    newGroupStates[i].message);
+                    }
+                }
+            }
+        });
+    },
     updateWebServerStateData: function(newWebServerStates) {
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         webServersToUpdate.forEach(
@@ -116,7 +108,6 @@ var GroupOperations = React.createClass({
             }
         });
     },
-
     updateJvmStateData: function(newJvmStates) {
         var self = this;
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
@@ -172,15 +163,13 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData([]);
     },
     statics: {
+        groupStatusWidgetMap: {},
         webServerStatusWidgetMap: {},
         jvmStatusWidgetMap: {} // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
     }
 });
 
 var GroupOperationsDataTable = React.createClass({
-   jvmHasNewMessage: [],
-   webServerStateErrorMessages: [],
-   webServerHasNewMessage: [],
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -220,9 +209,9 @@ var GroupOperationsDataTable = React.createClass({
 
                               {sTitle:"State",
                                mData:null,
-                               mRender: this.getStateForGroup,
-                               colWidth:"116px",
-                               bSortable:true}];
+                               tocType:"custom",
+                               tocRenderCfgFn: this.renderGroupStateRowData.bind(this, "grp"),
+                               colWidth:"115px"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
@@ -488,7 +477,26 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
    },
+   renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+      var self= this;
+      aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+           var key = type + oData.id.id;
+           return React.render(<StatusWidget key={key} defaultStatus=""
+                                    errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
+                      GroupOperations.groupStatusWidgetMap[key] = this;
 
+                      // Fetch and set initial state
+                      var statusWidget = this;
+                      self.props.stateService.getCurrentGroupStates(oData.id.id)
+                                             .then(function(data) {
+                                                      statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                             data.applicationResponseContent[0].asOf,
+                                                                             data.applicationResponseContent[0].message);
+                                                   });
+
+                  });
+      }.bind(this);
+   },
    renderWebServerStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
@@ -509,7 +517,6 @@ var GroupOperationsDataTable = React.createClass({
                    });
        }.bind(this);
    },
-
    renderJvmStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
         var self= this;
         aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
