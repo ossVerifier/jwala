@@ -101,15 +101,19 @@ var GroupOperations = React.createClass({
     },
 
     updateWebServerStateData: function(newWebServerStates) {
-        this.mutateStateDirectly(groupOperationsHelper.processWebServerData(this.state.webServers,
-                                                                 [],
-                                                                 this.state.webServerStates,
-                                                                 newWebServerStates));
-
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         webServersToUpdate.forEach(
         function(webServer) {
-            groupOperationsHelper.updateWebServersInDataTables(webServer.groupId.id, webServer.webServerId.id, webServer.state.stateString);
+            var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
+            if (webServerStatusWidget !== undefined) {
+                for (var i = 0; i < newWebServerStates.length; i++) {
+                    if (newWebServerStates[i].id.id === webServer.webServerId.id) {
+                        webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
+                                                        newWebServerStates[i].asOf,
+                                                        newWebServerStates[i].message);
+                    }
+                }
+            }
         });
     },
 
@@ -137,11 +141,6 @@ var GroupOperations = React.createClass({
                                                                               });
         this.props.stateService.pollForUpdates(this.props.statePollTimeout, this.dataSink);
     },
-    fetchCurrentWebServerStates: function() {
-        var self = this;
-        this.props.stateService.getCurrentWebServerStates().then(function(data) { self.updateWebServerStateData(data.applicationResponseContent);})
-                                                           .caught(function(e) {});
-    },
     fetchCurrentGroupStates: function() {
         var self = this;
         this.props.stateService.getCurrentGroupStates().then(function(data) { self.updateGroupsStateData(data.applicationResponseContent);})
@@ -161,7 +160,6 @@ var GroupOperations = React.createClass({
         this.retrieveData();
         this.pollStates();
         this.fetchCurrentGroupStates();
-        this.fetchCurrentWebServerStates();
     },
     componentWillUnmount: function() {
         this.dataSink.stop();
@@ -174,6 +172,7 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData([]);
     },
     statics: {
+        webServerStatusWidgetMap: {},
         jvmStatusWidgetMap: {} // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
     }
 });
@@ -280,10 +279,11 @@ var GroupOperationsDataTable = React.createClass({
                                              busyStatusTimeout:tocVars.startStopTimeout,
                                              extraDataToPassOnCallback:["name","groups"],
                                              expectedState:"STOPPED"}],
-                                           {sTitle:"State",
-                                            mData:null,
-                                            mRender: this.getStateForWebServer,
-                                            colWidth:"105px"}];
+                                            {sTitle:"State",
+                                             mData:null,
+                                             tocType:"custom",
+                                             tocRenderCfgFn: this.renderWebServerStateRowData.bind(this, "grp", "webServer"),
+                                             colWidth:"105px"}];
 
         var webServerOfGrpChildTableDetails = {tableIdPrefix:"ws-child-table_",
                                                className:"simple-data-table",
@@ -487,6 +487,27 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}/>
+   },
+
+   renderWebServerStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+       var self= this;
+       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            var key = parentPrefix + parentId + type + oData.id.id;
+            return React.render(<StatusWidget key={key} defaultStatus=""
+                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
+                       GroupOperations.webServerStatusWidgetMap[key] = this;
+
+                       // Fetch and set initial state
+                       var statusWidget = this;
+                       self.props.stateService.getCurrentWebServerStates(oData.id.id)
+                                              .then(function(data) {
+                                                       statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                              data.applicationResponseContent[0].asOf,
+                                                                              data.applicationResponseContent[0].message);
+                                                    });
+
+                   });
+       }.bind(this);
    },
 
    renderJvmStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
@@ -929,79 +950,6 @@ var GroupOperationsDataTable = React.createClass({
                                                           cancelCallback,
                                                           "Web Server");
     },
-    webServerErrorAlertCallback: function(alertDlgDivId, ws) {
-        this.webServerHasNewMessage[ws.id.id] = "false";
-        React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-        React.renderComponent(<DialogBox title={ws.name + " State Error Messages"}
-                                         contentDivClassName="maxHeight400px"
-                                         content={<ErrorMsgList msgList={this.webServerStateErrorMessages[ws.id.id]}/>} />,
-                                         document.getElementById(alertDlgDivId));
-    },
-    /**
-     * This method is responsible for displaying the state in the grid
-     *
-     */
-    getStateForWebServer: function(mData, type, fullData, parentItemId) {
-        var webServerId = fullData.id.id;
-        var webServerToRender = this.webServersById[webServerId];
-
-        var colComponentClassName = "ws" + webServerId + "-grp" + fullData.parentItemId + "-state";
-
-        if (this.webServersById !== undefined && webServerToRender !== undefined) {
-            if (webServerToRender.state !== undefined) {
-
-                if (webServerToRender.state.message !== undefined && webServerToRender.state.message !== "") {
-
-                    if (this.webServerStateErrorMessages[webServerId] === undefined) {
-                        this.webServerStateErrorMessages[webServerId] = [];
-                    }
-
-                    var msgs = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(webServerToRender.state.message);
-                    if (!groupOperationsHelper.lastItemEquals(this.webServerStateErrorMessages[webServerId],
-                                                              "msg",
-                                                              msgs[0])) {
-                        this.webServerStateErrorMessages[webServerId].push({dateTime:groupOperationsHelper.getCurrentDateTime(webServerToRender.state.asOf),
-                                                                            msg:msgs[0],
-                                                                            pullDown:msgs[1]});
-                        this.webServerHasNewMessage[webServerId] = "true";
-                    }
-
-                    if (this.webServerStateErrorMessages[webServerId].length > 0) {
-                        var self = this;
-                        var alertBtnDivId = "alert-btn-div-ws" + webServerId + "-grp" + fullData.parentItemId;
-                        var alertDlgDivId = "alert-dlg-div-ws" + webServerId + "-grp" + fullData.parentItemId;
-
-                        if ($("." + colComponentClassName).parent().find("#" + alertBtnDivId).size() === 0) {
-                            $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />" +
-                                                                         "<div id='" + alertBtnDivId + "' class='inline-block'/>" +
-                                                                         "<div id='" + alertDlgDivId + "'>");
-                            $("." + colComponentClassName).html(webServerToRender.state.stateString);
-                        }
-
-                        var flashing = this.webServerHasNewMessage[webServerId] !== undefined ? this.webServerHasNewMessage[webServerId] : "true";
-                        React.renderComponent(<FlashingButton className="ui-button-height ui-alert-border ui-state-error"
-                                                              spanClassName="ui-icon ui-icon-alert"
-                                                              callback={self.webServerErrorAlertCallback.bind(this, alertDlgDivId, webServerToRender)}
-                                                              flashing={flashing}
-                                                              flashClass="flash"/>, document.getElementById(alertBtnDivId));
-                    }
-
-                } else {
-                    this.webServerStateErrorMessages[webServerId] = [];
-                    React.unmountComponentAtNode(document.getElementById(alertDlgDivId));
-                    React.unmountComponentAtNode(document.getElementById(alertBtnDivId));
-                    $("." + colComponentClassName).parent().html("<div class='" + colComponentClassName + " state' />");
-                    $("." + colComponentClassName).html(webServerToRender.state.stateString);
-                }
-
-            } else {
-                $("." + colComponentClassName).html("UNKNOWN");
-            }
-        }
-
-        return "<div class='" + colComponentClassName + "'/>"
-    },
-
     getStateForGroup: function(mData, type, fullData) {
         var groupId = fullData.id.id;
 
