@@ -76,16 +76,24 @@ public class JvmControlServiceImpl implements JvmControlService {
             } else {
                 String result = execData.standardErrorOrStandardOut();
                 switch(execData.getReturnCode().getReturnCode()) {
-                case ExecReturnCode.ABNORMAL_SUCCESS:
+                case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                     LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {}\n{}", aCommand, result);
                     jvmControlServiceLifecycle.notifyMessageOnly(aCommand.getJvmId(),
                             result,
                             aUser);
                     break;
-                case ExecReturnCode.NO_OP:
+                case ExecReturnCode.STP_EXIT_CODE_NO_OP:
                     LOGGER.debug("exiting controlJvm with result NOOP for command {}: '{}'", aCommand, result);                
                     jvmControlServiceLifecycle.revertState(prevState, aUser);
                     break;
+                case ExecReturnCode.STP_EXIT_CODE_FAST_FAIL:
+                    LOGGER.error("exiting controlJvm FAST FAIL command {}\n{}", aCommand, result);
+                    jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
+                            JvmState.JVM_FAILED,
+                            result,
+                            aUser);
+                    throw new ExternalSystemErrorException(AemFaultType.FAST_FAIL,
+                            "Remote JVM startup health checks failed for jvm with id " + aCommand.getJvmId().getId() + ": " + result);
                 default: 
                     if(aCommand.getControlOperation().checkForSuccess(result)) {
                         LOGGER.debug("exiting controlJvm for command {}: '{}'", aCommand, result);                

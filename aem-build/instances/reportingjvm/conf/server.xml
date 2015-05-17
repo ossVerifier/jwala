@@ -48,6 +48,15 @@
 	    schedulerThreadCount="1"
 	    schedulerThreadNamePrefix="JMS Reporting Thread"/>
 
+  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
+            jmsConnectionFactory="java:/jms/toc-cf"
+            jmsDestination="java:/jms/toc-status"
+            systemExitCodeOnError="${STP_EXIT_CODE_FAST_FAIL}" 
+            testMessageTimeToLiveMs="125"
+            timeToWaitForJmsResponseMs="5000" />
+  
+  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" />
+
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html
   -->

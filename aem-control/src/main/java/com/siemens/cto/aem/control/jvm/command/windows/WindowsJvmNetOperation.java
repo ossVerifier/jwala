@@ -49,10 +49,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                         "echo ./toc-mcast TERMINATED ", quotedServiceName(aServiceName),"; ",
                         "( sc query ",quotedServiceName(aServiceName),"| tail -8 )",    "; ",                        
                         "/usr/bin/kill -9 -f $B ",      "; ",
-                        "exit " + ExecReturnCode.ABNORMAL_SUCCESS,                      "; ",
+                        "exit " + ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS,                      "; ",
                     "else ",
                         "echo The service has not been started.",                       "; ",
-                        "exit " + ExecReturnCode.NO_OP,                                 "; ",
+                        "exit " + ExecReturnCode.STP_EXIT_CODE_NO_OP,                                 "; ",
                     "fi");
         }
     },
