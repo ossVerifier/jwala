@@ -245,7 +245,8 @@ var GroupConfigDataTable = React.createClass({
     render: function() {
         var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name", tocType:"link", colWidth:"1132px", maxDisplayTextLen:150}];
+                        {sTitle:"Group Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink,
+                            colWidth:"1132px", maxDisplayTextLen:150}];
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
                                  className:"simple-data-table"};
@@ -264,5 +265,12 @@ var GroupConfigDataTable = React.createClass({
                              editCallback={this.props.editCallback}
                              rowSubComponentContainerClassName="row-sub-component-container"
                              childTableDetails={childTableDetails}/>
+    },
+    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            return React.render(new React.DOM.button({className:"button-link",
+                                    onClick:self.props.editCallback.bind(this, oData), title:sData}, sData), nTd);
+        }.bind(this);
     }
 });
