@@ -53,8 +53,8 @@ ModalDialogBox = React.createClass({
         var height = this.props.height === undefined ? "auto" : this.props.height;
         var width = this.props.width === undefined ? "auto" : this.props.width;
 
-        var theStyle = {zIndex:"998", position:"fixed",height:height,width:width,top:this.state.top + "px",left:this.state.left + "px",display:"block"};
-        var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"100%"};
+        var theStyle = {overflow:"visible", zIndex:"998", position:"fixed",height:height,width:width,top:this.state.top + "px",left:this.state.left + "px",display:"block"};
+        var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
 
         var theDialog = React.DOM.div({ref:"theDialog",
@@ -100,7 +100,7 @@ ModalDialogBox = React.createClass({
     componentDidUpdate: function() {
         // Set the initial position if it is not yet set. Position the dialog at the center of the screen.
         if (this.refs.theDialog !== undefined) {
-            if (this.state.top < 0) {
+            if (this.state.top === -1000) {
                 var height = $(this.refs.theDialog.getDOMNode()).height();
                 var width = $(this.refs.theDialog.getDOMNode()).width();
                 this.setState({top: ($(window).height()/2) - (height/2),

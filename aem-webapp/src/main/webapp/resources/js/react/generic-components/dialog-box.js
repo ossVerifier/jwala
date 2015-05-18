@@ -15,7 +15,7 @@ DialogBox = React.createClass({
     },
     render: function() {
         var theStyle = {zIndex:"999", position:"fixed",height:"auto",width:this.state.width + "px",top:this.state.top + "px",left:this.state.left + "px",display:"block"};
-        var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"100%"};
+        var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
         return React.DOM.div({className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
                               tabIndex:"-1",
