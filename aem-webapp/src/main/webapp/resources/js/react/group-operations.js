@@ -163,9 +163,10 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData([]);
     },
     statics: {
+        // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
         groupStatusWidgetMap: {},
         webServerStatusWidgetMap: {},
-        jvmStatusWidgetMap: {} // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
+        jvmStatusWidgetMap: {}
     }
 });
 
