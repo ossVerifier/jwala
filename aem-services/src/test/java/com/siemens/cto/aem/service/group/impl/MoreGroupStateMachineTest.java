@@ -216,18 +216,18 @@ public class MoreGroupStateMachineTest {
     public void testWebServerTriggers() {
 
         setWsState(WebServerReachableState.WS_UNREACHABLE);
-        setJvmState(JvmState.JVM_STOPPED);
+        setJvmState(JvmState.SVC_STOPPED);
         classUnderTest.synchronizedInitializeGroup(mockGroup, testUser);
         assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 
         setWsState(WebServerReachableState.WS_REACHABLE);
-        setJvmState(JvmState.JVM_STOPPED);
+        setJvmState(JvmState.SVC_STOPPED);
         classUnderTest.wsUnreachable(ws.getId());
         classUnderTest.refreshState();
         assertEquals(GroupState.GRP_PARTIAL, classUnderTest.getCurrentState());
 
         setWsState(WebServerReachableState.WS_UNREACHABLE);
-        setJvmState(JvmState.JVM_STOPPED);
+        setJvmState(JvmState.SVC_STOPPED);
         classUnderTest.wsReachable(ws.getId());
         classUnderTest.refreshState();
         assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
@@ -236,7 +236,7 @@ public class MoreGroupStateMachineTest {
         setJvmState(JvmState.JVM_FAILED);
         classUnderTest.wsError(ws.getId());
         classUnderTest.refreshState();
-        assertEquals(GroupState.GRP_UNKNOWN, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_FAILURE, classUnderTest.getCurrentState());
 
     }
 

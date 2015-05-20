@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessagingException;
 import org.springframework.integration.channel.DirectChannel;
@@ -31,6 +33,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
@@ -190,6 +193,14 @@ public class DispatchCommandIntegrationTest {
     @Configuration
     @ImportResource("classpath*:META-INF/spring/integration.xml")
     static class CommonConfiguration {
+
+        @Bean 
+        public static PropertySourcesPlaceholderConfigurer configurer() { 
+             PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
+             ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+             ppc.setLocalOverride(true);
+             return ppc;
+        } 
 
         @Bean(name = "jvmControlService")
         public JvmControlService jvmControlService() {

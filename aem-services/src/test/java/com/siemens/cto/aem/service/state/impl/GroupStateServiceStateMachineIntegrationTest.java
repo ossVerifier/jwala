@@ -269,9 +269,9 @@ public class GroupStateServiceStateMachineIntegrationTest {
         
         settle();
 
-        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 5, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.SVC_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.SVC_STOPPED, 5, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.SVC_STOPPED, 10, TimeUnit.MILLISECONDS);
 
         waitForLocks(2, "testGroupStateUpdatingSeries", 3, await-10, 5000, 5000);
        
@@ -303,7 +303,7 @@ public class GroupStateServiceStateMachineIntegrationTest {
         group2Lock.drainPermits();
         group2bLock.drainPermits();
         
-        scheduleJvmThread(5L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(5L, JvmState.SVC_STOPPED, 0, TimeUnit.MILLISECONDS);
 
         waitForState(group2Lock, "testJvmInTwoGroups", await-10, 10000, 3L, GroupState.GRP_STOPPED);
         waitForState(group2bLock, "testJvmInTwoGroups", await-10, 10000, 4L, GroupState.GRP_STOPPED);
@@ -341,9 +341,9 @@ public class GroupStateServiceStateMachineIntegrationTest {
 
         groupWith3Lock.drainPermits();
 
-        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.SVC_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.SVC_STOPPED, 0, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.SVC_STOPPED, 0, TimeUnit.MILLISECONDS);
 
 
         waitForState(groupWith3Lock, "testGroupStateParallelStartStop", await, 10000, 2L, GroupState.GRP_STOPPED);
@@ -362,13 +362,13 @@ public class GroupStateServiceStateMachineIntegrationTest {
         long await = System.currentTimeMillis();
 
         scheduleJvmThread(2L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(2L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(2L, JvmState.SVC_STOPPED, 10, TimeUnit.MILLISECONDS);
 
         scheduleJvmThread(3L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(3L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(3L, JvmState.SVC_STOPPED, 10, TimeUnit.MILLISECONDS);
 
         scheduleJvmThread(4L, JvmState.JVM_STARTED, 9, TimeUnit.MILLISECONDS);
-        scheduleJvmThread(4L, JvmState.JVM_STOPPED, 10, TimeUnit.MILLISECONDS);
+        scheduleJvmThread(4L, JvmState.SVC_STOPPED, 10, TimeUnit.MILLISECONDS);
         
         waitForLocks(2, "testGroupStateUpdatingInParallel", 6, await-10, 5000, 5000);
 

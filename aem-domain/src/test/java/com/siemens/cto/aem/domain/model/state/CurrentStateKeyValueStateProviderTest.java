@@ -39,7 +39,7 @@ public class CurrentStateKeyValueStateProviderTest {
         verifyKeySet(CommonStateKey.ID,
                      id.getId().toString());
         verifyKeySet(CommonStateKey.STATE,
-                     state.toStateString());
+                     state.toPersistentString());
         verifyKeySet(CommonStateKey.AS_OF,
                      ISODateTimeFormat.dateTime().print(asOf));
         verifyKeySet(CommonStateKey.TYPE,
@@ -66,7 +66,7 @@ public class CurrentStateKeyValueStateProviderTest {
         verifyKeySet(CommonStateKey.ID,
                      id.getId().toString());
         verifyKeySet(CommonStateKey.STATE,
-                     state.toStateString());
+                     state.toPersistentString());
         verifyKeySet(CommonStateKey.AS_OF,
                      ISODateTimeFormat.dateTime().print(asOf));
         verifyKeySet(CommonStateKey.TYPE,

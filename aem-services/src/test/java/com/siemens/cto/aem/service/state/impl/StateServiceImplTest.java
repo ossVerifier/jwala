@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -163,6 +165,14 @@ public class StateServiceImplTest {
     @Import(TestJpaConfiguration.class)
     static class Config {
 
+        @Bean 
+        public static PropertySourcesPlaceholderConfigurer configurer() { 
+             PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
+             ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+             ppc.setLocalOverride(true);
+             return ppc;
+        } 
+        
         @Bean
         public StateService<Jvm, JvmState> getStateService() {
             return new JvmStateServiceImpl(getPersistenceService(),

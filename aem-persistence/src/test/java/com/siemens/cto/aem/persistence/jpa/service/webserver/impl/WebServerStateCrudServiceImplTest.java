@@ -70,7 +70,7 @@ public class WebServerStateCrudServiceImplTest {
                      state.getId().getId());
         assertEquals(StateType.WEB_SERVER,
                      state.getId().getStateType());
-        assertEquals(expectedState.toStateString(),
+        assertEquals(expectedState.toPersistentString(),
                      state.getState());
     }
 
@@ -90,7 +90,7 @@ public class WebServerStateCrudServiceImplTest {
                      actualState.getId().getId());
         assertEquals(StateType.WEB_SERVER,
                      actualState.getId().getStateType());
-        assertEquals(expectedState.toStateString(),
+        assertEquals(expectedState.toPersistentString(),
                      actualState.getState());
     }
 
@@ -110,7 +110,7 @@ public class WebServerStateCrudServiceImplTest {
         for (final JpaCurrentState state : states) {
             final Identifier<WebServer> actualId = new Identifier<>(state.getId().getId());
             assertTrue(expectedData.containsKey(actualId));
-            assertEquals(expectedData.get(actualId).toStateString(),
+            assertEquals(expectedData.get(actualId).toPersistentString(),
                          state.getState());
         }
     }

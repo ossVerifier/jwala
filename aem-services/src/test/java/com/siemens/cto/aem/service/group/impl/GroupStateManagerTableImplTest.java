@@ -120,7 +120,7 @@ public class GroupStateManagerTableImplTest {
         Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmCommand("test", "test", 80, 443, 443, 8005,
                 8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(testUser)));
         group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(group.getId(), jvm.getId()),  AuditEvent.now(testUser)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STOPPED), AuditEvent.now(testUser)));
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(testUser)));
 
         classUnderTest.synchronizedInitializeGroup(group, testUser);
 
@@ -146,8 +146,7 @@ public class GroupStateManagerTableImplTest {
 
         classUnderTest.synchronizedInitializeGroup(group, testUser);
 
-        // 1 error jvm alone, so we will stay in in JVM_UNKNOWN
-        assertEquals(GroupState.GRP_UNKNOWN, classUnderTest.getCurrentState());
+        assertEquals(GroupState.GRP_FAILURE, classUnderTest.getCurrentState());
 
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STARTED), AuditEvent.now(testUser)));
 
@@ -186,7 +185,7 @@ public class GroupStateManagerTableImplTest {
         testIncomingJvmStartMessage();
 
         Jvm jvm = jvmUsedInTest;
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STOPPED), AuditEvent.now(testUser)));
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(testUser)));
 
         assertFalse(classUnderTest.canStart());
         assertTrue(classUnderTest.canStop());
@@ -217,9 +216,9 @@ public class GroupStateManagerTableImplTest {
         group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(group.getId(), jvm.getId()),  AuditEvent.now(testUser)));
         group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(group.getId(), jvm2.getId()),  AuditEvent.now(testUser)));
         group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(group.getId(), jvm3.getId()),  AuditEvent.now(testUser)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STOPPED), AuditEvent.now(testUser)));
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(testUser)));
         jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STARTED), AuditEvent.now(testUser)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.JVM_STOPPED), AuditEvent.now(testUser)));
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.SVC_STOPPED), AuditEvent.now(testUser)));
 
         classUnderTest.synchronizedInitializeGroup(group, testUser);
 
@@ -238,7 +237,7 @@ public class GroupStateManagerTableImplTest {
         // receive a stop event for an already stopped jvm, we transit to JVM_STOPPING anyway (per re-design to node/edge 8/19, and update 8/20)
         assertEquals(GroupState.GRP_STOPPING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STOPPED), AuditEvent.now(testUser)));
+        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.SVC_STOPPED), AuditEvent.now(testUser)));
         classUnderTest.jvmStopped(jvm2.getId());
         classUnderTest.refreshState();
         // received the final stop, go to JVM_STOPPED

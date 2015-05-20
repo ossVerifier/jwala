@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.FileNotFoundException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,8 +61,7 @@ public class DefaultJvmExecCommandBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build();
-        final ExecCommand expectedCommand = new ExecCommand("net",
-                                                            "start",
+        final ExecCommand expectedCommand = new ExecCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
                                                             "\"" + jvmName + "\"");
         assertEquals(expectedCommand,
                      actualCommand);

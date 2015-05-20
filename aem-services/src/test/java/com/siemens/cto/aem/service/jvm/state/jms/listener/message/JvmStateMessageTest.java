@@ -28,7 +28,7 @@ public class JvmStateMessageTest {
         final JvmStateMessage message = new JvmStateMessage(expectedId,
                                                             expectedId,
                                                             "unused type",
-                                                            expectedState.getState().toStateString(),
+                                                            expectedState.getState().toPersistentString(),
                                                             ISODateTimeFormat.dateTime().print(expectedState.getAsOf()));
 
         final SetStateCommand<Jvm, JvmState> actualCommand = message.toCommand();

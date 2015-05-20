@@ -22,7 +22,7 @@ public class AbstractCurrentStateMessageExtractorTest {
     protected <S, T extends OperationalState> void setupMockMapMessage(final CurrentState<S, T> aState) throws JMSException {
         mockMapString(CommonStateKey.AS_OF, ISODateTimeFormat.dateTime().print(aState.getAsOf()));
         mockMapString(CommonStateKey.ID, aState.getId().getId().toString());
-        mockMapString(CommonStateKey.STATE, aState.getState().toStateString());
+        mockMapString(CommonStateKey.STATE, aState.getState().toPersistentString());
         mockMapString(CommonStateKey.TYPE, aState.getType().name());
         mockMapString(CommonStateKey.MESSAGE, aState.getMessage());
     }
