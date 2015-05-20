@@ -303,6 +303,7 @@ var renderButton = function(tableId, item, data, type, full, parentItemId) {
                                         expectedState:item.expectedState,
                                         isBusyCallback:item.isBusyCallback,
                                         buttonClassName:item.buttonClassName,
+                                        onClickMessage:item.onClickMessage,
                                         extraDataToPassOnCallback:extraData,
                                         busyStatusTimeout:item.busyStatusTimeout,
                                         parentItemId:parentItemId});
