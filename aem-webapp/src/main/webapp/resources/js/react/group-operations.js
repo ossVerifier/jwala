@@ -32,7 +32,6 @@ var GroupOperations = React.createClass({
                                                               groupsById={groupOperationsHelper.keyGroupsById(this.state.groups)}
                                                               webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
-                                                              jvmsById={groupOperationsHelper.keyJvmsById(this.state.jvms)}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
                                                               stateService={this.props.stateService}/>
                                 </div>
@@ -163,9 +162,10 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData([]);
     },
     statics: {
+        // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
         groupStatusWidgetMap: {},
         webServerStatusWidgetMap: {},
-        jvmStatusWidgetMap: {} // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
+        jvmStatusWidgetMap: {}
     }
 });
 
@@ -174,8 +174,6 @@ var GroupOperationsDataTable = React.createClass({
 
        // TODO: Set status here
        this.groupsById = groupOperationsHelper.keyGroupsById(nextProps.groups);
-       this.webServersById = groupOperationsHelper.keyWebServersById(nextProps.webServers);
-       this.jvmsById = groupOperationsHelper.keyJvmsById(nextProps.jvms);
 
        this.hasNoData = (this.props.data.length === 0);
 
@@ -247,12 +245,9 @@ var GroupOperationsDataTable = React.createClass({
                                              btnCallback:this.webServerStart,
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-play",
-                                             clickedStateClassName:"busy-button",
-                                             isBusyCallback:this.isWebServerStartStopInProcess,
                                              buttonClassName:"ui-button-height",
-                                             busyStatusTimeout:tocVars.startStopTimeout,
                                              extraDataToPassOnCallback:["name","groups"],
-                                             expectedState:"STARTED"},
+                                             onClickMessage:"Starting..."},
                                             {tocType:"space"},
                                             {id:"stopWebServer",
                                              sTitle:"Stop",
@@ -262,12 +257,9 @@ var GroupOperationsDataTable = React.createClass({
                                              btnCallback:this.webServerStop,
                                              className:"inline-block",
                                              customSpanClassName:"ui-icon ui-icon-stop",
-                                             clickedStateClassName:"busy-button",
-                                             isBusyCallback:this.isWebServerStartStopInProcess,
                                              buttonClassName:"ui-button-height",
-                                             busyStatusTimeout:tocVars.startStopTimeout,
                                              extraDataToPassOnCallback:["name","groups"],
-                                             expectedState:"STOPPED"}],
+                                             onClickMessage:"Stopping..."}],
                                             {sTitle:"State",
                                              mData:null,
                                              tocType:"custom",
@@ -280,23 +272,25 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
-                                                   {id:"startWebServers",
-                                                    sTitle:"Start Web Servers",
-                                                    tocType:"button",
-                                                    btnLabel:"",
-                                                    btnCallback:this.startGroupWebServers,
-                                                    className:"inline-block",
-                                                    customSpanClassName:"ui-icon ui-icon-play",
-                                                    buttonClassName:"ui-button-height"},
+                                                    {id:"startWebServers",
+                                                     sTitle:"Start Web Servers",
+                                                     mData:null,
+                                                     tocType:"button",
+                                                     btnLabel:"Start Web Servers",
+                                                     btnCallback:this.startGroupWebServers,
+                                                     className:"inline-block",
+                                                     buttonClassName:"ui-button-height",
+                                                    },
                                                     {id:"space1", tocType:"space"},
                                                     {id:"stopWebServers",
-                                                    sTitle:"Stop Web Servers",
-                                                    tocType:"button",
-                                                    btnLabel:"",
-                                                    btnCallback:this.stopGroupWebServers,
-                                                    className:"inline-block",
-                                                    customSpanClassName:"ui-icon ui-icon-stop",
-                                                    buttonClassName:"ui-button-height"},
+                                                     sTitle:"Stop Web Servers",
+                                                     mData:null,
+                                                     tocType:"button",
+                                                     btnLabel:"Stop Web Servers",
+                                                     btnCallback:this.stopGroupWebServers,
+                                                     className:"inline-block",
+                                                     buttonClassName:"ui-button-height",
+                                                    },
                                                     {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]]};
@@ -341,21 +335,23 @@ var GroupOperationsDataTable = React.createClass({
                                     headerComponents:[
                                          {id:"startJvms",
                                           sTitle:"Start JVMs",
+                                          mData:null,
                                           tocType:"button",
-                                          btnLabel:"",
+                                          btnLabel:"Start JVMs",
                                           btnCallback:this.startGroupJvms,
                                           className:"inline-block",
-                                          customSpanClassName:"ui-icon ui-icon-play",
-                                          buttonClassName:"ui-button-height"},
+                                          buttonClassName:"ui-button-height",
+                                         },
                                          {id:"space1", tocType:"space"},
                                          {id:"stopJvms",
-                                          sTitle:"Stop JVMs",
-                                          tocType:"button",
-                                          btnLabel:"",
-                                          btnCallback:this.stopGroupJvms,
-                                          className:"inline-block",
-                                          customSpanClassName:"ui-icon ui-icon-stop",
-                                          buttonClassName:"ui-button-height"},
+                                           sTitle:"Stop JVMs",
+                                           mData:null,
+                                           tocType:"button",
+                                           btnLabel:"Stop JVMs",
+                                           btnCallback:this.stopGroupJvms,
+                                           className:"inline-block",
+                                           buttonClassName:"ui-button-height",
+                                          },
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]]};
@@ -435,12 +431,9 @@ var GroupOperationsDataTable = React.createClass({
                                   btnCallback:this.jvmStart,
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-play",
-                                  clickedStateClassName:"busy-button",
-                                  isBusyCallback:this.isJvmStartStopInProcess,
                                   buttonClassName:"ui-button-height",
-                                  busyStatusTimeout:tocVars.startStopTimeout,
                                   extraDataToPassOnCallback:["jvmName","groups"],
-                                  expectedState:"STARTED"},
+                                  onClickMessage:"Starting..."},
                                  {tocType:"space"},
                                  {id:"stopJvm",
                                   sTitle:"Stop",
@@ -450,12 +443,9 @@ var GroupOperationsDataTable = React.createClass({
                                   btnCallback:this.jvmStop,
                                   className:"inline-block",
                                   customSpanClassName:"ui-icon ui-icon-stop",
-                                  clickedStateClassName:"busy-button",
-                                  isBusyCallback:this.isJvmStartStopInProcess,
                                   buttonClassName:"ui-button-height",
-                                  busyStatusTimeout:tocVars.startStopTimeout,
                                   extraDataToPassOnCallback:["jvmName","groups"],
-                                  expectedState:"STOPPED"}],
+                                  onClickMessage:"Stopping..."}],
                                 {sTitle:"State",
                                  mData:null,
                                  tocType:"custom",
@@ -537,16 +527,6 @@ var GroupOperationsDataTable = React.createClass({
                     });
         }.bind(this);
    },
-
-   isWebServerStartStopInProcess: function(id, expectedState) {
-        if (this.webServersById[id] !== undefined) {
-            return (expectedState !== this.webServersById[id].state.stateString);
-        }
-        return true;
-   },
-   isJvmStartStopInProcess: function(id, expectedState) {
-        return (expectedState !== this.jvmsById[id].state.stateString);
-   },
    renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
           dataTable.expandCollapseEnabled = true;
           aoColumnDefs[itemIndex].mDataProp = null;
@@ -573,7 +553,6 @@ var GroupOperationsDataTable = React.createClass({
                 });
             }
 
-            self.webServersById = groupOperationsHelper.keyWebServersById(response.applicationResponseContent);
             responseCallback(response);
 
             // This will set the state which triggers DOM rendering thus the state will be updated

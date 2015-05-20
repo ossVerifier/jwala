@@ -74,6 +74,16 @@ var DataTableButton = React.createClass({
     },
     statics: {
         handleClick: function(self) {
+            if (self.props.onClickMessage !== undefined && $("#tooltip" + self.props.id).length === 0) {
+                var top = $("#" + self.props.id).position().top - 20;
+                var left = $("#" + self.props.id).position().left + 15;
+                $("#" + self.props.id).parent().parent().append("<div id='tooltip" + self.props.id +
+                    "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
+                    "style='display:block;top:" + top + ";left:" + left + "'>" + self.props.onClickMessage + "</div>");
+                $("#tooltip" + self.props.id).fadeOut(3000, function() {
+                    $("#tooltip" + self.props.id).remove();
+                });
+            }
 
             // Set the timeouts
             // Note: Manual state monitoring using timeouts are not needed anymore once we are using "the REACT" grid already ;)

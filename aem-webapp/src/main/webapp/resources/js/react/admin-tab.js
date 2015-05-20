@@ -84,7 +84,8 @@ var AdminTab = React.createClass({
                     </p>
                     <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
 
-                    /* Uncomment code below to enable changeable themes.
+                    {null
+                    /* Uncomment code below and remove the curly braces and null to enable changeable themes.
                     <br />
                         <h3>Themes</h3>
                     <br/>
@@ -92,6 +93,7 @@ var AdminTab = React.createClass({
                       {themeOptions}
                     </select>
                     */
+                    }
 
                </div>
     },
