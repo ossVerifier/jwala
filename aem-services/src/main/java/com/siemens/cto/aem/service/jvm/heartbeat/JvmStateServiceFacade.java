@@ -38,41 +38,6 @@ public class JvmStateServiceFacade extends AbstractStateServiceFacade<Jvm, JvmSt
 
     @Override
     protected SetStateCommand<Jvm, JvmState> createCommand(final CurrentState<Jvm, JvmState> currentState, final CurrentState<Jvm, JvmState> aNewCurrentState) {
-
-        // startup/shutdown protection - check for starting/stopping        
-        CurrentState<Jvm, JvmState> newState = aNewCurrentState;
-        
-        boolean discard = false;
-
-        if(currentState != null) {
-            // if starting, ignore stopped. If stopping, ignore started.
-            // TODO: we rely on started to exit starting. However, we have no way to leave JVM_STARTING to JVM_STOPPED in case of failure.
-            switch(currentState.getState()) {
-                case JVM_STARTING:
-                    switch(newState.getState()) {
-                        case JVM_STOPPED: 
-                            discard = true;
-                            break;
-                        default: break;
-                    } break;
-                case JVM_STOPPING:
-                    switch(newState.getState()) {
-                        case JVM_STARTED: 
-                            discard = true;
-                            break;
-                        default: break;
-                    } break;
-                default:
-                    discard = false;        
-                    break;
-            }
-        }
-
-        if(discard) { 
-            LOGGER.debug("Discarding reverse heartbeat; Jvm starting/stopping: {}", aNewCurrentState);                
-            return null;
-        } 
-
         return new JvmSetStateCommand(aNewCurrentState);
     }
     

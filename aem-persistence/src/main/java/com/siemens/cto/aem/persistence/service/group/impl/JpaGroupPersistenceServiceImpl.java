@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.persistence.service.group.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
@@ -20,6 +23,7 @@ import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -163,6 +167,18 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate) {
         LOGGER.debug("Persisting new state " + aGroupToUpdate.getCommand());
         return groupFrom(aGroupToUpdate.getCommand().getNewState(), groupCrudService.updateGroupStatus(Event.<SetStateCommand<Group, GroupState>>create(aGroupToUpdate.getCommand(), aGroupToUpdate.getAuditEvent())));
+    }
+
+    @Override
+    public List<CurrentState<Group, GroupState>> markStaleStates(StateType stateType, GroupState staleState,
+            Date cutoff, AuditEvent auditData) {
+        throw new UnsupportedOperationException("Group stale state not implemented, supported or necessary.");
+    }
+    @Override
+    public List<CurrentState<Group, GroupState>> markStaleStates(StateType stateType, GroupState staleState,
+            Collection<GroupState> statesToCheck,
+            Date cutoff, AuditEvent auditData) {
+        throw new UnsupportedOperationException("Group stale state not implemented, supported or necessary.");
     }
 
 }

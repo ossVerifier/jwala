@@ -86,19 +86,20 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
                              .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
                              .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPED)
-                             .edge(JVM_FAILED,     GroupState.GRP_UNKNOWN) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
+                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPED)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
                              .edge(JVM_NEW,        GroupState.GRP_STARTING)
                              .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
                              .edge(JVM_START,      GroupState.GRP_STARTING)
                              .edge(JVM_STOP,       GroupState.GRP_STOPPING)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_UNKNOWN)
+                             .edge(JVM_DESTROYING, GroupState.GRP_UNKNOWN)
                              .edge(JVM_DESTROYED,  GroupState.GRP_UNKNOWN)
                              .edge(JVM_STALE,      GroupState.GRP_UNKNOWN) 
                              .edge(JVM_UNKNOWN,    GroupState.GRP_UNKNOWN) // handle bad states.
                              .edge(WS_UNKNOWN,     GroupState.GRP_UNKNOWN) 
-                             .edge(WS_FAILED,      GroupState.GRP_UNKNOWN)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .build());
 
         ne.put(GroupState.GRP_STARTING, new NodeBuilder()
@@ -110,11 +111,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
                              .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
                              .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_STARTING) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTING) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTING) // Web Server states too
-                             .edge(WS_FAILED,      GroupState.GRP_STARTING)
+                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTING)
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTING)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .edge(JVM_NEW,        GroupState.GRP_STARTING)
                              .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
                              .edge(JVM_START,      GroupState.GRP_STARTING)
@@ -133,11 +135,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
                              .edge(WS_UNREACHABLE, GroupState.GRP_STOPPING)         // per 8/20 stay in stopping
                              .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)     // per 8/20 stay in stopping
-                             .edge(JVM_FAILED,     GroupState.GRP_STOPPING) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STOPPING) // the same state, we do not
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPING) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPING) // Web Server states too
-                             .edge(WS_FAILED,      GroupState.GRP_STOPPING)
+                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPING)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STOPPING)
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPING)
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPING)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .edge(JVM_NEW,        GroupState.GRP_STOPPING)
                              .edge(JVM_INITIALIZING,GroupState.GRP_STOPPING)
                              .edge(JVM_START,      GroupState.GRP_STOPPING)
@@ -155,12 +158,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)// per 8/20 go to stopping
                              .edge(WS_STOPPING,    GroupState.GRP_STOPPING)    // per 8/20 go to stopping
                              .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_STARTED) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTED) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTED) // Web Server states too
-                             .edge(WS_FAILED,      GroupState.GRP_STARTED)
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
+                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTED)
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTED)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .edge(JVM_NEW,        GroupState.GRP_STARTING)
                              .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
                              .edge(JVM_START,      GroupState.GRP_STARTED)
@@ -177,12 +181,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(JVM_STOPPING,   GroupState.GRP_STOPPING) // per 8/20 go to stopping
                              .edge(WS_STOPPING,    GroupState.GRP_STOPPING)   // per 8/20 go to stopping
                              .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPED)
-                             .edge(JVM_FAILED,     GroupState.GRP_STOPPED) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING) // the same state, we do not
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPED) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPED) // Web Server states too
-                             .edge(WS_FAILED,      GroupState.GRP_STOPPED)
+                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
+                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPED)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPED)
+                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPED)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .edge(JVM_NEW,        GroupState.GRP_STARTING)
                              .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
                              .edge(JVM_START,      GroupState.GRP_STARTING)
@@ -201,11 +206,12 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
                              .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
                              .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_PARTIAL) // these will always stay in
-                             .edge(JVM_INITIALIZED,GroupState.GRP_PARTIAL) // the same state, we do not
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_PARTIAL) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_PARTIAL) // Web Server states too
-                             .edge(WS_FAILED,      GroupState.GRP_PARTIAL)
+                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
+                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
+                             .edge(JVM_INITIALIZED,GroupState.GRP_PARTIAL)
+                             .edge(JVM_UNKNOWN,    GroupState.GRP_PARTIAL)
+                             .edge(WS_UNKNOWN,     GroupState.GRP_PARTIAL)
+                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
                              .edge(JVM_NEW,        GroupState.GRP_PARTIAL)
                              .edge(JVM_INITIALIZING,GroupState.GRP_PARTIAL)
                              .edge(JVM_START,      GroupState.GRP_PARTIAL)

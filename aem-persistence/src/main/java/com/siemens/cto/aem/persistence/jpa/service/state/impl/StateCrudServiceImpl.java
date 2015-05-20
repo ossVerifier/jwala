@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.service.state.impl;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -7,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -19,6 +22,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
 import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 
+@SuppressWarnings("unchecked")
 public class StateCrudServiceImpl<S, T extends OperationalState> implements StateCrudService<S, T> {
 
     @PersistenceContext(unitName = "aem-unit")
@@ -40,7 +44,7 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
         final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(),
                                                            stateType);
         currentState.setId(id);
-        currentState.setState(newState.getState().toStateString());
+        currentState.setState(newState.getState().toPersistentString());
         currentState.setAsOf(newState.getAsOf().toCalendar(Locale.US));
         currentState.setMessage(newState.getMessage());
 
@@ -66,5 +70,41 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
                            somePagination);
 
         return query.getResultList();
+    }
+
+    @Override
+    public List<JpaCurrentState> markStaleStates(StateType stateType, T staleState, Date cutoff, AuditEvent auditData) {
+        final Query updateQuery = entityManager.createNamedQuery(JpaCurrentState.UPDATE_STALE_STATES_QUERY);
+        final Query getQuery = entityManager.createNamedQuery(JpaCurrentState.FIND_STALE_STATES_QUERY);
+
+        getQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
+        updateQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
+        
+        paginator.paginate(getQuery, PaginationParameter.all());
+
+        List<JpaCurrentState> results = getQuery.getResultList();
+        
+        updateQuery.setParameter(JpaCurrentState.STATE_NAME, staleState.toPersistentString());
+        updateQuery.executeUpdate();
+        return results;
+    }
+    
+    @Override
+    public List<JpaCurrentState> markStaleStates(StateType stateType, T staleState, Collection<String> statesToCheck, Date cutoff, AuditEvent auditData) {
+        final Query updateQuery = entityManager.createNamedQuery(JpaCurrentState.UPDATE_STALE_STATES_SUBSET_QUERY);
+        final Query getQuery = entityManager.createNamedQuery(JpaCurrentState.FIND_STALE_STATES_SUBSET_QUERY);
+
+        getQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
+        getQuery.setParameter(JpaCurrentState.CHECK_STATES, statesToCheck);
+        updateQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
+        updateQuery.setParameter(JpaCurrentState.CHECK_STATES, statesToCheck);
+        
+        paginator.paginate(getQuery, PaginationParameter.all());
+
+        List<JpaCurrentState> results = getQuery.getResultList();
+        
+        updateQuery.setParameter(JpaCurrentState.STATE_NAME, staleState.toPersistentString());
+        updateQuery.executeUpdate();
+        return results;
     }
 }

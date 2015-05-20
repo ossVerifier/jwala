@@ -37,4 +37,7 @@ public interface JvmControlServiceLifecycle {
                                       final User aUser);
 
     void notifyMessageOnly(Identifier<Jvm> jvmId, String result, User aUser);
+
+    /* Set completed state to confirmed state, no message. */
+    void completeState(ControlJvmCommand aCommand, User aUser);
 }

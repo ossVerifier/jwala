@@ -18,21 +18,8 @@ import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
  * JVMs utilize infrastructure-provided code to send 
  * JVM state to TOC. 
  * 
- * The translation is done using the state strings
+ * The translation is done using the enum names
  * defined for JvmState here. 
- * 
- * This means that we must make sure that these
- * JvmState enum stateStrings match the ReportingState
- * defined in infrastructure-provided.
- * 
- * This does unfortunately at the moment bind the UI
- * display to the enums, because we also use 
- * stateString for the display.
- * 
- * TODO: Consider how to separate i-p, from toc,from the ui
- * (which requires two conversions). Perhaps best just to
- * keep the coupling, and expect translation to be an i18n
- * operation.
  * 
  * @author horspe00
  *
@@ -43,23 +30,24 @@ public enum JvmState implements OperationalState {
     JVM_INITIALIZING("INITIALIZING",    TRANSIENT, UNSTABLE),
     JVM_INITIALIZED ("INITIALIZED",     TRANSIENT, STABLE  ),
     JVM_START       ("START SENT",      TRANSIENT, UNSTABLE),
-    JVM_STARTING    ("STARTING",        TRANSIENT, UNSTABLE),
+    JVM_STARTING    ("STARTING",        PERMANENT, UNSTABLE),
     JVM_STARTED     ("STARTED",         PERMANENT, STABLE  ),
     JVM_STOP        ("STOP SENT",       TRANSIENT, UNSTABLE),
     JVM_STOPPING    ("STOPPING",        TRANSIENT, UNSTABLE),
-    JVM_STOPPED     ("STOPPED",         PERMANENT, STABLE  ),
+    JVM_STOPPED     ("SHUTTING_DOWN",   TRANSIENT, STABLE  ),
     JVM_DESTROYING  ("DESTROYING",      TRANSIENT, UNSTABLE),
     JVM_DESTROYED   ("DESTROYED",       PERMANENT, STABLE  ),
     JVM_UNKNOWN     ("UNKNOWN",         PERMANENT, UNSTABLE),
     JVM_STALE       ("STALE",           PERMANENT, UNSTABLE),
     JVM_FAILED      ("FAILED",          PERMANENT, UNSTABLE),
+    SVC_STOPPED     ("STOPPED",         PERMANENT, STABLE)
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
 
     static {
         for (final JvmState state : values()) {
-            LOOKUP_MAP.put(state.toStateString(), state);
+            LOOKUP_MAP.put(state.toPersistentString(), state);
         }
     }
 
@@ -89,8 +77,8 @@ public enum JvmState implements OperationalState {
     }
 
     @Override
-    public String toString() {
-        return stateName;
+    public String toPersistentString() {
+        return name();
     }
 
     @Override

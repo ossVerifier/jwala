@@ -390,4 +390,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         this.applicationContext = applicationContext;
 
     }
+
+    @Override
+    public void checkForStaleStates() {
+        throw new UnsupportedOperationException("Group stale state checking not implemented, supported, or required.");
+    }
 }

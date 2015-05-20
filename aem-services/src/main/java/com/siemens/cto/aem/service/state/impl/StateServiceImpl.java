@@ -29,8 +29,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     private final StatePersistenceService<S, T> persistenceService;
     private final StateNotificationService      notificationService;
     private final StateType                     stateType;
-
-    protected final StateNotificationGateway    stateNotificationGateway;
+    private final StateNotificationGateway    stateNotificationGateway;
 
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
             final StateNotificationService theNotificationService, final StateType theStateType,
@@ -102,6 +101,20 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
      */
     protected StateNotificationService getNotificationService() {
         return notificationService;
+    }
+
+    /**
+     * Accessor for derived class.
+     */
+    protected StatePersistenceService<S,T> getPersistenceService() {
+        return persistenceService;
+    }
+    
+    /**
+     * Accessor for derived class.
+     */
+    protected StateNotificationGateway getStateNotificationGateway() {
+        return stateNotificationGateway;
     }
 
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);

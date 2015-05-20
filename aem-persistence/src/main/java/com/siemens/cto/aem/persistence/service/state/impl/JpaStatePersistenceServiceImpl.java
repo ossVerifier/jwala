@@ -1,13 +1,19 @@
 package com.siemens.cto.aem.persistence.service.state.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -49,6 +55,35 @@ public abstract class JpaStatePersistenceServiceImpl<S, T extends OperationalSta
         }
         return results;
     }
+    
+    @Override
+    public List<CurrentState<S,T>> markStaleStates(StateType stateType, T staleState, Date cutoff, AuditEvent auditData) {
+        List<JpaCurrentState> jpaStaleStates = stateCrudService.markStaleStates(stateType, staleState, cutoff, auditData);
+        final List<CurrentState<S, T>> results = new ArrayList<>(jpaStaleStates.size());
+        for (final JpaCurrentState state : jpaStaleStates) {
+            results.add(build(state));
+        }
+        return results;
+    };
 
-    protected abstract CurrentState<S, T> build(final JpaCurrentState aCurrentState);
+    @Override
+    public List<CurrentState<S,T>> markStaleStates(StateType stateType, T staleState, Collection<T> checkStates, Date cutoff, AuditEvent auditData) {
+        HashSet<String> statesToCheck = new HashSet<String>(checkStates.size());
+        for(T t : checkStates) { 
+            statesToCheck.add(t.toPersistentString());
+        }        
+
+        List<JpaCurrentState> jpaStaleStates = stateCrudService.markStaleStates(stateType, staleState, statesToCheck, cutoff, auditData);
+        final List<CurrentState<S, T>> results = new ArrayList<>(jpaStaleStates.size());
+        for (final JpaCurrentState state : jpaStaleStates) {
+            results.add(build(state, true));
+        }
+        return results;
+    };
+
+    protected CurrentState<S, T> build(final JpaCurrentState aCurrentState) {
+        return build(aCurrentState, false);
+    }
+    
+    protected abstract CurrentState<S, T> build(final JpaCurrentState aCurrentState, boolean stale);
 }

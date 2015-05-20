@@ -28,7 +28,7 @@ public enum GroupState implements OperationalState {
 
     static {
         for (final GroupState state : values()) {
-            LOOKUP_MAP.put(state.toStateString(), state);
+            LOOKUP_MAP.put(state.toPersistentString(), state);
         }
     }
 
@@ -61,11 +61,6 @@ public enum GroupState implements OperationalState {
     }
 
     @Override
-    public String toString() {
-        return toStateString();
-    }
-
-    @Override
     public Transience getTransience() {
         return transientState;
     }
@@ -73,5 +68,10 @@ public enum GroupState implements OperationalState {
     @Override
     public Stability getStability() {
         return stableState;
+    }
+
+    @Override
+    public String toPersistentString() {
+        return name();
     }
 }

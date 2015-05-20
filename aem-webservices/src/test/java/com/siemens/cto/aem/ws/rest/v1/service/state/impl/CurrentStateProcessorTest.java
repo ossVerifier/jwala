@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.siemens.cto.aem.domain.model.state.*;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +88,11 @@ public class CurrentStateProcessorTest {
         @Override
         public Stability getStability() {
             return Stability.STABLE;
+        }
+
+        @Override
+        public String toPersistentString() {            
+            return name();
         }
     }
 

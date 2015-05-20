@@ -36,6 +36,10 @@ public class JvmJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuilder<Jv
     }
 
     private JvmState createState() {
-        return JvmState.convertFrom(currentState.getState());
+        if(staleFlag == true) {
+            return JvmState.JVM_STALE;
+        } else {
+            return JvmState.convertFrom(currentState.getState());
+        }
     }
 }

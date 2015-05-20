@@ -25,7 +25,7 @@ public enum WebServerReachableState implements OperationalState {
 
     static {
         for (final WebServerReachableState state : values()) {
-            LOOKUP_MAP.put(state.externalName, state);
+            LOOKUP_MAP.put(state.toPersistentString(), state);
         }
     }
 
@@ -61,5 +61,10 @@ public enum WebServerReachableState implements OperationalState {
     @Override
     public Stability getStability() {
         return stableState;
+    }
+
+    @Override
+    public String toPersistentString() {
+        return name();
     }
 }

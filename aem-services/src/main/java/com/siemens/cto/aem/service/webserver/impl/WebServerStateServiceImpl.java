@@ -34,6 +34,11 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
 
     @Override
     protected void sendNotification(final CurrentState<WebServer, WebServerReachableState> anUpdatedState) {
-        stateNotificationGateway.webServerStateChanged(anUpdatedState);
+        getStateNotificationGateway().webServerStateChanged(anUpdatedState);
+    }
+
+    @Override
+    public void checkForStaleStates() {
+        throw new UnsupportedOperationException("WebServer stale state checking not required for reverse polling.");
     }
 }

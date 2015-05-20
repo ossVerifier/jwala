@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,14 +40,10 @@ import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JvmJpaStatePersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
+import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -165,9 +165,9 @@ public class StateServiceImplTest {
 
         @Bean
         public StateService<Jvm, JvmState> getStateService() {
-            return new AlternateJvmStateServiceImpl(getPersistenceService(),
-                                                    getStateNotificationService(),
-                                                    getStateNotificationGateway());
+            return new JvmStateServiceImpl(getPersistenceService(),
+                                           getStateNotificationService(),
+                                           getStateNotificationGateway());
         }
 
         @Bean

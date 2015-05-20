@@ -10,6 +10,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -24,6 +26,9 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
     
+    @Autowired
+    PropertySourcesPlaceholderConfigurer configurer;
+    
     public AdminServiceRestImpl(FilesConfiguration theFilesConfiguration, ResourceService resourceService) {
         this.filesConfiguration = theFilesConfiguration;
         this.resourceService = resourceService;
@@ -33,6 +38,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response reload() {
         ApplicationProperties.reload();
         Properties copyToReturn = ApplicationProperties.getProperties();
+        configurer.setProperties(copyToReturn);
         
         filesConfiguration.reload();
         

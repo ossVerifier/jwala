@@ -86,7 +86,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
         aConsumer.set(CommonStateKey.ID, id.getId().toString());
         aConsumer.set(CommonStateKey.TYPE, type.toString());
         aConsumer.set(CommonStateKey.AS_OF, DATE_TIME_FORMATTER.print(asOf));
-        aConsumer.set(CommonStateKey.STATE, state.toStateString());
+        aConsumer.set(CommonStateKey.STATE, state.toPersistentString());
         aConsumer.set(CommonStateKey.MESSAGE, message);
     }
 

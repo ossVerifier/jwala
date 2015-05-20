@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.resource.impl.ResourceInstanceCrudServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

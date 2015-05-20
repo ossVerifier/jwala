@@ -19,4 +19,13 @@ public interface StateService<S, T extends OperationalState> {
     Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds);
 
     Set<CurrentState<S, T>> getCurrentStates(final PaginationParameter somePagination);
+
+    /**
+     * Periodically invoked by spring to convert states to STALE
+     * Implementations are supposed to parameterized in toc-defaults, e.g.:
+     * states.stale-check.initial-delay.millis=45000
+     * states.stale-check.period.millis=60000
+     * states.stale-check.jvm.stagnation.millis=60000
+     */
+    void checkForStaleStates();
 }

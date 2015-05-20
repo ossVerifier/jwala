@@ -6,6 +6,8 @@ import java.util.Calendar;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -16,10 +18,27 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity
 @Table(name = "current_state")
+@NamedQueries({
+    @NamedQuery(name = JpaCurrentState.FIND_STALE_STATES_QUERY,
+            query = "SELECT j FROM JpaCurrentState j where j.asOf < :cutoff"),
+    @NamedQuery(name = JpaCurrentState.UPDATE_STALE_STATES_QUERY,
+            query = "update JpaCurrentState j SET j.state = :stateName where j.asOf < :cutoff"),
+    @NamedQuery(name = JpaCurrentState.FIND_STALE_STATES_SUBSET_QUERY,
+            query = "SELECT j FROM JpaCurrentState j where j.asOf < :cutoff and j.state in :checkStates"),
+    @NamedQuery(name = JpaCurrentState.UPDATE_STALE_STATES_SUBSET_QUERY,
+            query = "update JpaCurrentState j SET j.state = :stateName where j.asOf < :cutoff and j.state in :checkStates"),
+})
 public class JpaCurrentState implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    public static final String FIND_STALE_STATES_QUERY = "states.findStaleStates";
+    public static final String UPDATE_STALE_STATES_QUERY = "states.updateStaleStates";
+    public static final String FIND_STALE_STATES_SUBSET_QUERY = "states.subsetFindStaleStates";
+    public static final String UPDATE_STALE_STATES_SUBSET_QUERY = "states.subsetUpdateStaleStates";
+    public static final String CUTOFF = "cutoff";
+    public static final String STATE_NAME = "stateName";
+    public static final String CHECK_STATES = "checkStates";
+    
     @EmbeddedId
     private JpaCurrentStateId id;
 

@@ -1,20 +1,42 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
+import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_COMPLETE_STATE;
+import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_FAILURE_STATE;
+import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_IN_PROGRESS_STATE;
+import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_SUCCESS_KEYWORDS;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_FAILED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_START;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOP;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.SVC_STOPPED;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 
+/**
+ * Enumeration of control operations that can be executed against a JVM
+ */
 public enum JvmControlOperation {
 
-    START("start", JvmState.JVM_START, new String[] {"The requested service has already been started."}),
-    STOP("stop", JvmState.JVM_STOP, new String[] {/*net*/"The (.*) service is not started.",
-                                                  /*sc*/"The service has not been started.",
-                                                  /*script*/"The service has not been started."}),
-    THREAD_DUMP("threadDump", null, null),
-    HEAP_DUMP("heapDump", null, null);
+    START(  "start",JVM_START, NO_JVM_COMPLETE_STATE,JVM_FAILED,
+                    new String[] {"The requested service has already been started."}
+                    ),
+                    
+    STOP(   "stop", JVM_STOP, SVC_STOPPED, JVM_FAILED,
+                    new String[] {/*net*/"The (.*) service is not started.",
+                                  /*sc*/"The service has not been started.",
+                                  /*script*/"The service has not been started."}),
+                                  
+    THREAD_DUMP(
+            "threadDump",   NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, 
+                            NO_JVM_SUCCESS_KEYWORDS),
+            
+    HEAP_DUMP("heapDump",   NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, 
+                            NO_JVM_SUCCESS_KEYWORDS);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
@@ -26,13 +48,20 @@ public enum JvmControlOperation {
 
     private final String operationValue;
     private final JvmState operationState;
+    private final JvmState confirmedState;
+    private final JvmState failureState;
     private final Pattern[] successOutputPattern;
 
     private JvmControlOperation(final String theValue,
                                 final JvmState theOperationJvmState,
+                                final JvmState theConfirmedState,
+                                final JvmState theFailureState,
                                 final String[] successOutputRegex) {
         operationValue = theValue;
         operationState = theOperationJvmState;
+        confirmedState = theConfirmedState;
+        failureState   = theFailureState;
+        
         if(successOutputRegex != null) {
             successOutputPattern = new Pattern[successOutputRegex.length];
             int i = 0;
@@ -60,6 +89,18 @@ public enum JvmControlOperation {
 
     public JvmState getOperationState() {
         return operationState;
+    }
+
+    public JvmState getConfirmedState() {
+        return confirmedState;
+    }
+
+    public JvmState getFailureStateOrPrevious(CurrentState<Jvm, JvmState> prevState) {
+        return prevState == null ? failureState : (failureState == null ? prevState.getState() : failureState);
+    }
+
+    public JvmState getFailureState() {
+        return failureState;
     }
 
     /** Compare against success strings */

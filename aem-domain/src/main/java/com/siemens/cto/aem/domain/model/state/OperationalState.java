@@ -4,6 +4,8 @@ public interface OperationalState {
 
     String toStateString();
 
+    String toPersistentString();
+
     Transience getTransience();
 
     Stability getStability();

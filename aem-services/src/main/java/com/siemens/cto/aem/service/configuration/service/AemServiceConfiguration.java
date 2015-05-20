@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
@@ -42,9 +42,9 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
-import com.siemens.cto.aem.service.jvm.impl.AlternateJvmStateServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.state.GroupStateService;
@@ -66,8 +66,10 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
+import com.siemens.cto.toc.files.FileManager;
 
 @Configuration
+@EnableScheduling
 public class AemServiceConfiguration {
 
     @Autowired
@@ -235,7 +237,7 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmStateService")
     public StateService<Jvm, JvmState> getJvmStateService() {
-        return new AlternateJvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
+        return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
                                                 getStateNotificationService(),
                                                 stateNotificationGateway);
     }

@@ -36,6 +36,10 @@ public class WebServerJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuil
     }
 
     private WebServerReachableState createState() {
-        return WebServerReachableState.convertFrom(currentState.getState());
+        if(staleFlag == true) {
+            return WebServerReachableState.WS_UNKNOWN;
+        } else {
+            return WebServerReachableState.convertFrom(currentState.getState());
+        }
     }
 }

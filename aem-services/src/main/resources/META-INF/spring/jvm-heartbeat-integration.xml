@@ -133,7 +133,7 @@
         
         <int:header-enricher id="jvmFailedHttpHeaderEnricher">
             <int:header name="reachableState"
-                value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).JVM_STOPPED}" />
+                value="#{T(com.siemens.cto.aem.domain.model.jvm.JvmState).SVC_STOPPED}" />
         </int:header-enricher>
 
         <int:transformer id="jvmSuccessfulHeaderIdTransformer"

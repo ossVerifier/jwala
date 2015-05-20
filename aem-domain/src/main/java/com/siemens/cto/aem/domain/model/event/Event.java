@@ -43,7 +43,7 @@ public class Event<T> implements Serializable {
         if (obj.getClass() != getClass()) {
             return false;
         }
-        Event rhs = (Event) obj;
+        Event<?> rhs = (Event<?>) obj;
         return new EqualsBuilder()
                 .append(this.command, rhs.command)
                 .append(this.auditEvent, rhs.auditEvent)

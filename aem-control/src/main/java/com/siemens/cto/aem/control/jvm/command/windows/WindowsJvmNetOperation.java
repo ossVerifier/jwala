@@ -1,5 +1,11 @@
 package com.siemens.cto.aem.control.jvm.command.windows;
 
+import static com.siemens.cto.aem.control.AemControl.Properties.CYGPATH;
+import static com.siemens.cto.aem.control.AemControl.Properties.SCRIPTS_PATH;
+import static com.siemens.cto.aem.control.AemControl.Properties.SLEEP_TIME;
+import static com.siemens.cto.aem.control.AemControl.Properties.START_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.STOP_SCRIPT_NAME;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
@@ -8,52 +14,38 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 
+/**
+ * Windows JVM Net Operations
+ * 
+ * When calling out to a script located on the disk
+ * the path is located from the toc.properties file
+ *
+ */
 public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 
     START(JvmControlOperation.START) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
-            return new ExecCommand("net", "start", quotedServiceName(aServiceName));
+            return new ExecCommand(
+                    cygpathWrapper(START_SCRIPT_NAME), 
+                    quotedServiceName(aServiceName)
+            );
         }
     },
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String...aParams) {
-            //return new ExecCommand("net", "stop", quotedServiceName(aServiceName));
-            String sleepSecStr = ApplicationProperties.get("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
             return new ExecCommand(
-                    "export B=`", 
-                        "sc queryex ", quotedServiceName(aServiceName), 
-                            "| grep PID ",
-                            "| awk '{ print $3 }'",
-                        "`;",
-                    "if [ $B -ne 0 ]; then ",
-                        "sc stop ",quotedServiceName(aServiceName),"> /dev/null; ",
-                        "export A=$? ",                 "; ",
-                        "/usr/bin/sleep ",sleepSecStr,  "; ",
-                        "export C=`", 
-                        "sc queryex ", quotedServiceName(aServiceName), 
-                            "| grep PID ",
-                            "| awk '{ print $3 }'",
-                        "`;",
-                        "if [ $C -ne $B ]; then ",
-                            "exit $A ",                 "; ",
-                        "fi",                           "; ",
-                        "echo Service TERMINATED.",     "; ",
-                        "echo ./toc-mcast TERMINATED ", quotedServiceName(aServiceName),"; ",
-                        "( sc query ",quotedServiceName(aServiceName),"| tail -8 )",    "; ",                        
-                        "/usr/bin/kill -9 -f $B ",      "; ",
-                        "exit " + ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS,                      "; ",
-                    "else ",
-                        "echo The service has not been started.",                       "; ",
-                        "exit " + ExecReturnCode.STP_EXIT_CODE_NO_OP,                                 "; ",
-                    "fi");
+                    cygpathWrapper(STOP_SCRIPT_NAME), 
+                    quotedServiceName(aServiceName),
+                    SLEEP_TIME.getValue());
+
         }
     },
     THREAD_DUMP(JvmControlOperation.THREAD_DUMP) {
@@ -79,8 +71,6 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         }
     };
 
-    private static final String NET_STOP_SLEEP_TIME_SECONDS_DEFAULT = "60";
-    
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
             JvmControlOperation.class);
 
@@ -102,5 +92,9 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 
     public static WindowsJvmNetOperation lookup(final JvmControlOperation anOperation) {
         return LOOKUP_MAP.get(anOperation);
+    }
+    
+    private static String cygpathWrapper(AemControl.Properties scriptPath) {
+        return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`"; 
     }
 }

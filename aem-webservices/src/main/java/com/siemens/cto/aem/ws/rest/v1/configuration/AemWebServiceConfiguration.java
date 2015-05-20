@@ -5,10 +5,6 @@ import java.util.List;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import com.siemens.cto.aem.service.webserver.WebServerCommandService;
-
-import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -28,9 +24,11 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.ExternalSystemErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
@@ -44,6 +42,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.state.impl.StateConsumerManager;
 import com.siemens.cto.aem.ws.rest.v1.service.state.impl.StateServiceRestImpl;
@@ -183,6 +183,7 @@ public class AemWebServiceConfiguration {
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
         providers.add(getV1InternalErrorExceptionMapper());
+        providers.add(getV1ExternalSystemErrorExceptionMapper());
         providers.add(getV1TransactionRequiredExceptionMapper());
 
         return providers;
@@ -211,6 +212,11 @@ public class AemWebServiceConfiguration {
     @Bean
     public InternalErrorExceptionMapper getV1InternalErrorExceptionMapper() {
         return new InternalErrorExceptionMapper();
+    }
+
+    @Bean
+    public ExternalSystemErrorExceptionMapper getV1ExternalSystemErrorExceptionMapper() {
+        return new ExternalSystemErrorExceptionMapper();
     }
 
     @Bean

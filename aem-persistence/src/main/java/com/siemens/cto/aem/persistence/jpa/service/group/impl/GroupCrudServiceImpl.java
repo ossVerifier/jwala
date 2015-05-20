@@ -105,6 +105,8 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
         return jpaGroup;
     }
+    
+    @SuppressWarnings("unchecked")
     @Override
     public JpaGroup getGroup(final String name) throws NotFoundException {
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name = :groupName");

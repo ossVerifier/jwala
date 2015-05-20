@@ -15,7 +15,7 @@ public class WebServerJpaStatePersistenceServiceImpl extends JpaStatePersistence
     }
 
     @Override
-    protected CurrentState<WebServer, WebServerReachableState> build(final JpaCurrentState aCurrentState) {
-        return new WebServerJpaCurrentStateBuilder(aCurrentState).build();
+    protected CurrentState<WebServer, WebServerReachableState> build(JpaCurrentState aCurrentState, boolean stale) {
+        return new WebServerJpaCurrentStateBuilder(aCurrentState).setStale(stale).build();
     }
 }
