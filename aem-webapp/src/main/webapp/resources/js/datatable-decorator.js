@@ -58,11 +58,17 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].mDataProp = null;
                     aoColumnDefs[itemIndex].sClass = "control center";
                     aoColumnDefs[itemIndex].sWidth = "20px";
+
+                    aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+                        var o = renderExpandCollapseControl(tableId, parentItemId, rootId, childTableDetails,
+                                                            sData, item.type, oData, expandIcon, collapseIcon);
+                        return React.render(o, nTd);
+                    }.bind(this);
+
                 }
 
                 if (item.mRender !== undefined ||
                     item.tocType === "button"  ||
-                    item.tocType === "control" ||
                     item.tocType === "emptyColumn") {
                         aoColumnDefs[itemIndex].bSortable = (item.bSortable === undefined ? false : item.bSortable);
                 }
@@ -239,17 +245,6 @@ var renderComponents = function(tableId,
         renderedComponent = "&nbsp;";
     } else if (item.tocType === "link") {
         renderedComponent = renderLink(item, tableId, data, type, full, editCallback);
-    } else if (item.tocType === "control") {
-        renderedComponent = renderExpandCollapseControl(tableId,
-                                                        parentItemId,
-                                                        rootId,
-                                                        childTableDetails,
-                                                        data,
-                                                        type,
-                                                        full,
-                                                        expandIcon,
-                                                        collapseIcon,
-                                                        parentItemName);
     } else if (item.tocType === "array") {
         renderedComponent = renderArray(item, data);
         if (renderedComponent.length > item.maxDisplayTextLen) {
@@ -340,51 +335,33 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
 
 var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childTableDetails, data, type, full, expandIcon, collapseIcon) {
     var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
-
-    if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
-        for (var i = 0; i < childTableDetails.length; i++) {
-            childTableDetails[i]["data"] = data;
-        }
-    } else {
-        childTableDetails["data"] = data;
-    }
-
     var theRootId = (rootId === undefined ? full.id.id : rootId);
-    var delimitedId = createDelimitedId([tableId,
-                                         full.id.id], "_");
+    var delimitedId = createDelimitedId([tableId, full.id.id], "_");
 
-    var dataSources = [];
-    var childTableDetailsArray = [];
-
-    if(Object.prototype.toString.call(childTableDetails) === "[object Array]") {
-        for (var i = 0; i < childTableDetails.length; i++) {
-            dataSources[i] = childTableDetails[i].dataCallback === undefined ?
-                                {jsonData:childTableDetails[i].data} :
-                                {dataCallback:childTableDetails[i].dataCallback};
-            childTableDetailsArray[i] = childTableDetails[i];
-        }
+    if (Object.prototype.toString.call(childTableDetails) === "[object Array]") {
+        childTableDetails.forEach(function(childTableDetail) {
+            if (childTableDetail.dataCallback === undefined) {
+                // Note: There should be a generic way to get the data (meaning no specifics like jvm) since this
+                //       js code functions as a generic helper.
+                // TODO: Remove specifics!
+                childTableDetail.data = full.jvms;
+            }
+        })
     } else {
-            dataSources[0] = childTableDetails.dataCallback === undefined ?
-                                {jsonData:childTableDetails.data} :
-                                {dataCallback:childTableDetails.dataCallback};
-            childTableDetailsArray[0] = childTableDetails;
+        // TODO: Remove specifics!
+        childTableDetails.data = full.jvms;
     }
 
-    var expander = new ExpandCollapseControl({id:delimitedId,
-                                               expandIcon:expandIcon,
-                                               collapseIcon:collapseIcon,
-                                               childTableDetails:childTableDetails,
-                                               rowSubComponentContainerClassName:"row-sub-component-container",
-                                               parentItemId:full.id.id,
-                                               parentItemName:full.name,
-                                               dataTable:$("#" + tableId).dataTable(),
-                                               rootId:theRootId});
-
-    var renderedComponent = React.renderComponentToStaticMarkup(expander);
-
-    TocPager.allExpanders[delimitedId] = { "component": expander, "dataSources": dataSources, "childTableDetailsArray": childTableDetailsArray };
-
-    return renderedComponent;
+    return React.createElement(ExpandCollapseControl, {id:delimitedId,
+                                                       key:delimitedId,
+                                                       expandIcon:expandIcon,
+                                                       collapseIcon:collapseIcon,
+                                                       childTableDetails:childTableDetails,
+                                                       rowSubComponentContainerClassName:"row-sub-component-container",
+                                                       parentItemId:full.id.id,
+                                                       parentItemName:full.name,
+                                                       dataTable:$("#" + tableId).dataTable(),
+                                                       rootId:theRootId});
 };
 
 var renderArray = function(item, data) {

@@ -18,10 +18,8 @@ var ExpandCollapseControl = React.createClass({
                 childTableDetailsArray[0] = this.props.childTableDetails;
         }
 
-        $("#" + this.props.id).off("click");
-        $("#" + this.props.id).on("click", this.onClick.bind(this, dataSources, childTableDetailsArray));
-
-        return <span id={this.props.id} className="ui-icon ui-icon-triangle-1-e"/>
+        return <span id={this.props.id} className="ui-icon ui-icon-triangle-1-e"
+                     onClick={this.onClick.bind(this, dataSources, childTableDetailsArray)}/>
     },
     decorateTable: function(childTableDetails) {
         return decorateTableAsDataTable(childTableDetails.tableIdPrefix + this.props.id,
@@ -107,7 +105,6 @@ var ExpandCollapseControl = React.createClass({
         }
     },
     onClick: function(dataSources, childTableDetailsArray) {
-
         var self = this;
         var dataTable = this.props.dataTable;
 
