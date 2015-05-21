@@ -79,24 +79,38 @@ var ExpandCollapseControl = React.createClass({
                     // Accordion button specific codes
                     // attach handlers to the buttons
                     for (var i = 0; i < headerComponents.length; i++) {
-                        var component = headerComponents[i];
-                        var buttonSelector = dataTable.selector + "_" + component.id;
 
-                        // Remove span to prevent span within a span due to the application of JQuery button.
-                        // This fixes bug in ie8 where the button label goes outside the button container.
-                        var label = $(buttonSelector).find("span").html();
-                        $(buttonSelector).find("span").remove();
-                        $(buttonSelector).html(label);
-                        $(buttonSelector).attr("title", component.sTitle);
-                        $(buttonSelector).button();
-                        $(buttonSelector).off("click");
-                        $(buttonSelector).on("click",
-                                       {id:self.props.parentItemId,
-                                        name:self.props.parentItemName,
-                                        buttonSelector: buttonSelector, },
-                                        component.btnCallback);
-                        $(buttonSelector).find("span").attr("class", component.customSpanClassName);
-                        $(buttonSelector).addClass("ui-button-height");
+                        var component = headerComponents[i];
+
+                        if (component.tocType === "button") {
+                            var buttonSelector = dataTable.selector + "_" + component.id;
+
+                            var label = $(buttonSelector).find("span").html();
+                            var onClickCallback = function(theComponent, event) {
+                                // Popup status (that fades out)
+                                if (theComponent.onClickMessage !== undefined && $("#tooltip" + theComponent.id).length === 0) {
+                                    var top = $(event.data.buttonSelector).position().top - 20;
+                                    var left = $(event.data.buttonSelector).position().left + 15;
+                                    $(event.data.buttonSelector).parent().parent().append("<div id='tooltip" + theComponent.id +
+                                        "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
+                                        "style='display:block;top:" + top + ";left:" + left + "'>" + theComponent.onClickMessage + "</div>");
+                                    $("#tooltip" + theComponent.id).fadeOut(3000, function() {
+                                        $("#tooltip" + theComponent.id).remove();
+                                    });
+                                }
+                                theComponent.btnCallback(event);
+                            }.bind(self, component);
+
+                            $(buttonSelector).find("span").remove();
+                            $(buttonSelector).html(label);
+                            $(buttonSelector).attr("title", component.sTitle);
+                            $(buttonSelector).button();
+
+                            $(buttonSelector).click({id:self.props.parentItemId, name:self.props.parentItemName, buttonSelector: buttonSelector}, onClickCallback);
+
+                            $(buttonSelector).find("span").attr("class", component.customSpanClassName);
+                            $(buttonSelector).addClass("ui-button-height");
+                        }
 
                     }
                 }

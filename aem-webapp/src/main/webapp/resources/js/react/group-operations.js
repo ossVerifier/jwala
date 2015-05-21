@@ -192,6 +192,7 @@ var GroupOperationsDataTable = React.createClass({
                                 className:"inline-block",
                                 buttonClassName:"ui-button-height",
                                 extraDataToPassOnCallback:"name",
+                                onClickMessage:"Starting..."
                                },
                                {tocType:"space"},
                                {id:"stopGroup",
@@ -203,6 +204,7 @@ var GroupOperationsDataTable = React.createClass({
                                 className:"inline-block",
                                 buttonClassName:"ui-button-height",
                                 extraDataToPassOnCallback:"name",
+                                onClickMessage:"Stopping..."
                               }],
 
                               {sTitle:"State",
@@ -280,7 +282,7 @@ var GroupOperationsDataTable = React.createClass({
                                                      btnCallback:this.startGroupWebServers,
                                                      className:"inline-block",
                                                      buttonClassName:"ui-button-height",
-                                                    },
+                                                     onClickMessage:"Starting..."},
                                                     {id:"space1", tocType:"space"},
                                                     {id:"stopWebServers",
                                                      sTitle:"Stop Web Servers",
@@ -290,7 +292,7 @@ var GroupOperationsDataTable = React.createClass({
                                                      btnCallback:this.stopGroupWebServers,
                                                      className:"inline-block",
                                                      buttonClassName:"ui-button-height",
-                                                    },
+                                                     onClickMessage:"Stopping..."},
                                                     {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]]};
@@ -341,6 +343,7 @@ var GroupOperationsDataTable = React.createClass({
                                           btnCallback:this.startGroupJvms,
                                           className:"inline-block",
                                           buttonClassName:"ui-button-height",
+                                          onClickMessage:"Starting..."
                                          },
                                          {id:"space1", tocType:"space"},
                                          {id:"stopJvms",
@@ -351,6 +354,7 @@ var GroupOperationsDataTable = React.createClass({
                                            btnCallback:this.stopGroupJvms,
                                            className:"inline-block",
                                            buttonClassName:"ui-button-height",
+                                           onClickMessage:"Stopping..."
                                           },
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
