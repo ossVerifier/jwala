@@ -88,12 +88,12 @@ var ExpandCollapseControl = React.createClass({
                             var label = $(buttonSelector).find("span").html();
                             var onClickCallback = function(theComponent, event) {
                                 // Popup status (that fades out)
-                                if (theComponent.onClickMessage !== undefined && $("#tooltip" + theComponent.id).length === 0) {
-                                    var top = $(event.data.buttonSelector).position().top - 20;
-                                    var left = $(event.data.buttonSelector).position().left + 15;
-                                    $(event.data.buttonSelector).parent().parent().append("<div id='tooltip" + theComponent.id +
+                                if (theComponent.onClickMessage !== undefined && $("#tooltip" + event.data.id).length === 0) {
+                                    var top = $(event.data.buttonSelector).parent().position().top - $(event.data.buttonSelector).height()/2;
+                                    var left = $(event.data.buttonSelector).parent().position().left + $(event.data.buttonSelector).width()/2;
+                                    $(event.data.buttonSelector).parent().append("<div id='tooltip" + theComponent.id +
                                         "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
-                                        "style='display:block;top:" + top + ";left:" + left + "'>" + theComponent.onClickMessage + "</div>");
+                                        "style='top:" + top + "px;left:" + left + "px'>" + theComponent.onClickMessage + "</div>");
                                     $("#tooltip" + theComponent.id).fadeOut(3000, function() {
                                         $("#tooltip" + theComponent.id).remove();
                                     });

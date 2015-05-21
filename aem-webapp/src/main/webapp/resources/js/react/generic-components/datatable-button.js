@@ -75,11 +75,11 @@ var DataTableButton = React.createClass({
     statics: {
         handleClick: function(self) {
             if (self.props.onClickMessage !== undefined && $("#tooltip" + self.props.id).length === 0) {
-                var top = $("#" + self.props.id).position().top - 20;
-                var left = $("#" + self.props.id).position().left + 15;
-                $("#" + self.props.id).parent().parent().append("<div id='tooltip" + self.props.id +
+                var top = $("#" + self.props.id).parent().position().top - $("#" + self.props.id).height()/2;
+                var left = $("#" + self.props.id).parent().position().left + $("#" + self.props.id).width()/2;
+                $("#" + self.props.id).parent().append("<div id='tooltip" + self.props.id +
                     "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
-                    "style='display:block;top:" + top + ";left:" + left + "'>" + self.props.onClickMessage + "</div>");
+                    "style='top:" + top + "px;left:" + left + "px'>" + self.props.onClickMessage + "</div>");
                 $("#tooltip" + self.props.id).fadeOut(3000, function() {
                     $("#tooltip" + self.props.id).remove();
                 });
