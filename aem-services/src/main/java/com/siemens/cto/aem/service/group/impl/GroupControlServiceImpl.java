@@ -40,7 +40,7 @@ public class GroupControlServiceImpl implements GroupControlService {
     @Override
     public GroupControlHistory controlGroup(ControlGroupCommand aCommand, User aUser) {
 
-        LOGGER.debug("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(),
+        LOGGER.info("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(),
                 aCommand.getGroupId());
 
         // TODO: incomplete controlHistory 

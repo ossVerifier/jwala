@@ -22,8 +22,11 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
  */
 public enum JvmControlOperation {
 
-    START(  "start",JVM_START, NO_JVM_COMPLETE_STATE,JVM_FAILED,
-                    new String[] {"The requested service has already been started."}
+    START(  "start",JVM_START, NO_JVM_COMPLETE_STATE, JVM_FAILED,
+                    new String[] {
+                            /*net*/"The requested service has already been started.",
+                            /*sc*/"An instance of the service is already running."                            
+    }
                     ),
                     
     STOP(   "stop", JVM_STOP, SVC_STOPPED, JVM_FAILED,

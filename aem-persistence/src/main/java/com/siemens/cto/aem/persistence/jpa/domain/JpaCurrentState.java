@@ -20,11 +20,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @Table(name = "current_state")
 @NamedQueries({
     @NamedQuery(name = JpaCurrentState.FIND_STALE_STATES_QUERY,
-            query = "SELECT j FROM JpaCurrentState j where j.asOf < :cutoff"),
+            query = "SELECT j FROM JpaCurrentState j, JpaJvm jvm where j.asOf < :cutoff and j.id.id = jvm.id"),
     @NamedQuery(name = JpaCurrentState.UPDATE_STALE_STATES_QUERY,
             query = "update JpaCurrentState j SET j.state = :stateName where j.asOf < :cutoff"),
     @NamedQuery(name = JpaCurrentState.FIND_STALE_STATES_SUBSET_QUERY,
-            query = "SELECT j FROM JpaCurrentState j where j.asOf < :cutoff and j.state in :checkStates"),
+            query = "SELECT j FROM JpaCurrentState j, JpaJvm jvm where j.asOf < :cutoff and j.state in :checkStates and j.id.id = jvm.id"),
     @NamedQuery(name = JpaCurrentState.UPDATE_STALE_STATES_SUBSET_QUERY,
             query = "update JpaCurrentState j SET j.state = :stateName where j.asOf < :cutoff and j.state in :checkStates"),
 })

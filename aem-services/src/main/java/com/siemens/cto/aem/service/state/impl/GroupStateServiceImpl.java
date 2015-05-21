@@ -98,8 +98,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             return Collections.<SetGroupStateCommand>emptyList();
         }
 
-        List<SetGroupStateCommand> result = null;
-        result = new ArrayList<>(groups.size());
+        List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
+        List<ReadWriteLease> lockedGsms = new ArrayList<>(groups.size());
 
         try {
             for(LiteGroup group : groups) {
@@ -124,6 +124,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                     // could not lock
                     LOGGER.warn("Skipping group due to lock {}", group);
                     continue;
+                } else {
+                    lockedGsms.add(gsm);
                 }
                                 
                 gsm.refreshState();
@@ -138,10 +140,14 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 result.add(sgsc);
             }
         } catch(final RuntimeException re) {
-            LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
-            for(SetGroupStateCommand sgsc : result) {
-                this.groupStateUnlock(sgsc);
+            for(ReadWriteLease gsm : lockedGsms) {
+                Group group = gsm.getCurrentGroup();
+                if(group != null) {
+                    LOGGER.warn("GSS Unlock: {}", group);
+                    getLockableGsm(group.getId()).unlockPersistent();
+                }
             }
+            LOGGER.warn("GSS Unlocked affected groups due to exception.", re);
             result.clear();
             throw re;
         }
@@ -170,6 +176,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
 
         List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
+        List<ReadWriteLease> lockedGsms = new ArrayList<>(groups.size());
 
         try {
             for(Group group : groups) {
@@ -192,6 +199,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                     // could not lock
                     LOGGER.warn("GSS Skipping group due to lock {}", group);
                     continue;
+                } else { 
+                    lockedGsms.add(gsm);
                 }
 
                 gsm.refreshState();
@@ -206,10 +215,14 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 result.add(sgsc);
             }
         } catch(final RuntimeException re) {
-            LOGGER.warn("GSS Unlocking affected groups due to exception.", re);
-            for(SetGroupStateCommand sgsc : result) {
-                this.groupStateUnlock(sgsc);
+            for(ReadWriteLease gsm : lockedGsms) {
+                Group group = gsm.getCurrentGroup();
+                if(group != null) {
+                    LOGGER.warn("GSS Unlock: {}", group);
+                    getLockableGsm(group.getId()).unlockPersistent();
+                }
             }
+            LOGGER.warn("GSS Unlocked affected groups due to exception.", re);
             result.clear();
             throw re;
         }
