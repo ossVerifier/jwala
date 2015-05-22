@@ -34,7 +34,7 @@ var WebServerConfig = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
-        return  <div className={this.props.className}>
+        return  <div className={"react-dialog-container " + this.props.className}>
                     <table>
                         <tr>
                             <td>

@@ -27,8 +27,8 @@
  */
 ModalDialogBox = React.createClass({
     getInitialState: function() {
-        var top = this.props.top === undefined ? -1000 : this.props.top;
-        var left = this.props.left === undefined ? -1000 : this.props.left;
+        var top = this.props.top === undefined ? -10000 : this.props.top;
+        var left = this.props.left === undefined ? -10000 : this.props.left;
 
         return {
             top: top,
@@ -53,7 +53,7 @@ ModalDialogBox = React.createClass({
         var height = this.props.height === undefined ? "auto" : this.props.height;
         var width = this.props.width === undefined ? "auto" : this.props.width;
 
-        var theStyle = {overflow:"visible", zIndex:"998", position:"fixed",height:height,width:width,top:this.state.top + "px",left:this.state.left + "px",display:"block"};
+        var theStyle = {overflow:"visible", zIndex:"998", position:"absolute",height:height,width:width,top:this.state.top + "px",left:this.state.left + "px",display:"block"};
         var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
 
@@ -100,11 +100,16 @@ ModalDialogBox = React.createClass({
     componentDidUpdate: function() {
         // Set the initial position if it is not yet set. Position the dialog at the center of the screen.
         if (this.refs.theDialog !== undefined) {
-            if (this.state.top === -1000) {
+            if (this.state.top === -10000) {
                 var height = $(this.refs.theDialog.getDOMNode()).height();
                 var width = $(this.refs.theDialog.getDOMNode()).width();
-                this.setState({top: ($(window).height()/2) - (height/2),
-                               left: ($(window).width()/2) - (width/2)});
+                var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
+                var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
+                this.setState({top:offsetY - height/2,left:offsetX - width/2});
+
+                if (this.props.modal === true) {
+                    $(this.getDOMNode()).parent().append(this.divOverlay);
+                }
             }
         }
     },

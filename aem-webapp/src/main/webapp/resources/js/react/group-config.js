@@ -35,7 +35,7 @@ var GroupConfig = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
-        return  <div className={this.props.className}>
+        return  <div className={"react-dialog-container " + this.props.className}>
                     <table>
                         <tr>
                             <td>
@@ -246,7 +246,7 @@ var GroupConfigDataTable = React.createClass({
         var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
                         {sTitle:"Group Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink,
-                            colWidth:"1132px", maxDisplayTextLen:150}];
+                            colWidth:"1000px", maxDisplayTextLen:150}];
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
                                  className:"simple-data-table"};
@@ -258,7 +258,6 @@ var GroupConfigDataTable = React.createClass({
         childTableDetails["tableDef"] = childTableDef;
 
         return <TocDataTable tableId="group-config-table"
-                             className="groupConfig dataTable hierarchical"
                              tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
