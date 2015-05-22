@@ -155,8 +155,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                              .edge(WS_STARTING,    GroupState.GRP_STARTING)   // per 8/20 go to starting
                              .edge(JVM_STARTED,    GroupState.GRP_STARTED)
                              .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
-                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)// per 8/20 go to stopping
-                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)    // per 8/20 go to stopping
+                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)// per 8/20 go to stopping
+                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)    // per 8/20 go to stopping
                              .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
                              .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
                              .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)

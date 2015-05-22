@@ -381,7 +381,7 @@ var GroupOperationsDataTable = React.createClass({
                                   extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
                                   {id:"spacediag", tocType:"space"},
                                   {id:"diagnose",
-                                      sTitle:"Diagnose",
+                                      sTitle:"Check State",
                                       mData:null,
                                       tocType:"button",
                                       btnLabel:"",
