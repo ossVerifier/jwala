@@ -22,7 +22,8 @@ var Anchor = React.createClass({
             val = val.substring(0, this.props.maxDisplayTextLen) + "...";
         }
 
-        return <button id={this.props.id} className="button-link" title={title}>{val}</button>
+        var className = (this.props.className === undefined ? "button-link" : "button-link " + this.props.className);
+        return <button id={this.props.id} className={className} title={title}>{val}</button>
     },
     linkClick: function() {
         if ($("#" + this.props.id).hasClass("disabled")) {

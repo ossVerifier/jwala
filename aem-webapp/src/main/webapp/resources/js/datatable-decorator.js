@@ -320,6 +320,7 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
                                                            : data.replace(/[\. ,:-]+/g, '');
         var id = createDelimitedId([tableId, "link",  linkLabelPartId, full.id.id], "_");
         return React.renderComponentToStaticMarkup(new Anchor({id:id,
+                                                               className: "anchor-font-style",
                                                                data:full,
                                                                value:item.linkLabel !== undefined ?
                                                                      item.linkLabel :
@@ -330,7 +331,7 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
                                                                waitForResponse:item.waitForResponse,
                                                                maxDisplayTextLen:item.maxDisplayTextLen}));
     }  else {
-        return "<a href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
+        return "<a class='anchor-font-style' href='" + item.hRefCallback(full) + "' target='_blank'>" + item.linkLabel + "</a>";
     }
 };
 
