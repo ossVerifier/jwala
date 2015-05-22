@@ -972,7 +972,7 @@ var StatusWidget = React.createClass({
                                       callback={this.showErrorMsgCallback}/>
         }
         return <div className="status-widget-container">
-                   <div ref="errorDlg" style={{display:"inline-block"}}/>
+                   <div ref="errorDlg" className="react-dialog-container"/>
                    <span className="status-label">{this.state.status}</span>
                    {errorBtn}
                </div>;

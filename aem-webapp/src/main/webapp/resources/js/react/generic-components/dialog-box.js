@@ -9,12 +9,12 @@ DialogBox = React.createClass({
         return {
             width: width,
             height: height,
-            top: ($(window).height()/2) - (height/2),
-            left: ($(window).width()/2) - (width/2)
+            top: -10000,
+            left: -10000
         }
     },
     render: function() {
-        var theStyle = {zIndex:"999", position:"fixed",height:"auto",width:this.state.width + "px",top:this.state.top + "px",left:this.state.left + "px",display:"block"};
+        var theStyle = {zIndex:"999", position:"absolute",height:"auto",width:this.state.width + "px",top:this.state.top + "px",left:this.state.left + "px",display:"block"};
         var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
         return React.DOM.div({className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
@@ -30,12 +30,9 @@ DialogBox = React.createClass({
     },
     divOverlay: $('<div class="ui-widget-overlay ui-front"></div>'),
     componentDidMount: function() {
-        // Note! The comment out code below does not work in IE8
-        // TODO: Find out the reason for the codes below then remove the if possible and do the positioning via set state and rendering.
-        // $(this.getDOMNode())[0].offsetTop = $(this.getDOMNode())[0].offsetTop;
-        // $(this.getDOMNode())[0].offsetTop = ($(window).height()/2) - ($(this.getDOMNode())[0].offsetHeight / 2);
-
-        this.setState({top:  ($(window).height()/2) - ($(this.getDOMNode())[0].offsetHeight / 2)});
+        var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
+        var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
+        this.setState({top:offsetY - this.state.height/2,left:offsetX - this.state.width/2});
 
         if (this.props.modal === true) {
             $(this.getDOMNode()).parent().append(this.divOverlay);

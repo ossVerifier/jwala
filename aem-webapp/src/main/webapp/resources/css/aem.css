@@ -157,3 +157,7 @@ div .state {
 .no-border {
     border:none !important;
 }
+
+.react-dialog-container {
+    position: absolute; /* Makes sure that the child dialog's position is relative to it's container! */
+}
