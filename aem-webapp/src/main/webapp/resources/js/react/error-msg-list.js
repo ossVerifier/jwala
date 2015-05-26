@@ -11,7 +11,10 @@ var ErrorMsgList = React.createClass({
                 count++;
             }
             return count;
-        }
+        },
+        KEY_PREFIX: "key",
+        EVEN: "even",
+        ODD: "odd"
     },
     getInitialState: function() {
         return {
@@ -34,8 +37,8 @@ var ErrorMsgList = React.createClass({
                     var style = ((col === "dateTime") ? {width:"115px"} : {});
                     cols.push(React.DOM.td({className:className, style:style}, row[col]));
                 } else {
-                   var theKey = "key" + i;
-                   var pullDownIconClassName = this.state.pullDownVisible["key" + i] === true ? "ui-icon-triangle-1-n" : "ui-icon-triangle-1-s";
+                   var theKey = ErrorMsgList.KEY_PREFIX + i;
+                   var pullDownIconClassName = this.state.pullDownVisible[ErrorMsgList.KEY_PREFIX + i] === true ? "ui-icon-triangle-1-n" : "ui-icon-triangle-1-s";
                    cols.push(React.DOM.td({className:"text-align-center", style:{width:"16px"} /* Easiest way to center the pull down icon. */},
                                            React.DOM.span({className:"ui-icon cursorPointer " + pullDownIconClassName,
                                                           onClick:this.clickPullDown.bind(this, theKey)}, "")));
@@ -47,14 +50,19 @@ var ErrorMsgList = React.createClass({
 
                 }
             }
-            var trClassName = (rowIdx++ % 2 === 0) ? "even" : "odd";
+            var trClassName = (rowIdx++ % 2 === 0) ? ErrorMsgList.EVEN : ErrorMsgList.ODD;
             rows.push(React.DOM.tr({className:trClassName} , cols));
 
-            var rowStyle = this.state.pullDownVisible["key" + i] === true ? {} : {display:"none"};
+            var rowStyle = this.state.pullDownVisible[ErrorMsgList.KEY_PREFIX + i] === true ? {} : {display:"none"};
             rows.push(React.DOM.tr({style:rowStyle}, pullDownMsg));
         }
 
         return React.DOM.table({className:"errMsgTable"}, rows);
+    },
+    componentDidMount: function() {
+        // Open the latest error message details by default.
+        this.state.pullDownVisible[ErrorMsgList.KEY_PREFIX + (this.props.msgList.length - 1)] = true;
+        this.forceUpdate();
     },
     clickPullDown: function(key) {
         if (this.state.pullDownVisible[key]) {
