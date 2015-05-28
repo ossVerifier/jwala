@@ -185,7 +185,8 @@ var ExpandCollapseControl = React.createClass({
             return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
                                                                      tableDef={this.props.childTableDetails.tableDef}
                                                                      className={this.props.childTableDetails.className}
-                                                                     title={this.props.childTableDetails.title}/>)
+                                                                     title={this.props.childTableDetails.title}
+                                                                     divTypeContainerClassName={this.props.childTableDetails.divTypeContainerClassName}/>)
         }
 
     },

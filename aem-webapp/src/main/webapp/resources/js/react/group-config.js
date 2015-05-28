@@ -36,7 +36,7 @@ var GroupConfig = React.createClass({
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={"react-dialog-container " + this.props.className}>
-                    <table>
+                    <table className="group-config-table-type-container">
                         <tr>
                             <td>
                                 <div style={{float:"right"}}>
@@ -243,13 +243,14 @@ var GroupConfigDataTable = React.createClass({
       return !nextProps.noUpdateWhen;
     },
     render: function() {
-        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"10px"},
+        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"14px"},
                         {sTitle:"Group ID", mData:"id.id", bVisible:false},
                         {sTitle:"Group Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink,
-                            colWidth:"1000px", maxDisplayTextLen:150}];
+                        colWidth:"1070px", maxDisplayTextLen:150}];
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
-                                 className:"simple-data-table"};
+                                 className:"simple-data-table",
+                                 divTypeContainerClassName:"group-config-jvm-div-type-container"};
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                              {sTitle:"JVM Name", mData:"jvmName"},
@@ -258,6 +259,7 @@ var GroupConfigDataTable = React.createClass({
         childTableDetails["tableDef"] = childTableDef;
 
         return <TocDataTable tableId="group-config-table"
+                             className="group-config-table"
                              tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}

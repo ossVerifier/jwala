@@ -33,7 +33,7 @@ var TocDataTable = React.createClass({
             header = this.props.title === undefined ? "" : new React.DOM.h3(null, this.props.title);
         }
 
-        return React.DOM.div({style:this.props.hide === true ? {display:"none"} : {}},
+        return React.DOM.div({style:this.props.hide === true ? {display:"none"} : {}, className:this.props.divTypeContainerClassName},
                              header,
                              React.DOM.table({id: this.props.tableId}))
     },
