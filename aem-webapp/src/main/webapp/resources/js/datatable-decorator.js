@@ -58,7 +58,6 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].mDataProp = null;
                     aoColumnDefs[itemIndex].sClass = "control center";
                     aoColumnDefs[itemIndex].sWidth = "20px";
-
                     aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
                         var o = renderExpandCollapseControl(tableId, parentItemId, rootId, childTableDetails,
                                                             sData, item.type, oData, expandIcon, collapseIcon);
@@ -69,7 +68,8 @@ var decorateTableAsDataTable = function(tableId,
 
                 if (item.mRender !== undefined ||
                     item.tocType === "button"  ||
-                    item.tocType === "emptyColumn") {
+                    item.tocType === "emptyColumn" ||
+                    item.tocType === "control") {
                         aoColumnDefs[itemIndex].bSortable = (item.bSortable === undefined ? false : item.bSortable);
                 }
 
