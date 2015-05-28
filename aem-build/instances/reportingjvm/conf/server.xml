@@ -34,8 +34,8 @@
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
   <Listener className="com.siemens.cto.infrastructure.atomikos.AtomikosLifecycleListener" />
   <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="38"
-            instanceId="38"
+            id="1"
+            instanceId="1"
             type="JVM"
 	    jmsConnectionFactory="java:/jms/toc-cf"
 	    jmsDestination="java:/jms/toc-status"
@@ -74,15 +74,23 @@
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsTopic"
-              address="tocStatus-usmlvv1cto933-1"/>
+              address="tocStatus"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="tcp://usmlvv1cto924:7222"
-              userName="989test"
-              userPassword="Passw0rd"/>
+              serverUrl="ssl://localhost:7243"
+              userName="admin"
+              userPassword="Passw0rd"
+              connAttemptCount="2"
+              connAttemptDelay="100"
+              reconnAttemptCount="100"
+              reconnAttemptDelay="1000"
+              SSLEnableVerifyHost="true"
+              SSLEnableVerifyHostName="false"
+              SSLTrustedCertificate="${STP_HOME}\siemens\data\security\ems\ctorootca.pem" />
+              />
 
   </GlobalNamingResources>
 

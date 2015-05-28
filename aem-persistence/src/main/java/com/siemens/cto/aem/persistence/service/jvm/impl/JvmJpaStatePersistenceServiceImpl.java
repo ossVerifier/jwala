@@ -15,7 +15,7 @@ public class JvmJpaStatePersistenceServiceImpl extends JpaStatePersistenceServic
     }
 
     @Override
-    protected CurrentState<Jvm, JvmState> build(final JpaCurrentState aCurrentState, boolean stale) {
-        return new JvmJpaCurrentStateBuilder(aCurrentState).setStale(stale).build();
+    protected CurrentState<Jvm, JvmState> build(final JpaCurrentState aCurrentState, JvmState staleState) {
+        return new JvmJpaCurrentStateBuilder(aCurrentState).setStaleOption(staleState).build();
     }
 }

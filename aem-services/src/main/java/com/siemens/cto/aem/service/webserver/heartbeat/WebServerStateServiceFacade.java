@@ -33,6 +33,10 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
         webServerDao = theWebServerDao;
     }
 
+    /**
+     * We filter indications that the server is started while the server is stopping
+     * but we do do stale state checking on starting and stopping now.
+     */
     @Override
     protected SetStateCommand<WebServer, WebServerReachableState> createCommand(final CurrentState<WebServer, WebServerReachableState> currentState, final CurrentState<WebServer, WebServerReachableState> aNewCurrentState) {
         
@@ -53,8 +57,7 @@ public class WebServerStateServiceFacade extends AbstractStateServiceFacade<WebS
                 default:
                     break;
             }
-        }        
-        
+        }
         return new WebServerSetStateCommand(aNewCurrentState);
     }
     

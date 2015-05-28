@@ -28,6 +28,13 @@ import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> implements StateService<Jvm, JvmState> {
 
     private ArrayList<JvmState> jvmStatesToCheck = new ArrayList<>(10);
+    private ArrayList<JvmState> jvmStoppingStatesToCheck = new ArrayList<>(1);
+    
+    @Value("${states.stale-check.jvm.stagnation.millis}")
+    private int stagnationMillis;
+
+    @Value("${states.stopped-check.jvm.max-stop-time.millis}")
+    private int serviceStoppedMillis;
 
     public JvmStateServiceImpl(final StatePersistenceService<Jvm, JvmState> thePersistenceService,
                                         final StateNotificationService theNotificationService,
@@ -43,7 +50,10 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
                 jvmStatesToCheck.add(e);
             }                
         } 
+        jvmStatesToCheck.remove(JvmState.JVM_STOPPED);
         jvmStatesToCheck.add(JvmState.JVM_STARTED);
+
+        jvmStoppingStatesToCheck.add(JvmState.JVM_STOPPED);
     }
 
     @Override
@@ -60,9 +70,6 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
     }
     
     
-    @Value("${states.stale-check.jvm.stagnation.millis}")
-    private int stagnationMillis;
-    
     
     /** 
      * Periodically invoked by spring to convert states to STALE
@@ -78,6 +85,28 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
         Calendar cutoff = GregorianCalendar.getInstance();
         cutoff.add(Calendar.MILLISECOND, 0-stagnationMillis);        
         List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.JVM_STALE, jvmStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
+        for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
+            getStateNotificationGateway().jvmStateChanged(anUpdatedState);
+            getNotificationService().notifyStateUpdated(anUpdatedState);
+        }
+    }
+
+    /** 
+     * Periodically invoked by spring to mark services that 
+     * are stuck in SHUTTING DOWN (due to manual termination) 
+
+     * Parameterized in toc-defaults:
+     * states.stopped-check.initial-delay.millis=120000
+     * states.stopped-check.period.millis=60000
+     * states.stopped-check.jvm.max-stop-time.millis=120000
+     */
+    @Scheduled(initialDelayString="${states.stopped-check.initial-delay.millis}", fixedRateString="${states.stopped-check.period.millis}")
+    @Transactional
+    @Override
+    public void checkForStoppedStates() {
+        Calendar cutoff = GregorianCalendar.getInstance();
+        cutoff.add(Calendar.MILLISECOND, 0-serviceStoppedMillis);        
+        List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.SVC_STOPPED, jvmStoppingStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
         for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
             getStateNotificationGateway().jvmStateChanged(anUpdatedState);
             getNotificationService().notifyStateUpdated(anUpdatedState);

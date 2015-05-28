@@ -1,7 +1,29 @@
 package com.siemens.cto.aem.service.group.impl;
 
 
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.*;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_FAILURE;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_INITIALIZED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_PARTIAL;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STARTED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STARTING;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STOPPED;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STOPPING;
+import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_UNKNOWN;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_DESTROYED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_DESTROYING;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_FAILED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_INITIALIZED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_INITIALIZING;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_NEW;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STALE;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_START;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STARTED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STARTING;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOP;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOPPED;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOPPING;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_UNKNOWN;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.SVC_STOPPED;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_FAILED;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_REACHABLE;
 import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_STARTING;
@@ -13,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,6 +52,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -47,226 +71,142 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
     public static class Node {
-        private final Map<WebServerReachableState, GroupState> wsEdges;
-        private final Map<JvmState, GroupState> jvmEdges;
-        public Node(Map<WebServerReachableState, GroupState> wsEdges, Map<JvmState, GroupState> jvmEdges) {
-            this.wsEdges = wsEdges;
-            this.jvmEdges = jvmEdges;
+        private final Map<OperationalState, GroupState> edges;
+        public Node(Map<OperationalState, GroupState> edges) {
+            this.edges = edges;
         }
-        public GroupState transit(JvmState sig) { return jvmEdges.get(sig); }
-        public GroupState transit(WebServerReachableState sig) { return wsEdges.get(sig); }
+        public GroupState transit(OperationalState sig) { return edges.get(sig); }
     }
     public static class NodeBuilder {
-        private Map<WebServerReachableState, GroupState> wsEdges = new ConcurrentHashMap<>();
-        private Map<JvmState, GroupState> jvmEdges = new ConcurrentHashMap<>();
+        private Map<OperationalState, GroupState> edges = new ConcurrentHashMap<>();
 
         public NodeBuilder() {}
-        public NodeBuilder edge(JvmState signal, GroupState endpoint) {
-            jvmEdges.put(signal, endpoint);
+        public NodeBuilder edge(OperationalState signal, GroupState endpoint) {
+            edges.put(signal, endpoint);
             return this;
         }
-        public NodeBuilder edge(WebServerReachableState signal, GroupState endpoint) {
-            wsEdges.put(signal, endpoint);
+        public NodeBuilder edges(TreeSet<OperationalState> transitions, GroupState endpoint) {
+            for(OperationalState state : transitions) {
+                edges.put(state, endpoint);
+            }
             return this;
         }
         public Node build() {
-            return new Node(wsEdges, jvmEdges);
+            return new Node(edges);
         }
     }
-    private static final Map<GroupState, Node> ne = new ConcurrentHashMap<>();
+    private static final Map<GroupState, Node> fsm = new ConcurrentHashMap<>();
     static {
+        // Create some temporary buckets of similar states, to simplify 
+        // initialing the state machine.
 
-        // Unqualified states are statically imported WebServerReachableStates (for brevity)
+        // Starting states
+        TreeSet<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for(OperationalState state : new OperationalState[] {
+                JVM_NEW,         
+                JVM_INITIALIZING,
+                JVM_INITIALIZED, 
+                JVM_START,       
+                JVM_STARTING,    
+                JVM_STARTED,
+                WS_REACHABLE,
+                WS_STARTING
+        }) {
+            startingStates.add(state);
+        }
 
-        ne.put(GroupState.GRP_UNKNOWN, new NodeBuilder()
-                             .edge(WS_STARTING,    GroupState.GRP_STARTING)
-                             .edge(JVM_STARTING,   GroupState.GRP_STARTING)
-                             .edge(JVM_STARTED,    GroupState.GRP_STARTED)
-                             .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
-                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
-                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
-                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
-                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPED)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
-                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
-                             .edge(JVM_START,      GroupState.GRP_STARTING)
-                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
-                             .edge(JVM_DESTROYING, GroupState.GRP_UNKNOWN)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_UNKNOWN)
-                             .edge(JVM_STALE,      GroupState.GRP_UNKNOWN) 
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_UNKNOWN) // handle bad states.
-                             .edge(WS_UNKNOWN,     GroupState.GRP_UNKNOWN) 
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
+        // Stopping states
+        TreeSet<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for(OperationalState state : new OperationalState[] {
+                JVM_STOP,        
+                JVM_STOPPING,    
+                JVM_STOPPED,     
+                JVM_DESTROYING,  
+                JVM_DESTROYED,   
+                SVC_STOPPED,
+                WS_UNREACHABLE,
+                WS_STOPPING
+        }) {
+            stoppingStates.add(state);
+        }
+        
+        // Failing states
+        TreeSet<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for(OperationalState state : new OperationalState[] {
+                JVM_FAILED,
+                WS_FAILED,
+        }) {
+            failingStates.add(state);
+        }        
+        
+        // Unknown states
+        TreeSet<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
+        for(OperationalState state : new OperationalState[] {
+                JVM_UNKNOWN,     
+                JVM_STALE,       
+                WS_UNKNOWN
+        }) {
+            unknownStates.add(state);
+        }        
+        
+        // Begin state machine initialization
+        fsm.put(GRP_UNKNOWN, new NodeBuilder()
+                             .edges(startingStates,GRP_STARTING)
+                             .edges(stoppingStates,GRP_STOPPING)
+                             .edges(failingStates, GRP_FAILURE)
+                             .edges(unknownStates, GRP_UNKNOWN)
+                             .edge(JVM_STARTED,    GRP_STARTED) // override
+                             .edge(WS_REACHABLE,   GRP_STARTED) // override 
+                             .edge(SVC_STOPPED,    GRP_STOPPED) // override 
+                             .edge(WS_UNREACHABLE, GRP_STOPPED) // override 
                              .build());
 
-        ne.put(GroupState.GRP_STARTING, new NodeBuilder()
-                             .edge(JVM_STARTING,   GroupState.GRP_STARTING)
-                             .edge(WS_STARTING,    GroupState.GRP_STARTING)
-                             .edge(JVM_STARTED,    GroupState.GRP_STARTING)    // per 8/20 stay in starting
-                             .edge(WS_REACHABLE,   GroupState.GRP_STARTING)        // per 8/20 stay in starting
-                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)
-                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
-                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTING)
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTING)
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
-                             .edge(JVM_START,      GroupState.GRP_STARTING)
-                             .edge(JVM_STOP,       GroupState.GRP_STARTING)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_STARTING)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_STARTING)
-                             .edge(JVM_STALE,      GroupState.GRP_STARTING) 
-                             .build());
+        fsm.put(GRP_INITIALIZED, fsm.get(GRP_UNKNOWN));
 
-        ne.put(GroupState.GRP_STOPPING, new NodeBuilder()
-                             .edge(JVM_STARTING,   GroupState.GRP_PARTIAL)
-                             .edge(WS_STARTING,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
-                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
-                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
-                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPING)         // per 8/20 stay in stopping
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)     // per 8/20 stay in stopping
-                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPING)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STOPPING)
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPING)
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPING)
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                             .edge(JVM_NEW,        GroupState.GRP_STOPPING)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_STOPPING)
-                             .edge(JVM_START,      GroupState.GRP_STOPPING)
-                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_STOPPING)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_STOPPING)
-                             .edge(JVM_STALE,      GroupState.GRP_STOPPING) 
-                             .build());
-
-        ne.put(GroupState.GRP_STARTED, new NodeBuilder()
-                             .edge(JVM_STARTING,   GroupState.GRP_STARTING) // per 8/20 go to starting
-                             .edge(WS_STARTING,    GroupState.GRP_STARTING)   // per 8/20 go to starting
-                             .edge(JVM_STARTED,    GroupState.GRP_STARTED)
-                             .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
-                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)// per 8/20 go to stopping
-                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)    // per 8/20 go to stopping
-                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
-                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STARTED)
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STARTED)
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
-                             .edge(JVM_START,      GroupState.GRP_STARTED)
-                             .edge(JVM_STOP,       GroupState.GRP_STOPPING)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_STARTED)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_STARTED)
-                             .edge(JVM_STALE,      GroupState.GRP_STARTED)                              .build());
-
-        ne.put(GroupState.GRP_STOPPED, new NodeBuilder()
-                             .edge(JVM_STARTING,   GroupState.GRP_STARTING) // per 8/20 go to starting
-                             .edge(WS_STARTING,    GroupState.GRP_STARTING) // per 8/20 go to starting
-                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
-                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPING,   GroupState.GRP_STOPPING) // per 8/20 go to stopping
-                             .edge(WS_STOPPING,    GroupState.GRP_STOPPING)   // per 8/20 go to stopping
-                             .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
-                             .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
-                             .edge(SVC_STOPPED,    GroupState.GRP_STOPPED)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_STOPPED)
-                             .edge(WS_UNKNOWN,     GroupState.GRP_STOPPED)
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                             .edge(JVM_NEW,        GroupState.GRP_STARTING)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
-                             .edge(JVM_START,      GroupState.GRP_STARTING)
-                             .edge(JVM_STOP,       GroupState.GRP_STOPPED)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_STOPPED)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_STOPPED)
-                             .edge(JVM_STALE,      GroupState.GRP_STOPPED)                              
-                             .build());
-
-        ne.put(GroupState.GRP_PARTIAL, new NodeBuilder()
-                             .edge(JVM_STARTING,   GroupState.GRP_PARTIAL)
-                             .edge(WS_STARTING,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_STARTED,    GroupState.GRP_PARTIAL)
-                             .edge(WS_REACHABLE,   GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPING,   GroupState.GRP_PARTIAL)
-                             .edge(WS_STOPPING,    GroupState.GRP_PARTIAL)
-                             .edge(WS_UNREACHABLE, GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(SVC_STOPPED,    GroupState.GRP_PARTIAL)
-                             .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                             .edge(JVM_INITIALIZED,GroupState.GRP_PARTIAL)
-                             .edge(JVM_UNKNOWN,    GroupState.GRP_PARTIAL)
-                             .edge(WS_UNKNOWN,     GroupState.GRP_PARTIAL)
-                             .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                             .edge(JVM_NEW,        GroupState.GRP_PARTIAL)
-                             .edge(JVM_INITIALIZING,GroupState.GRP_PARTIAL)
-                             .edge(JVM_START,      GroupState.GRP_PARTIAL)
-                             .edge(JVM_STOP,       GroupState.GRP_PARTIAL)
-                             .edge(JVM_DESTROYING,  GroupState.GRP_PARTIAL)
-                             .edge(JVM_DESTROYED,  GroupState.GRP_PARTIAL)
-                             .edge(JVM_STALE,      GroupState.GRP_PARTIAL)   
-                             .build());
-
-        ne.put(GroupState.GRP_FAILURE, new NodeBuilder()
-                            .edge(JVM_STARTING,   GroupState.GRP_FAILURE)
-                            .edge(WS_STARTING,    GroupState.GRP_FAILURE)
-                            .edge(JVM_STARTED,    GroupState.GRP_FAILURE)
-                            .edge(WS_REACHABLE,   GroupState.GRP_FAILURE)
-                            .edge(JVM_STOPPING,   GroupState.GRP_FAILURE)
-                            .edge(WS_STOPPING,    GroupState.GRP_FAILURE)
-                            .edge(WS_UNREACHABLE, GroupState.GRP_FAILURE)
-                            .edge(JVM_STOPPED,    GroupState.GRP_FAILURE)
-                            .edge(SVC_STOPPED,    GroupState.GRP_FAILURE)
-                            .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                            .edge(JVM_INITIALIZED,GroupState.GRP_FAILURE)
-                            .edge(JVM_UNKNOWN,    GroupState.GRP_FAILURE)
-                            .edge(WS_UNKNOWN,     GroupState.GRP_FAILURE)
-                            .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                            .edge(JVM_NEW,        GroupState.GRP_FAILURE)
-                            .edge(JVM_INITIALIZING,GroupState.GRP_FAILURE)
-                            .edge(JVM_START,      GroupState.GRP_FAILURE)
-                            .edge(JVM_STOP,       GroupState.GRP_FAILURE)
-                            .edge(JVM_DESTROYING,  GroupState.GRP_FAILURE)
-                            .edge(JVM_DESTROYED,  GroupState.GRP_FAILURE)
-                            .edge(JVM_STALE,      GroupState.GRP_FAILURE)   
+        fsm.put(GRP_STARTING, new NodeBuilder()
+                            .edges(startingStates,GRP_STARTING)
+                            .edges(stoppingStates,GRP_PARTIAL)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_PARTIAL)
                             .build());
 
-        ne.put(GroupState.GRP_INITIALIZED, new NodeBuilder()
-                            .edge(JVM_STARTING,   GroupState.GRP_STARTING)
-                            .edge(WS_STARTING,    GroupState.GRP_STARTING)
-                            .edge(JVM_STARTED,    GroupState.GRP_STARTED)
-                            .edge(WS_REACHABLE,   GroupState.GRP_STARTED)
-                            .edge(JVM_STOPPING,   GroupState.GRP_STOPPING)
-                            .edge(WS_STOPPING,    GroupState.GRP_STOPPING)
-                            .edge(WS_UNREACHABLE, GroupState.GRP_STOPPED)
-                            .edge(JVM_STOPPED,    GroupState.GRP_STOPPING)
-                            .edge(SVC_STOPPED,    GroupState.GRP_STOPPED)
-                            .edge(JVM_FAILED,     GroupState.GRP_FAILURE)
-                            .edge(JVM_INITIALIZED,GroupState.GRP_STARTING)
-                            .edge(JVM_UNKNOWN,    GroupState.GRP_UNKNOWN)
-                            .edge(WS_UNKNOWN,     GroupState.GRP_UNKNOWN)
-                            .edge(WS_FAILED,      GroupState.GRP_FAILURE)
-                            .edge(JVM_NEW,        GroupState.GRP_STARTING)
-                            .edge(JVM_INITIALIZING,GroupState.GRP_STARTING)
-                            .edge(JVM_START,      GroupState.GRP_STARTING)
-                            .edge(JVM_STOP,       GroupState.GRP_STOPPING)
-                            .edge(JVM_DESTROYING,  GroupState.GRP_STOPPING)
-                            .edge(JVM_DESTROYED,  GroupState.GRP_STOPPING)
-                            .edge(JVM_STALE,      GroupState.GRP_UNKNOWN)
+        fsm.put(GRP_STOPPING, new NodeBuilder()
+                            .edges(startingStates,GRP_PARTIAL)
+                            .edges(stoppingStates,GRP_STOPPING)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_PARTIAL)
+                             .build());
+
+        fsm.put(GRP_STARTED, new NodeBuilder()
+                            .edges(startingStates,GRP_STARTING)
+                            .edges(stoppingStates,GRP_PARTIAL)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_PARTIAL)
+                            .edge(JVM_STARTED,    GRP_STARTED) // override
+                            .edge(WS_REACHABLE,   GRP_STARTED) // override 
+                            .build());
+
+        fsm.put(GRP_STOPPED, new NodeBuilder()
+                            .edges(startingStates,GRP_PARTIAL)
+                            .edges(stoppingStates,GRP_STOPPING)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_PARTIAL)
+                            .edge(SVC_STOPPED,    GRP_STOPPED) // override 
+                            .edge(WS_UNREACHABLE, GRP_STOPPED) // override 
+                             .build());
+
+        fsm.put(GRP_PARTIAL, new NodeBuilder()
+                            .edges(startingStates,GRP_PARTIAL)
+                            .edges(stoppingStates,GRP_PARTIAL)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_PARTIAL)
+                             .build());
+
+        fsm.put(GRP_FAILURE, new NodeBuilder()
+                            .edges(startingStates,GRP_FAILURE)
+                            .edges(stoppingStates,GRP_FAILURE)
+                            .edges(failingStates, GRP_FAILURE)
+                            .edges(unknownStates, GRP_FAILURE)
                             .build());
         
     }
@@ -301,7 +241,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
      */
     private synchronized CurrentGroupState refreshState(Group group) {
         currentGroupState = null;
-        GroupState state = GroupState.GRP_UNKNOWN;
+        GroupState state = GRP_UNKNOWN;
 
         for(AtomicInteger stateCount : counters.values()) {
             stateCount.set(0);
@@ -321,7 +261,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                 WebServerReachableState value = wsState!=null?wsState.getState():WebServerReachableState.WS_UNKNOWN;
 
                 counters.get(value).incrementAndGet();
-                state = ne.get(state).transit(value);
+                state = fsm.get(state).transit(value);
             }
         }
 
@@ -330,7 +270,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             JvmState value = jvmState!=null?jvmState.getState():JvmState.JVM_UNKNOWN;
 
             counters.get(value).incrementAndGet();
-            state = ne.get(state).transit(value);
+            state = fsm.get(state).transit(value);
         }
 
         int jvmTotal = 0;
@@ -399,13 +339,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     @Transactional
     public CurrentGroupState signalStopRequested(User user) {
-        return newState(GroupState.GRP_STOPPING);
+        return newState(GRP_STOPPING);
     }
 
     @Override
     @Transactional
     public CurrentGroupState signalStartRequested(User user) {
-        return newState(GroupState.GRP_STARTING);
+        return newState(GRP_STARTING);
     }
 
     @Override
@@ -453,13 +393,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Override
     @Transactional
     public boolean canStart() {
-        return currentGroupState.getState() != GroupState.GRP_STARTED;
+        return currentGroupState.getState() != GRP_STARTED;
     }
 
     @Override
     @Transactional
     public boolean canStop() {
-        return currentGroupState.getState() != GroupState.GRP_STOPPED;
+        return currentGroupState.getState() != GRP_STOPPED;
     }
 
     @Override

@@ -36,8 +36,8 @@ public class WebServerJpaCurrentStateBuilder extends AbstractJpaCurrentStateBuil
     }
 
     private WebServerReachableState createState() {
-        if(staleFlag == true) {
-            return WebServerReachableState.WS_UNKNOWN;
+        if(staleStateOption != null) {
+            return staleStateOption;
         } else {
             return WebServerReachableState.convertFrom(currentState.getState());
         }

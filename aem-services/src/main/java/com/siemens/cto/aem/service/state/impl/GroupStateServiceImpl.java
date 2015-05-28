@@ -408,4 +408,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     public void checkForStaleStates() {
         throw new UnsupportedOperationException("Group stale state checking not implemented, supported, or required.");
     }
+
+    @Override
+    public void checkForStoppedStates() {
+        throw new UnsupportedOperationException("Group terminated state checking not implemented, supported, or required.");
+    }
 }

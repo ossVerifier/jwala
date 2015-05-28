@@ -38,8 +38,8 @@ public enum JvmState implements OperationalState {
     JVM_DESTROYING  ("DESTROYING",      TRANSIENT, UNSTABLE),
     JVM_DESTROYED   ("DESTROYED",       PERMANENT, STABLE  ),
     JVM_UNKNOWN     ("UNKNOWN",         PERMANENT, UNSTABLE),
-    JVM_STALE       ("NO HEARTBEAT",    PERMANENT, UNSTABLE),
-    JVM_FAILED      ("FAILED",          PERMANENT, UNSTABLE),
+    JVM_STALE       ("NO HEARTBEAT",    PERMANENT, STABLE),
+    JVM_FAILED      ("FAILED",          PERMANENT, STABLE),
     SVC_STOPPED     ("STOPPED",         PERMANENT, STABLE)
     ;
 

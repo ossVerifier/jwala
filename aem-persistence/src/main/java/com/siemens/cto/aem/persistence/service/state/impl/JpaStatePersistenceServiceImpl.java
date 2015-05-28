@@ -76,14 +76,14 @@ public abstract class JpaStatePersistenceServiceImpl<S, T extends OperationalSta
         List<JpaCurrentState> jpaStaleStates = stateCrudService.markStaleStates(stateType, staleState, statesToCheck, cutoff, auditData);
         final List<CurrentState<S, T>> results = new ArrayList<>(jpaStaleStates.size());
         for (final JpaCurrentState state : jpaStaleStates) {
-            results.add(build(state, true));
+            results.add(build(state, staleState));
         }
         return results;
     };
 
     protected CurrentState<S, T> build(final JpaCurrentState aCurrentState) {
-        return build(aCurrentState, false);
+        return build(aCurrentState, null);
     }
     
-    protected abstract CurrentState<S, T> build(final JpaCurrentState aCurrentState, boolean stale);
+    protected abstract CurrentState<S, T> build(final JpaCurrentState aCurrentState, T staleState);
 }

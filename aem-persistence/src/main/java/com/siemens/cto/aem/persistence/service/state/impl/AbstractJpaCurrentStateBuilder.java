@@ -13,7 +13,7 @@ public abstract class AbstractJpaCurrentStateBuilder<S, T extends OperationalSta
     private static final Chronology USE_DEFAULT_CHRONOLOGY = null;
 
     protected JpaCurrentState currentState;
-    protected boolean staleFlag;
+    protected T staleStateOption;
 
     public AbstractJpaCurrentStateBuilder(final JpaCurrentState aCurrentState) {
         currentState = aCurrentState;
@@ -48,8 +48,8 @@ public abstract class AbstractJpaCurrentStateBuilder<S, T extends OperationalSta
                             USE_DEFAULT_CHRONOLOGY);
     }
     
-    public AbstractJpaCurrentStateBuilder<S, T> setStale(boolean tf) { 
-        staleFlag = tf;
+    public AbstractJpaCurrentStateBuilder<S, T> setStaleOption(T staleState) { 
+        staleStateOption = staleState;
         return this;
     }
 

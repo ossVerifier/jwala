@@ -28,4 +28,14 @@ public interface StateService<S, T extends OperationalState> {
      * states.stale-check.jvm.stagnation.millis=60000
      */
     void checkForStaleStates();
+
+    /**
+    * Periodically invoked by spring to mark services that 
+    * are stuck in SHUTTING DOWN (due to manual termination) 
+    * Parameterized in toc-defaults:
+    * states.stopped-check.initial-delay.millis=120000
+    * states.stopped-check.period.millis=60000
+    * states.stopped-check.jvm.max-stop-time.millis=120000
+    */
+    void checkForStoppedStates();
 }

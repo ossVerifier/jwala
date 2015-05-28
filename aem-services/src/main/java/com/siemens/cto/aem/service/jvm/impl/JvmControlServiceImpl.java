@@ -86,7 +86,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                     LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {}\n{}", aCommand, result);
                     jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
-                            JvmState.SVC_STOPPED,
+                            ctrlOp.getConfirmedState(),
                             result,
                             aUser);
                     break;
@@ -107,10 +107,10 @@ public class JvmControlServiceImpl implements JvmControlService {
                         LOGGER.debug("exiting controlJvm for command {}: '{}'", aCommand, result);                
                         jvmControlServiceLifecycle.revertState(prevState, aUser);
                     } else {
-                        LOGGER.error("exiting controlJvm for FAILING command {}\n{}", aCommand, result);
+                        LOGGER.error("exiting controlJvm for FAILING ({}) command {}\n{}", execData.getReturnCode().getReturnCode(), aCommand, result);
                         jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
                                 ctrlOp.getFailureStateOrPrevious(prevState),
-                                result,
+                                "Return code: "+execData.getReturnCode().getReturnCode() + "; "+ result,
                                 aUser);
                         throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                 "Error controlling a JVM with id " + aCommand.getJvmId().getId() + ": " + result);
