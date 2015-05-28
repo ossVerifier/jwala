@@ -1,0 +1,6 @@
+{"name":"contextSecurityProps","contentType":"application/txt", 
+	"properties":[{"name":"security.keystore.keyStoreLocation", "required":"true"},
+				  {"name":"security.keystore.keyStorePassword"},	
+				  {"name":"security.keystore.keyStoreType", "required":"true"}, 
+				  {"name":"security.keystore.privateKeyAlias"}, 
+				  {"name":"security.keystore.privateKeyPassword"}]}

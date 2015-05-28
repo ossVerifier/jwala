@@ -14,6 +14,7 @@ dependencies {
     compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
 
     compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"
+    compile group: "org.slf4j", name:"slf4j-simple", version:"$project.versions.slf4j"
 
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"

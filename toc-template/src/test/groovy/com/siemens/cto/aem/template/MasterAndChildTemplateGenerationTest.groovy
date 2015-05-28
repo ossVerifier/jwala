@@ -7,7 +7,7 @@ import com.siemens.cto.aem.domain.model.resource.ResourceInstance
 import groovy.text.SimpleTemplateEngine;
 
 /**
- * Test generation of a child template in which its result is used in the generation of a master template using
+ * Test generation of a child template in which its result is used in the generation of a masters template using
  * Groovy's SimpleTemplateEngine.
  *
  * Created by Z003BPEJ on 5/1/2015.

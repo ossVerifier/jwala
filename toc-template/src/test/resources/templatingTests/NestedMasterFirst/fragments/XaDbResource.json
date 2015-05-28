@@ -1,0 +1,10 @@
+{"name":"DbResource","contentType":"application/xml", 
+	"properties":[{"name":"name", "required":"true"},
+				  {"name":"auth", "required":"true"},	
+				  {"name":"type", "required":"true"}, 
+				  {"name":"factory", "required":"true"},  
+				  {"name":"uniqueResourceName", "required":"true"}, 
+				  {"name":"xaDataSourceClassName", "required":"true"}, 
+				  {"name":"xaProperties.user", "required":"true"}, 
+				  {"name":"xaProperties.password", "required":"true"}, 
+				  {"name":"xaProperties.URL", "required":"true"}]}

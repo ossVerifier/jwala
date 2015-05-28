@@ -29,7 +29,7 @@ ext {
                  httpcomponents_client : "4.3.3",
                  tomcat : '7.0.55',
                  ant: '1.8.2',
-                 groovy: '2.2.0',
+                 groovy: '2.4.3',
                  jacoco: '0.6.5.201403032054',
                  devbundle: '1.0-SNAPSHOT'
                 ]

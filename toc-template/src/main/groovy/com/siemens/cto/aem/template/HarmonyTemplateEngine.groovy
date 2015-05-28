@@ -12,7 +12,7 @@ public class HarmonyTemplateEngine {
 
     FileManager templateManager;
     def engine = new GStringTemplateEngine();
-    
+
     public HarmonyTemplateEngine(FileManager theTemplateManager) {
         this.templateManager = theTemplateManager;
     }
