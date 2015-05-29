@@ -394,7 +394,8 @@ var WebAppDataTable = React.createClass({
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}
-                             rowSubComponentContainerClassName="row-sub-component-container"/>
+                             rowSubComponentContainerClassName="row-sub-component-container"
+                             isColResizable={true}/>
     },
 
 

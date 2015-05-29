@@ -16,7 +16,7 @@ th.adj-col {
 }
 
 td.adj-col {
-    border-left: 1px solid #C0C0C0 !important;
+    border-left: 1px solid rgb(230, 230, 230) !important;
     overflow: hidden !important;
     white-space: nowrap !important;
     padding-right: 1px !important;

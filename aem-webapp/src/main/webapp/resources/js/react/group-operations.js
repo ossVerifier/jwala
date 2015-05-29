@@ -469,7 +469,8 @@ var GroupOperationsDataTable = React.createClass({
                              rowSubComponentContainerClassName="row-sub-component-container"
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}
-                             initialSortColumn={[[2, "asc"]]}/>
+                             initialSortColumn={[[2, "asc"]]}
+                             isColResizable={true}/>
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;
