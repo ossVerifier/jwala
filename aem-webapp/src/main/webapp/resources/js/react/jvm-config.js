@@ -249,7 +249,8 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input ref="jvmName" name="jvmName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
+                                <td><input ref="jvmName" name="jvmName" type="text" valueLink={this.linkState("name")}
+                                           required maxLength="255" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*Host</td>
@@ -260,7 +261,8 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="255"/></td>
+                                <td><input name="hostName" type="text" valueLink={this.linkState("host")}
+                                           required maxLength="255" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*Status Path</td>
@@ -271,7 +273,8 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} required maxLength="64"/></td>
+                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")}
+                                           required maxLength="64" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>System Properties</td>
@@ -282,7 +285,7 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><textarea name="systemProperties" ref="sysProps" cols="35" rows="5"
+                                <td><textarea name="systemProperties" ref="sysProps" cols="50" rows="5"
                                               valueLink={this.linkState("sysProps")} maxLength="5000"/></td>
                             </tr>
                             <tr>

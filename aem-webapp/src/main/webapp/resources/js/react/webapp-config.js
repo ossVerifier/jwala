@@ -207,7 +207,8 @@ var WebAppConfigForm = React.createClass({
                                            value={this.state.WebAppName}
                                            onChange={this.onChangeWebAppName}
                                            maxLength="255"
-                                           required/></td>
+                                           required
+                                           className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>
@@ -220,7 +221,8 @@ var WebAppConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="webappContext" type="text" valueLink={this.linkState("WebAppContext")} required maxLength="255"/></td>
+                                <td><input name="webappContext" type="text" valueLink={this.linkState("WebAppContext")}
+                                           required maxLength="255" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>
@@ -234,12 +236,12 @@ var WebAppConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td>
-                                <DataCombobox           name="groupId"
-                                                        data={this.props.groupSelectData}
-                                                        selectedVal={this.state.GroupId}
-                                                        dataField="id.id"
-                                                        val="name"
-                                                        onChange={this.onSelectGroup}/>
+                                <DataCombobox name="groupId"
+                                              data={this.props.groupSelectData}
+                                              selectedVal={this.state.GroupId}
+                                              dataField="id.id"
+                                              val="name"
+                                              onChange={this.onSelectGroup}/>
                                 </td>
                             </tr>
 

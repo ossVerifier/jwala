@@ -233,7 +233,9 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input ref="webServerName" name="webserverName" type="text" valueLink={this.linkState("name")} required maxLength="255"/></td>
+                                <td><input ref="webServerName" name="webserverName" type="text"
+                                           valueLink={this.linkState("name")} required maxLength="255"
+                                           className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*Host</td>
@@ -244,7 +246,8 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required maxLength="255"/></td>
+                                <td><input name="hostName" type="text" valueLink={this.linkState("host")} required
+                                           maxLength="255" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*HTTP Port</td>
@@ -277,7 +280,8 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")} maxLength="64"/></td>
+                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")}
+                                           maxLength="64" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*HTTP Config File</td>
@@ -288,7 +292,8 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="httpConfigFile" type="text" valueLink={this.linkState("httpConfigFile")} maxLength="64"/></td>
+                                <td><input name="httpConfigFile" type="text" valueLink={this.linkState("httpConfigFile")}
+                                           maxLength="64" className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*Server Root</td>
@@ -299,7 +304,8 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="svrRoot" type="text" valueLink={this.linkState("svrRoot")} maxLength="64" required/></td>
+                                <td><input name="svrRoot" type="text" valueLink={this.linkState("svrRoot")}
+                                           maxLength="64" required className="width-max"/></td>
                             </tr>
                             <tr>
                                 <td>*Document Root</td>
@@ -310,7 +316,8 @@ var WebServerConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="docRoot" type="text" valueLink={this.linkState("docRoot")} maxLength="64" required/></td>
+                                <td><input name="docRoot" type="text" valueLink={this.linkState("docRoot")}
+                                           maxLength="64" required className="width-max"/></td>
                             </tr>
 
                             <tr>

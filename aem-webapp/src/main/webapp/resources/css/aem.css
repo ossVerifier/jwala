@@ -154,6 +154,10 @@ div .state {
     margin: 2px 2px 2px 2px;
 }
 
+.width-max {
+    width: 100%;
+}
+
 .no-border {
     border:none !important;
 }
