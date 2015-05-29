@@ -20,7 +20,7 @@ var Tabs = React.createClass({displayName:"Tabs",
           }
         } else { 
           /* higher level tab managed the state change */
-          $(window).off('hashchange', this.handleBack.bind(this));
+          $(window).off('hashchange', this.handleBack);
         }
     },
     componentDidUpdate: function(prevProps, prevState) {
@@ -31,10 +31,10 @@ var Tabs = React.createClass({displayName:"Tabs",
        }
     },
     componentWillUnmount: function() {
-       $(window).off('hashchange', this.handleBack.bind(this));
+       $(window).off('hashchange', this.handleBack);
     },
     componentDidMount: function() { 
-       $(window).on('hashchange', this.handleBack.bind(this));
+       $(window).on('hashchange', this.handleBack);
        document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
     },
     render: function() {
