@@ -107,16 +107,18 @@ var Tabs = React.createClass({displayName:"Tabs",
 
 });
 
-var TabsSwitcher = React.createClass({displayName:"TabsSwitcher",
+var TabsSwitcher = React.createClass({
+    displayName:"TabsSwitcher",
     render: function() {
         var active = this.props.active;
-        var items = this.props.items.map(function(item, index) {
-            return React.DOM.li({key:"li"+index, className:"" + (active === index ? "current" : "")},
-                   React.DOM.a({key:"a"+index, onClick:this.onClick.bind(this, index)},
-                item.title
-            ));
-        }.bind(this));
-        return React.DOM.div(null, items);
+        var items = [];
+        var self = this;
+        this.props.items.map(function(item, index) {
+            items.push(React.createElement("li", {key:"li"+index, className:(self.props.active === index ? "current" : "")},
+                           React.createElement("a", {key:"a"+index, onClick:self.onClick.bind(self, index)}, item.title)));
+        });
+        return React.createElement("div", null, items);
+
     },
     onClick: function(index) {
         this.props.onTabClick(index);
