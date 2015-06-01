@@ -155,9 +155,9 @@ var GroupConfig = React.createClass({
     selectItemCallback: function(item) {
         this.selectedGroup = item;
     },
-    editCallback: function(data) {
+    editCallback: function(e) {
         var self = this;
-        this.props.service.getGroup(data.id.id,
+        this.props.service.getGroup(e.data.id.id,
             function(response){
                 self.setState({selectedGroupForEditing:response.applicationResponseContent,
                                showModalFormEditDialog:true});
@@ -269,9 +269,10 @@ var GroupConfigDataTable = React.createClass({
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
-        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
-            return React.render(new React.DOM.button({className:"button-link",
-                                    onClick:self.props.editCallback.bind(this, oData), title:sData}, sData), nTd);
-        }.bind(this);
+        aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
+            return React.renderComponent(React.createElement("button", {className:"button-link", title:sData}, sData), nTd, function() {
+                $(this.getDOMNode()).click(oData, self.props.editCallback);
+            });
+        };
     }
 });

@@ -157,9 +157,9 @@ var WebServerConfig = React.createClass({
     selectItemCallback: function(item) {
         this.selectedWebServer = item;
     },
-    editCallback: function(data) {
+    editCallback: function(e) {
         var self = this;
-        this.props.service.getWebServer(data.id.id,
+        this.props.service.getWebServer(e.data.id.id,
             function(response){
                 self.setState({selectedWebServerForEditing:response.applicationResponseContent,
                                showModalFormEditDialog:true});
@@ -438,10 +438,10 @@ var WebServerDataTable = React.createClass({
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
-
         aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-            return React.renderComponent(new React.DOM.button({className:"button-link",
-                                         onClick:self.props.editCallback.bind(this, oData), title:sData}, sData), nTd);
-        }.bind(this);
+            return React.renderComponent(React.createElement("button", {className:"button-link", title:sData}, sData), nTd, function() {
+                $(this.getDOMNode()).click(oData, self.props.editCallback);
+            });
+        };
     }
 });

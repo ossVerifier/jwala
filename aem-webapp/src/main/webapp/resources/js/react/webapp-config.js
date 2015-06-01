@@ -114,9 +114,9 @@ var WebAppConfig = React.createClass({
     selectItemCallback: function(item) {
         selectedWebApp = item;
     },
-    editCallback: function(data) {
+    editCallback: function(e) {
         var thisComponent = this;
-        this.props.service.getWebApp(data.id.id,
+        this.props.service.getWebApp(e.data.id.id,
             function(response){
                 thisComponent.setState({WebAppFormData: response.applicationResponseContent,
                                         showModalFormEditDialog: true})
@@ -451,9 +451,11 @@ var WebAppDataTable = React.createClass({
                     val = val.substring(0, MAX_VAL_LEN) + "...";
                 }
 
-                return React.renderComponent(new React.DOM.button({className:"button-link", title:title,
-                                                 onClick:self.props.editCallback.bind(this, oData)}, val), nTd);
-            }.bind(this);
+                return React.renderComponent(React.createElement("button", {className:"button-link", title:title}, val), nTd, function() {
+                                $(this.getDOMNode()).click(oData, self.props.editCallback);
+                            });
+
+            };
     }
 
 });
