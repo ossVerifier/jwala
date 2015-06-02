@@ -35,7 +35,7 @@ var JvmConfig = React.createClass({
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
         return  <div className={this.props.className} className="react-dialog-container">
-                    <table>
+                    <table className="jvm-config-table-type-container">
                         <tr>
                             <td>
                                 <div style={{float:"right"}}>

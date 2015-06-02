@@ -266,8 +266,7 @@ var GroupConfigDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              editCallback={this.props.editCallback}
                              rowSubComponentContainerClassName="row-sub-component-container"
-                             childTableDetails={childTableDetails}
-                             isColResizable={true}/>
+                             childTableDetails={childTableDetails}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;

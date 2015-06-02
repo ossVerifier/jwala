@@ -1,7 +1,6 @@
 table.adj-col {
     table-layout: fixed !important;
     border-collapse: collapse !important;
-    width: 1072px !important; /* TODO: Table specific, have it as an option in the plugin. */
 }
 
 th.adj-col {
