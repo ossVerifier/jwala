@@ -471,8 +471,8 @@ var JvmConfigDataTable = React.createClass({
                          displayProperty:"name",
                          colWidth: "100px",
                          maxDisplayTextLen:10},
-                        {sTitle:"Http", mData:"httpPort"},
-                        {sTitle:"Https", mData:"httpsPort"},
+                        {sTitle:"HTTP", mData:"httpPort"},
+                        {sTitle:"HTTPS", mData:"httpsPort"},
                         {sTitle:"Redir", mData:"redirectPort"},
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"}];

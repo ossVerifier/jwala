@@ -419,7 +419,7 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
                         {sTitle:"Host", mData:"host", maxDisplayTextLen:45},
                         {sTitle:"Port", mData:"port"},
-                        {sTitle:"Https Port", mData:"httpsPort"},
+                        {sTitle:"HTTPS Port", mData:"httpsPort"},
                         {sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
                         {sTitle:"HTTP Config File", mData:"httpConfigFile.path", maxDisplayTextLen:20},
                         {sTitle:"Group",
