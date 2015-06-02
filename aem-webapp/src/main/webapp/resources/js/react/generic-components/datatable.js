@@ -92,9 +92,6 @@ var TocDataTable = React.createClass({
         });
 
     },
-    getDataTable: function() {
-        return this.dataTable;
-    },
     getDefaultProps: function() {
         return {
             initialSortColumn : []
