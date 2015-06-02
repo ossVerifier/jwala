@@ -4,6 +4,21 @@
     border: 1px solid rgb(192, 192, 192);
 }
 
+.resource-dev-warning {
+    border: 1px solid rgb(192, 192, 192);
+    text-align: center;
+    width: 100%;
+    background-color: #ffff99;
+    padding: 5px 0px;
+    font-weight: bold;
+}
+
+.resource-dev-warning-img {
+    height: 23px;
+    width: 23px;
+    padding: 0px 13px;
+}
+
 .tabs-xml-preview {
     list-style: none;
     padding: 0;

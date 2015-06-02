@@ -9,9 +9,16 @@ var ResourcesConfig = React.createClass({
                                                      getTemplateCallback={this.getTemplateCallback}/></div>);
         splitterComponents.push(<XmlTabs ref="xmlTabs"/>);
 
-        var splitter = <RSplitter components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
+        var splitter = <RSplitter disabled={true} components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION}/>
 
-        return <div className="resource-container">{splitter}</div>
+        return <div>
+                    <div className="resource-dev-warning">
+                        <img className="resource-dev-warning-img" src="public-resources/img/icons/ICCWARN.GIF"/>
+                        WARNING: The following content is under development and is provided for demonstration purposes.
+                        <img className="resource-dev-warning-img" src="public-resources/img/icons/ICCWARN.GIF"/>
+                    </div>
+                    <div className="resource-container">{splitter}</div>
+                </div>
     },
     generateXmlSnippetCallback: function(resourceName, groupName) {
         this.props.resourceService.getXmlSnippet(resourceName, groupName, this.generateXmlSnippetResponseCallback);
