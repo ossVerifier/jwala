@@ -3,7 +3,7 @@
  *
  * @author: Jedd Anthony Cuison
  *
- * usage: {@link http://jsfiddle.net/jlkwison/auw373we/18/}
+ * usage: {@link http://jsfiddle.net/jlkwison/auw373we/20/}
  *
   * @param tableWidth width "value" of the table e.g. 50 (not "50px").
   * @param minColWidth the allowable minimum column width "value". If set to zero, the column dissappears
@@ -17,8 +17,8 @@
 
             var mouseDrag = false;
             var colIdx;
-            var COL_RESIZE_CURSOR = "col-resize";
             var origWidths = [0, 0];
+            var RESIZE_COL_CURSOR_CLASS = "resize-col-cursor";
 
             minColWidth = (minColWidth === undefined ? 5 : minColWidth);
 
@@ -27,6 +27,10 @@
                     var newWidth = rightCellBorderPagePos - e.pageX;
                     var newWidthDiff = origWidths[1] - newWidth;
 
+                    // make sure that the mouse pointer is still the "resizable" pointer even if the current target changes
+                    // (e.g. when moving mouse very quickly and crosses the neighboring column)
+                    $(e.currentTarget).addClass(RESIZE_COL_CURSOR_CLASS);
+
                     if (newWidth > minColWidth && (origWidths[0] + newWidthDiff) > minColWidth) {
                         $(self[idx]).find("thead th").eq(colIdx - 1).innerWidth(origWidths[0] + newWidthDiff);
                         $(self[idx]).find("thead th").eq(colIdx).innerWidth(newWidth);
@@ -34,23 +38,22 @@
 
                 } else {
                     if ($(e.currentTarget).parent().children().index($(e.currentTarget))!==0){
-
-                        if ((e.offsetX >= 0) &&
-                            (e.offsetX <= 1)) {
-                            $("html,body").css("cursor", COL_RESIZE_CURSOR);
+                        console.log(e.offsetX);
+                        if ((e.offsetX >= 0) && (e.offsetX <= 3)) {
+                                $(e.currentTarget).addClass(RESIZE_COL_CURSOR_CLASS);
                         } else {
-                            $("html,body").css("cursor", "default");
+                            $(e.currentTarget).removeClass(RESIZE_COL_CURSOR_CLASS);
                         }
 
                     } else {
-                         $("html,body").css("cursor", "default");
+                         $(e.currentTarget).removeClass(RESIZE_COL_CURSOR_CLASS);
                     }
                 }
                 e.preventDefault();
             }
 
             var onTdMouseDown = function(e) {
-                if ($("html,body").css("cursor") === COL_RESIZE_CURSOR && !mouseDrag) {
+                if ($(e.currentTarget).hasClass(RESIZE_COL_CURSOR_CLASS) && !mouseDrag) {
                     mouseDrag = true;
                     colIdx = $(e.currentTarget).parent().children().index($(e.currentTarget));
                     rightCellBorderPagePos = $(e.currentTarget).offset().left + $(e.currentTarget).innerWidth();
@@ -62,19 +65,24 @@
                 }
             }
 
-            var onTdMouseUp = function() {
-                $("html,body").css("cursor", "default");
+            var onTdMouseUp = function(e) {
+                $(e.currentTarget).removeClass(RESIZE_COL_CURSOR_CLASS);
                 mouseDrag = false;
             }
 
-            var onTbodyMouseLeave = function() {
-                $("html,body").css("cursor", "default");
+            var onTbodyMouseLeave = function(e) {
+                $(e.currentTarget).removeClass(RESIZE_COL_CURSOR_CLASS);
                 mouseDrag = false;
             }
 
             if (tableWidth !== undefined) {
                 $(self[idx]).width(tableWidth);
             }
+
+            $(self[idx]).find("thead th").mousemove(onTdMouseMove);
+            $(self[idx]).find("thead th").mousedown(onTdMouseDown);
+            $(self[idx]).find("thead th").mouseup(onTdMouseUp);
+            $(self[idx]).find("thead").mouseleave(onTbodyMouseLeave);
 
             $(self[idx]).find("tbody td").mousemove(onTdMouseMove);
             $(self[idx]).find("tbody td").mousedown(onTdMouseDown);
