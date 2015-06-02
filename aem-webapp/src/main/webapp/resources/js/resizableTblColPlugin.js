@@ -3,7 +3,7 @@
  *
  * @author: Jedd Anthony Cuison
  *
- * usage: {@link http://jsfiddle.net/jlkwison/auw373we/20/}
+ * usage: {@link http://jsfiddle.net/jlkwison/auw373we/21/}
  *
   * @param tableWidth width "value" of the table e.g. 50 (not "50px").
   * @param minColWidth the allowable minimum column width "value". If set to zero, the column dissappears
