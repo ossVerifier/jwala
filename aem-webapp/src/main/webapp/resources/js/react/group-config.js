@@ -250,7 +250,8 @@ var GroupConfigDataTable = React.createClass({
 
         var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
                                  className:"simple-data-table",
-                                 divTypeContainerClassName:"group-config-jvm-div-type-container"};
+                                 divTypeContainerClassName:"group-config-jvm-div-type-container",
+                                 isColResizable:true};
 
         var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
                              {sTitle:"JVM Name", mData:"jvmName"},

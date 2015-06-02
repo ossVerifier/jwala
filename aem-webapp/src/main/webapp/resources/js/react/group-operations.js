@@ -295,7 +295,8 @@ var GroupOperationsDataTable = React.createClass({
                                                      onClickMessage:"Stopping..."},
                                                     {tocType:"label", className:"inline-block header-component-label", text:""}
                                                ],
-                                               initialSortColumn: [[2, "asc"]]};
+                                               initialSortColumn: [[2, "asc"]],
+                                               isColResizable: true};
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
 
@@ -304,7 +305,8 @@ var GroupOperationsDataTable = React.createClass({
                                             dataCallback:this.getApplicationsOfGrp,
                                             title:"Applications",
                                             isCollapsible:true,
-                                            initialSortColumn: [[1, "asc"]]};
+                                            initialSortColumn: [[1, "asc"]],
+                                            isColResizable: true};
 
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {mData:null, colWidth:"10px"},
@@ -358,7 +360,8 @@ var GroupOperationsDataTable = React.createClass({
                                           },
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
-                                    initialSortColumn: [[2, "asc"]]};
+                                    initialSortColumn: [[2, "asc"]],
+                                    isColResizable: true};
 
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},

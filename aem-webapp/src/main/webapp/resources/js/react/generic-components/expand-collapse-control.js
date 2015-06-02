@@ -134,6 +134,11 @@ var ExpandCollapseControl = React.createClass({
 
             for (var i = 0; i < dataSources.length; i++) {
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
+
+                if (childTableDetailsArray[i].isColResizable) {
+                    subDataTable.makeColumnsResizable();
+                }
+
                 var data = dataSources[i].jsonData;
                 if (data !== undefined && data !== null) {
 
