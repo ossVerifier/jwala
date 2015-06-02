@@ -38,7 +38,6 @@
 
                 } else {
                     if ($(e.currentTarget).parent().children().index($(e.currentTarget))!==0){
-                        console.log(e.offsetX);
                         if ((e.offsetX >= 0) && (e.offsetX <= 3)) {
                                 $(e.currentTarget).addClass(RESIZE_COL_CURSOR_CLASS);
                         } else {
