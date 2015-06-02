@@ -60,7 +60,26 @@ var TocDataTable = React.createClass({
                 this.dataTable.makeColumnsResizable();
             }
 
-            this.dataTable.fnSort(this.props.initialSortColumn);
+            var sortColumns = [];
+
+            /**
+             * Using this.props.initialSortColumn with fnSort directly like this -> this.dataTable.fnSort(sortColumns)
+             * produces the following bug:
+             * this.props.initialSortColumn will get the sorted data of the last sorted table and will result to
+             * the error "Cannot read property 'sSortDataType' of undefined" in IE if the last table
+             * sorted column index does not exist in the current table. This can be described better with the
+             * following scenario:
+             *
+             * User goes to JVM configuration tab then sorts the last column (8th column). The user then goes to the
+             * group configuration tab which immediately displays "Cannot read property 'sSortDataType' of undefined"
+             * if this.props.initialSortColumn is used directly as a parameter to fnSort. This is because
+             * the datatable will try to sort the 8th column which does not exists in the group configuration table.
+             */
+            this.props.initialSortColumn.forEach(function(col) {
+                sortColumns.push(col);
+            });
+
+            this.dataTable.fnSort(sortColumns);
         }
 
         if (this.props.applyThemeRoller !== false && this.props.className !== "") {
