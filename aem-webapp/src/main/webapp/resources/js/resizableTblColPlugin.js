@@ -38,8 +38,12 @@
 
                 } else {
                     if ($(e.currentTarget).parent().children().index($(e.currentTarget))!==0){
-                        if ((e.offsetX >= 0) && (e.offsetX <= 3)) {
-                                $(e.currentTarget).addClass(RESIZE_COL_CURSOR_CLASS);
+
+                        // e.offsetX is undefined in Mozilla thus the need for the code below
+                        var offsetX = e.offsetX === undefined ? e.pageX - $(e.currentTarget).offset().left : e.offsetX;
+
+                        if ((offsetX >= 0) && (offsetX <= 3)) {
+                            $(e.currentTarget).addClass(RESIZE_COL_CURSOR_CLASS);
                         } else {
                             $(e.currentTarget).removeClass(RESIZE_COL_CURSOR_CLASS);
                         }
