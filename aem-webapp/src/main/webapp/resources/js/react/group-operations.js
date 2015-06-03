@@ -977,7 +977,7 @@ var StatusWidget = React.createClass({
         }
         return <div className="status-widget-container">
                    <div ref="errorDlg" className="react-dialog-container"/>
-                   <span className="status-label">SHUTTING DOWN</span>
+                   <span className="status-label">{this.state.status}</span>
                    {errorBtn}
                </div>;
     },
