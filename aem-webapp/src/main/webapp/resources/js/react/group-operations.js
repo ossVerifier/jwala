@@ -211,7 +211,7 @@ var GroupOperationsDataTable = React.createClass({
                                mData:null,
                                tocType:"custom",
                                tocRenderCfgFn: this.renderGroupStateRowData.bind(this, "grp"),
-                               colWidth:"115px"}];
+                               colWidth:"130px"}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
@@ -266,7 +266,7 @@ var GroupOperationsDataTable = React.createClass({
                                              mData:null,
                                              tocType:"custom",
                                              tocRenderCfgFn: this.renderWebServerStateRowData.bind(this, "grp", "webServer"),
-                                             colWidth:"105px"}];
+                                             colWidth:"120px"}];
 
         var webServerOfGrpChildTableDetails = {tableIdPrefix:"ws-child-table_",
                                                className:"simple-data-table",
@@ -457,7 +457,7 @@ var GroupOperationsDataTable = React.createClass({
                                  mData:null,
                                  tocType:"custom",
                                  tocRenderCfgFn: this.renderJvmStateRowData.bind(this, "grp", "jvm"),
-                                 colWidth:"105px"}];
+                                 colWidth:"120px"}];
 
         jvmChildTableDetails["tableDef"] = jvmChildTableDef;
 
@@ -977,7 +977,7 @@ var StatusWidget = React.createClass({
         }
         return <div className="status-widget-container">
                    <div ref="errorDlg" className="react-dialog-container"/>
-                   <span className="status-label">{this.state.status}</span>
+                   <span className="status-label">SHUTTING DOWN</span>
                    {errorBtn}
                </div>;
     },

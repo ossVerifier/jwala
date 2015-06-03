@@ -123,8 +123,9 @@ body {
     top: 50%;
 }
 
+/* Acts as a shim to push the JVM and web server accordion start/stop buttons to right align with the buttons below the accordion. */
 .header-component-label  {
-    width:116px; /* Works fine for Chrome and Fire Fox */
+    width:130px; /* Works fine for Chrome and Fire Fox */
 }
 
 .disabled {
