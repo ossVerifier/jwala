@@ -34,6 +34,7 @@ import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,14 +71,15 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateManagerTableImpl.class);
 
-    public static class Node {
-        private final Map<OperationalState, GroupState> edges;
+    static class Node {
+        final Map<OperationalState, GroupState> edges;
         public Node(Map<OperationalState, GroupState> edges) {
             this.edges = edges;
         }
         public GroupState transit(OperationalState sig) { return edges.get(sig); }
     }
-    public static class NodeBuilder {
+    
+    static class NodeBuilder {
         private Map<OperationalState, GroupState> edges = new ConcurrentHashMap<>();
 
         public NodeBuilder() {}
@@ -97,6 +99,14 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     }
     private static final Map<GroupState, Node> fsm = new ConcurrentHashMap<>();
     static {
+        configureFsm();
+        LOGGER.info(outputFsm());
+    }
+    
+    /**
+     * Build the FSM machine
+     */
+    private static synchronized void configureFsm() {
         // Create some temporary buckets of similar states, to simplify 
         // initialing the state machine.
 
@@ -188,7 +198,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         fsm.put(GRP_STOPPED, new NodeBuilder()
                             .edges(startingStates,GRP_PARTIAL)
-                            .edges(stoppingStates,GRP_STOPPING)
+                            .edges  (stoppingStates,GRP_STOPPING)
                             .edges(failingStates, GRP_FAILURE)
                             .edges(unknownStates, GRP_PARTIAL)
                             .edge(SVC_STOPPED,    GRP_STOPPED) // override 
@@ -207,10 +217,33 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                             .edges(stoppingStates,GRP_FAILURE)
                             .edges(failingStates, GRP_FAILURE)
                             .edges(unknownStates, GRP_FAILURE)
-                            .build());
-        
+                            .build());        
     }
+    
+    /**
+     * Prepare a message for display/logging.
+     */
+    public static String outputFsm() {
+        StringBuilder fsmText = new StringBuilder();
+        fsmText.append("Group FSM initialized with state machine: ");
+        String comma1 = "";
+        for(Entry<GroupState, Node> node : fsm.entrySet()) {
+            fsmText.append(comma1);
+            fsmText.append(node.getKey().name() + ": {");
+            comma1 = ", ";
 
+            String comma = "";
+            for(Entry<OperationalState, GroupState> transition : node.getValue().edges.entrySet()) {
+                fsmText.append(comma);
+                fsmText.append(transition.getKey().toPersistentString());
+                fsmText.append("=>");
+                fsmText.append(transition.getValue().toPersistentString());
+                comma = ", ";
+            }
+            fsmText.append("}");
+        }
+        return fsmText.toString();
+    }
 
     // ========================   Attributes    ==============================
 
