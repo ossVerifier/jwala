@@ -17,4 +17,6 @@ public interface StateNotificationGateway {
     public void jvmStateChanged(CurrentState<Jvm, JvmState> jvmState);
     public void webServerStateChanged(CurrentState<WebServer, WebServerReachableState> webServerState);
     public void groupStateChanged(CurrentState<Group, GroupState> anUpdatedState);
+    
+    public void groupStateUpdateRequest(Group group);
 }

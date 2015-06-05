@@ -1,8 +1,22 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
@@ -11,20 +25,18 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.LinkedList;
-import java.util.LinkedHashSet;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
 
 public class GroupServiceImpl implements GroupService {
 
+    private final StateNotificationGateway stateNotificationGateway;
+    
     private final GroupPersistenceService groupPersistenceService;
 
-    public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService) {
+    public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
+            final StateNotificationGateway theStateNotificationGateway) {
         groupPersistenceService = theGroupPersistenceService;
+        stateNotificationGateway = theStateNotificationGateway;
     }
 
     @Override
@@ -72,8 +84,11 @@ public class GroupServiceImpl implements GroupService {
                              final User anUpdatingUser) {
 
         anUpdateGroupCommand.validateCommand();
-        return groupPersistenceService.updateGroup(createEvent(anUpdateGroupCommand,
-                                                               anUpdatingUser));
+        Group group = groupPersistenceService.updateGroup(
+                createEvent(anUpdateGroupCommand, anUpdatingUser));
+        
+        stateNotificationGateway.groupStateUpdateRequest(group);
+        return group;
     }
 
     @Override
@@ -88,8 +103,10 @@ public class GroupServiceImpl implements GroupService {
                                final User anAddingUser) {
 
         aCommand.validateCommand();
-        return groupPersistenceService.addJvmToGroup(createEvent(aCommand,
+        Group group = groupPersistenceService.addJvmToGroup(createEvent(aCommand,
                                                                  anAddingUser));
+        stateNotificationGateway.groupStateUpdateRequest(group);
+        return group;
     }
 
     @Override
@@ -103,7 +120,10 @@ public class GroupServiceImpl implements GroupService {
                           anAddingUser);
         }
 
-        return getGroup(aCommand.getGroupId());
+        Group group = getGroup(aCommand.getGroupId());
+
+        stateNotificationGateway.groupStateUpdateRequest(group);
+        return group;
     }
 
     @Override
@@ -112,8 +132,10 @@ public class GroupServiceImpl implements GroupService {
                                     final User aRemovingUser) {
 
         aCommand.validateCommand();
-        return groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
+        Group group = groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
                                                                       aRemovingUser));
+        stateNotificationGateway.groupStateUpdateRequest(group);
+        return group;
     }
 
     @Override

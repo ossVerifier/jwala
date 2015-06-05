@@ -20,7 +20,8 @@ public interface GroupStateService {
         List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException;
 
         List<SetGroupStateCommand> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> state) throws InterruptedException;
-
+        
+        SetGroupStateCommand stateUpdateRequest(Group group) throws InterruptedException;
     }
 
     interface Triggers {

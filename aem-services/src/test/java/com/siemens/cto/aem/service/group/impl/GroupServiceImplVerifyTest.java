@@ -1,23 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
-import com.siemens.cto.aem.service.VerificationBehaviorSupport;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -27,10 +9,36 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
+import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
+
 public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private GroupServiceImpl impl;
     private GroupPersistenceService groupPersistenceService;
+    private StateNotificationGateway stateNotificationGateway;
     private User user;
     private PaginationParameter pagination;
 
@@ -38,7 +46,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void setUp() {
 
         groupPersistenceService = mock(GroupPersistenceService.class);
-        impl = new GroupServiceImpl(groupPersistenceService);
+        stateNotificationGateway = mock(StateNotificationGateway.class);
+        impl = new GroupServiceImpl(groupPersistenceService, stateNotificationGateway);
         user = new User("unused");
         pagination = new PaginationParameter();
     }

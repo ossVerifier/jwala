@@ -6,6 +6,7 @@
      
     <bean id="messageTiming" class="com.siemens.cto.aem.service.group.impl.MessageTimingChannelInterceptor" />
 
+    <int:channel id="justRefresh" />
     <int:channel id="jvmStateUpdates" />
     <int:channel id="webServerStateUpdates" />
     <int:channel id="groupStateUpdates" />
@@ -21,6 +22,7 @@
         <int:method name="jvmStateChanged" request-channel="jvmStateUpdates"/>
         <int:method name="webServerStateChanged" request-channel="webServerStateUpdates"/>
         <int:method name="groupStateChanged" request-channel="groupStateUpdates"/>
+        <int:method name="groupStateUpdateRequest" request-channel="justRefresh"/>
     </int:gateway>
 
     <!-- Only used For Logging Results 
@@ -37,6 +39,12 @@
            input-channel="webServerStateUpdates"
            output-channel="groupStateUpdates"
            method="stateUpdateWebServer"
+           ref="groupStateService" />
+
+    <int:service-activator auto-startup="true"
+           input-channel="justRefresh"
+           output-channel="groupStateUpdates"
+           method="stateUpdateRequest"
            ref="groupStateService" />
 
     <!-- Handle group persistence and notification -->

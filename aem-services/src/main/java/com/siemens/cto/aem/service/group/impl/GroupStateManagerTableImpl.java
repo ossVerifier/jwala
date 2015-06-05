@@ -276,11 +276,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         currentGroupState = null;
         GroupState state = GRP_UNKNOWN;
 
-        // Always get the latest group. This is the fix for the bug wherein the group state still gets affected
-        // by the status of a JVM that was assigned to it but was reassigned to another group. This approach
-        // might need to be examined more closely and might be subject for refactoring in the future.
-        group = groupPersistenceService.getGroup(group.getId());
-
         for(AtomicInteger stateCount : counters.values()) {
             stateCount.set(0);
         }

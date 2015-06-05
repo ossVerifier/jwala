@@ -139,7 +139,9 @@ public class AemServiceConfiguration {
 
     @Bean
     public GroupService getGroupService() {
-        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService());
+        return new GroupServiceImpl(
+                persistenceServiceConfiguration.getGroupPersistenceService(),
+                stateNotificationGateway);
     }
 
     @Bean(name = "jvmService")

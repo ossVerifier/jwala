@@ -48,7 +48,14 @@ import com.siemens.cto.aem.service.state.StateService;
 
 
 /**
- * Invoked in response to incoming state changes - jvm or web server
+ * Primary Group State Service
+ * Reacts to incoming state changes on the state bus
+ * 
+ * Recalculates group state for all affected groups
+ * 
+ * Handles jvm or web server
+ * 
+ * Recent changes: Now utilizing group configuration 
  */
 public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API, ApplicationContextAware {
 
@@ -104,40 +111,11 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         try {
             for(LiteGroup group : groups) {
 
+                // Lite group unfortunately not good enough
                 final Identifier<Group> groupId = group.getId();
-
                 Group fullGroup = groupPersistenceService.getGroup(groupId);
-                CurrentGroupState priorState = fullGroup.getCurrentState();
-
-                LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
-                ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
-                    @Override
-                    public GroupStateMachine initializeGroupStateMachine() {
-                        GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
-                        Group group = groupPersistenceService.getGroup(groupId);
-                        newGsm.synchronizedInitializeGroup(group, systemUser);
-                        return newGsm;
-                    }
-                }, 1, TimeUnit.SECONDS);
-
-                if(gsm == null) {
-                    // could not lock
-                    LOGGER.warn("Skipping group due to lock {}", group);
-                    continue;
-                } else {
-                    lockedGsms.add(gsm);
-                }
-                                
-                gsm.refreshState();
                 
-                if(priorState != null &&
-                    priorState.getState() != gsm.getCurrentState() ) {
-                        lockableGsm.setDirty(true);                    
-                }
-
-                SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-
-                result.add(sgsc);
+                result.add(refreshGroupState(lockedGsms, fullGroup));
             }
         } catch(final RuntimeException re) {
             for(ReadWriteLease gsm : lockedGsms) {
@@ -181,38 +159,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         try {
             for(Group group : groups) {
 
-                final Identifier<Group> groupId = group.getId();
-                CurrentState<Group, GroupState> priorState = group.getCurrentState();
-
-                LockableGroupStateMachine lockableGsm = this.getLockableGsm(groupId);
-                ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
-                    @Override
-                    public GroupStateMachine initializeGroupStateMachine() {
-                        GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
-                        Group group = groupPersistenceService.getGroup(groupId);
-                        newGsm.synchronizedInitializeGroup(group, systemUser);
-                        return newGsm;
-                    }
-                }, 1, TimeUnit.SECONDS);
-
-                if(gsm == null) {
-                    // could not lock
-                    LOGGER.warn("GSS Skipping group due to lock {}", group);
-                    continue;
-                } else { 
-                    lockedGsms.add(gsm);
-                }
-
-                gsm.refreshState();
-                
-                if(priorState != null &&
-                        priorState.getState() != gsm.getCurrentState() ) {
-                            lockableGsm.setDirty(true);                    
-                }
-                
-                SetGroupStateCommand sgsc= new SetGroupStateCommand(gsm.getCurrentStateDetail());
-
-                result.add(sgsc);
+                result.add(refreshGroupState(lockedGsms, group));
             }
         } catch(final RuntimeException re) {
             for(ReadWriteLease gsm : lockedGsms) {
@@ -227,6 +174,71 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             throw re;
         }
         return result;
+    }
+
+    @Transactional(readOnly=true)
+    @Override
+    @Splitter
+    public SetGroupStateCommand stateUpdateRequest(Group group) throws InterruptedException {
+        LOGGER.debug("GSS Recalc group state by request.");
+
+        List<ReadWriteLease> lockedGsms = new ArrayList<>(1);
+
+        try {
+                return refreshGroupState(lockedGsms, group);
+        } catch(final RuntimeException re) {
+            for(ReadWriteLease gsm : lockedGsms) {
+                Group group2 = gsm.getCurrentGroup();
+                if(group2 != null) {
+                    LOGGER.warn("GSS Unlock: {}", group2);
+                    getLockableGsm(group2.getId()).unlockPersistent();
+                }
+            }
+            LOGGER.warn("GSS Unlocked affected groups due to exception.", re);
+            throw re;
+        }
+    }
+
+    /** Helper used by both WS and JVM update 
+     * @param lockedGsms a collection of active leases
+     * @return null for a null message  */
+    private SetGroupStateCommand refreshGroupState(
+            List<ReadWriteLease> lockedGsms,
+            Group group)
+            throws InterruptedException {
+        // Serialize access
+        LockableGroupStateMachine lockableGsm = this.getLockableGsm(group.getId());
+        ReadWriteLease gsm = lockableGsm.tryPersistentLock(new Initializer() {
+            @Override
+            public GroupStateMachine initializeGroupStateMachine() {
+                GroupStateMachine newGsm = applicationContext.getBean("groupStateMachine", GroupStateMachine.class);
+                // injection of prototype gsm - one time initialization complete
+                return newGsm;
+            }
+        }, 1, TimeUnit.SECONDS);
+
+        // handle timeout condition on lock by skipping
+        if(gsm == null) {
+            LOGGER.warn("Skipping group due to lock {}", group);
+            return null;
+        } else {
+            lockedGsms.add(gsm);
+        }
+        
+        // Get state before recalculation
+        CurrentState<Group, GroupState> priorState = group.getCurrentState();
+        
+        // reset GSM and refresh state with new group information.
+        gsm.synchronizedInitializeGroup(group, systemUser);
+        
+        // mark state machine as dirty if it has changed
+        if(priorState != null &&
+            priorState.getState() != gsm.getCurrentState() ) {
+                lockableGsm.setDirty(true);                    
+        }
+
+        // Construct an update. 
+        return new SetGroupStateCommand(gsm.getCurrentStateDetail());
     }
 
     /**
