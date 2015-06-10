@@ -18,7 +18,8 @@ var AdminTab = React.createClass({
 	doEncrypt: function() {
 		ServiceFactory.getAdminService().encryptServerSide(
 				this.state.toEncrypt, 
-				this.onEncryption);
+				this.onEncryption,
+				this.onEncryptionFail);
 	},
 	doReload: function() {
 		ServiceFactory.getAdminService().reloadProperties(
@@ -47,6 +48,14 @@ var AdminTab = React.createClass({
 			encryptProp:"${enc:"+e.applicationResponseContent+"}",
 			encryptLabel:"Encryption Succeeded",
 			encryptLabelOr:" or ",
+			toEncrypt: ""});
+	},
+	onEncryptionFail: function(e) {
+		this.setState({
+			encrypted:"Please enter some data to encrypt.",
+			encryptProp:"",
+			encryptLabel:"Encryption Failed:",
+			encryptLabelOr:"",
 			toEncrypt: ""});
 	},
     render: function() {

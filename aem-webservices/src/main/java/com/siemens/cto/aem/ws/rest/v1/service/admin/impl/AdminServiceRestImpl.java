@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -77,6 +79,10 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     @Override
     public Response encrypt(String cleartext) {
         
-        return ResponseBuilder.ok(resourceService.encryptUsingPlatformBean(cleartext));
+        if(cleartext == null || cleartext.trim().length() == 0) {
+            return Response.status(Response.Status.NO_CONTENT).build();
+        } else {
+            return ResponseBuilder.ok(resourceService.encryptUsingPlatformBean(cleartext));
+        }
     }
 }
