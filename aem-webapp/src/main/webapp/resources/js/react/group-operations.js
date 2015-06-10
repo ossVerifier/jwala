@@ -477,6 +477,7 @@ var GroupOperationsDataTable = React.createClass({
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;
+      aoColumnDefs[itemIndex].bSortable = false;
       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
            var key = type + oData.id.id;
            return React.render(<StatusWidget key={key} defaultStatus=""
