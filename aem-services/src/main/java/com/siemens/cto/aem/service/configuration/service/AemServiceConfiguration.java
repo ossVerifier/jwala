@@ -1,19 +1,11 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
+import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
@@ -22,22 +14,15 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
-import com.siemens.cto.aem.service.group.GroupControlService;
-import com.siemens.cto.aem.service.group.GroupJvmControlService;
-import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.group.GroupStateMachine;
-import com.siemens.cto.aem.service.group.GroupWebServerControlService;
-import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupStateManagerTableImpl;
-import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
+import com.siemens.cto.aem.service.group.*;
+import com.siemens.cto.aem.service.group.impl.*;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -47,26 +32,26 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
-import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
-import com.siemens.cto.aem.service.webserver.WebServerCommandService;
-import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
-import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
-import com.siemens.cto.aem.service.webserver.impl.WebServerControlHistoryServiceImpl;
-import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
-import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
-import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
+import com.siemens.cto.aem.service.webserver.*;
+import com.siemens.cto.aem.service.webserver.heartbeat.WebServerServiceFacade;
+import com.siemens.cto.aem.service.webserver.heartbeat.WebServerStateServiceFacade;
+import com.siemens.cto.aem.service.webserver.impl.*;
+import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
@@ -107,6 +92,21 @@ public class AemServiceConfiguration {
     
     @Autowired
     private HarmonyTemplateEngine harmonyTemplateEngine;
+
+    @Autowired
+    private WebServerDao webServerDao;
+
+    @Autowired
+    @Qualifier("webServerHttpRequestFactory")
+    private HttpClientRequestFactory httpClientRequestFactory;
+
+    @Autowired
+    @Qualifier("webServerServiceExistence")
+    private WebServerServiceExistenceFacade webServerServiceExistenceFacade;
+
+    @Autowired
+    @Qualifier("webServerStateServiceFacade")
+    private WebServerStateServiceFacade webServerStateServiceFacade;
 
     /**
      * Make toc.properties available to spring integration configuration
@@ -260,4 +260,27 @@ public class AemServiceConfiguration {
     public ResourceService getResourceService() {
         return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
     }
+
+    @Bean(name = "webServerProvider")
+    public WebServerServiceFacade getWebServerProvider() {
+        return new WebServerServiceFacade(getWebServerService());
+    }
+
+    @Bean(name = "webServerStateServiceFacade")
+    public WebServerStateServiceFacade getWebServerStateServiceFacade() {
+        return new WebServerStateServiceFacade(getWebServerStateService(), webServerDao);
+    }
+
+    @Bean
+    public WebServerStateGateway getWebServerStateGateway() {
+        return new WebServerStateGatewayImpl(httpClientRequestFactory, webServerServiceExistenceFacade,
+                                             commandExecutor, aemSshConfig, webServerStateServiceFacade);
+    }
+
+    @Bean
+    public WebServerStateRetrievalScheduledTaskHandler getWebServerStatePollerTask() {
+        return new WebServerStateRetrievalScheduledTaskHandler(getWebServerProvider(), httpClientRequestFactory,
+                                            webServerStateServiceFacade);
+    }
+
 }

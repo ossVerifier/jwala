@@ -41,13 +41,7 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
                 failed = true;
             }
     	}
-        try {
-            SourcePollingChannelAdapter webServerStateInitiator = appCtx.getBean("webServerStateInitiator", SourcePollingChannelAdapter.class);
-            webServerStateInitiator.start();
-        } catch(NoSuchBeanDefinitionException e) {
-            LOGGER.error("Could not start WebServer reverse heartbeat", e);
-            failed = true;
-        }
+
         if(!failed) {
         	LOGGER.info(eventMessage);
         }
