@@ -70,6 +70,10 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
                                                                     jvm);
+            if (execData != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))){
+                execData.cleanStandardOutput();
+                LOGGER.info("shell command output{}", execData.getStandardOutput());
+            }
 
             final JvmControlHistory completeHistory = jvmControlServiceLifecycle.completeHistory(incompleteHistory,
                                                                                                  aCommand,

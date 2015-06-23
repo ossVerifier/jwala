@@ -1,27 +1,27 @@
 package com.siemens.cto.aem.control.jvm.command.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ShellCommand;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.common.ApplicationException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DefaultJvmExecCommandBuilderImplTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DefaultJvmExecCommandBuilderImplTest.class);
-    
+
     private Jvm jvm;
     private DefaultJvmExecCommandBuilderImpl impl;
     private String jvmName;
@@ -29,22 +29,23 @@ public class DefaultJvmExecCommandBuilderImplTest {
 
     @After
     public void tearDown() {
-        if(originalPRP != null) { 
-            System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, originalPRP);            
+        if (originalPRP != null) {
+            System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, originalPRP);
         }
     }
+
     @Before
     public void setup() {
         originalPRP = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH);
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "aem-control/src/test/resources");
         try {
             ApplicationProperties.getInstance();
-        } catch( ApplicationException e) { 
+        } catch (ApplicationException e) {
             LOGGER.trace("Attempting to load properties without project in path", e);
             System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "src/test/resources");
-            ApplicationProperties.getInstance();            
+            ApplicationProperties.getInstance();
         }
-        
+
         impl = new DefaultJvmExecCommandBuilderImpl();
         jvm = mock(Jvm.class);
         jvmName = "theJvmName";
@@ -61,10 +62,10 @@ public class DefaultJvmExecCommandBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build();
-        final ExecCommand expectedCommand = new ExecCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
-                                                            "\"" + jvmName + "\"");
+        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
+                "\"" + jvmName + "\"");
         assertEquals(expectedCommand,
-                     actualCommand);
+                actualCommand);
     }
 
     @Test
@@ -76,7 +77,7 @@ public class DefaultJvmExecCommandBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build();
-        
+
         assertTrue(actualCommand.getCommandFragments().size() > 0);
     }
 }

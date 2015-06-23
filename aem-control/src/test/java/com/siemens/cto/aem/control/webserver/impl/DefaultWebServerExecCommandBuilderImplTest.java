@@ -2,6 +2,7 @@ package com.siemens.cto.aem.control.webserver.impl;
 
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.model.exec.ShellCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import org.junit.Before;
@@ -35,11 +36,10 @@ public class DefaultWebServerExecCommandBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build();
-        final ExecCommand expectedCommand = new ExecCommand("net",
-                                                            "start",
-                                                            "\"" + webServerName + "\"");
+        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
+                "\"" + webServerName + "\"");
         assertEquals(expectedCommand,
-                     actualCommand);
+                actualCommand);
     }
 
     @Test
@@ -51,10 +51,10 @@ public class DefaultWebServerExecCommandBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build();
-        final ExecCommand expectedCommand = new ExecCommand("net",
-                                                            "stop",
-                                                            "\"" + webServerName + "\"");
+        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/stop-service.sh`",
+                "\"" + webServerName + "\"",
+                "20");
         assertEquals(expectedCommand,
-                     actualCommand);
+                actualCommand);
     }
 }

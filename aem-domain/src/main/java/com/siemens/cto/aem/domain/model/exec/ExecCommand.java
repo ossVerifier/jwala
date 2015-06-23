@@ -1,20 +1,21 @@
 package com.siemens.cto.aem.domain.model.exec;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 public class ExecCommand implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final List<String> commandFragments;
+    protected final List<String> commandFragments;
+    protected boolean runInShell = false;
 
     public ExecCommand(final String... theCommandFragments) {
         this(Arrays.asList(theCommandFragments));
@@ -66,5 +67,9 @@ public class ExecCommand implements Serializable {
         return new ToStringBuilder(this)
                 .append("commandFragments", commandFragments)
                 .toString();
+    }
+
+    public boolean getRunInShell() {
+        return runInShell;
     }
 }

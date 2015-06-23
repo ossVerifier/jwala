@@ -11,7 +11,7 @@ public class ExecData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final ExecReturnCode returnCode;
-    private final String standardOutput;
+    private String standardOutput;
     private final String standardError;
 
     public ExecData(final ExecReturnCode theReturnCode,
@@ -81,5 +81,9 @@ public class ExecData implements Serializable {
                 .append("standardOutput", standardOutput)
                 .append("standardError", standardError)
                 .toString();
+    }
+
+    public void cleanStandardOutput() {
+        standardOutput = standardOutput.replaceAll("\\n","NEWLINE").replaceAll("\\p{C}", "").replaceAll("NEWLINE","\\\n");
     }
 }
