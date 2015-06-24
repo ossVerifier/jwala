@@ -18,7 +18,8 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
                     cygpathWrapper(START_SCRIPT_NAME),
-                    quotedServiceName(aServiceName)
+                    quotedServiceName(aServiceName),
+                    SLEEP_TIME.getValue()
             );
         }
     },

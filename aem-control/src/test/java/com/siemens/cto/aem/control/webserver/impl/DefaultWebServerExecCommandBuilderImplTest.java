@@ -37,7 +37,7 @@ public class DefaultWebServerExecCommandBuilderImplTest {
 
         final ExecCommand actualCommand = impl.build();
         final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
-                "\"" + webServerName + "\"");
+                "\"" + webServerName + "\"", "20");
         assertEquals(expectedCommand,
                 actualCommand);
     }
