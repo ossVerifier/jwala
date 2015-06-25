@@ -24,7 +24,8 @@ import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
@@ -45,13 +46,13 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private WebServerCommandExecutor commandExecutor;
 
     @Mock
-    private WebServerStateGateway webServerStateGateway;
-
-    @Mock
     private WebServerControlHistoryService controlHistoryService;
 
     @Mock
     private StateService<WebServer, WebServerReachableState> webServerStateService;
+
+    @Mock
+    private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
 
     @Captor
     private ArgumentCaptor<SetStateCommand<WebServer, WebServerReachableState>> setStateCommandCaptor;
@@ -62,9 +63,9 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     public void setup() {
         impl = new WebServerControlServiceImpl(webServerService,
                                                commandExecutor,
-                                               webServerStateGateway,
                                                controlHistoryService,
-                                               webServerStateService);
+                                               webServerStateService,
+                                               webServerReachableStateMap);
 
         user = new User("unused");
     }

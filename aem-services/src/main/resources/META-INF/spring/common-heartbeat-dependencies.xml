@@ -18,14 +18,7 @@
         <property name="connectTimeout" value="${ping.webServer.connectTimeout}"/>
         <property name="readTimeout" value="${ping.webServer.readTimeout}"/>
         <property name="periodMillis" value="${ping.webServer.period.millis}"/>
-        <property name="maxHttpConnections" value="${ping.webServer.maxHttpConnections}" />    
-    </bean>
-
-    <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
-        <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
-        <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
-        <property name="periodMillis" value="${ping.jvm.period.millis}"/>
-        <property name="maxHttpConnections" value="${ping.jvm.maxHttpConnections}" />        
+        <property name="maxHttpConnections" value="${ping.webServer.maxHttpConnections}" />
     </bean>
 
     <bean id="exceptionUtilHelper" class="com.siemens.cto.aem.common.exception.ExceptionUtil" factory-method="valueOf">

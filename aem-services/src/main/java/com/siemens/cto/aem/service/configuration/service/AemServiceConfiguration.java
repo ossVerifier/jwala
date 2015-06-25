@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
@@ -45,15 +46,28 @@ import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.annotation.Resource;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
+@EnableAsync
 @EnableScheduling
 public class AemServiceConfiguration {
 
@@ -79,9 +93,6 @@ public class AemServiceConfiguration {
     private StateNotificationGateway stateNotificationGateway;
 
     @Autowired
-    private WebServerStateGateway webServerStateGateway;
-
-    @Autowired
     private JvmStateGateway jvmStateGateway;
 
     @Autowired
@@ -97,10 +108,6 @@ public class AemServiceConfiguration {
     private WebServerDao webServerDao;
 
     @Autowired
-    @Qualifier("webServerHttpRequestFactory")
-    private HttpClientRequestFactory httpClientRequestFactory;
-
-    @Autowired
     @Qualifier("webServerServiceExistence")
     private WebServerServiceExistenceFacade webServerServiceExistenceFacade;
 
@@ -108,11 +115,16 @@ public class AemServiceConfiguration {
     @Qualifier("webServerStateServiceFacade")
     private WebServerStateServiceFacade webServerStateServiceFacade;
 
+    private static final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
+
+    @Resource
+    private Environment env;
+
     /**
      * Make toc.properties available to spring integration configuration
      * System properties are only used if there is no setting in toc.properties.
      */
-    @Bean 
+    @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() { 
          PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
          ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
@@ -207,9 +219,9 @@ public class AemServiceConfiguration {
     public WebServerControlService getWebServerControlService() {
         return new WebServerControlServiceImpl(getWebServerService(),
                                                aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                                               webServerStateGateway,
                                                getWebServerControlHistoryService(),
-                                               getWebServerStateService());
+                                               getWebServerStateService(),
+                                               webServerReachableStateMap);
     }
 
     @Bean(name="webServerCommandService")
@@ -271,16 +283,39 @@ public class AemServiceConfiguration {
         return new WebServerStateServiceFacade(getWebServerStateService(), webServerDao);
     }
 
-    @Bean
-    public WebServerStateGateway getWebServerStateGateway() {
-        return new WebServerStateGatewayImpl(httpClientRequestFactory, webServerServiceExistenceFacade,
-                                             commandExecutor, aemSshConfig, webServerStateServiceFacade);
+    @Bean(name = "webServerHttpRequestFactory")
+    @DependsOn("aemServiceConfigurationPropertiesConfigurer")
+    public HttpClientRequestFactory getHttpClientRequestFactory(
+            @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
+            @Value("${ping.jvm.readTimeout}") final int readTimeout,
+            @Value("${ping.jvm.period.millis}") final long millis,
+            @Value("${ping.jvm.maxHttpConnections}") final int maxHttpConnections) throws UnrecoverableKeyException,
+                                                                                          NoSuchAlgorithmException,
+                                                                                          KeyStoreException,
+                                                                                          KeyManagementException {
+        HttpClientRequestFactory httpClientRequestFactory = new HttpClientRequestFactory();
+        httpClientRequestFactory.setConnectTimeout(connectionTimeout);
+        httpClientRequestFactory.setReadTimeout(readTimeout);
+        httpClientRequestFactory.setPeriodMillis(millis);
+        httpClientRequestFactory.setMaxHttpConnections(maxHttpConnections);
+        return httpClientRequestFactory;
     }
 
     @Bean
-    public WebServerStateRetrievalScheduledTaskHandler getWebServerStatePollerTask() {
-        return new WebServerStateRetrievalScheduledTaskHandler(getWebServerProvider(), httpClientRequestFactory,
-                                            webServerStateServiceFacade);
+    @Autowired
+    public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
+            final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
+        return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker);
+    }
+
+    @Bean
+    @Autowired
+    public WebServerStateSetterWorker getWebServerStateSetterWorker(
+            @Qualifier("webServerHttpRequestFactory") final HttpClientRequestFactory httpClientRequestFactory,
+            @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
+        return new WebServerStateSetterWorker(httpClientRequestFactory,
+                                              webServerReachableStateMap,
+                                              webServerStateService);
     }
 
 }

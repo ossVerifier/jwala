@@ -23,30 +23,30 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.service.webserver.WebServerStateGateway;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
     private final WebServerService webServerService;
     private final WebServerCommandExecutor webServerCommandExecutor;
-    private final WebServerStateGateway webServerStateGateway;
     private final WebServerControlHistoryService controlHistoryService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
+    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final WebServerCommandExecutor theExecutor,
-                                       final WebServerStateGateway theWebServerStateGateway,
                                        final WebServerControlHistoryService theControlHistoryService,
-                                       final StateService<WebServer, WebServerReachableState> theWebServerStateService) {
+                                       final StateService<WebServer, WebServerReachableState> theWebServerStateService,
+                                       final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap) {
         webServerService = theWebServerService;
         webServerCommandExecutor = theExecutor;
-        webServerStateGateway = theWebServerStateGateway;
         controlHistoryService = theControlHistoryService;
         webServerStateService = theWebServerStateService;
+        webServerReachableStateMap = theWebServerReachableStateMap;
     }
 
     @Override
@@ -56,57 +56,108 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         try {
             aCommand.validateCommand();
 
+            final SetStateCommand<WebServer, WebServerReachableState> setStateCommand = createStateCommand(aCommand);
+            webServerReachableStateMap.put(aCommand.getWebServerId(), setStateCommand.getNewState().getState());
+
             final WebServerControlHistory incompleteHistory = controlHistoryService.beginIncompleteControlHistory(new Event<>(aCommand,
                     AuditEvent.now(aUser)));
 
-            final Identifier<WebServer> webServerId = aCommand.getWebServerId();
-
-            webServerStateService.setCurrentState(createStateCommandWithoutMessage(aCommand),
-                    aUser);
-
-            final WebServer webServer = webServerService.getWebServer(webServerId);
+            webServerStateService.setCurrentState(setStateCommand, aUser);
 
             final ExecData execData = webServerCommandExecutor.controlWebServer(aCommand,
-                    webServer);
-            if (execData != null && (aCommand.getControlOperation().equals(WebServerControlOperation.START) || aCommand.getControlOperation().equals(WebServerControlOperation.STOP))) {
-                execData.cleanStandardOutput();
-                LOGGER.info("shell command output{}", execData.getStandardOutput());
+                    webServerService.getWebServer(aCommand.getWebServerId()));
+
+            if (execData != null &&
+                (aCommand.getControlOperation().equals(WebServerControlOperation.START) ||
+                 aCommand.getControlOperation().equals(WebServerControlOperation.STOP))) {
+                    execData.cleanStandardOutput();
+                    LOGGER.info("shell command output{}", execData.getStandardOutput());
+
+                    // Set the states after sending out the control command.
+                    if (execData.getReturnCode().wasSuccessful()) {
+                        final WebServerReachableState finalWebServerState =
+                                aCommand.getControlOperation().equals(WebServerControlOperation.START) ?
+                                        WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
+                        webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
+                                                                                 finalWebServerState), aUser);
+                    } else {
+                        webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
+                        webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
+                                WebServerReachableState.WS_FAILED,
+                                execData.extractMessageFromStandardOutput()), aUser);
+                    }
+
             }
 
-            webServerStateGateway.initiateWebServerStateRequest(webServer);
-
-            final WebServerControlHistory completeHistory = controlHistoryService.completeControlHistory(new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
-                    AuditEvent.now(aUser)));
+            final WebServerControlHistory completeHistory =
+                    controlHistoryService.completeControlHistory(
+                            new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
+                            AuditEvent.now(aUser)));
 
             return completeHistory;
 
         } catch (final CommandFailureException cfe) {
-            webServerStateService.setCurrentState(createStateCommandWithMessage(aCommand.getWebServerId(),
-                            WebServerReachableState.WS_FAILED,
-                            cfe.getMessage()),
-                    aUser);
+            webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
+            webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
+                                                                     WebServerReachableState.WS_FAILED,
+                                                                     cfe.getMessage()), aUser);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "CommandFailureException when attempting to control a Web Server: " + aCommand,
-                    cfe);
+                                             "CommandFailureException when attempting to control a Web Server: " + aCommand,
+                                             cfe);
+        } finally {
+            if (webServerReachableStateMap.get(aCommand.getWebServerId()) != WebServerReachableState.WS_FAILED) {
+                webServerReachableStateMap.remove(aCommand.getWebServerId());
+            }
         }
     }
 
-    SetStateCommand<WebServer, WebServerReachableState> createStateCommandWithoutMessage(final ControlWebServerCommand aCommand) {
-        final SetStateCommand<WebServer, WebServerReachableState> command = new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
-                aCommand.getControlOperation().getOperationState(),
-                DateTime.now(),
-                StateType.WEB_SERVER));
+    /**
+     * Sets the web server state.
+     * @param aCommand {@link ControlWebServerCommand}
+     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     */
+    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerCommand aCommand) {
+        final SetStateCommand<WebServer, WebServerReachableState> command =
+                new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
+                                                                aCommand.getControlOperation().getOperationState(),
+                                                                DateTime.now(),
+                                                                StateType.WEB_SERVER));
         return command;
     }
 
-    SetStateCommand<WebServer, WebServerReachableState> createStateCommandWithMessage(final Identifier<WebServer> anId,
-                                                                                      final WebServerReachableState aState,
-                                                                                      final String aMessage) {
-        final SetStateCommand<WebServer, WebServerReachableState> command = new WebServerSetStateCommand(new CurrentState<>(anId,
-                aState,
-                DateTime.now(),
-                StateType.WEB_SERVER,
-                aMessage));
+    /**
+     * Sets the web server state.
+     * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
+     * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param aMessage a message e.g. error message etc.
+     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     */
+    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
+                                                                           final WebServerReachableState aState,
+                                                                           final String aMessage) {
+        final SetStateCommand<WebServer, WebServerReachableState> command =
+                new WebServerSetStateCommand(new CurrentState<>(anId,
+                                                                aState,
+                                                                DateTime.now(),
+                                                                StateType.WEB_SERVER,
+                                                                aMessage));
         return command;
     }
+
+    /**
+     * Sets the web server state.
+     * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
+     * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     */
+    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
+                                                                           final WebServerReachableState aState) {
+        final SetStateCommand<WebServer, WebServerReachableState> command =
+                new WebServerSetStateCommand(new CurrentState<>(anId,
+                                             aState,
+                                             DateTime.now(),
+                                             StateType.WEB_SERVER));
+        return command;
+    }
+
 }
