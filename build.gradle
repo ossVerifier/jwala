@@ -78,7 +78,6 @@ subprojects {
 
     repositories {
         maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
-        maven { url "http://usmlvv1nrg645.usmlvv1d0a.smshsc.net/artifactory/ext-release-local" }
 //      maven { url "https://repo1.maven.org/maven2" }
     }
 

@@ -14,12 +14,25 @@ dependencies {
 
 }
 
-/*apply plugin: 'miredot'
+apply plugin: 'miredot'
 
 miredot {
     source = sourceSets.main.allJava
     destination = sourceSets.main.output
     licence = 'UHJvamVjdHxjb20uc2llbWVucy5jdG8uYWVtLmFlbS13ZWJzZXJ2aWNlc3wyMDE3LTAxLTI4fGZhbHNlI01DMENGRk9DSm12bWsxbEl3amNjMEljWDFiWEN5bWdSQWhVQWxoRTFXYlV2R0N6RzA3WkNybFZ4dTNaTXYyWT0=' 
+}
+
+configurations {
+  miredotlib 
+}
+
+dependencies { 
+    miredotlib 'com.qmino:miredot-plugin:1.6.1'
+}    
+
+task getDeps(type: Copy) {
+  from configurations.miredotlib
+  into 'runtime/'
 }
 
 buildscript {
@@ -29,10 +42,10 @@ buildscript {
         maven { url "http://repo1.maven.org/maven2" }
     }
     dependencies {
-        classpath 'com.qmino:miredot-plugin:1.5.1'
+        classpath 'com.qmino:miredot-plugin:1.6.1'
     }
 }
-*/
+
 
 publishing {
     publications {
