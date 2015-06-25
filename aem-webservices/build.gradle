@@ -37,6 +37,7 @@ task getDeps(type: Copy) {
 
 buildscript {
     repositories {
+          maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
 //        maven { url "http://nexus.qmino.com/content/repositories/miredot" }
 //        maven { url "http://nexus.qmino.com/content/repositories/miredot-snapshots" }
     }
