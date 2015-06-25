@@ -13,7 +13,7 @@ dependencies {
     compile group: "commons-fileupload", name: "commons-fileupload", version: "$project.versions.commons_fileupload"
 
 }
-
+/*
 apply plugin: 'miredot'
 
 miredot {
@@ -45,7 +45,7 @@ buildscript {
         classpath 'com.qmino:miredot-plugin:1.6.1'
     }
 }
-
+*/
 
 publishing {
     publications {
