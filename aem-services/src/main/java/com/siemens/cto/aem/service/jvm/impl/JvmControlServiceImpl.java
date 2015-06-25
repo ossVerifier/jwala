@@ -86,6 +86,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                         aUser);
             } else {
                 String result = execData.standardErrorOrStandardOut();
+                if (execData != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
+                    result = execData.extractMessageFromStandardOutput();
+                }
                 switch(execData.getReturnCode().getReturnCode()) {
                 case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                     LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {}\n{}", aCommand, result);

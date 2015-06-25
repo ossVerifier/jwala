@@ -84,6 +84,16 @@ public class ExecData implements Serializable {
     }
 
     public void cleanStandardOutput() {
-        standardOutput = standardOutput.replaceAll("\\n","NEWLINE").replaceAll("\\p{C}", "").replaceAll("NEWLINE","\\\n");
+        standardOutput = standardOutput.replaceAll("\\n","NEWLINE") // remove the new line formatting
+                .replaceAll("\\p{C}", "")                           // remove all the hidden formatting characters that cause display issues in the browser
+                .replaceAll("NEWLINE","\\\n");                      // restore the new line formatting
+    }
+
+    public String extractMessageFromStandardOutput() {
+        return standardOutput.replaceAll("\\n", "NEWLINE")      // remove the new line formatting
+                .replaceAll("^.*?\\[0mNEWLINE\\$", "")          // remove the shell prompt and the original command
+                .replaceAll("^.*\\s\\d+\\sNEWLINE", "")         // remove the original command again
+                .replaceAll("NEWLINE\\]0;~.*logout","")         // remove all the trailing shell prompts
+                .replaceAll("NEWLINE", "\\\n");                 // restore the new line formatting
     }
 }
