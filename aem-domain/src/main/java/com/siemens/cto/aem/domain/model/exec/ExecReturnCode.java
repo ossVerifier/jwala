@@ -37,6 +37,10 @@ public class ExecReturnCode implements Serializable {
         return (returnCode.equals(ZERO));
     }
 
+    public boolean wasAbnormallySuccessful() {
+        return returnCode.equals(STP_EXIT_CODE_ABNORMAL_SUCCESS);
+    }
+
     public boolean wasCompleted() {
         return (returnCode != null);
     }

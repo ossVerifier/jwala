@@ -74,7 +74,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     LOGGER.info("shell command output{}", execData.getStandardOutput());
 
                     // Set the states after sending out the control command.
-                    if (execData.getReturnCode().wasSuccessful()) {
+                    if (execData.getReturnCode().wasSuccessful() || execData.getReturnCode().wasAbnormallySuccessful()) {
                         final WebServerReachableState finalWebServerState =
                                 aCommand.getControlOperation().equals(WebServerControlOperation.START) ?
                                         WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
