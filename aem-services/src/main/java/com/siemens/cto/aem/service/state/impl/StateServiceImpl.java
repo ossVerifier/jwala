@@ -41,7 +41,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand, final User aUser) {
         LOGGER.trace("Attempting to set state for {} {} ", stateType, aCommand);
         aCommand.validateCommand();
