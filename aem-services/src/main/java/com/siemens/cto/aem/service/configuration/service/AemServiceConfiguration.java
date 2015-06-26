@@ -5,7 +5,6 @@ import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -38,8 +37,6 @@ import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.*;
-import com.siemens.cto.aem.service.webserver.heartbeat.WebServerServiceFacade;
-import com.siemens.cto.aem.service.webserver.heartbeat.WebServerStateServiceFacade;
 import com.siemens.cto.aem.service.webserver.impl.*;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
@@ -106,14 +103,6 @@ public class AemServiceConfiguration {
 
     @Autowired
     private WebServerDao webServerDao;
-
-    @Autowired
-    @Qualifier("webServerServiceExistence")
-    private WebServerServiceExistenceFacade webServerServiceExistenceFacade;
-
-    @Autowired
-    @Qualifier("webServerStateServiceFacade")
-    private WebServerStateServiceFacade webServerStateServiceFacade;
 
     private static final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
 
@@ -271,16 +260,6 @@ public class AemServiceConfiguration {
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
         return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
-    }
-
-    @Bean(name = "webServerProvider")
-    public WebServerServiceFacade getWebServerProvider() {
-        return new WebServerServiceFacade(getWebServerService());
-    }
-
-    @Bean(name = "webServerStateServiceFacade")
-    public WebServerStateServiceFacade getWebServerStateServiceFacade() {
-        return new WebServerStateServiceFacade(getWebServerStateService(), webServerDao);
     }
 
     @Bean(name = "webServerHttpRequestFactory")
