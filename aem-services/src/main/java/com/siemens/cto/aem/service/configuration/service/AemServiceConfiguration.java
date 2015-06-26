@@ -280,7 +280,7 @@ public class AemServiceConfiguration {
         return httpClientRequestFactory;
     }
 
-    @Bean
+    @Bean(name = "webServerStateRetrievalScheduledTaskHandler")
     @Autowired
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {

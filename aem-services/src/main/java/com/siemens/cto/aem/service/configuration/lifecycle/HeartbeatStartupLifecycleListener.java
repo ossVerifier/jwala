@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.configuration.lifecycle;
 
+import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -41,6 +42,13 @@ public class HeartbeatStartupLifecycleListener implements ApplicationListener<Ap
                 failed = true;
             }
     	}
+
+        // TODO: Find out if we need to have a "doWebServer" flag just like what JVM has since this method gets executed around 3x on application startup.
+        // Note: Actually there's no effect on calling setEnabled of {@link WebServerStateRetrievalScheduledTaskHandler}
+        // several times but it's just not prudent.
+        final WebServerStateRetrievalScheduledTaskHandler webServerStateRetrievalScheduledTaskHandler =
+                appCtx.getBean("webServerStateRetrievalScheduledTaskHandler", WebServerStateRetrievalScheduledTaskHandler.class);
+        webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
 
         if(!failed) {
         	LOGGER.info(eventMessage);

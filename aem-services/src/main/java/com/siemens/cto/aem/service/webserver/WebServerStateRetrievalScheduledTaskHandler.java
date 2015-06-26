@@ -16,6 +16,7 @@ import java.util.List;
 public class WebServerStateRetrievalScheduledTaskHandler {
     private final WebServerService webServerService;
     private final WebServerStateSetterWorker webServerStateSetterWorker;
+    private boolean enabled;
 
     public WebServerStateRetrievalScheduledTaskHandler(final WebServerService webServerService,
                                                        final WebServerStateSetterWorker webServerStateSetterWorker) {
@@ -25,11 +26,21 @@ public class WebServerStateRetrievalScheduledTaskHandler {
 
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() throws IOException {
-        final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
+        if (isEnabled()) {
+            final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
 
-        for (WebServer webServer: webServers) {
-            webServerStateSetterWorker.pingWebServer(webServer);
+            for (WebServer webServer : webServers) {
+                webServerStateSetterWorker.pingWebServer(webServer);
+            }
         }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
 }
