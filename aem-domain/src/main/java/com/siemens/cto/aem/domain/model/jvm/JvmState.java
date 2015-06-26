@@ -1,16 +1,9 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
+import com.siemens.cto.aem.domain.model.state.OperationalState;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.Stability;
-import com.siemens.cto.aem.domain.model.state.Transience;
-
-import static com.siemens.cto.aem.domain.model.state.Stability.STABLE;
-import static com.siemens.cto.aem.domain.model.state.Stability.UNSTABLE;
-import static com.siemens.cto.aem.domain.model.state.Transience.PERMANENT;
-import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
 
 /**
  * JvmState defines the known states for JVMs.
@@ -26,21 +19,21 @@ import static com.siemens.cto.aem.domain.model.state.Transience.TRANSIENT;
  */
 public enum JvmState implements OperationalState {
 
-    JVM_NEW         ("NEW",             PERMANENT, STABLE  ),
-    JVM_INITIALIZING("INITIALIZING",    TRANSIENT, UNSTABLE),
-    JVM_INITIALIZED ("INITIALIZED",     TRANSIENT, STABLE  ),
-    JVM_START       ("START SENT",      TRANSIENT, UNSTABLE),
-    JVM_STARTING    ("STARTING",        PERMANENT, UNSTABLE),
-    JVM_STARTED     ("STARTED",         PERMANENT, STABLE  ),
-    JVM_STOP        ("STOP SENT",       TRANSIENT, UNSTABLE),
-    JVM_STOPPING    ("STOPPING",        TRANSIENT, UNSTABLE),
-    JVM_STOPPED     ("SHUTTING DOWN",   TRANSIENT, STABLE  ),
-    JVM_DESTROYING  ("DESTROYING",      TRANSIENT, UNSTABLE),
-    JVM_DESTROYED   ("DESTROYED",       PERMANENT, STABLE  ),
-    JVM_UNKNOWN     ("UNKNOWN",         PERMANENT, UNSTABLE),
-    JVM_STALE       ("NO HEARTBEAT",    PERMANENT, STABLE),
-    JVM_FAILED      ("FAILED",          PERMANENT, STABLE),
-    SVC_STOPPED     ("STOPPED",         PERMANENT, STABLE)
+    JVM_NEW         ("NEW"),
+    JVM_INITIALIZING("INITIALIZING"),
+    JVM_INITIALIZED ("INITIALIZED"),
+    JVM_START       ("START SENT"),
+    JVM_STARTING    ("STARTING"),
+    JVM_STARTED     ("STARTED"),
+    JVM_STOP        ("STOP SENT"),
+    JVM_STOPPING    ("STOPPING"),
+    JVM_STOPPED     ("SHUTTING DOWN"),
+    JVM_DESTROYING  ("DESTROYING"),
+    JVM_DESTROYED   ("DESTROYED"),
+    JVM_UNKNOWN     ("UNKNOWN"),
+    JVM_STALE       ("NO HEARTBEAT"),
+    JVM_FAILED      ("FAILED"),
+    SVC_STOPPED     ("STOPPED")
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
@@ -59,16 +52,9 @@ public enum JvmState implements OperationalState {
     }
 
     private final String stateName;
-    private final Transience transientState;
 
-    private final Stability stableState;
-
-    private JvmState(final String theStateName,
-                     final Transience theTransientState,
-                     final Stability theStableState) {
+    private JvmState(final String theStateName) {
         stateName = theStateName;
-        transientState = theTransientState;
-        stableState = theStableState;
     }
 
     @Override
@@ -81,13 +67,4 @@ public enum JvmState implements OperationalState {
         return name();
     }
 
-    @Override
-    public Transience getTransience() {
-        return transientState;
-    }
-
-    @Override
-    public Stability getStability() {
-        return stableState;
-    }
 }

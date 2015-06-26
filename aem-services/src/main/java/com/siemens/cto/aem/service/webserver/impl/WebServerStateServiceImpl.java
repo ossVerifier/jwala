@@ -1,20 +1,9 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.Transience;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -23,6 +12,15 @@ import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebServerReachableState> implements StateService<WebServer, WebServerReachableState> {
 
@@ -39,11 +37,8 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
               StateType.WEB_SERVER,
               theStateNotificationGateway);
 
-        for(WebServerReachableState e : WebServerReachableState.values()) {
-            if( e.getTransience() == Transience.TRANSIENT) {
-                wsStatesToCheck.add(e);
-            }                
-        } 
+        wsStatesToCheck.add(WebServerReachableState.WS_STARTING);
+        wsStatesToCheck.add(WebServerReachableState.WS_STOPPING);
     }
 
     @Override

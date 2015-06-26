@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.domain.model.state;
 
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -7,9 +9,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 
 public class CurrentState<S extends Object, T extends OperationalState> implements KeyValueStateProvider {
 
@@ -55,14 +54,6 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
 
     public String getStateString() {
         return state.toStateString();
-    }
-
-    public boolean isTransientState() {
-        return state.getTransience().isTransient();
-    }
-
-    public boolean isStableState() {
-        return state.getStability().isStable();
     }
 
     public boolean hasMessage() {

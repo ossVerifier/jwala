@@ -1,29 +1,26 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.Stability;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.Transience;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> implements StateService<Jvm, JvmState> {
 
@@ -44,14 +41,15 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
               StateType.JVM,
               theStateNotificationGateway);
 
-        for(JvmState e : JvmState.values()) {
-            if(         e.getStability() == Stability.UNSTABLE 
-                    ||  e.getTransience() == Transience.TRANSIENT) {
-                jvmStatesToCheck.add(e);
-            }                
-        } 
-        jvmStatesToCheck.remove(JvmState.JVM_STOPPED);
+        jvmStatesToCheck.add(JvmState.JVM_INITIALIZING);
+        jvmStatesToCheck.add(JvmState.JVM_INITIALIZED);
+        jvmStatesToCheck.add(JvmState.JVM_START);
+        jvmStatesToCheck.add(JvmState.JVM_STARTING);
         jvmStatesToCheck.add(JvmState.JVM_STARTED);
+        jvmStatesToCheck.add(JvmState.JVM_STOP);
+        jvmStatesToCheck.add(JvmState.JVM_STOPPING);
+        jvmStatesToCheck.add(JvmState.JVM_DESTROYING);
+        jvmStatesToCheck.add(JvmState.JVM_UNKNOWN);
 
         jvmStoppingStatesToCheck.add(JvmState.JVM_STOPPED);
     }

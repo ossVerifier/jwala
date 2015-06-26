@@ -87,7 +87,6 @@ public class WebServerStateSetterWorker {
      */
     private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState) {
         if (!isWebServerBusyOrDown(webServer)) {
-            // TODO: Verify with team if we can use User.getSystemUser().
             webServerStateService.setCurrentState(createStateCommand(webServer.getId(),
                             webServerReachableState),
                     User.getSystemUser());

@@ -81,16 +81,6 @@ public class CurrentStateProcessorTest {
         }
 
         @Override
-        public Transience getTransience() {
-            return Transience.PERMANENT;
-        }
-
-        @Override
-        public Stability getStability() {
-            return Stability.STABLE;
-        }
-
-        @Override
         public String toPersistentString() {            
             return name();
         }
