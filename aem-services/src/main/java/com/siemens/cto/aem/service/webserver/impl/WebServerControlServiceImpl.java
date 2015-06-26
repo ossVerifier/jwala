@@ -81,26 +81,17 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
                                                                                  finalWebServerState), aUser);
                     } else {
-                        webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
-                        webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
-                                WebServerReachableState.WS_FAILED,
-                                execData.extractMessageFromStandardOutput()), aUser);
+                        setFailedState(aCommand, aUser, execData.extractMessageFromStandardOutput());
                     }
 
             }
 
-            final WebServerControlHistory completeHistory =
-                    controlHistoryService.completeControlHistory(
-                            new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
-                            AuditEvent.now(aUser)));
-
-            return completeHistory;
+            return controlHistoryService.completeControlHistory(
+                        new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
+                        AuditEvent.now(aUser)));
 
         } catch (final CommandFailureException cfe) {
-            webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
-            webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
-                                                                     WebServerReachableState.WS_FAILED,
-                                                                     cfe.getMessage()), aUser);
+            setFailedState(aCommand, aUser, cfe.getMessage());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                              "CommandFailureException when attempting to control a Web Server: " + aCommand,
                                              cfe);
@@ -112,17 +103,30 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     /**
+     * Set web server state to failed.
+     * @param aCommand {@link ControlWebServerCommand} which contains the id of the web server whose status is to be set to failed.
+     * @param aUser the user who issued the control command.
+     * @param msg the message that details the cause of the failed state.
+     */
+    private void setFailedState(final ControlWebServerCommand aCommand, final User aUser, String msg) {
+        final WebServer webServer = webServerService.getWebServer(aCommand.getWebServerId());
+        msg = webServer.getName() + " at " + webServer.getHost() + ": " + msg;
+        webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
+        webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
+                WebServerReachableState.WS_FAILED,
+                msg), aUser);
+    }
+
+    /**
      * Sets the web server state.
      * @param aCommand {@link ControlWebServerCommand}
      * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerCommand aCommand) {
-        final SetStateCommand<WebServer, WebServerReachableState> command =
-                new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
-                                                                aCommand.getControlOperation().getOperationState(),
-                                                                DateTime.now(),
-                                                                StateType.WEB_SERVER));
-        return command;
+        return new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
+                                                               aCommand.getControlOperation().getOperationState(),
+                                                               DateTime.now(),
+                                                               StateType.WEB_SERVER));
     }
 
     /**
@@ -135,13 +139,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState,
                                                                            final String aMessage) {
-        final SetStateCommand<WebServer, WebServerReachableState> command =
-                new WebServerSetStateCommand(new CurrentState<>(anId,
-                                                                aState,
-                                                                DateTime.now(),
-                                                                StateType.WEB_SERVER,
-                                                                aMessage));
-        return command;
+        return new WebServerSetStateCommand(new CurrentState<>(anId,
+                                                               aState,
+                                                               DateTime.now(),
+                                                               StateType.WEB_SERVER,
+                                                               aMessage));
     }
 
     /**
@@ -152,12 +154,10 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState) {
-        final SetStateCommand<WebServer, WebServerReachableState> command =
-                new WebServerSetStateCommand(new CurrentState<>(anId,
-                                             aState,
-                                             DateTime.now(),
-                                             StateType.WEB_SERVER));
-        return command;
+        return new WebServerSetStateCommand(new CurrentState<>(anId,
+                                            aState,
+                                            DateTime.now(),
+                                            StateType.WEB_SERVER));
     }
 
 }
