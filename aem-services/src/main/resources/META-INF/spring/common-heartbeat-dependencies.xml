@@ -27,8 +27,6 @@
 
     <bean id="jvmServiceExistence" class="com.siemens.cto.aem.control.jvm.command.impl.JvmServiceExistenceFacade"/>
 
-    <bean id="webServerServiceExistence" class="com.siemens.cto.aem.control.webserver.command.impl.WebServerServiceExistenceFacade"/>
-
     <bean id="generalCallerRunsPolicy" class="java.util.concurrent.ThreadPoolExecutor$CallerRunsPolicy" />
 
 </beans>
