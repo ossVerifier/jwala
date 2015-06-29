@@ -44,7 +44,7 @@ public class WebServerStateSetterWorker {
      * Ping the web server via http get.
      * @param webServer the web server to ping.
      */
-    @Async
+    @Async("webServerTaskExecutor")
     void pingWebServer(WebServer webServer) {
         ClientHttpResponse response = null;
         if (!isWebServerBusyOrDown(webServer)) {
@@ -101,12 +101,10 @@ public class WebServerStateSetterWorker {
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState) {
-        final SetStateCommand<WebServer, WebServerReachableState> command =
-                new WebServerSetStateCommand(new CurrentState<>(anId,
-                        aState,
-                        DateTime.now(),
-                        StateType.WEB_SERVER));
-        return command;
+        return new WebServerSetStateCommand(new CurrentState<>(anId,
+                                            aState,
+                                            DateTime.now(),
+                                            StateType.WEB_SERVER));
     }
 
 }
