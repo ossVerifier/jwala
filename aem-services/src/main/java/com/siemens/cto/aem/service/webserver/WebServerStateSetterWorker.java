@@ -16,9 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * Sets a web server's state. This class is meant to be a spring bean wherein its "work" method pingWebServer
@@ -45,7 +47,7 @@ public class WebServerStateSetterWorker {
      * @param webServer the web server to ping.
      */
     @Async("webServerTaskExecutor")
-    void pingWebServer(WebServer webServer) {
+    Future<?> pingWebServer(WebServer webServer) {
         ClientHttpResponse response = null;
         if (!isWebServerBusyOrDown(webServer)) {
 
@@ -67,6 +69,7 @@ public class WebServerStateSetterWorker {
             }
 
         }
+        return new AsyncResult<>(null);
     }
 
     /**

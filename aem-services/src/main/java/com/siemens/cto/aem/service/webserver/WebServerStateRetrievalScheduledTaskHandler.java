@@ -5,7 +5,9 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Handles periodic retrieval of all web server states. This handler is defined as a Spring bean in conjunction
@@ -26,12 +28,35 @@ public class WebServerStateRetrievalScheduledTaskHandler {
 
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() throws IOException {
+
         if (isEnabled()) {
+
+            final List<Future<?>> futures = new ArrayList<>();
             final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
 
             for (WebServer webServer : webServers) {
-                webServerStateSetterWorker.pingWebServer(webServer);
+                futures.add(webServerStateSetterWorker.pingWebServer(webServer));
             }
+
+            /**
+             * Wait until all asynchronous threads are finished before having this method complete its execution.
+             * This is done to make sure that the web server state pipeline does not get clogged.
+             * Spring's @Schedule will only commence once this method has finished executing.
+             * {@link http://docs.spring.io/spring/docs/current/spring-framework-reference/html/scheduling.html} 28.4.2
+             * a fixed delay...the period will be measured from the completion time of each preceding invocation
+             */
+            if (futures.size() > 0) {
+                boolean done = false;
+                while (!done) {
+                    for (Future<?> future : futures) {
+                        done = future.isDone();
+                        if (!done) {
+                            break;
+                        }
+                    }
+                }
+            }
+
         }
     }
 
