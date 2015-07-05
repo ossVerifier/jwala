@@ -37,6 +37,7 @@ import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.*;
+import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import com.siemens.cto.aem.service.webserver.impl.*;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
@@ -45,10 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -70,6 +68,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableAsync
 @EnableScheduling
+@ComponentScan("com.siemens.cto.aem.service.webserver.component")
 public class AemServiceConfiguration {
 
     @Autowired
@@ -293,12 +292,13 @@ public class AemServiceConfiguration {
 
     @Bean
     @Autowired
-    public WebServerStateSetterWorker getWebServerStateSetterWorker(
+    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
             @Qualifier("webServerHttpRequestFactory") final HttpClientRequestFactory httpClientRequestFactory,
             @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
-        return new WebServerStateSetterWorker(httpClientRequestFactory,
-                                              webServerReachableStateMap,
-                                              webServerStateService);
+                webServerStateSetterWorker.setHttpClientRequestFactory(httpClientRequestFactory);
+                webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
+                webServerStateSetterWorker.setWebServerStateService(webServerStateService);
+                return webServerStateSetterWorker;
     }
 
     @Bean(name = "webServerTaskExecutor")

@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
