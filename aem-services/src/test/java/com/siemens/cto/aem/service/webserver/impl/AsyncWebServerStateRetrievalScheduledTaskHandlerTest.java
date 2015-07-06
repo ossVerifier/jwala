@@ -93,10 +93,12 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         webServers.add(webServer2);
 
         MockitoAnnotations.initMocks(this);
+        reset(Config.webServerService);
     }
 
     @Test
-    public void testWebServerStatePollerTaskExecute() throws IOException, InterruptedException {
+    public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
+        System.out.println("1");
         when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
@@ -109,6 +111,38 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
+    }
+
+    @Test
+    public void testWebServerStatePollerTaskExecuteHttpStatusNotFound() throws IOException, InterruptedException {
+        System.out.println("2");
+        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
+        when(request.execute()).thenReturn(clientHttpResponse);
+        when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+
+        webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+        webServerStateRetrievalScheduledTaskHandler.execute();
+
+        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(request, times(2)).execute();
+        verify(clientHttpResponse, times(2)).close();
+    }
+
+    @Test
+    public void testWebServerStatePollerTaskExecuteIoException() throws IOException, InterruptedException {
+        System.out.println("3");
+        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
+
+        webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+        webServerStateRetrievalScheduledTaskHandler.execute();
+
+        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(request, times(0)).execute();
+        verify(clientHttpResponse, times(0)).close();
     }
 
     @Configuration
