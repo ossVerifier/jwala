@@ -25,6 +25,7 @@ else
             echo Service $1 already started.
             exit $STP_EXIT_CODE_ABNORMAL_SUCCESS
         fi
+        echo $1 failed to start and was not already started
         exit $STP_EXIT_CODE_FAILED
     else
         for (( c=1; c<=$2; c++ ))
@@ -35,6 +36,7 @@ else
                 exit $STP_EXIT_CODE_SUCCESS
             fi
         done
+        echo $1 failed to reach the RUNNING state after timeout: $2 seconds
         exit $STP_EXIT_CODE_TIMED_OUT
     fi
 fi
