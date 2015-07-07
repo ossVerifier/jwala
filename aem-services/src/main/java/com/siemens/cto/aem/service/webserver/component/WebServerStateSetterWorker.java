@@ -10,7 +10,11 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
@@ -37,6 +41,7 @@ import java.util.concurrent.Future;
 @Service
 public class WebServerStateSetterWorker {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
     private HttpClientRequestFactory httpClientRequestFactory;
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private StateService<WebServer, WebServerReachableState> webServerStateService;
@@ -70,12 +75,18 @@ public class WebServerStateSetterWorker {
                 response = request.execute();
 
                 if (response.getStatusCode() == HttpStatus.OK) {
-                    setState(webServer, WebServerReachableState.WS_REACHABLE);
+                    setState(webServer, WebServerReachableState.WS_REACHABLE, null);
                 } else {
-                    setState(webServer, WebServerReachableState.WS_UNREACHABLE);
+                    setState(webServer, WebServerReachableState.WS_FAILED,
+                             "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
+                             response.getStatusCode() + "'");
                 }
+            } catch (ConnectTimeoutException cte) {
+                LOGGER.info(cte.getLocalizedMessage(), cte);
+                setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
             } catch (IOException ioe) {
-                setState(webServer, WebServerReachableState.WS_UNREACHABLE);
+                LOGGER.error(ioe.getLocalizedMessage(), ioe);
+                setState(webServer, WebServerReachableState.WS_FAILED, ioe.getMessage());
             } finally {
                 if (response != null) {
                     response.close();
@@ -102,27 +113,36 @@ public class WebServerStateSetterWorker {
      * Sets the web server state if the web server is not starting or stopping.
      * @param webServer the web server
      * @param webServerReachableState {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param msg a message
      */
-    private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState) {
-        if (!isWebServerBusyOrDown(webServer)) {
-            webServerStateService.setCurrentState(createStateCommand(webServer.getId(),
-                            webServerReachableState),
-                    User.getSystemUser());
-        }
+    private void setState(final WebServer webServer,
+                          final WebServerReachableState webServerReachableState,
+                          final String msg) {
+        webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
+                                              User.getSystemUser());
     }
 
     /**
      * Sets the web server state.
-     * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
-     * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param id the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
+     * @param state the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param msg a message
      * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
      */
-    private SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
-                                                                           final WebServerReachableState aState) {
-        return new WebServerSetStateCommand(new CurrentState<>(anId,
-                                            aState,
-                                            DateTime.now(),
-                                            StateType.WEB_SERVER));
+    private SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
+                                                                                   final WebServerReachableState state,
+                                                                                   final String msg) {
+            if (StringUtils.isEmpty(msg)) {
+                return new WebServerSetStateCommand(new CurrentState<>(id,
+                                                                       state,
+                                                                       DateTime.now(),
+                                                                       StateType.WEB_SERVER));
+            }
+            return new WebServerSetStateCommand(new CurrentState<>(id,
+                                                    state,
+                                                    DateTime.now(),
+                                                    StateType.WEB_SERVER,
+                                                    msg));
     }
 
     public void setHttpClientRequestFactory(HttpClientRequestFactory httpClientRequestFactory) {
