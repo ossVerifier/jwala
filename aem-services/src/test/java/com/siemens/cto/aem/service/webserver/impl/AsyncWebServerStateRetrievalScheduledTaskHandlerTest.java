@@ -34,8 +34,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.mockito.Matchers.any;
@@ -98,7 +100,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
-        System.out.println("1");
         when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
@@ -108,6 +109,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
         webServerStateRetrievalScheduledTaskHandler.execute();
 
+        waitForAsyncThreadsToComplete();
+
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
@@ -115,7 +118,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusNotFound() throws IOException, InterruptedException {
-        System.out.println("2");
         when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
@@ -125,6 +127,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
         webServerStateRetrievalScheduledTaskHandler.execute();
 
+        waitForAsyncThreadsToComplete();
+
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
@@ -132,7 +136,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteIoException() throws IOException, InterruptedException {
-        System.out.println("3");
         when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
@@ -140,9 +143,23 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
         webServerStateRetrievalScheduledTaskHandler.execute();
 
+        waitForAsyncThreadsToComplete();
+
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(0)).execute();
         verify(clientHttpResponse, times(0)).close();
+    }
+
+    private void waitForAsyncThreadsToComplete() {
+        boolean done = false;
+        while (!done) {
+            for (Identifier<WebServer> key : Config.webServerFutureMap.keySet()) {
+                done = Config.webServerFutureMap.get(key).isDone();
+                if (!done) {
+                    break;
+                }
+            }
+        }
     }
 
     @Configuration
@@ -162,19 +179,23 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         @Mock
         private static StateService<WebServer, WebServerReachableState> webServerStateService;
 
+        @Autowired
+        private WebServerStateSetterWorker webServerStateSetterWorker;
+
+        private static Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
+
         public Config() {
             MockitoAnnotations.initMocks(this);
         }
-
-        @Autowired
-        private WebServerStateSetterWorker webServerStateSetterWorker;
 
         @Bean
         WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler() {
             webServerStateSetterWorker.setHttpClientRequestFactory(httpClientRequestFactory);
             webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
             webServerStateSetterWorker.setWebServerStateService(webServerStateService);
-            return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker);
+            return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
+                                                                   webServerStateSetterWorker,
+                                                                   webServerFutureMap);
         }
 
         @Bean(name = "webServerTaskExecutor")

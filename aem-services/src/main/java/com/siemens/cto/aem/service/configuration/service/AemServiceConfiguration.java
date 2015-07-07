@@ -62,6 +62,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -108,6 +109,7 @@ public class AemServiceConfiguration {
     private WebServerDao webServerDao;
 
     private static final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
+    private static final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
 
     @Resource
     private Environment env;
@@ -287,7 +289,9 @@ public class AemServiceConfiguration {
     @Autowired
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
-        return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker);
+        return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
+                                                               webServerStateSetterWorker,
+                                                               webServerFutureMap);
     }
 
     @Bean
@@ -303,10 +307,11 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerTaskExecutor")
     @Autowired
+    // TODO: Get values from a property file.
     public TaskExecutor getWebServerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory) {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(5);
-        threadPoolTaskExecutor.setMaxPoolSize(5);
+        threadPoolTaskExecutor.setMaxPoolSize(20);
         threadPoolTaskExecutor.setQueueCapacity(100);
         threadPoolTaskExecutor.setKeepAliveSeconds(5);
         threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
