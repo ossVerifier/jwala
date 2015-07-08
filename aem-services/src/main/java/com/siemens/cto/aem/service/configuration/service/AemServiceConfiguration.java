@@ -307,13 +307,16 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerTaskExecutor")
     @Autowired
-    // TODO: Get values from a property file.
-    public TaskExecutor getWebServerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory) {
+    public TaskExecutor getWebServerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
+                                                 @Value("${thread-task-executor.pool.size}") final int corePoolSize,
+                                                 @Value("${thread-task-executor.pool.max-size}") final int maxPoolSize,
+                                                 @Value("${thread-task-executor.pool.queue-capacity}") final int queueCapacity,
+                                                 @Value("${thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(5);
-        threadPoolTaskExecutor.setMaxPoolSize(20);
-        threadPoolTaskExecutor.setQueueCapacity(100);
-        threadPoolTaskExecutor.setKeepAliveSeconds(5);
+        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
+        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        threadPoolTaskExecutor.setKeepAliveSeconds(keepAliveSeconds);
         threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         threadPoolTaskExecutor.setThreadFactory(threadFactory);
         return threadPoolTaskExecutor;
