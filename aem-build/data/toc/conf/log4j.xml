@@ -132,19 +132,6 @@
         <appender-ref ref="TRACE_TOC" />
     </root>
     
-    <!-- Debugging configuration - do not check in -->
-    
-    <!-- CTO TCO logger -->
-    <logger name="com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryImpl" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="TRACE_TOC" />
-    </logger>
-    <!-- CTO TCO logger -->
-    <logger name="com.siemens.cto.toc.files.impl.TemplateManagerImpl" additivity="false">
-        <level value="DEBUG" />
-        <appender-ref ref="TRACE_TOC" />
-    </logger>
-
     <!-- CTO TCO logger for heartbeat/integration start stop -->
     <logger name="com.siemens.cto.aem.service.configuration.lifecycle.HeartbeatStartupLifecycleListener">
         <level value="INFO" />
@@ -156,4 +143,15 @@
         <appender-ref ref="TRACE_TOC" />
     </logger>
     
+    <!-- CTO TCO logger - Log the shell output when starting/stopping a JVM or web server -->
+    <logger name="com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+
+    <logger name="com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+
 </log4j:configuration>

@@ -84,16 +84,19 @@ public class ExecData implements Serializable {
     }
 
     public void cleanStandardOutput() {
-        standardOutput = standardOutput.replaceAll("\\n","NEWLINE") // remove the new line formatting
-                .replaceAll("\\p{C}", "")                           // remove all the hidden formatting characters that cause display issues in the browser
-                .replaceAll("NEWLINE","\\\n");                      // restore the new line formatting
+        standardOutput = standardOutput.replaceAll("\u001B\\[[;\\d]*m", "") // remove the ASCII color codes that come back from the shell
+                .replaceAll("\u001B\\]0;~", "") // remove the ASCII color codes that come back from the shell
+                .replaceAll("\\n", "NEWLINE")                               // remove the new line formatting
+                .replaceAll("\\p{C}", "")                                   // remove all the hidden formatting characters that cause display issues in the browser
+                .replaceAll("NEWLINE", "\\\n");                             // restore the new line formatting
     }
 
     public String extractMessageFromStandardOutput() {
-        return standardOutput.replaceAll("\\n", "NEWLINE")      // remove the new line formatting
-                .replaceAll("^.*?\\[0mNEWLINE\\$", "")          // remove the shell prompt and the original command
-                .replaceAll("^.*\\s\\d+\\sNEWLINE", "")         // remove the original command again
-                .replaceAll("NEWLINE\\]0;~.*logout","")         // remove all the trailing shell prompts
-                .replaceAll("NEWLINE", "\\\n");                 // restore the new line formatting
+        return standardOutput.replaceAll("\\n", "NEWLINE")                      // remove the new line formatting
+                .replaceAll("^.*?NEWLINE\\$", "")                               // remove the shell prompt and the original command by taking out the first line
+                .replaceAll("^.*\\s\\\".*\\\"\\s\\d+\\sNEWLINE", "")            // remove the original command again by looking for the second script parameter in quotes
+                .replaceAll("[A-Za-z0-9]+@[A-Za-z0-9]+\\s~NEWLINE\\$", "")      // remove the user@host info
+                .replaceAll("\\s\\sexitNEWLINElogout", "")                      // remove the remaining shell prompt info
+                .replaceAll("NEWLINE", "\\\n");                                 // restore the new line formatting
     }
 }

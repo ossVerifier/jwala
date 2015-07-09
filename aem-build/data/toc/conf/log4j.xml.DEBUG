@@ -157,4 +157,15 @@
         <appender-ref ref="TRACE_TOC" />
     </logger>
     
+    <!-- CTO TCO logger - Log the shell output when starting/stopping a JVM or web server -->
+    <logger name="com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+
+    <logger name="com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+
 </log4j:configuration>
