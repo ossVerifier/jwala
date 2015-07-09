@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -96,6 +98,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         MockitoAnnotations.initMocks(this);
         reset(Config.webServerService);
+
+        Config.webServerFutureMap.clear();
     }
 
     @Test
@@ -107,6 +111,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
 
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+
+        assertEquals(0, Config.webServerFutureMap.size());
         webServerStateRetrievalScheduledTaskHandler.execute();
 
         waitForAsyncThreadsToComplete();
@@ -114,6 +120,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
+
+        assertEquals(2, Config.webServerFutureMap.size());
     }
 
     @Test
@@ -125,6 +133,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
 
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+
+        assertEquals(0, Config.webServerFutureMap.size());
         webServerStateRetrievalScheduledTaskHandler.execute();
 
         waitForAsyncThreadsToComplete();
@@ -132,6 +142,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
+
+        assertEquals(2, Config.webServerFutureMap.size());
     }
 
     @Test
@@ -141,6 +153,8 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
 
         webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+
+        assertEquals(0, Config.webServerFutureMap.size());
         webServerStateRetrievalScheduledTaskHandler.execute();
 
         waitForAsyncThreadsToComplete();
@@ -148,7 +162,37 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
         verify(request, times(0)).execute();
         verify(clientHttpResponse, times(0)).close();
+
+        assertEquals(2, Config.webServerFutureMap.size());
     }
+
+    @Test
+    public void testWebServerStatePollerTaskExecuteHttpStatusOkWithCleanup() throws IOException, InterruptedException {
+        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
+        when(request.execute()).thenReturn(clientHttpResponse);
+        when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+
+        webServerStateRetrievalScheduledTaskHandler.setEnabled(true);
+
+        Config.webServerFutureMap.put(new Identifier<WebServer>(999L), null);
+        webServerStateRetrievalScheduledTaskHandler.execute();
+
+        waitForAsyncThreadsToComplete();
+
+        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(request, times(2)).execute();
+        verify(clientHttpResponse, times(2)).close();
+
+        assertEquals(2, Config.webServerFutureMap.size());
+
+
+        for (Identifier<WebServer> key : Config.webServerFutureMap.keySet()) {
+            assertNotEquals(999L, key.getId().longValue());
+        }
+    }
+
 
     private void waitForAsyncThreadsToComplete() {
         boolean done = false;

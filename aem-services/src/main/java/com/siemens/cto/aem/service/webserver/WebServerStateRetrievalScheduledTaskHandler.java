@@ -7,6 +7,7 @@ import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorke
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -36,13 +37,43 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     public void execute() throws IOException {
         if (isEnabled()) {
             final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
-            for (WebServer webServer : webServers) {
-
-                if (webServerFutureMap.get(webServer.getId()) == null || webServerFutureMap.get(webServer.getId()).isDone()) {
-                    webServerFutureMap.put(webServer.getId(), webServerStateSetterWorker.pingWebServer(webServer));
+            try {
+                for (WebServer webServer : webServers) {
+                    if (webServerFutureMap.get(webServer.getId()) == null || webServerFutureMap.get(webServer.getId()).isDone()) {
+                        webServerFutureMap.put(webServer.getId(), webServerStateSetterWorker.pingWebServer(webServer));
+                    }
                 }
-
+            } finally {
+                if (webServers.size() < webServerFutureMap.size()) {
+                    cleanFuturesMap(webServers);
+                }
             }
+        }
+    }
+
+    /**
+     * Remove Futures who's key does not match any of the web server ids in the web server list.
+     *
+     * @param webServers the web server list
+     */
+    private void cleanFuturesMap(final List<WebServer> webServers) {
+        final List<Identifier<WebServer>> futureKeysForRemoval = new ArrayList<>();
+        for (Identifier<WebServer> key : webServerFutureMap.keySet()) {
+            boolean hasMatch = false;
+            for (WebServer webServer : webServers) {
+                hasMatch = key.equals(webServer.getId());
+                if (hasMatch) {
+                    break;
+                }
+            }
+
+            if (!hasMatch) {
+                futureKeysForRemoval.add(key);
+            }
+        }
+
+        for (Identifier<WebServer> key: futureKeysForRemoval) {
+            webServerFutureMap.remove(key);
         }
     }
 
