@@ -39,14 +39,14 @@ public class WebServerStateRetrievalScheduledTaskHandler {
             final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
             try {
                 for (WebServer webServer : webServers) {
-                    if (webServerFutureMap.get(webServer.getId()) == null || webServerFutureMap.get(webServer.getId()).isDone()) {
-                        webServerFutureMap.put(webServer.getId(), webServerStateSetterWorker.pingWebServer(webServer));
+                    if (webServerFutureMap.get(webServer.getId()) == null ||
+                        webServerFutureMap.get(webServer.getId()).isDone()) {
+                            webServerFutureMap.put(webServer.getId(),
+                                                   webServerStateSetterWorker.pingWebServer(webServer));
                     }
                 }
             } finally {
-                if (webServers.size() < webServerFutureMap.size()) {
-                    cleanFuturesMap(webServers);
-                }
+                cleanFuturesMap(webServers);
             }
         }
     }
@@ -58,22 +58,24 @@ public class WebServerStateRetrievalScheduledTaskHandler {
      */
     private void cleanFuturesMap(final List<WebServer> webServers) {
         final List<Identifier<WebServer>> futureKeysForRemoval = new ArrayList<>();
-        for (Identifier<WebServer> key : webServerFutureMap.keySet()) {
-            boolean hasMatch = false;
-            for (WebServer webServer : webServers) {
-                hasMatch = key.equals(webServer.getId());
-                if (hasMatch) {
-                    break;
+        if (webServers.size() < webServerFutureMap.size()) {
+            for (Identifier<WebServer> key : webServerFutureMap.keySet()) {
+                boolean hasMatch = false;
+                for (WebServer webServer : webServers) {
+                    hasMatch = key.equals(webServer.getId());
+                    if (hasMatch) {
+                        break;
+                    }
+                }
+
+                if (!hasMatch) {
+                    futureKeysForRemoval.add(key);
                 }
             }
 
-            if (!hasMatch) {
-                futureKeysForRemoval.add(key);
+            for (Identifier<WebServer> key : futureKeysForRemoval) {
+                webServerFutureMap.remove(key);
             }
-        }
-
-        for (Identifier<WebServer> key: futureKeysForRemoval) {
-            webServerFutureMap.remove(key);
         }
     }
 
