@@ -108,8 +108,8 @@ public class AemServiceConfiguration {
     @Autowired
     private WebServerDao webServerDao;
 
-    private static final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
-    private static final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
+    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
+    private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
 
     @Resource
     private Environment env;
@@ -308,10 +308,10 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerTaskExecutor")
     @Autowired
     public TaskExecutor getWebServerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
-                                                 @Value("${thread-task-executor.pool.size}") final int corePoolSize,
-                                                 @Value("${thread-task-executor.pool.max-size}") final int maxPoolSize,
-                                                 @Value("${thread-task-executor.pool.queue-capacity}") final int queueCapacity,
-                                                 @Value("${thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
+                                                 @Value("${webserver.thread-task-executor.pool.size}") final int corePoolSize,
+                                                 @Value("${webserver.thread-task-executor.pool.max-size}") final int maxPoolSize,
+                                                 @Value("${webserver.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
+                                                 @Value("${webserver.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
         threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
