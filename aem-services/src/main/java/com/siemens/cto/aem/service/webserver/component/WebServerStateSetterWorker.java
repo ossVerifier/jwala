@@ -118,8 +118,10 @@ public class WebServerStateSetterWorker {
     private void setState(final WebServer webServer,
                           final WebServerReachableState webServerReachableState,
                           final String msg) {
-        webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
-                                              User.getSystemUser());
+        if (!isWebServerBusyOrDown(webServer)) {
+            webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
+                                                  User.getSystemUser());
+        }
     }
 
     /**
