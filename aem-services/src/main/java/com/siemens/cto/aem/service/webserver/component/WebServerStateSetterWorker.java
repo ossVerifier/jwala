@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.component;
 
+import com.siemens.cto.aem.common.exception.ExceptionUtil;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
@@ -11,6 +12,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -82,11 +84,11 @@ public class WebServerStateSetterWorker {
                              response.getStatusCode() + "'");
                 }
             } catch (ConnectTimeoutException cte) {
-                LOGGER.info(cte.getLocalizedMessage(), cte);
+                LOGGER.info(cte.getMessage(), cte);
                 setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
             } catch (IOException ioe) {
-                LOGGER.error(ioe.getLocalizedMessage(), ioe);
-                setState(webServer, WebServerReachableState.WS_FAILED, ioe.getMessage());
+                LOGGER.error(ioe.getMessage(), ioe);
+                setState(webServer, WebServerReachableState.WS_FAILED, ExceptionUtils.getStackTrace(ioe));
             } finally {
                 if (response != null) {
                     response.close();
