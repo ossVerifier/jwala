@@ -988,9 +988,11 @@ var StatusWidget = React.createClass({
             newState["newErrorMsg"] = true;
             newState["showErrorBtn"] = true;
             var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(errorMsg);
-            this.state.errorMessages.push({dateTime:groupOperationsHelper.getCurrentDateTime(dateTime),
-                                           msg:errMsg[0],
-                                           pullDown:errMsg[1]});
+            if (this.state.errorMessages.length === 0 || this.state.errorMessages[this.state.errorMessages.length - 1].msg !== errMsg[0]) {
+                this.state.errorMessages.push({dateTime:groupOperationsHelper.getCurrentDateTime(dateTime),
+                                               msg:errMsg[0],
+                                               pullDown:errMsg[1]});
+            }
         } else {
             newState["newErrorMsg"] = false;
             newState["showErrorBtn"] = false;
