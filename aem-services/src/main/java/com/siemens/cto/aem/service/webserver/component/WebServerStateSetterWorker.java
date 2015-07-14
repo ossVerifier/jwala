@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.webserver.component;
 
-import com.siemens.cto.aem.common.exception.ExceptionUtil;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
