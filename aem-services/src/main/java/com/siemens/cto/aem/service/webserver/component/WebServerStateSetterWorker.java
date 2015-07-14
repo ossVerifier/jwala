@@ -70,7 +70,7 @@ public class WebServerStateSetterWorker {
     @Async("webServerTaskExecutor")
     public Future<?> pingWebServer(WebServer webServer) {
         ClientHttpResponse response = null;
-        if (!isWebServerBusyOrDown(webServer)) {
+        if (!isWebServerBusy(webServer)) {
             try {
                 ClientHttpRequest request = httpClientRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                 response = request.execute();
@@ -104,10 +104,9 @@ public class WebServerStateSetterWorker {
      * @param webServer the webServer
      * @return true if web server is starting or stopping
      */
-    private boolean isWebServerBusyOrDown(final WebServer webServer) {
+    private boolean isWebServerBusy(final WebServer webServer) {
         return  webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STARTING ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOPPING ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_FAILED;
+                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOPPING;
     }
 
     /**
@@ -119,7 +118,7 @@ public class WebServerStateSetterWorker {
     private void setState(final WebServer webServer,
                           final WebServerReachableState webServerReachableState,
                           final String msg) {
-        if (!isWebServerBusyOrDown(webServer)) {
+        if (!isWebServerBusy(webServer)) {
             webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
                                                   User.getSystemUser());
         }

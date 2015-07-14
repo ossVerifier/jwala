@@ -97,9 +97,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                                              "CommandFailureException when attempting to control a Web Server: " + aCommand,
                                              cfe);
         } finally {
-            if (webServerReachableStateMap.get(aCommand.getWebServerId()) != WebServerReachableState.WS_FAILED) {
-                webServerReachableStateMap.remove(aCommand.getWebServerId());
-            }
+            webServerReachableStateMap.remove(aCommand.getWebServerId());
         }
     }
 
