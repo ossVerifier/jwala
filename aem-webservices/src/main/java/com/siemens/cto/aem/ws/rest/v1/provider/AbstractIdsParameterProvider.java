@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractIdsParameterProvider<T> {
 

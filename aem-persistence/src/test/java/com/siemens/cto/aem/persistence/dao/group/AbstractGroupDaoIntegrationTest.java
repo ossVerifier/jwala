@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.group;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -18,7 +7,14 @@ import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractGroupDaoIntegrationTest {
@@ -118,17 +114,11 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test
     public void testGetGroups() {
 
-        final PaginationParameter pagination = new PaginationParameter(0, 2);
+        groupDao.createGroup(GroupEventsTestHelper.createCreateGroupEvent("Auto-constructed Group " + (1),
+                                                        "Auto-constructed User " + (1)));
+        final List<Group> actualGroups = groupDao.getGroups();
 
-        for (int i=0; i<= pagination.getLimit(); i++) {
-            groupDao.createGroup(GroupEventsTestHelper.createCreateGroupEvent("Auto-constructed Group " + (i + 1),
-                                                        "Auto-constructed User " + (i + 1)));
-        }
-
-        final List<Group> actualGroups = groupDao.getGroups(pagination);
-
-        assertEquals(pagination.getLimit().intValue(),
-                     actualGroups.size());
+        assertTrue(actualGroups.size() > 0);
     }
 
     @Test
@@ -136,8 +126,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
 
         final String expectedContains = preCreatedGroup.getName().substring(3, 5);
 
-        final List<Group> actualGroups = groupDao.findGroups(expectedContains,
-                                                             new PaginationParameter());
+        final List<Group> actualGroups = groupDao.findGroups(expectedContains);
 
         for(final Group group : actualGroups) {
             assertTrue(group.getName().contains(expectedContains));

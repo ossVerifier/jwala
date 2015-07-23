@@ -1,16 +1,14 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import java.io.Serializable;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import com.siemens.cto.aem.domain.model.state.StateType;
+import java.io.Serializable;
 
 @Embeddable
 public class JpaCurrentStateId implements Serializable {

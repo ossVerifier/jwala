@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.domain.model.webserver.command;
 
-import java.io.Serializable;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.command.GroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import java.io.Serializable;
 
 public class ControlGroupWebServerCommand implements Serializable, GroupCommand {
     private static final long serialVersionUID = 1L;

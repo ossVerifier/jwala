@@ -1,18 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.core.Response;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
@@ -25,23 +12,27 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -104,10 +95,9 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGetJvmList() {
-        when(impl.getJvms(any(PaginationParameter.class))).thenReturn(jvmList);
+        when(impl.getJvms()).thenReturn(jvmList);
 
-        final PaginationParamProvider paginationProvider = new PaginationParamProvider();
-        final Response response = cut.getJvms(paginationProvider);
+        final Response response = cut.getJvms();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();

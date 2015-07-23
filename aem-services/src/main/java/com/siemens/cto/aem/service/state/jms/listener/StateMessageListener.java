@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.service.state.jms.listener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class StateMessageListener implements MessageListener {
 

@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.common.properties;
 
+import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.ApplicationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.common.ApplicationException;
 
 public class ApplicationProperties {
 

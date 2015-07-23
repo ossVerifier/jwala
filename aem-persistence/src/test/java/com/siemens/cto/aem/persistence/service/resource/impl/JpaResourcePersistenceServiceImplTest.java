@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceServiceTest;
 import org.junit.runner.RunWith;

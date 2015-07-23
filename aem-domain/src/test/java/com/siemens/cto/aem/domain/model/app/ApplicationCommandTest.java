@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.domain.model.app;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class ApplicationCommandTest {
 

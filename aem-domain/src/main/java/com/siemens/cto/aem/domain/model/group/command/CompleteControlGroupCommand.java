@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.domain.model.group.command;
 
-import java.io.Serializable;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+
+import java.io.Serializable;
 
 public class CompleteControlGroupCommand implements Serializable, Command {
 

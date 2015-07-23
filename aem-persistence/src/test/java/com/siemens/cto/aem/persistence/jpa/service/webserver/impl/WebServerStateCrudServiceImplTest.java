@@ -1,9 +1,18 @@
 package com.siemens.cto.aem.persistence.jpa.service.webserver.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,20 +28,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -106,7 +104,7 @@ public class WebServerStateCrudServiceImplTest {
                         DateTime.now());
         }
 
-        final List<JpaCurrentState> states = impl.getStates(PaginationParameter.all());
+        final List<JpaCurrentState> states = impl.getStates();
         for (final JpaCurrentState state : states) {
             final Identifier<WebServer> actualId = new Identifier<>(state.getId().getId());
             assertTrue(expectedData.containsKey(actualId));

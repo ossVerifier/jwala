@@ -1,17 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
@@ -26,6 +14,15 @@ import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerC
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class GroupWebServerControlServiceImplTest {
     private GroupControlPersistenceService mockPersistenceService;

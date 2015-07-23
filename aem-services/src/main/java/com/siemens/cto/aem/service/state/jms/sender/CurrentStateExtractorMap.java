@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.state.jms.sender;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.service.state.jms.sender.message.CurrentStateMessageExtractor;
 import com.siemens.cto.aem.service.state.jms.sender.message.GroupCurrentStateMessageExtractor;
 import com.siemens.cto.aem.service.state.jms.sender.message.JvmCurrentStateMessageExtractor;
 import com.siemens.cto.aem.service.state.jms.sender.message.WebServerCurrentStateMessageExtractor;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public enum CurrentStateExtractorMap {
 

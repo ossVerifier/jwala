@@ -1,16 +1,12 @@
 package com.siemens.cto.toc.files;
 
-import static com.siemens.cto.toc.files.RepositoryFileInformation.Type.DELETED;
-import static com.siemens.cto.toc.files.RepositoryFileInformation.Type.NONE;
-import static com.siemens.cto.toc.files.RepositoryFileInformation.Type.STORED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Test;
+import static com.siemens.cto.toc.files.RepositoryFileInformation.Type.*;
+import static org.junit.Assert.*;
 
 public class RepositoryFileInformationTest {
 

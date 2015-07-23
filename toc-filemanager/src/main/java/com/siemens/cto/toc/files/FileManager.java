@@ -1,11 +1,11 @@
 package com.siemens.cto.toc.files;
 
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collection;
-
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
 
 public interface FileManager {
 

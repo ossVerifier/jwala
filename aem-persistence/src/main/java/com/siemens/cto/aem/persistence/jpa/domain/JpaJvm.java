@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import java.util.List;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 import javax.persistence.*;
-
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import java.util.List;
 
 @Entity
 @Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})

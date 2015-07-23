@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.domain.model.id;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 public class IdentifierSetBuilder {
 

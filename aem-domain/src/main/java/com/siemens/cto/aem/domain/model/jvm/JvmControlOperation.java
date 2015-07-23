@@ -1,21 +1,15 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
-import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_COMPLETE_STATE;
-import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_FAILURE_STATE;
-import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_IN_PROGRESS_STATE;
-import static com.siemens.cto.aem.domain.AemDomain.NO_JVM_SUCCESS_KEYWORDS;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_FAILED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_START;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOP;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.SVC_STOPPED;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import static com.siemens.cto.aem.domain.AemDomain.*;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.*;
 
 /**
  * Enumeration of control operations that can be executed against a JVM

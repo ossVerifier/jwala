@@ -1,18 +1,12 @@
 package com.siemens.cto.aem.service.group;
 
-import java.util.List;
-
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+
+import java.util.List;
 
 public interface GroupService {
 
@@ -23,10 +17,9 @@ public interface GroupService {
 
     Group getGroup(final String name);
 
-    List<Group> getGroups(final PaginationParameter aPaginationParam);
+    List<Group> getGroups();
 
-    List<Group> findGroups(final String aGroupNameFragment,
-                           final PaginationParameter aPaginationParam);
+    List<Group> findGroups(final String aGroupNameFragment);
 
     Group updateGroup(final UpdateGroupCommand anUpdateGroupCommand,
                       final User anUpdatingUser);

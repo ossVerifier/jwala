@@ -5,37 +5,21 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 
 import java.util.List;
 
 public interface ApplicationDao {
 
-//    Application createApplication(
-//            final Event<CreateApplicationCommand> aApplicationToCreate);
-//
-//    Application updateApplication(
-//            final Event<UpdateApplicationCommand> aApplicationToUpdate);
-//
     Application getApplication(final Identifier<Application> aApplicationId)
             throws NotFoundException;
 
-    List<Application> getApplications(final PaginationParameter somePagination);
+    List<Application> getApplications();
 
-    List<Application> findApplications(final String aGroupName,
-            final PaginationParameter somePagination);
+    List<Application> findApplications(final String aGroupName);
+    List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId);
 
-//    void removeApplication(final Identifier<Application> aApplicationId);
-//
-    List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId,
-            PaginationParameter aPaginationParam);
+    List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId);
 
-    List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId, PaginationParameter somePagination);
-
-//    void removeApplicationsBelongingTo(final Identifier<Group> aGroupId);
-//
-
-    List<Application> findApplicationsBelongingToWebServer(String aWebServerName,
-                                                           PaginationParameter somePagination);
+    List<Application> findApplicationsBelongingToWebServer(String aWebServerName);
 
 }

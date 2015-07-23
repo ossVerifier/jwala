@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.web.javascript.variable.dynamic;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.siemens.cto.aem.web.javascript.variable.AbstractSingleVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class LoginStatusSource extends AbstractSingleVariableSource implements JavaScriptVariableSource {
 

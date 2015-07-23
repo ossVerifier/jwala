@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener.message;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
+
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 
 public class JvmStateMapMessageConverterImpl implements JvmStateMapMessageConverter {
 

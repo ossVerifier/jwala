@@ -1,14 +1,27 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.toc.files.FileManager;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.TocFile;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,30 +31,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.toc.files.RepositoryFileInformation;
-import com.siemens.cto.toc.files.FileManager;
-import com.siemens.cto.toc.files.TocFile;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by z0031wps on 4/2/2014.
@@ -152,24 +146,24 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGetWebServers() {
-        when(wsDao.getWebServers(any(PaginationParameter.class))).thenReturn(mockWebServersAll);
-        final List<WebServer> webServers= wsService.getWebServers(PaginationParameter.all());
+        when(wsDao.getWebServers()).thenReturn(mockWebServersAll);
+        final List<WebServer> webServers= wsService.getWebServers();
         assertEquals(2, webServers.size());
     }
 
     @Test
     public void testFindWebServersBelongingTo() {
-        when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(1L)), any(PaginationParameter.class))).thenReturn(mockWebServers11);
-        when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(2L)), any(PaginationParameter.class))).thenReturn(mockWebServers12);
+        when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(1L)))).thenReturn(mockWebServers11);
+        when(wsDao.findWebServersBelongingTo(eq(new Identifier<Group>(2L)))).thenReturn(mockWebServers12);
 
-        final List<WebServer> webServers= wsService.findWebServers(group.getId(), PaginationParameter.all());
-        final List<WebServer> webServers2 = wsService.findWebServers(group2.getId(), PaginationParameter.all());
+        final List<WebServer> webServers= wsService.findWebServers(group.getId());
+        final List<WebServer> webServers2 = wsService.findWebServers(group2.getId());
 
         assertEquals(1, webServers.size());
         assertEquals(1, webServers2.size());
 
-        verify(wsDao, times(1)).findWebServersBelongingTo(eq(group.getId()), any(PaginationParameter.class));
-        verify(wsDao, times(1)).findWebServersBelongingTo(eq(group2.getId()), any(PaginationParameter.class));
+        verify(wsDao, times(1)).findWebServersBelongingTo(eq(group.getId()));
+        verify(wsDao, times(1)).findWebServersBelongingTo(eq(group2.getId()));
     }
 
     @SuppressWarnings("unchecked")
@@ -196,7 +190,7 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testDeleteWebServers() {
-        when(wsDao.getWebServers(any(PaginationParameter.class))).thenReturn(mockWebServersAll);
+        when(wsDao.getWebServers()).thenReturn(mockWebServersAll);
         wsService.removeWebServer(mockWebServer.getId());
         verify(wsDao, atLeastOnce()).removeWebServer(mockWebServer.getId());
     }
@@ -228,17 +222,17 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testFindWebServersNameFragment() {
-        when(wsDao.findWebServers(eq("the-ws-name-2"), any(PaginationParameter.class))).thenReturn(mockWebServers12);
-        when(wsDao.findWebServers(eq("the-ws-name"), any(PaginationParameter.class))).thenReturn(mockWebServersAll);
+        when(wsDao.findWebServers(eq("the-ws-name-2"))).thenReturn(mockWebServers12);
+        when(wsDao.findWebServers(eq("the-ws-name"))).thenReturn(mockWebServersAll);
 
-        final List<WebServer> webServers= wsService.findWebServers("the-ws-name-2", PaginationParameter.all());
-        final List<WebServer> webServers2 = wsService.findWebServers("the-ws-name", PaginationParameter.all());
+        final List<WebServer> webServers= wsService.findWebServers("the-ws-name-2");
+        final List<WebServer> webServers2 = wsService.findWebServers("the-ws-name");
 
         assertEquals(1, webServers.size());
         assertEquals(2, webServers2.size());
 
-        verify(wsDao, times(1)).findWebServers(eq("the-ws-name-2"), any(PaginationParameter.class));
-        verify(wsDao, times(1)).findWebServers(eq("the-ws-name"), any(PaginationParameter.class));
+        verify(wsDao, times(1)).findWebServers(eq("the-ws-name-2"));
+        verify(wsDao, times(1)).findWebServers(eq("the-ws-name"));
     }
 
     @Test
@@ -270,7 +264,7 @@ public class WebServerServiceImplTest {
         Application [] appArray = {app1, app2};
 
         when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
+        when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
 
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", null);
 
@@ -286,7 +280,7 @@ public class WebServerServiceImplTest {
         Application [] appArray = {app1, app2};
 
         when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(Arrays.asList(appArray));
+        when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
 
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
 
@@ -310,7 +304,7 @@ public class WebServerServiceImplTest {
         jvms.add(jvm1);
         jvms.add(jvm2);
 
-        when(wsDao.findJvms(anyString(), any(PaginationParameter.class))).thenReturn(jvms);
+        when(wsDao.findJvms(anyString())).thenReturn(jvms);
 
         final Application app1 = mock(Application.class);
             when(app1.getName()).thenReturn("hello-world-1");
@@ -326,7 +320,7 @@ public class WebServerServiceImplTest {
         apps.add(app2);
         apps.add(app3);
 
-        when(wsDao.findApplications(anyString(), any(PaginationParameter.class))).thenReturn(apps);
+        when(wsDao.findApplications(anyString())).thenReturn(apps);
 
         String workerPropertiesStr = wsService.generateWorkerProperties("Apache2.4");
 

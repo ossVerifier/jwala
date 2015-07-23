@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.service.configuration.jms;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.naming.NamingException;
-
+import com.siemens.cto.aem.service.state.jms.JmsPackageBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jndi.JndiLocatorDelegate;
 
-import com.siemens.cto.aem.service.state.jms.JmsPackageBuilder;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.naming.NamingException;
 
 @Configuration
 public class AemJmsConfig {

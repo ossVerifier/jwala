@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.web.javascript.variable.property;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ApplicationPropertySource implements JavaScriptVariableSource {
 

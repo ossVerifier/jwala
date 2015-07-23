@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.web.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
+import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Test;
-
-import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by Z003BPEJ on 6/18/14.

@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.domain.model.rule.jvm;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import org.junit.Test;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

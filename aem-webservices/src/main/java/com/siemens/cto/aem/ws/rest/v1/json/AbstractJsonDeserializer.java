@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.json;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonDeserializer;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractJsonDeserializer<U> extends JsonDeserializer<U> {
 

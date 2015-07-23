@@ -1,38 +1,27 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
-import com.siemens.cto.aem.service.VerificationBehaviorSupport;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
@@ -40,7 +29,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupPersistenceService groupPersistenceService;
     private StateNotificationGateway stateNotificationGateway;
     private User user;
-    private PaginationParameter pagination;
 
     @Before
     public void setUp() {
@@ -49,7 +37,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         stateNotificationGateway = mock(StateNotificationGateway.class);
         impl = new GroupServiceImpl(groupPersistenceService, stateNotificationGateway);
         user = new User("unused");
-        pagination = new PaginationParameter();
     }
 
     @Test
@@ -77,9 +64,9 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testGetGroups() {
 
-        impl.getGroups(pagination);
+        impl.getGroups();
 
-        verify(groupPersistenceService, times(1)).getGroups(eq(pagination));
+        verify(groupPersistenceService, times(1)).getGroups();
     }
 
     @Test
@@ -87,11 +74,9 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String fragment = "unused";
 
-        impl.findGroups(fragment,
-                        pagination);
+        impl.findGroups(fragment);
 
-        verify(groupPersistenceService, times(1)).findGroups(eq(fragment),
-                                                             eq(pagination));
+        verify(groupPersistenceService, times(1)).findGroups(eq(fragment));
     }
 
     @Test(expected = BadRequestException.class)
@@ -99,8 +84,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String badFragment = "";
 
-        impl.findGroups(badFragment,
-                        pagination);
+        impl.findGroups(badFragment);
     }
 
     @Test

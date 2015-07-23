@@ -1,16 +1,15 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

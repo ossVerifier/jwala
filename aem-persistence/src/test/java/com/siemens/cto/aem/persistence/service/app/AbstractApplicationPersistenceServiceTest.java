@@ -1,5 +1,14 @@
 package com.siemens.cto.aem.persistence.service.app;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.app.*;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -8,20 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 
 import static org.junit.Assert.*;
 

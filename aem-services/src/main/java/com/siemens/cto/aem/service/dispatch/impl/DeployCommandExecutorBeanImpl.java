@@ -1,8 +1,7 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import org.springframework.integration.Message;
-
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
+import org.springframework.integration.Message;
 
 public class DeployCommandExecutorBeanImpl {
     

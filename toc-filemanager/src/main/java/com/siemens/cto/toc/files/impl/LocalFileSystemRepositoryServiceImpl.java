@@ -1,5 +1,14 @@
 package com.siemens.cto.toc.files.impl;
 
+import com.siemens.cto.toc.files.FilesConfiguration;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
+import com.siemens.cto.toc.files.RepositoryService;
+import com.siemens.cto.toc.files.TocPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -12,16 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.siemens.cto.toc.files.FilesConfiguration;
-import com.siemens.cto.toc.files.RepositoryService;
-import com.siemens.cto.toc.files.RepositoryFileInformation;
-import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
-import com.siemens.cto.toc.files.TocPath;
 
 public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
 

@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener.message;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-
+import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;

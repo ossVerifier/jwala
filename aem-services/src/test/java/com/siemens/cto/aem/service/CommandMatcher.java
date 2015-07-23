@@ -1,8 +1,7 @@
 package com.siemens.cto.aem.service;
 
-import org.mockito.ArgumentMatcher;
-
 import com.siemens.cto.aem.domain.model.command.Command;
+import org.mockito.ArgumentMatcher;
 
 public class CommandMatcher<T> extends ArgumentMatcher<T> {
 

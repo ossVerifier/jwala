@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener.message;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-import org.junit.Test;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -12,6 +8,9 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

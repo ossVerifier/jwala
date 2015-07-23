@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.domain.model.group;
 
-import java.io.Serializable;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+
+import java.io.Serializable;
 
 public class GroupControlHistory implements Serializable {
 

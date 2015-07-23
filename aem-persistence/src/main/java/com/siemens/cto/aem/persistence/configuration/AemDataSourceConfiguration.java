@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
+import com.siemens.cto.aem.common.ApplicationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.jndi.JndiLocatorDelegate;
 
-import com.siemens.cto.aem.common.ApplicationException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 @Configuration
 public class AemDataSourceConfiguration {

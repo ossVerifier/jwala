@@ -1,11 +1,9 @@
 package com.siemens.cto.aem.common.time;
 
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.common.time.TimeDuration;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 

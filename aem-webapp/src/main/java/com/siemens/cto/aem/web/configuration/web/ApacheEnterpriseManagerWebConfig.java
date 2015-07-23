@@ -1,15 +1,18 @@
 package com.siemens.cto.aem.web.configuration.web;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.web.controller.IndexController;
+import com.siemens.cto.aem.web.controller.SamlController;
+import com.siemens.cto.aem.web.javascript.variable.CompositeJavaScriptVariableSource;
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
+import com.siemens.cto.aem.web.javascript.variable.dynamic.ContextPathSource;
+import com.siemens.cto.aem.web.javascript.variable.dynamic.LoginStatusSource;
+import com.siemens.cto.aem.web.javascript.variable.property.ApplicationPropertySource;
+import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
+import com.siemens.cto.security.saml.service.impl.SamlIdentityProviderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.LocaleResolver;
@@ -22,16 +25,8 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.web.controller.IndexController;
-import com.siemens.cto.aem.web.controller.SamlController;
-import com.siemens.cto.aem.web.javascript.variable.CompositeJavaScriptVariableSource;
-import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
-import com.siemens.cto.aem.web.javascript.variable.dynamic.ContextPathSource;
-import com.siemens.cto.aem.web.javascript.variable.dynamic.LoginStatusSource;
-import com.siemens.cto.aem.web.javascript.variable.property.ApplicationPropertySource;
-import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
-import com.siemens.cto.security.saml.service.impl.SamlIdentityProviderServiceImpl;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebMvc

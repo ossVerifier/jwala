@@ -7,8 +7,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Created by z003e5zv on 3/20/2015.
  */

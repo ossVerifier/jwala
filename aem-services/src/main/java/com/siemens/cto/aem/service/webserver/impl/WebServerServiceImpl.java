@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.HTTPD_CONF_TEMPLATE;
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.HTTPD_SSL_CONF_TEMPLATE;
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.WORKERS_PROPS_TEMPLATE;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -19,15 +8,22 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.List;
+
+import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.*;
 
 public class WebServerServiceImpl implements WebServerService {
 
@@ -64,27 +60,23 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WebServer> getWebServers(final PaginationParameter aPaginationParam) {
+    public List<WebServer> getWebServers() {
 
-        return dao.getWebServers(aPaginationParam);
+        return dao.getWebServers();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<WebServer> findWebServers(final String aWebServerNameFragment,
-                                          final PaginationParameter aPaginationParam) {
+    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
 
-        return dao.findWebServers(aWebServerNameFragment,
-                                  aPaginationParam);
+        return dao.findWebServers(aWebServerNameFragment);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<WebServer> findWebServers(final Identifier<Group> aGroupId,
-                                          final PaginationParameter aPaginationParam) {
+    public List<WebServer> findWebServers(final Identifier<Group> aGroupId) {
 
-        return dao.findWebServersBelongingTo(aGroupId,
-                                             aPaginationParam);
+        return dao.findWebServersBelongingTo(aGroupId);
 
     }
 
@@ -118,8 +110,8 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional(readOnly = true)
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
         final WebServer server = dao.findWebServerByName(aWebServerName);
-        final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
-        final List<Jvm> jvms = dao.findJvms(aWebServerName, PaginationParameter.all());
+        final List<Application> apps = dao.findApplications(aWebServerName);
+        final List<Jvm> jvms = dao.findJvms(aWebServerName);
         
         try {
             if (withSsl != null && withSsl) {
@@ -137,8 +129,8 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public String generateWorkerProperties(final String aWebServerName) {
-        final List<Jvm> jvms = dao.findJvms(aWebServerName, PaginationParameter.all());
-        final List<Application> apps = dao.findApplications(aWebServerName, PaginationParameter.all());
+        final List<Jvm> jvms = dao.findJvms(aWebServerName);
+        final List<Application> apps = dao.findApplications(aWebServerName);
         try {
             return ApacheWebServerConfigFileGenerator
                     .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);

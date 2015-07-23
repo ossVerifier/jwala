@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

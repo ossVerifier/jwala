@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.service.resource;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 public interface ResourceService {

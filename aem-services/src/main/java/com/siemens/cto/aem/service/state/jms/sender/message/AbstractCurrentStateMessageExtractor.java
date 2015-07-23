@@ -1,17 +1,16 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 
 public abstract class AbstractCurrentStateMessageExtractor<T extends OperationalState> implements CurrentStateMessageExtractor {
 

@@ -1,18 +1,16 @@
 package com.siemens.cto.aem.service.state.jms;
 
-import javax.jms.Destination;
-
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.impl.AbstractStateNotificationService;
+import com.siemens.cto.aem.service.state.jms.sender.message.MessageCreatorKeyValueStateConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.impl.AbstractStateNotificationService;
-import com.siemens.cto.aem.service.state.jms.sender.message.MessageCreatorKeyValueStateConsumer;
+import javax.jms.Destination;
 
 public class JmsStateNotificationServiceImpl extends AbstractStateNotificationService implements StateNotificationService {
 

@@ -1,5 +1,15 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
 import org.junit.Before;
@@ -14,17 +24,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
-import com.siemens.cto.aem.service.webserver.WebServerService;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
 		WebServerServiceImplIntegrationTest.CommonConfiguration.class,

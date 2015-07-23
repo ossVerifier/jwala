@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.domain.model.state.message.StateKey;
 import org.joda.time.format.ISODateTimeFormat;
 import org.mockito.Mock;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;

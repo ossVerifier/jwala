@@ -1,36 +1,23 @@
 package com.siemens.cto.aem.persistence.service.group.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
@@ -81,19 +68,17 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public List<Group> getGroups(final PaginationParameter somePagination) {
+    public List<Group> getGroups() {
 
-        final List<JpaGroup> groups = groupCrudService.getGroups(somePagination);
+        final List<JpaGroup> groups = groupCrudService.getGroups();
 
         return groupsFrom(groups);
     }
 
     @Override
-    public List<Group> findGroups(final String aName,
-                                  final PaginationParameter somePagination) {
+    public List<Group> findGroups(final String aName) {
 
-        final List<JpaGroup> groups = groupCrudService.findGroups(aName,
-                                                                  somePagination);
+        final List<JpaGroup> groups = groupCrudService.findGroups(aName);
 
         return groupsFrom(groups);
     }
@@ -158,8 +143,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Set<CurrentState<Group, GroupState>> getAllKnownStates(PaginationParameter somePagination) {
-        final List<JpaGroup> groups = groupCrudService.getGroups(somePagination);
+    public Set<CurrentState<Group, GroupState>> getAllKnownStates() {
+        final List<JpaGroup> groups = groupCrudService.getGroups();
         return groupStatesFrom(groups);
     }
 

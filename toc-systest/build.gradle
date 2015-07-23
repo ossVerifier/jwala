@@ -2,9 +2,9 @@ apply plugin: 'groovy'
 apply plugin: 'stpIntegTest'
 apply plugin: 'stpJvmControl'
 
-import com.siemens.cto.gradle.*
-import org.h2.tools.Server
+import com.siemens.cto.gradle.ProcessExec
 import groovy.sql.Sql
+import org.h2.tools.Server
 
 configurations {
     integTestConf

@@ -1,27 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.core.Response;
-
 import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
-import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
@@ -32,11 +18,21 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import javax.ws.rs.core.Response;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
@@ -62,17 +58,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroups(final PaginationParamProvider paginationParamProvider,
-                              final NameSearchParameterProvider aGroupNameSearch) {
-        final PaginationParameter pagination = paginationParamProvider.getPaginationParameter();
-        LOGGER.debug("Get Groups requested with pagination: {} and search: {}", pagination, aGroupNameSearch.getName());
+    public Response getGroups(final NameSearchParameterProvider aGroupNameSearch) {
+        LOGGER.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
 
         final List<Group> groups;
         if (aGroupNameSearch.isNamePresent()) {
-            groups = groupService.findGroups(aGroupNameSearch.getName(),
-                                             pagination);
+            groups = groupService.findGroups(aGroupNameSearch.getName());
         } else {
-            groups = groupService.getGroups(pagination);
+            groups = groupService.getGroups();
         }
 
         return ResponseBuilder.ok(groups);
@@ -178,7 +171,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final Set<CurrentState<Group, GroupState>> currentGroupStates;
 
         if (groupIds.isEmpty()) {
-            currentGroupStates = groupStateService.getCurrentStates(PaginationParameter.all());
+            currentGroupStates = groupStateService.getCurrentStates();
         } else {
             currentGroupStates = groupStateService.getCurrentStates(groupIds);
         }

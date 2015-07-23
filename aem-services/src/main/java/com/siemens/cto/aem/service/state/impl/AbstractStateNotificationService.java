@@ -1,5 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -8,14 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.service.state.StateNotificationConsumer;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 
 public abstract class AbstractStateNotificationService implements StateNotificationService {
 

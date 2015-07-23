@@ -1,19 +1,14 @@
 package com.siemens.cto.aem.service.webserver;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Test;
-
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.Path;
+import org.junit.Test;
+
+import java.util.*;
 
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;

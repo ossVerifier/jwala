@@ -1,19 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.group.impl;
 
-import java.util.Calendar;
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-
-import org.joda.time.DateTime;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -26,20 +12,23 @@ import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
+import org.joda.time.DateTime;
+
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.Calendar;
+import java.util.List;
 
 public class GroupCrudServiceImpl implements GroupCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
-    private final JpaQueryPaginator paginator;
-
     public GroupCrudServiceImpl() {
-        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -122,7 +111,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
     }
 
     @Override
-    public List<JpaGroup> getGroups(final PaginationParameter somePagination) {
+    public List<JpaGroup> getGroups() {
 
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<JpaGroup> criteria = builder.createQuery(JpaGroup.class);
@@ -132,22 +121,15 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
         final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
 
-        paginator.paginate(query,
-                           somePagination);
-
         return query.getResultList();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<JpaGroup> findGroups(final String aName,
-                                     final PaginationParameter somePagination) {
+    public List<JpaGroup> findGroups(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
         query.setParameter("groupName", "%" + aName + "%");
-
-        paginator.paginate(query,
-                           somePagination);
 
         return query.getResultList();
     }

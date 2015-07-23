@@ -1,28 +1,5 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.FileSystems;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
@@ -31,7 +8,6 @@ import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
@@ -39,6 +15,24 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.FileSystems;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
@@ -124,8 +118,8 @@ public class ApplicationServiceImplTest {
 
     @Test
     public void testAllGet() {
-        when(applicationDao.getApplications(any(PaginationParameter.class))).thenReturn(applications2);
-        final List<Application> apps = applicationService.getApplications(PaginationParameter.all());
+        when(applicationDao.getApplications()).thenReturn(applications2);
+        final List<Application> apps = applicationService.getApplications();
         assertEquals(applications2.size(), apps.size());
         
         Application application = apps.get(0);
@@ -146,8 +140,8 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testFindByGroupId() {
-        when(applicationDao.findApplicationsBelongingTo(any(Identifier.class), any(PaginationParameter.class))).thenReturn(applications2);
-        final List<Application> apps = applicationService.findApplications(groupId, PaginationParameter.all());
+        when(applicationDao.findApplicationsBelongingTo(any(Identifier.class))).thenReturn(applications2);
+        final List<Application> apps = applicationService.findApplications(groupId);
         assertEquals(applications2.size(), apps.size());
         
         Application application = apps.get(1);

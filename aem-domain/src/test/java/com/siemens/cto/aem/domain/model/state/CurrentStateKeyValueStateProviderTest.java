@@ -1,17 +1,16 @@
 package com.siemens.cto.aem.domain.model.state;
 
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;

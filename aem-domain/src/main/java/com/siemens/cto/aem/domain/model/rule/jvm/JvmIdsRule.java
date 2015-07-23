@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.domain.model.rule.jvm;
 
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.Rule;
 import com.siemens.cto.aem.domain.model.rule.identifier.MultipleIdentifiersRule;
+
+import java.util.Set;
 
 public class JvmIdsRule extends MultipleIdentifiersRule<Jvm> implements Rule {
 

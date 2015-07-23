@@ -1,9 +1,8 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
-import org.junit.Test;
-
 import com.siemens.cto.aem.commandprocessor.impl.cli.LocalRuntimeCommandProcessorImpl;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

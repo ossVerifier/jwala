@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.concurrent.TimeUnit;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+
+import java.util.concurrent.TimeUnit;
 
 public class InMemoryStateNotificationConsumerBuilderImpl implements StateNotificationConsumerBuilder {
 

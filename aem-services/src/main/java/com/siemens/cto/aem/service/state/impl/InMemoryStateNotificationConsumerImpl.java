@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class InMemoryStateNotificationConsumerImpl extends AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 

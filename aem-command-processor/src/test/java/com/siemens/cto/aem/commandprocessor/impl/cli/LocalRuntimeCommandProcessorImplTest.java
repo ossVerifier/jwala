@@ -1,16 +1,15 @@
 package com.siemens.cto.aem.commandprocessor.impl.cli;
 
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-
-import org.junit.Test;
-
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.commandprocessor.impl.SimpleCommandProcessorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.WindowsTest;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.exception.NotYetReturnedException;
+import org.junit.Test;
+
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

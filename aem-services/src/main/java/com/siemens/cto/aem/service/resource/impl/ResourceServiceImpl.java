@@ -1,34 +1,33 @@
 package com.siemens.cto.aem.service.resource.impl;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.template.HarmonyTemplate;
+import com.siemens.cto.aem.template.HarmonyTemplateEngine;
+import com.siemens.cto.toc.files.FileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.template.HarmonyTemplate;
-import com.siemens.cto.aem.template.HarmonyTemplateEngine;
-import com.siemens.cto.toc.files.FileManager;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ResourceServiceImpl implements ResourceService {
 

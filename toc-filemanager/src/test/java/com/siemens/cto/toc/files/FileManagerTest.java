@@ -1,20 +1,11 @@
 package com.siemens.cto.toc.files;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.Properties;
-
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.toc.files.impl.FileManagerImpl;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
+import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +14,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.siemens.cto.toc.files.impl.FileManagerImpl;
-import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.*;
+import java.util.Collection;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {

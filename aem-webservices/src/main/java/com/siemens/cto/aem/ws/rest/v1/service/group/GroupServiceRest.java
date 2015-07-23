@@ -1,29 +1,27 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonControlGroup;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonJvms;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 @Path("/groups")
 @Produces(MediaType.APPLICATION_JSON)
 public interface GroupServiceRest {
 
     @GET
-    Response getGroups(@BeanParam final PaginationParamProvider paginationParamProvider,
-                       @BeanParam final NameSearchParameterProvider aGroupNameSearch);
+    Response getGroups(@BeanParam final NameSearchParameterProvider aGroupNameSearch);
 
     @GET
     @Path("/{groupId}")

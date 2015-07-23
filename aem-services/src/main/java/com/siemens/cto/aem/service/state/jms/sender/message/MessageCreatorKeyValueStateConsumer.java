@@ -1,18 +1,16 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.siemens.cto.aem.domain.model.state.KeyValueStateConsumer;
+import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import org.springframework.jms.core.MessageCreator;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.Session;
-
-import org.springframework.jms.core.MessageCreator;
-
-import com.siemens.cto.aem.domain.model.state.KeyValueStateConsumer;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MessageCreatorKeyValueStateConsumer implements KeyValueStateConsumer, MessageCreator {
 

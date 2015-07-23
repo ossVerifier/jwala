@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
@@ -16,6 +9,12 @@ import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 
 public class PrivateApplicationServiceImpl implements PrivateApplicationService {
 

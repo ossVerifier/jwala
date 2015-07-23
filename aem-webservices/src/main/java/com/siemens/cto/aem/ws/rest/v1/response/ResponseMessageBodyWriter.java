@@ -1,12 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.response;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.util.StringUtils;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
@@ -14,10 +10,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.util.StringUtils;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 
 @Provider

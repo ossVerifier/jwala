@@ -1,21 +1,20 @@
 package com.siemens.cto.aem.persistence.service.jvm.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
@@ -47,22 +46,18 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public List<Jvm> getJvms(final PaginationParameter somePagination) {
-        return jvmsFrom(jvmCrudService.getJvms(somePagination));
+    public List<Jvm> getJvms() {
+        return jvmsFrom(jvmCrudService.getJvms());
     }
 
     @Override
-    public List<Jvm> findJvms(final String aName,
-                              final PaginationParameter somePagination) {
-        return jvmsFrom(jvmCrudService.findJvms(aName,
-                                                somePagination));
+    public List<Jvm> findJvms(final String aName) {
+        return jvmsFrom(jvmCrudService.findJvms(aName));
     }
 
     @Override
-    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup,
-                                         final PaginationParameter somePagination) {
-        return jvmsFrom(jvmCrudService.findJvmsBelongingTo(aGroup,
-                                                           somePagination));
+    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup) {
+        return jvmsFrom(jvmCrudService.findJvmsBelongingTo(aGroup));
     }
 
     @Override

@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
@@ -20,6 +13,10 @@ import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerC
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.state.GroupStateService.API;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.mockito.Mockito.*;
 
 public class GroupControlServiceImplTest {
 

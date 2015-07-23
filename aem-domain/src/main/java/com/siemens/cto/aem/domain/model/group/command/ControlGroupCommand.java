@@ -1,11 +1,5 @@
 package com.siemens.cto.aem.domain.model.group.command;
 
-import java.io.Serializable;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.MultipleRuleCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -13,6 +7,11 @@ import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.group.GroupControlOperationRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
 
 public class ControlGroupCommand implements Serializable, GroupCommand {
 

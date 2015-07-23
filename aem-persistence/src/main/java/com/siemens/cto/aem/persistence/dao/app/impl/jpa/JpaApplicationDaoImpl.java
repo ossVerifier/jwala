@@ -6,11 +6,9 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -22,8 +20,6 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     
     @PersistenceContext(unitName = "aem-unit")
     EntityManager em;
-    
-    JpaQueryPaginator paginator = new JpaQueryPaginator();
     
     /*
      * When creating create/update methods, we must call the methods to update the 
@@ -47,12 +43,9 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
     }
 
     @Override
-    public List<Application> getApplications(PaginationParameter somePagination) {        
+    public List<Application> getApplications() {
         Query q = em.createQuery("select a from JpaApplication a");
-
-        paginator.paginate(q,
-                somePagination);
-        return buildApplications(q.getResultList());              
+        return buildApplications(q.getResultList());
     }
 
     @SuppressWarnings("unchecked")
@@ -64,42 +57,30 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         return apps;
     }
     @Override
-    public List<Application> findApplications(String aGroupName, PaginationParameter somePagination) {
+    public List<Application> findApplications(String aGroupName) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);
         q.setParameter(JpaApplication.GROUP_NAME_PARAM, aGroupName);
-
-        paginator.paginate(q, somePagination); 
         return buildApplications(q.getResultList());
     }
 
     @Override
-    public List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId,
-            PaginationParameter somePagination) {
+    public List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_ID);
         q.setParameter(JpaApplication.GROUP_ID_PARAM, aGroupId.getId());
-        paginator.paginate(q, somePagination); 
         return buildApplications(q.getResultList());
     }
 
     @Override
-    public List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId, PaginationParameter somePagination) {
+    public List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_JVM_ID);
         q.setParameter(JpaApplication.JVM_ID_PARAM, aJvmId.getId());
-        if(somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        }
         return buildApplications(q.getResultList());
     }
 
     @Override
-    public List<Application> findApplicationsBelongingToWebServer(String aWebServerName, PaginationParameter somePagination) {
+    public List<Application> findApplicationsBelongingToWebServer(String aWebServerName) {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_NAME);
         q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
-        if (somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        }
         return buildApplications(q.getResultList());
     }
 

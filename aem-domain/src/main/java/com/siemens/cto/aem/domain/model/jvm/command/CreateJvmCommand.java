@@ -1,21 +1,16 @@
 package com.siemens.cto.aem.domain.model.jvm.command;
 
-import java.io.Serializable;
-
-import com.siemens.cto.aem.domain.model.rule.HostNameRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.rule.MultipleRules;
-import com.siemens.cto.aem.domain.model.rule.PortNumberRule;
-import com.siemens.cto.aem.domain.model.rule.ShutdownPortNumberRule;
+import com.siemens.cto.aem.domain.model.rule.*;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
-import com.siemens.cto.aem.domain.model.rule.StatusPathRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
 
 public class CreateJvmCommand implements Serializable, Command {
 

@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -18,6 +11,12 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class GroupJvmRelationshipServiceImpl implements GroupJvmRelationshipService {
 

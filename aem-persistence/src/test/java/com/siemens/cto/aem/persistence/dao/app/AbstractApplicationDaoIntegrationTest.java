@@ -5,12 +5,10 @@ import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,10 +43,6 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     private JpaJvm jpaJvm;
     private static final Path SVR_ROOT = new Path("./");
     private static final Path DOC_ROOT = new Path("htdocs");
-
-    private PaginationParameter limitNone = new PaginationParameter(1000, 1);
-    private PaginationParameter limit10 = new PaginationParameter(0,10);
-    private PaginationParameter limitAll = PaginationParameter.all();
 
     private JpaGroup        jpaGroup;
 
@@ -104,31 +97,26 @@ public abstract class AbstractApplicationDaoIntegrationTest {
     }
 
     @Test public void testGetApplications() {
-        List<Application> allApplications = applicationDao.getApplications(PaginationParameter.all());
+        List<Application> allApplications = applicationDao.getApplications();
         assertTrue(allApplications.size() == 2);
         assertJpaApplicationMatches(allApplications.get(0), jpaApplicationWithGroup);
         assertJpaApplicationMatches(allApplications.get(1), jpaApplication);
     }
 
-    @Test public void testGetLimitedApplications() {
-        List<Application> allApplications = applicationDao.getApplications(limitNone);
-        assertTrue(allApplications.size() == 0);
-    }
-
     @Test public void testFindApplicationsNoGroup() {
-        List<Application> applications = applicationDao.findApplications("groupMissing", limitAll);
+        List<Application> applications = applicationDao.findApplications("groupMissing");
         assertTrue(applications.size() == 0);
     }
 
     @Test public void testFindApplicationsBelongingTo() {
 
-        List<Application> applications = applicationDao.findApplications(jpaGroup.getName(), limit10);
+        List<Application> applications = applicationDao.findApplications(jpaGroup.getName());
         assertTrue(applications.size() == 1);
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
 
     @Test public void testFindApplicationsBelongingToGroupId() {
-        List<Application> applications = applicationDao.findApplicationsBelongingTo(id(jpaGroup.getId(), Group.class), limit10);
+        List<Application> applications = applicationDao.findApplicationsBelongingTo(id(jpaGroup.getId(), Group.class));
         assertTrue(applications.size() == 1);
         assertJpaApplicationMatches(applications.get(0), jpaApplicationWithGroup);
     }
@@ -147,7 +135,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         entityManager.persist(jpaApplicationWithGroup2);
         entityManager.flush();
 
-        List<Application> applications = applicationDao.findApplicationsBelongingToJvm(id(jpaJvm.getId(), Jvm.class), limit10);
+        List<Application> applications = applicationDao.findApplicationsBelongingToJvm(id(jpaJvm.getId(), Jvm.class));
 
         assertTrue(applications.size() == 2);
         assertNotEquals(applications.get(0), applications.get(1));
@@ -243,7 +231,7 @@ public abstract class AbstractApplicationDaoIntegrationTest {
         entityManager.flush();
 
         final List<Application> applications =
-                applicationDao.findApplicationsBelongingToWebServer(jpaWebServer.getName(), limit10);
+                applicationDao.findApplicationsBelongingToWebServer(jpaWebServer.getName());
 
         assertEquals(4, applications.size());
 

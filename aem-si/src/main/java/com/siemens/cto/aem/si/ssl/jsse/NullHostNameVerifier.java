@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.si.ssl.jsse;
 
-import java.io.IOException;
-import java.security.cert.X509Certificate;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-
-import org.apache.http.conn.ssl.X509HostnameVerifier;
+import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 /**
  * Do not do host name verification for ping

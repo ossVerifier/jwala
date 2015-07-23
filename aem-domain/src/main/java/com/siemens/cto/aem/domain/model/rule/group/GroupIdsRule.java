@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.domain.model.rule.group;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.rule.Rule;
 import com.siemens.cto.aem.domain.model.rule.identifier.MultipleIdentifiersRule;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GroupIdsRule extends MultipleIdentifiersRule<Group> implements Rule {
 

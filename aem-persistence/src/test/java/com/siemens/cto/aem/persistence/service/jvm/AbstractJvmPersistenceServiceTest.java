@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.persistence.service.jvm;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -16,16 +7,19 @@ import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractJvmPersistenceServiceTest {
@@ -216,7 +210,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                                 "EXAMPLE_OPTS=%someEnv%/someVal");
         }
 
-        final List<Jvm> jvms = jvmPersistenceService.getJvms(PaginationParameter.all());
+        final List<Jvm> jvms = jvmPersistenceService.getJvms();
 
         assertTrue(jvms.size() >= numberToCreate);
     }
@@ -244,8 +238,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                                 "EXAMPLE_OPTS=%someEnv%/someVal");
         }
 
-        final List<Jvm> jvms = jvmPersistenceService.findJvms(findable,
-                                                              PaginationParameter.all());
+        final List<Jvm> jvms = jvmPersistenceService.findJvms(findable);
 
         assertTrue(jvms.size() >= numberToFind);
         for (final Jvm jvm : jvms) {
@@ -278,8 +271,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                                       userId);
         }
 
-        final List<Jvm> jvms = jvmPersistenceService.findJvmsBelongingTo(groupId,
-                                                                         PaginationParameter.all());
+        final List<Jvm> jvms = jvmPersistenceService.findJvmsBelongingTo(groupId);
 
         assertTrue(jvms.size() >= numberToCreate);
 

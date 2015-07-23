@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.domain.model.group;
 
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 public class RemoveJvmFromGroupCommand extends AbstractJvmGroupCommand {
 

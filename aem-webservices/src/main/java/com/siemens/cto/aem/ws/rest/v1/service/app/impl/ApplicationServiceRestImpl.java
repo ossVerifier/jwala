@@ -1,22 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -25,13 +8,26 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
@@ -51,27 +47,25 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getApplications(Identifier<Group> aGroupId, PaginationParamProvider paginationParamProvider) {
-        LOGGER.debug("Get Apps requested with pagination: {}, groupId: {}", paginationParamProvider, aGroupId != null ? aGroupId : "null");
+    public Response getApplications(Identifier<Group> aGroupId) {
+        LOGGER.debug("Get Apps requested with groupId: {}", aGroupId != null ? aGroupId : "null");
         final List<Application> apps;
-        PaginationParameter page = paginationParamProvider.getPaginationParameter();
         if(aGroupId != null) {
-            apps = service.findApplications(aGroupId, page);
+            apps = service.findApplications(aGroupId);
         } else {
-            apps = service.getApplications(page);
+            apps = service.getApplications();
         }
         return ResponseBuilder.ok(apps);
     }
 
     @Override
-    public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId, PaginationParamProvider paginationParamProvider) {
-        LOGGER.debug("Find Apps requested with pagination: {}, aJvmId: {}", paginationParamProvider, aJvmId != null ? aJvmId : "null");
-        PaginationParameter page = paginationParamProvider.getPaginationParameter();
+    public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId) {
+        LOGGER.debug("Find Apps requested with aJvmId: {}", aJvmId != null ? aJvmId : "null");
         if(aJvmId != null) {
-            final List<Application> apps = service.findApplicationsByJvmId(aJvmId, page);
+            final List<Application> apps = service.findApplicationsByJvmId(aJvmId);
             return ResponseBuilder.ok(apps);
         } else {
-            final List<Application> apps = service.getApplications(page);
+            final List<Application> apps = service.getApplications();
             return ResponseBuilder.ok(apps);
         }
     }

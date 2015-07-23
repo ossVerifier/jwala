@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.service.jvm.heartbeat;
 
-import java.util.List;
-
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.service.jvm.JvmService;
+
+import java.util.List;
 
 public class JvmServiceFacade {
 
@@ -15,6 +14,6 @@ public class JvmServiceFacade {
     }
 
     public List<Jvm> getAllJvms() {
-        return service.getJvms(PaginationParameter.all());
+        return service.getJvms();
     }
 }

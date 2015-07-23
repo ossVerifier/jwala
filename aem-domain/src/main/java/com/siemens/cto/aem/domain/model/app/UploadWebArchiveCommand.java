@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.domain.model.app;
 
-import java.io.InputStream;
-import java.io.Serializable;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.ValidWebArchiveNameRule;
 import com.siemens.cto.aem.domain.model.rule.app.GoodStreamRule;
+
+import java.io.InputStream;
+import java.io.Serializable;
 
 public class UploadWebArchiveCommand implements Serializable, Command {
 

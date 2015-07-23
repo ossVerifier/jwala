@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.domain.model.resource;
 
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.apache.commons.lang3.builder.EqualsBuilder;

@@ -1,17 +1,16 @@
 package com.siemens.cto.aem.commandprocessor.impl.cli;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
 

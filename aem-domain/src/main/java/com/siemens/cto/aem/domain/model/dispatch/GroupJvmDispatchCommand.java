@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public class GroupJvmDispatchCommand extends DispatchCommand {
    

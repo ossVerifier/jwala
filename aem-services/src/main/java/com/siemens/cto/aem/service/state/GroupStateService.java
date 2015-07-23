@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.service.state;
 
-import java.util.List;
-
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
@@ -13,6 +11,8 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+
+import java.util.List;
 
 public interface GroupStateService {
 

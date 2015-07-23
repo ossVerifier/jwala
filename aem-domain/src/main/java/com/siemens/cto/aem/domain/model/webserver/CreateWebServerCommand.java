@@ -1,22 +1,21 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
-import java.io.Serializable;
-import java.util.Collection;
-
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.rule.*;
-import com.siemens.cto.aem.domain.model.rule.webserver.HttpConfigFileRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.rule.*;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.HttpConfigFileRule;
 import com.siemens.cto.aem.domain.model.rule.webserver.WebServerNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
+import java.util.Collection;
 
 public class CreateWebServerCommand implements Serializable, Command {
 

@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.domain.model.rule;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 
 public abstract class ValidNameRule implements Rule {
 

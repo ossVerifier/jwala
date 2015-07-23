@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.web.javascript.variable.dynamic;
 
-import javax.servlet.ServletContext;
-
 import com.siemens.cto.aem.web.javascript.variable.AbstractSingleVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
+
+import javax.servlet.ServletContext;
 
 public class ContextPathSource extends AbstractSingleVariableSource implements JavaScriptVariableSource {
 

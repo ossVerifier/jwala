@@ -1,20 +1,12 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import java.io.Serializable;
-import java.util.Calendar;
-
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Calendar;
 
 @Entity
 @Table(name = "current_state")

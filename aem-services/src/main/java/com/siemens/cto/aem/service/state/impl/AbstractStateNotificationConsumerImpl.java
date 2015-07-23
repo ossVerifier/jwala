@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemaining;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 

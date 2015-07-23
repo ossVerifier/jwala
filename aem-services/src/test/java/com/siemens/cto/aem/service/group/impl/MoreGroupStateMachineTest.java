@@ -1,10 +1,28 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupState;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
+import com.siemens.cto.aem.service.group.GroupStateMachine;
+import com.siemens.cto.aem.service.state.StateService;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,30 +40,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.group.GroupStateMachine;
-import com.siemens.cto.aem.service.state.StateService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;
@@ -154,7 +152,7 @@ public class MoreGroupStateMachineTest {
 
         when(webServerDao.getWebServer(eq(ws.getId()))).thenReturn(ws);
 
-        when(webServerDao.findWebServersBelongingTo(eq(mockGroup.getId()), eq(PaginationParameter.all()))).thenReturn(wsList);
+        when(webServerDao.findWebServersBelongingTo(eq(mockGroup.getId()))).thenReturn(wsList);
 
         when(jvmPersistenceService.getJvm(eq(jvm.getId()))).thenReturn(jvm);
 

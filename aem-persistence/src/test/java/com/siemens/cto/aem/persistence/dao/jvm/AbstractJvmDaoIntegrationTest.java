@@ -1,13 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.jvm;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -19,12 +11,16 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractJvmDaoIntegrationTest {
@@ -142,8 +138,8 @@ public abstract class AbstractJvmDaoIntegrationTest {
         createMultipleJvms(numberActive, activeSuffix, activeSuffix, statusPath);
         createMultipleJvms(numberToCreate - numberActive, passiveSuffix, passiveSuffix, statusPath);
 
-        final List<Jvm> activeJvms = jvmDao.findJvms(activeSuffix, new PaginationParameter(0, numberToCreate));
-        final List<Jvm> passiveJvms = jvmDao.findJvms(passiveSuffix, new PaginationParameter(0, numberToCreate));
+        final List<Jvm> activeJvms = jvmDao.findJvms(activeSuffix);
+        final List<Jvm> passiveJvms = jvmDao.findJvms(passiveSuffix);
 
         verifyBulkJvmAssertions(activeJvms, numberActive, activeSuffix, activeSuffix, 5, 4, 3, 2, 1, statusPath);
         verifyBulkJvmAssertions(passiveJvms, numberToCreate - numberActive, passiveSuffix, passiveSuffix, 5, 4, 3, 2, 1, statusPath);
@@ -156,9 +152,9 @@ public abstract class AbstractJvmDaoIntegrationTest {
         final Path statusPath = new Path("/abc");
 
         createMultipleJvms(numberToCreate, suffix, suffix, statusPath);
-        final List<Jvm> jvms = jvmDao.getJvms(new PaginationParameter(0, numberToCreate));
+        final List<Jvm> jvms = jvmDao.getJvms();
 
-        assertEquals(numberToCreate, jvms.size());
+        assertTrue(jvms.size() > numberToCreate);
     }
 
     protected Event<CreateGroupCommand> createGroupCommandEvent(final String aGroupName, final String aUserName) {

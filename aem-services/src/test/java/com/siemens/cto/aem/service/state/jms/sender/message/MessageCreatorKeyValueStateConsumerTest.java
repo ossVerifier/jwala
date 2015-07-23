@@ -1,23 +1,20 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.Session;
-
+import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.domain.model.state.message.StateKey;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.Session;
 
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageCreatorKeyValueStateConsumerTest {

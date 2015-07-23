@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.si.ssl.hc;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-
-import javax.net.ssl.HostnameVerifier;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -19,6 +12,12 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.SchemeRegistryFactory;
 import org.apache.http.protocol.HttpContext;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
+import javax.net.ssl.HostnameVerifier;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 
 /**
  * Use a pooling connection manager for HTTP and HTTPS ping connections

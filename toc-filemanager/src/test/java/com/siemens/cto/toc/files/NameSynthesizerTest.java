@@ -1,17 +1,16 @@
 package com.siemens.cto.toc.files;
 
-import static org.junit.Assert.assertNotEquals;
-
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-
+import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+
+import static org.junit.Assert.assertNotEquals;
 
 @RunWith(value=MockitoJUnitRunner.class)
 public class NameSynthesizerTest {

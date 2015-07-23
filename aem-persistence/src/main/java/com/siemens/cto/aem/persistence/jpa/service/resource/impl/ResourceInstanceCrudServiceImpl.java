@@ -1,12 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.resource.impl;
 
-import java.util.Calendar;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.exception.NotUniqueException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -19,6 +12,12 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by z003e5zv on 3/25/2015.

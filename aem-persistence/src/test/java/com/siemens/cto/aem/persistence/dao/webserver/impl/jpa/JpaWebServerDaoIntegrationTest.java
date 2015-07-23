@@ -1,5 +1,11 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.webserver.AbstractWebServerDaoIntegrationTest;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,13 +16,6 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.webserver.AbstractWebServerDaoIntegrationTest;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
 		JpaWebServerDaoIntegrationTest.CommonConfiguration.class,
 		TestJpaConfiguration.class })
@@ -24,8 +23,7 @@ import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
 @Transactional
-public class JpaWebServerDaoIntegrationTest extends
-		AbstractWebServerDaoIntegrationTest {
+public class JpaWebServerDaoIntegrationTest extends AbstractWebServerDaoIntegrationTest {
 
 	@Configuration
 	static class CommonConfiguration {

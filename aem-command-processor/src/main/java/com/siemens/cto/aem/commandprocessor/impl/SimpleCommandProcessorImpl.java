@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
 import com.siemens.cto.aem.io.FullInputStreamReader;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class SimpleCommandProcessorImpl implements SimpleCommandProcessor {
 

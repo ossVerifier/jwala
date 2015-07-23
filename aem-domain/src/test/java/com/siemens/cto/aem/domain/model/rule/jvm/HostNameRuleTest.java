@@ -1,13 +1,10 @@
 package com.siemens.cto.aem.domain.model.rule.jvm;
 
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.rule.HostNameRule;
 import org.junit.Test;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class HostNameRuleTest {
 

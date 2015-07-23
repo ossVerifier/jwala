@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.List;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
@@ -19,6 +15,9 @@ import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceServ
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 

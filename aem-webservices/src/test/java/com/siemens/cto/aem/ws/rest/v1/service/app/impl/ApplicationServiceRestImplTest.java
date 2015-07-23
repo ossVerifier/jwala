@@ -1,16 +1,33 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.cxf.common.util.Base64Utility;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.util.Assert;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,42 +36,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.cxf.common.util.Base64Utility;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.util.Assert;
-
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.service.app.ApplicationService;
-import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
-import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceRestImplTest {
@@ -78,7 +64,6 @@ public class ApplicationServiceRestImplTest {
     List<Application> applications = new ArrayList<>(1);
     List<Application> applications2 = new ArrayList<>(2);
     List<Application> emptyList = new ArrayList<>(0);
-    PaginationParamProvider allProvider = new PaginationParamProvider(null,null, "true");
 
     @Before
     public void setUp() {
@@ -289,9 +274,9 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testGetApplications() {
-        when(service.getApplications(any(PaginationParameter.class))).thenReturn(applications);
+        when(service.getApplications()).thenReturn(applications);
 
-        Response resp = cut.getApplications(null, allProvider);
+        Response resp = cut.getApplications(null);
         List<Application> result = getApplicationsFromResponse(resp);
 
         assertEquals(applications, result);
@@ -331,8 +316,8 @@ public class ApplicationServiceRestImplTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testFindApplicationsByGroupIdNone() {
-        when(service.findApplications(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
-        Response resp = cut.getApplications(id(2L, Group.class), allProvider);
+        when(service.findApplications(any(Identifier.class))).thenReturn(emptyList);
+        Response resp = cut.getApplications(id(2L, Group.class));
 
         List<Application> result = getApplicationsFromResponse(resp);
 
@@ -341,8 +326,8 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testFindApplicationsByJvmId() {
-        when(service.findApplicationsByJvmId(Matchers.eq(id(2L, Jvm.class)), any(PaginationParameter.class))).thenReturn(applications);
-        Response resp = cut.findApplicationsByJvmId(id(2L, Jvm.class), allProvider);
+        when(service.findApplicationsByJvmId(Matchers.eq(id(2L, Jvm.class)))).thenReturn(applications);
+        Response resp = cut.findApplicationsByJvmId(id(2L, Jvm.class));
         List<Application> result = getApplicationsFromResponse(resp);
 
         assertEquals(applications, result);
@@ -351,8 +336,8 @@ public class ApplicationServiceRestImplTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testFindApplicationsByNullJvmId() {
-        when(service.findApplicationsByJvmId(any(Identifier.class), any(PaginationParameter.class))).thenReturn(emptyList);
-        Response resp = cut.findApplicationsByJvmId(null, allProvider);
+        when(service.findApplicationsByJvmId(any(Identifier.class))).thenReturn(emptyList);
+        Response resp = cut.findApplicationsByJvmId(null);
         List<Application> result = getApplicationsFromResponse(resp);
 
         assertEquals(emptyList, result);

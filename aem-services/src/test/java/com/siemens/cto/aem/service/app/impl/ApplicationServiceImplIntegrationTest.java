@@ -1,9 +1,22 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.persistence.dao.app.impl.jpa.JpaApplicationDaoImpl;
+import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
+import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,24 +30,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.app.impl.jpa.JpaApplicationDaoImpl;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
-import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
-import com.siemens.cto.aem.service.app.ApplicationService;
-import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -98,7 +96,7 @@ public class ApplicationServiceImplIntegrationTest {
      */
     @Test
     public void testGetAllApplications() {
-        List<Application> all = cut.getApplications(PaginationParameter.all());
+        List<Application> all = cut.getApplications();
         assertEquals(0, all.size());
     }
     
@@ -107,7 +105,7 @@ public class ApplicationServiceImplIntegrationTest {
      */
     @Test
     public void testGetApplicationsByGroup() {
-        List<Application> partial = cut.findApplications(new Identifier<Group>(0L), PaginationParameter.all());
+        List<Application> partial = cut.findApplications(new Identifier<Group>(0L));
         assertEquals(0, partial.size());
     }
 

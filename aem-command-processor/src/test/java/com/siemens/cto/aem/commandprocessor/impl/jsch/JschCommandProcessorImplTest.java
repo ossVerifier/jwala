@@ -1,15 +1,6 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import com.siemens.cto.aem.commandprocessor.SimpleCommandProcessor;
-import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.SimpleCommandProcessorImpl;
 import com.siemens.cto.aem.common.IntegrationTestRule;
@@ -18,10 +9,16 @@ import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
 import com.siemens.cto.aem.domain.model.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
+import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.*;
 
 @Ignore
 // TODO: Make this work locally

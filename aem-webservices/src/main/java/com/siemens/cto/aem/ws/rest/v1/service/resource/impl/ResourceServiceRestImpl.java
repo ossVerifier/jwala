@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -9,13 +8,10 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-
 import java.util.List;
 
 /**

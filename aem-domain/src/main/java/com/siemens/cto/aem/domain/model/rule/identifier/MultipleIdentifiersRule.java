@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.domain.model.rule.identifier;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.Rule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.rule.Rule;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class MultipleIdentifiersRule<T> implements Rule {
 

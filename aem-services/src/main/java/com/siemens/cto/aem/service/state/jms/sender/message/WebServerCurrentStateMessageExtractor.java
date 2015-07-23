@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 
 public class WebServerCurrentStateMessageExtractor extends AbstractCurrentStateMessageExtractor<WebServerReachableState> {
 

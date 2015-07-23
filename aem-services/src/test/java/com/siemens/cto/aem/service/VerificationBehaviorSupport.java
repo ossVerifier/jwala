@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.service;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;

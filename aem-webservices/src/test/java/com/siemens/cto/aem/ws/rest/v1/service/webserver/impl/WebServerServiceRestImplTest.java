@@ -1,12 +1,20 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.core.Response;
-
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.*;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,36 +22,15 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
-import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
-import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -105,10 +92,9 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGetWebServerList() {
-        when(impl.getWebServers(any(PaginationParameter.class))).thenReturn(webServerList);
+        when(impl.getWebServers()).thenReturn(webServerList);
 
-        final PaginationParamProvider paginationProvider = new PaginationParamProvider();
-        final Response response = cut.getWebServers(null, paginationProvider);
+        final Response response = cut.getWebServers(null);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -222,10 +208,9 @@ public class WebServerServiceRestImplTest {
                 new FileSystemPath("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT ));
 
         final Identifier<Group> groupId = new Identifier<>("1");
-        final PaginationParamProvider paginationParamProvider = new PaginationParamProvider("retrieveAll");
 
-        when(impl.findWebServers(Matchers.eq(groupId), Matchers.eq(PaginationParameter.all()))).thenReturn(webServers);
-        final Response response = cut.getWebServers(groupId, paginationParamProvider);
+        when(impl.findWebServers(Matchers.eq(groupId))).thenReturn(webServers);
+        final Response response = cut.getWebServers(groupId);
 
         final List<WebServer> result =
                 (List<WebServer>) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent();

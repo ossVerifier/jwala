@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 public class StateConsumerManager {
 

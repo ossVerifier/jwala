@@ -1,24 +1,18 @@
 package com.siemens.cto.aem.web.controller;
 
-import java.util.Set;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
-import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
 
 @Controller
 public class IndexController {

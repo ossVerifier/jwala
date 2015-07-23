@@ -1,50 +1,6 @@
 package com.siemens.cto.aem.service.group.impl;
 
 
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_FAILURE;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_INITIALIZED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_PARTIAL;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STARTED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STARTING;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STOPPED;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_STOPPING;
-import static com.siemens.cto.aem.domain.model.group.GroupState.GRP_UNKNOWN;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_DESTROYED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_DESTROYING;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_FAILED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_INITIALIZED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_INITIALIZING;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_NEW;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STALE;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_START;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STARTED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STARTING;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOP;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOPPED;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_STOPPING;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.JVM_UNKNOWN;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.SVC_STOPPED;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_FAILED;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_REACHABLE;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_STARTING;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_STOPPING;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_UNKNOWN;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.WS_UNREACHABLE;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState.StateDetail;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -54,7 +10,6 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -63,6 +18,19 @@ import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.StateService;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.siemens.cto.aem.domain.model.group.GroupState.*;
+import static com.siemens.cto.aem.domain.model.jvm.JvmState.*;
+import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.*;
 
 /**
  * Instantaneous FSM for calculating group state at a particular time
@@ -280,7 +248,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             stateCount.set(0);
         }
 
-        List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId(), PaginationParameter.all());
+        List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId());
 
         if(!webServers.isEmpty()) {
 

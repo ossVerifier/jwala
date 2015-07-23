@@ -1,13 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
-import java.util.Calendar;
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -15,24 +7,23 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.Calendar;
+import java.util.List;
 
 public class JvmCrudServiceImpl implements JvmCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
-
-    private final JpaQueryPaginator paginator;
-
-    public JvmCrudServiceImpl() {
-        paginator = new JpaQueryPaginator();
-    }
 
     @Override
     public JpaJvm createJvm(final Event<CreateJvmCommand> aJvmToCreate) {
@@ -114,28 +105,21 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<JpaJvm> getJvms(final PaginationParameter somePagination) {
+    public List<JpaJvm> getJvms() {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
-
-        paginator.paginate(query,
-                           somePagination);
 
         return query.getResultList();
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<JpaJvm> findJvms(final String aName,
-                                 final PaginationParameter somePagination) {
+    public List<JpaJvm> findJvms(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
 
         query.setParameter("jvmName",
                            "%" + aName + "%");
-
-        paginator.paginate(query,
-                           somePagination);
 
         return query.getResultList();
     }
@@ -150,14 +134,10 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<JpaJvm> findJvmsBelongingTo(final Identifier<Group> aGroup,
-                                            final PaginationParameter somePagination) {
+    public List<JpaJvm> findJvmsBelongingTo(final Identifier<Group> aGroup) {
         final Query query = entityManager.createQuery("SELECT j FROM JpaGroup g join g.jvms j WHERE g.id = :groupId ORDER BY j.name");
 
         query.setParameter("groupId", aGroup.getId());
-
-        paginator.paginate(query,
-                           somePagination);
 
         return query.getResultList();
     }

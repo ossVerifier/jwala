@@ -9,7 +9,6 @@ import com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +16,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by z003e5zv on 3/25/2015.

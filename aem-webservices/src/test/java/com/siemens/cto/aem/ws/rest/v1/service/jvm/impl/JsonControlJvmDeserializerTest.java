@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.io.IOException;
-
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
+import java.io.IOException;
 
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.object;

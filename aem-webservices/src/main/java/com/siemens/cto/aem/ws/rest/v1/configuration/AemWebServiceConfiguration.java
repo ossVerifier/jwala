@@ -1,18 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.ext.MessageBodyWriter;
-
-import org.apache.cxf.endpoint.Server;
-import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -27,11 +14,7 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.BadRequestExceptionMapper;
-import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.ExternalSystemErrorExceptionMapper;
-import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.InternalErrorExceptionMapper;
-import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.NotFoundExceptionMapper;
-import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.TransactionRequiredExceptionMapper;
+import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.*;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -52,6 +35,17 @@ import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import com.siemens.cto.toc.files.FilesConfiguration;
+import org.apache.cxf.endpoint.Server;
+import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.ws.rs.ext.MessageBodyWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class AemWebServiceConfiguration {

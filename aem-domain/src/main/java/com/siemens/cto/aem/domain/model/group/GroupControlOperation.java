@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.domain.model.group;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public enum GroupControlOperation {
 

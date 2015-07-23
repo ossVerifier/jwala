@@ -1,17 +1,16 @@
 package com.siemens.cto.aem.domain.model.webserver;
 
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.uri.UriBuilder;
+import org.junit.Test;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import org.junit.Test;
-
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.uri.UriBuilder;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.domain.model.audit;
 
-import java.io.Serializable;
-
+import com.siemens.cto.aem.domain.model.temporary.User;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.siemens.cto.aem.domain.model.temporary.User;
+import java.io.Serializable;
 
 public class AuditEvent implements Serializable {
 

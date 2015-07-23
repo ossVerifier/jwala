@@ -1,8 +1,7 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

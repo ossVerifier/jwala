@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.control.configuration;
 
-import java.util.Properties;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Properties;
 
 @Configuration
 public class AemSshConfig {

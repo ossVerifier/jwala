@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.domain.model.ssh;
 
-import java.io.Serializable;
-
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import java.io.Serializable;
 
 public class SshConfiguration implements Serializable {
 

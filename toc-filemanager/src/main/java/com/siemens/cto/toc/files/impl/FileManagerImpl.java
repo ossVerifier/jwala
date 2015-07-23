@@ -1,25 +1,19 @@
 package com.siemens.cto.toc.files.impl;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.toc.files.*;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
+import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.toc.files.RepositoryService;
-import com.siemens.cto.toc.files.RepositoryFileInformation;
-import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
-import com.siemens.cto.toc.files.FileManager;
-import com.siemens.cto.toc.files.TocFile;
-import com.siemens.cto.toc.files.TocPath;
-import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
+import java.io.*;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class FileManagerImpl implements FileManager {
 

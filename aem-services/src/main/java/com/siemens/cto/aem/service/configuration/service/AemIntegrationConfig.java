@@ -1,14 +1,12 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import java.util.concurrent.ThreadFactory;
-
+import com.siemens.cto.aem.service.configuration.lifecycle.HeartbeatStartupLifecycleListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
-import com.siemens.cto.aem.service.configuration.lifecycle.HeartbeatStartupLifecycleListener;
+import java.util.concurrent.ThreadFactory;
 
 @Configuration
 @ImportResource({

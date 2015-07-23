@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
@@ -16,6 +14,7 @@ import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.state.GroupStateService;
+import org.springframework.transaction.annotation.Transactional;
 
 public class GroupControlServiceImpl implements GroupControlService {
 

@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.service.state;
 
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
+
+import java.util.Set;
 
 public interface StateService<S, T extends OperationalState> {
 
@@ -18,7 +17,7 @@ public interface StateService<S, T extends OperationalState> {
 
     Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds);
 
-    Set<CurrentState<S, T>> getCurrentStates(final PaginationParameter somePagination);
+    Set<CurrentState<S, T>> getCurrentStates();
 
     /**
      * Periodically invoked by spring to convert states to STALE

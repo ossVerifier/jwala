@@ -1,18 +1,13 @@
 package com.siemens.cto.aem.si.ssl.jsse;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 @Deprecated
 /**

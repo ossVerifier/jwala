@@ -1,20 +1,31 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
+import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,34 +44,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
-import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
-import com.siemens.cto.aem.service.group.GroupJvmControlService;
-import com.siemens.cto.aem.service.group.GroupWebServerControlService;
-import com.siemens.cto.aem.service.jvm.JvmControlService;
-import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.service.webserver.WebServerService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = { DispatchCommandIntegrationTest.CommonConfiguration.class })
@@ -224,7 +219,7 @@ public class DispatchCommandIntegrationTest {
         @Bean(name = "webServerService")
         public WebServerService getWebServerService() {
             WebServerService mockWebServerService = mock(WebServerService.class);
-            when(mockWebServerService.findWebServers(any(Identifier.class), any(PaginationParameter.class))).thenReturn(wsList);
+            when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(wsList);
             return mockWebServerService;
         }
         

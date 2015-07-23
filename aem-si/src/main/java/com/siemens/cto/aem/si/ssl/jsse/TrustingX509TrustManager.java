@@ -1,9 +1,8 @@
 package com.siemens.cto.aem.si.ssl.jsse;
 
+import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-
-import javax.net.ssl.X509TrustManager;
 
 /**
  * For use with self-signed certificates.

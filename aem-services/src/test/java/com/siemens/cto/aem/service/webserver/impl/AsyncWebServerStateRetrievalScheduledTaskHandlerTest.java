@@ -3,7 +3,6 @@ package com.siemens.cto.aem.service.webserver.impl;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
@@ -104,7 +103,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
-        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerService.getWebServers()).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
@@ -117,7 +116,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         waitForAsyncThreadsToComplete();
 
-        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(Config.webServerService, times(1)).getWebServers();
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
 
@@ -126,7 +125,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusNotFound() throws IOException, InterruptedException {
-        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerService.getWebServers()).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
@@ -139,7 +138,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         waitForAsyncThreadsToComplete();
 
-        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(Config.webServerService, times(1)).getWebServers();
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
 
@@ -148,7 +147,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteIoException() throws IOException, InterruptedException {
-        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerService.getWebServers()).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
 
@@ -159,7 +158,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         waitForAsyncThreadsToComplete();
 
-        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(Config.webServerService, times(1)).getWebServers();
         verify(request, times(0)).execute();
         verify(clientHttpResponse, times(0)).close();
 
@@ -168,7 +167,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusOkWithCleanup() throws IOException, InterruptedException {
-        when(Config.webServerService.getWebServers(eq(PaginationParameter.all()))).thenReturn(webServers);
+        when(Config.webServerService.getWebServers()).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.httpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
@@ -181,7 +180,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         waitForAsyncThreadsToComplete();
 
-        verify(Config.webServerService, times(1)).getWebServers(PaginationParameter.all());
+        verify(Config.webServerService, times(1)).getWebServers();
         verify(request, times(2)).execute();
         verify(clientHttpResponse, times(2)).close();
 

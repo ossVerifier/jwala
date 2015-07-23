@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.service.state.jms;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -20,6 +9,15 @@ import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.impl.AbstractStateNotificationConsumerImpl;
 import com.siemens.cto.aem.service.state.jms.sender.CurrentStateExtractorMap;
 import com.siemens.cto.aem.service.state.jms.sender.message.CurrentStateMessageExtractor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 

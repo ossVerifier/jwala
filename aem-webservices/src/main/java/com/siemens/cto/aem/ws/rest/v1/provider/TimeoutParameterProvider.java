@@ -1,15 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.QueryParam;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.ws.rest.v1.fault.RestFaultType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.QueryParam;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Timeout provider

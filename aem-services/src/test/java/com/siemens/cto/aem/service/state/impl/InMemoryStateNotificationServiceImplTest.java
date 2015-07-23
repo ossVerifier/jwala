@@ -1,17 +1,15 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.siemens.cto.aem.common.time.TimeDuration;
+import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
+import com.siemens.cto.aem.service.state.*;
+import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,24 +20,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.siemens.cto.aem.common.time.TimeDuration;
-import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)

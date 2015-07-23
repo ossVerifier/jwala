@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
-import java.net.URL;
-import java.util.Properties;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
+import com.siemens.cto.toc.files.FilesConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -14,12 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
-import com.siemens.cto.toc.files.FilesConfiguration;
+import javax.ws.rs.core.Response;
+import java.net.URL;
+import java.util.Properties;
 
 public class AdminServiceRestImpl implements AdminServiceRest {
 

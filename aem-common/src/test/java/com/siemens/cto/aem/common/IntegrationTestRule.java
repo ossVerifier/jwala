@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.common;
 
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 
 public class IntegrationTestRule implements TestRule {
 

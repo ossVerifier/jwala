@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.domain.model.rule.group;
 
-import static org.junit.Assert.assertEquals;
-
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import org.junit.Test;
 
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
+import static org.junit.Assert.assertEquals;
 
 public class GroupNameRuleTest {
     private final GroupNameRule rule = new GroupNameRule("");

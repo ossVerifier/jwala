@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import java.io.Serializable;
-import java.util.Calendar;
+import com.siemens.cto.aem.domain.model.id.Identifier;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import java.io.Serializable;
+import java.util.Calendar;
 
 @MappedSuperclass
 public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> implements Serializable, Audited {

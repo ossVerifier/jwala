@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupJvmSplitterBean {
 

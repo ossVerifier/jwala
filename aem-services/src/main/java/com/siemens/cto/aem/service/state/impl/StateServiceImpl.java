@@ -1,26 +1,24 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class StateServiceImpl<S, T extends OperationalState> implements StateService<S, T> {
 
@@ -91,9 +89,9 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
     @Override
     @Transactional(readOnly = true)
-    public Set<CurrentState<S, T>> getCurrentStates(final PaginationParameter somePagination) {
+    public Set<CurrentState<S, T>> getCurrentStates() {
         LOGGER.trace("Getting all states for {}", stateType);
-        return persistenceService.getAllKnownStates(somePagination);
+        return persistenceService.getAllKnownStates();
     }
 
     /**

@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.domain.model.group.command;
 
-import java.io.Serializable;
-
-import org.joda.time.DateTime;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
@@ -14,6 +10,9 @@ import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupStateRule;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
 
 public class SetGroupStateCommand extends SetStateCommand<Group, GroupState> implements Serializable, Command {
 

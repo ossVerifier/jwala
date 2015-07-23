@@ -1,20 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
-
-import com.siemens.cto.toc.files.FileManager;
-import groovy.text.SimpleTemplateEngine;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -29,13 +14,25 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
+import com.siemens.cto.toc.files.FileManager;
+import groovy.text.SimpleTemplateEngine;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
 
 public class JvmServiceImpl implements JvmService {
 
@@ -97,28 +94,24 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Jvm> getJvms(final PaginationParameter aPaginationParam) {
+    public List<Jvm> getJvms() {
 
-        return jvmPersistenceService.getJvms(aPaginationParam);
+        return jvmPersistenceService.getJvms();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final String aJvmNameFragment,
-                              final PaginationParameter aPaginationParam) {
+    public List<Jvm> findJvms(final String aJvmNameFragment) {
 
         new JvmNameRule(aJvmNameFragment).validate();
-        return jvmPersistenceService.findJvms(aJvmNameFragment,
-                aPaginationParam);
+        return jvmPersistenceService.findJvms(aJvmNameFragment);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final Identifier<Group> aGroupId,
-                              final PaginationParameter aPaginationParam) {
+    public List<Jvm> findJvms(final Identifier<Group> aGroupId) {
 
-        return jvmPersistenceService.findJvmsBelongingTo(aGroupId,
-                aPaginationParam);
+        return jvmPersistenceService.findJvmsBelongingTo(aGroupId);
 
     }
 
@@ -158,7 +151,7 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional(readOnly = true)
     public String generateConfig(String aJvmName) {
-        final List<Jvm> jvm = jvmPersistenceService.findJvms(aJvmName, PaginationParameter.all());
+        final List<Jvm> jvm = jvmPersistenceService.findJvms(aJvmName);
 
         if(jvm.size()==1) { 
             try {

@@ -1,8 +1,7 @@
 package com.siemens.cto.aem.service;
 
-import org.mockito.ArgumentMatcher;
-
 import com.siemens.cto.aem.domain.model.event.Event;
+import org.mockito.ArgumentMatcher;
 
 public class EventMatcher<T> extends ArgumentMatcher<Event<T>> {
 

@@ -1,21 +1,16 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
-import com.siemens.cto.aem.service.state.StateNotificationService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class StateConsumerManagerTest {
 

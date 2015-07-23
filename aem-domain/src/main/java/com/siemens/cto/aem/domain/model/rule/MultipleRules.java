@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.domain.model.rule;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
+import java.util.Arrays;
+import java.util.List;
 
 public class MultipleRules implements Rule {
 

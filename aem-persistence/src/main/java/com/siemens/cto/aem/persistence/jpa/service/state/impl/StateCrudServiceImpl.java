@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.state.impl;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -16,11 +7,17 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 @SuppressWarnings("unchecked")
 public class StateCrudServiceImpl<S, T extends OperationalState> implements StateCrudService<S, T> {
@@ -29,11 +26,9 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     private EntityManager entityManager;
 
     private final StateType stateType;
-    private final JpaQueryPaginator paginator;
 
     public StateCrudServiceImpl(final StateType theStateType) {
         stateType = theStateType;
-        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -62,12 +57,10 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     }
 
     @Override
-    public List<JpaCurrentState> getStates(final PaginationParameter somePagination) {
+    public List<JpaCurrentState> getStates() {
         final Query query = entityManager.createQuery("SELECT j FROM JpaCurrentState j WHERE j.id.stateType = :stateType");
 
         query.setParameter("stateType", stateType);
-        paginator.paginate(query,
-                           somePagination);
 
         return query.getResultList();
     }
@@ -80,8 +73,6 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
         getQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
         updateQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
         
-        paginator.paginate(getQuery, PaginationParameter.all());
-
         List<JpaCurrentState> results = getQuery.getResultList();
         
         updateQuery.setParameter(JpaCurrentState.STATE_NAME, staleState.toPersistentString());
@@ -99,8 +90,6 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
         updateQuery.setParameter(JpaCurrentState.CUTOFF, cutoff);
         updateQuery.setParameter(JpaCurrentState.CHECK_STATES, statesToCheck);
         
-        paginator.paginate(getQuery, PaginationParameter.all());
-
         List<JpaCurrentState> results = getQuery.getResultList();
         
         updateQuery.setParameter(JpaCurrentState.STATE_NAME, staleState.toPersistentString());

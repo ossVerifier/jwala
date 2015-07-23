@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.template
 
-import com.siemens.cto.aem.domain.model.resource.ResourceType
 import java.nio.file.Path
 
 class HarmonyTemplate {

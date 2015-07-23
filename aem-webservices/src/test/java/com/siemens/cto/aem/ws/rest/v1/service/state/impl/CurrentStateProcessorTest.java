@@ -1,18 +1,18 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import com.siemens.cto.aem.domain.model.state.*;
-
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.CurrentStateChronologicalComparator;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

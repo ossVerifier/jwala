@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.domain.model.rule;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 
 import java.util.Map;

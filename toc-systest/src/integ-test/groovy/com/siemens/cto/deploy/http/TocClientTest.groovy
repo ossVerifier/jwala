@@ -1,13 +1,14 @@
-package com.siemens.cto.deploy.http;
+package com.siemens.cto.deploy.http
 
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Ignore
-import groovy.json.JsonBuilder;
+import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import org.junit.After
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Test
+
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertNotNull
 
 /**
  * Test code for TocClient

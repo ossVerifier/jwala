@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
@@ -18,13 +9,17 @@ import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class InMemoryJvmStateNotificationConsumerImplTest {
 

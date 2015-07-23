@@ -1,11 +1,5 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.junit.*;
-
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.impl.cli.LocalRuntimeCommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorBuilder;
@@ -13,10 +7,13 @@ import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
+import org.junit.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

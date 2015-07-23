@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.si.ssh;
 
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.expression.Expression;
-import org.springframework.integration.Message;
-
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.expression.Expression;
+import org.springframework.integration.Message;
 
 public class SshExecExecutingService extends SshExecutingService {
 

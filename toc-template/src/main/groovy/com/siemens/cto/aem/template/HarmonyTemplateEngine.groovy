@@ -1,11 +1,12 @@
 package com.siemens.cto.aem.template
 
 import com.siemens.cto.aem.domain.model.group.Group
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.domain.model.resource.ResourceInstance
 import com.siemens.cto.aem.domain.model.resource.ResourceType
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException
 import com.siemens.cto.toc.files.FileManager
 import groovy.text.GStringTemplateEngine
+
 import java.nio.file.Path
 
 public class HarmonyTemplateEngine {

@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,7 +35,7 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() throws IOException {
         if (isEnabled()) {
-            final List<WebServer> webServers = webServerService.getWebServers(PaginationParameter.all());
+            final List<WebServer> webServers = webServerService.getWebServers();
             try {
                 for (WebServer webServer : webServers) {
                     if (webServerFutureMap.get(webServer.getId()) == null ||

@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.domain.model.command;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.rule.Rule;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class MultipleRuleCommand implements Command {
 

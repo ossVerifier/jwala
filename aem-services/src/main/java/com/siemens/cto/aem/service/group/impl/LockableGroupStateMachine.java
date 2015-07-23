@@ -1,8 +1,5 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
@@ -11,6 +8,9 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
+
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class LockableGroupStateMachine {
 

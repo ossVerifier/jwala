@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.response;
 
-import javax.ws.rs.core.Response;
-
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.Success;
+
+import javax.ws.rs.core.Response;
 
 public class ResponseBuilder {
 

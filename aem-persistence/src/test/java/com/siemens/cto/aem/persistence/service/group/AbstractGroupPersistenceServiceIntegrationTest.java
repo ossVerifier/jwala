@@ -1,27 +1,22 @@
 package com.siemens.cto.aem.persistence.service.group;
 
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractGroupPersistenceServiceIntegrationTest {
@@ -135,17 +130,12 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     @Test
     public void testGetGroups() {
 
-        final PaginationParameter pagination = new PaginationParameter(0, 2);
+        groupHelper.createGroup("Auto-constructed Group " + (1),
+                           "Auto-constructed User " + (1));
 
-        for (int i=0; i<= pagination.getLimit(); i++) {
-            groupHelper.createGroup("Auto-constructed Group " + (i + 1),
-                               "Auto-constructed User " + (i + 1));
-        }
+        final List<Group> actualGroups = groupPersistenceService.getGroups();
 
-        final List<Group> actualGroups = groupPersistenceService.getGroups(pagination);
-
-        assertEquals(pagination.getLimit().intValue(),
-                     actualGroups.size());
+        assertTrue(actualGroups.size() > 0);
     }
 
     @Test
@@ -153,8 +143,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
         final String expectedContains = preCreatedGroup.getName().substring(3, 5);
 
-        final List<Group> actualGroups = groupPersistenceService.findGroups(expectedContains,
-                                                                            new PaginationParameter());
+        final List<Group> actualGroups = groupPersistenceService.findGroups(expectedContains);
 
         for(final Group group : actualGroups) {
             assertTrue(group.getName().contains(expectedContains));

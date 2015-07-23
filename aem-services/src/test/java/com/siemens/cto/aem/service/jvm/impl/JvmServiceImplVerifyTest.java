@@ -1,25 +1,15 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
@@ -27,13 +17,17 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
 import com.siemens.cto.toc.files.FileManager;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
@@ -42,7 +36,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private JvmPersistenceService jvmPersistenceService;
     private GroupService groupService;
     private User user;
-    private PaginationParameter pagination;
     private FileManager fileManager;
 
     @Before
@@ -51,7 +44,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService = mock(GroupService.class);
         jvmStateGateway = mock(JvmStateGateway.class);
         user = new User("unused");
-        pagination = new PaginationParameter();
         fileManager = mock(FileManager.class);
         impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway);
     }
@@ -126,11 +118,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String fragment = "unused";
 
-        impl.findJvms(fragment,
-                      pagination);
+        impl.findJvms(fragment);
 
-        verify(jvmPersistenceService, times(1)).findJvms(eq(fragment),
-                                                         eq(pagination));
+        verify(jvmPersistenceService, times(1)).findJvms(eq(fragment));
     }
 
     @Test(expected = BadRequestException.class)
@@ -138,8 +128,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String badFragment = "";
 
-        impl.findJvms(badFragment,
-                      pagination);
+        impl.findJvms(badFragment);
     }
 
     @Test
@@ -147,19 +136,17 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Identifier<Group> id = new Identifier<>(-123456L);
 
-        impl.findJvms(id,
-                      pagination);
+        impl.findJvms(id);
 
-        verify(jvmPersistenceService, times(1)).findJvmsBelongingTo(eq(id),
-                                                                    eq(pagination));
+        verify(jvmPersistenceService, times(1)).findJvmsBelongingTo(eq(id));
     }
 
     @Test
     public void testGetAll() {
 
-        impl.getJvms(pagination);
+        impl.getJvms();
 
-        verify(jvmPersistenceService, times(1)).getJvms(eq(pagination));
+        verify(jvmPersistenceService, times(1)).getJvms();
     }
     
 
@@ -172,7 +159,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final ArrayList<Jvm> jvms = new ArrayList<>(1);
         jvms.add(jvm);
         
-        when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()), any(PaginationParameter.class))).thenReturn(jvms);
+        when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()))).thenReturn(jvms);
         when(fileManager.getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE))).thenReturn("/server-xml.tpl");
         impl.generateConfig(jvm.getJvmName());
 

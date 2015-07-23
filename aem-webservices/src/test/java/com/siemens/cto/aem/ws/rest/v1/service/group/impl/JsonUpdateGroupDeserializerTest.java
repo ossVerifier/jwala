@@ -1,16 +1,15 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.io.IOException;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
 
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
 import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.object;

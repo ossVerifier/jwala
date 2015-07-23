@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.control.jvm.windows;
 
+import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import org.junit.Test;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
-import org.junit.Test;
-
-import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 
 import static org.junit.Assert.assertEquals;
 

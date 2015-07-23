@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.web.javascript.variable.property;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
 import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public enum ApplicationPropertySourceDefinition {
 

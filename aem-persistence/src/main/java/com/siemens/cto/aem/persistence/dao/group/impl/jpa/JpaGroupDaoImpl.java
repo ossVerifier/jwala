@@ -1,18 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -22,21 +9,25 @@ import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
+
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class JpaGroupDaoImpl implements GroupDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
-    private final JpaQueryPaginator paginator;
 
     public JpaGroupDaoImpl() {
-        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -95,7 +86,7 @@ public class JpaGroupDaoImpl implements GroupDao {
     }
 
     @Override
-    public List<Group> getGroups(final PaginationParameter somePagination) {
+    public List<Group> getGroups() {
 
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<JpaGroup> criteria = builder.createQuery(JpaGroup.class);
@@ -105,23 +96,15 @@ public class JpaGroupDaoImpl implements GroupDao {
 
         final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
 
-        paginator.paginate(query,
-                           somePagination);
-
         return groupsFrom(query.getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Group> findGroups(final String aName,
-                                  final PaginationParameter somePagination) {
+    public List<Group> findGroups(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
         query.setParameter("groupName", "?" + aName + "?");
-
-        paginator.paginate(query,
-                           somePagination);
-
         return groupsFrom(query.getResultList());
     }
 

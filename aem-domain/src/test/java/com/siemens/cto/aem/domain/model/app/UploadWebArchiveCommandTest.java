@@ -1,21 +1,20 @@
 package com.siemens.cto.aem.domain.model.app;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.group.Group;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.Group;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UploadWebArchiveCommandTest {

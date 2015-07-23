@@ -1,21 +1,15 @@
 package com.siemens.cto.aem.service.state.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.Session;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.jms.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
+import java.lang.IllegalStateException;
 
 public class JmsPackageBuilderTest {
 

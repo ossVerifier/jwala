@@ -1,26 +1,15 @@
 package com.siemens.cto.toc.files;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.UUID;
-
+import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
+import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
+import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,16 +21,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.UUID;
+
+import static org.junit.Assert.*;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {

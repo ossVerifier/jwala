@@ -1,10 +1,5 @@
 package com.siemens.cto.aem.control.webserver.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.junit.*;
-
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
@@ -15,6 +10,10 @@ import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import org.junit.*;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;

@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.web.javascript.variable.dynamic;
 
-import javax.servlet.ServletContext;
-
+import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
+import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariable;
-import com.siemens.cto.aem.web.javascript.variable.StringJavaScriptVariable;
+import javax.servlet.ServletContext;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;

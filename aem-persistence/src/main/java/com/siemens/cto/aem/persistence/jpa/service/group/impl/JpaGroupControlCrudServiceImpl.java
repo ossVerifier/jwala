@@ -1,8 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.group.impl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -12,6 +9,9 @@ import com.siemens.cto.aem.domain.model.group.command.GroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupControlHistory;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupControlCrudService;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 public class JpaGroupControlCrudServiceImpl implements GroupControlCrudService {
 

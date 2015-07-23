@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.service.fault;
 
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-
+import com.jcraft.jsch.JSchException;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import org.springframework.integration.MessageHandlingException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import com.jcraft.jsch.JSchException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 
 /**
  * Used to map exceptions to AemFaultTypes in 

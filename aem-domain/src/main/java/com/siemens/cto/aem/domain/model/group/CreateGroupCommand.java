@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.domain.model.group;
 
-import java.io.Serializable;
-
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.model.command.Command;
+import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
+import java.io.Serializable;
 
 public class CreateGroupCommand implements Serializable, Command {
 

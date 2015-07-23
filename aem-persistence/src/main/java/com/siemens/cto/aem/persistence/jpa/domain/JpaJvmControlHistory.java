@@ -1,15 +1,8 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity(name = "jvm_control_history")
 public class JpaJvmControlHistory implements Serializable {

@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -18,7 +9,6 @@ import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -26,9 +16,15 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Set;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -47,9 +43,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response getJvms(final PaginationParamProvider paginationParamProvider) {
-        LOGGER.debug("Get JVMs with pagination requested: {}", paginationParamProvider);
-        final List<Jvm> jvms = jvmService.getJvms(paginationParamProvider.getPaginationParameter());
+    public Response getJvms() {
+        LOGGER.debug("Get JVMs requested");
+        final List<Jvm> jvms = jvmService.getJvms();
         return ResponseBuilder.ok(jvms);
     }
 
@@ -115,7 +111,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final Set<CurrentState<Jvm, JvmState>> currentJvmStates;
 
         if (jvmIds.isEmpty()) {
-            currentJvmStates = jvmStateService.getCurrentStates(PaginationParameter.all());
+            currentJvmStates = jvmStateService.getCurrentStates();
         } else {
             currentJvmStates = jvmStateService.getCurrentStates(jvmIds);
         }

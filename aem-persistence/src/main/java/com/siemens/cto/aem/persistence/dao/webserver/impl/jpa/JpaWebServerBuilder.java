@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
@@ -12,6 +8,10 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class JpaWebServerBuilder {
 

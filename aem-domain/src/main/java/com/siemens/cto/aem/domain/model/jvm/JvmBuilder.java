@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.domain.model.jvm;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.Path;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class JvmBuilder {
 

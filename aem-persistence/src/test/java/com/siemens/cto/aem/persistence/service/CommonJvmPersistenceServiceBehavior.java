@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.service;
 
-import java.util.Collections;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -12,6 +10,8 @@ import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+
+import java.util.Collections;
 
 public class CommonJvmPersistenceServiceBehavior {
 

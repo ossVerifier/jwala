@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.domain.model.group;
 
-import org.joda.time.DateTime;
-
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.KeyValueStateConsumer;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import org.joda.time.DateTime;
 
 public class CurrentGroupState extends CurrentState<Group, GroupState> {
 

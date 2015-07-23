@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.io.IOException;
-
+import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
+import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
-import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
-import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import java.io.IOException;
 
 @JsonDeserialize(using = JsonControlGroup.JsonControlGroupDeserializer.class)
 public class JsonControlGroup {

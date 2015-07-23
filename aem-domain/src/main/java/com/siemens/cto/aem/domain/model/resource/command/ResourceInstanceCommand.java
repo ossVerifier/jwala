@@ -2,6 +2,7 @@ package com.siemens.cto.aem.domain.model.resource.command;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
+
 import java.io.Serializable;
 import java.util.Map;
 

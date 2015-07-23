@@ -1,7 +1,10 @@
 package com.siemens.cto.aem.service.state.jms;
 
-import javax.jms.Destination;
-
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.jms.sender.message.MessageCreatorKeyValueStateConsumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,16 +14,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jms.core.JmsTemplate;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.service.state.StateNotificationConsumer;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.jms.sender.message.MessageCreatorKeyValueStateConsumer;
+import javax.jms.Destination;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JmsStateNotificationServiceImplTest {

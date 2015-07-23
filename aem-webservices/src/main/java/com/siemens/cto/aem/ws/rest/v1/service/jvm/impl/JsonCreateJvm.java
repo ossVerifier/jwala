@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.ObjectCodec;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -19,6 +8,16 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.ObjectCodec;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
 public class JsonCreateJvm {

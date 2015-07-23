@@ -1,13 +1,21 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.util.*;
-
-import javax.ws.rs.core.Response;
-
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,31 +26,18 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
-import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.provider.PaginationParamProvider;
-import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  *
@@ -94,7 +89,7 @@ public class GroupServiceRestImplTest {
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
-        final List<Group> result = new ArrayList<Group>();
+        final List<Group> result = new ArrayList<>();
         result.add(ws);
         return result;
     }
@@ -132,11 +127,10 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroupList() {
-        when(impl.getGroups(any(PaginationParameter.class))).thenReturn(groupList);
+        when(impl.getGroups()).thenReturn(groupList);
 
-        final PaginationParamProvider paginationProvider = new PaginationParamProvider();
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider();
-        final Response response = cut.getGroups(paginationProvider, nameSearchParameterProvider);
+        final Response response = cut.getGroups(nameSearchParameterProvider);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -150,12 +144,11 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroupListName() {
-        when(impl.findGroups(any(String.class), any(PaginationParameter.class))).thenReturn(groupList);
+        when(impl.findGroups(any(String.class))).thenReturn(groupList);
 
-        final PaginationParamProvider paginationProvider = new PaginationParamProvider();
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider(name);
 
-        final Response response = cut.getGroups(paginationProvider, nameSearchParameterProvider);
+        final Response response = cut.getGroups(nameSearchParameterProvider);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();

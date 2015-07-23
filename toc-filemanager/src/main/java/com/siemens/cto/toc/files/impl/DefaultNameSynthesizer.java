@@ -1,9 +1,9 @@
 package com.siemens.cto.toc.files.impl;
 
+import com.siemens.cto.toc.files.NameSynthesizer;
+
 import java.nio.file.Path;
 import java.util.UUID;
-
-import com.siemens.cto.toc.files.NameSynthesizer;
 
 public class DefaultNameSynthesizer implements NameSynthesizer {
 

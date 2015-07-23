@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.web.configuration.web;
 
 import junit.framework.TestCase;
-
 import org.springframework.context.MessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;

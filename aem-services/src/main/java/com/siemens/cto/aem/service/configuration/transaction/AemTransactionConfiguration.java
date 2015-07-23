@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.service.configuration.transaction;
 
+import com.siemens.cto.aem.persistence.configuration.AemJpaConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.jta.JtaTransactionManager;
-
-import com.siemens.cto.aem.persistence.configuration.AemJpaConfiguration;
 
 @Configuration
 @EnableTransactionManagement

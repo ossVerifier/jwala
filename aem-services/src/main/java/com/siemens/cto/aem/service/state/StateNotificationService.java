@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.state;
 
-import java.util.List;
-
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+
+import java.util.List;
 
 public interface StateNotificationService {
 

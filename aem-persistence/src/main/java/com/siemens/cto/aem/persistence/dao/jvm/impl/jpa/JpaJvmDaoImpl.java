@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -16,24 +7,28 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
+
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class JpaJvmDaoImpl implements JvmDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
-    private final JpaQueryPaginator paginator;
 
     public JpaJvmDaoImpl() {
-        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -109,38 +104,29 @@ public class JpaJvmDaoImpl implements JvmDao {
     }
 
     @Override
-    public List<Jvm> getJvms(final PaginationParameter somePagination) {
+    public List<Jvm> getJvms() {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
-
-        paginator.paginate(query,
-                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }
 
     @Override
-    public List<Jvm> findJvms(final String aName,
-                              final PaginationParameter somePagination) {
+    public List<Jvm> findJvms(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
 
         query.setParameter("jvmName", "%" + aName + "%");
-        paginator.paginate(query,
-                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }
 
     @Override
-    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup,
-                                         final PaginationParameter somePagination) {
+    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup) {
 
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j JOIN j.groups g WHERE g.id = :groupId ORDER BY j.name");
 
         query.setParameter("groupId", aGroup.getId());
-        paginator.paginate(query,
-                           somePagination);
 
         return jvmsFrom(query.getResultList());
     }

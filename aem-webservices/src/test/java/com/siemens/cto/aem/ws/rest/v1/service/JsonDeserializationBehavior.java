@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.codehaus.jackson.map.DeserializerProvider;
 import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.deser.CustomDeserializerFactory;
 import org.codehaus.jackson.map.deser.StdDeserializerProvider;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonDeserializationBehavior {
 

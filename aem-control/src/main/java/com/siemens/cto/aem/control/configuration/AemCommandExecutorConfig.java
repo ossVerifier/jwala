@@ -1,18 +1,17 @@
 package com.siemens.cto.aem.control.configuration;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import com.siemens.cto.aem.commandprocessor.CommandExecutor;
+import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
+import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
+import com.siemens.cto.aem.control.jvm.impl.RemoteJvmCommandExecutorImpl;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
 import com.siemens.cto.aem.control.webserver.impl.RemoteWebServerCommandExecutorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.siemens.cto.aem.commandprocessor.CommandExecutor;
-import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
-import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.control.jvm.impl.RemoteJvmCommandExecutorImpl;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class AemCommandExecutorConfig {

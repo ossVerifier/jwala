@@ -1,8 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -10,6 +7,9 @@ import com.siemens.cto.aem.domain.model.jvm.JvmBuilder;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class JpaJvmBuilder {
 

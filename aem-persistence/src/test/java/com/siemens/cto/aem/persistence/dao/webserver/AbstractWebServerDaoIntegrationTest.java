@@ -1,21 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -25,8 +9,8 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -35,13 +19,20 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.*;
 
 import static com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper.createCreateGroupEvent;
 import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createCreateWebServerEvent;
 import static com.siemens.cto.aem.persistence.dao.webserver.WebServerEventsTestHelper.createUpdateWebServerEvent;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractWebServerDaoIntegrationTest {
@@ -205,19 +196,16 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 	@Test
 	public void testGetWebServers() {
 
-		final PaginationParameter pagination = new PaginationParameter(0, 2);
-
-		for (int i = 0; i <= pagination.getLimit(); i++) {
-			webServerDao.createWebServer(createCreateWebServerEvent(
-					preCreatedGroupIds, TEST_WS_NAME + (i + 1),
-					UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, TEST_USER_NAME + (i + 1),
+        for (int i = 0; i <= 5; i++) {
+            webServerDao.createWebServer(createCreateWebServerEvent(
+                    preCreatedGroupIds, TEST_WS_NAME + (i + 1),
+                    UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, TEST_USER_NAME + (i + 1),
                     STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT));
-		}
+        }
 
-		final List<WebServer> actualWebServers = webServerDao
-				.getWebServers(pagination);
+		final List<WebServer> actualWebServers = webServerDao.getWebServers();
 
-		assertEquals(pagination.getLimit().intValue(), actualWebServers.size());
+		assertTrue(actualWebServers.size() > 0);
 	}
 
 	@Test
@@ -226,8 +214,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 		final String expectedContains = preCreatedWebServer.getName()
 				.substring(3, 5);
 
-		final List<WebServer> actualWebServers = webServerDao.findWebServers(
-				expectedContains, new PaginationParameter());
+		final List<WebServer> actualWebServers = webServerDao.findWebServers(expectedContains);
 
 		for (final WebServer WebServer : actualWebServers) {
 			assertTrue(WebServer.getName().contains(expectedContains));
@@ -448,7 +435,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         entityManager.flush();
 
         final List<Application> applications =
-                webServerDao.findApplications(jpaWebServer.getName(), PaginationParameter.all());
+                webServerDao.findApplications(jpaWebServer.getName());
 
         assertEquals(4, applications.size());
 
@@ -641,7 +628,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         entityManager.flush();
 
         final List<Jvm> jvms =
-                webServerDao.findJvms(WEB_SERVER_NAME, PaginationParameter.all());
+                webServerDao.findJvms(WEB_SERVER_NAME);
 
         assertEquals(3, jvms.size());
 
@@ -659,7 +646,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     @Test
     public void testFindWebServersBelongingToGroup() {
         final List<WebServer> webServers =
-            webServerDao.findWebServersBelongingTo(preCreatedGroup.getId(), PaginationParameter.all());
+            webServerDao.findWebServersBelongingTo(preCreatedGroup.getId());
         assertTrue(webServers.size() > 0);
     }
 }

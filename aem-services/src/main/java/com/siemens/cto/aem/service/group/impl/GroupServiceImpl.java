@@ -1,31 +1,19 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 public class GroupServiceImpl implements GroupService {
 
@@ -64,18 +52,16 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Group> getGroups(final PaginationParameter aPaginationParam) {
-        return groupPersistenceService.getGroups(aPaginationParam);
+    public List<Group> getGroups() {
+        return groupPersistenceService.getGroups();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Group> findGroups(final String aGroupNameFragment,
-                                  final PaginationParameter aPaginationParam) {
+    public List<Group> findGroups(final String aGroupNameFragment) {
 
         new GroupNameRule(aGroupNameFragment).validate();
-        return groupPersistenceService.findGroups(aGroupNameFragment,
-                                                  aPaginationParam);
+        return groupPersistenceService.findGroups(aGroupNameFragment);
     }
 
     @Override

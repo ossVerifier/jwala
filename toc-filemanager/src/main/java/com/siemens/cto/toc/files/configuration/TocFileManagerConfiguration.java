@@ -1,25 +1,16 @@
 package com.siemens.cto.toc.files.configuration;
 
-import java.io.IOException;
-
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.toc.files.*;
+import com.siemens.cto.toc.files.impl.*;
+import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.toc.files.FilesConfiguration;
-import com.siemens.cto.toc.files.NameSynthesizer;
-import com.siemens.cto.toc.files.RepositoryService;
-import com.siemens.cto.toc.files.FileManager;
-import com.siemens.cto.toc.files.WebArchiveManager;
-import com.siemens.cto.toc.files.impl.DefaultNameSynthesizer;
-import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.siemens.cto.toc.files.impl.FileManagerImpl;
-import com.siemens.cto.toc.files.impl.WebArchiveManagerImpl;
-import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
+import java.io.IOException;
 
 @Configuration
 public class TocFileManagerConfiguration {

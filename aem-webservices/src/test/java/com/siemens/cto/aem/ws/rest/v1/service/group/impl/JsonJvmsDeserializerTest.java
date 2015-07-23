@@ -1,13 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
@@ -16,11 +8,15 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
 
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.array;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyTextValue;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.keyValue;
-import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.object;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+
+import static com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

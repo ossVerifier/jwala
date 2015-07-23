@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
+import com.siemens.cto.aem.domain.model.temporary.User;
+
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
-
-import com.siemens.cto.aem.domain.model.temporary.User;
 
 public class AuthenticatedUser {
 

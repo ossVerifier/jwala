@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.domain.model.app;
 
-import java.io.Serializable;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
+
+import java.io.Serializable;
 
 public class RemoveWebArchiveCommand implements Serializable, Command {
 

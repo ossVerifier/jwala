@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GroupWebServerSplitterBean {
 
@@ -26,9 +25,9 @@ public class GroupWebServerSplitterBean {
         
         LOGGER.debug("splitting GroupJvmDispatchCommand for group {}", group.getName());
 
-        List<WebServerDispatchCommand> webServerCommands = new ArrayList<WebServerDispatchCommand>();
+        List<WebServerDispatchCommand> webServerCommands = new ArrayList<>();
 
-        List<WebServer> webServers = webServerService.findWebServers(group.getId(), PaginationParameter.all());
+        List<WebServer> webServers = webServerService.findWebServers(group.getId());
 
         for (WebServer webServer : webServers) {
             webServerCommands.add(new WebServerDispatchCommand(webServer, groupDispatchCommand));

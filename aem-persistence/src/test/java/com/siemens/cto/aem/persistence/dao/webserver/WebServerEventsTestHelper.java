@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
-import java.util.Collection;
-
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -12,6 +10,8 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+
+import java.util.Collection;
 
 public class WebServerEventsTestHelper {
 

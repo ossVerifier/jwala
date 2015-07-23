@@ -1,20 +1,5 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -24,7 +9,6 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -35,17 +19,22 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.JpaQueryPaginator;
+
+import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
-    private final JpaQueryPaginator paginator;
-
     public JpaWebServerDaoImpl() {
-        paginator = new JpaQueryPaginator();
     }
 
     @Override
@@ -139,7 +128,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public List<WebServer> getWebServers(final PaginationParameter somePagination) {
+    public List<WebServer> getWebServers() {
 
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<JpaWebServer> criteria = builder.createQuery(JpaWebServer.class);
@@ -149,19 +138,15 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
         final TypedQuery<JpaWebServer> query = entityManager.createQuery(criteria);
 
-        paginator.paginate(query, somePagination);
-
         return webServersFrom(query.getResultList());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<WebServer> findWebServers(final String aName, final PaginationParameter somePagination) {
+    public List<WebServer> findWebServers(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaWebServer g WHERE g.name LIKE :WebServerName");
         query.setParameter("WebServerName", "?" + aName + "?");
-
-        paginator.paginate(query, somePagination);
 
         return webServersFrom(query.getResultList());
     }
@@ -238,14 +223,12 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup,
-            final PaginationParameter somePagination) {
+    public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup) {
 
         final Query query =
             entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY);
 
         query.setParameter("groupId", aGroup.getId());
-        paginator.paginate(query, somePagination);
 
         return webserversFrom(query.getResultList());
     }
@@ -269,13 +252,9 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public List<Application> findApplications(final String aWebServerName, final PaginationParameter somePagination) {
+    public List<Application> findApplications(final String aWebServerName) {
         final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
         q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
-        if (somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        }
 
         final ArrayList<Application> apps = new ArrayList<>(q.getResultList().size());
         for(final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
@@ -293,14 +272,9 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public List<Jvm> findJvms(final String aWebServerName, final PaginationParameter somePagination) {
+    public List<Jvm> findJvms(final String aWebServerName) {
         final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
         q.setParameter("wsName", aWebServerName);
-
-        if (somePagination.isLimited()) {
-            q.setFirstResult(somePagination.getOffset());
-            q.setMaxResults(somePagination.getLimit());
-        }
 
         final ArrayList<Jvm> jvms = new ArrayList<>(q.getResultList().size());
         for(final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {

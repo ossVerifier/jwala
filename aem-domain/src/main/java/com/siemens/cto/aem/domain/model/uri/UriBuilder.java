@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.domain.model.uri;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
+import com.siemens.cto.aem.domain.model.path.Path;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.siemens.cto.aem.domain.model.path.Path;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class UriBuilder {
 

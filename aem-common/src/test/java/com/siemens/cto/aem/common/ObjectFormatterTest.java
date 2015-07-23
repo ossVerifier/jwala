@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.common;
 
-import java.lang.reflect.Field;
-
 import junit.framework.TestCase;
+
+import java.lang.reflect.Field;
 
 /**
  * Created by z002xuvs on 12/2/13.

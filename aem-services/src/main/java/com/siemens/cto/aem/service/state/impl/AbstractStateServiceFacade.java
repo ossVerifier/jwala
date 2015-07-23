@@ -1,17 +1,5 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.integration.Message;
-import org.springframework.integration.MessagingException;
-import org.springframework.integration.annotation.Transformer;
-import org.springframework.integration.support.MessageBuilder;
-
 import com.siemens.cto.aem.common.exception.ExceptionUtil;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -20,6 +8,17 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.service.state.StateService;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.integration.Message;
+import org.springframework.integration.MessagingException;
+import org.springframework.integration.annotation.Transformer;
+import org.springframework.integration.support.MessageBuilder;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public abstract class AbstractStateServiceFacade<S, T extends OperationalState> {
 

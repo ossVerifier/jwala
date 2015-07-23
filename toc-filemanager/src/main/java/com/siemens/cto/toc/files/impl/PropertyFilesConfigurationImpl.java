@@ -1,15 +1,15 @@
 package com.siemens.cto.toc.files.impl;
 
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.toc.files.FilesConfiguration;
+import com.siemens.cto.toc.files.TocPath;
+
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.toc.files.FilesConfiguration;
-import com.siemens.cto.toc.files.TocPath;
 
 /**
  * Paths specified in TocFiles section as paths.* 

@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.domain.model.app;
 
-import java.io.Serializable;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -10,6 +8,8 @@ import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.app.ApplicationContextRule;
 import com.siemens.cto.aem.domain.model.rule.app.ApplicationNameRule;
 import com.siemens.cto.aem.domain.model.rule.group.GroupIdRule;
+
+import java.io.Serializable;
 
 public class CreateApplicationCommand implements Serializable, Command {
 

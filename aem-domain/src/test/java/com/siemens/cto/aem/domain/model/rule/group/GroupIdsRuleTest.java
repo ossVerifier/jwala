@@ -1,15 +1,14 @@
 package com.siemens.cto.aem.domain.model.rule.group;
 
-import static org.junit.Assert.assertTrue;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.rule.Rule;
+import org.junit.Test;
 
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.junit.Test;
-
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.rule.Rule;
+import static org.junit.Assert.assertTrue;
 
 public class GroupIdsRuleTest {
 

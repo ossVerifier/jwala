@@ -1,14 +1,5 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
@@ -17,6 +8,14 @@ import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.io.FullInputStreamReaderTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 public class ThreadedCommandExecutorImpl implements CommandExecutor {
 

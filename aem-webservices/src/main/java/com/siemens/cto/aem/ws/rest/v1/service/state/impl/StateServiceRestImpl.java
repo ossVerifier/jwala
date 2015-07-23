@@ -1,17 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.CurrentStateChronologicalComparator;
@@ -20,6 +8,12 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 public class StateServiceRestImpl implements StateServiceRest {
 

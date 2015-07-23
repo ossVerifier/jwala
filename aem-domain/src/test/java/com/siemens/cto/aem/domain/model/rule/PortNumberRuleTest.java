@@ -1,13 +1,10 @@
 package com.siemens.cto.aem.domain.model.rule;
 
-import org.junit.Test;
-
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PortNumberRuleTest {
     AemFaultType error = AemFaultType.INVALID_WEBSERVER_PORT;

@@ -1,16 +1,15 @@
 package com.siemens.cto.aem.service.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ResourceServiceImplTest {
 

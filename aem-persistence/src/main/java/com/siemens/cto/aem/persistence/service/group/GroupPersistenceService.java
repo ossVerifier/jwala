@@ -1,19 +1,15 @@
 package com.siemens.cto.aem.persistence.service.group;
 
-import java.util.List;
-
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.model.group.UpdateGroupCommand;
+import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.PaginationParameter;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
+
+import java.util.List;
+import java.util.Set;
 
 public interface GroupPersistenceService extends StatePersistenceService<Group, GroupState> {
 
@@ -25,10 +21,9 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group getGroup(final String name) throws NotFoundException;
 
-    List<Group> getGroups(final PaginationParameter somePagination);
+    List<Group> getGroups();
 
-    List<Group> findGroups(final String aName,
-                           final PaginationParameter somePagination);
+    List<Group> findGroups(final String aName);
 
     void removeGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
@@ -38,5 +33,7 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group updateGroupStatus(Event<SetGroupStateCommand> aGroupToUpdate);
 
-    public Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
+    Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
+
+    Set<CurrentState<Group, GroupState>> getAllKnownStates();
 }

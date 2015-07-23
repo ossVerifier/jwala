@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.domain.model.audit;
 
-import java.io.Serializable;
-import java.util.Calendar;
-import java.util.Date;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 
 public class AuditDateTime implements Serializable {
 

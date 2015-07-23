@@ -1,19 +1,14 @@
 package com.siemens.cto.aem.service.state.jms;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import com.siemens.cto.aem.service.state.jms.JmsPackage;
-
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class JmsPackageTest {
 

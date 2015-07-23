@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.common;
 
+import junit.framework.TestCase;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 public class ObjectsTest extends TestCase {
 

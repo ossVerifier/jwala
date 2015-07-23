@@ -1,21 +1,18 @@
 package com.siemens.cto.aem.service.configuration.jms;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.MessageListener;
-import javax.jms.Session;
-
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
+import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
+import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
-import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
-import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class AemMessageListenerConfig {
