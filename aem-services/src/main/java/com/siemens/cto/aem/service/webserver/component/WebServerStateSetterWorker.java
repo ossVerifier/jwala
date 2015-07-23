@@ -11,6 +11,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class WebServerStateSetterWorker {
     @Async("webServerTaskExecutor")
     public Future<?> pingWebServer(WebServer webServer) {
         ClientHttpResponse response = null;
-        if (!isWebServerBusyOrDown(webServer)) {
+        if (!isWebServerBusy(webServer)) {
             try {
                 ClientHttpRequest request = httpClientRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                 response = request.execute();
@@ -82,11 +83,11 @@ public class WebServerStateSetterWorker {
                              response.getStatusCode() + "'");
                 }
             } catch (ConnectTimeoutException cte) {
-                LOGGER.info(cte.getLocalizedMessage(), cte);
+                LOGGER.info(cte.getMessage(), cte);
                 setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
             } catch (IOException ioe) {
-                LOGGER.error(ioe.getLocalizedMessage(), ioe);
-                setState(webServer, WebServerReachableState.WS_FAILED, ioe.getMessage());
+                LOGGER.error(ioe.getMessage(), ioe);
+                setState(webServer, WebServerReachableState.WS_FAILED, ExceptionUtils.getStackTrace(ioe));
             } finally {
                 if (response != null) {
                     response.close();
@@ -103,10 +104,9 @@ public class WebServerStateSetterWorker {
      * @param webServer the webServer
      * @return true if web server is starting or stopping
      */
-    private boolean isWebServerBusyOrDown(final WebServer webServer) {
+    private boolean isWebServerBusy(final WebServer webServer) {
         return  webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STARTING ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOPPING ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_FAILED;
+                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOPPING;
     }
 
     /**
@@ -118,7 +118,7 @@ public class WebServerStateSetterWorker {
     private void setState(final WebServer webServer,
                           final WebServerReachableState webServerReachableState,
                           final String msg) {
-        if (!isWebServerBusyOrDown(webServer)) {
+        if (!isWebServerBusy(webServer)) {
             webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
                                                   User.getSystemUser());
         }

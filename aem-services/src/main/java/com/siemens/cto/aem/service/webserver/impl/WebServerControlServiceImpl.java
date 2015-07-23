@@ -23,6 +23,7 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,14 +93,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         AuditEvent.now(aUser)));
 
         } catch (final CommandFailureException cfe) {
-            setFailedState(aCommand, aUser, cfe.getMessage());
+            setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                              "CommandFailureException when attempting to control a Web Server: " + aCommand,
                                              cfe);
         } finally {
-            if (webServerReachableStateMap.get(aCommand.getWebServerId()) != WebServerReachableState.WS_FAILED) {
-                webServerReachableStateMap.remove(aCommand.getWebServerId());
-            }
+            webServerReachableStateMap.remove(aCommand.getWebServerId());
         }
     }
 
