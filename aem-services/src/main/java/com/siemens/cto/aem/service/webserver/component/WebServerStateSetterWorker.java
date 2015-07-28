@@ -16,9 +16,8 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -46,6 +45,8 @@ public class WebServerStateSetterWorker {
     private HttpClientRequestFactory httpClientRequestFactory;
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private StateService<WebServer, WebServerReachableState> webServerStateService;
+    @Autowired
+    private ClientFactoryHelper clientFactoryHelper;
 
     /**
      * Note: Setting of class variables through the constructor preferred but @Async does not work
@@ -72,8 +73,8 @@ public class WebServerStateSetterWorker {
         ClientHttpResponse response = null;
         if (!isWebServerBusy(webServer)) {
             try {
-                ClientHttpRequest request = httpClientRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
-                response = request.execute();
+
+                response = clientFactoryHelper.requestGet(webServer.getStatusUri());
 
                 if (response.getStatusCode() == HttpStatus.OK) {
                     setState(webServer, WebServerReachableState.WS_REACHABLE, null);
@@ -145,10 +146,6 @@ public class WebServerStateSetterWorker {
                                                     DateTime.now(),
                                                     StateType.WEB_SERVER,
                                                     msg));
-    }
-
-    public void setHttpClientRequestFactory(HttpClientRequestFactory httpClientRequestFactory) {
-        this.httpClientRequestFactory = httpClientRequestFactory;
     }
 
     public void setWebServerReachableStateMap(Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap) {

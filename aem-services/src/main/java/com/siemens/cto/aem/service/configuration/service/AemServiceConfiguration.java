@@ -37,6 +37,7 @@ import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.*;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import com.siemens.cto.aem.service.webserver.impl.*;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
@@ -101,7 +102,7 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemSshConfig aemSshConfig;
-    
+
     @Autowired
     private HarmonyTemplateEngine harmonyTemplateEngine;
 
@@ -119,14 +120,14 @@ public class AemServiceConfiguration {
      * System properties are only used if there is no setting in toc.properties.
      */
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
-    public static PropertySourcesPlaceholderConfigurer configurer() { 
+    public static PropertySourcesPlaceholderConfigurer configurer() {
          PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
          ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
          ppc.setLocalOverride(true);
          ppc.setProperties(ApplicationProperties.getProperties());
          return ppc;
-    } 
-    
+    }
+
     @Bean(name="groupStateMachine")
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
     public GroupStateMachine getGroupStateMachine() {
@@ -219,7 +220,8 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name="webServerCommandService")
-    public WebServerCommandService getWebServerCommandService() {
+    @Autowired
+    public WebServerCommandService getWebServerCommandService(ClientFactoryHelper factoryHelper) {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
@@ -228,7 +230,8 @@ public class AemServiceConfiguration {
         return new WebServerCommandServiceImpl(getWebServerService(),
                                                commandExecutor,
                                                jschBuilder,
-                                               sshConfig);
+                                               sshConfig,
+                                                factoryHelper);
     }
 
     @Bean
@@ -261,7 +264,7 @@ public class AemServiceConfiguration {
     public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
         return new JmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
     }
-    
+
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
         return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
@@ -297,9 +300,7 @@ public class AemServiceConfiguration {
     @Bean
     @Autowired
     public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
-            @Qualifier("webServerHttpRequestFactory") final HttpClientRequestFactory httpClientRequestFactory,
             @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
-                webServerStateSetterWorker.setHttpClientRequestFactory(httpClientRequestFactory);
                 webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
                 webServerStateSetterWorker.setWebServerStateService(webServerStateService);
                 return webServerStateSetterWorker;

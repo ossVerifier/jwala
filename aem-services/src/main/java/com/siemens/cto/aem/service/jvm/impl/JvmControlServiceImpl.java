@@ -90,7 +90,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 }
                 switch (execData.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
-                        LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {}\n{}", aCommand, result);
+                        LOGGER.error("exiting controlJvm for ABNORMAL_SUCCESS command {} :: {}", aCommand, result);
                         jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
                                 ctrlOp.getConfirmedState(),
                                 result,
@@ -101,7 +101,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         jvmControlServiceLifecycle.revertState(prevState, aUser);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_FAST_FAIL:
-                        LOGGER.error("exiting controlJvm FAST FAIL command {}\n{}", aCommand, result);
+                        LOGGER.error("exiting controlJvm FAST FAIL command {} :: {}", aCommand, result);
                         jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
                                 ctrlOp.getFailureStateOrPrevious(prevState),
                                 result,
@@ -113,7 +113,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                             LOGGER.debug("exiting controlJvm for command {}: '{}'", aCommand, result);
                             jvmControlServiceLifecycle.revertState(prevState, aUser);
                         } else {
-                            LOGGER.error("exiting controlJvm for FAILING ({}) command {}\n{}", execData.getReturnCode().getReturnCode(), aCommand, result);
+                            LOGGER.error("exiting controlJvm for FAILING ({}) command {} :: {}", execData.getReturnCode().getReturnCode(), aCommand, result);
                             jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
                                     ctrlOp.getFailureStateOrPrevious(prevState),
                                     "Return code: " + execData.getReturnCode().getReturnCode() + "; " + result,

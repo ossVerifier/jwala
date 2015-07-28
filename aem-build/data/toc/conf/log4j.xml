@@ -149,6 +149,11 @@
         <appender-ref ref="TRACE_TOC" />
     </logger>
 
+    <logger name="com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl" additivity="false">
+        <level value="INFO" />
+        <appender-ref ref="TRACE_TOC" />
+    </logger>
+
     <logger name="com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl" additivity="false">
         <level value="INFO" />
         <appender-ref ref="TRACE_TOC" />

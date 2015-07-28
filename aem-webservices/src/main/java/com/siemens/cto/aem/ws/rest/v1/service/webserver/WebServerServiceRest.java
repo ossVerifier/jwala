@@ -50,6 +50,10 @@ public interface WebServerServiceRest {
                             @QueryParam("ssl") final Boolean withSsl);
 
     @GET
+    @Path("/{webServerName}/deployConf")
+    Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName);
+
+    @GET
     @Path("/{webServerName}/loadbalancer/conf")
     Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
 

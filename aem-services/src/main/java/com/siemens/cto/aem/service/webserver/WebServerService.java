@@ -15,6 +15,8 @@ public interface WebServerService {
             final User aCreatingUser);
 
 	WebServer getWebServer(final Identifier<WebServer> aWebServerId);
+
+	WebServer getWebServer(final String aWebServerName);
 	
 	List<WebServer> getWebServers();
 	

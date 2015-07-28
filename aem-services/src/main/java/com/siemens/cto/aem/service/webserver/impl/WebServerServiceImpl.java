@@ -54,8 +54,13 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public WebServer getWebServer(final Identifier<WebServer> aWebServerId) {
-
         return dao.getWebServer(aWebServerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WebServer getWebServer(final String aWebServerName) {
+        return dao.findWebServerByName(aWebServerName);
     }
 
     @Override

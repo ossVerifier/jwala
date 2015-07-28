@@ -2,6 +2,8 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -25,17 +27,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
+    public static final String STP_HTTPD_DATA_DIR = "paths.httpd.conf";
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
+    private Map<String, ReentrantReadWriteLock> wsWriteLocks = new HashMap<String, ReentrantReadWriteLock>();
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
@@ -69,7 +77,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                                     final AuthenticatedUser aUser) {
         LOGGER.debug("Create WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerCommand(),
-                                                                        aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -77,7 +85,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                                     final AuthenticatedUser aUser) {
         LOGGER.debug("Update WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerCommand(),
-                                                                   aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -100,7 +108,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(controlHistory);
         } else {
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
-                                             execData.getStandardError());
+                    execData.getStandardError());
         }
     }
 
@@ -108,13 +116,70 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response generateConfig(final String aWebServerName, final Boolean withSsl) {
 
         try {
-            String httpdConfStr = webServerService.generateHttpdConfig(aWebServerName, withSsl);
+            String httpdConfStr = generateHttpdConfText(aWebServerName, withSsl);
             return Response.ok(httpdConfStr).build();
         } catch (TemplateNotFoundException e) {
             throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
-                                             e.getMessage(),
-                                             e);
+                    e.getMessage(),
+                    e);
         }
+    }
+
+    @Override
+    public Response generateAndDeployConfig(final String aWebServerName) {
+
+        // only one at a time per web server
+        if (!wsWriteLocks.containsKey(aWebServerName)) {
+            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
+        }
+        wsWriteLocks.get(aWebServerName).writeLock().lock();
+
+        // create the file
+        final File httpdConfFile = createTempHttpdConf(aWebServerName);
+
+        // copy the file
+        final ExecData execData;
+        final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
+        try {
+            execData = webServerCommandService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, new RuntimeCommandBuilder());
+            if (execData.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
+                return ResponseBuilder.ok();
+            } else {
+                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}", aWebServerName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            }
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e.getMessage());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf", e);
+        } finally {
+            wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potentially memory leak: could clean it up but adds complexity
+        }
+    }
+
+    private File createTempHttpdConf(String aWebServerName) {
+        PrintWriter out = null;
+        final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+        final File httpdConfFile = new File((httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_httpd." + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".conf").replace("\\", "/"));
+        final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
+        try {
+            out = new PrintWriter(httpdConfAbsolutePath);
+            final boolean useSSL = true;
+            out.println(generateHttpdConfText(aWebServerName, useSSL));
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
+            throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+        return httpdConfFile;
+    }
+
+    private String generateHttpdConfText(String aWebServerName, Boolean withSsl) {
+        return webServerService.generateHttpdConfig(aWebServerName, withSsl);
     }
 
     @Override
@@ -144,8 +209,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (CommandFailureException cmdFailEx) {
             LOGGER.warn("Command Failure Occurred", cmdFailEx);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                         new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                                                                cmdFailEx.getMessage()));
+                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                            cmdFailEx.getMessage()));
         }
     }
 }

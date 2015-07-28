@@ -6,6 +6,7 @@ import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
@@ -233,7 +234,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         @Bean
         WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler() {
-            webServerStateSetterWorker.setHttpClientRequestFactory(httpClientRequestFactory);
             webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
             webServerStateSetterWorker.setWebServerStateService(webServerStateService);
             return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
@@ -254,6 +254,11 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
             tf.setDaemon(true);
             threadPoolTaskExecutor.setThreadFactory(tf);
             return threadPoolTaskExecutor;
+        }
+
+        @Bean(name="webServerHttpRequestFactory")
+        public HttpClientRequestFactory getHttpClientRequestFactory(){
+            return httpClientRequestFactory;
         }
 
     }
