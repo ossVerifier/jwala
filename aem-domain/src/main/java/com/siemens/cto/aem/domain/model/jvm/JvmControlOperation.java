@@ -33,6 +33,9 @@ public enum JvmControlOperation {
                             NO_JVM_SUCCESS_KEYWORDS),
             
     HEAP_DUMP("heapDump",   NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, 
+                            NO_JVM_SUCCESS_KEYWORDS),
+
+    DEPLOY_CONFIG_TAR("deployConfigTar",   NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE,
                             NO_JVM_SUCCESS_KEYWORDS);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();

@@ -49,7 +49,7 @@ public interface WebServerServiceRest {
     Response generateConfig(@PathParam("webServerName") final String aWebServerName,
                             @QueryParam("ssl") final Boolean withSsl);
 
-    @GET
+    @PUT
     @Path("/{webServerName}/deployConf")
     Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName);
 

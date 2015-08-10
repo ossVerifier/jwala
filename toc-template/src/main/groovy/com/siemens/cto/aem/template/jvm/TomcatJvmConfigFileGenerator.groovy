@@ -21,10 +21,11 @@ public class TomcatJvmConfigFileGenerator {
      */
     public static String getServerXml(final String templateFileName,
                                       final Jvm jvm
-                                      ) {
-        final binding = [webServerName:jvm.getHostName(),
-                                         jvms:[jvm],
-                                         comments:""]
+    ) {
+        final binding = [webServerName: jvm.getHostName(),
+                         jvms         : [jvm],
+                         comments     : "",
+                         catalina     : [base: "KATALINA_TEST"]] // TODO <-- get the real catalina.base from properties (OR change the server-xml.tpl to not use this binding)
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 

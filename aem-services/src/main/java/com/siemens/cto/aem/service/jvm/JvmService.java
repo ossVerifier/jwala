@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.jvm;
 
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -7,6 +9,7 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.exception.CommandFailureException;
 
 import java.util.List;
 
@@ -35,4 +38,5 @@ public interface JvmService {
 
     String performDiagnosis(Identifier<Jvm> aJvmId);
 
+    ExecData secureCopyConfigTar(Jvm jvm, RuntimeCommandBuilder runtimeCommandBuilder) throws CommandFailureException;
 }

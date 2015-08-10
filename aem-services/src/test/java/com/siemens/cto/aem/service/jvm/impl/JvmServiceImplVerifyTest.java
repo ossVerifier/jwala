@@ -10,11 +10,13 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Before;
@@ -37,6 +39,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupService groupService;
     private User user;
     private FileManager fileManager;
+    private ClientFactoryHelper factoryHelper;
+    private SshConfiguration sshConfig;
 
     @Before
     public void setup() {
@@ -45,7 +49,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmStateGateway = mock(JvmStateGateway.class);
         user = new User("unused");
         fileManager = mock(FileManager.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway);
+        factoryHelper = mock(ClientFactoryHelper.class);
+        sshConfig = mock(SshConfiguration.class);
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway, factoryHelper, sshConfig);
     }
 
     @Test

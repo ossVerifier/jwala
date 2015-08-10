@@ -17,7 +17,7 @@ public class RuntimeCommandBuilder {
     private static final String PATHS_CYGWIN_BASE = "paths.cygwin.base";
 
     public RuntimeCommandBuilder() {
-        parameters = new ArrayList<String>();
+        parameters = new ArrayList<>();
     }
 
     public void setOperation(AemControl.Properties operation) {
@@ -28,13 +28,17 @@ public class RuntimeCommandBuilder {
         this.parameters.add(parameter);
     }
 
+    public void addCygwinPathParameter(String parameter) {
+        this.parameters.add(cygpathParameterWrapper(parameter));
+    }
+
     public RuntimeCommand build() {
         StringBuilder cmmd = new StringBuilder();
         cmmd.append(ApplicationProperties.get(PATHS_CYGWIN_BASE))
                 .append("/bin/bash.exe")
                 .append(" -c ")
                 .append("\"")
-                .append(cygpathWrapper(SCP_SCRIPT_NAME));
+                .append(cygpathWrapper(operation));
         for (String param : parameters) {
             cmmd.append(" ");
             cmmd.append(param);
@@ -47,4 +51,7 @@ public class RuntimeCommandBuilder {
         return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";
     }
 
+    private static String cygpathParameterWrapper(String parameter) {
+        return "`" + CYGPATH.toString() + " " + parameter + "`";
+    }
 }

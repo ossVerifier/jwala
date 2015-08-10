@@ -3,8 +3,13 @@ package com.siemens.cto.aem.service.jvm.impl;
 import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -14,45 +19,60 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import static com.siemens.cto.aem.control.AemControl.Properties.DEPLOY_CONFIG_TAR_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
 import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
 
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
-    
+
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final FileManager fileManager;
     private final JvmStateGateway jvmStateGateway;
+    private ClientFactoryHelper clientFactoryHelper;
+    private SshConfiguration sshConfig;
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
-                          final GroupService theGroupService, 
+                          final GroupService theGroupService,
                           final FileManager theFileManager,
-                          final JvmStateGateway theJvmStateGateway) {
+                          final JvmStateGateway theJvmStateGateway, ClientFactoryHelper factoryHelper,
+                          final SshConfiguration sshConfig) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         fileManager = theFileManager;
         jvmStateGateway = theJvmStateGateway;
+        clientFactoryHelper = factoryHelper;
+        this.sshConfig = sshConfig;
     }
 
     @Override
@@ -63,7 +83,7 @@ public class JvmServiceImpl implements JvmService {
         aCreateJvmCommand.validateCommand();
 
         final Event<CreateJvmCommand> event = new Event<>(aCreateJvmCommand,
-                                                          AuditEvent.now(aCreatingUser));
+                AuditEvent.now(aCreatingUser));
 
         return jvmPersistenceService.createJvm(event);
     }
@@ -76,11 +96,11 @@ public class JvmServiceImpl implements JvmService {
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
 
         final Jvm newJvm = createJvm(aCreateAndAssignCommand.getCreateCommand(),
-                                     aCreatingUser);
+                aCreatingUser);
 
         final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.toAddCommandsFor(newJvm.getId());
         addJvmToGroups(addCommands,
-                       aCreatingUser);
+                aCreatingUser);
 
         return getJvm(newJvm.getId());
     }
@@ -123,12 +143,12 @@ public class JvmServiceImpl implements JvmService {
         anUpdateJvmCommand.validateCommand();
 
         final Event<UpdateJvmCommand> event = new Event<>(anUpdateJvmCommand,
-                                                          AuditEvent.now(anUpdatingUser));
+                AuditEvent.now(anUpdatingUser));
 
         jvmPersistenceService.removeJvmFromGroups(anUpdateJvmCommand.getId());
 
         addJvmToGroups(anUpdateJvmCommand.getAssignmentCommands(),
-                       anUpdatingUser);
+                anUpdatingUser);
 
         return jvmPersistenceService.updateJvm(event);
     }
@@ -143,44 +163,45 @@ public class JvmServiceImpl implements JvmService {
                                   final User anAddingUser) {
         for (final AddJvmToGroupCommand command : someAddCommands) {
             groupService.addJvmToGroup(command,
-                                       anAddingUser);
+                    anAddingUser);
         }
     }
 
-    
+
     @Override
     @Transactional(readOnly = true)
     public String generateConfig(String aJvmName) {
         final List<Jvm> jvm = jvmPersistenceService.findJvms(aJvmName);
 
-        if(jvm.size()==1) { 
+        if (jvm.size() == 1) {
             try {
                 return TomcatJvmConfigFileGenerator
-                            .getServerXml(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm.get(0));
-            } catch(IOException e) {
+                        .getServerXml(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm.get(0));
+            } catch (IOException e) {
                 LOGGER.warn("Template not found", e);
-                throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());                
+                throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
             }
-        } if(jvm.size() > 1) {
+        }
+        if (jvm.size() > 1) {
             throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
-        } else { 
+        } else {
             throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
         }
     }
 
     @Override
     public String performDiagnosis(Identifier<Jvm> aJvmId) {
-        
+
         // if the Jvm does not exist, we'll get a 404 NotFoundException
         Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
-        
+
         // this is a fire and forget gateway. There will be no response.
         jvmStateGateway.initiateJvmStateRequest(jvm);
-                         
+
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
-        HashMap<String,Object> binding = new HashMap<String,Object>();
-        binding.put("jvm", jvm);        
-        
+        HashMap<String, Object> binding = new HashMap<String, Object>();
+        binding.put("jvm", jvm);
+
         try {
             String diagnosis = engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
             return diagnosis;
@@ -191,7 +212,36 @@ public class JvmServiceImpl implements JvmService {
             // so just dump out the diagnosis template and the exception so it can be 
             // debugged.
         }
-        
+
+    }
+
+    @Override
+    public ExecData secureCopyConfigTar(Jvm jvm, RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
+
+        final String jvmName = jvm.getJvmName();
+
+        // ping the web server and return if not stopped
+        try {
+            ClientHttpResponse response = clientFactoryHelper.requestGet(jvm.getStatusUri());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return new ExecData(new ExecReturnCode(1), "", "The target JVM must be stopped before attempting to copy the tar config to the JVM");
+            }
+        } catch (IOException e) {
+            if (!(e instanceof ConnectException || e instanceof ConnectTimeoutException)) {
+                LOGGER.error("Failed to ping {} while attempting to copy tar config :: ERROR: {}", jvmName, e.getMessage());
+                throw new InternalErrorException(AemFaultType.INVALID_JVM_OPERATION, "Failed to ping while attempting to copy tar config", e);
+            }
+        }
+
+         // create and execute the scp command
+        String jvmConfigTar = jvmName + "_config.tar";
+        rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
+        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("stp.jvm.resources.dir")+ "/" + jvmConfigTar);
+        rtCommandBuilder.addParameter(sshConfig.getUserName());
+        rtCommandBuilder.addParameter(jvm.getHostName());
+        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("paths.instances"));
+        RuntimeCommand rtCommand = rtCommandBuilder.build();
+        return rtCommand.execute();
     }
 
 }

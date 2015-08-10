@@ -121,27 +121,27 @@ public class AemServiceConfiguration {
      */
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() {
-         PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
-         ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
-         ppc.setLocalOverride(true);
-         ppc.setProperties(ApplicationProperties.getProperties());
-         return ppc;
+        PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
+        ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+        ppc.setLocalOverride(true);
+        ppc.setProperties(ApplicationProperties.getProperties());
+        return ppc;
     }
 
-    @Bean(name="groupStateMachine")
+    @Bean(name = "groupStateMachine")
     @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
     public GroupStateMachine getGroupStateMachine() {
         return new GroupStateManagerTableImpl();
     }
 
-    @Bean(name="groupStateService")
+    @Bean(name = "groupStateService")
     public GroupStateService.API getGroupStateService() {
         return new GroupStateServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
                 getStateNotificationService(),
                 StateType.GROUP,
                 stateNotificationGateway
-                );
+        );
     }
 
     @Bean
@@ -152,14 +152,16 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "jvmService")
-    public JvmService getJvmService() {
+    public JvmService getJvmService(ClientFactoryHelper factoryHelper) {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
-                                  getGroupService(),
+                getGroupService(),
                 fileManager,
-                                  jvmStateGateway);
+                jvmStateGateway,
+                factoryHelper,
+                aemSshConfig.getSshConfiguration());
     }
 
-    @Bean(name="webServerService")
+    @Bean(name = "webServerService")
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), fileManager);
     }
@@ -174,21 +176,22 @@ public class AemServiceConfiguration {
         return new PrivateApplicationServiceImpl(/** Relying on autowire */);
     }
 
-    @Bean(name="jvmControlService")
-    public JvmControlService getJvmControlService() {
-        return new JvmControlServiceImpl(getJvmService(),
-                                         aemCommandExecutorConfig.getJvmCommandExecutor(),
-                                         getJvmControlServiceLifecycle());
+    @Bean(name = "jvmControlService")
+    @Autowired
+    public JvmControlService getJvmControlService(ClientFactoryHelper factoryHelper) {
+        return new JvmControlServiceImpl(getJvmService(factoryHelper),
+                aemCommandExecutorConfig.getJvmCommandExecutor(),
+                getJvmControlServiceLifecycle());
     }
 
-    @Bean(name="jvmControlServiceLifecycle")
+    @Bean(name = "jvmControlServiceLifecycle")
     public JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
         return new JvmControlServiceImpl.LifecycleImpl(
                 persistenceServiceConfiguration.getJvmControlPersistenceService(),
                 getJvmStateService());
     }
 
-    @Bean(name="groupControlService")
+    @Bean(name = "groupControlService")
     public GroupControlService getGroupControlService() {
         return new GroupControlServiceImpl(
                 getGroupWebServerControlService(),
@@ -196,30 +199,30 @@ public class AemServiceConfiguration {
                 getGroupStateService());
     }
 
-    @Bean(name="groupJvmControlService")
+    @Bean(name = "groupJvmControlService")
     public GroupJvmControlService getGroupJvmControlService() {
         return new GroupJvmControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
-                                         getGroupService(),
-                                         commandDispatchGateway);
+                getGroupService(),
+                commandDispatchGateway);
     }
 
-    @Bean(name="groupWebServerControlService")
+    @Bean(name = "groupWebServerControlService")
     public GroupWebServerControlService getGroupWebServerControlService() {
         return new GroupWebServerControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
-                                         getGroupService(),
-                                         commandDispatchGateway);
+                getGroupService(),
+                commandDispatchGateway);
     }
 
-    @Bean(name="webServerControlService")
+    @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService() {
         return new WebServerControlServiceImpl(getWebServerService(),
-                                               aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                                               getWebServerControlHistoryService(),
-                                               getWebServerStateService(),
-                                               webServerReachableStateMap);
+                aemCommandExecutorConfig.getWebServerCommandExecutor(),
+                getWebServerControlHistoryService(),
+                getWebServerStateService(),
+                webServerReachableStateMap);
     }
 
-    @Bean(name="webServerCommandService")
+    @Bean(name = "webServerCommandService")
     @Autowired
     public WebServerCommandService getWebServerCommandService(ClientFactoryHelper factoryHelper) {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
@@ -228,10 +231,10 @@ public class AemServiceConfiguration {
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
         return new WebServerCommandServiceImpl(getWebServerService(),
-                                               commandExecutor,
-                                               jschBuilder,
-                                               sshConfig,
-                                                factoryHelper);
+                commandExecutor,
+                jschBuilder,
+                sshConfig,
+                factoryHelper);
     }
 
     @Bean
@@ -242,22 +245,22 @@ public class AemServiceConfiguration {
     @Bean(name = "stateNotificationService")
     public StateNotificationService getStateNotificationService() {
         return new JmsStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
-                                                   aemJmsConfig.getStateNotificationDestination(),
-                                                   getStateNotificationConsumerBuilder());
+                aemJmsConfig.getStateNotificationDestination(),
+                getStateNotificationConsumerBuilder());
     }
 
     @Bean(name = "jvmStateService")
     public StateService<Jvm, JvmState> getJvmStateService() {
         return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
-                                                getStateNotificationService(),
-                                                stateNotificationGateway);
+                getStateNotificationService(),
+                stateNotificationGateway);
     }
 
     @Bean(name = "webServerStateService")
     public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
         return new WebServerStateServiceImpl(persistenceServiceConfiguration.getWebServerStatePersistenceService(),
-                                             getStateNotificationService(),
-                                             stateNotificationGateway);
+                getStateNotificationService(),
+                stateNotificationGateway);
     }
 
     @Bean
@@ -277,9 +280,9 @@ public class AemServiceConfiguration {
             @Value("${ping.jvm.readTimeout}") final int readTimeout,
             @Value("${ping.jvm.period.millis}") final long millis,
             @Value("${ping.jvm.maxHttpConnections}") final int maxHttpConnections) throws UnrecoverableKeyException,
-                                                                                          NoSuchAlgorithmException,
-                                                                                          KeyStoreException,
-                                                                                          KeyManagementException {
+            NoSuchAlgorithmException,
+            KeyStoreException,
+            KeyManagementException {
         HttpClientRequestFactory httpClientRequestFactory = new HttpClientRequestFactory();
         httpClientRequestFactory.setConnectTimeout(connectionTimeout);
         httpClientRequestFactory.setReadTimeout(readTimeout);
@@ -293,17 +296,17 @@ public class AemServiceConfiguration {
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
         return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
-                                                               webServerStateSetterWorker,
-                                                               webServerFutureMap);
+                webServerStateSetterWorker,
+                webServerFutureMap);
     }
 
     @Bean
     @Autowired
     public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
-            @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
-                webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
-                webServerStateSetterWorker.setWebServerStateService(webServerStateService);
-                return webServerStateSetterWorker;
+                                                                    @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
+        webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
+        webServerStateSetterWorker.setWebServerStateService(webServerStateService);
+        return webServerStateSetterWorker;
     }
 
     @Bean(name = "webServerTaskExecutor")

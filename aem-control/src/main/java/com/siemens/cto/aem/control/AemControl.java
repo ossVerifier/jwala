@@ -18,6 +18,8 @@ public class AemControl {
         START_SCRIPT_NAME("commands.cygwin.start-service", "start-service.sh"),
         STOP_SCRIPT_NAME("commands.cygwin.stop-service", "stop-service.sh"),
         SCP_SCRIPT_NAME("commands.cygwin.scp", "secure-copy-httpd-conf.sh"),
+        TAR_CREATE_COMMAND("commands.cygwin.tar-create", "create-config-tar.sh"),
+        DEPLOY_CONFIG_TAR_SCRIPT_NAME("commands.cygwin.deploy-config-tar", "deploy-config-tar.sh"),
         SLEEP_TIME("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
 
         private final String propertyName;

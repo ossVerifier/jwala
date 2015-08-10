@@ -1,15 +1,21 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -18,13 +24,22 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -33,6 +48,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
     private final StateService<Jvm, JvmState> jvmStateService;
+    private Map<String, ReentrantReadWriteLock> wsWriteLocks;
 
     public JvmServiceRestImpl(final JvmService theJvmService,
                               final JvmControlService theJvmControlService,
@@ -40,6 +56,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
+        wsWriteLocks = new HashMap<>();
     }
 
     @Override
@@ -64,10 +81,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
             jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
-                                                user);
+                    user);
         } else {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
-                                       user);
+                    user);
         }
         return ResponseBuilder.created(jvm);
     }
@@ -77,7 +94,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                               final AuthenticatedUser aUser) {
         LOGGER.debug("Update JVM requested: {}", aJvmToUpdate);
         return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
-                                                       aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -94,13 +111,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                                final AuthenticatedUser aUser) {
         LOGGER.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
         final JvmControlHistory controlHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
-                                                                              aUser.getUser());
+                aUser.getUser());
         final ExecData execData = controlHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(controlHistory);
         } else {
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
-                                             execData.getStandardError());
+                    execData.getStandardError());
         }
     }
 
@@ -126,24 +143,106 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return Response.ok(serverXmlStr).build();
         } catch (TemplateNotFoundException e) {
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND,
-                                             e.getMessage(),
-                                             e);
+                    e.getMessage(),
+                    e);
         }
     }
 
     @Override
-    public Response generateGetEnvironment(@PathParam("jvmName") final String jvmName) {
+    public Response generateAndDeployConfig(final Identifier<Jvm> aJvmId, AuthenticatedUser user) {
 
+        // only one at a time per web server
+        if (!wsWriteLocks.containsKey(aJvmId.toString())) {
+            wsWriteLocks.put(aJvmId.toString(), new ReentrantReadWriteLock());
+        }
+        wsWriteLocks.get(aJvmId.toString()).writeLock().lock();
+
+        // create the file
+        Jvm jvm = jvmService.getJvm(aJvmId);
+        String jvmName = jvm.getJvmName();
+        final String jvmConfigTar = generateJvmConfigTar(jvmName, new RuntimeCommandBuilder());
+
+        // copy and deploy the tar file
+        ExecData execData;
+
+        try {
+            // copy
+            execData = jvmService.secureCopyConfigTar(jvm, new RuntimeCommandBuilder());
+            if (execData.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
+            } else {
+                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                LOGGER.error("Copy command completed with error trying to copy config tar to {} :: ERROR: {}", jvmName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            }
+
+            // call script to backup and tar the current directory and then untar the new tar
+            JvmControlHistory completeHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
+            execData = completeHistory.getExecData();
+            if (execData.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Deployment of config tar was successful: {}", jvmConfigTar);
+            } else {
+                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                LOGGER.error("Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}", jvmName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            }
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", jvmName, e.getMessage());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf", e);
+        } finally {
+            wsWriteLocks.get(aJvmId.toString()).writeLock().unlock(); // potential memory leak: could clean it up but adds complexity
+        }
         return ResponseBuilder.ok();
+    }
+
+    private String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
+
+        // TODO eventually replace all this with generating the config files and creating the tar file to be copied over and expanded
+        String serverXmlStr = jvmService.generateConfig(jvmName);
+
+        // TODO create test file for now but really create all the conf files
+        String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+        String jvmResourcesDir = stpJvmResourcesDir + "/" + jvmName;
+        File resDir = new File(jvmResourcesDir);
+        if (!resDir.exists()) {
+            boolean result = resDir.mkdirs();
+            if (!result){
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + jvmResourcesDir);
+            }
+        }
+        File serverXml = new File(jvmResourcesDir + "/JM_resourceTEST.xml"); // TODO replace with real conf file
+        try {
+            FileUtils.writeStringToFile(serverXml, serverXmlStr);
+        } catch (FileNotFoundException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create file " + serverXml.getPath());
+        } catch (IOException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file " + serverXml.getPath());
+        }
+
+        // tar up the test file
+        rtCommandBuilder.setOperation(TAR_CREATE_COMMAND);
+        String jvmConfigTar = jvmName + "_config.tar";
+        String configTar = stpJvmResourcesDir + "/" + jvmName;
+        rtCommandBuilder.addParameter(jvmConfigTar);
+        rtCommandBuilder.addCygwinPathParameter(configTar);
+        RuntimeCommand tarCommand = rtCommandBuilder.build();
+        ExecData tarResult = tarCommand.execute();
+        if (!tarResult.getReturnCode().wasSuccessful()) {
+            String standardError = tarResult.getStandardError().isEmpty() ? tarResult.getStandardOutput() : tarResult.getStandardError();
+            LOGGER.error("Tar create command completed with error trying to create config tar for {} :: ERROR: {}", jvmName, standardError);
+            throw new InternalErrorException(AemFaultType.INVALID_PATH, standardError);
+        }
+
+        return configTar;
     }
 
     @Override
     public Response diagnoseJvm(Identifier<Jvm> aJvmId) {
-        
+
         String diagnosis = jvmService.performDiagnosis(aJvmId);
-        
+
         return Response.ok(diagnosis).build();
     }
-    
-    
+
+
 }

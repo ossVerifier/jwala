@@ -65,6 +65,19 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                     aServiceName + " | grep PID | awk '{ print $3 }'`";
             return new ExecCommand(jMapCmd, parameters);
         }
+    },
+    DEPLOY_CONFIG_TAR(JvmControlOperation.DEPLOY_CONFIG_TAR) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            String dataJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+            String instancesDir = ApplicationProperties.get("paths.instances");
+            return new ExecCommand(
+                    cygpathWrapper(DEPLOY_CONFIG_TAR_SCRIPT_NAME),
+                    dataJvmResourcesDir + "/" + aServiceName + "_config.tar",
+                    instancesDir + "/" + aServiceName,
+                    dataJvmResourcesDir
+            );
+        }
     };
 
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(

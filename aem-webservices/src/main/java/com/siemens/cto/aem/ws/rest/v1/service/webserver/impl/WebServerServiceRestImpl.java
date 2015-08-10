@@ -144,7 +144,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             execData = webServerCommandService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, new RuntimeCommandBuilder());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
-                return ResponseBuilder.ok();
             } else {
                 String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}", aWebServerName, standardError);
@@ -154,8 +153,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e.getMessage());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf", e);
         } finally {
-            wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potentially memory leak: could clean it up but adds complexity
+            wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potential memory leak: could clean it up but adds complexity
         }
+        return ResponseBuilder.ok();
     }
 
     private File createTempHttpdConf(String aWebServerName) {

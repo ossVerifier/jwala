@@ -48,8 +48,9 @@ public interface JvmServiceRest {
     Response generateConfig(@PathParam("jvmName") final String aJvmName);
 
     @GET
-    @Path("/{jvmName}/generate/getEnv")
-    Response generateGetEnvironment(@PathParam("jvmName") final String jvmName);
+    @Path("/{jvmId}/deployConf")
+    Response generateAndDeployConfig(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                                     @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/states/current")
