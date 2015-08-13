@@ -91,8 +91,8 @@ var serviceFoundation = {
         });
     },
 
-    put : function(url, dataType, content, thenCallback, caughtCallback) {
-        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
+    put : function(url, dataType, content, thenCallback, caughtCallback, showLoading) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading === undefined ? true : showLoading);
         return Promise.cast($.ajax({url: url,
                                         dataType: dataType,
                                         type: 'PUT',

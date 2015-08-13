@@ -89,7 +89,8 @@ var webServerService = {
                                      "json",
                                      null,
                                      successCallback,
-                                     errorCallback);
+                                     errorCallback,
+                                     false);
     }
 
 };
