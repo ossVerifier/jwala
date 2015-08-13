@@ -10,16 +10,27 @@
  * 4. onClick - the callback that is executed when the button is clicked.
  * 5. label - the label of the button.
  * 6. title - the title of the button that is shown in a tooltip when the user hovers the mouse pointer over it.
+ * 7. busyClassName - the class that shows a spinner or busy indicator.
  */
 var RButton = React.createClass({
     getInitialState: function() {
         return {
-            hover: false
+            hover: false,
+            busy: false
         }
     },
     render: function() {
-        var className = (this.props.className !== undefined) ? this.props.className : "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only";
-        var spanClassName = (this.props.spanClassName !== undefined) ? this.props.spanClassName : "ui-button-text";
+        var className;
+        var spanClassName;
+
+        if (this.state.busy && this.props.busyClassName !== undefined) {
+            className = this.props.busyClassName;
+            spanClassName = "";
+        } else {
+            className = (this.props.className !== undefined) ? this.props.className : "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only";
+            spanClassName = (this.props.spanClassName !== undefined) ? this.props.spanClassName : "ui-button-text";
+        }
+
         var theHoverClassName = (this.props.hoverClassName !== undefined) ? this.props.hoverClassName : "ui-state-hover";
         var hoverClassName = this.state.hover ? theHoverClassName : "";
         return React.DOM.button({className: className + " " + hoverClassName,
@@ -33,12 +44,26 @@ var RButton = React.createClass({
                                  React.DOM.span({className:spanClassName}, this.props.label));
     },
     handleClick: function() {
-        this.props.onClick();
+        if (!this.state.busy) {
+            this.setState({busy: true});
+            this.props.onClick(this.doneCallback);
+        }
     },
     mouseOverHandler: function() {
-        this.setState({hover:true});
+        if (!this.state.busy) {
+            this.setState({hover:true});
+        }
     },
     mouseOutHandler: function() {
         this.setState({hover:false});
     },
+
+    /**
+     * Used in conjunction with busy state to stop the spinner/busy indicator.
+     * This method gets passed to the onClick event and in turn should be called by the calling
+     * component to remove the spinner/busy indicator.
+     */
+    doneCallback: function() {
+        this.setState({busy: false});
+    }
 });

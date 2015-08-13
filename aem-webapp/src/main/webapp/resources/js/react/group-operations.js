@@ -225,48 +225,14 @@ var GroupOperationsDataTable = React.createClass({
                                             displayProperty:"name",
                                             maxDisplayTextLen:20,
                                             colWidth:"129px"},
-                                           [{sTitle:"Load Balancer Status",
-                                             mData:null,
-                                             tocType:"link",
-                                             linkLabel:"status",
-                                             hRefCallback:this.buildHRefLoadBalancerConfig},
-                                            {tocType:"space"},
-                                            {tocType:"space"},
-                                            {sTitle:"",
-                                             mData:null,
-                                             tocType:"link",
-                                             linkLabel:"httpd.conf",
-                                             onClickCallback:this.onClickHttpdConf},
-                                            {tocType:"space"},
-                                            {tocType:"space"},
-                                            {id:"startWebServer",
-                                             sTitle:"Start",
-                                             mData:null,
-                                             tocType:"button",
-                                             btnLabel:"",
-                                             btnCallback:this.webServerStart,
-                                             className:"inline-block",
-                                             customSpanClassName:"ui-icon ui-icon-play",
-                                             buttonClassName:"ui-button-height",
-                                             extraDataToPassOnCallback:["name","groups"],
-                                             onClickMessage:"Starting..."},
-                                            {tocType:"space"},
-                                            {id:"stopWebServer",
-                                             sTitle:"Stop",
-                                             mData:null,
-                                             tocType:"button",
-                                             btnLabel:"",
-                                             btnCallback:this.webServerStop,
-                                             className:"inline-block",
-                                             customSpanClassName:"ui-icon ui-icon-stop",
-                                             buttonClassName:"ui-button-height",
-                                             extraDataToPassOnCallback:["name","groups"],
-                                             onClickMessage:"Stopping..."}],
-                                            {sTitle:"State",
-                                             mData:null,
-                                             tocType:"custom",
-                                             tocRenderCfgFn: this.renderWebServerStateRowData.bind(this, "grp", "webServer"),
-                                             colWidth:"120px"}];
+                                           {mData:null,
+                                            tocType:"custom",
+                                            tocRenderCfgFn: this.renderWebServerControlPanelWidget.bind(this, "grp", "webServer")},
+                                           {sTitle:"State",
+                                            mData:null,
+                                            tocType:"custom",
+                                            tocRenderCfgFn: this.renderWebServerStateRowData.bind(this, "grp", "webServer"),
+                                            colWidth:"120px"}];
 
         var webServerOfGrpChildTableDetails = {tableIdPrefix:"ws-child-table_",
                                                className:"simple-data-table",
@@ -496,6 +462,28 @@ var GroupOperationsDataTable = React.createClass({
                   });
       }.bind(this);
    },
+
+
+
+    renderWebServerGenerateBtn: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+        var self= this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            return React.render(<a>Testing...</a>, nTd);
+    }.bind(this);
+   },
+
+
+   renderWebServerControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+       var self= this;
+       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            return React.render(<WebServerControlPanelWidget data={oData}
+                                                             webServerService={webServerService}
+                                                             webServerStartCallback={this.webServerStart}
+                                                             webServerStopCallback={this.webServerStop} />, nTd, function() {
+                   });
+       }.bind(this);
+   },
+
    renderWebServerStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
@@ -779,11 +767,6 @@ var GroupOperationsDataTable = React.createClass({
                                               "webServer");
     },
 
-   onClickHttpdConf: function(data) {
-       var id = data.id.id;
-       var url = "webServerCommand?webServerId=" + id + "&operation=viewHttpdConf";
-       window.open(url)
-   },
    jvmHeapDump: function(id, selector, host) {
        var requestHeapDump = function() {return jvmControlService.heapDump(id);};
        var heapDumpRequestCallback = function(response){
@@ -815,7 +798,7 @@ var GroupOperationsDataTable = React.createClass({
    },
 
     confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
-        var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm" + id;
+        var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm_ws_" + id;
         $(buttonSelector).parent().append("<div id='" + dialogId +"' style='text-align:left'>" + msg + "</div>");
         $(buttonSelector).parent().find("#" + dialogId).dialog({
            title: "Confirmation",
@@ -934,6 +917,7 @@ var GroupOperationsDataTable = React.createClass({
                                                           cancelCallback,
                                                           "Web Server");
     },
+
     webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
@@ -1006,4 +990,105 @@ var StatusWidget = React.createClass({
                                 content={<ErrorMsgList msgList={this.state.errorMessages}/>} />,
                      this.refs.errorDlg.getDOMNode());
     }
+});
+
+/**
+ * A panel widget for web server buttons.
+ */
+var WebServerControlPanelWidget = React.createClass({
+    doneCallback: null,
+    render: function() {
+        return <div className="web-server-control-panel-widget">
+
+                    <RButton ref="stopBtn"
+                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            spanClassName="ui-icon ui-icon-stop"
+                            onClick={this.webServerStop}
+                            title="Stop"/>
+
+                    <RButton ref="startBtn"
+                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             spanClassName="ui-icon ui-icon-play"
+                             onClick={this.webServerStart}
+                             title="Start"/>
+
+                    <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             spanClassName="ui-icon ui-icon-gear"
+                             onClick={this.generateHttpdConf}
+                             title="Generate HTTPD Conf"
+                             busyClassName="busy-button"/>
+
+                    <button className="button-link anchor-font-style" onClick={this.onClickHttpdConf}>httpd.conf</button>
+
+                    <a href={"https://" + this.props.data.host + ":" + this.props.data.httpsPort + tocVars.loadBalancerStatusMount}>status</a>
+
+               </div>
+    },
+
+    webServerStart: function() {
+        this.showFadingStatusClickedLabel("Starting...", this.refs.startBtn.getDOMNode(), this.props.data.id.id);
+        this.props.webServerStartCallback(this.props.data.id.id,
+                                          this.refs.stopBtn.getDOMNode(),
+                                          this.props.data,
+                                          WebServerControlPanelWidget.getReactId(this.refs.stopBtn.getDOMNode()).replace(/\./g, "-"),
+                                          function() { /* cancel callback */ });
+    },
+
+    webServerStop: function() {
+        this.showFadingStatusClickedLabel("Stopping...", this.refs.stopBtn.getDOMNode(), this.props.data.id.id);
+        this.props.webServerStopCallback(this.props.data.id.id,
+                                         this.refs.stopBtn.getDOMNode(),
+                                         this.props.data,
+                                         WebServerControlPanelWidget.getReactId(this.refs.stopBtn.getDOMNode()).replace(/\./g, "-"),
+                                         function() { /* cancel callback */ });
+    },
+
+    onClickHttpdConf: function() {
+        var url = "webServerCommand?webServerId=" + this.props.data.id.id + "&operation=viewHttpdConf";
+        window.open(url)
+    },
+
+    generateHttpdConf: function(doneCallback) {
+        this.doneCallback = doneCallback;
+        this.props.webServerService.deployHttpdConf(this.props.data.name,
+                                                    this.generateHttpdConfSucccessCallback,
+                                                    this.generateHttpdConfErrorCallback);
+    },
+
+    generateHttpdConfSucccessCallback: function(response) {
+        this.doneCallback();
+         $.alert("Successfully generated and deployed HTTPD Conf",
+                 "Deploy " + this.props.data.name +  "'s HTTPD conf", false);
+    },
+
+    generateHttpdConfErrorCallback: function(msg, doneCallback) {
+        this.doneCallback();
+        $.errorAlert(msg, "Deploy " + this.props.data.name +  "'s HTTPD conf", false);
+    },
+
+    /**
+     * Uses jquery to take advantage of the fade out effect and to reuse the old code...for now.
+     */
+    showFadingStatusClickedLabel: function(msg, btnDom, webServerId) {
+        var tooTipId = "tooltip" +  WebServerControlPanelWidget.getReactId(btnDom).replace(/\./g, "-") + webServerId;
+        if (msg !== undefined && $("#" + tooTipId).length === 0) {
+            var top = $(btnDom).position().top - $(btnDom).height()/2;
+            var left = $(btnDom).position().left + $(btnDom).width()/2;
+            $(btnDom).parent().append("<div id='" + tooTipId +
+                "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
+                "style='top:" + top + "px;left:" + left + "px'>" + msg + "</div>");
+
+            $("#" + tooTipId).fadeOut(3000, function() {
+                $("#" + tooTipId).remove();
+            });
+
+        }
+    },
+
+    statics: {
+        getReactId: function(dom) {
+            return $(dom).attr("data-reactid");
+        }
+    }
+
 });

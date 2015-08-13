@@ -50,7 +50,8 @@ public interface WebServerServiceRest {
                             @QueryParam("ssl") final Boolean withSsl);
 
     @PUT
-    @Path("/{webServerName}/deployConf")
+    @Path("/{webServerName}/conf")
+    @Consumes(MediaType.APPLICATION_JSON)
     Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName);
 
     @GET

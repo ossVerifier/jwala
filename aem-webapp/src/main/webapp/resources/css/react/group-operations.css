@@ -13,3 +13,15 @@
     float: right;
     display: inline-block;
 }
+
+.web-server-control-panel-widget {
+    width: 100%;
+    padding-right: 0px;
+    text-align: right;
+}
+
+.web-server-control-panel-widget > button {
+    display: inline-block;
+    float: right;
+    margin-left: 3px !important;
+}

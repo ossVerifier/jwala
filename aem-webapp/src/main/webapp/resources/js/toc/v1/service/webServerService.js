@@ -79,5 +79,17 @@ var webServerService = {
      */
     getWebServerByGroupId : function(groupId, responseCallback) {
         return serviceFoundation.get("v1.0/webservers?groupId=" + groupId, "json", responseCallback);
+    },
+
+    /**
+     * Generate HTTPD Conf then deploy to a web server.
+     */
+    deployHttpdConf: function(webserverName, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/webservers/" + webserverName + "/conf",
+                                     "json",
+                                     null,
+                                     successCallback,
+                                     errorCallback);
     }
+
 };

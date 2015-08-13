@@ -80,7 +80,8 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         } catch (IOException e) {
             if (!(e instanceof ConnectException || e instanceof ConnectTimeoutException)) {
                 LOGGER.error("Failed to ping {} while attempting to copy httpd.config :: ERROR: {}",aWebServerName, e.getMessage());
-                throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed to ping while attempting to copy httpd.config", e);
+                throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION,
+                        "Failed to ping " + aWebServerName + " while attempting to copy httpd.config", e);
             }
         }
 

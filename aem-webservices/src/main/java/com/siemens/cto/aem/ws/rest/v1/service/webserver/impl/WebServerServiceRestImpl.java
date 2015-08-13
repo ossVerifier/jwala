@@ -132,15 +132,17 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         if (!wsWriteLocks.containsKey(aWebServerName)) {
             wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
         }
+
         wsWriteLocks.get(aWebServerName).writeLock().lock();
 
-        // create the file
-        final File httpdConfFile = createTempHttpdConf(aWebServerName);
-
-        // copy the file
-        final ExecData execData;
-        final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
+            // create the file
+            final File httpdConfFile = createTempHttpdConf(aWebServerName);
+
+            // copy the file
+            final ExecData execData;
+            final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
+
             execData = webServerCommandService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, new RuntimeCommandBuilder());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
