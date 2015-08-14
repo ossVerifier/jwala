@@ -17,7 +17,7 @@
     background-image: url(../../../../img/react/components/gray-tabs.png);
     background-position: right top;
 
-    color: C0C0C0;
+    color: 000000; /* make tabs not look disabled */
     float: left;
     line-height: 21px; /* inactive tabs height */
     padding-right: 10px;

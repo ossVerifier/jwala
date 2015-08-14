@@ -157,7 +157,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potential memory leak: could clean it up but adds complexity
         }
-        return ResponseBuilder.ok();
+        return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
     private File createTempHttpdConf(String aWebServerName) {
