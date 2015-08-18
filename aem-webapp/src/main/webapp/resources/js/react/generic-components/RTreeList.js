@@ -64,7 +64,8 @@ var RTreeList = React.createClass({
                                                   theTree: this,
                                                   key: key /* React use */,
                                                   nodeKey: key,
-                                                  selectedNodeKey: this.state.selectedNodeKey}, childNodes));
+                                                  selectedNodeKey: this.state.selectedNodeKey,
+                                                  parent: parent}, childNodes));
         }
         return nodes;
     }
@@ -107,6 +108,7 @@ var Node = React.createClass({
     onClickNodeHandler: function() {
         if (this.props.selectable === true) {
             this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
+            this.props.data["parent"] = this.props.parent;
             this.props.theTree.onSelectNode(this.props.data);
         }
     },
