@@ -58,6 +58,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Group> getGroups(final boolean fetchWebServers) {
+        return groupPersistenceService.getGroups(fetchWebServers);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Group> findGroups(final String aGroupNameFragment) {
 
         new GroupNameRule(aGroupNameFragment).validate();

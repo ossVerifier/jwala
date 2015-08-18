@@ -12,10 +12,14 @@ var ResourceEditor = React.createClass({
     },
     render: function() {
         if (this.state.groupData === null) {
-            return <div>Loading group data...</div>
+            return <div>Loading data...</div>
         }
 
-        var treeMetaData = [{propKey: "name", selectable: true}];
+        var treeMetaData = {propKey: "name",
+                            children:[{entity: "webServers", propKey: "name", selectable: true},
+                                      {entity: "jvms", propKey: "jvmName", selectable: true,
+                                            children:[{entity: "webApps", propKey: "name", selectable: true}]}]};
+
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
                                               title="Groups"
                                               contentClassName="resource-static-dialog-content">
@@ -24,7 +28,7 @@ var ResourceEditor = React.createClass({
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
-                                              selectNodeCallback={this.selectGroupNodeCallback} />
+                                              selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog title="Resources" contentClassName="resource-static-dialog-content">
@@ -139,12 +143,42 @@ var ResourceEditor = React.createClass({
         return [];
     },
     componentDidMount: function() {
-        this.props.groupService.getGroups(this.getGroupDataCallback);
+        this.props.groupService.getGroups(this.getGroupDataCallback, "webServers=true");
         this.props.resourceService.getResourceTypes(this.getResourceTypesCallback);
     },
+
+    dataRetrievalCount: 1 /* We can't make this into a state since it's being used by asynchronous callbacks! */,
+    groupData: null,
+
     getGroupDataCallback: function(response) {
-        this.setState({groupData:response.applicationResponseContent});
+        var self = this;
+        this.dataRetrievalCount = 0; // set to zero since group data retrieval is done at this point
+
+        if (response.applicationResponseContent !== undefined) {
+            this.groupData = response.applicationResponseContent;
+            this.groupData.forEach(function(group) {
+                group.jvms.forEach(function(jvm){
+                    self.dataRetrievalCount++;
+                    self.props.webAppService.getWebAppsByJvm(jvm.id.id, function(response){
+                        self.getJvmDataCallback(jvm, response.applicationResponseContent);
+                    });
+                });
+            });
+        }
+
+        if (this.dataRetrievalCount === 0) {
+            this.setState({groupData:this.groupData});
+        }
     },
+
+    getJvmDataCallback: function(jvm, applicationResponseContent) {
+        this.dataRetrievalCount--;
+        jvm["webApps"] = applicationResponseContent;
+        if (this.dataRetrievalCount === 0) {
+            this.setState({groupData:this.groupData});
+        }
+    },
+
     getResourceTypesCallback: function(response) {
         this.setState({resourceTypes:response.applicationResponseContent});
     },
@@ -155,8 +189,10 @@ var ResourceEditor = React.createClass({
             this.setState({currentGroupName:this.state.groupData[0].name});
         }
     },
-    selectGroupNodeCallback: function(group) {
-        this.setState({currentGroupName:group.name});
+    selectNodeCallback: function(data) {
+        // this.setState({currentGroupName:group.name});
+        console.log("ResourceEditor");
+        console.log(data);
     },
     componentWillUpdate: function(nextProps, nextState) {
         if (this.state.currentGroupName !== nextState.currentGroupName) {

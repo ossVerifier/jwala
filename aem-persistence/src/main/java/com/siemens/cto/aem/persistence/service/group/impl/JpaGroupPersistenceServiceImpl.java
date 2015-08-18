@@ -36,13 +36,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
         final JpaGroup group = groupCrudService.createGroup(anEvent);
 
-        return groupFrom(group);
+        return groupFrom(group, false);
     }
 
     @Override
     public Group updateGroup(final Event<UpdateGroupCommand> anEvent) throws NotFoundException {
         groupCrudService.updateGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getId()));
+        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getId()), false);
     }
 
     @Override
@@ -50,13 +50,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
 
-        return groupFrom(group);
+        return groupFrom(group, false);
     }
 
     @Override
     public Group getGroup(final String name) throws NotFoundException {
         final JpaGroup group = groupCrudService.getGroup(name);
-        return groupFrom(group);
+        return groupFrom(group, false);
     }
 
     @Override
@@ -69,18 +69,20 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     @Override
     public List<Group> getGroups() {
-
         final List<JpaGroup> groups = groupCrudService.getGroups();
+        return groupsFrom(groups, false);
+    }
 
-        return groupsFrom(groups);
+    @Override
+    public List<Group> getGroups(boolean fetchWebServers) {
+        final List<JpaGroup> groups = groupCrudService.getGroups();
+        return groupsFrom(groups, fetchWebServers);
     }
 
     @Override
     public List<Group> findGroups(final String aName) {
-
         final List<JpaGroup> groups = groupCrudService.findGroups(aName);
-
-        return groupsFrom(groups);
+        return groupsFrom(groups, false);
     }
 
     @Override
@@ -92,17 +94,17 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     @Override
     public Group addJvmToGroup(final Event<AddJvmToGroupCommand> anEvent) throws NotFoundException {
         groupJvmRelationshipService.addJvmToGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getGroupId()));
+        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getGroupId()), false);
     }
 
     @Override
     public Group removeJvmFromGroup(final Event<RemoveJvmFromGroupCommand> anEvent) throws NotFoundException {
         groupJvmRelationshipService.removeJvmFromGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getGroupId()));
+        return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getGroupId()), false);
     }
 
-    protected Group groupFrom(final JpaGroup aJpaGroup) {
-        return new JpaGroupBuilder(aJpaGroup).build();
+    protected Group groupFrom(final JpaGroup aJpaGroup, final boolean fetchWebServers) {
+        return new JpaGroupBuilder(aJpaGroup).setFetchWebServers(fetchWebServers).build();
     }
 
     protected Group groupFrom(final CurrentState<Group, GroupState> originalStatus, final JpaGroup aJpaGroup) {
@@ -116,10 +118,10 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
     }
 
-    protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups) {
+    protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups, final boolean fetchWebServers) {
         final List<Group> groups = new ArrayList<>();
         for (final JpaGroup jpaGroup : someJpaGroups) {
-            groups.add(groupFrom(jpaGroup));
+            groups.add(groupFrom(jpaGroup, fetchWebServers));
         }
         return groups;
     }

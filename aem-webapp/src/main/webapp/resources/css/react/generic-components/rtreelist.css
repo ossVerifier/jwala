@@ -9,26 +9,29 @@
     white-space: nowrap;
 }
 
+.root-node-ul {
+    padding: 0 0 0 0;
+}
+
 ul.tree-list-style {
     list-style-type: none;
-    padding: 0 0 0 0;
-    margin: 3px 0 0 3px;
+    padding-left: 10px;
 }
 
 li.tree-list-style {
     list-style-type: none;
-    margin: 4px 0 4px 0px;
+    margin: 4px 0 4px 17px;
 }
 
 span.tree-list-style {
     margin: 4px 0 4px 0;
 }
 
-.li-style.selectable {
+.span-style.selectable {
     cursor: pointer;
 }
 
-.li-style.selectable:hover {
+.span-style.selectable:hover  {
     background-color: rgb(230, 230, 230);
 }
 

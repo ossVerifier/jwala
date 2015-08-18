@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,14 +59,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroups(final NameSearchParameterProvider aGroupNameSearch) {
+    public Response getGroups(final NameSearchParameterProvider aGroupNameSearch, final boolean fetchWebServers) {
         LOGGER.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
 
         final List<Group> groups;
         if (aGroupNameSearch.isNamePresent()) {
             groups = groupService.findGroups(aGroupNameSearch.getName());
         } else {
-            groups = groupService.getGroups();
+            groups = groupService.getGroups(fetchWebServers);
         }
 
         return ResponseBuilder.ok(groups);

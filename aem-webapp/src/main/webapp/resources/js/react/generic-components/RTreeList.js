@@ -3,160 +3,114 @@
  *
  * Properties:
  *
- * 1. title - the tree list header title (will be deprecated in the future, this should be placed in the container)
- * 2. data -
- * 3. treeMetaData
- * 4. expandIcon
- * 5. collapseIcon
- * 6. selectNodeCallback
+ * 1. data
+ * 2. treeMetaData = describes (in JSON) how data will be presented in a tree structure.
  *
- * Sample usage using jsx:
+ *    Example:
  *
- * <RTreeList title = "JVMs"
- *            data = {sampleTreeListData.applicationResponseContent}
- *            treeMetaData = {treeMetaData}
- *            expandIcon = "css/images/plus.png"
- *            collapseIcon = "css/images/minus.png"
- *            selectNodeCallback = {selectNodeCallback} />
+ *     {propKey: "name",
+ *      children:[{entity: "webServers",
+ *                 propKey: "name",
+ *                 selectable: true},
+ *                {entity: "jvms",
+ *                 propKey: "jvmName",
+ *                 selectable: true, children:[{entity: "webApps",
+ *                                              propKey: "name",
+ *                                              selectable: true}]
+ *                }]
+ *     }
  *
- * Where:
- *
- * 1. sampleTreeListData.applicationResponseContent = [{name: "Some Name", jvms: [{jvmName: "Some JVM Name"}]}];
- * 2. treeMetaData - describes the data in a hierarchical fashion e.g. [{propKey: "name"}, {entity: "jvms", propKey: "jvmName", selectable: true}];
+ * 3. expandIcon
+ * 4. collapseIcon
+ * 5. selectNodeCallback - Callback that is called when a node is clicked.
  *
  * TODO: Write unit tests.
  */
 var RTreeList = React.createClass({
     getInitialState: function() {
-        return {
-            selectedNodeKey: null
-        }
+        return {selectedNodeKey: null};
     },
     render: function() {
+        var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, "");
+        return React.createElement("div", null, React.createElement("ul", {className: "root-node-ul"}, nodes));
+    },
+    selectNode: function(name) {
+        // TODO: Find out what this is for...
+    },
+    onSelectNode: function(data) {
+        this.props.selectNodeCallback(data);
+    },
+    createTreeNodes: function(data, meta, level, parent) {
         var self = this;
         var nodes = [];
 
-        if (this.props.data.length > 0) {
-            for (var i = 0; i < this.props.data.length; i++) {
-                var key = Node.createKey("na", 0, i);
-                nodes.push(React.createElement(Node, {key: key, // used by React
-                                                      ref: key,
-                                                      nodeKey: key, // used for node comparison
-                                                      level: 0,
-                                                      data: this.props.data[i],
-                                                      treeMetaData: this.props.treeMetaData,
-                                                      collapsedByDefault: false,
-                                                      expandIcon: this.props.expandIcon,
-                                                      collapseIcon: this.props.collapseIcon,
-                                                      selectNodeCallback: this.props.selectNodeCallback,
-                                                      theTree: this,
-                                                      selectedNodeKey: this.state.selectedNodeKey}));
-            }
-
-            var ul = React.createElement("ul", {className: "tree-list-style"}, nodes);
-            return React.createElement("div", {className: "tree-list-content"}, ul);
-        }
-        return React.createElement("div", {className: "tree-list-content"}, "The tree is empty...");
-    },
-    selectNode: function(name) {
-        var self = this;
-        if (this.props.treeMetaData !== null) {
-            for (var i = 0; i < this.props.data.length; i++) {
-            var level = 0;
-                this.props.treeMetaData.forEach(function(metaDataItem){
-                    if (self.props.data[i][metaDataItem["propKey"]] === name) {
-                        var parent = (level === 0 ? "na" : metaDataItem[level - 1]);
-                        var key = Node.createKey(parent, level, i);
-                        self.setState({selectedNodeKey:key});
-                        return;
+        for (var i = 0; i < data.length; i++) {
+            var childNodes = [];
+            if (meta.children !== undefined) {
+                meta.children.forEach(function(child){
+                    if (data[i][child.entity] !== undefined && data[i][child.entity].length > 0) {
+                        childNodes.push(self.createTreeNodes(data[i][child.entity], child, level + 1, data[i][meta.propKey]));
                     }
-                    level++;
                 });
             }
+
+            var key = parent + data[i][meta.propKey] + level;
+            nodes.push(React.createElement(Node, {label:data[i][meta.propKey],
+                                                  collapsedByDefault:false,
+                                                  expandIcon: this.props.expandIcon,
+                                                  collapseIcon: this.props.collapseIcon,
+                                                  selectable: meta.selectable,
+                                                  data: data[i],
+                                                  theTree: this,
+                                                  key: key /* React use */,
+                                                  nodeKey: key,
+                                                  selectedNodeKey: this.state.selectedNodeKey}, childNodes));
         }
-    },
-    getSelectedNode: function() {
-        if (this.state.selectedNodeKey !== null) {
-            return this.refs[this.state.selectedNodeKey];
-        }
-        return null;
+        return nodes;
     }
 });
 
+/**
+ * A tree node.
+ */
 var Node = React.createClass({
     getInitialState: function() {
         return {
             isCollapsed: this.props.collapsedByDefault
         }
     },
-
     isSelected: function() {
         return this.props.nodeKey === this.props.selectedNodeKey;
     },
-
     render: function() {
-        var self = this;
-        var level = this.props.level === undefined ? 0 : this.props.level;
-        var nextLevel = level + 1;
+        var children;
+        var expandCollapseIcon = null;
+        var liClassName = this.props.children.length === 0 ? "tree-list-style" : "";
 
-        var metaData = this.props.treeMetaData[level + 1]; // Get child meta data
-        var childNodes = [];
-        if (metaData !== undefined) {
-            var nodeIdx = 0;
+        var spanClassName = this.props.selectable ? "span-style selectable" : "span-style";
+        spanClassName = this.isSelected() ? spanClassName + " " +Node.HIGHLIGHT_CLASS_NAME : spanClassName;
 
-            if (this.props.data[metaData.entity] !== undefined) {
-                this.props.data[metaData.entity].forEach(function(item) {
-                    var key = Node.createKey(self.props.nodeKey, nextLevel, nodeIdx);
-                    childNodes.push(React.createElement(Node, {key: key, // used by React
-                                                               nodeKey: key, // used for node comparison
-                                                               ref: key,
-                                                               data: item,
-                                                               treeMetaData: self.props.treeMetaData,
-                                                               level: nextLevel,
-                                                               collapsedByDefault: false,
-                                                               expandIcon: self.props.expandIcon,
-                                                               collapseIcon: self.props.collapseIcon,
-                                                               selectNodeCallback: self.props.selectNodeCallback,
-                                                               theTree: self.props.theTree,
-                                                               selectedNodeKey: self.props.selectedNodeKey}));
-                    nodeIdx++;
-                });
+        if (this.props.children.length > 0) {
+            expandCollapseIcon = React.createElement("img", {ref: "expandCollapseIcon",
+                                                             src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon),
+                                                             onClick:this.onClickIconHandler, className: "expand-collapse-padding"});
+            if (!this.state.isCollapsed) {
+                children = React.createElement("ul", {className: "tree-list-style"}, this.props.children);
             }
         }
-
-        var selectableClassName = this.props.treeMetaData[level].selectable === true ? "selectable" : "";
-
-        var selectedClassName = "";
-        if (this.isSelected()) {
-            selectedClassName = Node.HIGHLIGHT_CLASS_NAME;
-        }
-
-        var nodeLabel = this.props.data[this.props.treeMetaData[level].propKey];
-
-        if (childNodes.length > 0) {
-            return React.createElement("li", {className: "li-style " + selectableClassName},
-                       React.createElement("img", {ref: "expandCollapseIcon", src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon), onClick:this.onClickIconHandler, className: "expand-collapse-padding"}),
-                       React.createElement("span", {ref: "nodeLabel", className: "tree-list-style " + selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel),
-                       React.createElement("li", {className: "tree-list-style " + (this.state.isCollapsed ? "li-display-none" : "")},
-                           React.createElement("ul", {className: "tree-list-style"}, childNodes)));
-        }
-        return React.createElement("li", {className: "tree-list-style li-style " + selectableClassName, onClick:this.onClickIconHandler},
-                   React.createElement("span", {ref: "nodeLabel", className: selectedClassName, onClick: this.onClickNodeHandler.bind(this, this.props.treeMetaData[level].selectable, this.props.data)}, nodeLabel));
-    },
-    onClickNodeHandler: function(isSelectable, data) {
-        if (isSelectable) {
-            this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
-            this.props.selectNodeCallback(this.props.data);
-        }
+        return React.createElement("li", {className: liClassName}, expandCollapseIcon,
+                                          React.createElement("span", {onClick: this.onClickNodeHandler, className: spanClassName}, this.props.label), children);
     },
     onClickIconHandler: function() {
         this.setState({isCollapsed:!this.state.isCollapsed});
     },
-    statics: {
-        PREFIX: "node",
-        HIGHLIGHT_CLASS_NAME: "ui-state-highlight",
-        createKey: function(parentNodeKey, level, nodeIdx) {
-            return Node.PREFIX + "-" + parentNodeKey + "-" + level + "-" + nodeIdx;
+    onClickNodeHandler: function() {
+        if (this.props.selectable === true) {
+            this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
+            this.props.theTree.onSelectNode(this.props.data);
         }
+    },
+    statics: {
+        HIGHLIGHT_CLASS_NAME: "ui-state-highlight"
     }
 });

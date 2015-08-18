@@ -21,7 +21,8 @@ import javax.ws.rs.core.Response;
 public interface GroupServiceRest {
 
     @GET
-    Response getGroups(@BeanParam final NameSearchParameterProvider aGroupNameSearch);
+    Response getGroups(@BeanParam final NameSearchParameterProvider aGroupNameSearch,
+                       @QueryParam("webServers") final boolean fetchWebServers);
 
     @GET
     @Path("/{groupId}")

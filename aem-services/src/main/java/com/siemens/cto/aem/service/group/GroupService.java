@@ -19,6 +19,8 @@ public interface GroupService {
 
     List<Group> getGroups();
 
+    List<Group> getGroups(final boolean fetchWebServers);
+
     List<Group> findGroups(final String aGroupNameFragment);
 
     Group updateGroup(final UpdateGroupCommand anUpdateGroupCommand,

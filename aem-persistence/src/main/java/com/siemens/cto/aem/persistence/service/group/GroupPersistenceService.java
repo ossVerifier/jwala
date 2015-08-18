@@ -23,6 +23,8 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     List<Group> getGroups();
 
+    List<Group> getGroups(final boolean fetchWebServers);
+
     List<Group> findGroups(final String aName);
 
     void removeGroup(final Identifier<Group> aGroupId) throws NotFoundException;
