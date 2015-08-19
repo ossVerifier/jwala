@@ -127,10 +127,10 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroupList() {
-        when(impl.getGroups()).thenReturn(groupList);
+        when(impl.getGroups(eq(false))).thenReturn(groupList);
 
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider();
-        final Response response = cut.getGroups(nameSearchParameterProvider);
+        final Response response = cut.getGroups(nameSearchParameterProvider, false);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -148,7 +148,7 @@ public class GroupServiceRestImplTest {
 
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider(name);
 
-        final Response response = cut.getGroups(nameSearchParameterProvider);
+        final Response response = cut.getGroups(nameSearchParameterProvider, false);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
