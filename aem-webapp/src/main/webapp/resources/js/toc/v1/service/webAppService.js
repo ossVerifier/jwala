@@ -65,5 +65,8 @@ var webAppService = {
     },
     getWebAppsByJvm : function(jvmId, responseCallback) {
         return serviceFoundation.get("v1.0/applications/jvm/" + jvmId, "json", responseCallback);
+    },
+    getResources : function(appName, responseCallback) {
+        return serviceFoundation.get("v1.0/applications/" + encodeURI(appName) + "/resources/name", "json", responseCallback);
     }
 };

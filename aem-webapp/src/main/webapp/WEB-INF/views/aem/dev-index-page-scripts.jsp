@@ -48,6 +48,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/rxmleditor.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script src="public-resources/js/react/generic-components/RStaticDialog.js"></script>
+<script src="public-resources/js/react/generic-components/RListBox.js"></script>
 <script src="public-resources/js/react/generic-components/RTreeList.js"></script>
 <script src="public-resources/js/react/generic-components/RSplitter.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-grid.js"></script>

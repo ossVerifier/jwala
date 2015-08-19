@@ -66,4 +66,8 @@ public interface JvmServiceRest {
     @Path("/{jvmId}/diagnosis")
     Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
 
+    @GET
+    @Path("/{jvmName}/resources/name")
+    Response getResourceNames(@PathParam("jvmName") final String jvmName);
+
 }

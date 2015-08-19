@@ -91,6 +91,9 @@ var webServerService = {
                                      successCallback,
                                      errorCallback,
                                      false);
+    },
+    getResources : function(webServerName, responseCallback) {
+        return serviceFoundation.get("v1.0/webservers/" + encodeURI(webServerName) + "/resources/name", "json", responseCallback);
     }
 
 };

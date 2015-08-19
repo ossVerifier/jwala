@@ -66,4 +66,8 @@ public interface WebServerServiceRest {
     @Path("/{webServerId}/conf/current")
     Response getHttpdConfig(@PathParam("webServerId") final Identifier<WebServer> aWebServerId);
 
+    @GET
+    @Path("/{wsName}/resources/name")
+    Response getResourceNames(@PathParam("wsName") final String wsName);
+
 }

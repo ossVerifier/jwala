@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/simple-datatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/anchor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rsplitter.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rlistbox.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rtreelist.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rxmleditor.css">

@@ -53,4 +53,8 @@ public interface ApplicationServiceRest {
     Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
                               @BeanParam final AuthenticatedUser aUser);
 
+    @GET
+    @Path("/{appName}/resources/name")
+    Response getResourceNames(@PathParam("appName") final String appName);
+
 }

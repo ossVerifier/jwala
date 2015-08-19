@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
@@ -32,11 +31,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
@@ -244,5 +239,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return Response.ok(diagnosis).build();
     }
 
+    @Override
+    public Response getResourceNames(final String jvmName) {
+        // TODO: Get resource names from db.
+        final List<String> resources = new LinkedList<>();
+        resources.add("context.xml");
+        resources.add("server.xml");
+        resources.add("setenv.bat");
+        return ResponseBuilder.ok(resources);
+    }
 
 }

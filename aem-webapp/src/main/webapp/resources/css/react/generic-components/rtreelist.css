@@ -1,16 +1,13 @@
-.tree-list-title {
-    text-align: center;
-}
-
 .tree-list-content {
     min-height: 303px;
     width: auto;
-    border: 1px solid rgb(195, 195, 195);
     white-space: nowrap;
+    padding-top: 2px;
 }
 
 .root-node-ul {
-    padding: 0 0 0 0;
+    padding: 0 0 0 4px;
+    margin-top: 2px;
 }
 
 ul.tree-list-style {
@@ -27,16 +24,8 @@ span.tree-list-style {
     margin: 4px 0 4px 0;
 }
 
-.span-style.selectable {
+.span-style {
     cursor: pointer;
-}
-
-.span-style.selectable:hover  {
-    background-color: rgb(230, 230, 230);
-}
-
-.li-display-none {
-    display: none;
 }
 
 img.expand-collapse-padding {

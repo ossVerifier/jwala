@@ -32,10 +32,7 @@ var RTreeList = React.createClass({
     },
     render: function() {
         var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, "");
-        return React.createElement("div", null, React.createElement("ul", {className: "root-node-ul"}, nodes));
-    },
-    selectNode: function(name) {
-        // TODO: Find out what this is for...
+        return React.createElement("div", {className:"tree-list-content ui-widget-content"}, React.createElement("ul", {className: "root-node-ul"}, nodes));
     },
     onSelectNode: function(data) {
         this.props.selectNodeCallback(data);
@@ -65,7 +62,8 @@ var RTreeList = React.createClass({
                                                   key: key /* React use */,
                                                   nodeKey: key,
                                                   selectedNodeKey: this.state.selectedNodeKey,
-                                                  parent: parent}, childNodes));
+                                                  parent: parent,
+                                                  entity: meta.entity}, childNodes));
         }
         return nodes;
     }
@@ -77,7 +75,8 @@ var RTreeList = React.createClass({
 var Node = React.createClass({
     getInitialState: function() {
         return {
-            isCollapsed: this.props.collapsedByDefault
+            isCollapsed: this.props.collapsedByDefault,
+            mouseOver: false
         }
     },
     isSelected: function() {
@@ -88,8 +87,12 @@ var Node = React.createClass({
         var expandCollapseIcon = null;
         var liClassName = this.props.children.length === 0 ? "tree-list-style" : "";
 
-        var spanClassName = this.props.selectable ? "span-style selectable" : "span-style";
-        spanClassName = this.isSelected() ? spanClassName + " " +Node.HIGHLIGHT_CLASS_NAME : spanClassName;
+        var spanClassName = "";
+        if (this.isSelected()) {
+            spanClassName = spanClassName + "span-style " + Node.HIGHLIGHT_CLASS_NAME;
+        } else if (this.state.mouseOver && this.props.selectable) {
+            spanClassName = spanClassName + "span-style " + Node.FOCUS_CLASS_NAME;
+        }
 
         if (this.props.children.length > 0) {
             expandCollapseIcon = React.createElement("img", {ref: "expandCollapseIcon",
@@ -100,7 +103,18 @@ var Node = React.createClass({
             }
         }
         return React.createElement("li", {className: liClassName}, expandCollapseIcon,
-                                          React.createElement("span", {onClick: this.onClickNodeHandler, className: spanClassName}, this.props.label), children);
+                                          React.createElement("span", {onClick: this.onClickNodeHandler,
+                                                                       onMouseOver: this.onMouseOver,
+                                                                       onMouseOut: this.onMouseOut,
+                                                                       className: spanClassName}, this.props.label), children);
+    },
+    onMouseOver: function(event) {
+        event.preventDefault();
+        this.setState({mouseOver: true});
+    },
+    onMouseOut: function(event) {
+        event.preventDefault();
+        this.setState({mouseOver: false});
     },
     onClickIconHandler: function() {
         this.setState({isCollapsed:!this.state.isCollapsed});
@@ -108,11 +122,15 @@ var Node = React.createClass({
     onClickNodeHandler: function() {
         if (this.props.selectable === true) {
             this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
-            this.props.data["parent"] = this.props.parent;
+
+            // Add RTreeList specific data
+            this.props.data["rtreeListMetaData"] = {parent: this.props.parent, entity: this.props.entity};
+
             this.props.theTree.onSelectNode(this.props.data);
         }
     },
     statics: {
-        HIGHLIGHT_CLASS_NAME: "ui-state-highlight"
+            HIGHLIGHT_CLASS_NAME: "ui-state-active",
+            FOCUS_CLASS_NAME: "ui-state-focus"
     }
 });

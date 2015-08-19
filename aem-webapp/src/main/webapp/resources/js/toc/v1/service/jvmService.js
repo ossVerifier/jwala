@@ -72,6 +72,9 @@
     },
     diagnoseJvm: function(id, responseCallback) {
     	return serviceFoundation.get("v1.0/jvms/" + id + "/diagnosis", "json", responseCallback);
-    }
+    },
+    getResources : function(jvmName, responseCallback) {
+        return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/name", "json", responseCallback);
+    },
 
 };

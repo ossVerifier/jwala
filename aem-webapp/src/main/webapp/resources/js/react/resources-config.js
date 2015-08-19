@@ -5,6 +5,8 @@ var ResourcesConfig = React.createClass({
 
         splitterComponents.push(<div><ResourceEditor resourceService={this.props.resourceService}
                                                      groupService={this.props.groupService}
+                                                     jvmService={this.props.jvmService}
+                                                     wsService={this.props.wsService}
                                                      webAppService={this.props.webAppService}
                                                      generateXmlSnippetCallback={this.generateXmlSnippetCallback}
                                                      getTemplateCallback={this.getTemplateCallback}/></div>);

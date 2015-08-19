@@ -215,4 +215,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                             cmdFailEx.getMessage()));
         }
     }
+
+    @Override
+    public Response getResourceNames(final String wsName) {
+        // TODO: Get resource names from db.
+        final List<String> resources = new LinkedList<>();
+        resources.add("httpd.conf");
+        return ResponseBuilder.ok(resources);
+    }
 }

@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
@@ -149,5 +150,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                                                        aUser.getUser());
 
         return ResponseBuilder.ok(updated);
+    }
+
+    @Override
+    public Response getResourceNames(String appName) {
+        // TODO: Get resource names from db.
+        final List<String> resources = new LinkedList<>();
+        resources.add(appName + ".xml");
+        return ResponseBuilder.ok(resources);
     }
 }
