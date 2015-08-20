@@ -7,7 +7,9 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
@@ -70,6 +72,17 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     public Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId) {
         groupJvmRelationshipService.removeRelationshipsForJvm(aJvmId);
         return getJvm(aJvmId);
+    }
+
+    @Override
+    public JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event) {
+        final JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmCrudService.uploadServerXml(event);
+        return jpaJvmConfigTemplate;
+    }
+
+    @Override
+    public String getJvmTemplate(String templateName, Identifier<Jvm> jvmId) {
+        return jvmCrudService.getJvmTemplate(templateName, jvmId);
     }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {

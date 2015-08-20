@@ -1,0 +1,19 @@
+{"name":"Server XML","contentType":"application/xml",
+	"properties":[
+					{"name":"jmsStatusTopic", "required":"true"},
+					{"name":"jvmAjpPort", "required": "true"},
+					{"name":"jvmHttpPort", "required":"true"},
+					{"name":"jvmHttpsPort", "required":"true"},
+					{"name":"jvmId", "required":"true"},
+					{"name":"jvmName", "required":"true"},
+					{"name":"jvmShutDownPort", "required":"true"},
+					{"name":"tibcoEmsHost", "required":"true"},
+					{"name":"tibcoEmsPasswordStpEncrypted", "required":"true"},
+					{"name":"tibcoEmsPort", "required":"true"},
+					{"name":"tibcoEmsUserName", "required":"true"},
+					{"name":"stpExitCodeFastFail", "required":"true"},
+					{"name":"stpHome", "required":"true"},
+					{"name":"stpSecurityRelativeDir", "required":"true"},
+					{"name":"stpServerName", "required":"true"}
+				]
+}

@@ -7,6 +7,8 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
@@ -27,4 +29,8 @@ public interface JvmPersistenceService {
     void removeJvm(final Identifier<Jvm> aJvmId);
 
     Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId);
+
+    JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event);
+
+    String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 }

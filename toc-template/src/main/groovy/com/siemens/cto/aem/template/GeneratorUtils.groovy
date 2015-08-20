@@ -4,7 +4,7 @@ import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundExceptio
 import groovy.text.GStringTemplateEngine
 
 public class GeneratorUtils {
-    
+
     public static String bindDataToTemplate(final binding, final String templateFileName) {
         def resource = new File(templateFileName)
         binding.comments = "Generated from " + templateFileName
@@ -20,6 +20,11 @@ public class GeneratorUtils {
         }
 
         return engine.createTemplate(resource.text).make(binding)
+    }
+
+    public static String bindDataToTemplateText(final binding, final String templateText) {
+        final engine = new GStringTemplateEngine()
+        return engine.createTemplate(templateText).make(binding)
     }
 
 }

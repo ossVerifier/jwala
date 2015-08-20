@@ -47,9 +47,16 @@ public interface JvmServiceRest {
     @Path("/{jvmName}/conf")
     Response generateConfig(@PathParam("jvmName") final String aJvmName);
 
+    // todo make @put and rename deployconf to conf just like in webserverservicerest.java when connecting the UI gear button
     @GET
     @Path("/{jvmId}/deployConf")
     Response generateAndDeployConfig(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                                     @BeanParam final AuthenticatedUser aUser);
+
+    @POST
+    @Path("/{jvmId}/serverXml")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadServerXMLTemplate(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
                                      @BeanParam final AuthenticatedUser aUser);
 
     @GET

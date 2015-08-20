@@ -18,10 +18,12 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -44,9 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.DEPLOY_CONFIG_TAR_SCRIPT_NAME;
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
 import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
 
 public class JvmServiceImpl implements JvmService {
@@ -171,18 +171,24 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional(readOnly = true)
     public String generateConfig(String aJvmName) {
-        final List<Jvm> jvm = jvmPersistenceService.findJvms(aJvmName);
+        final List<Jvm> jvmList = jvmPersistenceService.findJvms(aJvmName);
 
-        if (jvm.size() == 1) {
+        if (jvmList.size() == 1) {
+            Jvm jvm = jvmList.get(0);
             try {
+                final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate("server.xml", jvm.getId());
                 return TomcatJvmConfigFileGenerator
-                        .getServerXml(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm.get(0));
-            } catch (IOException e) {
-                LOGGER.warn("Template not found", e);
-                throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
+                        .getServerXmlFromText(serverXmlTemplateText, jvm);
+            } catch (BadRequestException bre) {
+                // TODO remove once we know the server.xml template is in the database as part of the EPM install
+                try {
+                    return TomcatJvmConfigFileGenerator.getServerXmlFromFile(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm);
+                } catch (IOException e) {
+                    throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
+                }
             }
         }
-        if (jvm.size() > 1) {
+        if (jvmList.size() > 1) {
             throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
         } else {
             throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
@@ -233,15 +239,23 @@ public class JvmServiceImpl implements JvmService {
             }
         }
 
-         // create and execute the scp command
+        // create and execute the scp command
         String jvmConfigTar = jvmName + "_config.tar";
         rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
-        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("stp.jvm.resources.dir")+ "/" + jvmConfigTar);
+        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("stp.jvm.resources.dir") + "/" + jvmConfigTar);
         rtCommandBuilder.addParameter(sshConfig.getUserName());
         rtCommandBuilder.addParameter(jvm.getHostName());
         rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("paths.instances"));
         RuntimeCommand rtCommand = rtCommandBuilder.build();
         return rtCommand.execute();
+    }
+
+    @Override
+    @Transactional
+    public JpaJvmConfigTemplate uploadServerXml(UploadServerXmlTemplateCommand command, User user) {
+        command.validateCommand();
+        final Event<UploadServerXmlTemplateCommand> event = new Event<>(command, AuditEvent.now(user));
+        return jvmPersistenceService.uploadServerXml(event);
     }
 
 }

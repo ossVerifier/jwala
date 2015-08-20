@@ -8,8 +8,10 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
@@ -39,4 +41,6 @@ public interface JvmService {
     String performDiagnosis(Identifier<Jvm> aJvmId);
 
     ExecData secureCopyConfigTar(Jvm jvm, RuntimeCommandBuilder runtimeCommandBuilder) throws CommandFailureException;
+
+    JpaJvmConfigTemplate uploadServerXml(UploadServerXmlTemplateCommand command, User user);
 }

@@ -166,10 +166,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvms.add(jvm);
         
         when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()))).thenReturn(jvms);
-        when(fileManager.getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE))).thenReturn("/server-xml.tpl");
-        impl.generateConfig(jvm.getJvmName());
+        when(jvmPersistenceService.getJvmTemplate(eq("server.xml"),eq(jvm.getId()))).thenReturn("<server>test</server>");
+        String generatedXml = impl.generateConfig(jvm.getJvmName());
 
-        verify(fileManager, times(1)).getAbsoluteLocation(eq(ConfigurationTemplate.SERVER_XML_TEMPLATE));
+        assert !generatedXml.isEmpty();
     }
 
     @Test

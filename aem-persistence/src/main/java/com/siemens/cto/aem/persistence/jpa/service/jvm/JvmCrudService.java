@@ -7,7 +7,9 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
@@ -27,4 +29,7 @@ public interface JvmCrudService {
 
     void removeJvm(final Identifier<Jvm> aGroupId);
 
+    JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event);
+
+    String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 }

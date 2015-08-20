@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -12,6 +13,7 @@ import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -23,14 +25,19 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -190,22 +197,73 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok();
     }
 
+    @Context
+    private MessageContext context;
+
+    @Override
+    public Response uploadServerXMLTemplate(Identifier<Jvm> aJvmId, AuthenticatedUser aUser) {
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", aJvmId);
+
+        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
+
+        Jvm jvm = jvmService.getJvm(aJvmId);
+
+        ServletFileUpload sfu = new ServletFileUpload();
+        InputStream data = null;
+        try {
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemStream file1;
+
+            while (iter.hasNext()) {
+                file1 = iter.next();
+                try {
+                    data = file1.openStream();
+                    UploadServerXmlTemplateCommand command = new UploadServerXmlTemplateCommand(jvm,
+                            file1.getName(),
+                            data);
+
+                    return ResponseBuilder.created(
+                            jvmService.uploadServerXml(command, aUser.getUser())); // early out on first attachment
+                } finally {
+                    assert data != null;
+                    data.close();
+                }
+            }
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_JVM_OPERATION, "No data"));
+        } catch (IOException | FileUploadException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
+        }
+    }
+
     private String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
 
-        // TODO eventually replace all this with generating the config files and creating the tar file to be copied over and expanded
         String serverXmlStr = jvmService.generateConfig(jvmName);
 
-        // TODO create test file for now but really create all the conf files
         String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
-        String jvmResourcesDir = stpJvmResourcesDir + "/" + jvmName;
-        File resDir = new File(jvmResourcesDir);
-        if (!resDir.exists()) {
-            boolean result = resDir.mkdirs();
-            if (!result){
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + jvmResourcesDir);
+        String stpRelativeConfDir = ApplicationProperties.get("stp.jvm.resources.relative.conf.dir");
+        String stpRelativeBinDir = ApplicationProperties.get("stp.jvm.resources.relative.bin.dir");
+        String jvmResourcesConfDir = stpJvmResourcesDir + "/" + jvmName + stpRelativeConfDir;
+        String jvmResourcesBinDir = stpJvmResourcesDir + "/" + jvmName + stpRelativeBinDir;
+        File resConfDir = new File(jvmResourcesConfDir);
+        if (!resConfDir.exists()) {
+            boolean result = resConfDir.mkdirs();
+            if (!result) {
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + jvmResourcesConfDir);
             }
         }
-        File serverXml = new File(jvmResourcesDir + "/JM_resourceTEST.xml"); // TODO replace with real conf file
+        File resBinDir = new File(jvmResourcesConfDir);
+        if (!resBinDir.exists()) {
+            boolean result = resBinDir.mkdirs();
+            if (!result) {
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + jvmResourcesBinDir);
+            }
+        }
+        File serverXml = new File(jvmResourcesConfDir + "/server.xml");
+        File contextXml = new File(jvmResourcesConfDir + "/context.xml"); // TODO create context.xml
+        File setenvBat = new File(jvmResourcesBinDir + "/setenv.bat"); // TODO create setenv.bat
         try {
             FileUtils.writeStringToFile(serverXml, serverXmlStr);
         } catch (FileNotFoundException e) {
