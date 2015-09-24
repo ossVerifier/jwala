@@ -16,18 +16,18 @@
   limitations under the License.
 -->
 <!-- The contents of this file will be loaded for each web application -->
-<Context docBase="../../../webapps/aem-webapp-1.0-SNAPSHOT.war">
+<Context docBase="../../../webapps/aem-webapp-1.0.1-SNAPSHOT.war">
     <!--  This version applies to unpacked wars.
         docBase="${STP_HOME}/siemens/webapps/aem-webapp-1.0-SNAPSHOT.war"> -->
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="${STP_HOME}/siemens/data/toc/conf"/>
-                
+
     <Environment name="securityProperties"
         value="../../../properties/tocSecurity.properties"
         type="java.lang.String"
         override="false" />
-        
+
     <Resource name="jdbc/toc-xa"
           auth="Container"
           type="com.atomikos.jdbc.AtomikosDataSourceBean"

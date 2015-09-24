@@ -34,7 +34,7 @@ dependencies {
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
-    
+
     testRuntime group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-util', version: "$project.versions.tomcat"
@@ -52,14 +52,6 @@ test {
                   "*.configuration.*",
                   "**.configuration.**",
                   "com.siemens.cto.aem.service.configuration.service.*"]
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
     }
 }
 

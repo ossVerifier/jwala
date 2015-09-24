@@ -6,7 +6,7 @@ dependencies {
 
     compile project(":aem-common")
     compile project(":aem-domain")
-    
+
     compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
 
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
@@ -38,12 +38,3 @@ test {
                   "com.siemens.cto.aem.service.configuration.service.*"]
     }
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-}
-

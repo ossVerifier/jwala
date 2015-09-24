@@ -31,8 +31,8 @@ dependencies {
       compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
       compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
       No compile dependencies needed. Junit removed from this block and placed below.
-    */ 
-    
+    */
+
     integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"
     integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
@@ -191,7 +191,7 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
 
         integTestSuiteRunner.execute()
 
-        //  Peter is commenting this out because it prevents things running locally. 
+        //  Peter is commenting this out because it prevents things running locally.
         //  psExec.execute()
 
     }

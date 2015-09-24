@@ -49,7 +49,7 @@ sonarRunner {
     }
 }
 
-task(clean) << { 
+task(clean) << {
 	delete "build/jacoco"
 }
 
@@ -57,23 +57,41 @@ subprojects {
     apply plugin: "java"
     apply plugin: "jacoco"
     apply plugin: "pmd"
-    apply plugin: 'maven-publish'
     apply plugin: "eclipse"
 
     sourceCompatibility = 1.7
     group = "com.siemens.cto.aem"
-    version = "1.0-SNAPSHOT"
+    version = project.properties['buildVersion']
 
-    publishing {
-        repositories {
-            maven {
-                url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/libs-snapshot-local"
-                credentials {
-                    username 'deployer'
-                    password 'deployerpassword'
-                }
-            }
-        }
+    plugins.withType(MavenPublishPlugin).whenPluginAdded {
+
+      publishing {
+          repositories {
+              maven {
+                  url project.properties['publishRepoUrl']
+                  credentials {
+                      username project.properties['publishRepoUser']
+                      password project.properties['publishRepoPassword']
+                  }
+              }
+          }
+          publications {
+              mavenJava(MavenPublication) {
+                  from components.java
+                  println project.name;
+                  if(project.name.equals('aem-persistence')) {
+                    artifact("drop.sql") {
+                      classifier "drop"
+                      extension "sql"
+                    }
+                    artifact("create.sql") {
+                      classifier "create"
+                      extension "sql"
+                    }
+                  }
+              }
+          }
+      }
     }
 
     repositories {

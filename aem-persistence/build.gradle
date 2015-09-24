@@ -1,22 +1,8 @@
+apply plugin: 'maven-publish'
+
 configurations {
     javaAgentOpenJpa
 }
-
-publishing {
-  publications {
-    maven(MavenPublication) {
-      artifact("drop.sql") {
-        classifier "drop"
-        extension "sql"
-      }
-      artifact("create.sql") {
-        classifier "create"
-        extension "sql"
-      }
-    }
-  }
-}
-
 
 dependencies {
     compile project(":aem-common")
@@ -55,14 +41,6 @@ test {
                   "com.siemens.cto.aem.common.*",
                   "*.configuration.*",
                   "**.configuration.**"]
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
     }
 }
 

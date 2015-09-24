@@ -13,12 +13,3 @@ dependencies {
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-}
-

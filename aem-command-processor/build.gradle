@@ -32,12 +32,3 @@ dependencies {
 test {
     workingDir(rootProject.projectDir)
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-}
-

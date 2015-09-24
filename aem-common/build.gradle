@@ -12,11 +12,3 @@ task commonTestJar(type: Jar) {
 artifacts {
     commonTest commonTestJar
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-}
