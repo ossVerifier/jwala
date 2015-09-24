@@ -76,5 +76,42 @@
     getResources : function(jvmName, responseCallback) {
         return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/name", "json", responseCallback);
     },
+    getResourceTemplate : function(jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
+        return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+    },
+    previewResourceFile: function(jvmName, groupName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/jvms/" + encodeURI(jvmName) + "/resources/preview;groupName=" + encodeURI(groupName),
+                                     "json",
+                                     template,
+                                     successCallback,
+                                     errorCallback,
+                                     false,
+                                     "text/plain; charset=utf-8");
+    },
+    deployJvmConfAllFiles: function(jvmName, responseCallback, caughtCallback) {
+        return serviceFoundation.put("v1.0/jvms/" + jvmName + "/conf", "json", null, responseCallback, caughtCallback, false);
+    },
+    deployJvmConf: function(jvmName, resourceTemplateName, responseCallback, caughtCallback) {
+        return serviceFoundation.put("v1.0/jvms/" + jvmName + "/conf/" + resourceTemplateName, "json", null, responseCallback, caughtCallback, false);
+    },
+    updateResourceTemplate: function(jvmName, resourceTemplateName, resourceTemplateContent, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURI(resourceTemplateName),
+                                     "json",
+                                     resourceTemplateContent,
+                                     successCallback,
+                                     errorCallback,
+                                     false,
+                                     "text/plain; charset=utf-8");
+    },
+    uploadTemplateForm: function(jvmName, templateName, templateFile, successCallback, errorCallback) {
+        return serviceFoundation.post("v1.0/jvms/" + encodeURI(jvmName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),
+                                        "json",
+                                        templateFile,
+                                        successCallback,
+                                        errorCallback,
+                                        false,
+                                        "multipart/form-data",
+                                        true);
+    }
 
 };

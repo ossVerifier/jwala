@@ -1,7 +1,6 @@
 .tree-list-content {
     min-height: 303px;
     width: auto;
-    white-space: nowrap;
     padding-top: 2px;
 }
 
@@ -10,22 +9,22 @@
     margin-top: 2px;
 }
 
-ul.tree-list-style {
+.rtreelist-list {
     list-style-type: none;
     padding-left: 10px;
 }
 
-li.tree-list-style {
+.rtreelist-list-item {
     list-style-type: none;
-    margin: 4px 0 4px 17px;
 }
 
-span.tree-list-style {
-    margin: 4px 0 4px 0;
+.rtreelist-list-item.no-children {
+     margin: 4px 0 4px 17px;
 }
 
-.span-style {
+span.rtreelist-list-item {
     cursor: pointer;
+    margin: 4px 0 4px 0;
 }
 
 img.expand-collapse-padding {

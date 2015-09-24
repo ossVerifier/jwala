@@ -103,7 +103,7 @@ public class WebServerCommandServiceImplTest {
         when(webServerService.getWebServer(eq(id))).thenReturn(aWebServer);
         when(jschBuilder.build()).thenReturn(jSch);
         when(executor.execute(any(CommandProcessorBuilder.class)))
-                .thenReturn(new ExecData(new ExecReturnCode(1), "The content of HTTPD Conf", ""));
+                .thenReturn(new ExecData(new ExecReturnCode(1), "The content of httpd.conf", ""));
         assertNotNull(factoryHelper);
         impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, factoryHelper);
     }
@@ -111,7 +111,7 @@ public class WebServerCommandServiceImplTest {
     @Test
     public void testGetHttpdConf() throws CommandFailureException {
         final ExecData execData = impl.getHttpdConf(id);
-        assertEquals(execData.getStandardOutput(), "The content of HTTPD Conf");
+        assertEquals(execData.getStandardOutput(), "The content of httpd.conf");
     }
 
     @Test

@@ -54,4 +54,11 @@ public class RuntimeCommandBuilder {
     private static String cygpathParameterWrapper(String parameter) {
         return "`" + CYGPATH.toString() + " " + parameter + "`";
     }
+
+    public void reset() {
+        parameters = null;
+        parameters = new ArrayList<>();
+
+        operation = null;
+    }
 }

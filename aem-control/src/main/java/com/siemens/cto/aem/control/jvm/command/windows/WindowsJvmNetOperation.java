@@ -78,6 +78,25 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                     dataJvmResourcesDir
             );
         }
+    },
+    DELETE_SERVICE(JvmControlOperation.DELETE_SERVICE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(
+                    cygpathWrapper(DELETE_SERVICE_SCRIPT_NAME),
+                    aServiceName
+            );
+        }
+    },
+    INVOKE_SERVICE(JvmControlOperation.INVOKE_SERVICE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME),
+                    aServiceName,
+                    ApplicationProperties.get("paths.instances")
+            );
+        }
     };
 
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(

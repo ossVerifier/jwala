@@ -11,7 +11,9 @@ var ResourcePane = React.createClass({
     },
     render: function() {
         if (this.state.resourceOptions.length > 0) {
-            return <div className="resource-list-box ui-widget-content"><RListBox options={this.state.resourceOptions} /></div>
+            return <div className="resource-list-box ui-widget-content">
+                       <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback} />
+                   </div>
         }
         return <div className="resource-list-box ui-widget-content"><span>Please select a JVM, Web Server or Web Application...</span></div>
     },
@@ -32,5 +34,14 @@ var ResourcePane = React.createClass({
             options.push({value: resourceName, label: resourceName});
         });
         this.setState({resourceOptions: options});
+    },
+    selectCallback: function(value) {
+         this.props.selectCallback(value);
+    },
+    getSelectedValue: function() {
+        if (this.refs.listBox !== undefined) {
+            return this.refs.listBox.getSelectedValue();
+        }
+        return null;
     }
 });

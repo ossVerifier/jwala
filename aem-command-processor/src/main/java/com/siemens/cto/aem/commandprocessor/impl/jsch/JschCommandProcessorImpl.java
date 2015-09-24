@@ -110,8 +110,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         return new ExecReturnCode(returnCode);
     }
 
-    protected Session prepareSession(final JSch aJsch,
-                                     final RemoteSystemConnection someConnectionInfo) throws JSchException {
+    private Session prepareSession(final JSch aJsch,
+                                   final RemoteSystemConnection someConnectionInfo) throws JSchException {
         return aJsch.getSession(someConnectionInfo.getUser(),
                 someConnectionInfo.getHost(),
                 someConnectionInfo.getPort());

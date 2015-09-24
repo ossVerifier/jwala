@@ -37,7 +37,15 @@ import javax.persistence.*;
     ),
     @NamedQuery(
         name=JpaApplication.QUERY_BY_WEB_SERVER_NAME,
-        query="SELECT a FROM JpaApplication a WHERE a.group in (SELECT ws.groups FROM JpaWebServer ws WHERE ws.name =:wsName)")
+        query="SELECT a FROM JpaApplication a WHERE a.group in (SELECT ws.groups FROM JpaWebServer ws WHERE ws.name =:wsName)"),
+    @NamedQuery(
+            name=JpaApplication.QUERY_BY_NAME,
+            query="SELECT a FROM JpaApplication a WHERE a.name = :appName"),
+    @NamedQuery(
+            name=JpaApplication.QUERY_BY_GROUP_JVM_AND_APP_NAME,
+            query="SELECT a FROM JpaApplication a WHERE a.name = :appName AND a.group in " +
+                  "(SELECT g FROM JpaGroup g WHERE g.name = :groupName AND g.jvms.name = :jvmName)")
+
     })
 public class JpaApplication extends AbstractEntity<JpaApplication, Application> {
 
@@ -50,10 +58,12 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     public static final String QUERY_BY_GROUP_NAME = "findApplicationsByGroupName";
     public static final String QUERY_BY_JVM_ID = "findApplicationsByJvmId";
     public static final String QUERY_BY_WEB_SERVER_NAME = "findApplicationsByWebServerName";
+    public static final String QUERY_BY_NAME = "findApplicationByName";
     public static final String GROUP_ID_PARAM = "groupId";
     public static final String JVM_ID_PARAM = "jvmId";
     public static final String GROUP_NAME_PARAM = "groupName";
     public static final String WEB_SERVER_NAME_PARAM = "wsName";
+    public static final String QUERY_BY_GROUP_JVM_AND_APP_NAME = "findApplicationByGroupJvmAndAppName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

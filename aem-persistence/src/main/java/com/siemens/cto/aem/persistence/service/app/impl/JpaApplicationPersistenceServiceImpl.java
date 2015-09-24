@@ -4,11 +4,14 @@ import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
+
+import java.util.List;
 
 public class JpaApplicationPersistenceServiceImpl implements ApplicationPersistenceService {
 
@@ -22,9 +25,12 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application createApplication(final Event<CreateApplicationCommand> anAppToCreate) {
+    public Application createApplication(final Event<CreateApplicationCommand> anAppToCreate, final String appContextTemplate) {
         JpaGroup jpaGroup = groupCrudService.getGroup(anAppToCreate.getCommand().getGroupId());
         final JpaApplication jpaApp = applicationCrudService.createApplication(anAppToCreate, jpaGroup);
+        final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
+        final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
+        applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate);
         return JpaAppBuilder.appFrom(jpaApp);
     }
 
@@ -40,7 +46,17 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     public void removeApplication(Identifier<Application> anAppId) {
         applicationCrudService.removeApplication(anAppId);
     }
-    
+
+    @Override
+    public List<String> getResourceTemplateNames(final String appName) {
+        return applicationCrudService.getResourceTemplateNames(appName);
+    }
+
+    @Override
+    public String getResourceTemplate(final String appName, final String resourceTemplateName) {
+        return applicationCrudService.getResourceTemplate(appName, resourceTemplateName);
+    }
+
     @Override
     public Application updateWARPath(final Event<UploadWebArchiveCommand> anAppToUpdate, String warPath) {
         final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
@@ -53,6 +69,17 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
         jpaOriginal.setWarPath(null);
         return JpaAppBuilder.appFrom(jpaOriginal);
+    }
+
+    @Override
+    public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template) {
+        applicationCrudService.updateResourceTemplate(appName, resourceTemplateName, template);
+        return applicationCrudService.getResourceTemplate(appName, resourceTemplateName);
+    }
+
+    @Override
+    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateCommand> event) {
+        return applicationCrudService.uploadAppTemplate(event);
     }
 
 }

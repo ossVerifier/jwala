@@ -2,11 +2,11 @@ div.dataGrid-default {
     position: absolute;
     width: 98%;
     height: 530px;
-    overflow: scroll
+    overflow: scroll;
 }
 
 table.dataGrid-default {
-    border-collapse: collapse
+    border-collapse: collapse;
 }
 
 table.dataGrid-default th {

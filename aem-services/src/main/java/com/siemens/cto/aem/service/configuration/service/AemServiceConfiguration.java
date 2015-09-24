@@ -15,8 +15,16 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
+import com.siemens.cto.aem.service.app.impl.ApplicationCommandServiceImpl;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
@@ -148,7 +156,8 @@ public class AemServiceConfiguration {
     public GroupService getGroupService() {
         return new GroupServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
-                stateNotificationGateway);
+                stateNotificationGateway,
+                getWebServerService());
     }
 
     @Bean(name = "jvmService")
@@ -167,8 +176,27 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public ApplicationService getApplicationService() {
-        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(), persistenceServiceConfiguration.getApplicationPersistenceService());
+    @Autowired
+    public GroupJvmRelationshipService groupJvmRelationshipService(final GroupCrudService groupCrudService,
+                                                                   final JvmCrudService jvmCrudService) {
+        return new GroupJvmRelationshipServiceImpl(groupCrudService, jvmCrudService);
+    }
+
+    @Bean
+    @Autowired
+    public JvmPersistenceService getJvmPersistenceService(final JvmCrudService jvmCrudService,
+                                                          final GroupJvmRelationshipService groupJvmRelationshipService) {
+        return new JpaJvmPersistenceServiceImpl(jvmCrudService, groupJvmRelationshipService);
+    }
+
+    @Bean
+    @Autowired
+    public ApplicationService getApplicationService(final ClientFactoryHelper clientFactoryHelper,
+                                                    final JvmPersistenceService jvmPersistenceService) {
+        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(),
+                                          persistenceServiceConfiguration.getApplicationPersistenceService(),
+                                          jvmPersistenceService,
+                                          clientFactoryHelper, null, null);
     }
 
     @Bean
@@ -235,6 +263,11 @@ public class AemServiceConfiguration {
                 jschBuilder,
                 sshConfig,
                 factoryHelper);
+    }
+
+    @Bean
+    public ApplicationCommandService getApplicationCommandService() {
+        return new ApplicationCommandServiceImpl(aemSshConfig.getSshConfiguration());
     }
 
     @Bean

@@ -22,4 +22,8 @@ public interface ApplicationDao {
 
     List<Application> findApplicationsBelongingToWebServer(String aWebServerName);
 
+    Application findApplicationByName(final String name);
+
+    Application findApplication(String appName, String groupName, String jvmName);
+
 }

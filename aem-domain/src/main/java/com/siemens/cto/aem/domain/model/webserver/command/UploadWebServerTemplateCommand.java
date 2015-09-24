@@ -1,26 +1,26 @@
-package com.siemens.cto.aem.domain.model.jvm.command;
+package com.siemens.cto.aem.domain.model.webserver.command;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.rule.MultipleRules;
 import com.siemens.cto.aem.domain.model.rule.ValidTemplateNameRule;
 import com.siemens.cto.aem.domain.model.rule.app.GoodStreamRule;
-import com.siemens.cto.aem.domain.model.rule.jvm.JvmIdRule;
+import com.siemens.cto.aem.domain.model.rule.webserver.WebServerIdRule;
+import com.siemens.cto.aem.domain.model.webserver.WebServer;
 
 import java.io.InputStream;
 import java.io.Serializable;
 
 /**
- * Created by z0033r5b on 8/17/2015.
+ * Created by z0033r5b on 8/26/2015.
  */
-public class UploadServerXmlTemplateCommand implements Serializable, Command {
-    private final Jvm jvm;
+public abstract class UploadWebServerTemplateCommand implements Serializable, Command {
+    private final WebServer webServer;
     private String fileName;
     private final InputStream data;
 
-    public UploadServerXmlTemplateCommand(Jvm jvm, String fileName, InputStream data) {
-        this.jvm = jvm;
+    public UploadWebServerTemplateCommand(WebServer webServer, String fileName, InputStream data) {
+        this.webServer = webServer;
         this.fileName = fileName;
         this.data = data;
     }
@@ -30,16 +30,18 @@ public class UploadServerXmlTemplateCommand implements Serializable, Command {
         new MultipleRules(
                 new ValidTemplateNameRule(this.fileName),
                 new GoodStreamRule(this.data),
-                new JvmIdRule(this.jvm.getId())
-                ).validate();
+                new WebServerIdRule(this.webServer.getId())
+        ).validate();
 
     }
 
-    public Jvm getJvm() {
-        return jvm;
+    public WebServer getWebServer() {
+        return webServer;
     }
 
     public InputStream getData(){
         return data;
     }
+
+    public abstract String getConfFileName();
 }

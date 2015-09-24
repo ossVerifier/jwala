@@ -6,9 +6,13 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
@@ -24,11 +28,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
+    private final WebServerDao webServerDao;
 
     public JpaGroupPersistenceServiceImpl(final GroupCrudService theGroupCrudService,
                                           final GroupJvmRelationshipService theGroupJvmRelationshipService) {
         groupCrudService = theGroupCrudService;
         groupJvmRelationshipService = theGroupJvmRelationshipService;
+        webServerDao = new JpaWebServerDaoImpl();
     }
 
     @Override
@@ -51,6 +57,14 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
 
         return groupFrom(group, false);
+    }
+
+    @Override
+    public Group getGroupWithWebServers(final Identifier<Group> aGroupId) throws NotFoundException {
+
+        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+
+        return groupFrom(group, true);
     }
 
     @Override
@@ -148,6 +162,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public Set<CurrentState<Group, GroupState>> getAllKnownStates() {
         final List<JpaGroup> groups = groupCrudService.getGroups();
         return groupStatesFrom(groups);
+    }
+
+    @Override
+    public Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
+        groupJvmRelationshipService.populateJvmConfig(uploadJvmTemplateCommands, user, overwriteExisting);
+        return groupFrom(groupCrudService.getGroup(aGroupId), false);
     }
 
     @Override

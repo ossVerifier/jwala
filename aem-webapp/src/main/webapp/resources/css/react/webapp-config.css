@@ -1,5 +1,5 @@
 .war-upload-component {
-    width: 621px
+    width: 621px;
 }
 
 .war-upload-component div.archive-file {
@@ -7,14 +7,14 @@
 }
 
 .war-upload-component div.eject-icon {
-    float: right
+    float: right;
 }
 
 .war-upload-component div.file-upload {
     padding: 10px 0 0 0;
-    width: 300px
+    width: 300px;
 }
 
 .webapp-config > table {
-    width: 100%
+    width: 100%;
 }

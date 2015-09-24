@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Scanner;
 
 public class RuntimeCommand {
     private String command;
@@ -45,6 +44,11 @@ public class RuntimeCommand {
         }
     }
 
+    @Override
+    public String toString() {
+        return command;
+    }
+
     class ProcessLogger extends Thread {
 
         private final InputStream stream;
@@ -62,18 +66,19 @@ public class RuntimeCommand {
 
         public void run() {
             try {
-                int nextChar;
-                StringBuffer lineBuff = new StringBuffer();
-                while ((nextChar = this.stream.read()) != -1) {
+                int nextChar = this.stream.read();
+                StringBuilder lineBuff = new StringBuilder();
+                while (nextChar != -1) {
                     lineBuff.append((char) nextChar);
                     if (lineBuff.toString().endsWith(LINE_SEPARATOR)) {
                         final String line = lineBuff.toString();
-                        if (!line.equals(LINE_SEPARATOR))
-                            LOGGER.info(this.processType + ": " + line.substring(0,
-                                    line.length() - LINE_SEPARATOR.length()));
-                        lineBuff = new StringBuffer();
+                        if (!line.equals(LINE_SEPARATOR)) {
+                            LOGGER.info(this.processType + ": " + line.substring(0, line.length() - LINE_SEPARATOR.length()));
+                        }
+                        lineBuff = new StringBuilder();
                     }
                     this.captureBuffer.append((char) nextChar);
+                    nextChar = this.stream.read();
                 }
                 if(!"".equals(lineBuff.toString().trim())){
                     LOGGER.info(lineBuff.toString());

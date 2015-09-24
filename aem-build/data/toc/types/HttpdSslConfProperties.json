@@ -1,0 +1,14 @@
+{"name":"HTTPD Conf","contentType":"application/xml",
+	"properties":[
+					{"name":"webServerName", "required":"true"},
+					{"name":"comments", "required": "true"},
+					{"name":"webServer.host", "required":"true"},
+					{"name":"it.webAppContext", "required":"true"},
+					{"name":"it.name", "required":"true"},
+					{"name":"it.httpPort", "required":"true"},
+					{"name":"ctxPath", "required":"true"},
+					{"name":"jvmName", "required":"true"},
+					{"name":"hostName", "required":"true"},
+					{"name":"jvmAjpPort", "required":"true"}
+				]
+}

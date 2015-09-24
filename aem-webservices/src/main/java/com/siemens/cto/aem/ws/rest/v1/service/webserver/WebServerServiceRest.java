@@ -70,4 +70,38 @@ public interface WebServerServiceRest {
     @Path("/{wsName}/resources/name")
     Response getResourceNames(@PathParam("wsName") final String wsName);
 
+    @POST
+    @Path("/{wsName}/resources/uploadTemplate")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadConfigTemplate(@PathParam("wsName") final String webServerName,
+                                  @BeanParam final AuthenticatedUser aUser,
+                                  @QueryParam("templateName") final String templateName);
+
+    /**
+     * Get resource template content.
+     * @param wsName web server name.
+     * @param resourceTemplateName the resource template name.
+     * @param tokensReplaced flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
+     * @return the template contents
+     */
+    @GET
+    @Path("/{wsName}/resources/template/{resourceTemplateName}")
+    Response getResourceTemplate(@PathParam("wsName") final String wsName,
+                                 @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                 @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
+    @PUT
+    @Path("/{wsName}/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateResourceTemplate(@PathParam("wsName") final String wsName,
+                                    @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                    final String content);
+
+    @PUT
+    @Path("/{webServerName}/resources/preview")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response previewResourceTemplate(@PathParam("webServerName") String webServerName,
+                                     @MatrixParam("groupName") String groupName,
+                                     String template);
+
 }

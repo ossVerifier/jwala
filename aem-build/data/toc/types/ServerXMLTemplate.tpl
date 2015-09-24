@@ -20,7 +20,7 @@
      define subcomponents such as "Valves" at this level.
      Documentation at /docs/config/server.html
  -->
-<Server port="${jvmShutDownPort}" shutdown="SHUTDOWN">
+<Server port="${jvm.shutdownPort}" shutdown="SHUTDOWN">
   <!-- Security listener. Documentation at /docs/config/listeners.html
   <Listener className="org.apache.catalina.security.SecurityListener" />
   -->
@@ -34,8 +34,8 @@
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
   <Listener className="com.siemens.cto.infrastructure.atomikos.AtomikosLifecycleListener" />
   <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="${jvmId}"
-            instanceId="${jvmId}"
+            id="${jvm.id.getId()}"
+            instanceId="${jvm.id.getId()}"
             type="JVM"
             jmsConnectionFactory="java:/jms/toc-cf"
             jmsDestination="java:/jms/toc-status"
@@ -86,7 +86,7 @@
               type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="ssl://@tibco.ems.host@:@tibco.ems.port@"
               userName="@tibco.ems.user.name@"
-              userPassword="@tibco.ems.password.stpencrypted@"
+              userPassword="\${enc:@tibco.ems.password.stpencrypted@}"
               connAttemptCount="100"
               connAttemptDelay="1000"
               reconnAttemptCount="100"
@@ -121,9 +121,9 @@
     -->
 
     <Connector 
-      port="${jvmHttpsPort}" 
-      SSLCertificateFile="@stp.security.dir@\\id\\${jvmHostName}.cer" 
-      SSLCertificateKeyFile="@stp.security.dir@\\id\\${jvmHostName}.key" 
+      port="${jvm.httpsPort}" 
+      SSLCertificateFile="@stp.security.dir@\\id\\${jvm.hostName}.cer" 
+      SSLCertificateKeyFile="@stp.security.dir@\\id\\${jvm.hostName}.key" 
       SSLEnabled="true" 
       SSLPassword="" 
       acceptCount="100" 
@@ -151,7 +151,7 @@
      
      <!-- The STP Engine is the normal standalone Tomcat host 
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvmName}">
+    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
 
       <!-- Host Features: Standard Host
            AppBase: stpapps/
@@ -174,7 +174,7 @@
             errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
 
         <!-- Attempt to ensure we 'could' identify ourselves properly over SSL -->  
-        <Alias>${jvmHostName}</Alias>
+        <Alias>${jvm.hostName}</Alias>
         
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
@@ -210,9 +210,9 @@
          APR (HTTP/AJP) Connector: /docs/apr.html
          Define a non-SSL HTTP/1.1 Connector on port 8090
     -->
-    <Connector port="${jvmHttpPort}" protocol="HTTP/1.1"
+    <Connector port="${jvm.httpPort}" protocol="HTTP/1.1"
                connectionTimeout="20000"
-               redirectPort="${jvmHttpsPort}" />
+               redirectPort="${jvm.httpsPort}" />
     <!-- A "Connector" using the shared thread pool-->
     <!--
     <Connector executor="tomcatThreadPool"
@@ -221,7 +221,7 @@
                redirectPort="8091" />
     -->
     <!-- Define an AJP 1.3 Connector on port 8094 -->
-    <Connector port="${jvmAjpPort}" protocol="AJP/1.3" redirectPort="${jvmHttpsPort}" />
+    <Connector port="${jvm.ajpPort}" protocol="AJP/1.3" redirectPort="${jvm.httpsPort}" />
 
 
     <!-- An Engine represents the entry point (within Catalina) that processes

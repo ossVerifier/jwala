@@ -55,7 +55,7 @@ public class CommandController {
     @RequestMapping(value = "/webServerCommand")
     public void webServerCommand(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final Identifier<WebServer> id = new Identifier<>(request.getParameter("webServerId"));
-        final String ERROR_MSG_PREFIX = "Error reading HTTPD Conf: ";
+        final String ERROR_MSG_PREFIX = "Error reading httpd.conf: ";
         response.setContentType("text/plain");
         try {
             final ExecData execData = webServerCommandService.getHttpdConf(id);

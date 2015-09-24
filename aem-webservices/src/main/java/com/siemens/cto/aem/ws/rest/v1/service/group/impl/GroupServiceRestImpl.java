@@ -1,19 +1,26 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadHttpdConfTemplateCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
@@ -29,8 +36,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +50,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
 
     private final GroupService groupService;
+    private final ResourceService resourceService;
 
     @Autowired
     private GroupControlService groupControlService;
@@ -54,8 +65,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Qualifier("groupStateService")
     private StateService<Group, GroupState> groupStateService;
 
-    public GroupServiceRestImpl(final GroupService theGroupService) {
+    public GroupServiceRestImpl(final GroupService theGroupService, ResourceService theResourceService) {
         groupService = theGroupService;
+        resourceService = theResourceService;
     }
 
     @Override
@@ -83,7 +95,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Create Group requested: {}", aNewGroupName);
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
-                                                                aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -91,7 +103,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
         return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
-                                                           aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -107,8 +119,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                        final AuthenticatedUser aUser) {
         LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupCommand(aGroupId,
-                                                                                                aJvmId),
-                                                                  aUser.getUser()));
+                        aJvmId),
+                aUser.getUser()));
     }
 
     @Override
@@ -118,7 +130,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupCommand command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
-                                                              aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -128,9 +140,45 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
-                                                                             JvmControlOperation.convertFrom(command.getExternalValue()));
+                JvmControlOperation.convertFrom(command.getExternalValue()));
         return ResponseBuilder.ok(groupJvmControlService.controlGroup(grpCommand,
-                                                                      aUser.getUser()));
+                aUser.getUser()));
+    }
+
+    @Override
+    public Response populateJvmConfig(final Identifier<Group> aGroupId, final AuthenticatedUser aUser, final boolean overwriteExisting) {
+        List<UploadJvmTemplateCommand> uploadJvmTemplateCommands = new ArrayList<>();
+        for (Jvm jvm : groupService.getGroup(aGroupId).getJvms()) {
+            for (final ResourceType resourceType : resourceService.getResourceTypes()) {
+                if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(resourceType.getConfigFileName())) {
+                    FileInputStream dataInputStream = null;
+                    try {
+                        dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + resourceType.getTemplateName()));
+                        UploadJvmTemplateCommand uploadJvmTemplateCommand = new UploadJvmTemplateCommand(jvm, resourceType.getTemplateName(), dataInputStream) {
+                            @Override
+                            public String getConfFileName() {
+                                return resourceType.getConfigFileName();
+                            }
+                        };
+                        uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return ResponseBuilder.ok(groupService.populateJvmConfig(aGroupId, uploadJvmTemplateCommands, aUser.getUser(), overwriteExisting));
+    }
+
+    @Override
+    public Response populateWebServerConfig(final Identifier<Group> aGroupId, final AuthenticatedUser aUser, final boolean overwriteExisting) {
+        List<UploadWebServerTemplateCommand> uploadWSTemplateCommands = new ArrayList<>();
+        UploadWebServerTemplateCommandBuilder uploadCommandBuilder = new UploadWebServerTemplateCommandBuilder();
+        for (WebServer webServer : groupService.getGroupWithWebServers(aGroupId).getWebServers()) {
+            UploadHttpdConfTemplateCommand httpdConfTemplateCommand = uploadCommandBuilder.buildHttpdConfCommand(webServer);
+            uploadWSTemplateCommands.add(httpdConfTemplateCommand);
+        }
+        return ResponseBuilder.ok(groupService.populateWebServerConfig(aGroupId, uploadWSTemplateCommands, aUser.getUser(), overwriteExisting));
     }
 
     @Override
@@ -140,9 +188,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         LOGGER.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
-                WebServerControlOperation.convertFrom(command.getExternalValue()) );
+                WebServerControlOperation.convertFrom(command.getExternalValue()));
         return ResponseBuilder.ok(groupWebServerControlService.controlGroup(grpCommand,
-                                                                            aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -155,14 +203,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation);
         return ResponseBuilder.ok(groupControlService.controlGroup(grpCommand,
-                                                                   aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
     public Response resetState(final Identifier<Group> aGroupId,
                                final AuthenticatedUser aUser) {
         return ResponseBuilder.ok(groupControlService.resetState(aGroupId,
-                                                                 aUser.getUser()));
+                aUser.getUser()));
     }
 
     @Override
@@ -184,7 +232,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
             final List<String> groupNames = new LinkedList<>();
-            for (LiteGroup group: jvm.getGroups()) {
+            for (LiteGroup group : jvm.getGroups()) {
                 groupNames.add(group.getName());
             }
             membershipDetailsList.add(new MembershipDetails(jvm.getJvmName(),
@@ -198,12 +246,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (WebServer webServer : webServers) {
             final List<String> groupNames = new LinkedList<>();
-            for (Group group: webServer.getGroups()) {
+            for (Group group : webServer.getGroups()) {
                 groupNames.add(group.getName());
             }
             membershipDetailsList.add(new MembershipDetails(webServer.getName(),
-                                          GroupChildType.WEB_SERVER,
-                                          groupNames));
+                    GroupChildType.WEB_SERVER,
+                    groupNames));
         }
         return membershipDetailsList;
     }

@@ -10,9 +10,11 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
 
 import javax.persistence.EntityExistsException;
@@ -20,7 +22,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Scanner;
 
 public class JvmCrudServiceImpl implements JvmCrudService {
 
@@ -135,9 +139,9 @@ public class JvmCrudServiceImpl implements JvmCrudService {
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event) {
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event) {
 
-        final UploadServerXmlTemplateCommand command = event.getCommand();
+        final UploadJvmTemplateCommand command = event.getCommand();
         final Jvm jvm = command.getJvm();
         Identifier<Jvm> id = jvm.getId();
         final JpaJvm jpaJvm = getJvm(id);
@@ -147,26 +151,25 @@ public class JvmCrudServiceImpl implements JvmCrudService {
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
-        Query query = entityManager.createQuery("SELECT t FROM JpaJvmConfigTemplate t where t.templateName ='server.xml' and t.jvm = :jpaJvm");
+        Query query = entityManager.createQuery("SELECT t FROM JpaJvmConfigTemplate t where t.templateName = :tempName and t.jvm = :jpaJvm");
         query.setParameter("jpaJvm", jpaJvm);
+        query.setParameter("tempName", command.getConfFileName());
         List<JpaJvmConfigTemplate> templates = query.getResultList();
         JpaJvmConfigTemplate jpaConfigTemplate;
-        if (templates.size() == 1){
+        if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.flush();
-        }
-        else if (templates.size() == 0){
+        } else if (templates.isEmpty()) {
             //create
             jpaConfigTemplate = new JpaJvmConfigTemplate();
             jpaConfigTemplate.setJvm(jpaJvm);
-            jpaConfigTemplate.setTemplateName("server.xml");
+            jpaConfigTemplate.setTemplateName(command.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
-        }
-        else {
+        } else {
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for JVM [" + jvm.getJvmName() + "] but returned " + templates.size() + " templates");
         }
@@ -182,10 +185,11 @@ public class JvmCrudServiceImpl implements JvmCrudService {
         query.setParameter("jpaJvm", jpaJvm);
         query.setParameter("tempName", templateName);
         List<JpaJvmConfigTemplate> templates = query.getResultList();
-        if (templates.size() == 1){
+        if (templates.size() == 1) {
             return templates.get(0).getTemplateContent();
-        }
-        else {
+        } else if (templates.isEmpty()) {
+            return "";
+        } else {
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one " + templateName + " template to be returned for JVM [" + jpaJvm.getName() + "] but returned " + templates.size() + " templates");
         }
@@ -200,4 +204,40 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
         return query.getResultList();
     }
+
+    @Override
+    public List<String> getResourceTemplateNames(String jvmName) {
+        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_RESOURCE_TEMPLATE_NAMES);
+        q.setParameter("jvmName", jvmName);
+        return q.getResultList();
+    }
+
+    @Override
+    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_CONTENT);
+        q.setParameter("jvmName", jvmName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (RuntimeException re) {
+            throw new NonRetrievableResourceTemplateContentException(jvmName, resourceTemplateName, re);
+        }
+    }
+
+    @Override
+    public void updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
+        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_CONTENT);
+        q.setParameter("jvmName", jvmName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateContent", template);
+
+        try {
+            if (q.executeUpdate() == 0) {
+                throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName);
+            }
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName, re);
+        }
+    }
+
 }

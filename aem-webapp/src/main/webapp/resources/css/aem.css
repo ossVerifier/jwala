@@ -1,7 +1,7 @@
 html *
 {
    font-family: Tahoma, Helvetica, sans-serif;
-   font-size: 12px
+   font-size: 12px;
 }
 
 body {
@@ -9,11 +9,11 @@ body {
 }
 
 .error {
-    color: red
+    color: red;
 }
 
 .ok {
-    color: green
+    color: green;
 }
 
 .textAlignLeft {

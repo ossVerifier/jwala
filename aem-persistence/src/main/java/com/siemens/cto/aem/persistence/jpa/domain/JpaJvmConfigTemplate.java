@@ -7,7 +7,19 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "JVM_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"JVM_ID", "TEMPLATE_NAME"})})
+@NamedQueries({
+    @NamedQuery(name = JpaJvmConfigTemplate.GET_JVM_RESOURCE_TEMPLATE_NAMES,
+                query = "SELECT t.templateName FROM JpaJvmConfigTemplate t WHERE t.jvm.name = :jvmName"),
+    @NamedQuery(name = JpaJvmConfigTemplate.GET_JVM_TEMPLATE_CONTENT,
+                query = "SELECT t.templateContent FROM JpaJvmConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
+    @NamedQuery(name = JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_CONTENT,
+                query = "UPDATE JpaJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.jvm.name = :jvmName AND t.templateName = :templateName")
+})
 public class JpaJvmConfigTemplate {
+
+    public static final String GET_JVM_RESOURCE_TEMPLATE_NAMES = "getJvmResourceTemplateNames";
+    public static final String GET_JVM_TEMPLATE_CONTENT = "getJvmTemplateContent";
+    public static final String UPDATE_JVM_TEMPLATE_CONTENT = "updateJvmTemplateContent";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,4 +66,5 @@ public class JpaJvmConfigTemplate {
     public void setId(Long id) {
         this.id = id;
     }
+
 }

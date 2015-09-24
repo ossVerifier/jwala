@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.configuration;
 
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -45,14 +46,17 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 public class AemWebServiceConfiguration {
 
     @Autowired
     private FilesConfiguration filesConfiguration;
-    
+
     @Autowired
     private GroupService groupService;
 
@@ -73,7 +77,7 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private WebServerCommandService webServerCommandService;
-    
+
     @Autowired
     private ResourceService resourceService;
 
@@ -88,6 +92,8 @@ public class AemWebServiceConfiguration {
     @Autowired
     @Qualifier("stateNotificationService")
     private StateNotificationService stateNotificationService;
+
+    private final Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
 
     @Bean
     public Server getV1JaxResServer() {
@@ -130,14 +136,17 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public GroupServiceRest getV1GroupServiceRest() {
-        return new GroupServiceRestImpl(groupService);
+        return new GroupServiceRestImpl(groupService, resourceService);
     }
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
         return new JvmServiceRestImpl(jvmService,
-                                      jvmControlService,
-                                      jvmStateService);
+                jvmControlService,
+                jvmStateService,
+                resourceService,
+                new RuntimeCommandBuilder(),
+                writeLockMap);
     }
 
     @Bean
@@ -148,21 +157,22 @@ public class AemWebServiceConfiguration {
     @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService,
-                                            webServerControlService,
-                                            webServerCommandService,
-                                            webServerStateService);
+                webServerControlService,
+                webServerCommandService,
+                webServerStateService);
     }
 
     @Bean
     public StateServiceRest getV1StateServiceRest() {
         return new StateServiceRestImpl(stateNotificationService,
-                                        getStateConsumerManager());
+                getStateConsumerManager());
     }
 
     @Bean
     public ApplicationServiceRest getV1ApplicationServiceRest() {
         return new ApplicationServiceRestImpl(applicationService);
     }
+
     @Bean
     public ResourceServiceRest getV1ResourceServiceRest() {
         return new ResourceServiceRestImpl(resourceService, groupService, jvmService);

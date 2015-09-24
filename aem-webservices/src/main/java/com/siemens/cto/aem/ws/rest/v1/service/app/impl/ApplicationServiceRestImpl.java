@@ -3,11 +3,15 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.domain.model.app.UploadAppTemplateCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -21,13 +25,14 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.MatrixParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
@@ -153,10 +158,108 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getResourceNames(String appName) {
-        // TODO: Get resource names from db.
-        final List<String> resources = new LinkedList<>();
-        resources.add(appName + ".xml");
-        return ResponseBuilder.ok(resources);
+    public Response getResourceNames(final String appName) {
+        return ResponseBuilder.ok(service.getResourceTemplateNames(appName));
+    }
+
+    @Override
+    public Response getResourceTemplate(final String appName,
+                                        final String groupName,
+                                        final String jvmName,
+                                        final String resourceTemplateName,
+                                        final boolean tokensReplaced) {
+        return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName,
+                                                              tokensReplaced));
+    }
+
+    @Override
+    public Response updateResourceTemplate(final String appName,
+                                           final String resourceTemplateName,
+                                           final String content) {
+
+        try {
+            return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content));
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
+                            e.getMessage()));
+        }
+
+    }
+
+    @Override
+    public Response deployConf(final String appName,
+                               final String groupName,
+                               final String jvmName,
+                               final String resourceTemplateName,
+                               final AuthenticatedUser authUser) {
+        try {
+            final ExecData execData = service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
+            if (execData.getReturnCode().wasSuccessful()) {
+                return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to " + jvmName);
+            } else {
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                                             new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
+            }
+        } catch (RuntimeException re) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                                         new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
+        }
+
+    }
+
+    @Override
+    public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName) {
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
+
+        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
+
+        List<Application> applications = service.getApplications();
+        Application app = null;
+        for (Application resultApp : applications){
+            if (resultApp.getName().equals(appName)) {
+                app = resultApp;
+                break;
+            }
+        }
+        if (null == app){
+            throw new InternalErrorException(AemFaultType.APPLICATION_NOT_FOUND, "Could not find Application with name " + appName);
+        }
+
+        ServletFileUpload sfu = new ServletFileUpload();
+        InputStream data = null;
+        try {
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemStream file1;
+
+            while (iter.hasNext()) {
+                file1 = iter.next();
+                try {
+                    data = file1.openStream();
+                    UploadAppTemplateCommand command = new UploadAppTemplateCommand(app,
+                            file1.getName(),
+                            appXmlFileName,
+                            data);
+
+                    return ResponseBuilder.created(
+                            service.uploadAppTemplate(command, aUser.getUser())); // early out on first attachment
+                } finally {
+                    assert data != null;
+                    data.close();
+                }
+            }
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_JVM_OPERATION, "No data"));
+        } catch (IOException | FileUploadException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
+        }
+    }
+    @Override
+    public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
+                                            final String template) {
+        return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
     }
 }

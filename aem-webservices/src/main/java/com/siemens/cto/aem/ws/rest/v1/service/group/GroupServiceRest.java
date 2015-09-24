@@ -60,6 +60,18 @@ public interface GroupServiceRest {
                               final JsonControlJvm jvmControlOperation,
                               @BeanParam final AuthenticatedUser aUser);
 
+    @GET
+    @Path("/{groupId}/jvms/defaultConfig")
+    Response populateJvmConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
+                               @BeanParam final AuthenticatedUser aUser,
+                               @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
+
+    @GET
+    @Path("/{groupId}/webservers/defaultConfig")
+    Response populateWebServerConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
+                                     @BeanParam final AuthenticatedUser aUser,
+                                     @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
+
     @POST
     @Path("/{groupId}/commands")
     Response controlGroup(@PathParam("groupId") final Identifier<Group> aGroupId,
@@ -86,7 +98,7 @@ public interface GroupServiceRest {
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)
      * Note: The group specified by id will not be included hence the word "Other" in the method name.
      *
-     * @param id the id of the group
+     * @param id             the id of the group
      * @param groupChildType the child type to get details on
      * @return membership details of a group's children
      */

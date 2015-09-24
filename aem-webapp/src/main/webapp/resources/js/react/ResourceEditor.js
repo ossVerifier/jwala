@@ -8,8 +8,7 @@
 var ResourceEditor = React.createClass({
     getInitialState: function() {
         return {
-            groupData: null,
-            selectedTreeListNodeMetaData: null
+            groupData: null
         }
     },
     render: function() {
@@ -17,14 +16,24 @@ var ResourceEditor = React.createClass({
             return <div>Loading data...</div>
         }
 
-        var treeMetaData = {propKey: "name",
-                            children:[{entity: "webServers", propKey: "name", selectable: true},
-                                      {entity: "jvms", propKey: "jvmName", selectable: true,
-                                            children:[{entity: "webApps", propKey: "name", selectable: true}]}]};
+        var treeMetaData = {entity: "groups",
+                            propKey: "name",
+                            icon: "public-resources/img/icons/group.png",
+                            children:[{entity: "webServers",
+                                       propKey: "name", selectable: true,
+                                       icon: "public-resources/img/icons/webserver.png"},
+                                      {entity: "jvms",
+                                       propKey: "jvmName",
+                                       selectable: true,
+                                       icon: "public-resources/img/icons/appserver.png",
+                                       children:[{entity: "webApps",
+                                                  propKey: "name",
+                                                  selectable: true,
+                                                  icon: "public-resources/img/icons/webapp.png"}]}]};
 
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
-                                              title="Groups"
-                                              contentClassName="resource-static-dialog-content">
+                                              title="Topology"
+                                              contentClassName="resource-static-dialog-content-1">
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -33,14 +42,15 @@ var ResourceEditor = React.createClass({
                                               selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
-        var resourcesPane = <RStaticDialog title="Resources" contentClassName="resource-static-dialog-content">
+        var resourcesPane = <RStaticDialog title="Resources" contentClassName="resource-static-dialog-content-2">
                                 <ResourcePane ref="resourcePane"
                                               jvmService={this.props.jvmService}
                                               wsService={this.props.wsService}
-                                              webAppService={this.props.webAppService}/>
+                                              webAppService={this.props.webAppService}
+                                              selectCallback={this.selectResourceCallback}/>
                             </RStaticDialog>
 
-        var resourceAttrPane = <RStaticDialog title="Properties and Values" contentClassName="resource-static-dialog-content">
+        var resourceAttrPane = <RStaticDialog title="Properties and Values" contentClassName="resource-static-dialog-content-3">
                                    <ResourceAttrPane ref="resourceAttrPane" />
                                </RStaticDialog>
 
@@ -51,9 +61,9 @@ var ResourceEditor = React.createClass({
 
         return <RSplitter components={splitterComponents}
                           orientation={RSplitter.HORIZONTAL_ORIENTATION}
-                          panelDimensions={[{width:"33.33%", height:"100%"},
-                                            {width:"33.33%", height:"100%"},
-                                            {width:"33.33%", height:"100%"}]} />
+                          panelDimensions={[{width:"37.30%", height:"100%"},
+                                            {width:"19.36%", height:"100%"},
+                                            {width:"43.33%", height:"100%"}]} />
     },
     componentDidMount: function() {
         this.props.groupService.getGroups(this.getGroupDataCallback, "webServers=true");
@@ -96,5 +106,9 @@ var ResourceEditor = React.createClass({
     selectNodeCallback: function(data) {
         this.refs.resourcePane.getData(data);
         this.refs.resourceAttrPane.showAttributes(data);
+        this.props.selectEntityCallback(data, null);
     },
+    selectResourceCallback: function(value) {
+        this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value);
+    }
 });

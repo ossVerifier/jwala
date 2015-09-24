@@ -176,7 +176,7 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     childProjectName "${ROOT_NAME}-webapp"
     warFileToDeploy "${ROOT_NAME}-webapp-1.0-SNAPSHOT.war"
     jvmInstancePath JVM_INSTANCE_PATH
-    jvmShutdownWaitTime 60000 // Make it 1 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
+    jvmShutdownWaitTime 300000 // Make it 1 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
     pingUrl "https://localhost:9101/stp.png"
 
     beforeJvmStart {

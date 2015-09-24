@@ -1,0 +1,109 @@
+package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
+
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.junit.Assert.*;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+@EnableTransactionManagement
+@IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class,
+        classes = {JvmCrudServiceImplTest.Config.class
+        })
+public class JvmCrudServiceImplTest {
+
+    public static final String SERVER_XML = "server.xml";
+    @Autowired
+    private JvmCrudServiceImpl impl;
+
+    private User user;
+    private Jvm jvm;
+
+    @Before
+    public void setup() throws Exception {
+        user = new User("unused");
+
+        String testJvmName = "testJvmName";
+        CreateJvmCommand createCommand = new CreateJvmCommand(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
+        Event<CreateJvmCommand> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
+        JpaJvm jpaJvm = impl.createJvm(createJvmEvent);
+        jvm = new Jvm(jpaJvm.id(), jpaJvm.getName(), new HashSet<LiteGroup>());
+    }
+
+    @Test
+    public void testUploadJvmTemplateXml() throws FileNotFoundException {
+        final String expectedTemplateName = SERVER_XML;
+        File testTemplate = new File("./src/test/resources/HttpdSslConfTemplate.tpl");
+        UploadJvmTemplateCommand uploadCommand = new UploadJvmTemplateCommand(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
+            @Override
+            public String getConfFileName() {
+                return SERVER_XML;
+            }
+        };
+        Event<UploadJvmTemplateCommand> uploadEvent = new Event<>(uploadCommand, AuditEvent.now(user));
+        JpaJvmConfigTemplate result = impl.uploadJvmTemplateXml(uploadEvent);
+        assertEquals(expectedTemplateName, result.getTemplateName());
+
+        // test get resource template names
+        List<String> resultList = impl.getResourceTemplateNames(jvm.getJvmName());
+        assertFalse(resultList.isEmpty());
+        assertEquals(1, resultList.size());
+        assertEquals(SERVER_XML, resultList.get(0));
+
+        // test get resource template
+        String resultText = impl.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
+        assertFalse(resultText.isEmpty());
+
+        // test update template
+        impl.updateResourceTemplate(jvm.getJvmName(), SERVER_XML, "<server>updated content</server>");
+        String resultUpdate = impl.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
+        assertTrue(resultUpdate.contains("updated content"));
+    }
+
+    @Test
+    public void testGetJvmTemplate() {
+        String result = impl.getJvmTemplate(SERVER_XML, jvm.getId());
+        assertNotNull(result);
+    }
+
+    @Configuration
+    @Import(TestJpaConfiguration.class)
+    static class Config {
+
+        @Bean
+        public JvmCrudServiceImpl getJvmCrudServiceImpl() {
+            return new JvmCrudServiceImpl();
+        }
+    }
+}

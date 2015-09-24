@@ -5,7 +5,9 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 
 import java.util.List;
@@ -18,6 +20,8 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     Group updateGroup(final Event<UpdateGroupCommand> anEvent) throws NotFoundException;
 
     Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
+
+    Group getGroupWithWebServers(final Identifier<Group> aGroupId) throws NotFoundException;
 
     Group getGroup(final String name) throws NotFoundException;
 
@@ -38,4 +42,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
 
     Set<CurrentState<Group, GroupState>> getAllKnownStates();
+
+    Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 }

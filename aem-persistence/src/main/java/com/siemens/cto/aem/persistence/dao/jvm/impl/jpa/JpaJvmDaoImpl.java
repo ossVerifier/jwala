@@ -152,6 +152,14 @@ public class JpaJvmDaoImpl implements JvmDao {
         }
     }
 
+    @Override
+    public Jvm findJvm(String jvmName, String groupName) {
+        final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
+        q.setParameter("jvmName", jvmName);
+        q.setParameter("groupName", groupName);
+        return jvmFrom((JpaJvm) q.getSingleResult());
+    }
+
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
 
         final JpaJvmBuilder builder = new JpaJvmBuilder(aJpaJvm);

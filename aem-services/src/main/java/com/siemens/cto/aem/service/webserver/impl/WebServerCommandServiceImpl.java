@@ -29,6 +29,7 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
@@ -43,7 +44,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     private final CommandExecutor executor;
     private final JschBuilder jsch;
     private final SshConfiguration sshConfig;
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerCommandServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebServerCommandServiceImpl.class);
     private ClientFactoryHelper clientFactoryHelper;
 
     public WebServerCommandServiceImpl(final WebServerService theWebServerService,
@@ -72,18 +73,28 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
 
         // ping the web server and return if not stopped
+        ClientHttpResponse response = null;
         try {
-            ClientHttpResponse response = clientFactoryHelper.requestGet(aWebServer.getStatusUri());
+            response = clientFactoryHelper.requestGet(aWebServer.getStatusUri());
             if (response.getStatusCode() == HttpStatus.OK) {
                 return new ExecData(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
             }
+        } catch (ConnectException e) {
+            logger.info("Ignore connect exception when attempting to replace resource files for the web server", e);
+        } catch (ConnectTimeoutException e) {
+            logger.info("Ignore connect timeout exception when attempting to replace resource files for the web server", e);
+        } catch (SocketTimeoutException e) {
+            logger.info("Ignore socket timeout exception when attempting to replace resource files for the web server", e);
         } catch (IOException e) {
-            if (!(e instanceof ConnectException || e instanceof ConnectTimeoutException)) {
-                LOGGER.error("Failed to ping {} while attempting to copy httpd.config :: ERROR: {}",aWebServerName, e.getMessage());
-                throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION,
-                        "Failed to ping " + aWebServerName + " while attempting to copy httpd.config", e);
+            logger.error("Failed to ping {} while attempting to copy httpd.config :: ERROR: {}", aWebServerName, e.getMessage());
+            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION,
+                    "Failed to ping " + aWebServerName + " while attempting to copy httpd.config", e);
+        } finally {
+            if (response != null) {
+                response.close();
             }
         }
+
 
         // create and execute the scp command
         String httpdConfUriPath = aWebServer.getHttpConfigFile().getUriPath();

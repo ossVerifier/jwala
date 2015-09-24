@@ -2,8 +2,21 @@
     min-height: 354px;
 }
 
-.resource-static-dialog-content {
-    min-width: 341px;
+.resource-static-dialog-content-1 {
+    min-width: 383px;
+    width: 383px;
     min-height: 305px;
+    padding: 5px 5px 5px 5px !important;
+}
+
+.resource-static-dialog-content-2 {
+    min-width: 190px;
+    width: 190px;
+    min-height: 305px;
+    padding: 5px 5px 5px 5px !important;
+}
+
+.resource-static-dialog-content-3 {
+    min-width: 450px;
     padding: 5px 5px 5px 5px !important;
 }

@@ -364,17 +364,6 @@ var GroupOperationsDataTable = React.createClass({
                                       buttonClassName:"ui-button-height",
                                       extraDataToPassOnCallback:["jvmName","groups"]},
                                  {tocType:"space"},
-                                 {id:"healthCheck",
-                                  sTitle:"Health Check",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.onClickHealthCheck,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-health-check",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
-                                  {tocType:"space"},
                                  {id:"threadDump",
                                   sTitle:"Thread Dump",
                                   mData:null,
@@ -396,7 +385,20 @@ var GroupOperationsDataTable = React.createClass({
                                   buttonClassName:"ui-button-height",
                                   extraDataToPassOnCallback:"hostName"},
                                  {tocType:"space"},
-                                 {id:"startJvm",
+                                 {id:"generateJvmConfig",
+                                  sTitle:"Generate JVM resources files",
+                                  mData:"name",
+                                  tocType:"button",
+                                  btnLabel:"",
+                                  btnCallback:this.jvmGenerateJvmConfig,
+                                  className:"inline-block",
+                                  customSpanClassName:"ui-icon ui-icon-gear",
+                                  buttonClassName:"ui-button-height",
+                                  clickedStateClassName:"busy-button",
+                                  busyStatusTimeout:30000,
+                                  extraDataToPassOnCallback:["jvmName"]},
+                                 {tocType:"space"},
+                                  {id:"startJvm",
                                   sTitle:"Start",
                                   mData:null,
                                   tocType:"button",
@@ -796,6 +798,22 @@ var GroupOperationsDataTable = React.createClass({
 
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
+    jvmGenerateJvmConfig: function(jvmId,jqClassSelector,extraData,groupId,doneCallback) {
+        this.doneCallback = doneCallback;
+        ServiceFactory.getJvmService().deployJvmConfAllFiles(extraData.jvmName,
+                                                         this.generateJvmConfigSucccessCallback,
+                                                         this.generateJvmConfigErrorCallback);
+    },
+    generateJvmConfigSucccessCallback: function(response) {
+        this.doneCallback();
+         $.alert("Successfully generated and deployed JVM resource files",
+                 "Deploy " + response.applicationResponseContent.jvmName +  "'s server.xml, context.xml, and setenv.bat", false);
+    },
+
+    generateJvmConfigErrorCallback: function(msg, doneCallback) {
+        this.doneCallback();
+        $.errorAlert(msg, "Error deploying JVM resource files", false);
+    },
 
     confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
         var dialogId = "start-stop-confirm-dialog-for_group" + parentItemId + "_jvm_ws_" + id;
@@ -1015,7 +1033,7 @@ var WebServerControlPanelWidget = React.createClass({
                     <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-gear"
                              onClick={this.generateHttpdConf}
-                             title="Generate HTTPD Conf"
+                             title="Generate httpd.conf"
                              busyClassName="busy-button"/>
 
                     <button className="button-link anchor-font-style" onClick={this.onClickHttpdConf}>httpd.conf</button>
@@ -1057,13 +1075,13 @@ var WebServerControlPanelWidget = React.createClass({
 
     generateHttpdConfSucccessCallback: function(response) {
         this.doneCallback();
-         $.alert("Successfully generated and deployed HTTPD Conf",
-                 "Deploy " + this.props.data.name +  "'s HTTPD conf", false);
+         $.alert("Successfully generated and deployed httpd.conf",
+                 "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
     generateHttpdConfErrorCallback: function(msg, doneCallback) {
         this.doneCallback();
-        $.errorAlert(msg, "Deploy " + this.props.data.name +  "'s HTTPD conf", false);
+        $.errorAlert(msg, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
     /**

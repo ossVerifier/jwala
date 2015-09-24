@@ -3,22 +3,17 @@ package com.siemens.cto.aem.service.jvm.impl;
 import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.*;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -42,16 +37,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.SERVER_XML_TEMPLATE;
 
 public class JvmServiceImpl implements JvmService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(JvmServiceImpl.class);
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
@@ -81,11 +77,12 @@ public class JvmServiceImpl implements JvmService {
                          final User aCreatingUser) {
 
         aCreateJvmCommand.validateCommand();
-
         final Event<CreateJvmCommand> event = new Event<>(aCreateJvmCommand,
                 AuditEvent.now(aCreatingUser));
+        Jvm jvm = jvmPersistenceService.createJvm(event);
+        // TODO add JVM_NEW state to JVM state table
 
-        return jvmPersistenceService.createJvm(event);
+        return jvm;
     }
 
     @Override
@@ -110,6 +107,11 @@ public class JvmServiceImpl implements JvmService {
     public Jvm getJvm(final Identifier<Jvm> aJvmId) {
 
         return jvmPersistenceService.getJvm(aJvmId);
+    }
+
+    @Override
+    public Jvm getJvm(final String jvmName) {
+        return jvmPersistenceService.findJvms(jvmName).get(0);
     }
 
     @Override
@@ -170,23 +172,19 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateConfig(String aJvmName) {
+    public String generateConfigFile(String aJvmName, String templateName) {
         final List<Jvm> jvmList = jvmPersistenceService.findJvms(aJvmName);
 
         if (jvmList.size() == 1) {
             Jvm jvm = jvmList.get(0);
-            try {
-                final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate("server.xml", jvm.getId());
+            final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
+            if (!serverXmlTemplateText.isEmpty()) {
                 return TomcatJvmConfigFileGenerator
-                        .getServerXmlFromText(serverXmlTemplateText, jvm);
-            } catch (BadRequestException bre) {
-                // TODO remove once we know the server.xml template is in the database as part of the EPM install
-                try {
-                    return TomcatJvmConfigFileGenerator.getServerXmlFromFile(fileManager.getAbsoluteLocation(SERVER_XML_TEMPLATE), jvm);
-                } catch (IOException e) {
-                    throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
-                }
+                        .getJvmConfigFromText(serverXmlTemplateText, jvm, jvmPersistenceService.getJvms());
+            } else {
+                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
             }
+
         }
         if (jvmList.size() > 1) {
             throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
@@ -205,12 +203,11 @@ public class JvmServiceImpl implements JvmService {
         jvmStateGateway.initiateJvmStateRequest(jvm);
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
-        HashMap<String, Object> binding = new HashMap<String, Object>();
+        Map<String, Object> binding = new HashMap<String, Object>();
         binding.put("jvm", jvm);
 
         try {
-            String diagnosis = engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
-            return diagnosis;
+            return engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
         } catch (CompilationFailedException | ClassNotFoundException | IOException e) {
             throw new ApplicationException(DIAGNOSIS_INITIATED, e);
             // why do this? Because if there was a problem with the template that made
@@ -222,40 +219,93 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public ExecData secureCopyConfigTar(Jvm jvm, RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
+    public ExecData secureCopyFile(RuntimeCommandBuilder rtCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException {
 
-        final String jvmName = jvm.getJvmName();
-
-        // ping the web server and return if not stopped
-        try {
-            ClientHttpResponse response = clientFactoryHelper.requestGet(jvm.getStatusUri());
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return new ExecData(new ExecReturnCode(1), "", "The target JVM must be stopped before attempting to copy the tar config to the JVM");
-            }
-        } catch (IOException e) {
-            if (!(e instanceof ConnectException || e instanceof ConnectTimeoutException)) {
-                LOGGER.error("Failed to ping {} while attempting to copy tar config :: ERROR: {}", jvmName, e.getMessage());
-                throw new InternalErrorException(AemFaultType.INVALID_JVM_OPERATION, "Failed to ping while attempting to copy tar config", e);
-            }
-        }
-
-        // create and execute the scp command
-        String jvmConfigTar = jvmName + "_config.tar";
         rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
-        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("stp.jvm.resources.dir") + "/" + jvmConfigTar);
+        rtCommandBuilder.addCygwinPathParameter(srcDirPath + "/" + fileName);
         rtCommandBuilder.addParameter(sshConfig.getUserName());
-        rtCommandBuilder.addParameter(jvm.getHostName());
-        rtCommandBuilder.addCygwinPathParameter(ApplicationProperties.get("paths.instances"));
+        rtCommandBuilder.addParameter(destHostName);
+        rtCommandBuilder.addCygwinPathParameter(destPath);
         RuntimeCommand rtCommand = rtCommandBuilder.build();
         return rtCommand.execute();
     }
 
+    public boolean isJvmStarted(Jvm jvm) {
+        // ping the web server and return if not stopped
+        ClientHttpResponse response = null;
+        try {
+            response = clientFactoryHelper.requestGet(jvm.getStatusUri());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return true;
+            }
+        } catch (ConnectException e) {
+            logger.info("Ignore connect exception, the JVM should be stopped to allow secure copy of the resource files ", e);
+        } catch (ConnectTimeoutException e) {
+            logger.info("Ignore connect timeout exception, the JVM should be stopped to allow secure copy of the resource files ", e);
+        } catch (SocketTimeoutException e) {
+            logger.info("Ignore socket timeout exception when attempting to replace resource files for the web server", e);
+        } catch (IOException e) {
+            logger.error("Failed to ping {} while attempting to copy tar config :: ERROR: {}", jvm.getJvmName(), e.getMessage());
+            throw new InternalErrorException(AemFaultType.INVALID_JVM_OPERATION, "Failed to ping while attempting to copy tar config", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String previewResourceTemplate(String jvmName, String groupName, String template) {
+        // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
+        return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template,
+                                                                 jvmPersistenceService.findJvms(jvmName).get(0),
+                                                                 jvmPersistenceService.getJvms());
+    }
+
     @Override
     @Transactional
-    public JpaJvmConfigTemplate uploadServerXml(UploadServerXmlTemplateCommand command, User user) {
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateCommand command, User user) {
         command.validateCommand();
-        final Event<UploadServerXmlTemplateCommand> event = new Event<>(command, AuditEvent.now(user));
-        return jvmPersistenceService.uploadServerXml(event);
+        final Event<UploadJvmTemplateCommand> event = new Event<>(command, AuditEvent.now(user));
+        return jvmPersistenceService.uploadJvmTemplateXml(event);
+    }
+
+    @Override
+    public List<String> getResourceTemplateNames(final String jvmName) {
+        return jvmPersistenceService.getResourceTemplateNames(jvmName);
+    }
+
+    @Override
+    public String getResourceTemplate(final String jvmName,
+                                      final String resourceTemplateName,
+                                      final boolean tokensReplaced) {
+        final String template = jvmPersistenceService.getResourceTemplate(jvmName, resourceTemplateName);
+        if (tokensReplaced) {
+            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvmPersistenceService.findJvms(jvmName).get(0), jvmPersistenceService.getJvms());
+        }
+        return template;
+    }
+
+    @Override
+    @Transactional
+    public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
+        return jvmPersistenceService.updateResourceTemplate(jvmName, resourceTemplateName, template);
+    }
+
+    @Override
+    public String generateInvokeBat(String jvmName) {
+        final List<Jvm> jvmList = jvmPersistenceService.findJvms(jvmName);
+
+        if (jvmList.size() == 1) {
+            Jvm jvm = jvmList.get(0);
+            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(fileManager.getResourceTypeTemplate("InvokeBat"), jvm, jvmPersistenceService.getJvms());
+        }
+        if (jvmList.size() > 1) {
+            throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
+        } else {
+            throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
+        }
     }
 
 }

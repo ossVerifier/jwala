@@ -34,15 +34,35 @@ var RXmlEditor = React.createClass({
 
         elements = this.formatContent(this.state.content);
 
-        return React.createElement("div", {className:"xml-editor",
-                                           tabIndex:0,
-                                           onKeyPress:this.keyPressHandler,
-                                           onKeyDown:this.keyDownHandler,
-                                           onKeyUp:this.keyUpHandler,
-                                           onFocus:this.onFocusHandler,
-                                           onBlur:this.onBlurHandler, onPaste:this.onPasteHandler}, elements);
-    },
+        var editor = React.createElement("div", {className:"xml-editor",
+                                                 tabIndex:0,
+                                                 onKeyPress:this.keyPressHandler,
+                                                 onKeyDown:this.keyDownHandler,
+                                                 onKeyUp:this.keyUpHandler,
+                                                 onFocus:this.onFocusHandler,
+                                                 onBlur:this.onBlurHandler, onPaste:this.onPasteHandler}, elements);
 
+        if (this.props.showToolbar === false) {
+            return React.createElement("div", null, editor);
+        }
+
+        var metaData = [{icon: "ui-icon-disk", title: "Save", onClickCallback: this.props.saveCallback.bind(this, this.state.content.join(""))},
+                        {icon: "ui-icon-arrowreturnthick-1-s", title: "Undo", onClickCallback: this.undo},
+                        {icon: "ui-icon-arrowreturnthick-1-e", title: "Redo", onClickCallback: this.redo}];
+        var toolbar = React.createElement(Toolbar, {className: "toolbar-container", metaData: metaData}, "?");
+
+        return React.createElement("div", null, toolbar, editor);
+
+    },
+    undo: function() {
+        // TODO: Write implementation...
+    },
+    redo: function() {
+        // TODO: Write implementation...
+    },
+    componentWillReceiveProps: function(nextProps) {
+        this.refresh(nextProps.content);
+    },
     onPasteHandler: function(e) {
         var self = this;
 
@@ -120,6 +140,13 @@ var RXmlEditor = React.createClass({
         var commentRangeArray = this.getCommentRangeArray(this.state.content);
 
         var lineCtr = 1;
+
+        elements.push(React.createElement(Character, {parent:self,
+                                                      className:"lineNumber",
+                                                      char:lineCtr++,
+                                                      idx:idx++,
+                                                      charCustomClassName:"lineNumberChar",
+                                                      customCursorClassName:"lineNumberCursor"}));
 
         content.forEach(function(ch) {
 
@@ -234,14 +261,15 @@ var RXmlEditor = React.createClass({
             if (this.eof()) {
                 this.state.content.push(e.key);
             } else {
-                this.state.content.splice(nextCursorIdx, 0, e.key); // insert after the cursor
+                this.state.content.splice(this.state.cursorIdx, 0, e.key);
             }
 
-            try {
-                $.parseXML(this.state.content.join(""));
-            } catch (e) {
-                console.log(e);
-            }
+// Note: No checking for now!
+//            try {
+//                $.parseXML(this.state.content.join(""));
+//            } catch (e) {
+//                console.log(e);
+//            }
 
         }
 
@@ -254,7 +282,6 @@ var RXmlEditor = React.createClass({
      * Handler for the key down event (e.g. ENTER, ARROW DOWN, BACKSPACE etc...)
      */
     keyDownHandler: function(e) {
-        console.log("key down");
         if (this.state.ctrlDown) {
             return this.processCtrlPlusKeyCode(e.keyCode);
         } else if (this.state.shiftDown) {
@@ -274,7 +301,7 @@ var RXmlEditor = React.createClass({
                     this.delSelectedChars();
                 } else {
                     if (this.state.cursorIdx > 0) {
-                        this.state.content.splice(this.state.cursorIdx, 1);
+                        this.state.content.splice(this.state.cursorIdx - 1, 1);
                         this.setState({cursorIdx:this.state.cursorIdx - 1});
                     }
                 }
@@ -288,7 +315,7 @@ var RXmlEditor = React.createClass({
                 }
                 return false;
             case RXmlEditor.key.RIGHT_ARROW:
-                if (this.state.cursorIdx < (this.state.content.length - 1)) {
+                if (this.state.cursorIdx < (this.state.content.length)) {
                     var cursorLineIdx = RXmlEditor.getCursorLineIdx(this.state.content, this.state.cursorIdx + 1);
                     this.setState({cursorIdx: this.state.cursorIdx + 1, cursorLineIdx:cursorLineIdx, selectRange:null});
                 } else {
@@ -300,8 +327,8 @@ var RXmlEditor = React.createClass({
                 if (this.hasSelection()) {
                     this.delSelectedChars();
                 } else {
-                    if (this.state.cursorIdx < (this.state.content.length - 1)) {
-                        this.state.content.splice(this.state.cursorIdx + 1, 1);
+                    if (this.state.cursorIdx < (this.state.content.length)) {
+                        this.state.content.splice(this.state.cursorIdx, 1);
                         this.setState({cursorIdx:this.state.cursorIdx});
                     }
                 }
@@ -399,7 +426,7 @@ var RXmlEditor = React.createClass({
                 idx2 = this.state.selectRange.lower + 1;
             }
             nextCursorIdx = idx1 - 1;
-            this.state.content.splice(idx1, idx2 - idx1);
+            this.state.content.splice(idx1 - 1, idx2 - idx1);
 
             this.setState({cursorIdx:nextCursorIdx,
                            cursorLineIdx:RXmlEditor.getCursorLineIdx(this.state.content, nextCursorIdx),
@@ -458,7 +485,7 @@ var RXmlEditor = React.createClass({
     processCtrlPlusKeyCode: function(keyCode) {
         switch (keyCode) {
             case RXmlEditor.key.A:
-                this.setState({selectRange:{lower:1, upper:this.state.content.length - 1}});
+                this.setState({selectRange:{lower:1, upper:this.state.content.length}});
                 return false;
             case RXmlEditor.key.C:
                 this.copyContentSelectionToClipboard();
@@ -615,4 +642,21 @@ var Character = React.createClass({
     clickHandler: function() {
         this.props.parent.setState({cursorIdx:this.props.idx, selectRange:null});
     }
+});
+
+/**
+ * A toolbar component.
+ */
+var Toolbar = React.createClass({
+
+    render: function() {
+        var btns = [];
+        this.props.metaData.forEach(function(meta){
+            btns.push(React.createElement("button", {className:"ui-button ui-widget ui-state-default ui-corner-all", onClick:meta.onClickCallback},
+                        React.createElement("span", {className:"ui-icon " + meta.icon, title: meta.title})));
+        });
+
+        return React.createElement("div", {className: this.props.className}, btns);
+    }
+
 });

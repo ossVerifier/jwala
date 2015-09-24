@@ -94,6 +94,36 @@ var webServerService = {
     },
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURI(webServerName) + "/resources/name", "json", responseCallback);
+    },
+    getResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
+        return serviceFoundation.get("v1.0/webservers/" + encodeURI(wsName) + "/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+    },
+    updateResourceTemplate: function(webServerName, resourceTemplateName, resourceTemplateContent, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/webservers/" + encodeURI(webServerName) + "/resources/template/" + encodeURI(resourceTemplateName),
+                                     "json",
+                                     resourceTemplateContent,
+                                     successCallback,
+                                     errorCallback,
+                                     false,
+                                     "text/plain; charset=utf-8");
+    },
+    uploadTemplateForm: function(webServerName, templateName, templateFile, successCallback, errorCallback) {
+         return serviceFoundation.post("v1.0/webservers/" + encodeURI(webServerName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),
+                                         "json",
+                                         templateFile,
+                                         successCallback,
+                                         errorCallback,
+                                         false,
+                                         "multipart/form-data",
+                                         true);
+     },
+     previewResourceFile: function(webServerName, groupName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/webservers/" + encodeURI(webServerName) + "/resources/preview;groupName=" + encodeURI(groupName),
+                                     "json",
+                                     template,
+                                     successCallback,
+                                     errorCallback,
+                                     false,
+                                     "text/plain; charset=utf-8");
     }
-
 };

@@ -5,12 +5,15 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.rule.group.GroupNameRule;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -18,13 +21,14 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
 
     private final StateNotificationGateway stateNotificationGateway;
-    
     private final GroupPersistenceService groupPersistenceService;
+    private WebServerService webServerService;
 
     public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
-            final StateNotificationGateway theStateNotificationGateway) {
+                            final StateNotificationGateway theStateNotificationGateway, WebServerService wSService) {
         groupPersistenceService = theGroupPersistenceService;
         stateNotificationGateway = theStateNotificationGateway;
+        webServerService = wSService;
     }
 
     @Override
@@ -42,6 +46,12 @@ public class GroupServiceImpl implements GroupService {
     @Transactional(readOnly = true)
     public Group getGroup(final Identifier<Group> aGroupId) {
         return groupPersistenceService.getGroup(aGroupId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Group getGroupWithWebServers(Identifier<Group> aGroupId) {
+        return groupPersistenceService.getGroupWithWebServers(aGroupId);
     }
 
     @Override
@@ -177,6 +187,19 @@ public class GroupServiceImpl implements GroupService {
         }
 
         return otherGroupConnectionDetails;
+    }
+
+    @Override
+    @Transactional
+    public Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
+        return groupPersistenceService.populateJvmConfig(aGroupId, uploadJvmTemplateCommands, user, overwriteExisting);
+    }
+
+    @Override
+    @Transactional
+    public Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
+        webServerService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
+        return groupPersistenceService.getGroup(aGroupId);
     }
 
     protected <T> Event<T> createEvent(final T aCommand,
