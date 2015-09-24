@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.app.impl.jpa.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
@@ -13,10 +14,18 @@ import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerDaoImpl;
 import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
+import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,19 +75,57 @@ public class ApplicationServiceImplIntegrationTest {
         public GroupDao getGroupDao() {
             return new JpaGroupDaoImpl();
         }
-    }   
+
+        @Bean
+        @Autowired
+        public JvmPersistenceService getJvmPersistenceService(final GroupJvmRelationshipService groupJvmRelationshipService) {
+            return new JpaJvmPersistenceServiceImpl(new JvmCrudServiceImpl(), groupJvmRelationshipService);
+        }
+
+        @Bean
+        public GroupJvmRelationshipService getGroupJvmRelationshipService() {
+            return new GroupJvmRelationshipServiceImpl(new GroupCrudServiceImpl(), new JvmCrudServiceImpl());
+        }
+
+        @Bean
+        public ApplicationCommandService getApplicationCommandService() {
+            final SshConfiguration sshConfiguration = new SshConfiguration("z003bpej", 22, "", "");
+            return new ApplicationCommandServiceImpl(sshConfiguration);
+        }
+
+        @Bean(name = "webServerHttpRequestFactory")
+        public HttpClientRequestFactory getHttpClientRequestFactory() throws Exception {
+            return new HttpClientRequestFactory();
+        }
+
+        @Bean
+        public ClientFactoryHelper getClientFactoryHelper() {
+            return new ClientFactoryHelper();
+        }
+
+    }
     
     @Autowired
-    private ApplicationDao           applicationDao;
+    private ApplicationDao applicationDao;
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
     
-    private ApplicationService      cut;
+    private ApplicationService cut;
+
+    // @Autowired
+    private JvmPersistenceService jvmPersistenceService;
+
+    @Autowired
+    private ClientFactoryHelper clientFactoryHelper;
+
+    // @Autowired
+    private ApplicationCommandService applicationCommandService;
 
     @Before
     public void setup() { 
-        cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService);
+        cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService,
+                                         clientFactoryHelper, applicationCommandService, null);
     }
 
     /**

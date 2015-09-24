@@ -33,7 +33,11 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar stateUpdated;
 
-    @ManyToMany(mappedBy = "groups")
+    @ManyToMany
+    @JoinTable(name = "WEBSERVER_GRP",
+            joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
+            inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
+            uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "WEBSERVER_ID"}))
     private List<JpaWebServer> webServers;
     
     @Override

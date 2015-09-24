@@ -7,7 +7,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
@@ -75,14 +75,30 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event) {
-        final JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmCrudService.uploadServerXml(event);
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event) {
+        final JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmCrudService.uploadJvmTemplateXml(event);
         return jpaJvmConfigTemplate;
     }
 
     @Override
     public String getJvmTemplate(String templateName, Identifier<Jvm> jvmId) {
         return jvmCrudService.getJvmTemplate(templateName, jvmId);
+    }
+
+    @Override
+    public List<String> getResourceTemplateNames(final String jvmName) {
+        return jvmCrudService.getResourceTemplateNames(jvmName);
+    }
+
+    @Override
+    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) {
+        return jvmCrudService.getResourceTemplate(jvmName, resourceTemplateName);
+    }
+
+    @Override
+    public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
+        jvmCrudService.updateResourceTemplate(jvmName, resourceTemplateName, template);
+        return jvmCrudService.getResourceTemplate(jvmName, resourceTemplateName);
     }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
@@ -96,4 +112,5 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         }
         return jvms;
     }
+
 }

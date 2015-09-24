@@ -7,9 +7,15 @@ import java.util.List;
 
 @Entity
 @Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+@NamedQueries({
+    @NamedQuery(name = JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME,
+                query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName")
+})
 public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
+
+    public static final String QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME = "findJvmByGroupAndJvmName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

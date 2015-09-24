@@ -57,7 +57,7 @@ public class WebServerStateSetterWorker {
      *     return new WebServerStateSetterWorker(...);
      * }
      *
-     * It should totally be instantiated by Spring (e.g. using @Autowired or if usign XML using <Bean>...<Bean/>)
+     * It should totally be instantiated by Spring (e.g. using @Autowired or if using XML using <Bean>...<Bean/>)
      *
      * Bean definition using context xml and constructor injection would have worked but for consistency
      * (as the application is mostly Spring annotation driven), it was avoided.

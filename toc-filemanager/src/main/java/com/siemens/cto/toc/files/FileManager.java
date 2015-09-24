@@ -27,6 +27,6 @@ public interface FileManager {
      * @return a string containing the text of the masters template named
      */
     String getMasterTemplate(String masterTemplateName);
-    InputStream getMasterTempateByStream(String masterTemplateName);
+    InputStream getMasterTemplateByStream(String masterTemplateName);
 
 }

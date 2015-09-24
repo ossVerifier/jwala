@@ -15,7 +15,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rlistbox.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rtreelist.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rxmleditor.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/xmleditor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/error-msg-list.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/adjustable-table-col.css">
 
@@ -34,10 +34,8 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/accordion.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/jquery-ui/button.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-editor.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-pane.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-attr-pane.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/react/xml-preview.css">
-<link rel="stylesheet" type="text/css" href="public-resources/css/snippet-2.0.0/jquery.snippet.min.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/resource-pane.css">
 
 <jsp:include page="/index-page-scripts?devMode=${devMode}"/>
 

@@ -30,13 +30,18 @@ var serviceFoundation = {
                                        complete: loadingUiBehavior.hideLoading
                                    }));
     },
-    post : function(url, dataType, content, thenCallback, caughtCallback, showDefaultAjaxProcessingAnimation, contentType) {
+    post : function(url, dataType, content, thenCallback, caughtCallback, showDefaultAjaxProcessingAnimation, contentType, isFileUpload) {
         var ajaxParams = {url: url,
                           dataType: dataType,
                           type: 'POST',
                           data: content,
                           contentType: contentType !== undefined ? contentType : 'application/json',
                           cache: false};
+        if (isFileUpload) {
+            ajaxParams.cache = false;
+            ajaxParams.contentType = false;
+            ajaxParams.processData = false;
+        }
 
         if (showDefaultAjaxProcessingAnimation !== false) {
             var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
@@ -81,7 +86,9 @@ var serviceFoundation = {
             beforeSend: loadingUiBehavior.showLoading,
             complete: loadingUiBehavior.hideLoading
         })).caught(function(e){
-           if (e.status !== 200) {
+           if (e.responseText !== undefined && e.status !== 200) {
+               $.errorAlert(JSON.parse(e.responseText).applicationResponseContent, "Error");
+           } else if (e.status !== 200) {
                $.errorAlert(JSON.stringify(e), "Error");
            }
 
@@ -91,13 +98,13 @@ var serviceFoundation = {
         });
     },
 
-    put : function(url, dataType, content, thenCallback, caughtCallback, showLoading) {
+    put : function(url, dataType, content, thenCallback, caughtCallback, showLoading, contentType) {
         var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading === undefined ? true : showLoading);
         return Promise.cast($.ajax({url: url,
                                         dataType: dataType,
                                         type: 'PUT',
                                         data: content,
-                                        contentType: 'application/json',
+                                        contentType: contentType === undefined ? 'application/json' : contentType,
                                         cache: false,
                                         beforeSend: loadingUiBehavior.showLoading,
                                         complete: loadingUiBehavior.hideLoading

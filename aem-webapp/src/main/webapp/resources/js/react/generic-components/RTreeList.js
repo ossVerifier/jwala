@@ -28,16 +28,16 @@
  */
 var RTreeList = React.createClass({
     getInitialState: function() {
-        return {selectedNodeKey: null};
+        return {selectedNode: null};
     },
     render: function() {
-        var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, "");
+        var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, null, "");
         return React.createElement("div", {className:"tree-list-content ui-widget-content"}, React.createElement("ul", {className: "root-node-ul"}, nodes));
     },
     onSelectNode: function(data) {
         this.props.selectNodeCallback(data);
     },
-    createTreeNodes: function(data, meta, level, parent) {
+    createTreeNodes: function(data, meta, level, parent, parentLabel) {
         var self = this;
         var nodes = [];
 
@@ -46,12 +46,12 @@ var RTreeList = React.createClass({
             if (meta.children !== undefined) {
                 meta.children.forEach(function(child){
                     if (data[i][child.entity] !== undefined && data[i][child.entity].length > 0) {
-                        childNodes.push(self.createTreeNodes(data[i][child.entity], child, level + 1, data[i][meta.propKey]));
+                        childNodes.push(self.createTreeNodes(data[i][child.entity], child, level + 1, data[i], data[i][meta.propKey]));
                     }
                 });
             }
 
-            var key = parent + data[i][meta.propKey] + level;
+            var key = parentLabel + data[i][meta.propKey] + level;
             nodes.push(React.createElement(Node, {label:data[i][meta.propKey],
                                                   collapsedByDefault:false,
                                                   expandIcon: this.props.expandIcon,
@@ -61,11 +61,15 @@ var RTreeList = React.createClass({
                                                   theTree: this,
                                                   key: key /* React use */,
                                                   nodeKey: key,
-                                                  selectedNodeKey: this.state.selectedNodeKey,
+                                                  selectedNode: this.state.selectedNode,
                                                   parent: parent,
-                                                  entity: meta.entity}, childNodes));
+                                                  entity: meta.entity,
+                                                  icon: meta.icon}, childNodes));
         }
         return nodes;
+    },
+    getSelectedNodeData: function() {
+        return this.state.selectedNode === null ? null : this.state.selectedNode.props.data;
     }
 });
 
@@ -80,18 +84,19 @@ var Node = React.createClass({
         }
     },
     isSelected: function() {
-        return this.props.nodeKey === this.props.selectedNodeKey;
+        var selectedNodeKey = this.props.selectedNode === null ? null : this.props.selectedNode.props.nodeKey;
+        return this.props.nodeKey === selectedNodeKey;
     },
     render: function() {
         var children;
         var expandCollapseIcon = null;
-        var liClassName = this.props.children.length === 0 ? "tree-list-style" : "";
+        var liClassName = this.props.children.length === 0 ? "rtreelist-list-item no-children" : "rtreelist-list-item";
 
-        var spanClassName = "";
+        var spanClassName = "rtreelist-list-item";
         if (this.isSelected()) {
-            spanClassName = spanClassName + "span-style " + Node.HIGHLIGHT_CLASS_NAME;
+            spanClassName = spanClassName + " " + Node.HIGHLIGHT_CLASS_NAME;
         } else if (this.state.mouseOver && this.props.selectable) {
-            spanClassName = spanClassName + "span-style " + Node.FOCUS_CLASS_NAME;
+            spanClassName = spanClassName + " " + Node.FOCUS_CLASS_NAME;
         }
 
         if (this.props.children.length > 0) {
@@ -99,10 +104,16 @@ var Node = React.createClass({
                                                              src: (this.state.isCollapsed ? this.props.expandIcon : this.props.collapseIcon),
                                                              onClick:this.onClickIconHandler, className: "expand-collapse-padding"});
             if (!this.state.isCollapsed) {
-                children = React.createElement("ul", {className: "tree-list-style"}, this.props.children);
+                children = React.createElement("ul", {className: "rtreelist-list"}, this.props.children);
             }
         }
-        return React.createElement("li", {className: liClassName}, expandCollapseIcon,
+
+        var nodeIcon;
+        if (this.props.icon !== undefined) {
+            nodeIcon = React.createElement("img", {src: this.props.icon});
+        }
+
+        return React.createElement("li", {className: liClassName}, expandCollapseIcon, nodeIcon,
                                           React.createElement("span", {onClick: this.onClickNodeHandler,
                                                                        onMouseOver: this.onMouseOver,
                                                                        onMouseOut: this.onMouseOut,
@@ -121,7 +132,7 @@ var Node = React.createClass({
     },
     onClickNodeHandler: function() {
         if (this.props.selectable === true) {
-            this.props.theTree.setState({selectedNodeKey: this.props.nodeKey});
+            this.props.theTree.setState({selectedNode: this});
 
             // Add RTreeList specific data
             this.props.data["rtreeListMetaData"] = {parent: this.props.parent, entity: this.props.entity};

@@ -1,11 +1,14 @@
 package com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl;
 
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.RemoveJvmFromGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
@@ -112,5 +115,14 @@ public class GroupJvmRelationshipServiceImpl implements GroupJvmRelationshipServ
         }
 
         entityManager.flush();
+    }
+
+    @Override
+    public void populateJvmConfig(List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
+        for (UploadJvmTemplateCommand command: uploadJvmTemplateCommands) {
+            if (overwriteExisting || jvmCrudService.getJvmTemplate(command.getConfFileName(), command.getJvm().getId()).isEmpty()){
+                jvmCrudService.uploadJvmTemplateXml(new Event<>(command, AuditEvent.now(user)));
+            }
+        }
     }
 }

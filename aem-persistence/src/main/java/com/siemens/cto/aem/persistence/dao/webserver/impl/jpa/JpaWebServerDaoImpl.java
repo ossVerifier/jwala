@@ -9,25 +9,24 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 
 public class JpaWebServerDaoImpl implements WebServerDao {
 
@@ -92,7 +91,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
             final Collection<Identifier<Group>> groupIds = updateWebServerCommand.getNewGroupIds();
 
-            final ArrayList<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
+            final List<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
 
             if (groupIds != null) {
                 for (final Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
@@ -119,7 +118,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             // We have to catch the generalized exception because OpenJPA can throw a rollback instead.
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
                     + aWebServerToUpdate.getCommand().getNewName(), eee);
-        } 
+        }
     }
 
     @Override
@@ -154,8 +153,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     @Override
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
 
-        final JpaWebServer WebServer = getJpaWebServer(aWebServerId);
-        entityManager.remove(WebServer);
+        final JpaWebServer webServer = getJpaWebServer(aWebServerId);
+        entityManager.remove(webServer);
     }
 
     protected List<WebServer> webServersFrom(final List<JpaWebServer> someJpaWebServers) {
@@ -226,7 +225,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup) {
 
         final Query query =
-            entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY);
+                entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY);
 
         query.setParameter("groupId", aGroup.getId());
 
@@ -256,8 +255,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
         q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
 
-        final ArrayList<Application> apps = new ArrayList<>(q.getResultList().size());
-        for(final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
+        final List<Application> apps = new ArrayList<>(q.getResultList().size());
+        for (final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
             apps.add(JpaAppBuilder.appFrom(jpa));
         }
         return apps;
@@ -276,11 +275,101 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
         q.setParameter("wsName", aWebServerName);
 
-        final ArrayList<Jvm> jvms = new ArrayList<>(q.getResultList().size());
-        for(final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {
+        final List<Jvm> jvms = new ArrayList<>(q.getResultList().size());
+        for (final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {
             jvms.add((new JpaJvmBuilder(jpaJvm)).build());
         }
         return jvms;
+    }
+
+    @Override
+    public List<String> getResourceTemplateNames(final String webServerName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_RESOURCE_TEMPLATE_NAMES);
+        q.setParameter("webServerName", webServerName);
+        return q.getResultList();
+    }
+
+    @Override
+    public String getResourceTemplate(final String webServerName, final String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);
+        q.setParameter("webServerName", webServerName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e) {
+            throw new NonRetrievableResourceTemplateContentException(webServerName, resourceTemplateName, e);
+        }
+    }
+
+    @Override
+    public void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
+        for (UploadWebServerTemplateCommand command : uploadWSTemplateCommands) {
+            final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);
+            q.setParameter("webServerName", command.getWebServer().getName());
+            q.setParameter("templateName", command.getConfFileName());
+            List results = q.getResultList();
+            if (overwriteExisting || results.isEmpty()) {
+                uploadWebServerTemplate(new Event<>(command, AuditEvent.now(user)));
+            }
+        }
+    }
+
+    @Override
+    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateCommand> event) {
+        return uploadWebServerTemplate(event);
+    }
+
+    private JpaWebServerConfigTemplate uploadWebServerTemplate(Event<UploadWebServerTemplateCommand> event) {
+        final UploadWebServerTemplateCommand command = event.getCommand();
+        final WebServer webServer = command.getWebServer();
+        Identifier<WebServer> id = webServer.getId();
+        final JpaWebServer jpaWebServer = getJpaWebServer(id);
+
+        InputStream inStream = command.getData();
+        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        // get an instance and then do a create or update
+        Query query = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE);
+        query.setParameter("webServerName", webServer.getName());
+        query.setParameter("templateName", command.getConfFileName());
+        List<JpaWebServerConfigTemplate> templates = query.getResultList();
+        JpaWebServerConfigTemplate jpaConfigTemplate;
+        if (templates.size() == 1) {
+            //update
+            jpaConfigTemplate = templates.get(0);
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.flush();
+        } else if (templates.isEmpty()) {
+            //create
+            jpaConfigTemplate = new JpaWebServerConfigTemplate();
+            jpaConfigTemplate.setWebServer(jpaWebServer);
+            jpaConfigTemplate.setTemplateName(command.getConfFileName());
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.persist(jpaConfigTemplate);
+            entityManager.flush();
+        } else {
+            throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
+                    "Only expecting one template to be returned for web server [" + webServer.getName() + "] but returned " + templates.size() + " templates");
+        }
+
+        return jpaConfigTemplate;
+    }
+
+    @Override
+    public void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_CONTENT);
+        q.setParameter("webServerName", wsName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateContent", template);
+
+        try {
+            if (q.executeUpdate() == 0) {
+                throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
+            }
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(wsName, resourceTemplateName, re);
+        }
     }
 
 }

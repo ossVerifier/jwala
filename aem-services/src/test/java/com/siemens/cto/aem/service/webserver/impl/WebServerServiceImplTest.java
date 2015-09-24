@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -11,7 +13,9 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.TocFile;
@@ -127,7 +131,10 @@ public class WebServerServiceImplTest {
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
                 TocFile file = (TocFile)invocation.getArguments()[0];
-                return "/" + file.getFileName();
+                if (file != null) {
+                    return "/" + file.getFileName();
+                }
+                return null;
             }
         });
     }
@@ -169,6 +176,8 @@ public class WebServerServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreateWebServers() {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+
         when(wsDao.createWebServer(any(Event.class))).thenReturn(mockWebServer);
         CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroupIds(),
                                                                 mockWebServer.getName(),
@@ -186,6 +195,8 @@ public class WebServerServiceImplTest {
         assertEquals("the-ws-name", webServer.getName());
         assertEquals("the-ws-group-name", webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
+
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -281,11 +292,64 @@ public class WebServerServiceImplTest {
 
         when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenReturn(readReferenceFile("/httpd-ssl-conf.tpl"));
 
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
                      removeCarriageReturnsAndNewLines(generatedHttpdConf));
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testGenerateHttpdConfigWithIoException() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+
+        when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenThrow(IOException.class);
+
+        wsService.generateHttpdConfig("Apache2.4", null);
+    }
+
+    @Test
+    public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentException() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
+
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
+
+        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
+                removeCarriageReturnsAndNewLines(generatedHttpdConf));
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentExceptionThenIoException() throws IOException {
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+
+        Application [] appArray = {app1, app2};
+
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        when(wsDao.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
+        when(fileManager.getAbsoluteLocation(eq(ConfigurationTemplate.HTTPD_SSL_CONF_TEMPLATE))).thenThrow(IOException.class);
+
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
+
+        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd.conf")),
+                removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test
@@ -326,6 +390,100 @@ public class WebServerServiceImplTest {
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/workers.properties")),
                      removeCarriageReturnsAndNewLines(workerPropertiesStr));
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testGenerateWorkerPropertiesWithIoException() throws IOException {
+        final Jvm jvm1 = mock(Jvm.class);
+        when(jvm1.getJvmName()).thenReturn("tc1");
+        when(jvm1.getHostName()).thenReturn("host1");
+        when(jvm1.getAjpPort()).thenReturn(8009);
+
+        final Jvm jvm2 = mock(Jvm.class);
+        when(jvm2.getJvmName()).thenReturn("tc2");
+        when(jvm2.getHostName()).thenReturn("host2");
+        when(jvm2.getAjpPort()).thenReturn(8109);
+
+        final List<Jvm> jvms = new ArrayList<>();
+        jvms.add(jvm1);
+        jvms.add(jvm2);
+
+        when(wsDao.findJvms(anyString())).thenReturn(jvms);
+
+        final Application app1 = mock(Application.class);
+        when(app1.getName()).thenReturn("hello-world-1");
+
+        final Application app2 = mock(Application.class);
+        when(app2.getName()).thenReturn("hello-world-2");
+
+        final Application app3 = mock(Application.class);
+        when(app3.getName()).thenReturn("hello-world-3");
+
+        final List<Application> apps = new ArrayList<>();
+        apps.add(app1);
+        apps.add(app2);
+        apps.add(app3);
+
+        when(wsDao.findApplications(anyString())).thenReturn(apps);
+        when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenThrow(IOException.class);
+
+        String workerPropertiesStr = wsService.generateWorkerProperties("Apache2.4");
+    }
+
+    @Test
+    public void testGetWebServer() {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("mockWebServer");
+        when(wsDao.findWebServerByName(eq("aWebServer"))).thenReturn(mockWebServer);
+        assertEquals("mockWebServer", wsService.getWebServer("aWebServer").getName());
+    }
+
+    @Test
+    public void testGetResourceTemplateNames() {
+        final String [] nameArray = {"httpd.conf"};
+        when(wsDao.getResourceTemplateNames(eq("Apache2.4"))).thenReturn(Arrays.asList(nameArray));
+        final List names = wsService.getResourceTemplateNames("Apache2.4");
+        assertEquals("httpd.conf", names.get(0));
+    }
+
+    @Test
+    public void testGetResourceTemplate() {
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenReturn("<template/>");
+        assertEquals("<template/>", wsService.getResourceTemplate("any", "any", false));
+    }
+
+    @Test
+    public void testGetResourceTemplateTokensReplaced() {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("mockWebServer");
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "httpd.conf", true));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNonHttpdConfGetResourceTemplateTokensReplaced() {
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServer.getName()).thenReturn("mockWebServer");
+        when(wsDao.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
+        when(wsDao.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "any-except-httpd.conf", true));
+    }
+
+    @Test
+    public void testPopulateWebServerConfig() {
+        final List<UploadWebServerTemplateCommand> theList = new ArrayList<>();
+        final User user = new User("id");
+        final boolean overwriteExisting = false;
+        wsService.populateWebServerConfig(theList, user, overwriteExisting);
+        verify(wsDao).populateWebServerConfig(eq(theList), eq(user), eq(overwriteExisting));
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        when(wsDao.getResourceTemplate("wsName", "resourceTemplateName")).thenReturn("template");
+        assertEquals("template", wsService.updateResourceTemplate("wsName", "resourceTemplateName", "template"));
+        verify(wsDao).updateResourceTemplate(eq("wsName"), eq("resourceTemplateName"), eq("template"));
     }
 
     private String removeCarriageReturnsAndNewLines(String s) {

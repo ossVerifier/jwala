@@ -12,7 +12,12 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadHttpdConfTemplateCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -33,6 +38,8 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final FileManager fileManager;
 
+    private final String HTTPD_CONF = "httpd.conf";
+
     public WebServerServiceImpl(final WebServerDao theDao, final FileManager theFileManager) {
         dao = theDao;
         fileManager = theFileManager;
@@ -46,9 +53,15 @@ public class WebServerServiceImpl implements WebServerService {
         aCreateWebServerCommand.validateCommand();
 
         final Event<CreateWebServerCommand> event = new Event<>(aCreateWebServerCommand,
-                                                                AuditEvent.now(aCreatingUser));
+                AuditEvent.now(aCreatingUser));
 
-        return  dao.createWebServer(event);
+        WebServer webServer = dao.createWebServer(event);
+
+        UploadWebServerTemplateCommandBuilder builder = new UploadWebServerTemplateCommandBuilder();
+        UploadHttpdConfTemplateCommand uploadHttpdConfTemplateCommand = builder.buildHttpdConfCommand(webServer);
+        uploadWebServerConfig(uploadHttpdConfTemplateCommand, aCreatingUser);
+
+        return webServer;
     }
 
     @Override
@@ -93,7 +106,7 @@ public class WebServerServiceImpl implements WebServerService {
         anUpdateWebServerCommand.validateCommand();
 
         final Event<UpdateWebServerCommand> event = new Event<>(anUpdateWebServerCommand,
-                                                                AuditEvent.now(anUpdatingUser));
+                AuditEvent.now(anUpdatingUser));
 
         return dao.updateWebServer(event);
     }
@@ -117,17 +130,27 @@ public class WebServerServiceImpl implements WebServerService {
         final WebServer server = dao.findWebServerByName(aWebServerName);
         final List<Application> apps = dao.findApplications(aWebServerName);
         final List<Jvm> jvms = dao.findJvms(aWebServerName);
-        
+
         try {
             if (withSsl != null && withSsl) {
-                return ApacheWebServerConfigFileGenerator
-                            .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
+                String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", false);
+                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(aWebServerName, httpdConfText, server, jvms, apps);
             }
             return ApacheWebServerConfigFileGenerator
-                        .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
-        } catch(IOException e) { 
+                    .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
+        } catch (IOException e) {
             LOGGER.warn("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
+        } catch (NonRetrievableResourceTemplateContentException nrtce) {
+            // TODO WHAAAAA ???? catchtrycatch - try .... ?
+            LOGGER.info("Failed to retrieve resource template from the database", nrtce);
+            try {
+                return ApacheWebServerConfigFileGenerator
+                        .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
+            } catch (IOException e) {
+                LOGGER.warn("Template not found", e);
+                throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
+            }
         }
     }
 
@@ -139,10 +162,67 @@ public class WebServerServiceImpl implements WebServerService {
         try {
             return ApacheWebServerConfigFileGenerator
                     .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
-        } catch(IOException e) { 
+        } catch (IOException e) {
             LOGGER.warn("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
         }
+    }
+
+    @Override
+    public List<String> getResourceTemplateNames(String webServerName) {
+        return dao.getResourceTemplateNames(webServerName);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getResourceTemplate(final String webServerName,
+                                      final String resourceTemplateName,
+                                      final boolean tokensReplaced) {
+        final String template = dao.getResourceTemplate(webServerName, resourceTemplateName);
+        if (tokensReplaced) {
+            if (resourceTemplateName.equalsIgnoreCase(HTTPD_CONF)) {
+                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName,
+                                                                               template,
+                                                                               dao.findWebServerByName(webServerName),
+                                                                               dao.findJvms(webServerName),
+                                                                               dao.findApplications(webServerName));
+            } else {
+                throw new UnsupportedOperationException("Data binding for \"" + resourceTemplateName +
+                        "\" template is currently not supported");
+            }
+        }
+        return template;
+    }
+
+    @Override
+    public void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
+        dao.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
+    }
+
+    @Override
+    @Transactional
+    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateCommand uploadWebServerTemplateCommand, User user) {
+        uploadWebServerTemplateCommand.validateCommand();
+        final Event<UploadWebServerTemplateCommand> event = new Event<>(uploadWebServerTemplateCommand, AuditEvent.now(user));
+        return dao.uploadWebserverConfigTemplate(event);
+    }
+
+    @Override
+    @Transactional
+    public String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
+        dao.updateResourceTemplate(wsName, resourceTemplateName, template);
+        return dao.getResourceTemplate(wsName, resourceTemplateName);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String previewResourceTemplate(final String webServerName, final String groupName, final String template) {
+        // TODO: Web server name shouldn't be unique therefore we will have to use the groupName parameter in the future.
+        return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName,
+                                                                       template,
+                                                                       dao.findWebServerByName(webServerName),
+                                                                       dao.findJvms(webServerName),
+                                                                       dao.findApplications(webServerName));
     }
 
 }

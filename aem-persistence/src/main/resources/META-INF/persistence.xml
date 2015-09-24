@@ -22,6 +22,8 @@
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!-- required to generate foreign key constraints

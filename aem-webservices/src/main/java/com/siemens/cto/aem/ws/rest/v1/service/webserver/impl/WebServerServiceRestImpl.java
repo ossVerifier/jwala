@@ -13,7 +13,11 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadHttpdConfTemplateCommand;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -23,13 +27,18 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -218,9 +227,79 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getResourceNames(final String wsName) {
-        // TODO: Get resource names from db.
-        final List<String> resources = new LinkedList<>();
-        resources.add("httpd.conf");
-        return ResponseBuilder.ok(resources);
+        return ResponseBuilder.ok(webServerService.getResourceTemplateNames(wsName));
     }
+
+    @Context
+    private MessageContext context;
+
+    @Override
+    public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
+
+        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
+
+        WebServer webServer = webServerService.getWebServer(webServerName);
+        if (null == webServer) {
+            throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name " + webServerName);
+        }
+
+        ServletFileUpload sfu = new ServletFileUpload();
+        InputStream data = null;
+        try {
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemStream file1;
+
+            while (iter.hasNext()) {
+                file1 = iter.next();
+                try {
+                    data = file1.openStream();
+                    UploadWebServerTemplateCommand command = new UploadHttpdConfTemplateCommand(webServer,
+                            file1.getName(),
+                            data);
+
+                    return ResponseBuilder.created(
+                            webServerService.uploadWebServerConfig(command, aUser.getUser())); // early out on first attachment
+                } finally {
+                    assert data != null;
+                    data.close();
+                }
+            }
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_WEBSERVER_OPERATION, "No data"));
+        } catch (IOException | FileUploadException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
+        }
+    }
+
+    @Override
+    public Response getResourceTemplate(final String wsName,
+                                        final String resourceTemplateName,
+                                        final boolean tokensReplaced) {
+        return ResponseBuilder.ok(webServerService.getResourceTemplate(wsName, resourceTemplateName, tokensReplaced));
+    }
+
+    @Override
+    public Response updateResourceTemplate(final String wsName,
+                                           final String resourceTemplateName,
+                                           final String content) {
+
+        try {
+            return ResponseBuilder.ok(webServerService.updateResourceTemplate(wsName, resourceTemplateName, content));
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
+                            e.getMessage()));
+        }
+
+    }
+
+    @Override
+    public Response previewResourceTemplate(final String webServerName, final String groupName, String template) {
+        return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
+    }
+
 }

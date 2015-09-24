@@ -3,10 +3,10 @@ var Tabs = React.createClass({displayName:"Tabs",
         this.hashRegex = /#\/([^/]*)\/(([^/]*)\/)?(([^/]*)\/)?/; // zero-three levels deep, prefix with / suffixes with /, indexes 1 3 5, null zero match
 
         var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/) || 0;
-        var items = this.props.items;
+
         return {
             titlePrefix: "Tomcat Operations Center - ",
-            tabs: items,
+            tabs: this.props.items,
             active: activeTabIndex,
             themeName: "tabs-" + this.props.theme
         };
@@ -22,6 +22,9 @@ var Tabs = React.createClass({displayName:"Tabs",
           /* higher level tab managed the state change */
           $(window).off('hashchange', this.handleBack);
         }
+    },
+    componentWillReceiveProps: function(nextProps) {
+        this.setState({tabs: nextProps.items});
     },
     componentDidUpdate: function(prevProps, prevState) {
        document.title = this.state.titlePrefix + this.props.items[this.state.active].title;

@@ -31,14 +31,10 @@ public class TomcatJvmConfigFileGenerator {
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 
-    static String getServerXmlFromText(String serverXmlTemplateText, Jvm jvm) {
-        final binding = [jvmAjpPort     : jvm.getAjpPort(),
-                         jvmHostName    : jvm.getHostName(),
-                         jvmHttpPort    : jvm.getHttpPort(),
-                         jvmHttpsPort   : jvm.getHttpsPort(),
-                         jvmId          : jvm.getId().id,
-                         jvmName        : jvm.getJvmName(),
-                         jvmShutDownPort: jvm.getShutdownPort()
+    static String getJvmConfigFromText(String serverXmlTemplateText, Jvm currentJvm, List<Jvm> allJvms) {
+        final binding = [
+                jvm: currentJvm,
+                jvms: allJvms
         ]
         return bindDataToTemplateText(binding, serverXmlTemplateText);
     }

@@ -3,8 +3,10 @@ package com.siemens.cto.aem.service.group;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 
 import java.util.List;
 
@@ -14,6 +16,8 @@ public interface GroupService {
                       final User aCreatingUser);
 
     Group getGroup(final Identifier<Group> aGroupId);
+
+    Group getGroupWithWebServers(final Identifier<Group> aGroupId);
 
     Group getGroup(final String name);
 
@@ -50,4 +54,8 @@ public interface GroupService {
      * @return Web Servers that are members of more than one group.
      */
     List<WebServer> getOtherGroupingDetailsOfWebServers(final Identifier<Group> id);
+
+    Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
+
+    Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 }

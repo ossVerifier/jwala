@@ -9,6 +9,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,6 +29,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupServiceImpl impl;
     private GroupPersistenceService groupPersistenceService;
     private StateNotificationGateway stateNotificationGateway;
+    private WebServerService webServerService;
     private User user;
 
     @Before
@@ -35,7 +37,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         groupPersistenceService = mock(GroupPersistenceService.class);
         stateNotificationGateway = mock(StateNotificationGateway.class);
-        impl = new GroupServiceImpl(groupPersistenceService, stateNotificationGateway);
+        webServerService = mock(WebServerService.class);
+        impl = new GroupServiceImpl(groupPersistenceService, stateNotificationGateway, webServerService);
         user = new User("unused");
     }
 

@@ -83,10 +83,14 @@ var RSplitter = React.createClass({
         return React.createElement("div", {ref: "mainContainer", className:"rsplitter container " + orientationClassName}, divs);
     },
 
+    componentDidUpdate: function(prevProps, prevState) {
+        if (this.state.grabSplitter && this.props.updateCallback !== undefined) {
+            this.props.updateCallback();
+        }
+    },
+
     mouseMoveHandler: function(ref, idx, e) {
-
         var pagePos = this.props.orientation === RSplitter.VERTICAL_ORIENTATION ? e.pageY : e.pageX;
-
         if (pagePos !== this.state.mousePos && this.state.grabSplitter) {
             if (this.props.orientation === RSplitter.VERTICAL_ORIENTATION) {
                 var topDivHeight =

@@ -8,7 +8,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -25,6 +25,8 @@ public interface JvmService {
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
+    Jvm getJvm(final String jvmName);
+
     List<Jvm> getJvms();
 
     List<Jvm> findJvms(final String aJvmNameFragment);
@@ -36,11 +38,25 @@ public interface JvmService {
 
     void removeJvm(final Identifier<Jvm> aJvmId);
 
-    String generateConfig(String aJvmName);
+    String generateConfigFile(String aJvmName, String templateName);
 
     String performDiagnosis(Identifier<Jvm> aJvmId);
 
-    ExecData secureCopyConfigTar(Jvm jvm, RuntimeCommandBuilder runtimeCommandBuilder) throws CommandFailureException;
+    ExecData secureCopyFile(RuntimeCommandBuilder runtimeCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException;
 
-    JpaJvmConfigTemplate uploadServerXml(UploadServerXmlTemplateCommand command, User user);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateCommand command, User user);
+
+    List<String> getResourceTemplateNames(final String jvmName);
+
+    String getResourceTemplate(final String jvmName, final String resourceTemplateName, final boolean tokensReplaced);
+
+    String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
+
+    String generateInvokeBat(String jvmName);
+
+    boolean isJvmStarted(Jvm jvm);
+
+    String previewResourceTemplate(String jvmName,
+                                   String groupName,
+                                   String template);
 }

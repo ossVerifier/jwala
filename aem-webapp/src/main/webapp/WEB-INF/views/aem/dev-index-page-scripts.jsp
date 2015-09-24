@@ -17,6 +17,7 @@
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 <script src="public-resources/ext/js/snippet-2.0.0/jquery.snippet.js"></script>
 <script src="public-resources/ext/js/vkbeautify.0.99.00.beta.js"></script>
+<script src="public-resources/ext/js/jquery/jquery-linedtextarea.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
@@ -38,6 +39,7 @@
 <script src="public-resources/js/toc/group-operations-helper.js"></script>
 
 <!-- React UI -->
+<script type="text/jsx" src="public-resources/js/react/generic-components/RTabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/dialog-box.js"></script>
@@ -45,7 +47,8 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-combobox.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-multi-select-box.js"></script>
-<script type="text/jsx" src="public-resources/js/react/generic-components/rxmleditor.js"></script>
+<script type="text/jsx" src="public-resources/js/react/RToolbar.js"></script>
+<script type="text/jsx" src="public-resources/js/react/XmlEditor.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script src="public-resources/js/react/generic-components/RStaticDialog.js"></script>
 <script src="public-resources/js/react/generic-components/RListBox.js"></script>

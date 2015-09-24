@@ -2,6 +2,8 @@ package com.siemens.cto.aem.domain.model.group;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 
@@ -15,9 +17,9 @@ public class GroupControlHistory implements Serializable {
     private final AuditEvent whenRequested;
 
     public GroupControlHistory(final Identifier<GroupControlHistory> theId,
-                             final Identifier<Group> theGroupId,
-                             final GroupControlOperation theControlOperation,
-                             final AuditEvent theWhenRequested) {
+                               final Identifier<Group> theGroupId,
+                               final GroupControlOperation theControlOperation,
+                               final AuditEvent theWhenRequested) {
         id = theId;
         groupId = theGroupId;
         controlOperation = theControlOperation;
@@ -41,43 +43,33 @@ public class GroupControlHistory implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((controlOperation == null) ? 0 : controlOperation.hashCode());
-        result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((whenRequested == null) ? 0 : whenRequested.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        GroupControlHistory that = (GroupControlHistory) o;
+
+        return new EqualsBuilder()
+                .append(id, that.id)
+                .append(groupId, that.groupId)
+                .append(controlOperation, that.controlOperation)
+                .append(whenRequested, that.whenRequested)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GroupControlHistory other = (GroupControlHistory) obj;
-        if (controlOperation != other.controlOperation)
-            return false;
-        if (groupId == null) {
-            if (other.groupId != null)
-                return false;
-        } else if (!groupId.equals(other.groupId))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (whenRequested == null) {
-            if (other.whenRequested != null)
-                return false;
-        } else if (!whenRequested.equals(other.whenRequested))
-            return false;
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(groupId)
+                .append(controlOperation)
+                .append(whenRequested)
+                .toHashCode();
     }
 
     @Override

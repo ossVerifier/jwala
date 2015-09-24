@@ -33,7 +33,7 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     }
 
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
-    public void execute() throws IOException {
+    public void execute() {
         if (isEnabled()) {
             final List<WebServer> webServers = webServerService.getWebServers();
             try {
@@ -51,7 +51,7 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     }
 
     /**
-     * Remove Futures who's key does not match any of the web server ids in the web server list.
+     * Remove Futures whose key does not match any of the web server ids in the web server list.
      *
      * @param webServers the web server list
      */

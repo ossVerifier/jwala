@@ -6,9 +6,12 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.CreateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
@@ -39,4 +42,13 @@ public interface WebServerDao {
 
     List<Jvm> findJvms(final String aWebServerName);
 
+    List<String> getResourceTemplateNames(final String webServerName);
+
+    String getResourceTemplate(final String webServerName, final String resourceTemplateName);
+
+	void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting);
+
+	JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateCommand> event);
+
+    void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 }

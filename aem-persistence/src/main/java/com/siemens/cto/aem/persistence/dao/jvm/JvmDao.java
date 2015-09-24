@@ -27,4 +27,6 @@ public interface JvmDao {
     void removeJvm(final Identifier<Jvm> aGroupId);
 
     void removeJvmsBelongingTo(final Identifier<Group> aGroupId);
+
+    Jvm findJvm(String jvmName, String groupName);
 }

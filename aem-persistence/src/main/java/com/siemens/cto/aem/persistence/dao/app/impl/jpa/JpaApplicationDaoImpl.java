@@ -84,4 +84,20 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         return buildApplications(q.getResultList());
     }
 
+    @Override
+    public Application findApplicationByName(final String name) {
+        final Query q = em.createNamedQuery(JpaApplication.QUERY_BY_NAME);
+        q.setParameter("appName", name);
+        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
+    }
+
+    @Override
+    public Application findApplication(final String appName, final String groupName, final String jvmName) {
+        final Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_JVM_AND_APP_NAME);
+        q.setParameter("appName", appName);
+        q.setParameter("groupName", groupName);
+        q.setParameter("jvmName", jvmName);
+        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
+    }
+
 }

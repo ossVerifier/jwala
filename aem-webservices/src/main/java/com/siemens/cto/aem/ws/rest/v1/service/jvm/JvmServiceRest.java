@@ -35,7 +35,8 @@ public interface JvmServiceRest {
 
     @DELETE
     @Path("/{jvmId}")
-    Response removeJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
+    Response removeJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
+                       @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{jvmId}/commands")
@@ -47,21 +48,27 @@ public interface JvmServiceRest {
     @Path("/{jvmName}/conf")
     Response generateConfig(@PathParam("jvmName") final String aJvmName);
 
-    // todo make @put and rename deployconf to conf just like in webserverservicerest.java when connecting the UI gear button
-    @GET
-    @Path("/{jvmId}/deployConf")
-    Response generateAndDeployConfig(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
-                                     @BeanParam final AuthenticatedUser aUser);
+    @PUT
+    @Path("/{jvmName}/conf")
+    Response generateAndDeployConf(@PathParam("jvmName") final String jvmName,
+                                   @BeanParam final AuthenticatedUser aUser);
 
+    @PUT
+    @Path("/{jvmName}/conf/{fileName}")
+    Response generateAndDeployFile(@PathParam("jvmName") final String jvmName,
+                                   @PathParam("fileName") final String fileName,
+                                   @BeanParam final AuthenticatedUser aUser);
+    
     @POST
-    @Path("/{jvmId}/serverXml")
+    @Path("/{jvmName}/resources/uploadTemplate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadServerXMLTemplate(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
-                                     @BeanParam final AuthenticatedUser aUser);
+    Response uploadConfigTemplate(@PathParam("jvmName") final String jvmName,
+                                  @BeanParam final AuthenticatedUser aUser,
+                                  @QueryParam("templateName") final String templateName);
 
     @GET
     @Path("/states/current")
-//    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
+    // TODO: This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
     Response getCurrentJvmStates(@BeanParam final JvmIdsParameterProvider jvmIdsParameterProvider);
 
     /**
@@ -76,5 +83,33 @@ public interface JvmServiceRest {
     @GET
     @Path("/{jvmName}/resources/name")
     Response getResourceNames(@PathParam("jvmName") final String jvmName);
+
+    /**
+     * Get resource template content.
+     * @param jvmName JVM name.
+     * @param resourceTemplateName the resource template name.
+     * @param tokensReplaced flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
+     * @return the template contents
+     */
+    @GET
+    @Path("/{jvmName}/resources/template/{resourceTemplateName}")
+    Response getResourceTemplate(@PathParam("jvmName") final String jvmName,
+                                 @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                 @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
+    @PUT
+    @Path("/{jvmName}/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    // TODO: Pass authenticated user.
+    Response updateResourceTemplate(@PathParam("jvmName") final String jvmName,
+                                    @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                    final String content);
+
+    @PUT
+    @Path("/{jvmName}/resources/preview")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response previewResourceTemplate(@PathParam("jvmName") String jvmName,
+                                     @MatrixParam("groupName") String groupName,
+                                     String template);
 
 }

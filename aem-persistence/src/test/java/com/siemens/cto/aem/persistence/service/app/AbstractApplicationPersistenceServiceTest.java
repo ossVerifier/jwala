@@ -81,7 +81,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void testCreateApp() {
         CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        Application created = applicationPersistenceService.createApplication(anAppToCreate, "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -95,7 +95,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void testCreateNonSecureApp() {
         CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, false, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        Application created = applicationPersistenceService.createApplication(anAppToCreate, "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -139,7 +139,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void testUpdateWARPath() { 
         CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        Application created = applicationPersistenceService.createApplication(anAppToCreate, "");
         
         UploadWebArchiveCommand uploadCmd = new UploadWebArchiveCommand(created, "filename-uuid.war", 0L, null);
         Event<UploadWebArchiveCommand> uploadEvent = new Event<>(uploadCmd, AuditEvent.now(new User(aUser)));
@@ -152,7 +152,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void testRemoveWARPath() {        
         CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        Application created = applicationPersistenceService.createApplication(anAppToCreate, "");
         
         UploadWebArchiveCommand uploadCmd = new UploadWebArchiveCommand(created, "filename-uuid.war", 0L, null);
         Event<UploadWebArchiveCommand> uploadEvent = new Event<>(uploadCmd, AuditEvent.now(new User(aUser)));
@@ -171,7 +171,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     public void testUpdateSecureFlag() {
         CreateApplicationCommand cmd = new CreateApplicationCommand(expGroupId,  textName, textContext, true, true);
         Event<CreateApplicationCommand> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate);
+        Application created = applicationPersistenceService.createApplication(anAppToCreate, "");
         assertTrue(created.isSecure());
 
         final Event<UpdateApplicationCommand> updateEvent =

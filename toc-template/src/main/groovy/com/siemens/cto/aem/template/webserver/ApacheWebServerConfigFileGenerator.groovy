@@ -5,6 +5,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm
 import com.siemens.cto.aem.domain.model.webserver.WebServer
 
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplate
+import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplateText
 
 
 /**
@@ -51,5 +52,14 @@ public class ApacheWebServerConfigFileGenerator {
                          apps:apps.collect {app:[name: it.name]},
                          comments:""]
         return bindDataToTemplate(binding, templateFileName).toString()
+    }
+
+    static String getHttpdConfFromText(String aWebServerName, String httpdConfText, WebServer server, List<Jvm> jvms, List<Application> apps) {
+        final binding = [webServerName:aWebServerName,
+                         webServer:server,
+                         apps:apps,
+                         jvms:jvms,
+                         comments:""]
+        return bindDataToTemplateText(binding, httpdConfText).toString()
     }
 }

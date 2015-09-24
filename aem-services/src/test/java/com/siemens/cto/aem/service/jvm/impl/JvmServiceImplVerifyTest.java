@@ -1,6 +1,12 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
@@ -12,22 +18,31 @@ import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
-import com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.client.MockClientHttpResponse;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -41,6 +56,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private FileManager fileManager;
     private ClientFactoryHelper factoryHelper;
     private SshConfiguration sshConfig;
+    private RuntimeCommandBuilder rtCommandBuilder;
+    private RuntimeCommand command;
 
     @Before
     public void setup() {
@@ -52,18 +69,24 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         factoryHelper = mock(ClientFactoryHelper.class);
         sshConfig = mock(SshConfiguration.class);
         impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway, factoryHelper, sshConfig);
+        rtCommandBuilder = mock(RuntimeCommandBuilder.class);
+        command = mock(RuntimeCommand.class);
     }
 
     @Test
     public void testCreateValidate() {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         final CreateJvmCommand command = mock(CreateJvmCommand.class);
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>());
+        when(jvmPersistenceService.createJvm(any(Event.class))).thenReturn(jvm);
 
-        impl.createJvm(command,
-                       user);
+        impl.createJvm(command, user);
 
         verify(command, times(1)).validateCommand();
         verify(jvmPersistenceService, times(1)).createJvm(matchCommandInEvent(command));
+
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -79,13 +102,13 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(jvmPersistenceService.createJvm(matchCommandInEvent(createCommand))).thenReturn(jvm);
 
         impl.createAndAssignJvm(command,
-                                user);
+                user);
 
         verify(createCommand, times(1)).validateCommand();
         verify(jvmPersistenceService, times(1)).createJvm(matchCommandInEvent(createCommand));
         for (final AddJvmToGroupCommand addCommand : addCommands) {
             verify(groupService, times(1)).addJvmToGroup(matchCommand(addCommand),
-                                                         eq(user));
+                    eq(user));
         }
     }
 
@@ -98,14 +121,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(command.getAssignmentCommands()).thenReturn(addCommands);
 
         impl.updateJvm(command,
-                       user);
+                user);
 
         verify(command, times(1)).validateCommand();
         verify(jvmPersistenceService, times(1)).updateJvm(matchCommandInEvent(command));
         verify(jvmPersistenceService, times(1)).removeJvmFromGroups(Matchers.<Identifier<Jvm>>anyObject());
         for (final AddJvmToGroupCommand addCommand : addCommands) {
             verify(groupService, times(1)).addJvmToGroup(matchCommand(addCommand),
-                                                         eq(user));
+                    eq(user));
         }
     }
 
@@ -154,20 +177,20 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(jvmPersistenceService, times(1)).getJvms();
     }
-    
+
 
     @Test
     public void testGenerateConfig() throws IOException {
 
-        final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L), 
-                "jvm-name", "host-name", new HashSet<LiteGroup>(),  80, 443, 443, 8005, 8009, new Path("/"),
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
+                "jvm-name", "host-name", new HashSet<LiteGroup>(), 80, 443, 443, 8005, 8009, new Path("/"),
                 "EXAMPLE_OPTS=%someEnv%/someVal");
         final ArrayList<Jvm> jvms = new ArrayList<>(1);
         jvms.add(jvm);
-        
+
         when(jvmPersistenceService.findJvms(eq(jvm.getJvmName()))).thenReturn(jvms);
-        when(jvmPersistenceService.getJvmTemplate(eq("server.xml"),eq(jvm.getId()))).thenReturn("<server>test</server>");
-        String generatedXml = impl.generateConfig(jvm.getJvmName());
+        when(jvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("<server>test</server>");
+        String generatedXml = impl.generateConfigFile(jvm.getJvmName(), "server.xml");
 
         assert !generatedXml.isEmpty();
     }
@@ -186,5 +209,175 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getId()).thenReturn(anId);
         return jvm;
+    }
+
+    @Test
+    public void testGenerateServerXmlConfig() {
+        String testJvmName = "testjvm";
+        List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        String expectedValue = "<server>xml-content</server>";
+        when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
+
+        // happy case
+        String serverXml = impl.generateConfigFile(testJvmName, "server.xml");
+        assertEquals(expectedValue, serverXml);
+
+        // return too many jvms
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        boolean isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+
+        // return no jvms
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(new ArrayList<Jvm>());
+        isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+    }
+
+    @Test
+    public void testGenerateContextXmlConfig() {
+        String testJvmName = "testjvm";
+        List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        String expectedValue = "<server>xml-content</server>";
+        when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
+
+        // happy case
+        String serverXml = impl.generateConfigFile(testJvmName, "server.xml");
+        assertEquals(expectedValue, serverXml);
+
+        // return too many jvms
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        boolean isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+
+        // return no jvms
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(new ArrayList<Jvm>());
+        isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+    }
+
+    @Test
+    public void testGenerateSetenvBatConfig() {
+        String testJvmName = "testjvm";
+        List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        String expectedValue = "<server>xml-content</server>";
+        when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
+
+        // happy case
+        String serverXml = impl.generateConfigFile(testJvmName, "server.xml");
+        assertEquals(expectedValue, serverXml);
+
+        // return too many jvms
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        boolean isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+
+        // return no jvms
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(new ArrayList<Jvm>());
+        isBadRequest = false;
+        try {
+            impl.generateConfigFile(testJvmName, "server.xml");
+        } catch (BadRequestException e) {
+            isBadRequest = true;
+        }
+        assertTrue(isBadRequest);
+    }
+
+    @Test
+    public void testPerformDiagnosis() {
+        Identifier<Jvm> aJvmId = new Identifier<>(11L);
+        Jvm jvm = new Jvm(aJvmId, "testJvm", new HashSet<LiteGroup>());
+        when(jvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
+        String diagnosis = impl.performDiagnosis(aJvmId);
+        assertTrue(!diagnosis.isEmpty());
+    }
+
+    @Test
+    @Ignore
+    // TODO: Fix this, please see commented out codes.
+    public void testSecureCopy() throws IOException, URISyntaxException {
+        Jvm jvm = mock(Jvm.class);//new Jvm(new Identifier<Jvm>(99L), "testJvm", "testHostName", new HashSet<LiteGroup>(), 12, 13, 14, 15, 16,new Path("./stp-test.png"),"");
+        when(jvm.getStatusUri()).thenReturn(new URI("http://server/testUri.png"));
+        when(jvm.getJvmName()).thenReturn("testJvm");
+        ExecData successReturnData = new ExecData(new ExecReturnCode(0), "", "");
+        when(command.execute()).thenReturn(successReturnData);
+        when(rtCommandBuilder.build()).thenReturn(command);
+        when(factoryHelper.requestGet(any(URI.class))).thenReturn(new MockClientHttpResponse(new byte[]{}, HttpStatus.REQUEST_TIMEOUT));
+        boolean commandFailed = false;
+        ExecData result = null;
+//        try {
+//            result = impl.secureCopyFile(jvm, rtCommandBuilder);
+//        } catch (CommandFailureException e) {
+//            commandFailed = true;
+//        }
+        assertNotNull(result);
+        assertEquals(new ExecReturnCode(0), result.getReturnCode());
+    }
+
+    @Test
+    public void testGetResourceTemplateNames(){
+        String testJvmName = "testJvmName";
+        ArrayList<String> value = new ArrayList<>();
+        when(jvmPersistenceService.getResourceTemplateNames(testJvmName)).thenReturn(value);
+        value.add("testJvm.tpl");
+        List<String> result = impl.getResourceTemplateNames(testJvmName);
+        assertTrue(result.size() == 1);
+    }
+
+    @Test
+    public void testGetResourceTemplate(){
+        String testJvmName = "testJvmName";
+        String resourceTemplateName = "test-resource.tpl";
+        Jvm jvm = mock(Jvm.class);
+        String expectedValue = "<template>resource</template>";
+        when(jvmPersistenceService.getResourceTemplate(testJvmName, resourceTemplateName)).thenReturn(expectedValue);
+        List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        String result = impl.getResourceTemplate(testJvmName, resourceTemplateName, true);
+        assertEquals(expectedValue, result);
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        String testJvmName = "testJvmName";
+        String resourceTemplateName = "test-resource.tpl";
+        String template = "<template>update</template>";
+        when(jvmPersistenceService.updateResourceTemplate(testJvmName, resourceTemplateName, template)).thenReturn(template);
+        String result = impl.updateResourceTemplate(testJvmName, resourceTemplateName, template);
+        assertEquals(template, result);
     }
 }

@@ -120,7 +120,7 @@ public class CommandControllerTest {
 
         verify(response).setContentType(eq("text/plain"));
         verify(response).getWriter();
-        verify(printWriter).print(eq("Error reading HTTPD Conf: " + execData.getStandardError()));
+        verify(printWriter).print(eq("Error reading httpd.conf: " + execData.getStandardError()));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class CommandControllerTest {
         commandController.webServerCommand(request, response);
         verify(response).setContentType(eq("text/plain"));
         verify(response).getWriter();
-        verify(printWriter).print(eq("Error reading HTTPD Conf: " + cmdFailEx.getMessage()));
+        verify(printWriter).print(eq("Error reading httpd.conf: " + cmdFailEx.getMessage()));
     }
 
 }

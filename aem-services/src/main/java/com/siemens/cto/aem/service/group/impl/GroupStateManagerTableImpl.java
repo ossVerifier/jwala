@@ -41,36 +41,46 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     static class Node {
         final Map<OperationalState, GroupState> edges;
+
         public Node(Map<OperationalState, GroupState> edges) {
             this.edges = edges;
         }
-        public GroupState transit(OperationalState sig) { return edges.get(sig); }
+
+        public GroupState transit(OperationalState sig) {
+            return edges.get(sig);
+        }
     }
-    
+
     static class NodeBuilder {
         private Map<OperationalState, GroupState> edges = new ConcurrentHashMap<>();
 
-        public NodeBuilder() {}
+        public NodeBuilder() {
+        }
+
         public NodeBuilder edge(OperationalState signal, GroupState endpoint) {
             edges.put(signal, endpoint);
             return this;
         }
-        public NodeBuilder edges(TreeSet<OperationalState> transitions, GroupState endpoint) {
-            for(OperationalState state : transitions) {
+
+        public NodeBuilder edges(Set<OperationalState> transitions, GroupState endpoint) {
+            for (OperationalState state : transitions) {
                 edges.put(state, endpoint);
             }
             return this;
         }
+
         public Node build() {
             return new Node(edges);
         }
     }
-    private static final Map<GroupState, Node> fsm = new ConcurrentHashMap<>();
+
+    private static final Map<GroupState, Node> FSM = new ConcurrentHashMap<>();
+
     static {
         configureFsm();
         LOGGER.info(outputFsm());
     }
-    
+
     /**
      * Build the FSM machine
      */
@@ -79,13 +89,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         // initialing the state machine.
 
         // Starting states
-        TreeSet<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for(OperationalState state : new OperationalState[] {
-                JVM_NEW,         
+        Set<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for (OperationalState state : new OperationalState[]{
+                JVM_NEW,
                 JVM_INITIALIZING,
-                JVM_INITIALIZED, 
-                JVM_START,       
-                JVM_STARTING,    
+                JVM_INITIALIZED,
+                JVM_START,
+                JVM_STARTING,
                 JVM_STARTED,
                 WS_REACHABLE,
                 WS_STARTING
@@ -94,100 +104,100 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         }
 
         // Stopping states
-        TreeSet<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for(OperationalState state : new OperationalState[] {
-                JVM_STOP,        
-                JVM_STOPPING,    
-                JVM_STOPPED,     
-                JVM_DESTROYING,  
-                JVM_DESTROYED,   
+        Set<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for (OperationalState state : new OperationalState[]{
+                JVM_STOP,
+                JVM_STOPPING,
+                JVM_STOPPED,
+                JVM_DESTROYING,
+                JVM_DESTROYED,
                 SVC_STOPPED,
                 WS_UNREACHABLE,
                 WS_STOPPING
         }) {
             stoppingStates.add(state);
         }
-        
+
         // Failing states
-        TreeSet<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for(OperationalState state : new OperationalState[] {
+        Set<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
+        for (OperationalState state : new OperationalState[]{
                 JVM_FAILED,
                 WS_FAILED,
         }) {
             failingStates.add(state);
-        }        
-        
+        }
+
         // Unknown states
-        TreeSet<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
-        for(OperationalState state : new OperationalState[] {
-                JVM_UNKNOWN,     
-                JVM_STALE,       
+        Set<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
+        for (OperationalState state : new OperationalState[]{
+                JVM_UNKNOWN,
+                JVM_STALE,
                 WS_UNKNOWN
         }) {
             unknownStates.add(state);
-        }        
-        
+        }
+
         // Begin state machine initialization
-        fsm.put(GRP_UNKNOWN, new NodeBuilder()
-                             .edges(startingStates,GRP_STARTING)
-                             .edges(stoppingStates,GRP_STOPPING)
-                             .edges(failingStates, GRP_FAILURE)
-                             .edges(unknownStates, GRP_UNKNOWN)
-                             .edge(JVM_STARTED,    GRP_STARTED) // override
-                             .edge(WS_REACHABLE,   GRP_STARTED) // override 
-                             .edge(SVC_STOPPED,    GRP_STOPPED) // override 
-                             .edge(WS_UNREACHABLE, GRP_STOPPED) // override 
-                             .build());
+        FSM.put(GRP_UNKNOWN, new NodeBuilder()
+                .edges(startingStates, GRP_STARTING)
+                .edges(stoppingStates, GRP_STOPPING)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_UNKNOWN)
+                .edge(JVM_STARTED, GRP_STARTED) // override
+                .edge(WS_REACHABLE, GRP_STARTED) // override
+                .edge(SVC_STOPPED, GRP_STOPPED) // override
+                .edge(WS_UNREACHABLE, GRP_STOPPED) // override
+                .build());
 
-        fsm.put(GRP_INITIALIZED, fsm.get(GRP_UNKNOWN));
+        FSM.put(GRP_INITIALIZED, FSM.get(GRP_UNKNOWN));
 
-        fsm.put(GRP_STARTING, new NodeBuilder()
-                            .edges(startingStates,GRP_STARTING)
-                            .edges(stoppingStates,GRP_PARTIAL)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_PARTIAL)
-                            .build());
+        FSM.put(GRP_STARTING, new NodeBuilder()
+                .edges(startingStates, GRP_STARTING)
+                .edges(stoppingStates, GRP_PARTIAL)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_PARTIAL)
+                .build());
 
-        fsm.put(GRP_STOPPING, new NodeBuilder()
-                            .edges(startingStates,GRP_PARTIAL)
-                            .edges(stoppingStates,GRP_STOPPING)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_PARTIAL)
-                             .build());
+        FSM.put(GRP_STOPPING, new NodeBuilder()
+                .edges(startingStates, GRP_PARTIAL)
+                .edges(stoppingStates, GRP_STOPPING)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_PARTIAL)
+                .build());
 
-        fsm.put(GRP_STARTED, new NodeBuilder()
-                            .edges(startingStates,GRP_STARTING)
-                            .edges(stoppingStates,GRP_PARTIAL)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_PARTIAL)
-                            .edge(JVM_STARTED,    GRP_STARTED) // override
-                            .edge(WS_REACHABLE,   GRP_STARTED) // override 
-                            .build());
+        FSM.put(GRP_STARTED, new NodeBuilder()
+                .edges(startingStates, GRP_STARTING)
+                .edges(stoppingStates, GRP_PARTIAL)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_PARTIAL)
+                .edge(JVM_STARTED, GRP_STARTED) // override
+                .edge(WS_REACHABLE, GRP_STARTED) // override
+                .build());
 
-        fsm.put(GRP_STOPPED, new NodeBuilder()
-                            .edges(startingStates,GRP_PARTIAL)
-                            .edges  (stoppingStates,GRP_STOPPING)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_PARTIAL)
-                            .edge(SVC_STOPPED,    GRP_STOPPED) // override 
-                            .edge(WS_UNREACHABLE, GRP_STOPPED) // override 
-                             .build());
+        FSM.put(GRP_STOPPED, new NodeBuilder()
+                .edges(startingStates, GRP_PARTIAL)
+                .edges(stoppingStates, GRP_STOPPING)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_PARTIAL)
+                .edge(SVC_STOPPED, GRP_STOPPED) // override
+                .edge(WS_UNREACHABLE, GRP_STOPPED) // override
+                .build());
 
-        fsm.put(GRP_PARTIAL, new NodeBuilder()
-                            .edges(startingStates,GRP_PARTIAL)
-                            .edges(stoppingStates,GRP_PARTIAL)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_PARTIAL)
-                             .build());
+        FSM.put(GRP_PARTIAL, new NodeBuilder()
+                .edges(startingStates, GRP_PARTIAL)
+                .edges(stoppingStates, GRP_PARTIAL)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_PARTIAL)
+                .build());
 
-        fsm.put(GRP_FAILURE, new NodeBuilder()
-                            .edges(startingStates,GRP_FAILURE)
-                            .edges(stoppingStates,GRP_FAILURE)
-                            .edges(failingStates, GRP_FAILURE)
-                            .edges(unknownStates, GRP_FAILURE)
-                            .build());        
+        FSM.put(GRP_FAILURE, new NodeBuilder()
+                .edges(startingStates, GRP_FAILURE)
+                .edges(stoppingStates, GRP_FAILURE)
+                .edges(failingStates, GRP_FAILURE)
+                .edges(unknownStates, GRP_FAILURE)
+                .build());
     }
-    
+
     /**
      * Prepare a message for display/logging.
      */
@@ -195,13 +205,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         StringBuilder fsmText = new StringBuilder();
         fsmText.append("Group FSM initialized with state machine: ");
         String comma1 = "";
-        for(Entry<GroupState, Node> node : fsm.entrySet()) {
+        for (Entry<GroupState, Node> node : FSM.entrySet()) {
             fsmText.append(comma1);
             fsmText.append(node.getKey().name() + ": {");
             comma1 = ", ";
 
             String comma = "";
-            for(Entry<OperationalState, GroupState> transition : node.getValue().edges.entrySet()) {
+            for (Entry<OperationalState, GroupState> transition : node.getValue().edges.entrySet()) {
                 fsmText.append(comma);
                 fsmText.append(transition.getKey().toPersistentString());
                 fsmText.append("=>");
@@ -217,7 +227,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private Group currentGroup;
     private CurrentGroupState currentGroupState;
-    private ConcurrentHashMap<Enum<?>, AtomicInteger> counters = new ConcurrentHashMap<>();
+    private Map<Enum<?>, AtomicInteger> counters = new ConcurrentHashMap<>();
 
     // ========================   USES Beans    ==============================
 
@@ -229,11 +239,11 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     StatePersistenceService<Jvm, JvmState> jvmStatePersistenceService;
 
     @Autowired
-    WebServerDao        webServerDao;
+    WebServerDao webServerDao;
 
     @Autowired
     @Qualifier("webServerStateService")
-    StateService<WebServer, WebServerReachableState>    webServerStateService;
+    StateService<WebServer, WebServerReachableState> webServerStateService;
 
     /**
      * State transition and counting of jvms and ws active
@@ -244,65 +254,66 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         currentGroupState = null;
         GroupState state = GRP_UNKNOWN;
 
-        for(AtomicInteger stateCount : counters.values()) {
+        for (AtomicInteger stateCount : counters.values()) {
             stateCount.set(0);
         }
 
         List<WebServer> webServers = webServerDao.findWebServersBelongingTo(group.getId());
 
-        if(!webServers.isEmpty()) {
+        if (!webServers.isEmpty()) {
 
             Set<Identifier<WebServer>> webServerSet = new HashSet<>();
-            for(WebServer webServer : webServers) {
+            for (WebServer webServer : webServers) {
                 webServerSet.add(webServer.getId());
             }
-            Set<CurrentState<WebServer,WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
+            Set<CurrentState<WebServer, WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
 
-            for(CurrentState<WebServer, WebServerReachableState> wsState : results) {
-                WebServerReachableState value = wsState!=null?wsState.getState():WebServerReachableState.WS_UNKNOWN;
+            for (CurrentState<WebServer, WebServerReachableState> wsState : results) {
+                WebServerReachableState value = wsState != null ? wsState.getState() : WebServerReachableState.WS_UNKNOWN;
 
                 counters.get(value).incrementAndGet();
-                state = fsm.get(state).transit(value);
+                state = FSM.get(state).transit(value);
             }
         }
 
-        for(Jvm jvm : group.getJvms()) {
+        for (Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
-            JvmState value = jvmState!=null?jvmState.getState():JvmState.JVM_UNKNOWN;
+            JvmState value = jvmState != null ? jvmState.getState() : JvmState.JVM_UNKNOWN;
 
             counters.get(value).incrementAndGet();
-            state = fsm.get(state).transit(value);
+            state = FSM.get(state).transit(value);
         }
 
         int jvmTotal = 0;
         int wsTotal = 0;
-        for(JvmState eachJvmState : JvmState.values()) {
+        for (JvmState eachJvmState : JvmState.values()) {
             jvmTotal += counters.get(eachJvmState).get();
         }
-        for(WebServerReachableState eachWsState : WebServerReachableState.values()) {
+        for (WebServerReachableState eachWsState : WebServerReachableState.values()) {
             wsTotal += counters.get(eachWsState).get();
         }
         int jvmStarted = counters.get(JvmState.JVM_STARTED).get();
         int wsStarted = counters.get(WebServerReachableState.WS_REACHABLE).get();
 
-        return currentGroupState = newState(state, jvmStarted, jvmTotal, wsStarted, wsTotal);
+        currentGroupState = newState(state, jvmStarted, jvmTotal, wsStarted, wsTotal);
+        return currentGroupState;
     }
 
     private CurrentGroupState newState(GroupState state, int jvmStarted, int jvmTotal, int wsStarted, int wsTotal) {
-        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(),
+        currentGroupState = new CurrentGroupState(currentGroup.getId(), state, DateTime.now(),
                 new StateDetail(jvmStarted, jvmTotal),
                 new StateDetail(wsStarted, wsTotal)
-                );
+        );
 
         logCurrentState();
         return currentGroupState;
     }
 
     private CurrentGroupState newState(GroupState state) {
-        currentGroupState = new CurrentGroupState(currentGroup.getId(), state,DateTime.now(),
+        currentGroupState = new CurrentGroupState(currentGroup.getId(), state, DateTime.now(),
                 currentGroup.getCurrentState().getJvmsDetail(),
                 currentGroup.getCurrentState().getWebServersDetail()
-                );
+        );
         logCurrentState();
         return currentGroupState;
     }
@@ -313,13 +324,13 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     // =============== Constructor =====================
 
     public GroupStateManagerTableImpl() {
-        for(JvmState eachJvmState : JvmState.values()) {
+        for (JvmState eachJvmState : JvmState.values()) {
             counters.put(eachJvmState, new AtomicInteger(0));
         }
-        for(WebServerReachableState eachWsState : WebServerReachableState.values()) {
+        for (WebServerReachableState eachWsState : WebServerReachableState.values()) {
             counters.put(eachWsState, new AtomicInteger(0));
         }
-}
+    }
 
     // =============== API METHODS =====================
 
@@ -420,10 +431,10 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     @Override
     public String toString() {
-        if(currentGroup == null) {
+        if (currentGroup == null) {
             return super.toString();
         } else {
-            return "gsm:{id="+currentGroup.getId().getId()+",name='"+currentGroup.getName()+"',state="+currentGroupState+"}";
+            return "gsm:{id=" + currentGroup.getId().getId() + ",name='" + currentGroup.getName() + "',state=" + currentGroupState + "}";
         }
     }
 }

@@ -1,5 +1,8 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
@@ -81,58 +84,36 @@ public class JpaGroupControlHistory implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((completedDate == null) ? 0 : completedDate.hashCode());
-        result = prime * result + ((controlOperation == null) ? 0 : controlOperation.hashCode());
-        result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((requestedBy == null) ? 0 : requestedBy.hashCode());
-        result = prime * result + ((requestedDate == null) ? 0 : requestedDate.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        JpaGroupControlHistory that = (JpaGroupControlHistory) o;
+
+        return new EqualsBuilder()
+                .append(id, that.id)
+                .append(groupId, that.groupId)
+                .append(controlOperation, that.controlOperation)
+                .append(requestedDate, that.requestedDate)
+                .append(completedDate, that.completedDate)
+                .append(requestedBy, that.requestedBy)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        JpaGroupControlHistory other = (JpaGroupControlHistory) obj;
-        if (completedDate == null) {
-            if (other.completedDate != null)
-                return false;
-        } else if (!completedDate.equals(other.completedDate))
-            return false;
-        if (controlOperation == null) {
-            if (other.controlOperation != null)
-                return false;
-        } else if (!controlOperation.equals(other.controlOperation))
-            return false;
-        if (groupId == null) {
-            if (other.groupId != null)
-                return false;
-        } else if (!groupId.equals(other.groupId))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (requestedBy == null) {
-            if (other.requestedBy != null)
-                return false;
-        } else if (!requestedBy.equals(other.requestedBy))
-            return false;
-        if (requestedDate == null) {
-            if (other.requestedDate != null)
-                return false;
-        } else if (!requestedDate.equals(other.requestedDate))
-            return false;
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(groupId)
+                .append(controlOperation)
+                .append(requestedDate)
+                .append(completedDate)
+                .append(requestedBy)
+                .toHashCode();
     }
-
 }

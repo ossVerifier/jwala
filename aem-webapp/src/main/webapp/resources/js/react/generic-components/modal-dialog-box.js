@@ -144,7 +144,11 @@ ModalDialogBox = React.createClass({
         this.setState({top:e.pageY - this.mouseDownYDiff, left:e.pageX - this.mouseDownXDiff});
     },
     show: function(title, content, okCallback, cancelCallback) {
-        this.setState({show:true, title:title, content:content, okCallback:okCallback, cancelCallback:cancelCallback});
+        if (title !== undefined && content !== undefined && okCallback !== undefined && cancelCallback !== undefined){
+            this.setState({show:true, title:title, content:content, okCallback:okCallback, cancelCallback:cancelCallback});
+        } else {
+            this.setState({show:true});
+        }
     },
     close: function() {
         this.setState({show:false});

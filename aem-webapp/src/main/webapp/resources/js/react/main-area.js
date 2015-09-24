@@ -72,6 +72,12 @@ var ConfigureTabs = React.createClass({
 
 $(document).ready(function(){
 
+    if (typeof console == "undefined") {
+        window.console = {
+            log: function() {}
+        };
+    }
+
     $.validator.addMethod("notEqualTo", function(v, e, p) {
       return this.optional(e) || v != p;
     }, "Please specify a different value");
@@ -88,6 +94,11 @@ $(document).ready(function(){
 
     $.validator.addMethod("nameCheck", function(value, element) {
         var exp = /^[a-zA-Z0-9-_.]+$/i;
+        return this.optional(element) || exp.test(value);
+    }, "The field must only contain letters, numbers, underscores, dashes or periods.");
+
+    $.validator.addMethod("xmlFileNameCheck", function(value, element) {
+        var exp = /^.*\.xml$/i;
         return this.optional(element) || exp.test(value);
     }, "The field must only contain letters, numbers, underscores, dashes or periods.");
 

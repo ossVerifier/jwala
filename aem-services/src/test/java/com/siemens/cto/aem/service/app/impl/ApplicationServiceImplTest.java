@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.app.impl;
 
+import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
@@ -10,57 +11,63 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
 
-
-    /*Mock by hand*/
+    @Mock
     private ApplicationDao applicationDao;
 
-    /*Mock by hand*/
+    @Mock
     private ApplicationPersistenceService applicationPersistenceService;
-    
-    @Mock /*injected*/
+
+    @Mock
     private WebArchiveManager webArchiveManager;
 
-    @Mock /*injected*/
+    @Mock
     private PrivateApplicationService privateApplicationService = new PrivateApplicationServiceImpl();
 
+    @Mock
+    private JvmDao jvmDao;
+
     @InjectMocks @Spy
-    private ApplicationService applicationService = new ApplicationServiceImpl(
-            applicationDao = Mockito.mock(ApplicationDao.class),
-            applicationPersistenceService = Mockito.mock(ApplicationPersistenceService.class)            
-            );
+    // TODO: Replace the nulls with instantiated/mocked classes once tests that uses them are added.
+    private ApplicationService applicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService,
+                                                                               null, null, null, jvmDao);
     
     @Mock
     private Application mockApplication; 
     @Mock
-    private Application mockApplication2; 
-        
+    private Application mockApplication2;
+
     private Group group;
     private Group group2;
     private Identifier<Group> groupId;
@@ -73,10 +80,14 @@ public class ApplicationServiceImplTest {
     // Managed by setup/teardown
     ByteArrayInputStream uploadedFile;
     Application app;
-    
+
+    @BeforeClass
+    public static void init() {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+    }
+
     @Before
     public void setUp() {
-        
         groupId = new Identifier<Group>(1L);
         groupId2 = new Identifier<Group>(2L);
         group = new Group(groupId, "the-ws-group-name");
@@ -156,7 +167,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test(expected=BadRequestException.class)
     public void testCreateBadRequest() {
-        when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(Event.class), anyString())).thenReturn(mockApplication2);
         
         CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -167,7 +178,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreate() {
-        when(applicationPersistenceService.createApplication(any(Event.class))).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(Event.class), anyString())).thenReturn(mockApplication2);
         
         CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -193,7 +204,7 @@ public class ApplicationServiceImplTest {
     public void testRemove() {
         applicationService.removeApplication(mockApplication.getId(), testUser);
 
-        Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));        
+        verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));
     }
     
     private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveCommand>> {
@@ -218,8 +229,8 @@ public class ApplicationServiceImplTest {
         
         applicationService.uploadWebArchive(uwac, testUser);
 
-        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(argThat(new IsValidUploadEvent()));        
-        Mockito.verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryFileInformation.class));
+        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(argThat(new IsValidUploadEvent()));
+        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryFileInformation.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -229,7 +240,56 @@ public class ApplicationServiceImplTest {
         
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 
-        Mockito.verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));        
-        Mockito.verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));        
+        verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));
+        verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));
     }
+
+    @Test(expected = BadRequestException.class)
+    public void testDeleteWebArchiveWithIoException() throws IOException {
+        when(webArchiveManager.remove(any(Event.class))).thenThrow(IOException.class);
+        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testDeleteWebArchiveDeleteFailed() throws IOException {
+        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryFileInformation.none());
+
+        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
+
+        verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));
+        verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));
+    }
+
+    @Test
+    public void testGetResourceTemplateNames() {
+        final String [] nameArray = {"hct.xml"};
+        when(applicationPersistenceService.getResourceTemplateNames(eq("hct"))).thenReturn(Arrays.asList(nameArray));
+        final List names = applicationService.getResourceTemplateNames("hct");
+        assertEquals("hct.xml", names.get(0));
+    }
+
+    @Test
+    public void testGetResourceTemplate() {
+        final String theTemplate = "<context>${webApp.warPath}</context>";
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn(theTemplate);
+        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", null, null, "hct.xml", false));
+    }
+
+    @Test
+    public void testGetResourceTemplateWithTokensReplaced() {
+        final String theTemplate = "<context>${webApp.warPath}</context>";
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn(theTemplate);
+        final Application app = mock(Application.class);
+        when(app.getWarPath()).thenReturn("theWarPath");
+        when(applicationDao.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
+        when(jvmDao.findJvm(anyString(), anyString())).thenReturn(null);
+        assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", null, null, "hct.xml", true));
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        applicationService.updateResourceTemplate("hct", "hct.xml", "content");
+        verify(applicationPersistenceService).updateResourceTemplate(eq("hct"), eq("hct.xml"), eq("content"));
+    }
+
 }

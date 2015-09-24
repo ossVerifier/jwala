@@ -1,20 +1,32 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.*;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.apache.commons.io.FileUtils;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +35,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -33,9 +49,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- *
  * @author horspe00
- *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
@@ -67,6 +81,12 @@ public class WebServerServiceRestImplTest {
     @Mock
     private AuthenticatedUser authenticatedUser;
 
+    @Mock
+    private RuntimeCommandBuilder rtCommandBuilder;
+
+    @Mock
+    private RuntimeCommand rtCommand;
+
     private WebServerServiceRestImpl cut;
 
     private static List<WebServer> createWebServerList() {
@@ -86,8 +106,8 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-	cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService);
-	when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
+        cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService);
+        when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
     @Test
@@ -205,7 +225,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
         webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath"),
-                new FileSystemPath("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT ));
+                new FileSystemPath("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT));
 
         final Identifier<Group> groupId = new Identifier<>("1");
 
@@ -215,5 +235,111 @@ public class WebServerServiceRestImplTest {
         final List<WebServer> result =
                 (List<WebServer>) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent();
         assertEquals("test", result.get(0).getName());
+    }
+
+    @Test
+    public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        when(rtCommand.execute()).thenReturn(retSuccessExecData);
+        when(rtCommandBuilder.build()).thenReturn(rtCommand);
+        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(retSuccessExecData);
+        Response response = cut.generateAndDeployConfig(webServer.getName());
+        assertTrue(response.hasEntity());
+        FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        when(rtCommand.execute()).thenReturn(retSuccessExecData);
+        when(rtCommandBuilder.build()).thenReturn(rtCommand);
+        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        boolean failedSecureCopy = false;
+        try {
+            Response response = cut.generateAndDeployConfig(webServer.getName());
+        } catch (InternalErrorException e) {
+            failedSecureCopy = true;
+        }
+        assertTrue(failedSecureCopy);
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testGetCurrentWebServerStates() {
+        CurrentState<WebServer, WebServerReachableState> webServerState = new CurrentState<>(webServer.getId(), WebServerReachableState.WS_REACHABLE, new DateTime(), StateType.WEB_SERVER);
+        Set<CurrentState<WebServer, WebServerReachableState>> currentStates = new HashSet<>();
+        currentStates.add(webServerState);
+        when(webServerStateService.getCurrentStates(anySet())).thenReturn(currentStates);
+        Set<String> wsIds = new HashSet<>();
+        wsIds.add(webServer.getId().getId() + "");
+        WebServerIdsParameterProvider wsIdParamProvider = new WebServerIdsParameterProvider(wsIds);
+        Response response = cut.getCurrentWebServerStates(wsIdParamProvider);
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testGetCurrentWebServerStatesEmptyIdSet() {
+        CurrentState<WebServer, WebServerReachableState> webServerState = new CurrentState<>(webServer.getId(), WebServerReachableState.WS_REACHABLE, new DateTime(), StateType.WEB_SERVER);
+        Set<CurrentState<WebServer, WebServerReachableState>> currentStates = new HashSet<>();
+        currentStates.add(webServerState);
+        when(webServerStateService.getCurrentStates()).thenReturn(currentStates);
+        Set<String> wsIds = new HashSet<>();
+        WebServerIdsParameterProvider wsIdParamProvider = new WebServerIdsParameterProvider(wsIds);
+        Response response = cut.getCurrentWebServerStates(wsIdParamProvider);
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testGetHttpdConfig() throws CommandFailureException {
+        when(commandImpl.getHttpdConf(webServer.getId())).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
+        Response response = cut.getHttpdConfig(webServer.getId());
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testGetHttpdConfigThrowsException() throws CommandFailureException {
+        when(commandImpl.getHttpdConf(webServer.getId())).thenThrow(CommandFailureException.class);
+        Response response = cut.getHttpdConfig(webServer.getId());
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testGetResourceName() {
+        List<String> resourceNames = new ArrayList<>();
+        resourceNames.add("httpd-test.tpl");
+        when(impl.getResourceTemplateNames(webServer.getName())).thenReturn(resourceNames);
+        Response response = cut.getResourceNames(webServer.getName());
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testGetResourceTemplates() {
+        String resourceTemplateName = "httpd-conf.tpl";
+        when(impl.getResourceTemplate(webServer.getName(), resourceTemplateName, false)).thenReturn("ServerRoot=./test");
+        Response response = cut.getResourceTemplate(webServer.getName(), resourceTemplateName, false);
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        String resourceTemplateName = "httpd-conf.tpl";
+        String content = "ServerRoot=./test-update";
+        when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenReturn(content);
+        Response response = cut.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
+        assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testUpdateResourceTemplateException() {
+        String resourceTemplateName = "httpd-conf.tpl";
+        String content = "ServerRoot=./test-update";
+        when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenThrow(ResourceTemplateUpdateException.class);
+        Response response = cut.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
+        assertTrue(response.hasEntity());
     }
 }

@@ -7,7 +7,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadServerXmlTemplateCommand;
+import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
@@ -16,7 +16,6 @@ import java.util.List;
 public interface JvmCrudService {
 
     JpaJvm createJvm(final Event<CreateJvmCommand> aJvmToCreate);
-
     JpaJvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate);
 
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
@@ -29,7 +28,14 @@ public interface JvmCrudService {
 
     void removeJvm(final Identifier<Jvm> aGroupId);
 
-    JpaJvmConfigTemplate uploadServerXml(Event<UploadServerXmlTemplateCommand> event);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event);
 
     String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
+
+    List<String> getResourceTemplateNames(final String jvmName);
+
+    String getResourceTemplate(final String jvmName, final String resourceTemplateName);
+
+    void updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
+
 }

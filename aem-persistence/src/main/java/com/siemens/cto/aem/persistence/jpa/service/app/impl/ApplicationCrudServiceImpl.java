@@ -4,18 +4,22 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.model.app.UploadAppTemplateCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
+import java.io.InputStream;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Scanner;
 
 public class ApplicationCrudServiceImpl implements ApplicationCrudService {
 
@@ -65,7 +69,25 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
         return jpaApp;
     }
 
-    
+    @Override
+    public List<String> getResourceTemplateNames(final String appName) {
+        final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_RESOURCE_TEMPLATE_NAMES);
+        q.setParameter("appName", appName);
+        return q.getResultList();
+    }
+
+    @Override
+    public String getResourceTemplate(final String appName, final String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_CONTENT);
+        q.setParameter("appName", appName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e) {
+            throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
+        }
+    }
+
     @Override
     public JpaApplication updateApplication(final Event<UpdateApplicationCommand> anApplicationToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup) {
 
@@ -102,5 +124,72 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
                     "Application cannot be found: " + appId.getId());
         }
     }
+
+    @Override
+    public void updateResourceTemplate(final String appName, final String resourceTemplateName, final String template) {
+        final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT);
+        q.setParameter("appName", appName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateContent", template);
+
+        try {
+            if (q.executeUpdate() == 0) {
+                throw new ResourceTemplateUpdateException(appName, resourceTemplateName);
+            }
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(appName, resourceTemplateName, re);
+        }
+    }
+
+    @Override
+    public void createConfigTemplate(final JpaApplication app,
+                                     final String resourceTemplateName,
+                                     final String resourceTemplateContent) {
+        final JpaApplicationConfigTemplate template = new JpaApplicationConfigTemplate();
+        template.setApplication(app);
+        template.setTemplateName(resourceTemplateName);
+        template.setTemplateContent(resourceTemplateContent);
+        entityManager.persist(template);
+        entityManager.flush();
+    }
+
+    @Override
+    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateCommand> event) {
+        UploadAppTemplateCommand command = event.getCommand();
+        Application application = command.getApp();
+        Identifier<Application> id = application.getId();
+        JpaApplication jpaApp = getExisting(id);
+
+        InputStream inStream = command.getData();
+        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        // get an instance and then do a create or update
+        Query query = entityManager.createQuery("SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName");
+        query.setParameter("appName", application.getName());
+        query.setParameter("tempName", command.getConfFileName());
+        List<JpaApplicationConfigTemplate> templates = query.getResultList();
+        JpaApplicationConfigTemplate jpaConfigTemplate;
+        if (templates.size() == 1) {
+            //update
+            jpaConfigTemplate = templates.get(0);
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.flush();
+        } else if (templates.isEmpty()) {
+            //create
+            jpaConfigTemplate = new JpaApplicationConfigTemplate();
+            jpaConfigTemplate.setApplication(jpaApp);
+            jpaConfigTemplate.setTemplateName(command.getConfFileName());
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.persist(jpaConfigTemplate);
+            entityManager.flush();
+        } else {
+            throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND,
+                    "Only expecting one template to be returned for application [" + application.getName() + "] but returned " + templates.size() + " templates");
+        }
+
+        return jpaConfigTemplate;
+    }
+
 }
 
