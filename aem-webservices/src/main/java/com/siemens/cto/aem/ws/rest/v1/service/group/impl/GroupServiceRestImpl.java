@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
@@ -162,7 +165,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                         };
                         uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
                     } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                     }
                 }
             }

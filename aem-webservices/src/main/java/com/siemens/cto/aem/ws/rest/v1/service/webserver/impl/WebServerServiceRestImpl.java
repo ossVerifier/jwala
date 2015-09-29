@@ -52,16 +52,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
-    private Map<String, ReentrantReadWriteLock> wsWriteLocks = new HashMap<String, ReentrantReadWriteLock>();
+    private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
-                                    final StateService<WebServer, WebServerReachableState> theWebServerStateService) {
+                                    final StateService<WebServer, WebServerReachableState> theWebServerStateService,
+                                    final Map<String, ReentrantReadWriteLock> theWriteLocks) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
         webServerStateService = theWebServerStateService;
+        wsWriteLocks = theWriteLocks;
     }
 
     @Override
@@ -158,11 +160,19 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             } else {
                 String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}", aWebServerName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                Map<String, String> errorDetails = new HashMap<>();
+                errorDetails.put("webServerName", aWebServerName);
+                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
+                        new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError),
+                        errorDetails);
             }
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e.getMessage());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf", e);
+            Map<String, String> errorDetails = new HashMap<>();
+            errorDetails.put("webServerName", aWebServerName);
+            return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf"),
+                    errorDetails);
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potential memory leak: could clean it up but adds complexity
         }

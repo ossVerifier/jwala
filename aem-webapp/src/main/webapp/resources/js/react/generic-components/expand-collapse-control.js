@@ -34,7 +34,8 @@ var ExpandCollapseControl = React.createClass({
                                         this.props.parentItemId,
                                         this.props.rootId,
                                         childTableDetails.initialSortColumn,
-                                        this.props.parentItemName);
+                                        this.props.parentItemName,
+                                        false);
     },
     drawDataTable: function(dataTable, data, defaultSorting, isCollapsible, headerComponents) {
         dataTable.fnClearTable(data);

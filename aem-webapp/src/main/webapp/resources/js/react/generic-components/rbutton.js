@@ -16,7 +16,7 @@ var RButton = React.createClass({
     getInitialState: function() {
         return {
             hover: false,
-            busy: false
+            busy: false // Only used when busyClassName is defined.
         }
     },
     render: function() {
@@ -45,7 +45,9 @@ var RButton = React.createClass({
     },
     handleClick: function() {
         if (!this.state.busy) {
-            this.setState({busy: true});
+            if (this.props.busyClassName !== undefined) {
+                this.setState({busy: true});
+            }
             this.props.onClick(this.doneCallback);
         }
     },

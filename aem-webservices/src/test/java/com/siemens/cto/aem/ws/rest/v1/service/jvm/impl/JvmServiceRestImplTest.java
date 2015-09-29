@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -17,6 +16,7 @@ import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsComma
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -75,10 +76,6 @@ public class JvmServiceRestImplTest {
     @Mock
     private AuthenticatedUser authenticatedUser;
     @Mock
-    private RuntimeCommandBuilder runtimeCmdBuilder;
-    @Mock
-    private RuntimeCommand runtimeCmd;
-    @Mock
     private ResourceService resourceService;
 
     private Map<String, ReentrantReadWriteLock> writeLockMap;
@@ -107,7 +104,7 @@ public class JvmServiceRestImplTest {
     public void setUp() {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
-        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, resourceService, runtimeCmdBuilder, writeLockMap);
+        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
@@ -221,7 +218,7 @@ public class JvmServiceRestImplTest {
     public void testRemoveJvm() {
         when(impl.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(impl.getJvm(jvm.getId())).thenReturn(jvm);
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "",""));
+        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
         final Response response = cut.removeJvm(jvm.getId(), authenticatedUser);
         verify(impl, atLeastOnce()).removeJvm(jvm.getId());
@@ -276,9 +273,7 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(runtimeCmdBuilder, jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(runtimeCmd.execute()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(runtimeCmdBuilder.build()).thenReturn(runtimeCmd);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
 
@@ -291,7 +286,7 @@ public class JvmServiceRestImplTest {
         }
         assertFalse(failsScp);
         assertTrue(response != null && response.hasEntity());
-	FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
+        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
     }
 
     @Test
@@ -301,13 +296,11 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(runtimeCmdBuilder, jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(runtimeCmd.execute()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(runtimeCmdBuilder.build()).thenReturn(runtimeCmd);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
         final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("FAIL CONTROL SERVICE", ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: FAIL CONTROL SERVICE", ((Map)(((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
@@ -317,13 +310,11 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(runtimeCmdBuilder, jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
-        when(runtimeCmd.execute()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(runtimeCmdBuilder.build()).thenReturn(runtimeCmd);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
         when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
         when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
         final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("FAIL THE SERVICE SECURE COPY TEST", ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running scp command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
@@ -333,12 +324,11 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(runtimeCmdBuilder, jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
         when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new JvmControlHistory(null, null, null, null, new ExecData(new ExecReturnCode(0), "", "")));
-        when(runtimeCmd.execute()).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
-        when(runtimeCmdBuilder.build()).thenReturn(runtimeCmd);
+        when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
         final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("FAIL THE RUNTIME COMMAND TEST", ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running scp command IOException", ((Map)(((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test

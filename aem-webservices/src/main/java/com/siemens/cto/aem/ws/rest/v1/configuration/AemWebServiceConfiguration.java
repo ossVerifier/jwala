@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.configuration;
 
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -49,6 +48,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
@@ -93,7 +94,8 @@ public class AemWebServiceConfiguration {
     @Qualifier("stateNotificationService")
     private StateNotificationService stateNotificationService;
 
-    private final Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
+    private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
+    private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
     @Bean
     public Server getV1JaxResServer() {
@@ -145,8 +147,8 @@ public class AemWebServiceConfiguration {
                 jvmControlService,
                 jvmStateService,
                 resourceService,
-                new RuntimeCommandBuilder(),
-                writeLockMap);
+                getExecutorService(),
+                jvmWriteLockMap);
     }
 
     @Bean
@@ -159,7 +161,8 @@ public class AemWebServiceConfiguration {
         return new WebServerServiceRestImpl(webServerService,
                 webServerControlService,
                 webServerCommandService,
-                webServerStateService);
+                webServerStateService,
+                wsWriteLockMap);
     }
 
     @Bean
@@ -227,4 +230,9 @@ public class AemWebServiceConfiguration {
     public TransactionRequiredExceptionMapper getV1TransactionRequiredExceptionMapper() {
         return new TransactionRequiredExceptionMapper();
     }
+
+    @Bean(destroyMethod = "shutdownNow")
+    protected ExecutorService getExecutorService() {
+        return Executors.newFixedThreadPool(12);
+    } // TODO: why 12? is this configurable with a property?
 }

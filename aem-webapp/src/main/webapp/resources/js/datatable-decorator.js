@@ -30,7 +30,8 @@ var decorateTableAsDataTable = function(tableId,
                                         parentItemId /* e.g. group id. This is used to retrieve child data via the data callback method when the expand-collapse control is clicked */,
                                         rootId /* This is the first element id in a hierarchy */,
                                         initialSortColumn,
-                                        parentItemName){
+                                        parentItemName,
+                                        paginationEnabled){
 
     var self = this;
 
@@ -168,7 +169,8 @@ var decorateTableAsDataTable = function(tableId,
                                                    [25, 50, 100, 200, "All"]],
                                    "iDisplayLength": 25,
                                    "fnDrawCallback": rowSelectCallback,
-                                   "sPaginationType": "toc"};
+                                   "sPaginationType": "toc",
+                                   "bPaginate": paginationEnabled === undefined ? true : paginationEnabled};
 
         if (hideHeaderAndFooter === false) {
             dataTableProperties["sDom"] = "t";

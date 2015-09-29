@@ -37,10 +37,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -88,6 +86,7 @@ public class WebServerServiceRestImplTest {
     private RuntimeCommand rtCommand;
 
     private WebServerServiceRestImpl cut;
+    private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
 
     private static List<WebServer> createWebServerList() {
         final Group groupOne = new Group(Identifier.id(1L, Group.class), "ws-groupOne");
@@ -106,7 +105,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService);
+        cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService, writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 

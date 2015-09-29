@@ -4,12 +4,14 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.Success;
 
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 public class ResponseBuilder {
 
     public static Response ok() {
         return new ResponseBuilder().build();
     }
+
     public static Response ok(final Object someContent) {
         return new ResponseBuilder().applicationResponseContent(someContent).build();
     }
@@ -21,7 +23,7 @@ public class ResponseBuilder {
     public static Response notOk(final Response.Status aStatus,
                                  final FaultCodeException aFaultCode) {
         return new ResponseBuilder(aStatus).applicationResponse(new ApplicationResponse(aFaultCode.getMessageResponseStatus(),
-                                                                                        aFaultCode.getMessage())).build();
+                aFaultCode.getMessage())).build();
     }
 
     private ApplicationResponse applicationResponse;
@@ -37,7 +39,7 @@ public class ResponseBuilder {
 
     public ResponseBuilder applicationResponseContent(final Object someContent) {
         return applicationResponse(new ApplicationResponse(Success.SUCCESS,
-                                                           someContent));
+                someContent));
     }
 
     public ResponseBuilder applicationResponse(final ApplicationResponse anApplicationResponse) {
@@ -52,5 +54,11 @@ public class ResponseBuilder {
 
     public Response build() {
         return Response.status(status).entity(applicationResponse).build();
+    }
+
+    public static Response notOkWithDetails(Response.Status aStatus, FaultCodeException aFaultCode, Map<String, String> errorDetails) {
+        errorDetails.put("message", aFaultCode.getMessage());
+        return new ResponseBuilder(aStatus).applicationResponse(new ApplicationResponse(aFaultCode.getMessageResponseStatus(),
+                errorDetails)).build();
     }
 }

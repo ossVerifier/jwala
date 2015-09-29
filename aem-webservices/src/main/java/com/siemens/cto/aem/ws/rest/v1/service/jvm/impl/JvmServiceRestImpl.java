@@ -46,9 +46,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
@@ -63,7 +68,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final JvmControlService jvmControlService;
     private final StateService<Jvm, JvmState> jvmStateService;
     private final ResourceService resourceService;
-    private RuntimeCommandBuilder runtimeCommandBuilder;
+    private final ExecutorService executorService;
     private Map<String, ReentrantReadWriteLock> jvmWriteLocks;
     private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -73,13 +78,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                               final JvmControlService theJvmControlService,
                               final StateService<Jvm, JvmState> theJvmStateService,
                               final ResourceService theResourceService,
-                              final RuntimeCommandBuilder theRuntimeCommandBuilder,
+                              final ExecutorService theExecutorService,
                               final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
         resourceService = theResourceService;
-        runtimeCommandBuilder = theRuntimeCommandBuilder;
+        executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
     }
 
@@ -126,7 +131,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     };
                     jvmService.uploadJvmTemplateXml(uploadJvmTemplateCommand, aUser.getUser());
                 } catch (FileNotFoundException e) {
-                    logger.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(), jvm.getJvmName());
+                    logger.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(), jvm.getJvmName(), e);
                     throw new InternalErrorException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Could not find template " + resourceType.getTemplateName());
                 }
             }
@@ -273,16 +278,23 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response generateAndDeployConf(final String jvmName,
                                           final AuthenticatedUser user) {
-        final Jvm jvm;
-        jvm = jvmService.getJvm(jvmName);
-
         try {
-            generateAndDeployConf(jvm, user);
-            return ResponseBuilder.ok(jvm);
-        } catch (RuntimeException re) {
-            logger.error("Failed to generate and deploy configuration files for JVM: {}", jvm.getJvmName(), re);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
+            Future<Jvm> futureJvm = executorService.submit(new Callable<Jvm>() {
+                @Override
+                public Jvm call() throws Exception {
+                    final Jvm jvm = jvmService.getJvm(jvmName);
+                    return generateAndDeployConf(jvm, user);
+                }
+            });
+            return ResponseBuilder.ok(futureJvm.get());
+        } catch (RuntimeException | InterruptedException | ExecutionException re) {
+            logger.error("Failed to generate and deploy configuration files for JVM: {}", jvmName, re);
+            Map<String, String> errorDetails = new HashMap<>();
+            errorDetails.put("jvmName", jvmName);
+            errorDetails.put("jvmId", jvmService.getJvm(jvmName).getId().getId().toString());
+            return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()),
+                    errorDetails);
         }
     }
 
@@ -292,9 +304,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
      * @param jvm  - the JVM
      * @param user - the user
      *             <p>
-     *             NOTE: I think we can put this in the service layer.
      */
-    private void generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user) {
+    private Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user) {
 
         // only one at a time per JVM
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
@@ -319,12 +330,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             // create the tar file
-            runtimeCommandBuilder.reset();
-            final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName(), runtimeCommandBuilder);
+            final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName(), new RuntimeCommandBuilder());
 
             // copy the tar file
-            runtimeCommandBuilder.reset();
-            execData = jvmService.secureCopyFile(runtimeCommandBuilder, jvm.getJvmName() + "_config.tar", stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
+            execData = jvmService.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
             if (execData.getReturnCode().wasSuccessful()) {
                 logger.info("Copy of config tar successful: {}", jvmConfigTar);
             } else {
@@ -361,12 +370,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmStateService.setCurrentState(setStateStoppedCommand, user.getUser());
 
         } catch (CommandFailureException e) {
-            logger.error("Failed to copy the httpd.conf to {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf", e);
+            logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config", e);
         } finally {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
-
+        return jvm;
     }
 
     @Override
@@ -401,9 +410,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String jvmResourcesDirDest = jvmResourcesNameDir + deployResource.getRelativeDir();
             createConfigFile(jvmResourcesDirDest + "/", fileName, fileContent);
 
-            runtimeCommandBuilder.reset();
             final String destPath = stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
-            ExecData result = jvmService.secureCopyFile(runtimeCommandBuilder, fileName, jvmResourcesDirDest, jvm.getHostName(), destPath);
+            ExecData result = jvmService.secureCopyFile(new RuntimeCommandBuilder(), fileName, jvmResourcesDirDest, jvm.getHostName(), destPath);
             if (result.getReturnCode().wasSuccessful()) {
                 logger.info("Successful generation and deploy of {}", fileName);
             } else {

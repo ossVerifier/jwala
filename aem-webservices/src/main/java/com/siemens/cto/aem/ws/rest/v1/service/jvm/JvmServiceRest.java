@@ -105,6 +105,13 @@ public interface JvmServiceRest {
                                     @PathParam("resourceTemplateName") final String resourceTemplateName,
                                     final String content);
 
+    /**
+     * Request a preview a resource file.
+     * @param jvmName the JVM name
+     * @param groupName a group name
+     * @param template a template
+     * @return
+     */
     @PUT
     @Path("/{jvmName}/resources/preview")
     @Consumes(MediaType.TEXT_PLAIN)

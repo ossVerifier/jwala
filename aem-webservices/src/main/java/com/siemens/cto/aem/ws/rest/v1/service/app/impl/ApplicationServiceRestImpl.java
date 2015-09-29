@@ -203,6 +203,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                                              new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
             }
         } catch (RuntimeException re) {
+            LOGGER.error("Exception deploying application configuration", re);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                          new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
         }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.CYGPATH;
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 import static com.siemens.cto.aem.control.AemControl.Properties.SCRIPTS_PATH;
 
 public class RuntimeCommandBuilder {

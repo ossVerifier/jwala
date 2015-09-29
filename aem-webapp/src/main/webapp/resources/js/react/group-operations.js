@@ -170,6 +170,7 @@ var GroupOperations = React.createClass({
 });
 
 var GroupOperationsDataTable = React.createClass({
+   doneCallback: {},
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -799,20 +800,20 @@ var GroupOperationsDataTable = React.createClass({
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
     jvmGenerateJvmConfig: function(jvmId,jqClassSelector,extraData,groupId,doneCallback) {
-        this.doneCallback = doneCallback;
+        this.doneCallback[extraData.jvmName + "__cto" + jvmId] = doneCallback;
         ServiceFactory.getJvmService().deployJvmConfAllFiles(extraData.jvmName,
                                                          this.generateJvmConfigSucccessCallback,
                                                          this.generateJvmConfigErrorCallback);
     },
     generateJvmConfigSucccessCallback: function(response) {
-        this.doneCallback();
+        this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
          $.alert("Successfully generated and deployed JVM resource files",
-                 "Deploy " + response.applicationResponseContent.jvmName +  "'s server.xml, context.xml, and setenv.bat", false);
+                 response.applicationResponseContent.jvmName, false);
     },
 
-    generateJvmConfigErrorCallback: function(msg, doneCallback) {
-        this.doneCallback();
-        $.errorAlert(msg, "Error deploying JVM resource files", false);
+    generateJvmConfigErrorCallback: function(applicationResponseContent, doneCallback) {
+        this.doneCallback[applicationResponseContent.jvmName + "__cto" + applicationResponseContent.jvmId]();
+        $.errorAlert(applicationResponseContent.message, "Error deploying JVM resource files", false);
     },
 
     confirmJvmWebServerStopGroupDialogBox: function(id, parentItemId, buttonSelector, msg,callbackOnConfirm, cancelCallback) {
@@ -847,10 +848,10 @@ var GroupOperationsDataTable = React.createClass({
                                                            operationCallback,
                                                            cancelCallback,
                                                            serverType) {
-        var msg = "<b>" + serverType + " <span style='color:#2a70d0'>" + name + "</span> is a member of:</b><br/>" +
-                  groupOperationsHelper.groupArrayToHtmlList(groups, parentItemId)
-                  + "<br/><b> Are you sure you want to " + operation + " <span style='color:#2a70d0'>" + name + "</span></b> ?";
         if (groups.length > 1) {
+            var msg = "<b>" + serverType + " <span style='color:#2a70d0'>" + name + "</span> is a member of:</b><br/>" +
+                              groupOperationsHelper.groupArrayToHtmlList(groups, parentItemId)
+                              + "<br/><b> Are you sure you want to " + operation + " <span style='color:#2a70d0'>" + name + "</span></b> ?";
             this.confirmJvmWebServerStopGroupDialogBox(id,
                                                        parentItemId,
                                                        buttonSelector,
@@ -1014,7 +1015,7 @@ var StatusWidget = React.createClass({
  * A panel widget for web server buttons.
  */
 var WebServerControlPanelWidget = React.createClass({
-    doneCallback: null,
+    doneCallback: {},
     render: function() {
         return <div className="web-server-control-panel-widget">
 
@@ -1067,21 +1068,21 @@ var WebServerControlPanelWidget = React.createClass({
     },
 
     generateHttpdConf: function(doneCallback) {
-        this.doneCallback = doneCallback;
+        this.doneCallback[this.props.data.name] = doneCallback;
         this.props.webServerService.deployHttpdConf(this.props.data.name,
                                                     this.generateHttpdConfSucccessCallback,
                                                     this.generateHttpdConfErrorCallback);
     },
 
     generateHttpdConfSucccessCallback: function(response) {
-        this.doneCallback();
+        this.doneCallback[response.applicationResponseContent.name]();
          $.alert("Successfully generated and deployed httpd.conf",
                  "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
-    generateHttpdConfErrorCallback: function(msg, doneCallback) {
-        this.doneCallback();
-        $.errorAlert(msg, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+    generateHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
+        this.doneCallback[applicationResponseContent.webServerName]();
+        $.errorAlert(applicationResponseContent.message, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
     /**
