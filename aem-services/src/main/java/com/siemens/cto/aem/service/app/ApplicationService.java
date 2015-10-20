@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.app;
 
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -55,4 +56,6 @@ public interface ApplicationService {
      * @return The resource file preview.
      */
     String previewResourceTemplate(String appName, String groupName, String jvmName, String template);
+
+    void copyApplicationWarToGroupHosts(Application application, RuntimeCommandBuilder runtimeCommandBuilder);
 }

@@ -35,7 +35,7 @@ var RTreeList = React.createClass({
         return React.createElement("div", {className:"tree-list-content ui-widget-content"}, React.createElement("ul", {className: "root-node-ul"}, nodes));
     },
     onSelectNode: function(data) {
-        this.props.selectNodeCallback(data);
+        return this.props.selectNodeCallback(data);
     },
     createTreeNodes: function(data, meta, level, parent, parentLabel) {
         var self = this;
@@ -119,6 +119,10 @@ var Node = React.createClass({
                                                                        onMouseOut: this.onMouseOut,
                                                                        className: spanClassName}, this.props.label), children);
     },
+    componentDidMount: function() {
+        // Add RTreeList specific data
+        this.props.data["rtreeListMetaData"] = {parent: this.props.parent, entity: this.props.entity};
+    },
     onMouseOver: function(event) {
         event.preventDefault();
         this.setState({mouseOver: true});
@@ -131,13 +135,19 @@ var Node = React.createClass({
         this.setState({isCollapsed:!this.state.isCollapsed});
     },
     onClickNodeHandler: function() {
+        if (this.props.theTree.state.selectedNode !== null) {
+            if ($(this.props.theTree.state.selectedNode.getDOMNode()).attr("data-reactid") ===
+                $(this.getDOMNode()).attr("data-reactid")) {
+                return;
+            }
+        }
+
         if (this.props.selectable === true) {
+            var oldNode = this.props.theTree.state.selectedNode;
             this.props.theTree.setState({selectedNode: this});
-
-            // Add RTreeList specific data
-            this.props.data["rtreeListMetaData"] = {parent: this.props.parent, entity: this.props.entity};
-
-            this.props.theTree.onSelectNode(this.props.data);
+            if (!this.props.theTree.onSelectNode(this.props.data)) {
+                this.props.theTree.setState({selectedNode: oldNode});
+            }
         }
     },
     statics: {

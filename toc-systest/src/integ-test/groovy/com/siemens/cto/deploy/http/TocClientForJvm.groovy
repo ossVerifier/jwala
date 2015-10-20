@@ -42,5 +42,51 @@ class TocClientForJvm extends AbstractTocClient {
         tocHttpClient.delete(this.getV1Url() + "/" + jvmId)
     }
 
+    /**
+     * Generate a JVM instance as configured
+     */
+    public void deployJvmInstance(String jvmName) {
+        def jvmUrl = getV1Url() + "/${jvmName}/conf"
+        println "url = ${jvmUrl}"
+        tocHttpClient.put(jvmUrl, "");
+    }
+    
+    /**
+     * PUT https://localhost:9101/aem/v1.0/jvms/<jvm>/resources/template/<templateName.xml>
+     * @since 1.2
+     */
+    public String updateJvmTemplate(String jvmName, String templateName, String content) {
+        def jvmUrl = getV1Url() + "/"+jvmName+"/resources/template/" + templateName
+        println "url = ${jvmUrl}, content.length()=" + content.length();
+        tocHttpClient.putText(jvmUrl, content);
+    }
 
+    /**
+     * @since 1.2
+     */
+    public def start(String jvmName) {
+        def jvmId = getJvmIdForName(jvmName);
+        def jvmUrl = getV1Url() + "/"+jvmId+"/commands"
+        def jvmOp = "{\"controlOperation\":\"start\"}"
+        println "url = ${jvmUrl}, op=${jvmOp}";
+        tocHttpClient.execute(jvmUrl, jvmOp);
+    }
+
+    /**
+     * @since 1.2
+     */
+    public def stop(String jvmName) {
+        def jvmId = getJvmIdForName(jvmName);
+        def jvmUrl = getV1Url() + "/"+jvmId+"/commands"
+        def jvmOp = "{\"controlOperation\":\"stop\"}"
+        println "url = ${jvmUrl}, op=${jvmOp}";
+        tocHttpClient.execute(jvmUrl, jvmOp);
+    }
+    
+    /** Verify /stp.png
+     * @since 1.2 */
+    public def checkJvm(String jvmName) {
+        def jvmUrl = getJvm(jvmName).statusUri
+        tocHttpClient.getAnywhere(jvmUrl);
+    } 
 }

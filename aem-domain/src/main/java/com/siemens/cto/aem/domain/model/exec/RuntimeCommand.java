@@ -19,7 +19,7 @@ public class RuntimeCommand {
 
     public ExecData execute() {
         Runtime rt = Runtime.getRuntime();
-        LOGGER.info("Running scp command: {}", command);
+        LOGGER.info("Running command: {}", command);
         try {
             Process proc = rt.exec(command);
             final StringBuilder inputBuffer = new StringBuilder();
@@ -36,11 +36,11 @@ public class RuntimeCommand {
                     inputBuffer.toString(),
                     errorBuffer.toString());
         } catch (IOException e) {
-            LOGGER.error("Failed running scp command IOException :: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running scp command IOException", e);
+            LOGGER.error("Failed running command IOException :: ERROR: {}", e.getMessage());
+            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running command IOException", e);
         } catch (InterruptedException e) {
-            LOGGER.error("Failed running scp command InterruptedException:: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running scp command InterruptedException", e);
+            LOGGER.error("Failed running command InterruptedException:: ERROR: {}", e.getMessage());
+            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running command InterruptedException", e);
         }
     }
 

@@ -49,23 +49,15 @@ var stateService = function() {
     };
 
     return {
-        pollForUpdatesOld : function(timeout, dataSink) {
-            if (dataSink.shouldContinue()) {
-                return serviceFoundation.promisedGet("v1.0/states" + createPollingParametersOld(timeout, clientId),"json")
-                                        .then(sendToDataSinkThunk(dataSink))
-                                        .then(recurseThunk(timeout, dataSink))
-                                        .caught(
-                                            function(e) {return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
-
-            }
-        },
         pollForUpdates : function(timeout, dataSink) {
             if (dataSink.shouldContinue()) {
                 return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json")
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
-                                        .caught(
-                                            function(e) {return Promise.delay(30000).then(recurseThunk(timeout, dataSink));});
+                                        .caught(function(e) {
+                                                    console.log(e);
+                                                    return Promise.delay(30000).then(recurseThunk(timeout, dataSink));
+                                                 });
 
             }
         },

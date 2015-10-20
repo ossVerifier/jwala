@@ -18,11 +18,15 @@ var groupService = {
                                      successCallback,
                                      errorCallback);
     },
-	deleteGroup: function(id, caughtCallback) {
-	    return serviceFoundation.del("v1.0/groups/" + id, "json", caughtCallback);
+	deleteGroup: function(name, caughtCallback) {
+	    return serviceFoundation.del("v1.0/groups/" + encodeURI(name), "json", caughtCallback);
 	},
-	getGroup: function(id, responseCallback) {
-	    return serviceFoundation.get("v1.0/groups/" + id, "json", responseCallback);
+	getGroup: function(idOrName, responseCallback, byName) {
+	    var queryString = "";
+	    if (byName !== undefined) {
+            queryString = "byName=" + byName;
+	    }
+	    return serviceFoundation.get("v1.0/groups/" + idOrName + "?" + queryString, "json", responseCallback);
 	},
 	getChildrenOtherGroupConnectionDetails: function(id, groupChildType) {
 	    var queryParam = "";
@@ -34,5 +38,8 @@ var groupService = {
         return serviceFoundation.promisedGet("v1.0/groups/" + id + "/children/otherGroup/connectionDetails" + queryParam,
                                              "json",
                                              true);
+	},
+	getGroupByName: function(name, responseCallbacks) {
+
 	}
 }

@@ -99,9 +99,28 @@ var GroupOperations = React.createClass({
             if (webServerStatusWidget !== undefined) {
                 for (var i = 0; i < newWebServerStates.length; i++) {
                     if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                        webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
-                                                        newWebServerStates[i].asOf,
-                                                        newWebServerStates[i].message);
+                        if (newWebServerStates[i].stateString === GroupOperations.FAILED) {
+                            // Reroute to command status component.
+                            var mountingNode = $("#" + GroupOperations.getExtDivCompId(webServer.groupId.id));
+                            if (mountingNode.length > 0) {
+                                var status = {stateString: newWebServerStates[i].stateString,
+                                              asOf: newWebServerStates[i].asOf,
+                                              message: newWebServerStates[i].message};
+                                GroupOperations.pushCommandStatus(webServer.groupId.id, status);
+                                console.log(GroupOperations.commandStatusMap[webServer.groupId.id]);
+                                React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[webServer.groupId.id]}
+                                              closeCallback={
+                                                  function(){
+                                                      GroupOperations.commandStatusMap[webServer.groupId.id] = [];
+                                                      React.unmountComponentAtNode (mountingNode.get(0));
+                                                  }
+                                              }/>, mountingNode.get(0));
+                            }
+                        } else {
+                            webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
+                                                            newWebServerStates[i].asOf,
+                                                            newWebServerStates[i].message);
+                        }
                     }
                 }
             }
@@ -115,15 +134,33 @@ var GroupOperations = React.createClass({
             if (jvmStatusWidget !== undefined) {
                 for (var i = 0; i < newJvmStates.length; i++) {
                     if (newJvmStates[i].id.id === jvm.jvmId.id) {
-                        jvmStatusWidget.setStatus(newJvmStates[i].stateString,
-                                                  newJvmStates[i].asOf,
-                                                  newJvmStates[i].message);
+                        if (newJvmStates[i].stateString === GroupOperations.FAILED) {
+                            // Reroute to command status component.
+                            var mountingNode = $("#" + GroupOperations.getExtDivCompId(jvm.groupId.id));
+                            if (mountingNode.length > 0) {
+                                var status = {stateString: newJvmStates[i].stateString,
+                                              asOf: newJvmStates[i].asOf,
+                                              message: newJvmStates[i].message};
+                                GroupOperations.pushCommandStatus(jvm.groupId.id, status);
+                                console.log(GroupOperations.commandStatusMap[jvm.groupId.id]);
+                                React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[jvm.groupId.id]}
+                                              closeCallback={
+                                                  function(){
+                                                      GroupOperations.commandStatusMap[jvm.groupId.id] = [];
+                                                      React.unmountComponentAtNode (mountingNode.get(0));
+                                                  }
+                                              }/>, mountingNode.get(0));
+                            }
+                        } else {
+                            jvmStatusWidget.setStatus(newJvmStates[i].stateString,
+                                                      newJvmStates[i].asOf,
+                                                      newJvmStates[i].message);
+                        }
                     }
                 }
             }
         });
     },
-
     pollStates: function() {
         var self = this;
         this.dataSink = this.props.stateService.createDataSink(function(data) {
@@ -162,10 +199,20 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData([]);
     },
     statics: {
-        // Used in place of ref since ref will now work without a React wrapper (in the form a data table)
+        // Used in place of ref since ref will not work without a React wrapper (in the form a data table)
         groupStatusWidgetMap: {},
         webServerStatusWidgetMap: {},
-        jvmStatusWidgetMap: {}
+        jvmStatusWidgetMap: {},
+        FAILED: "FAILED",
+        getExtDivCompId: function(groupId) {
+            return "ext-comp-div-group-operations-table_" + groupId;
+        },
+        commandStatusMap: {},
+        pushCommandStatus: function(groupId, status) {
+            var statusArray = GroupOperations.commandStatusMap[groupId] === undefined ? [] : GroupOperations.commandStatusMap[groupId];
+            statusArray.push(status);
+            GroupOperations.commandStatusMap[groupId] = statusArray;
+        }
     }
 });
 
@@ -393,7 +440,7 @@ var GroupOperationsDataTable = React.createClass({
                                   btnLabel:"",
                                   btnCallback:this.jvmGenerateJvmConfig,
                                   className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-gear",
+                                  customSpanClassName:"ui-icon ui-icon-gear-custom",
                                   buttonClassName:"ui-button-height",
                                   clickedStateClassName:"busy-button",
                                   busyStatusTimeout:30000,
@@ -979,14 +1026,17 @@ var StatusWidget = React.createClass({
                                       flashClass="flash"
                                       callback={this.showErrorMsgCallback}/>
         }
+
+        var style = this.state.status === "STOPPED" ? {color: "#808080"} : {};
         return <div className="status-widget-container">
-                   <div ref="errorDlg" className="react-dialog-container"/>
-                   <span className="status-label">{this.state.status}</span>
+                   <div ref="errorDlg" className="dataTables_wrapper"/>
+                   <span className="status-label" style={style}>{this.state.status}</span>
                    {errorBtn}
                </div>;
     },
     setStatus: function(newStatus, dateTime, errorMsg) {
         var newState = {status:newStatus};
+
         if (errorMsg !== "") {
             newState["newErrorMsg"] = true;
             newState["showErrorBtn"] = true;
@@ -1032,7 +1082,7 @@ var WebServerControlPanelWidget = React.createClass({
                              title="Start"/>
 
                     <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
-                             spanClassName="ui-icon ui-icon-gear"
+                             spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateHttpdConf}
                              title="Generate httpd.conf"
                              busyClassName="busy-button"/>
@@ -1110,4 +1160,46 @@ var WebServerControlPanelWidget = React.createClass({
         }
     }
 
+});
+
+/**
+ * Display command state.
+ */
+var CommandStatusWidget = React.createClass({
+    getInitialState: function() {
+        return {xBtnHover: false};
+    },
+    render: function() {
+        var statusRows = [];
+        this.props.statusDetails.forEach(function(status) {
+            var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
+            statusRows.push(<tr><td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                <td className="command-status-td">{errMsg[0]}</td></tr>);
+        });
+
+        var xBtnHoverClass = this.state.xBtnHover ? "hover" : "";
+        return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
+                    <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
+                        <span className="ui-dialog-title">Error</span>
+                        <span ref="xBtn" className={"command-status-close-btn " + xBtnHoverClass}
+                            onClick={this.onXBtnClick} onMouseOver={this.onXBtnMouseOver} onMouseOut={this.onXBtnMouseOut}
+                            title="Closing the error message window will also clear the error message list related to this group."/>
+                    </div>
+                    <div className="ui-dialog-content ui-widget-content command-status-background command-status-content">
+                        <table>
+                            {statusRows}
+                        </table>
+                    </div>
+                </div>;
+
+    },
+    onXBtnClick: function() {
+        this.props.closeCallback();
+    },
+    onXBtnMouseOver: function() {
+        this.setState({xBtnHover: true});
+    },
+    onXBtnMouseOut: function() {
+        this.setState({xBtnHover: false});
+    }
 });

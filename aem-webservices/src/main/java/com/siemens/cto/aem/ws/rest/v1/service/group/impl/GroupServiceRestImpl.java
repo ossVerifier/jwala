@@ -88,9 +88,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroup(final Identifier<Group> aGroupId) {
-        LOGGER.debug("Get Group requested: {}", aGroupId);
-        return ResponseBuilder.ok(groupService.getGroup(aGroupId));
+    public Response getGroup(final String groupIdOrName, final boolean byName) {
+        if (byName) {
+            return  ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
+        }
+        final Identifier<Group> groupId = new Identifier<Group>(groupIdOrName);
+        LOGGER.debug("Get Group requested: {}", groupId);
+        return ResponseBuilder.ok(groupService.getGroup(groupId));
     }
 
     @Override
@@ -102,17 +106,24 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
-        return ResponseBuilder.ok(groupService.updateGroup(anUpdatedGroup.toUpdateGroupCommand(),
+
+        // TODO: Refactor adhoc conversion to process group name instead of Id.
+        final Group group = groupService.getGroup(anUpdatedGroup.getId());
+        final JsonUpdateGroup updatedGroup = new JsonUpdateGroup(group.getId().getId().toString(),
+                                                                 anUpdatedGroup.getName());
+
+        return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                 aUser.getUser()));
     }
 
     @Override
-    public Response removeGroup(final Identifier<Group> aGroupId) {
-        LOGGER.debug("Delete Group requested: {}", aGroupId);
-        groupService.removeGroup(aGroupId);
+    public Response removeGroup(final String name) {
+        LOGGER.debug("Delete Group requested: {}", name);
+        groupService.removeGroup(name);
         return ResponseBuilder.ok();
     }
 

@@ -28,11 +28,15 @@ var RListBox = React.createClass({
       this.setState({selectedValue: null});
     },
     onOptionClick: function(value) {
-        if (this.props.selectCallback !== undefined) {
-            this.props.selectCallback(value);
-        }
+        if (this.state.selectedValue !== value) {
+            if (this.props.selectCallback !== undefined) {
+                if (!this.props.selectCallback(value)) {
+                    return;
+                }
+            }
 
-        this.setState({selectedValue: value});
+            this.setState({selectedValue: value});
+        }
     },
     getSelectedValue: function() {
         return this.state.selectedValue;

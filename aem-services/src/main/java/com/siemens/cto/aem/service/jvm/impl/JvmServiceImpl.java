@@ -13,12 +13,14 @@ import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -26,10 +28,13 @@ import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+
 import groovy.text.SimpleTemplateEngine;
+
 import org.apache.http.conn.ConnectTimeoutException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
@@ -59,19 +64,21 @@ public class JvmServiceImpl implements JvmService {
     private final FileManager fileManager;
     private final JvmStateGateway jvmStateGateway;
     private ClientFactoryHelper clientFactoryHelper;
+    private final StateService<Jvm, JvmState> stateService;
     private SshConfiguration sshConfig;
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
                           final FileManager theFileManager,
                           final JvmStateGateway theJvmStateGateway, ClientFactoryHelper factoryHelper,
-                          final SshConfiguration sshConfig) {
+                          final StateService<Jvm, JvmState> theJvmStateService, final SshConfiguration theSshConfig) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         fileManager = theFileManager;
         jvmStateGateway = theJvmStateGateway;
         clientFactoryHelper = factoryHelper;
-        this.sshConfig = sshConfig;
+        stateService = theJvmStateService;
+        sshConfig = theSshConfig;
     }
 
     @Override
@@ -83,7 +90,7 @@ public class JvmServiceImpl implements JvmService {
         final Event<CreateJvmCommand> event = new Event<>(aCreateJvmCommand,
                 AuditEvent.now(aCreatingUser));
         Jvm jvm = jvmPersistenceService.createJvm(event);
-        // TODO add JVM_NEW state to JVM state table
+        // TODO add JVM_NEW state to JVM state table (already done? Appears as NEW on UI)
 
         return jvm;
     }
@@ -234,28 +241,10 @@ public class JvmServiceImpl implements JvmService {
     }
 
     public boolean isJvmStarted(Jvm jvm) {
-        // ping the web server and return if not stopped
-        ClientHttpResponse response = null;
-        try {
-            response = clientFactoryHelper.requestGet(jvm.getStatusUri());
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return true;
-            }
-        } catch (ConnectException e) {
-            logger.info("Ignore connect exception, the JVM should be stopped to allow secure copy of the resource files ", e);
-        } catch (ConnectTimeoutException e) {
-            logger.info("Ignore connect timeout exception, the JVM should be stopped to allow secure copy of the resource files ", e);
-        } catch (SocketTimeoutException e) {
-            logger.info("Ignore socket timeout exception when attempting to replace resource files for the web server", e);
-        } catch (IOException e) {
-            logger.error("Failed to ping {} while attempting to copy tar config :: ERROR: {}", jvm.getJvmName(), e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_JVM_OPERATION, "Failed to ping while attempting to copy tar config", e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-        }
-        return false;
+        
+        CurrentState<Jvm, JvmState> jvmCurrentState = stateService.getCurrentState(jvm.getId());
+        JvmState jvmState = jvmCurrentState.getState();
+        return jvmState.isStartedState();        
     }
 
     @Override

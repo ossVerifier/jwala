@@ -1,4 +1,10 @@
-{"name":"HTTPD Conf","contentType":"application/xml",
+{
+	"name":"HTTPD Conf",
+	"templateName":"HttpdSslConfTemplate.tpl",
+	"contentType":"application/xml",
+	"entityType":"webServer",
+	"configFileName":"httpd.conf",
+	"relativeDir":"/httpd",
 	"properties":[
 					{"name":"webServerName", "required":"true"},
 					{"name":"comments", "required": "true"},

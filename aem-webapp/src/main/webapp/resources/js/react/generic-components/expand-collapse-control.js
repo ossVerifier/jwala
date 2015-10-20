@@ -174,7 +174,9 @@ var ExpandCollapseControl = React.createClass({
 
     },
     fnFormatDetails: function() {
-
+        // An extra element which serves the purpose of mounting components "externally" via jQuery or React.render.
+        // This is required to mount the command status window without refactoring (REACTifying) the group operations page.
+        var externalComponentContainer = "<div id='ext-comp-div-"+ this.props.id  +  "'></div>";
         if(Object.prototype.toString.call(this.props.childTableDetails) === "[object Array]") {
             var tocDataTables = [];
             for (var i = 0; i < this.props.childTableDetails.length; i++) {
@@ -186,9 +188,9 @@ var ExpandCollapseControl = React.createClass({
                                                      hide:true // hide (show later) to prevent from screwing up the display when data is not yet available because of the header components
                                                     });
             }
-            return React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
+            return externalComponentContainer + React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
         } else {
-            return React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
+            return externalComponentContainer + React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
                                                                      tableDef={this.props.childTableDetails.tableDef}
                                                                      className={this.props.childTableDetails.className}
                                                                      title={this.props.childTableDetails.title}

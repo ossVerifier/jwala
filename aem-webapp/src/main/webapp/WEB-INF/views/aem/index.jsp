@@ -17,6 +17,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/xmleditor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/error-msg-list.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/rtextpreview.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/adjustable-table-col.css">
 
 <link rel="stylesheet" type="text/css" href="public-resources/css/themes/${cookie['theme'] == null ? 'redmond' : cookie['theme'].value}/jquery-ui.min.css">

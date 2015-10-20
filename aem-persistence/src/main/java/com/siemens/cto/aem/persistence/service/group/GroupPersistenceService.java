@@ -33,6 +33,8 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     void removeGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
+    void removeGroup(String name) throws NotFoundException;
+
     Group addJvmToGroup(final Event<AddJvmToGroupCommand> anEvent) throws NotFoundException;
 
     Group removeJvmFromGroup(final Event<RemoveJvmFromGroupCommand> anEvent) throws NotFoundException;

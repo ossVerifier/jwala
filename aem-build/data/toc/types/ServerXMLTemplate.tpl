@@ -49,7 +49,7 @@
             schedulerThreadNamePrefix="JMS Reporting Thread"/>
   <!-- commented out until we have jmx ports in jvm definitions in TOC -->
   <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
-            rmiRegistryPortPlatform="@toc.jmx.rmiRegistryPortPlatform@" rmiServerPortPlatform="@toc.jmx.rmiServerPortPlatform@" /-->
+            rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
   <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
             jmsConnectionFactory="java:/jms/toc-cf"
@@ -78,22 +78,22 @@
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsTopic"
-              address="@toc.jms.statusTopic@"/>
+              address="com.cerner.entp.n9sf.ltst.private.stp.toc.status-USMLVV1CTO4718"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="ssl://@tibco.ems.host@:@tibco.ems.port@"
-              userName="@tibco.ems.user.name@"
-              userPassword="\${enc:@tibco.ems.password.stpencrypted@}"
+              serverUrl="ssl://USMLVV1CTO924:7243"
+              userName="admin"
+              userPassword="\${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
               connAttemptCount="100"
               connAttemptDelay="1000"
               reconnAttemptCount="100"
               reconnAttemptDelay="1000"
               SSLEnableVerifyHost="true"
               SSLEnableVerifyHostName="false"
-              SSLTrustedCertificate="@stp.security.dir@\\ems\\ctorootca.pem" />
+              SSLTrustedCertificate="d:\\stp\\app\\data\\security\\ems\\ctorootca.pem" />
   </GlobalNamingResources>
 
 
@@ -122,8 +122,8 @@
 
     <Connector 
       port="${jvm.httpsPort}" 
-      SSLCertificateFile="@stp.security.dir@\\id\\${jvm.hostName}.cer" 
-      SSLCertificateKeyFile="@stp.security.dir@\\id\\${jvm.hostName}.key" 
+      SSLCertificateFile="d:\\stp\\app\\data\\security\\id\\${jvm.hostName}.cer" 
+      SSLCertificateKeyFile="d:\\stp\\app\\data\\security\\id\\${jvm.hostName}.key" 
       SSLEnabled="true" 
       SSLPassword="" 
       acceptCount="100" 
@@ -233,7 +233,7 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="@toc.jvm.name@">
+    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
 
       <!--For clustering, please take a look at documentation at:
           /docs/cluster-howto.html  (simple how to)

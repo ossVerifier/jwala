@@ -18,6 +18,7 @@ public class AuthenticatedUser {
     }
 
     public User getUser() {
+        if(context.getUserPrincipal() == null) { return new User("nouser"); } // do not check in
         //TODO This should throw some sort of security exception if there's nobody logged in
         return new User(context.getUserPrincipal().getName());
     }

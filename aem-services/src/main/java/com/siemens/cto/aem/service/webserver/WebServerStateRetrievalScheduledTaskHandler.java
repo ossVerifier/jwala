@@ -3,6 +3,8 @@ package com.siemens.cto.aem.service.webserver;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
@@ -18,7 +20,7 @@ import java.util.concurrent.Future;
  * Created by Z003BPEJ on 6/16/2015.
  */
 public class WebServerStateRetrievalScheduledTaskHandler {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateRetrievalScheduledTaskHandler.class);
     private final WebServerService webServerService;
     private final WebServerStateSetterWorker webServerStateSetterWorker;
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap;
@@ -36,10 +38,19 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     public void execute() {
         if (isEnabled()) {
             final List<WebServer> webServers = webServerService.getWebServers();
+            LOGGER.info("# of web servers to ping = {}", webServers.size());
             try {
                 for (WebServer webServer : webServers) {
+                    LOGGER.info(">>> Web server {} future {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()));
+
+                    if (webServerFutureMap.get(webServer.getId()) != null) {
+                        LOGGER.info(">>> Web server {} is done {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isDone());
+                        LOGGER.info(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isCancelled());
+                    }
+
                     if (webServerFutureMap.get(webServer.getId()) == null ||
                         webServerFutureMap.get(webServer.getId()).isDone()) {
+                            LOGGER.info(">>> Ping web server {}", webServer.getId().getId());
                             webServerFutureMap.put(webServer.getId(),
                                                    webServerStateSetterWorker.pingWebServer(webServer));
                     }

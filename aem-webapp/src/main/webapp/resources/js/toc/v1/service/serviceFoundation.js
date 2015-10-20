@@ -123,6 +123,20 @@ var serviceFoundation = {
                                     });
             },
 
+    promisedPut: function(url, dataType, content, showLoading, contentType) {
+                     var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading === undefined ? true : showLoading);
+                     var params = {url: url,
+                                   dataType: dataType,
+                                   type: 'PUT',
+                                   data: content,
+                                   contentType: contentType === undefined ? 'application/json' : contentType,
+                                   cache: false,
+                                   beforeSend: loadingUiBehavior.showLoading,
+                                   complete: loadingUiBehavior.hideLoading};
+                     return Promise.cast($.ajax(params));
+                  },
+
+
     /**
      * Form data converted to a serialized array will have a constant name-value pair i.e.
      * [{name:value}...] therefore using JSON stringify on it will not produce

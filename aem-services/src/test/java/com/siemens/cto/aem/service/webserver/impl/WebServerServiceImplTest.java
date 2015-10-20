@@ -269,8 +269,8 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGenerateHttpdConfig() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application [] appArray = {app1, app2};
 
@@ -285,8 +285,8 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGenerateHttpdConfigWithSsl() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application [] appArray = {app1, app2};
 
@@ -302,8 +302,8 @@ public class WebServerServiceImplTest {
 
     @Test(expected = InternalErrorException.class)
     public void testGenerateHttpdConfigWithIoException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application [] appArray = {app1, app2};
 
@@ -317,8 +317,8 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application [] appArray = {app1, app2};
 
@@ -335,8 +335,8 @@ public class WebServerServiceImplTest {
 
     @Test(expected = InternalErrorException.class)
     public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentExceptionThenIoException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true);
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true);
+        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
+        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application [] appArray = {app1, app2};
 

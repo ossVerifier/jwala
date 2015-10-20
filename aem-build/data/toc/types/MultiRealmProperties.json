@@ -1,5 +1,12 @@
-{"name":"Multi Realm","contentType":"application/xml", 
-	"properties":[{"name":"className1A", "required":"true"},
+{
+	"name":"Multi Realm",
+	"templateName":"MultiRealmTemplate.tpl",
+	"contentType":"application/xml",
+	"entityType":"resource",
+	"configFileName":"",
+	"relativeDir":"",
+	"properties":[
+				{"name":"className1A", "required":"true"},
 				  {"name":"className2A", "required":"true"},	
 				  {"name":"className2B", "required":"true"}, 
 				  {"name":"connectionURL"}, 
@@ -15,4 +22,6 @@
 				  {"name":"roleNested"},
 				  {"name":"roleSubtree"},
 				  {"name":"roleSearch"},
-				  {"name":"referrals"}]}
+				  {"name":"referrals"}
+			  ]
+}

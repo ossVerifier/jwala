@@ -16,5 +16,7 @@ ECHO Set java opts...
 
 CMD /C %2\bin\tomcat7 //US//%3 ++JvmOptions %JAVA_SERVICE_OPTS%#-javaagent:%4=destfile=%5,append=true,includes=com.siemens.cto.*
 
-ECHO testing
+ECHO Adding spring jpa agent to TOC's service
+CMD /C %2\bin\tomcat7 //US//%3 ++JvmOptions -javaagent:%CATALINA_BASE%\lib\spring-instrument-3.2.6.RELEASE.jar
+
 ECHO Finished installing %3 as a service

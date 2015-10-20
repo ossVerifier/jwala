@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.model.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
@@ -26,6 +27,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +36,9 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +49,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anySet;
 import static org.mockito.Mockito.*;
 
 /**
@@ -203,6 +209,15 @@ public class WebServerServiceRestImplTest {
 
         final WebServerControlHistory received = (WebServerControlHistory) content;
         assertEquals(webServerControlHistory, received);
+
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
+        boolean exceptionThrown = false;
+        try {
+            cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
+        } catch (Exception e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
     }
 
     @Test
@@ -252,19 +267,46 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException {
+    public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
         ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
+        Response response = null;
         try {
-            Response response = cut.generateAndDeployConfig(webServer.getName());
+            response = cut.generateAndDeployConfig(webServer.getName());
         } catch (InternalErrorException e) {
             failedSecureCopy = true;
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
-        assertTrue(failedSecureCopy);
+        assertFalse(failedSecureCopy);
+        assertNotNull(response);
+        assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testGenerateAndDeployConfigThrowsException() throws IOException, CommandFailureException {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        when(rtCommand.execute()).thenReturn(retSuccessExecData);
+        when(rtCommandBuilder.build()).thenReturn(rtCommand);
+        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        Response response = null;
+        try{
+            response = cut.generateAndDeployConfig(webServer.getName());
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+        assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
         System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
     }
 
@@ -340,5 +382,24 @@ public class WebServerServiceRestImplTest {
         when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenThrow(ResourceTemplateUpdateException.class);
         Response response = cut.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
         assertTrue(response.hasEntity());
+    }
+
+    @Test
+    public void testUploadConfigTemplate(){
+        MessageContext mockMessageContext = mock(MessageContext.class);
+        HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
+        HttpServletRequest mockHttpServletReq = mock(HttpServletRequest.class);
+        List<MediaType> mediaTypeList = new ArrayList<>();
+        mediaTypeList.add(MediaType.APPLICATION_JSON_TYPE);
+        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(mockMessageContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
+        when(mockMessageContext.getHttpServletRequest()).thenReturn(mockHttpServletReq);
+        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
+        cut.setMessageContext(mockMessageContext);
+        try {
+            cut.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
+        } catch (Exception e) {
+            assertEquals("Error receiving data", e.getMessage());
+        }
     }
 }

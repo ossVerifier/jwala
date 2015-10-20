@@ -18,7 +18,7 @@ CALL:stpSet JAVA_HOME d:\\stp\\jdk1.7.0_72
 SET JRE_HOME=%JAVA_HOME%\\jre
 
 CALL:stpSet CATALINA_HOME d:\\stp\\apache-tomcat-7.0.55\\core
-CALL:stpSet CATALINA_BASE d:\\stp\\siemens\\instances\\${jvm.jvmName}
+CALL:stpSet CATALINA_BASE d:\\stp\\app\\instances\\${jvm.jvmName}
 
 REM JMX_OPTS port settings deprecated in favor of a lifecycle listener in server.xml
 SET JMX_OPTS=-Dcom.sun.management.jmxremote.ssl=false
@@ -38,25 +38,22 @@ SET SSL_DEBUG_OPTS=-Djavax.net.debug=ssl
 
 SET ATOMIKOS_OPTS=-Dcom.atomikos.icatch.tm_unique_name=${jvm.jvmName}
 
-CALL:stpSet SPRING_AGENT d:\\stp\\siemens\\lib\\tomcat\\ext\\spring-instrument-3.2.6.RELEASE.jar
-SET SPRING_OPTS=-javaagent:%SPRING_AGENT%
-
 :: -------------------------------------------------------------------------------------------------------------------------------
 :: Set the location of the property source files.  If not specified as an environment variable, then set to the default location.
 :: -------------------------------------------------------------------------------------------------------------------------------
 IF "%STP_PS_LOC%" == "" (
-   CALL:stpSet STP_PS_LOC d:\\stp\\siemens\\properties\\propertySource.properties
+   CALL:stpSet STP_PS_LOC d:\\stp\\app\\properties\\propertySource.properties
 )
 
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
 :: STP_HOME, gsm classLoaderUrl, and property source location are needed as system properties for replacement in files like server.xml or context.xml
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
-SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DSTP_HOME=%STP_HOME% -Dgsm.classloader.url=%STP_HOME_UNIX%/siemens/lib/tomcat/ext/gsm -Dcom.siemens.cto.infrastructure.properties.propertySourceLocations=%STP_PS_LOC%
+SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DSTP_HOME=%STP_HOME% -Dgsm.classloader.url=d:/stp/app/lib/tomcat/gsm -Dcom.siemens.cto.infrastructure.properties.propertySourceLocations=%STP_PS_LOC%
 
-CALL:stpSet PROPERTIES_ROOT_PATH d:\\stp\\siemens\\properties
+CALL:stpSet PROPERTIES_ROOT_PATH d:\\stp\\app\\properties
 SET STP_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_ROOT_PATH%
 
-CALL:stpSet STP_PROPERTIES_DIR d:\\stp\\siemens\\properties
+CALL:stpSet STP_PROPERTIES_DIR d:\\stp\\app\\properties
 SET STP_OPTS=%STP_OPTS% -DSTP_PROPERTIES_DIR=%STP_PROPERTIES_DIR%
 
 CALL:stpSet LOG_ROOT_DIR d:/stp/apache-tomcat-7.0.55/logs
@@ -67,11 +64,11 @@ SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\\jaas.confi
 
 SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\\bin
 
-SET APP_DYNAMICS_OPTS=-javaagent:d:/stp/app-dynamics-3.9.4.0/agent//javaagent.jar -Dappdynamics.controller.hostName=DEVSRF2813 -Dappdynamics.controller.port=8090
+SET APP_DYNAMICS_OPTS=-javaagent:d:/stp/app-dynamics-3.9.4.0/agent/javaagent.jar -Dappdynamics.controller.hostName=USMLVV1CTO924 -Dappdynamics.controller.port=8090
 SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.applicationName=1D0A-Development-Environment-N9SF-LTST -Dappdynamics.agent.tierName=HEALTH-CHECK -Dappdynamics.agent.nodeName=${jvm.jvmName}
-SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.logs.dir=d:/stp/siemens/data/app-dyanmics/logs/
+SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.logs.dir=d:/stp/app/data/app-dynamics/logs/
 
-SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %ATOMIKOS_OPTS% %SPRING_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
+SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %ATOMIKOS_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
 
 IF false==true (
     SET PROD_OPTS=%PROD_OPTS% %APP_DYNAMICS_OPTS%

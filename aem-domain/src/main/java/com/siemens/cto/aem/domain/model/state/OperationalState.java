@@ -12,6 +12,9 @@ public interface OperationalState {
         }
         
     }
+    
+    static final boolean _IS_A_STARTED_STATE = true;
+    static final boolean _NOT_A_STARTED_STATE = false;
 
     String toStateString();
 

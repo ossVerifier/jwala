@@ -32,6 +32,15 @@ var ResourcesConfig = React.createClass({
                      />
                 </div>
     },
+    componentDidMount: function() {
+        MainArea.unsavedChanges = false;
+        window.onbeforeunload = function() {
+                                    console.log(this.refs);
+                                    if (MainArea.unsavedChanges === true) {
+                                        return "A resource template has recently been modified.";
+                                    }
+                                };
+    },
     generateXmlSnippetCallback: function(resourceName, groupName) {
         this.props.resourceService.getXmlSnippet(resourceName, groupName, this.generateXmlSnippetResponseCallback);
     },
@@ -42,14 +51,30 @@ var ResourcesConfig = React.createClass({
         this.refs.xmlTabs.refreshTemplateDisplay(template);
     },
     selectEntityCallback: function(data, resourceName) {
+        if (this.refs.xmlTabs.refs.xmlEditor !== undefined && this.refs.xmlTabs.refs.xmlEditor.isContentChanged()) {
+            var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
+            if (!ans) {
+                return false;
+            }
+        }
+
         this.refs.xmlTabs.setState({entityType: data.rtreeListMetaData.entity,
                                     entity: data,
                                     resourceTemplateName: null,
                                     entityParent: data.rtreeListMetaData.parent,
                                     template: ""});
+        return true;
     },
     selectResourceTemplateCallback: function(entity, resourceName) {
+        if (this.refs.xmlTabs.refs.xmlEditor !== undefined && this.refs.xmlTabs.refs.xmlEditor.isContentChanged()) {
+            var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
+            if (!ans) {
+                return false;
+            }
+        }
+
         this.refs.xmlTabs.reloadTemplate(entity, resourceName);
+        return true;
     },
     templateComponentDidMount: function(template) {
          var fileName = this.refs.xmlTabs.state.resourceTemplateName;
@@ -122,11 +147,18 @@ var ResourcesConfig = React.createClass({
          this.refs.templateUploadModal.show();
      },
      verticalSplitterDidUpdateCallback: function() {
-         this.refs.xmlTabs.refs.xmlEditor.resize();
+
+         if (this.refs.xmlTabs.refs.xmlEditor !== undefined) {
+            this.refs.xmlTabs.refs.xmlEditor.resize();
+         }
+
+         if (this.refs.xmlTabs.refs.xmlPreview !== undefined) {
+            this.refs.xmlTabs.refs.xmlPreview.resize();
+         }
+
          var tabContentHeight = $(".horz-divider.rsplitter.childContainer.vert").height() - 20;
          $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
      },
-
      statics: {
         getEntityName: function(entity, type) {
             if (type === "jvms") {
@@ -152,10 +184,10 @@ var XmlTabs = React.createClass({
             xmlEditor = <XmlEditor ref="xmlEditor"
                                    className="xml-editor-container"
                                    content={this.state.template}
-                                   saveCallback={this.saveResourceTemplateContentCallback}
-                                   deployCallback={this.deployResourceTemplateCallback}
-				   uploadDialogCallback={this.props.uploadDialogCallback}/>;
-            xmlPreview = <XmlPreview ref="xmlPreview" deployCallback={this.deployResourceTemplateCallback}/>
+                                   saveCallback={this.saveResource}
+				                   uploadDialogCallback={this.props.uploadDialogCallback}
+				                   onChange={this.onChangeCallback}/>;
+            xmlPreview = <XmlPreview ref="xmlPreview" deployCallback={this.deployResource}/>
         }
 
         var xmlTabItems = [{title: "Template", content:xmlEditor},
@@ -168,76 +200,105 @@ var XmlTabs = React.createClass({
     componentWillUpdate: function(nextProps, nextState) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/"});
     },
-    saveResourceTemplateContentCallback: function(data) {
-         if (this.state.entity !== null && this.state.resourceName !== null) {
+    onChangeCallback: function() {
+        if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
+            MainArea.unsavedChanges = true;
+        } else {
+            MainArea.unsavedChanges = false;
+        }
+    },
+
+    /*** Save and Deploy methods: Start ***/
+    saveResource: function(template) {
+        this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+    },
+    saveResourcePromise: function(template) {
+        var thePromise;
+        console.log("saving...");
+        if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
             if (this.state.entityType === "jvms") {
-                this.props.jvmService.updateResourceTemplate(this.state.entity.jvmName,
-                                                             this.state.resourceTemplateName,
-                                                             data,
-                                                             this.saveResourceTemplateContentSuccessCallback,
-                                                             this.saveResourceTemplateContentErrorCallback);
+                thePromise = this.props.jvmService.updateResourceTemplate(this.state.entity.jvmName,
+                    this.state.resourceTemplateName, template);
             } else if (this.state.entityType === "webServers") {
-                this.props.wsService.updateResourceTemplate(this.state.entity.name,
-                                                            this.state.resourceTemplateName,
-                                                            data,
-                                                            this.saveResourceTemplateContentSuccessCallback,
-                                                            this.saveResourceTemplateContentErrorCallback);
+                thePromise = this.props.wsService.updateResourceTemplate(this.state.entity.name,
+                    this.state.resourceTemplateName, template);
             } else if (this.state.entityType === "webApps") {
-                this.props.webAppService.updateResourceTemplate(this.state.entity.name,
-                                                                this.state.resourceTemplateName,
-                                                                data,
-                                                                this.saveResourceTemplateContentSuccessCallback,
-                                                                this.saveResourceTemplateContentErrorCallback);
+                thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
+                    this.state.resourceTemplateName, template);
             }
         }
+        return thePromise;
     },
-    deployResourceTemplateCallback: function(ajaxProcessDoneCallback) {
-        if (this.state.entity !== null && this.state.resourceName !== null) {
-             if (this.state.entityType === "jvms") {
-                this.props.jvmService.deployJvmConf(this.state.entity.jvmName,
-                                                    this.state.resourceTemplateName,
-                                                    this.deployResourceTemplateSuccessCallback.bind(this, ajaxProcessDoneCallback),
-                                                    this.deployResourceTemplateFailCallback.bind(this, ajaxProcessDoneCallback));
-             } else if (this.state.entityType === "webServers") {
-                this.props.wsService.deployHttpdConf(this.state.entity.name,
-                                                     this.deployResourceTemplateSuccessCallback.bind(this, ajaxProcessDoneCallback),
-                                                     this.deployResourceTemplateFailCallback(this, ajaxProcessDoneCallback));
-             } else if (this.state.entityType === "webApps") {
-                this.props.webAppService.deployWebAppsConf(this.state.entity.name,
-                                                           this.state.entity.group.name,
-                                                           this.state.entityParent.jvmName,
-                                                           this.state.resourceTemplateName,
-                                                           this.deployWebAppResourceTemplateSuccessCallback.bind(this, ajaxProcessDoneCallback),
-                                                           this.deployResourceTemplateFailCallback(this, ajaxProcessDoneCallback));
-             }
-        }
-    },
-    deployWebAppResourceTemplateSuccessCallback: function(response) {
-        $.alert(response.applicationResponseContent, false);
-    },
-    deployResourceTemplateSuccessCallback: function(ajaxProcessDoneCallback, response) {
-        if (ajaxProcessDoneCallback !== undefined) {
-            ajaxProcessDoneCallback();
-        }
-        $.alert("Successfully deployed resource file(s)", false);
-    },
-    deployResourceTemplateFailCallback: function(ajaxProcessDoneCallback, errMsg) {
-        if (ajaxProcessDoneCallback !== undefined) {
-            ajaxProcessDoneCallback();
-        }
-        $.errorAlert(errMsg, "Deploy Resource Template Error", false);
-    },
-    saveResourceTemplateContentSuccessCallback: function(response) {
-        this.showFadingStatus("Saved", this.refs.xmlEditor.getDOMNode());
+    savedResourceCallback: function(response) {
         if (response.message === "SUCCESS") {
+            console.log("Save success!");
+            MainArea.unsavedChanges = false;
+            this.showFadingStatus("Saved", this.refs.xmlEditor.getDOMNode());
             this.setState({template:response.applicationResponseContent});
         } else {
-            $.errorAlert(response.applicationResponseContent, "Save Resource Template Error", false);
+            throw response;
         }
     },
-    saveResourceTemplateContentErrorCallback: function(e) {
-        $.errorAlert(e, "Save Resource Template Error", false);
+    deployResourcePromise: function(ajaxProcessDoneCallback) {
+        var thePromise;
+        console.log("deploying...");
+        if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
+            if (this.state.entityType === "jvms") {
+                thePromise = this.props.jvmService.deployJvmConf(this.state.entity.jvmName,
+                                                                 this.state.resourceTemplateName);
+            } else if (this.state.entityType === "webServers") {
+                thePromise = this.props.wsService.deployHttpdConf(this.state.entity.name);
+            } else if (this.state.entityType === "webApps") {
+                thePromise = this.props.webAppService.deployWebAppsConf(this.state.entity.name,
+                                                                        this.state.entity.group.name,
+                                                                        this.state.entityParent.jvmName,
+                                                                        this.state.resourceTemplateName);
+            }
+        }
+        return thePromise;
     },
+    failed: function(title, response) {
+        try {
+            // Note: This will do for now. The problem is that the response's responseText is in HTML for save and
+            //       JSON for deploy. We should standardize the responseText (e.g. JSON only) before we can modify
+            //       this method to display the precise error message.
+            var jsonResponseText = JSON.parse(response.responseText);
+            var msg = jsonResponseText.applicationResponseContent === undefined ? "Operation was not successful!" :
+                jsonResponseText.applicationResponseContent;
+            $.errorAlert(msg, title, false);
+        } catch (e) {
+            console.log(response);
+            console.log(e);
+            $.errorAlert("Operation was not successful! Please check console logs for details.", title, false);
+        }
+    },
+    deployResource: function(ajaxProcessDoneCallback) {
+        if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
+            var ans = confirm("Changes to the resource template will be saved before deployment. Are you sure you want to proceed ?");
+            if (ans) {
+                var self = this;
+                this.saveResourcePromise(this.refs.xmlEditor.getText())
+                    .then(function(response){
+                        self.savedResourceCallback(response);
+                        return self.deployResourcePromise();
+                    })
+                    .then(this.deployResourceCallback).caught(this.failed.bind(this, "Deploy Resource"))
+                    .lastly(ajaxProcessDoneCallback);
+            } else {
+                ajaxProcessDoneCallback();
+            }
+        } else {
+            this.deployResourcePromise().then(this.deployResourceCallback)
+                                        .caught(this.failed.bind(this, "Deploy Resource"))
+                                        .lastly(ajaxProcessDoneCallback);
+        }
+    },
+    deployResourceCallback: function() {
+        console.log("Deploy success!");
+        $.alert("Successfully deployed resource file(s)", false);
+    },
+    /*** Save and Deploy methods: End ***/
+
     reloadTemplate: function(data, resourceName) {
         var entityType = this.state.entityType;
         if (entityType !== null && resourceName !== null) {
@@ -300,8 +361,10 @@ var XmlTabs = React.createClass({
     },
     previewSuccessCallback: function(response) {
         this.refs.xmlPreview.refresh(response.applicationResponseContent);
+        // this.refs.xmlTabs.refs.xmlPreview.resize();
     },
     previewErrorCallback: function(errMsg) {
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/"});
         $.errorAlert(errMsg, "Error");
     },
     /**

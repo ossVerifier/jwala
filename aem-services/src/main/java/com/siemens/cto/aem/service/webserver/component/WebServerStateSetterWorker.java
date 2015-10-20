@@ -12,7 +12,6 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,9 +72,8 @@ public class WebServerStateSetterWorker {
         ClientHttpResponse response = null;
         if (!isWebServerBusy(webServer)) {
             try {
-
                 response = clientFactoryHelper.requestGet(webServer.getStatusUri());
-
+                LOGGER.info(">>> Response = {} from web server {}", response.getStatusCode(), webServer.getId().getId());
                 if (response.getStatusCode() == HttpStatus.OK) {
                     setState(webServer, WebServerReachableState.WS_REACHABLE, null);
                 } else {
@@ -83,12 +81,12 @@ public class WebServerStateSetterWorker {
                              "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
                              response.getStatusCode() + "'");
                 }
-            } catch (ConnectTimeoutException cte) {
-                LOGGER.info(cte.getMessage(), cte);
-                setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
             } catch (IOException ioe) {
-                LOGGER.error(ioe.getMessage(), ioe);
-                setState(webServer, WebServerReachableState.WS_FAILED, ExceptionUtils.getStackTrace(ioe));
+                LOGGER.info(ioe.getMessage(), ioe);
+                setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
+            } catch (RuntimeException rte) {
+                LOGGER.error(rte.getMessage(), rte);
+                setState(webServer, WebServerReachableState.WS_FAILED, ExceptionUtils.getStackTrace(rte));
             } finally {
                 if (response != null) {
                     response.close();

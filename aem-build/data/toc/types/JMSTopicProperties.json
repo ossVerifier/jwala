@@ -1,7 +1,16 @@
-{"name":"JMS Topic","contentType":"application/xml", 
-	"properties":[{"name":"name", "required":"true"},
+{
+	"name":"JMS Topic",
+	"templateName":"JMSTopicTemplate.tpl",
+	"contentType":"application/xml",
+	"entityType":"resource",
+	"configFileName":"",
+	"relativeDir":"",
+	"properties":[
+				{"name":"name", "required":"true"},
 				  {"name":"auth"},	
 				  {"name":"type", "required":"true"}, 
 				  {"name":"description"}, 
 				  {"name":"factory"}, 
-				  {"name":"physicalName"}]}
+				  {"name":"physicalName"}
+				  ]
+}

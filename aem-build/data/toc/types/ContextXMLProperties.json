@@ -1,3 +1,9 @@
-{"name":"Context XML","contentType":"application/xml",
+{
+	"name":"Context XML",
+	"templateName":"ContextXMLTemplate.tpl",
+	"contentType":"application/xml",
+	"entityType":"jvm",
+	"configFileName":"context.xml",
+	"relativeDir":"/conf",
 	"properties":[]
 }

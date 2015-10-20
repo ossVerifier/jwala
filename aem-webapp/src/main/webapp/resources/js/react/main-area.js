@@ -17,6 +17,9 @@ var MainArea = React.createClass({
                         </tr>
                     </table>
                </div>
+    },
+    statics: {
+        unsavedChanges: false
     }
 });
 

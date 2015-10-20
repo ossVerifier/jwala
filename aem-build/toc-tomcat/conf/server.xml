@@ -74,7 +74,7 @@
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="ssl://localhost:7243"
+              serverUrl="ssl://usmlvv1cto924.usmlvv1d0a.smshsc.net:7243"
               userName="admin"
               userPassword="${encrypted:9hQ4KpxpM8e/VX3KkT2VYg==}"
               connAttemptCount="100"
@@ -109,12 +109,11 @@
         compressionMinSize: 2048 (default)
         threadPriority: 1 above Java NORM_PRIORITY - 6
     -->
-    <!-- SSLCertificateKeyFile="${STP_HOME}\siemens\data\security\id\ct1005kc.key"  -->
 
     <Connector 
       port="9101" 
-      SSLCertificateFile="${STP_HOME}\siemens\data\security\id\ct1005kc.cer" 
-      SSLCertificateKeyFile="${STP_HOME}${encrypted:FcZDK+G5bD73foneuKdpOZs+ZEwQatKH8h3gxILfTrLxayXR6cXeniR9t93Pavx4}"
+      SSLCertificateFile="${STP_HOME}\siemens\data\security\id\integ-test.cer" 
+      SSLCertificateKeyFile="${STP_HOME}\siemens\data\security\id\integ-test.key"
       SSLEnabled="true" 
       SSLPassword="" 
       acceptCount="100" 

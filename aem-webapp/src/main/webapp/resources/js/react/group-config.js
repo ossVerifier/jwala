@@ -1,106 +1,102 @@
 /** @jsx React.DOM */
 var GroupConfig = React.createClass({
-
-
-    /** -
-     * This object is used to let the component know when to update itself.
-     * It essentially uses a kind of "toggle switch" pattern wherein when set
-     * the flag is set to true then when "checked/viewed" the flag is set to false.
-     * This mechanism is required to essentially tell the component if the
-     * table needs to be updated since the underlying table is using jQuery Datatable.
-     * This should not be necessary if the entire table is purely made in React.
-     */
-    cancelFlag: {
-        flag: false,
-        set: function() {
-            this.flag = true;
-        },
-        check: function () {
-            var prevFlag = this.flag;
-            this.flag = false; // reset the flag
-            return prevFlag;
-        }
+    getColDef: function() {
+        return [{title:"Group Name", key:"name", renderCallback: this.renderNameCallback}];
     },
-
-
-    selectedGroup: null,
     getInitialState: function() {
-        return {
-            showModalFormAddDialog: false,
-            showModalFormEditDialog: false,
-            showDeleteConfirmDialog: false,
-            selectedGroupForEditing: null,
-            groupTableData: [{"name":"","id":{"id":0}}]
-        }
+        return {showModalFormEditDialog: false, selectedGroup: {"str-name": null}};
     },
     render: function() {
-        var btnDivClassName = this.props.className + "-btn-div";
-        return  <div className={"react-dialog-container " + this.props.className}>
+        return  <div className={"dataTables_wrapper " + this.props.className}>
                     <table className="group-config-table-type-container">
                         <tr>
                             <td>
                                 <div style={{float:"right"}}>
-                                    <GenericButton label="Delete" callback={this.delBtnCallback}/>
-                                    <GenericButton label="Add" callback={this.addBtnCallback}/>
+                                    <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
+                                    <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div>
-                                    <GroupConfigDataTable data={this.state.groupTableData}
-                                                          selectItemCallback={this.selectItemCallback}
-                                                          editCallback={this.editCallback}
-                                                          noUpdateWhen={
-                                                                this.state.showModalFormAddDialog ||
-                                                                this.state.showDeleteConfirmDialog ||
-                                                                this.state.showModalFormEditDialog ||
-                                                                this.cancelFlag.check()
-                                                          }/>
-                                </div>
-                            </td>
-                        </tr>
-                   </table>
+                                </td>
+                                       </tr>
+                                       <tr>
+                                           <td>
+                                               <div>
+                                                   <RDataTable ref="groupConfigTable"
+                                                               colDefinitions={this.getColDef()}
+                                                               data={this.state.groupData}
+                                                               selectItemCallback={this.selectItemCallback}
+                                                               tableIndex="name"/>
+                                               </div>
+                                           </td>
+                                       </tr>
+                                  </table>
+                                  <ModalDialogBox ref="modalAddGroupDlg"
+                                                  title="Add Group"
+                                                  okCallback={this.okAddCallback}
+                                                  content={<GroupConfigForm ref="groupAddForm" />}/>
+                                  <ModalDialogBox ref="modalEditGroupDlg"
+                                                  title="Edit Group"
+                                                  okCallback={this.okEditCallback}
+                                                  content={<GroupConfigForm ref="groupEditForm"
+                                                            data={this.state.selectedGroupForEditing}/>}/>
+                                  <ModalDialogBox ref="modalDeleteDlg"
+                                                  okLabel="Yes"
+                                                  cancelLabel="No"/>
 
-                   <ModalDialogBox title="Add Group"
-                                   show={this.state.showModalFormAddDialog}
-                                   okCallback={this.okAddCallback}
-                                   cancelCallback={this.cancelAddCallback}
-                                   content={<GroupConfigForm ref="groupAddForm" />}
-                                   width="auto"
-                                   height="auto"/>
+                </div>
 
-                   <ModalDialogBox title="Edit Group"
-                                   show={this.state.showModalFormEditDialog}
-                                   okCallback={this.okEditCallback}
-                                   cancelCallback={this.cancelEditCallback}
-                                   content={<GroupConfigForm ref="groupEditForm"
-                                                             data={this.state.selectedGroupForEditing}/>}
-                    />
-
-                    <ModalDialogBox title="Confirmation Dialog Box"
-                                    show={this.state.showDeleteConfirmDialog}
-                                    okCallback={this.confirmDeleteCallback}
-                                    cancelCallback={this.cancelDeleteCallback}
-                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
-                                    okLabel="Yes"
-                                    cancelLabel="No" />
-               </div>
     },
-    cancelAddCallback: function() {
-        this.cancelFlag.set();
-        this.setState({showModalFormAddDialog:false});
+    componentDidMount: function() {
+        this.props.service.getGroups(this.getGroupsCallback.bind(self, null));
     },
-    cancelEditCallback: function() {
-        this.cancelFlag.set();
-        this.setState({showModalFormEditDialog:false});
+    getGroupsCallback: function(selectedGroup, response) {
+        this.refs.groupConfigTable.refresh(response.applicationResponseContent);
+        if (selectedGroup !== null) {
+            this.refs.groupConfigTable.selectRow(selectedGroup);
+        }
+    },
+    selectItemCallback: function(group) {
+        this.setState({selectedGroup: group});
+    },
+    renderNameCallback: function(data) {
+        return <button className="button-link" onClick={this.onGroupNameClick.bind(this, data)}>{data}</button>
+    },
+    onGroupNameClick: function(groupName) {
+        var self = this;
+        this.props.service.getGroup(groupName,
+            function(response){
+                self.refs.modalEditGroupDlg.show();
+                self.refs.groupEditForm.setState({id: self.state.selectedGroup["str-name"], groupName: groupName});
+            },
+            true
+        )
+    },
+    addBtnCallback: function() {
+        this.refs.modalAddGroupDlg.show();
+    },
+    delBtnCallback: function() {
+        if (this.state.selectedGroup["str-name"] !== null) {
+            this.refs.modalDeleteDlg.show("Confirmation Dialog Box",
+                                          <div className="text-align-center"><br/><b>Are you sure you want to delete {this.state.selectedGroup["str-name"]} ?</b><br/><br/></div>,
+                                          this.confirmDeleteCallback);
+        }
+    },
+    confirmDeleteCallback: function(data) {
+        var self = this;
+        this.props.service.deleteGroup(this.state.selectedGroup["str-name"],
+                                       function() {
+                                           self.refs.modalDeleteDlg.close();
+                                           self.props.service.getGroups(self.getGroupsCallback.bind(self, null));
+                                       });
+        
     },
     okAddCallback: function() {
         if (this.refs.groupAddForm.isValid()) {
             var self = this;
-            this.props.service.insertNewGroup(this.refs.groupAddForm.state.groupName,
+            var groupName = this.refs.groupAddForm.state.groupName;
+            this.props.service.insertNewGroup(groupName,
                                               function(){
-                                                  self.refreshData({showModalFormAddDialog:false});
+                                                  self.refs.modalAddGroupDlg.close();
+                                                  self.props.service.getGroups(self.getGroupsCallback.bind(self, groupName));
                                               },
                                               function(errMsg) {
                                                   $.errorAlert(errMsg, "Error");
@@ -111,89 +107,41 @@ var GroupConfig = React.createClass({
         if (this.refs.groupEditForm.isValid()) {
             var self = this;
             this.props.service.updateGroup($(this.refs.groupEditForm.getDOMNode().children[0]).serializeArray(),
-                                           function(){
-                                               self.refreshData({showModalFormEditDialog:false});
-                                           },
-                                           function(errMsg) {
-                                               $.errorAlert(errMsg, "Error");
-                                           });
+                                                 function(){
+                                                     self.props.service.getGroups(self.getGroupsCallback.bind(self,
+                                                         self.refs.groupEditForm.state.groupName));
+                                                     self.refs.modalEditGroupDlg.close();
+                                                 },
+                                                 function(errMsg) {
+                                                     $.errorAlert(errMsg, "Error");
+                                                 });
         }
-    },
-
-    /**
-     * Retrieve data from REST Api the set states passed in parameter "states".
-     */
-    refreshData: function(states, doneCallback) {
-        var self = this;
-        this.props.service.getGroups(function(response){
-                                         states["groupTableData"] = response.applicationResponseContent;
-                                         if (doneCallback !== undefined) {
-                                            doneCallback();
-                                         }
-                                         self.setState(states);
-                                     });
-    },
-    addBtnCallback: function() {
-        this.setState({showModalFormAddDialog: true})
-    },
-    delBtnCallback: function() {
-        if (this.selectedGroup !== null) {
-            this.setState({showDeleteConfirmDialog: true});
-        }
-    },
-    confirmDeleteCallback: function() {
-        var self = this;
-        this.props.service.deleteGroup(this.selectedGroup.id.id,
-                                       this.refreshData.bind(this,
-                                                             {showDeleteConfirmDialog: false},
-                                                             function(){self.selectedGroup = null}));
-    },
-    cancelDeleteCallback: function() {
-        this.cancelFlag.set();
-        this.setState({showDeleteConfirmDialog: false});
-    },
-    selectItemCallback: function(item) {
-        this.selectedGroup = item;
-    },
-    editCallback: function(e) {
-        var self = this;
-        this.props.service.getGroup(e.data.id.id,
-            function(response){
-                self.setState({selectedGroupForEditing:response.applicationResponseContent,
-                               showModalFormEditDialog:true});
-            }
-        );
-    },
-    componentDidMount: function() {
-        this.refreshData({});
     }
-});
+})
 
 /**
- * The form that provides data input.
- */
+* The form that provides data input.
+*/
 var GroupConfigForm = React.createClass({
     getInitialState: function() {
-        var groupName = this.props.data !== undefined ? this.props.data.name : "";
         return {
-            groupName: groupName,
-        }
+            id: "", groupName: ""
+        };
     },
     render: function() {
-        var groupId =  this.props.data !== undefined ? this.props.data.id.id : "";
         return <div>
-                    <form ref="groupConfigForm">
-                        <input type="hidden" name="id" value={groupId} />
-                        <table>
-                            <tr>
-                                <td>Name</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="name" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
+                   <form ref="groupConfigForm">
+                       <input type="hidden" name="id" value={this.state.id} />
+                           <table>
+                               <tr>
+                                   <td>Name</td>
+                               </tr>
+                                <tr>
+                                    <td>
+                                        <label htmlFor="name" className="error"></label>
+                                    </td>
+                                </tr>
+                                <tr>
                                 <td><input ref="groupName"
                                            name="name"
                                            className="group-config-form-name-input"
@@ -201,9 +149,9 @@ var GroupConfigForm = React.createClass({
                                            value={this.state.groupName}
                                            onChange={this.onChangeGroupName}
                                            required/></td>
-                            </tr>
-                        </table>
-                    </form>
+                                </tr>
+                   </table>
+                   </form>
                </div>
     },
     onChangeGroupName: function(event) {
@@ -232,48 +180,5 @@ var GroupConfigForm = React.createClass({
             return true;
         }
         return false;
-    }
-});
-
-/**
- * The group data table.
- */
-var GroupConfigDataTable = React.createClass({
-    shouldComponentUpdate: function(nextProps, nextState) {
-      return !nextProps.noUpdateWhen;
-    },
-    render: function() {
-        var tableDef = [{sTitle:"", mData: "jvms", tocType:"control", colWidth:"14px"},
-                        {sTitle:"Group ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Group Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink,
-                        colWidth:"1070px", maxDisplayTextLen:150}];
-
-        var childTableDetails = {tableIdPrefix:"group-config-jvm-child-table",
-                                 className:"simple-data-table",
-                                 divTypeContainerClassName:"group-config-jvm-div-type-container",
-                                 isColResizable:true};
-
-        var childTableDef = [{sTitle:"JVM ID", mData:"id.id", bVisible:false},
-                             {sTitle:"JVM Name", mData:"jvmName"},
-                             {sTitle:"Host", mData:"hostName"}];
-
-        childTableDetails["tableDef"] = childTableDef;
-
-        return <TocDataTable tableId="group-config-table"
-                             className="group-config-table"
-                             tableDef={tableDef}
-                             data={this.props.data}
-                             selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}
-                             rowSubComponentContainerClassName="row-sub-component-container"
-                             childTableDetails={childTableDetails}/>
-    },
-    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
-        var self = this;
-        aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-            return React.renderComponent(React.createElement("button", {className:"button-link", title:sData}, sData), nTd, function() {
-                $(this.getDOMNode()).click(oData, self.props.editCallback);
-            });
-        };
     }
 });

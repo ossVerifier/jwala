@@ -91,17 +91,15 @@
     deployJvmConfAllFiles: function(jvmName, responseCallback, caughtCallback) {
         return serviceFoundation.put("v1.0/jvms/" + jvmName + "/conf", "json", null, responseCallback, caughtCallback, false);
     },
-    deployJvmConf: function(jvmName, resourceTemplateName, responseCallback, caughtCallback) {
-        return serviceFoundation.put("v1.0/jvms/" + jvmName + "/conf/" + resourceTemplateName, "json", null, responseCallback, caughtCallback, false);
+    deployJvmConf: function(jvmName, resourceTemplateName) {
+        return serviceFoundation.promisedPut("v1.0/jvms/" + jvmName + "/conf/" + resourceTemplateName, "json", null, false);
     },
-    updateResourceTemplate: function(jvmName, resourceTemplateName, resourceTemplateContent, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURI(resourceTemplateName),
-                                     "json",
-                                     resourceTemplateContent,
-                                     successCallback,
-                                     errorCallback,
-                                     false,
-                                     "text/plain; charset=utf-8");
+    updateResourceTemplate: function(jvmName, resourceTemplateName, resourceTemplateContent) {
+        return serviceFoundation.promisedPut("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURI(resourceTemplateName),
+                                             "json",
+                                             resourceTemplateContent,
+                                             false,
+                                             "text/plain; charset=utf-8");
     },
     uploadTemplateForm: function(jvmName, templateName, templateFile, successCallback, errorCallback) {
         return serviceFoundation.post("v1.0/jvms/" + encodeURI(jvmName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),

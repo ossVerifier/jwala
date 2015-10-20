@@ -35,7 +35,7 @@
 # least PidFile.
 #
 #ServerRoot ./
-ServerRoot ${apache.httpd.folder.forward.slash}/
+ServerRoot d:/stp/apache-httpd-2.4.10/
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -188,7 +188,7 @@ LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
 LoadModule status_module modules/mod_status.so
 LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so
 #Alternative load balancing methods, not used:
-#LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so
+LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so
 #LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so
 #LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so
 
@@ -216,9 +216,9 @@ Header edit Location ^http://(.*)\$  https://\$1
 </Files>
 
 #IPINS
-RewriteEngine on
-RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
-RewriteRule .* - [F]
+RewriteEngine on      
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
+RewriteRule .* - [F]    
 
 SSLEngine on
 SSLOptions +StrictRequire
@@ -253,6 +253,9 @@ Allow from all
 SSLRequireSSL
 </Directory>
 
+# Apply rewrite rules to 443 virtual host
+IncludeOptional ../app/data/httpd/*urlrewriterules.conf
+
 # TLS1 is supported because corporate group policy currently disables TLS1.2 and TLS1.1 in IE
 SSLProtocol -all +TLSv1.2 +TLSv1
 # Ideally we would be purely on TLS 1.2:
@@ -274,7 +277,7 @@ SSLVerifyClient none
 #Enable SSL over Proxy connections
 SSLProxyEngine on
 SSLProxyVerify require
-SSLProxyVerifyDepth 1
+SSLProxyVerifyDepth 2
 
 # Do not check expiration, to avoid outages
 SSLProxyCheckPeerExpire off
@@ -309,9 +312,10 @@ ProxyPassReverse ${it.webAppContext.replaceAll(" ", "")} balancer://lb-${it.name
 DocumentRoot "htdocs"
 
 #IPINS
-RewriteEngine on
-RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
-RewriteRule .* - [F]
+RewriteEngine on      
+IncludeOptional ../app/data/httpd/*urlrewriterules.conf
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)      
+RewriteRule .* - [F]    
 
 SSLEngine off
 
@@ -335,7 +339,7 @@ Allow from all
         def ctxPath = it.webAppContext.replaceAll(" ", "")
 %>
 <Proxy balancer://lb-${it.name.replaceAll(" ", "")}>
-ProxySet lbmethod=bybusyness
+ProxySet lbmethod=byrequests
 ProxySet stickysession=JSESSIONID|jsessionid
 ProxySet scolonpathdelim=On
 ProxySet growth=2
@@ -347,27 +351,10 @@ ProxySet nofailover=On
         def hostName = it.hostName.replaceAll(" ", "")
         def jvmName = it.jvmName.replaceAll(" ", "")
 %>
-BalancerMember http://${hostName}:${it.httpPort}${ctxPath} route=${jvmName} ping=250ms
+BalancerMember http://${hostName}:${it.httpPort}${ctxPath} route=${jvmName} ping=5000ms keepalive=on ttl=300 retry=0
 <%  } %>
 </Proxy>
 <% } %>
-
-<Proxy balancer://PING>
-ProxySet lbmethod=bybusyness
-ProxySet stickysession=JSESSIONID|jsessionid
-ProxySet scolonpathdelim=On
-ProxySet growth=2
-ProxySet nofailover=On
-<%
-    jvms.each() {
-        def hostName = it.hostName.replaceAll(" ", "")
-        def jvmName = it.jvmName.replaceAll(" ", "")
-        def jvmAjpPort = it.ajpPort
-%>
-BalancerMember ajp://${hostName}:${jvmAjpPort}/ route=${jvmName} ping=250ms
-<%  } %>
-</Proxy>
-
 
 #Output compression enabled globally for supported types
 LoadModule filter_module modules/mod_filter.so
@@ -387,19 +374,19 @@ LoadModule deflate_module modules/mod_deflate.so
         AddOutputFilterByType DEFLATE application/json
         AddOutputFilterByType DEFLATE application/javascript
         AddOutputFilterByType DEFLATE application/x-javascript
-
+ 
         AddOutputFilterByType DEFLATE application/x-httpd-php
         AddOutputFilterByType DEFLATE application/x-httpd-fastphp
         AddOutputFilterByType DEFLATE application/x-httpd-eruby
-
+ 
         DeflateCompressionLevel 9
-
+ 
 # Netscape 4.X has some problems
         BrowserMatch ^Mozilla/4 gzip-only-text/html
-
+ 
 # Netscape 4.06-4.08 have some more problems
         BrowserMatch ^Mozilla/4\\.0[678] no-gzip
-
+ 
 # MSIE masquerades as Netscape, but it is fine
         BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
 </IfModule>
@@ -758,3 +745,8 @@ SSLRandomSeed connect builtin
 #<IfModule headers_module>
 #RequestHeader unset DNT env=bad_DNT
 #</IfModule>
+
+<IfModule mpm_winnt_module> 
+ThreadsPerChild 1000 
+MaxConnectionsPerChild 0 
+</IfModule>

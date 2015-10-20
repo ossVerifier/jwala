@@ -3,6 +3,7 @@ textarea.xml-editor {
      width: 100%;
      resize: none;
      padding-top: 0 !important;
+     height: 244px;
 }
 
 .toolbar-container {

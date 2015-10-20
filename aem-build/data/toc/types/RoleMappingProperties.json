@@ -1,0 +1,7 @@
+{
+	"name":"Role Mapping Properties File",
+	"templateName":"RoleMappingTemplate.tpl",
+	"contentType":"text/plain",
+	"configFileName":"roleMapping.properties",
+	"relativeDir":"/properties"
+}

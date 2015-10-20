@@ -1,23 +1,36 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.group.*;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
+import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import org.joda.time.DateTime;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,22 +41,20 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.siemens.cto.aem.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anySet;
 import static org.mockito.Mockito.*;
 
 /**
- *
  * @author meleje00
- *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GroupServiceRestImplTest {
@@ -55,6 +66,7 @@ public class GroupServiceRestImplTest {
     private GroupControlHistory groupControlHistory = createGroupControlHistory(group.getId());
 
     private GroupServiceImpl impl;
+    private ResourceService resourceService;
 
     @Mock
     private GroupControlServiceImpl controlImpl;
@@ -63,7 +75,16 @@ public class GroupServiceRestImplTest {
     private GroupJvmControlServiceImpl controlJvmImpl;
 
     @Mock
+    private StateService<Group, GroupState> groupStateService;
+
+    @Mock
+    private GroupWebServerControlService groupWSControlService;
+
+    @Mock
     private AuthenticatedUser authenticatedUser;
+
+    @Mock
+    private GroupPersistenceService groupPersistenceService;
 
     @Mock
     private Jvm mockJvm;
@@ -85,11 +106,9 @@ public class GroupServiceRestImplTest {
     @Mock
     private Group mockGroup;
 
-    @Mock
-    private ResourceService resourceService;
-
-    @InjectMocks @Spy
-    private GroupServiceRestImpl cut = new GroupServiceRestImpl(impl = Mockito.mock(GroupServiceImpl.class), resourceService);
+    @InjectMocks
+    @Spy
+    private GroupServiceRestImpl cut = new GroupServiceRestImpl(impl = Mockito.mock(GroupServiceImpl.class), resourceService = Mockito.mock(ResourceServiceImpl.class));
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
@@ -104,7 +123,7 @@ public class GroupServiceRestImplTest {
                 id,
                 GroupControlOperation.START,
                 AuditEvent.now(new User(GROUP_CONTROL_TEST_USERNAME))
-                );
+        );
         return gch;
     }
 
@@ -127,6 +146,11 @@ public class GroupServiceRestImplTest {
         when(mockWebServer.getGroups()).thenReturn(groups);
         webServers = new ArrayList<>();
         webServers.add(mockWebServer);
+    }
+
+    @After
+    public void cleanUp() {
+        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -168,7 +192,7 @@ public class GroupServiceRestImplTest {
     public void testGetGroup() {
         when(impl.getGroup(any(Identifier.class))).thenReturn(group);
 
-        final Response response = cut.getGroup(Identifier.id(1l, Group.class));
+        final Response response = cut.getGroup("1", false);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -196,8 +220,9 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testUpdateGroup() {
-        final JsonUpdateGroup jsonUpdateGroup = new JsonUpdateGroup("1", name);
+        final JsonUpdateGroup jsonUpdateGroup = new JsonUpdateGroup("currentName", name);
         when(impl.updateGroup(any(UpdateGroupCommand.class), any(User.class))).thenReturn(group);
+        when(impl.getGroup(eq("currentName"))).thenReturn(group);
 
         final Response response = cut.updateGroup(jsonUpdateGroup, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -213,8 +238,8 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testRemoveGroup() {
-        final Response response = cut.removeGroup(Identifier.id(1l, Group.class));
-        verify(impl, atLeastOnce()).removeGroup(any(Identifier.class));
+        final Response response = cut.removeGroup("groupName");
+        verify(impl, atLeastOnce()).removeGroup(eq("groupName"));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -261,8 +286,8 @@ public class GroupServiceRestImplTest {
         when(controlJvmImpl.controlGroup(isA(ControlGroupJvmCommand.class), isA(User.class))).thenReturn(groupControlHistory);
         final Response response =
                 cut.controlGroupJvms(Identifier.id(1L, Group.class),
-                                     new JsonControlJvm("start"),
-                                     authenticatedUser);
+                        new JsonControlJvm("start"),
+                        authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -274,10 +299,10 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testSignalReset() {
-        when(this.controlImpl.resetState(eq(Identifier.id(1L, Group.class)), isA(User.class))).thenReturn(new CurrentGroupState(id(1L, Group.class), GroupState.GRP_PARTIAL, DateTime.now() ));
+        when(this.controlImpl.resetState(eq(Identifier.id(1L, Group.class)), isA(User.class))).thenReturn(new CurrentGroupState(id(1L, Group.class), GroupState.GRP_PARTIAL, DateTime.now()));
         final Response response =
                 cut.resetState(Identifier.id(1L, Group.class),
-                               authenticatedUser);
+                        authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -320,11 +345,84 @@ public class GroupServiceRestImplTest {
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeWebServer() {
         when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
         final Response response
-            = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.WEB_SERVER);
+                = cut.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.WEB_SERVER);
         assertEquals(response.getStatus(), 200);
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         final List<MembershipDetails> membershipDetailsList = (List) applicationResponse.getApplicationResponseContent();
         assertEquals("webServer1", membershipDetailsList.get(0).getName());
         assertEquals("group2", membershipDetailsList.get(0).getGroupNames().get(0));
+    }
+
+    @Test
+    public void testPopulateJvmConfig() {
+        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        Set<Jvm> jvmSet = new HashSet<>();
+        jvmSet.add(mockJvm);
+        Collection<ResourceType> resourceTypes = new ArrayList<>();
+        ResourceType mockResource = mock(ResourceType.class);
+        resourceTypes.add(mockResource);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockResource.getEntityType()).thenReturn("jvm");
+        when(mockResource.getConfigFileName()).thenReturn("server.xml");
+        when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
+        when(impl.getGroup(group.getId())).thenReturn(mockGroup);
+        when(impl.populateJvmConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
+        when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
+        Response response = cut.populateJvmConfig(group.getId(), authenticatedUser, false);
+        assertNotNull(response.getEntity());
+
+        when(mockResource.getTemplateName()).thenReturn("NoTemplate.tpl");
+        boolean exceptionThrown = false;
+        try {
+            cut.populateJvmConfig(group.getId(), authenticatedUser, false);
+        } catch (Exception e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+    }
+
+    @Test
+    public void testPopulateWebServerConfig(){
+        Set<WebServer> wsSet = new HashSet<>();
+        wsSet.add(mockWebServer);
+        when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
+        when(impl.getGroupWithWebServers(group.getId())).thenReturn(mockGroup);
+        when(mockGroup.getWebServers()).thenReturn(wsSet);
+        when(impl.populateWebServerConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
+        Response response = cut.populateWebServerConfig(group.getId(), authenticatedUser, false);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testControlGroupWebServers(){
+        JsonControlWebServer mockControlWebServer = mock(JsonControlWebServer.class);
+        when(mockControlWebServer.toControlOperation()).thenReturn(WebServerControlOperation.START);
+        when(groupWSControlService.controlGroup(any(ControlGroupWebServerCommand.class), any(User.class))).thenReturn(groupControlHistory);
+        Response response = cut.controlGroupWebservers(group.getId(), mockControlWebServer, authenticatedUser);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testControlGroup(){
+        JsonControlGroup mockControlGroup = mock(JsonControlGroup.class);
+        when(mockControlGroup.toControlOperation()).thenReturn(GroupControlOperation.START);
+        when(controlImpl.controlGroup(any(ControlGroupCommand.class), any(User.class))).thenReturn(groupControlHistory);
+        Response response = cut.controlGroup(group.getId(), mockControlGroup, authenticatedUser);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testGetCurrentJvmStates(){
+        GroupIdsParameterProvider mockGroupIdsParamProvider = mock(GroupIdsParameterProvider.class);
+        Set<Identifier<Group>> setGroupIds = new HashSet<>();
+        setGroupIds.add(group.getId());
+        when(mockGroupIdsParamProvider.valueOf()).thenReturn(setGroupIds);
+        when(groupStateService.getCurrentStates(anySet())).thenReturn(new HashSet<CurrentState<Group, GroupState>>());
+        Response response = cut.getCurrentJvmStates(mockGroupIdsParamProvider);
+        assertNotNull(response.getEntity());
+
+        when(mockGroupIdsParamProvider.valueOf()).thenReturn(new HashSet<Identifier<Group>>());
+        response = cut.getCurrentJvmStates(mockGroupIdsParamProvider);
+        assertNotNull(response.getEntity());
     }
 }

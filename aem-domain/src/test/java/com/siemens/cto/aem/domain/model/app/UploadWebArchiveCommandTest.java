@@ -20,7 +20,7 @@ import static org.junit.Assert.assertSame;
 public class UploadWebArchiveCommandTest {
 
     private Application initApplication(String name, String context, String groupName) {
-        return new Application(id(0L, Application.class), name, (String)null, context, new Group(id(0L, Group.class), groupName), true, true);
+        return new Application(id(0L, Application.class), name, (String)null, context, new Group(id(0L, Group.class), groupName), true, true, "testWar.war");
     }
     
     private UploadWebArchiveCommand initUploadCommand(Application app, String filename, byte[] data) {
@@ -68,7 +68,7 @@ public class UploadWebArchiveCommandTest {
         Mockito.when(badInputStream.markSupported()).thenReturn(true);
         Mockito.when(badInputStream.read()).thenReturn(-1);
         
-        Application app = new Application(null, null, null, null, null, true, true);
+        Application app = new Application(null, null, null, null, null, true, true, null);
         
         UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2L, badInputStream);
         cmd.validateCommand(); // should trigger BadRequestException
@@ -81,7 +81,7 @@ public class UploadWebArchiveCommandTest {
         Mockito.when(badInputStream.markSupported()).thenReturn(false);
         Mockito.when(badInputStream.available()).thenReturn(0);
         
-        Application app = new Application(null, null, null, null, null, true, true);
+        Application app = new Application(null, null, null, null, null, true, true, null);
         
         UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 2L, badInputStream);
         cmd.validateCommand(); // should trigger BadRequestException

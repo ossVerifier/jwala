@@ -106,6 +106,11 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
+    public void removeGroup(final String name) throws NotFoundException {
+        removeGroup(new Identifier<Group>(groupCrudService.getGroupId(name)));
+    }
+
+    @Override
     public Group addJvmToGroup(final Event<AddJvmToGroupCommand> anEvent) throws NotFoundException {
         groupJvmRelationshipService.addJvmToGroup(anEvent);
         return groupFrom(groupCrudService.getGroup(anEvent.getCommand().getGroupId()), false);

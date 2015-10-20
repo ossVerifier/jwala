@@ -25,8 +25,9 @@ public interface GroupServiceRest {
                        @QueryParam("webServers") final boolean fetchWebServers);
 
     @GET
-    @Path("/{groupId}")
-    Response getGroup(@PathParam("groupId") final Identifier<Group> aGroupId);
+    @Path("/{groupIdOrName}")
+    Response getGroup(@PathParam("groupIdOrName") String groupIdOrName,
+                      @QueryParam("byName") @DefaultValue("false") boolean byName);
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -39,8 +40,8 @@ public interface GroupServiceRest {
                          @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
-    @Path("/{groupId}")
-    Response removeGroup(@PathParam("groupId") final Identifier<Group> aGroupId);
+    @Path("/{name}")
+    Response removeGroup(@PathParam("name") String name);
 
     @POST
     @Path("/{groupId}/jvms")

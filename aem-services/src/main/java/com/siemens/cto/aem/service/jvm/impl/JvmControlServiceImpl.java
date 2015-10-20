@@ -102,6 +102,14 @@ public class JvmControlServiceImpl implements JvmControlService {
                         logger.error("exiting controlJvm FAST FAIL command {} :: {}", aCommand, result);
                         jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(), ctrlOp.getFailureStateOrPrevious(prevState), result, aUser);
                         throw new ExternalSystemErrorException(AemFaultType.FAST_FAIL, "Remote JVM startup health checks failed for jvm with id " + aCommand.getJvmId().getId() + ": " + result);
+                    case ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE:
+                        logger.error("exiting controlJVM NO SUCH SERVICE command {} :: {}", aCommand, result);
+                        jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
+                                ctrlOp.getFailureStateOrPrevious(prevState),
+                                result,
+                                aUser);
+                        throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                                "Error controlling JVM " + jvmName + ": " + result);
                     default:
                         processDefaultReturnCode(aCommand, aUser, prevState, ctrlOp, execData, result, jvmName);
                         break;

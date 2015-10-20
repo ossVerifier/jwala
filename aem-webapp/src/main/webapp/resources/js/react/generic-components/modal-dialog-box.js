@@ -27,6 +27,7 @@
  */
 ModalDialogBox = React.createClass({
     getInitialState: function() {
+
         var top = this.props.top === undefined ? -10000 : this.props.top;
         var left = this.props.left === undefined ? -10000 : this.props.left;
 
@@ -77,6 +78,9 @@ ModalDialogBox = React.createClass({
                                                      RButton({ref:"okBtn", onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}),
                                                      RButton({ref:"cancelBtn", onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
 
+                                       // Text area that would do the resizing for us, the only problem is that we need to resize the content along with it.
+                                       // React.createElement("textArea", {style: {width: "100%", height: "100%", position: "absolute", top: 0, left: 0, zIndex: -999}})
+
         return React.DOM.div({style:this.state.show ? {} : {display:"none"}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
 
@@ -103,8 +107,10 @@ ModalDialogBox = React.createClass({
             if (this.state.top === -10000) {
                 var height = $(this.refs.theDialog.getDOMNode()).height();
                 var width = $(this.refs.theDialog.getDOMNode()).width();
+
                 var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
                 var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
+
                 this.setState({top:offsetY - height/2,left:offsetX - width/2});
 
                 if (this.props.modal === true) {
@@ -144,7 +150,7 @@ ModalDialogBox = React.createClass({
         this.setState({top:e.pageY - this.mouseDownYDiff, left:e.pageX - this.mouseDownXDiff});
     },
     show: function(title, content, okCallback, cancelCallback) {
-        if (title !== undefined && content !== undefined && okCallback !== undefined && cancelCallback !== undefined){
+        if (title !== undefined && content !== undefined){
             this.setState({show:true, title:title, content:content, okCallback:okCallback, cancelCallback:cancelCallback});
         } else {
             this.setState({show:true});

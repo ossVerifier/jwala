@@ -43,7 +43,9 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
         currentState.setAsOf(newState.getAsOf().toCalendar(Locale.US));
         currentState.setMessage(newState.getMessage());
 
-        return entityManager.merge(currentState);
+        final JpaCurrentState mergedCurrentState = entityManager.merge(currentState);
+        entityManager.flush();
+        return mergedCurrentState;
     }
 
     @Override

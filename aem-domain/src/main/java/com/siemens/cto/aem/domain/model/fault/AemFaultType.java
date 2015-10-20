@@ -97,7 +97,7 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     INVALID_HTTP_CONFIG_FILE("AEM46", "InvalidHttpConfigFile"),
     /**/
-    TEMPLATE_NOT_FOUND("AEM47", "TemplateNotFound"), 
+    TEMPLATE_NOT_FOUND("AEM47", "TemplateNotFound"),
     /**/
     CANNOT_CONNECT("AEM48", "CannotConnect"),
 
@@ -111,7 +111,8 @@ public enum AemFaultType implements MessageResponseStatus {
     DATA_CONTROL_ERROR("AEM52", "MoreThanOneObjectFound"),
     FAST_FAIL("AEM53", "Remote JVM aborted in initial health checks."),
     JVM_TEMPLATE_NOT_FOUND("AEM54", "Could not return text for specified JVM configuration template"),
-    INVALID_TEMPLATE_NAME("AEM55", "InvalidXMLName" );
+    INVALID_TEMPLATE_NAME("AEM55", "InvalidXMLName" ),
+    INVALID_TEMPLATE("AEM56", "InvalidTemplate" );
 
 	private final String faultCode;
 	private final String faultMessage;

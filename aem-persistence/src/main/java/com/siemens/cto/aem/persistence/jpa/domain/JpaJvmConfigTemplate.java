@@ -27,12 +27,14 @@ public class JpaJvmConfigTemplate {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @Column(nullable = true)    
+    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction=org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaJvm jvm;
 
     @Column(name="TEMPLATE_NAME", nullable = false)
     private String templateName;
 
-    @Column(name="TEMPLATE_CONTENT", nullable = false)
+    @Column(name="TEMPLATE_CONTENT", nullable = false, length=2147483647)
     private String templateContent;
 
     public JpaJvm getJvm() {

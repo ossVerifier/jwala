@@ -85,6 +85,12 @@ var webServerService = {
      * Generate HTTPD Conf then deploy to a web server.
      */
     deployHttpdConf: function(webserverName, successCallback, errorCallback) {
+        if (successCallback === undefined) {
+            return serviceFoundation.promisedPut("v1.0/webservers/" + webserverName + "/conf",
+                                                 "json",
+                                                 null,
+                                                 false);
+        }
         return serviceFoundation.put("v1.0/webservers/" + webserverName + "/conf",
                                      "json",
                                      null,
@@ -98,14 +104,12 @@ var webServerService = {
     getResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURI(wsName) + "/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
-    updateResourceTemplate: function(webServerName, resourceTemplateName, resourceTemplateContent, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/webservers/" + encodeURI(webServerName) + "/resources/template/" + encodeURI(resourceTemplateName),
-                                     "json",
-                                     resourceTemplateContent,
-                                     successCallback,
-                                     errorCallback,
-                                     false,
-                                     "text/plain; charset=utf-8");
+    updateResourceTemplate: function(webServerName, resourceTemplateName, resourceTemplateContent) {
+        return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURI(webServerName) + "/resources/template/" + encodeURI(resourceTemplateName),
+                                             "json",
+                                             resourceTemplateContent,
+                                             false,
+                                             "text/plain; charset=utf-8");
     },
     uploadTemplateForm: function(webServerName, templateName, templateFile, successCallback, errorCallback) {
          return serviceFoundation.post("v1.0/webservers/" + encodeURI(webServerName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),

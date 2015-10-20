@@ -29,4 +29,7 @@ public interface GroupCrudService {
     void removeGroup(final Identifier<Group> aGroupId);
     
     JpaGroup updateGroupStatus(Event<SetStateCommand<Group, GroupState>> aGroupToUpdate);
+
+    Long getGroupId(String name);
+
 }

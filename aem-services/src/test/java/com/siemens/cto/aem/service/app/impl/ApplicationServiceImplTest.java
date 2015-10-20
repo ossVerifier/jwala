@@ -2,19 +2,26 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
+import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
-import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
+import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.junit.Before;
@@ -26,6 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
@@ -38,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,10 +67,22 @@ public class ApplicationServiceImplTest {
     @Mock
     private JvmDao jvmDao;
 
+    @Mock
+    private JvmPersistenceService jvmPersistenceService;
+
+    @Mock
+    private ApplicationCommandService applicationCommandService;
+
+    @Mock
+    private AemSshConfig aemSshConfig;
+
+    @Mock
+    private GroupService groupService;
+
+    @Mock
+    private FileManager fileManager;
     @InjectMocks @Spy
-    // TODO: Replace the nulls with instantiated/mocked classes once tests that uses them are added.
-    private ApplicationService applicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService,
-                                                                               null, null, null, jvmDao);
+    private ApplicationServiceImpl applicationService;
     
     @Mock
     private Application mockApplication; 
@@ -98,13 +119,14 @@ public class ApplicationServiceImplTest {
         when(mockApplication.getName()).thenReturn("TOC 1.0");
         when(mockApplication.getGroup()).thenReturn(group);
         when(mockApplication.getWebAppContext()).thenReturn("/aem");
-        
+        when(mockApplication.isSecure()).thenReturn(true);
 
         when(mockApplication2.getId()).thenReturn(new Identifier<Application>(2L));
         when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/toc-1.1.war");
         when(mockApplication2.getName()).thenReturn("TOC 1.1");
         when(mockApplication2.getGroup()).thenReturn(group2);
         when(mockApplication2.getWebAppContext()).thenReturn("/aem");
+        when(mockApplication2.isSecure()).thenReturn(false);
         
         applications2.add(mockApplication);
         applications2.add(mockApplication2);
@@ -113,6 +135,17 @@ public class ApplicationServiceImplTest {
         buf.asShortBuffer().put((short)0xc0de);
 
         uploadedFile = new ByteArrayInputStream(buf.array());
+
+        SshConfiguration mockSshConfig = mock(SshConfiguration.class);
+        aemSshConfig = mock(AemSshConfig.class);
+        when(mockSshConfig.getUserName()).thenReturn("mockUser");
+        when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
+
+        groupService = mock(GroupService.class);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);        
+
+        when(fileManager.getResourceTypeTemplate(eq("AppContextXMLTemplate.tpl"))).thenReturn("The application context template.");
+        when(fileManager.getResourceTypeTemplate(eq("RoleMappingTemplate.tpl"))).thenReturn("The role mapping properties template.");
     }
 
     @SuppressWarnings("unchecked")
@@ -167,7 +200,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test(expected=BadRequestException.class)
     public void testCreateBadRequest() {
-        when(applicationPersistenceService.createApplication(any(Event.class), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
         
         CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -178,7 +211,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreate() {
-        when(applicationPersistenceService.createApplication(any(Event.class), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
         
         CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -290,6 +323,138 @@ public class ApplicationServiceImplTest {
     public void testUpdateResourceTemplate() {
         applicationService.updateResourceTemplate("hct", "hct.xml", "content");
         verify(applicationPersistenceService).updateResourceTemplate(eq("hct"), eq("hct.xml"), eq("content"));
+    }
+
+    @Test
+    public void testDeployConf() throws CommandFailureException {
+        final Jvm jvm = mock(Jvm.class);
+        when(jvm.getHostName()).thenReturn("localhost");
+        final List<Jvm> jvmList = new ArrayList();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        final ExecData execData = mock(ExecData.class);
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        when(applicationCommandService.secureCopyConfFile(anyString(),
+                anyString(),
+                anyString(),
+                any(RuntimeCommandBuilder.class))).thenReturn(execData);
+
+
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+
+        final ExecData retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+        assertTrue(retExecData.getReturnCode().wasSuccessful());
+    }
+
+    @Test
+    public void testDeployConfWithPropertiesExtension() throws CommandFailureException {
+        final Jvm jvm = mock(Jvm.class);
+        when(jvm.getHostName()).thenReturn("localhost");
+        final List<Jvm> jvmList = new ArrayList();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        final ExecData execData = mock(ExecData.class);
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        when(applicationCommandService.secureCopyConfFile(anyString(),
+                anyString(),
+                anyString(),
+                any(RuntimeCommandBuilder.class))).thenReturn(execData);
+
+
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("roleMapping.properties"))).thenReturn("Test template properties");
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+
+        final ExecData retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "roleMapping.properties", testUser);
+        assertTrue(retExecData.getReturnCode().wasSuccessful());
+    }
+
+    @Test(expected = DeployApplicationConfException.class)
+    public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException {
+        final Jvm jvm = mock(Jvm.class);
+        when(jvm.getHostName()).thenReturn("localhost");
+        final List<Jvm> jvmList = new ArrayList();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        final ExecData execData = mock(ExecData.class);
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getStandardError()).thenReturn("No operation!");
+        when(applicationCommandService.secureCopyConfFile(anyString(),
+                anyString(),
+                anyString(),
+                any(RuntimeCommandBuilder.class))).thenReturn(execData);
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        final ExecData retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+    }
+
+    @Test(expected = DeployApplicationConfException.class)
+    public void testDeployConfExecDataCommandFailureException() throws CommandFailureException  {
+        final Jvm jvm = mock(Jvm.class);
+        when(jvm.getHostName()).thenReturn("localhost");
+        final List<Jvm> jvmList = new ArrayList();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        final ExecData execData = mock(ExecData.class);
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getStandardError()).thenReturn("No operation!");
+        when(applicationCommandService.secureCopyConfFile(anyString(),
+                anyString(),
+                anyString(),
+                any(RuntimeCommandBuilder.class))).thenThrow(CommandFailureException.class);
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        final ExecData retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+    }
+
+    @Test(expected = DeployApplicationConfException.class)
+    public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException  {
+        final Jvm jvm = mock(Jvm.class);
+        when(jvm.getHostName()).thenReturn("localhost");
+        final List<Jvm> jvmList = new ArrayList();
+        jvmList.add(jvm);
+        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        final ExecData execData = mock(ExecData.class);
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getStandardError()).thenReturn("No operation!");
+        when(applicationCommandService.secureCopyConfFile(anyString(),
+                anyString(),
+                anyString(),
+                any(RuntimeCommandBuilder.class))).thenThrow(FileNotFoundException.class);
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        final ExecData retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+    }
+
+    @Test
+    public void testPreviewResourceTemplate() {
+        final Jvm jvm = mock(Jvm.class);
+        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        final String preview = applicationService.previewResourceTemplate("hct", "hct-group", "jvm-1", "Template contents");
+        assertEquals("Template contents", preview);
+    }
+
+    @Test
+    public void testUploadTemplate() {
+        final UploadAppTemplateCommand cmd = mock(UploadAppTemplateCommand.class);
+        applicationService.uploadAppTemplate(cmd, testUser);
+        verify(cmd).validateCommand();
+        verify(applicationPersistenceService).uploadAppTemplate(any(Event.class));
+    }
+
+    @Test
+    public void testFindApplicationsByJvmId() {
+        final Identifier<Jvm> id = new Identifier<Jvm>(1l);
+        applicationService.findApplicationsByJvmId(id);
+        verify(applicationDao).findApplicationsBelongingToJvm(eq(id));
     }
 
 }

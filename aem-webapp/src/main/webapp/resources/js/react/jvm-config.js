@@ -34,13 +34,13 @@ var JvmConfig = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
-        return  <div className={this.props.className} className="react-dialog-container">
+        return  <div className={this.props.className} className="dataTables_wrapper">
                     <table className="jvm-config-table-type-container">
                         <tr>
                             <td>
                                 <div style={{float:"right"}}>
-                                    <GenericButton label="Delete" callback={this.delBtnCallback}/>
-                                    <GenericButton label="Add" callback={this.addBtnCallback}/>
+                                    <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
+                                    <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
                                 </div>
                             </td>
                         </tr>

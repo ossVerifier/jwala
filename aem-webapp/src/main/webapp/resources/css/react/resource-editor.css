@@ -1,22 +1,37 @@
 .resource-pane {
-    min-height: 354px;
+    width: 100%;
+    height: 304px; /* Required by IE8! If removed, resource panes won't show! */
+    border: 1px solid rgb(200, 200, 200) !important;
 }
 
 .resource-static-dialog-content-1 {
-    min-width: 383px;
-    width: 383px;
-    min-height: 305px;
-    padding: 5px 5px 5px 5px !important;
+    width: 100%;
+    min-height: 277px;
+    max-height: 277px;
+    padding: 0 0 0 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 .resource-static-dialog-content-2 {
-    min-width: 190px;
-    width: 190px;
-    min-height: 305px;
-    padding: 5px 5px 5px 5px !important;
+    min-height: 277px;
+    width: 100%;
+    padding: 0 0 0 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 .resource-static-dialog-content-3 {
-    min-width: 450px;
-    padding: 5px 5px 5px 5px !important;
+    min-height: 277px;
+    max-height: 277px;
+    width: 100%;
+    padding: 0 0 0 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+.resource-box {
+    width: 100%;
+    padding: 0 0 0 0 !important;
+    border: 0 !important;
 }

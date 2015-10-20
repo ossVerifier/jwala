@@ -27,8 +27,8 @@ var WebAppConfig = React.createClass({
                         <tr>
                             <td>
                                 <div style={{float:"right"}}>
-                                    <GenericButton label="Delete" callback={this.delBtnCallback}/>
-                                    <GenericButton label="Add" callback={this.addBtnCallback}/>
+                                    <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
+                                    <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
                                 </div>
                             </td>
                         </tr>

@@ -45,18 +45,12 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         aCommand.validateCommand();
 
         final CurrentState<S, T> currentState = persistenceService.getState(aCommand.getNewState().getId());
-
         final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(aCommand, AuditEvent
                 .now(aUser)));
 
-        if (    currentState == null || 
-                currentState.getState() != latestState.getState() || 
-                !currentState.getMessage().equals(latestState.getMessage())) {
-
-            notificationService.notifyStateUpdated(latestState); // the UI only
-                                                                 // cares about
-                                                                 // changes.
-
+        if (currentState == null || !currentState.getState().equals(latestState.getState()) ||
+            !currentState.getMessage().equalsIgnoreCase(latestState.getMessage())) {
+            notificationService.notifyStateUpdated(latestState);
         }
 
         // The internal bus is allowed to care about all state updates.

@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface ApplicationPersistenceService {
 
-    Application createApplication(final Event<CreateApplicationCommand> anAppToCreate, String appContextTemplate);
+    Application createApplication(Event<CreateApplicationCommand> anAppToCreate, String appContextTemplate,
+                                  String roleMappingPropertiesTemplate, String appPropertiesTemplate);
 
     Application updateApplication(final Event<UpdateApplicationCommand> anAppToUpdate);
 

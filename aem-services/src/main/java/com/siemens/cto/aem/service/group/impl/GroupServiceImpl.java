@@ -101,6 +101,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    public void removeGroup(final String name) {
+        groupPersistenceService.removeGroup(name);
+    }
+
+    @Override
+    @Transactional
     public Group addJvmToGroup(final AddJvmToGroupCommand aCommand,
                                final User anAddingUser) {
 

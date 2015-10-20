@@ -165,5 +165,12 @@ public class GroupCrudServiceImpl implements GroupCrudService {
         return jpaGroup;
     }
 
+    @Override
+    public Long getGroupId(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUP_ID);
+        q.setParameter("name", name);
+        return (Long) q.getSingleResult();
+    }
+
 }
 

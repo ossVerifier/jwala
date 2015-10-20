@@ -32,6 +32,8 @@ public interface GroupService {
 
     void removeGroup(final Identifier<Group> aGroupId);
 
+    void removeGroup(String name);
+
     Group addJvmToGroup(final AddJvmToGroupCommand aCommand,
                         final User anAddingUser);
 

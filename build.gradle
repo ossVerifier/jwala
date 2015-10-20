@@ -22,7 +22,7 @@ ext {
                  jms : "1.1",
                  infrastructureProvided : "1.0-SNAPSHOT",
                  infrastructureSecurity : "1.0-SNAPSHOT",
-                 infrastructureGradle : "1.0-SNAPSHOT",
+                 infrastructureGradle : "1.1.2-SNAPSHOT",
                  commons_lang : "3.3.2",
                  commons_logging : "1.1.1",
                  httpcomponents_core : "4.3.3",
@@ -31,7 +31,7 @@ ext {
                  ant: '1.8.2',
                  groovy: '2.4.3',
                  jacoco: '0.6.5.201403032054',
-                 devbundle: '1.0-SNAPSHOT'
+                 devbundle: '1.1-SNAPSHOT'
                 ]
 }
 

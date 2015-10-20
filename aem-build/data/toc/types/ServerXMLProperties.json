@@ -1,4 +1,10 @@
-{"name":"Server XML","contentType":"application/xml",
+{
+	"name":"Server XML",
+	"templateName":"ServerXMLTemplate.tpl",
+	"contentType":"application/xml",
+	"entityType":"jvm",
+	"configFileName":"server.xml",
+	"relativeDir":"/conf",
 	"properties":[
 					{"name":"jmsStatusTopic", "required":"true"},
 					{"name":"jvmAjpPort", "required": "true"},

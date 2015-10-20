@@ -19,25 +19,26 @@ import java.util.Map;
  */
 public enum JvmState implements OperationalState {
 
-    JVM_NEW         ("NEW"),
-    JVM_INITIALIZING("INITIALIZING"),
-    JVM_INITIALIZED ("INITIALIZED"),
-    JVM_START       ("START SENT"),
-    JVM_STARTING    ("STARTING"),
-    JVM_STARTED     ("STARTED"),
-    JVM_STOP        ("STOP SENT"),
-    JVM_STOPPING    ("STOPPING"),
-    JVM_STOPPED     ("SHUTTING DOWN"),
-    JVM_DESTROYING  ("DESTROYING"),
-    JVM_DESTROYED   ("DESTROYED"),
-    JVM_UNKNOWN     ("UNKNOWN"),
-    JVM_STALE       ("NO HEARTBEAT"),
-    JVM_FAILED      ("FAILED"),
-    SVC_STOPPED     ("STOPPED")
+    JVM_NEW         ("NEW",_NOT_A_STARTED_STATE),
+    JVM_INITIALIZING("INITIALIZING",_IS_A_STARTED_STATE),
+    JVM_INITIALIZED ("INITIALIZED",_IS_A_STARTED_STATE),
+    JVM_START       ("START SENT",_IS_A_STARTED_STATE),
+    JVM_STARTING    ("STARTING",_IS_A_STARTED_STATE),
+    JVM_STARTED     ("STARTED",_IS_A_STARTED_STATE),
+    JVM_STOP        ("STOP SENT",_IS_A_STARTED_STATE),
+    JVM_STOPPING    ("STOPPING",_IS_A_STARTED_STATE),
+    JVM_STOPPED     ("SHUTTING DOWN",_IS_A_STARTED_STATE),
+    JVM_DESTROYING  ("DESTROYING",_IS_A_STARTED_STATE),
+    JVM_DESTROYED   ("DESTROYED",_IS_A_STARTED_STATE),
+    JVM_UNKNOWN     ("UNKNOWN",_NOT_A_STARTED_STATE),
+    JVM_STALE       ("NO HEARTBEAT",_NOT_A_STARTED_STATE),
+    JVM_FAILED      ("FAILED",_NOT_A_STARTED_STATE),
+    SVC_STOPPED     ("STOPPED",_NOT_A_STARTED_STATE),
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
-
+    private boolean isStartedState;
+    
     static {
         for (final JvmState state : values()) {
             LOOKUP_MAP.put(state.toPersistentString(), state);
@@ -56,6 +57,10 @@ public enum JvmState implements OperationalState {
     private JvmState(final String theStateName) {
         stateName = theStateName;
     }
+    private JvmState(final String theStateName, boolean theIsStartedFlag) {
+        stateName = theStateName;
+        this.isStartedState = theIsStartedFlag;
+    }
 
     @Override
     public String toStateString() {
@@ -65,6 +70,10 @@ public enum JvmState implements OperationalState {
     @Override
     public String toPersistentString() {
         return name();
+    }
+
+    public boolean isStartedState() {
+        return isStartedState;
     }
 
 }

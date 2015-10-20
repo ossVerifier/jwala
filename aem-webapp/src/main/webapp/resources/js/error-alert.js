@@ -18,10 +18,11 @@ $.extend({ errorAlert: function (message, dlgTitle, modal) {
                 }
             }
 
-            $("<div style='font-size:16px'></div>").dialog( {
+            $("<div style='font-size:14px'></div>").dialog( {
                 buttons: { "Ok": function () { $(this).dialog("close"); } },
                 close: function (event, ui) { $(this).remove(); },
-                resizable: false,
+                resizable: true,
+                width: 500,
                 title: dlgTitle || "ERROR",
                 modal: modal !== undefined ? modal : true,
                 open: function () {

@@ -1,9 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+
 import com.siemens.cto.aem.domain.model.app.Application;
-
-import javax.persistence.*;
-
 
 /**
  * An application is usually a web application stored in a war file
@@ -69,7 +77,7 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     public Long id;
-
+    
     /**
      * Relationship stored in app.group to allow operations across a group
      * BUT, this does mean that a JpaApplication represents a single
@@ -90,6 +98,9 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     private boolean secure;
 
     private boolean loadBalanceAcrossServers;
+
+    @Column(nullable = true, unique = false)
+    private String warName;
 
     public void setWarPath(String aWarPath) {
         warPath = aWarPath;
@@ -136,4 +147,11 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
+    public void setWarName(String warName) {
+        this.warName = warName;
+    }
+
+    public String getWarName() {
+        return warName;
+    }
 }

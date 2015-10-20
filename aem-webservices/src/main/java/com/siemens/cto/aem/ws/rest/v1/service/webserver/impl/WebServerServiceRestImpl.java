@@ -125,15 +125,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response generateConfig(final String aWebServerName, final Boolean withSsl) {
-
-        try {
-            String httpdConfStr = generateHttpdConfText(aWebServerName, withSsl);
-            return Response.ok(httpdConfStr).build();
-        } catch (TemplateNotFoundException e) {
-            throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
-                    e.getMessage(),
-                    e);
-        }
+        String httpdConfStr = generateHttpdConfText(aWebServerName, withSsl);
+        return Response.ok(httpdConfStr).build();
     }
 
     @Override
@@ -167,7 +160,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                         errorDetails);
             }
         } catch (CommandFailureException e) {
-            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e.getMessage());
+            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
             Map<String, String> errorDetails = new HashMap<>();
             errorDetails.put("webServerName", aWebServerName);
             return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
@@ -243,6 +236,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Context
     private MessageContext context;
 
+    /*
+     * access point for unit testing
+     */
+    void setMessageContext(MessageContext aContextForTesting){
+        context = aContextForTesting;
+    }
+
     @Override
     public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
@@ -309,7 +309,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response previewResourceTemplate(final String webServerName, final String groupName, String template) {
-        return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
+        try {
+            return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
+        } catch (RuntimeException rte) {
+            return  ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+        }
     }
 
 }

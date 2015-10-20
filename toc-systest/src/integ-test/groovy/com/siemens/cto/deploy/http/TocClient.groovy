@@ -122,6 +122,12 @@ class TocClient implements TocClientLegacy {
     String getWebServerConfig(String name) {
         return this.connectors.getClientForWebservers().getWebServerConfig(name);
     }
+    
+    @Override
+    public void deployJvmInstance(String jvmName) { 
+        this.connectors.getClientForJvm().deployJvmInstance(jvmName);
+    }
+    
 
     private interface TocClientLegacy {
         // Groups
@@ -134,6 +140,7 @@ class TocClient implements TocClientLegacy {
         int getOrCreateJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties);
         Map<String,Integer> getJvmIdsForGroupAndServer(String groupName, String hostName);
         void deleteJvm(int jvmId);
+        void deployJvmInstance(String jvmName);
         // WebApp
         int addWebApp(String contextPath, String appName);
         int getOrCreateWebApp(String contextPath, String appName);

@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -24,11 +25,20 @@ import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceService
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.toc.files.FileManager;
+import com.siemens.cto.toc.files.FilesConfiguration;
+import com.siemens.cto.toc.files.RepositoryService;
+import com.siemens.cto.toc.files.TocPath;
+import com.siemens.cto.toc.files.impl.FileManagerImpl;
+import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,9 +49,12 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -52,6 +65,12 @@ import static org.junit.Assert.assertEquals;
 @EnableTransactionManagement
 @Transactional
 public class ApplicationServiceImplIntegrationTest {
+
+    @Mock
+    private AemSshConfig aemSshConfig;
+
+    @Mock
+    private GroupService groupService;
 
     @Configuration
     static class CommonConfiguration {
@@ -103,6 +122,38 @@ public class ApplicationServiceImplIntegrationTest {
             return new ClientFactoryHelper();
         }
 
+        @Bean
+        public FilesConfiguration getFilesConfiguration() {
+            return new FilesConfiguration() {
+                @Override
+                public Path getConfiguredPath(TocPath webArchive) {
+                    // Implement this when the need arises...
+                    return null;
+                }
+
+                @Override
+                public void reload() {
+                    // Implement this when the need arises...
+                }
+            };
+        }
+
+        @Bean
+        public RepositoryService getFileSystemStorage() {
+            return new LocalFileSystemRepositoryServiceImpl();
+        }
+
+        @Bean
+        public ResourceTypeDeserializer getResourceTypeDeserializer() {
+            // Implement this when the need arises...
+            return null;
+        }
+
+        @Bean
+        public FileManager getFileManager() {
+            return new FileManagerImpl();
+        }
+
     }
     
     @Autowired
@@ -122,10 +173,19 @@ public class ApplicationServiceImplIntegrationTest {
     // @Autowired
     private ApplicationCommandService applicationCommandService;
 
+    @Autowired
+    private FileManager fileManager;
+
     @Before
-    public void setup() { 
+    public void setup() {
+        SshConfiguration mockSshConfig = mock(SshConfiguration.class);
+        aemSshConfig = mock(AemSshConfig.class);
+        groupService = mock(GroupService.class);
+        when(mockSshConfig.getUserName()).thenReturn("mockUser");
+        when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
         cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService,
-                                         clientFactoryHelper, applicationCommandService, null);
+                                         clientFactoryHelper, applicationCommandService, null, aemSshConfig,
+                                         groupService, fileManager, null, null);
     }
 
     /**

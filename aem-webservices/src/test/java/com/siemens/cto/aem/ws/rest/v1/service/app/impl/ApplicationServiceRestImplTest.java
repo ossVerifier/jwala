@@ -57,9 +57,9 @@ public class ApplicationServiceRestImplTest {
     private ApplicationServiceRest cut;
 
     Group group1 = new Group(Identifier.id(0L, Group.class), "");
-    Application application = new Application(Identifier.id(1L, Application.class), "","","", group1, true, true);
-    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "","D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war","", group1, true, true);
-    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "","","", group1, true, true);
+    Application application = new Application(Identifier.id(1L, Application.class), "","","", group1, true, true, "testWar.war");
+    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "","D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war","", group1, true, true, "testWar.war");
+    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "","","", group1, true, true, "testWar.war");
 
     List<Application> applications = new ArrayList<>(1);
     List<Application> applications2 = new ArrayList<>(2);

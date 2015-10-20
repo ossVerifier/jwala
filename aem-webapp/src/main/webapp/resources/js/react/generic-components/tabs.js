@@ -124,6 +124,21 @@ var TabsSwitcher = React.createClass({
 
     },
     onClick: function(index) {
+        if (this.props.active !== index) {
+            // TODO: Find another way of doing this without using an external static variable.
+            // Note: This component should never know about "unsaved changes". I think the better
+            //       approach is to have the active content tell the tab that it's ready to relinquish
+            //       control or not. Another solution is to use a tab component that does not refresh
+            //       their content every time they become active so as not to require processing of
+            //       unsaved changes.
+            if (MainArea.unsavedChanges === true) {
+                var ans = confirm("There are unsaved changes on the resource template. Are you sure you want to navigate away from the current tab ?");
+                if (!ans) {
+                    return;
+                }
+            }
+            MainArea.unsavedChanges = false;
+        }
         this.props.onTabClick(index);
     }
 });

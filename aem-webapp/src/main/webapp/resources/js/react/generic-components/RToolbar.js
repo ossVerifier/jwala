@@ -52,8 +52,6 @@ var RToolbarButton = React.createClass({
         this.setState({hover: false});
     },
     ajaxProcessDoneCallback: function() {
-        if (this.state.clicked) {
-            this.setState({clicked: false});
-        }
+        this.setState({clicked: false});
     }
 });

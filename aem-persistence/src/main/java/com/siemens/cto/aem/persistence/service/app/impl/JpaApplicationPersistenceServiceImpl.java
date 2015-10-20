@@ -25,12 +25,15 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application createApplication(final Event<CreateApplicationCommand> anAppToCreate, final String appContextTemplate) {
+    public Application createApplication(final Event<CreateApplicationCommand> anAppToCreate, final String appContextTemplate,
+                                         final String roleMappingPropertiesTemplate, String appPropertiesTemplate) {
         JpaGroup jpaGroup = groupCrudService.getGroup(anAppToCreate.getCommand().getGroupId());
         final JpaApplication jpaApp = applicationCrudService.createApplication(anAppToCreate, jpaGroup);
         final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
         final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
         applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate);
+        applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties", roleMappingPropertiesTemplate);
+        applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".properties", appPropertiesTemplate);
         return JpaAppBuilder.appFrom(jpaApp);
     }
 
@@ -59,8 +62,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
 
     @Override
     public Application updateWARPath(final Event<UploadWebArchiveCommand> anAppToUpdate, String warPath) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
+        final UploadWebArchiveCommand command = anAppToUpdate.getCommand();
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(command.getApplication().getId());
         jpaOriginal.setWarPath(warPath);
+        jpaOriginal.setWarName(command.getFilename());
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
 

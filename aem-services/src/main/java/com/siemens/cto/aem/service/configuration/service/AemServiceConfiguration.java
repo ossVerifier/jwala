@@ -167,6 +167,7 @@ public class AemServiceConfiguration {
                 fileManager,
                 jvmStateGateway,
                 factoryHelper,
+                getJvmStateService(),
                 aemSshConfig.getSshConfiguration());
     }
 
@@ -194,9 +195,14 @@ public class AemServiceConfiguration {
     public ApplicationService getApplicationService(final ClientFactoryHelper clientFactoryHelper,
                                                     final JvmPersistenceService jvmPersistenceService) {
         return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(),
-                                          persistenceServiceConfiguration.getApplicationPersistenceService(),
-                                          jvmPersistenceService,
-                                          clientFactoryHelper, null, null);
+                persistenceServiceConfiguration.getApplicationPersistenceService(),
+                jvmPersistenceService,
+                clientFactoryHelper,
+                null,
+                null,
+                aemSshConfig,
+                getGroupService(), 
+		fileManager, null, null);
     }
 
     @Bean

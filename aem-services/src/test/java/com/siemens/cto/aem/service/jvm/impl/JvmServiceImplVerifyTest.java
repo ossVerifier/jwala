@@ -1,5 +1,32 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.internal.verification.Times;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.client.MockClientHttpResponse;
+
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -12,6 +39,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
@@ -23,28 +51,9 @@ import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmStateGateway;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.client.MockClientHttpResponse;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
 
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
@@ -58,7 +67,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private SshConfiguration sshConfig;
     private RuntimeCommandBuilder rtCommandBuilder;
     private RuntimeCommand command;
+    private StateService<Jvm, JvmState> stateService;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setup() {
         jvmPersistenceService = mock(JvmPersistenceService.class);
@@ -68,11 +79,13 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         fileManager = mock(FileManager.class);
         factoryHelper = mock(ClientFactoryHelper.class);
         sshConfig = mock(SshConfiguration.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway, factoryHelper, sshConfig);
+        stateService = (StateService<Jvm, JvmState>)mock(StateService.class);
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway, factoryHelper, stateService, sshConfig);
         rtCommandBuilder = mock(RuntimeCommandBuilder.class);
         command = mock(RuntimeCommand.class);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testCreateValidate() {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
@@ -211,6 +224,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         return jvm;
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGenerateServerXmlConfig() {
         String testJvmName = "testjvm";
@@ -246,6 +260,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertTrue(isBadRequest);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGenerateContextXmlConfig() {
         String testJvmName = "testjvm";
@@ -281,6 +296,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertTrue(isBadRequest);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGenerateSetenvBatConfig() {
         String testJvmName = "testjvm";
@@ -336,15 +352,15 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(command.execute()).thenReturn(successReturnData);
         when(rtCommandBuilder.build()).thenReturn(command);
         when(factoryHelper.requestGet(any(URI.class))).thenReturn(new MockClientHttpResponse(new byte[]{}, HttpStatus.REQUEST_TIMEOUT));
-        boolean commandFailed = false;
-        ExecData result = null;
+//        boolean commandFailed = false;
+//        ExecData result = null;
 //        try {
 //            result = impl.secureCopyFile(jvm, rtCommandBuilder);
 //        } catch (CommandFailureException e) {
 //            commandFailed = true;
 //        }
-        assertNotNull(result);
-        assertEquals(new ExecReturnCode(0), result.getReturnCode());
+//        assertNotNull(result);
+//        assertEquals(new ExecReturnCode(0), result.getReturnCode());
     }
 
     @Test
@@ -380,4 +396,27 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         String result = impl.updateResourceTemplate(testJvmName, resourceTemplateName, template);
         assertEquals(template, result);
     }
+
+    @Test
+    public void testSecureCopyConfFile() throws CommandFailureException {
+        when(rtCommandBuilder.build()).thenReturn(command);
+        impl.secureCopyFile(rtCommandBuilder, "host", "src", "conf", "dest");
+        verify(rtCommandBuilder).setOperation(SCP_SCRIPT_NAME);
+        verify(rtCommandBuilder, new Times(2)).addParameter(anyString());
+        verify(rtCommandBuilder, new Times(2)).addCygwinPathParameter(anyString());
+        verify(sshConfig).getUserName();
+    }
+
+    @Test
+    public void testGenerateInvokeBat() {
+        final Jvm jvm = mock(Jvm.class);
+        final List<Jvm> jvms = new ArrayList<>();
+        jvms.add(jvm);
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvms);
+        when(jvmPersistenceService.getJvms()).thenReturn(jvms);
+        when(fileManager.getResourceTypeTemplate(anyString())).thenReturn("template contents");
+        final String result = impl.generateInvokeBat(anyString());
+        assertEquals("template contents", result);
+    }
+
 }

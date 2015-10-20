@@ -11,7 +11,7 @@ var ResourceAttrPane = React.createClass({
     },
     render: function() {
         if (this.state.attributes === null ) {
-            return <div className="attr-list ui-widget-content"><span>Please select a JVM, Web Server or Web Application...</span></div>;
+            return <div className="attr-list ui-widget-content" style={{padding: "2px 2px"}}><span>Please select a JVM, Web Server or Web Application...</span></div>;
         }
 
         var entity = this.state.attributes.rtreeListMetaData.entity ;
@@ -128,7 +128,7 @@ var WebAppTable = React.createClass({
     },
     render: function() {
         if (this.state.isCollapsed) {
-            return <div style={{cursor: "pointer"}} onClick={this.onClick}>{"+ ${webApps}"}</div>
+            return <div style={{cursor: "pointer"}} onClick={this.onClick}>{"+ ${apps}"}</div>
         }
 
         var reactAttributeElements = [];
@@ -138,7 +138,7 @@ var WebAppTable = React.createClass({
             for (attr in this.props.attributes[key]) {
                 if (typeof(this.props.attributes[key][attr]) !== "object") {
                     reactAttributeElements.push(React.createElement(Attribute,
-                                                        {entity: "app[" + webAppIdx + "]", key: attr + webAppIdx, property: attr, value: this.props.attributes[key][attr]}));
+                                                        {entity: "apps[" + webAppIdx + "]", key: attr + webAppIdx, property: attr, value: this.props.attributes[key][attr]}));
                 }
             }
             webAppIdx++;

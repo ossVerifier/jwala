@@ -18,6 +18,7 @@ public class Application {
     private boolean secure;
 
     private boolean loadBalanceAcrossServers;
+    private String warName;
 
     public Application(Identifier<Application> anId,
                        String aName,
@@ -25,7 +26,8 @@ public class Application {
                        String aWebAppContext,
                        Group aGroup,
                        boolean secure,
-                       boolean loadBalanceAcrossServers) {
+                       boolean loadBalanceAcrossServers,
+                       String warName) {
         group = aGroup;
         id = anId;
         webAppContext = aWebAppContext;
@@ -33,6 +35,7 @@ public class Application {
         name = aName;
         this.secure = secure;
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+        this.warName = warName;
     }
 
     public Group getGroup() {
@@ -91,4 +94,11 @@ public class Application {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
+    public String getWarName() {
+        return warName;
+    }
+
+    public void setWarName(String warName) {
+        this.warName = warName;
+    }
 }

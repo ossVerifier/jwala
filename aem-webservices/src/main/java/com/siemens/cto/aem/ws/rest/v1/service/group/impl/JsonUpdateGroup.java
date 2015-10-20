@@ -16,7 +16,6 @@ import java.io.IOException;
 
 @JsonDeserialize(using = JsonUpdateGroup.JsonUpdateGroupDeserializer.class)
 public class JsonUpdateGroup {
-
     private final String id;
     private final String name;
 
@@ -53,5 +52,13 @@ public class JsonUpdateGroup {
             return new JsonUpdateGroup(node.get("id").getTextValue(),
                                        node.get("name").getTextValue());
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
     }
 }

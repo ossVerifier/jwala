@@ -1,7 +1,25 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UploadAppTemplateCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
@@ -17,23 +35,6 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.MatrixParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
@@ -134,8 +135,10 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                         -1L,
                         data);
 
-                    return ResponseBuilder.created(service.uploadWebArchive(command,
-                                                                            aUser.getUser())); // early out on first attachment
+                    final Application application = service.uploadWebArchive(command, aUser.getUser());
+                    service.copyApplicationWarToGroupHosts(application, new RuntimeCommandBuilder());
+
+                    return ResponseBuilder.created(application); // early out on first attachment
                 } finally {
                     data.close();
                 }
@@ -261,6 +264,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
                                             final String template) {
-        return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
+        try {
+            return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
+        } catch (RuntimeException rte) {
+            return  ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+        }
     }
 }
