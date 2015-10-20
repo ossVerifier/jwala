@@ -1,13 +1,5 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.service.state.StateNotificationConsumer;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +9,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.jms.JMSException;
+
+import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
+import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.service.state.StateNotificationConsumer;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+
 public abstract class AbstractStateNotificationService implements StateNotificationService {
 
     private final StateNotificationConsumerBuilder consumerBuilder;
@@ -24,12 +26,11 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     private final Lock pruneLock;
 
     protected AbstractStateNotificationService(final StateNotificationConsumerBuilder theConsumerBuilder) {
-        this(theConsumerBuilder,
-             Collections.<StateNotificationConsumerId, StateNotificationConsumer>emptyMap());
+        this(theConsumerBuilder, Collections.<StateNotificationConsumerId, StateNotificationConsumer> emptyMap());
     }
 
     protected AbstractStateNotificationService(final StateNotificationConsumerBuilder theConsumerBuilder,
-                                               final Map<StateNotificationConsumerId, StateNotificationConsumer> someConsumers) {
+            final Map<StateNotificationConsumerId, StateNotificationConsumer> someConsumers) {
         consumerBuilder = theConsumerBuilder;
         registeredConsumers = new ConcurrentHashMap<>(someConsumers);
         pruneLock = new ReentrantLock();
@@ -56,26 +57,41 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     }
 
     @Override
-    public List<CurrentState<?,?>> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
-                                                                             final TimeRemainingCalculator aTimeRemaining) {
+    public List<CurrentState<?, ?>> pollUpdatedStates(final StateNotificationConsumerId aConsumerId,
+            final TimeRemainingCalculator aTimeRemaining) throws JMSException {
         final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
 
         if (consumer != null) {
-            final List<CurrentState<?,?>> notifications = consumer.getNotifications(aTimeRemaining);
+            final List<CurrentState<?, ?>> notifications = consumer.getNotifications(aTimeRemaining);
             return notifications;
         }
 
-        return Collections.<CurrentState<?,?>>emptyList();
+        return Collections.<CurrentState<?, ?>> emptyList();
     }
 
     @Override
-    public CurrentState<?,?> pollUpdatedState(final StateNotificationConsumerId aConsumerId) {
+    public CurrentState<?, ?> pollUpdatedState(final StateNotificationConsumerId aConsumerId) throws JMSException {
+
         final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
 
-        if (consumer != null) {
-            return consumer.blockingGetNotification();
+        try {
+            if (consumer != null) {
+                return consumer.blockingGetNotification();
+            }
+        } catch (JMSException e) {
+            // Try to create a new consumer
+            try {
+                StateNotificationConsumer newConsumer = createConsumer();
+                CurrentState<?, ?> ret = newConsumer.blockingGetNotification();
+                // If we get here we did not throw an error on the
+                // blockinGetNotification call, so stick this consumer
+                // in the map.
+                registeredConsumers.put(aConsumerId, newConsumer);
+                return ret;
+            } catch (JMSException ex) {
+                throw ex;
+            }
         }
-        
         return null;
     }
 
@@ -99,9 +115,11 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     protected void prune() {
         if (pruneLock.tryLock()) {
             try {
-                final Iterator<Map.Entry<StateNotificationConsumerId, StateNotificationConsumer>> candidates = registeredConsumers.entrySet().iterator();
+                final Iterator<Map.Entry<StateNotificationConsumerId, StateNotificationConsumer>> candidates =
+                        registeredConsumers.entrySet().iterator();
                 while (candidates.hasNext()) {
-                    final Map.Entry<StateNotificationConsumerId, StateNotificationConsumer> candidate = candidates.next();
+                    final Map.Entry<StateNotificationConsumerId, StateNotificationConsumer> candidate =
+                            candidates.next();
                     final StateNotificationConsumer candidateConsumer = candidate.getValue();
                     if (candidateConsumer.isStale()) {
                         candidates.remove();

@@ -1,14 +1,16 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jms.JMSException;
+
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemaining;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
 
@@ -18,9 +20,8 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
     private volatile long lastAccessTime;
     private volatile boolean isClosed;
 
-    protected AbstractStateNotificationConsumerImpl(final Stale theStale,
-                                                    final TimeDuration theDefaultPollDuration,
-                                                    final long theLastAccessTime) {
+    protected AbstractStateNotificationConsumerImpl(final Stale theStale, final TimeDuration theDefaultPollDuration,
+            final long theLastAccessTime) {
         stale = theStale;
         defaultPollDuration = theDefaultPollDuration;
         lastAccessTime = theLastAccessTime;
@@ -45,22 +46,23 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
     }
 
     @Override
-    public CurrentState<?,?> blockingGetNotification() {
+    public CurrentState<?, ?> blockingGetNotification() throws JMSException {
         updateLastAccessTime();
-        
+
         return getNotificationsHelper(defaultPollDuration);
     }
 
     @Override
-    public List<CurrentState<?,?>> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator) {
+    public List<CurrentState<?, ?>> getNotifications(final TimeRemainingCalculator aRequestedTimeoutCalculator)
+            throws JMSException {
         updateLastAccessTime();
 
-        final List<CurrentState<?,?>> notifications = new ArrayList<>();
+        final List<CurrentState<?, ?>> notifications = new ArrayList<>();
 
         TimeRemainingCalculator calculator = new TimeRemainingCalculator(defaultPollDuration);
         TimeRemaining timeRemaining;
-        while ( (timeRemaining = calculator.getTimeRemaining()).isTimeRemaining()) {
-            final CurrentState<?,?> notification = getNotificationsHelper(timeRemaining.getDuration());
+        while ((timeRemaining = calculator.getTimeRemaining()).isTimeRemaining()) {
+            final CurrentState<?, ?> notification = getNotificationsHelper(timeRemaining.getDuration());
             if (notification != null) {
                 notifications.add(notification);
                 calculator = aRequestedTimeoutCalculator;
@@ -80,5 +82,5 @@ public abstract class AbstractStateNotificationConsumerImpl implements StateNoti
 
     protected abstract void closeHelper();
 
-    protected abstract CurrentState<?,?> getNotificationsHelper(final TimeDuration someTimeLeft);
+    protected abstract CurrentState<?, ?> getNotificationsHelper(final TimeDuration someTimeLeft) throws JMSException;
 }

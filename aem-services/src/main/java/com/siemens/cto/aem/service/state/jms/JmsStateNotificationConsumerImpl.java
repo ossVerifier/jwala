@@ -1,5 +1,16 @@
 package com.siemens.cto.aem.service.state.jms;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -9,48 +20,33 @@ import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.impl.AbstractStateNotificationConsumerImpl;
 import com.siemens.cto.aem.service.state.jms.sender.CurrentStateExtractorMap;
 import com.siemens.cto.aem.service.state.jms.sender.message.CurrentStateMessageExtractor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
+public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationConsumerImpl implements
+        StateNotificationConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JmsStateNotificationConsumerImpl.class);
 
     private final JmsPackage jmsPackage;
     private final Map<StateType, CurrentStateMessageExtractor> extractors;
 
-    public JmsStateNotificationConsumerImpl(final JmsPackage theJmsPackage,
-                                            final Stale theStale,
-                                            final TimeDuration theDefaultPollDuration) {
-        this(theJmsPackage,
-             theStale,
-             theDefaultPollDuration,
-             System.currentTimeMillis(),
-             CurrentStateExtractorMap.DEFAULT.getMap());
+    public JmsStateNotificationConsumerImpl(final JmsPackage theJmsPackage, final Stale theStale,
+            final TimeDuration theDefaultPollDuration) {
+        this(theJmsPackage, theStale, theDefaultPollDuration, System.currentTimeMillis(),
+                CurrentStateExtractorMap.DEFAULT.getMap());
     }
 
-    JmsStateNotificationConsumerImpl(final JmsPackage theJmsPackage,
-                                     final Stale theStale,
-                                     final TimeDuration theDefaultPollDuration,
-                                     final long theLastAccessTime,
-                                     final Map<StateType, CurrentStateMessageExtractor> theExtractors) {
-        super(theStale,
-              theDefaultPollDuration,
-              theLastAccessTime);
+    JmsStateNotificationConsumerImpl(final JmsPackage theJmsPackage, final Stale theStale,
+            final TimeDuration theDefaultPollDuration, final long theLastAccessTime,
+            final Map<StateType, CurrentStateMessageExtractor> theExtractors) {
+        super(theStale, theDefaultPollDuration, theLastAccessTime);
         jmsPackage = theJmsPackage;
         extractors = new EnumMap<>(theExtractors);
     }
 
     @Override
     public void addNotification(final CurrentState aNotification) {
-        throw new UnsupportedOperationException("This method should not be called because the topic subscription handles notifications.");
+        throw new UnsupportedOperationException(
+                "This method should not be called because the topic subscription handles notifications.");
     }
 
     @Override
@@ -59,11 +55,14 @@ public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationC
     }
 
     @Override
-    protected CurrentState getNotificationsHelper(final TimeDuration someTimeLeft) {
+    protected CurrentState getNotificationsHelper(final TimeDuration someTimeLeft) throws JMSException {
         try {
             return read(someTimeLeft.valueOf(TimeUnit.MILLISECONDS));
         } catch (final JMSException | RuntimeException e) {
             LOGGER.info("Exception occurred while consuming a JVM State Notification", e);
+            if (e instanceof javax.jms.IllegalStateException) {
+                throw e;
+            }
         }
         return null;
     }
@@ -74,9 +73,10 @@ public class JmsStateNotificationConsumerImpl extends AbstractStateNotificationC
 
     protected CurrentState extractFromMessage(final Message aMessage) throws JMSException {
         if (aMessage instanceof MapMessage) {
-            return extractFromMessageHelper((MapMessage)aMessage);
+            return extractFromMessageHelper((MapMessage) aMessage);
         } else {
-            throw new JMSException("Unsupported JMS message type :" + aMessage.getClass() + " with message : {" + aMessage.toString() + "}");
+            throw new JMSException("Unsupported JMS message type :" + aMessage.getClass() + " with message : {"
+                    + aMessage.toString() + "}");
         }
     }
 

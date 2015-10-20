@@ -1,9 +1,11 @@
 package com.siemens.cto.aem.service.state;
 
+import java.util.List;
+
+import javax.jms.JMSException;
+
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-
-import java.util.List;
 
 public interface StateNotificationConsumer {
 
@@ -17,14 +19,16 @@ public interface StateNotificationConsumer {
 
     /**
      * Return states sent within a duration
+     * 
      * @param someTime
      */
-    List<CurrentState<?, ?>> getNotifications(final TimeRemainingCalculator someTime);
-    
+    List<CurrentState<?, ?>> getNotifications(final TimeRemainingCalculator someTime) throws JMSException;
+
     /**
-     * Return a state update 
-     * Uses the default polling duration, likely 30s
+     * Return a state update Uses the default polling duration, likely
+     * 30s
+     * 
      * @return null or a state update.
      */
-    CurrentState<?, ?> blockingGetNotification();
+    CurrentState<?, ?> blockingGetNotification() throws JMSException;
 }

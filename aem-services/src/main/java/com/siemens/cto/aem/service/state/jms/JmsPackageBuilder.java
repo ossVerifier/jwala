@@ -1,9 +1,17 @@
 package com.siemens.cto.aem.service.state.jms;
 
-import javax.jms.*;
-import java.lang.IllegalStateException;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JmsPackageBuilder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JmsPackageBuilder.class);
 
     private ConnectionFactory connectionFactory;
     private Destination destination;
@@ -41,13 +49,11 @@ public class JmsPackageBuilder {
             final Session session = buildSession(connection);
             final MessageConsumer consumer = buildConsumer(session);
             connection.start();
-            return new JmsPackage(connection,
-                                  session,
-                                  consumer);
+            return new JmsPackage(connection, session, consumer);
         } catch (final JMSException jmse) {
-            throw new IllegalStateException("Unable to construct the necessary JMS instances",
-                                            jmse);
+            throw new IllegalStateException("Unable to construct the necessary JMS instances", jmse);
         }
+
     }
 
     protected Connection buildConnection() throws JMSException {
@@ -55,8 +61,7 @@ public class JmsPackageBuilder {
     }
 
     protected Session buildSession(final Connection aConnection) throws JMSException {
-        return aConnection.createSession(transacted,
-                                         acknowledgeMode);
+        return aConnection.createSession(transacted, acknowledgeMode);
     }
 
     protected MessageConsumer buildConsumer(final Session aSession) throws JMSException {
