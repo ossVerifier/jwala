@@ -23,9 +23,9 @@ var stateService = function() {
     };
 
     var sendToDataSinkThunk = function(dataSink) {
-        return function(data) {
-            dataSink.consume(data.applicationResponseContent);
-            return data.applicationResponseContent;
+        return function(response) {
+            dataSink.consume(response.applicationResponseContent);
+            return response.applicationResponseContent;
         }
     };
 
@@ -55,6 +55,11 @@ var stateService = function() {
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
                                         .caught(function(response) {
+                                                    if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
+                                                        alert("The session has expired! You will be redirected to the login page.");
+                                                        window.location.href = "login";
+                                                        return null;
+                                                    }
                                                     dataSink.err(response);
                                                     return Promise.delay(5000).then(recurseThunk(timeout, dataSink));
                                                  });
