@@ -152,7 +152,8 @@ var GroupOperations = React.createClass({
                             if (mountingNode.length > 0) {
                                 var status = {stateString: newWebServerStates[i].stateString,
                                               asOf: newWebServerStates[i].asOf,
-                                              message: newWebServerStates[i].message};
+                                              message: newWebServerStates[i].message,
+                                              from: webServer.name};
                                 GroupOperations.pushCommandStatus(webServer.groupId.id, status);
                                 React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[webServer.groupId.id]}
                                               closeCallback={
@@ -190,7 +191,8 @@ var GroupOperations = React.createClass({
                             if (mountingNode.length > 0) {
                                 var status = {stateString: newJvmStates[i].stateString,
                                               asOf: newJvmStates[i].asOf,
-                                              message: newJvmStates[i].message};
+                                              message: newJvmStates[i].message,
+                                              from: jvm.name};
                                 GroupOperations.pushCommandStatus(jvm.groupId.id, status);
                                 React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[jvm.groupId.id]}
                                               closeCallback={
@@ -1227,11 +1229,19 @@ var CommandStatusWidget = React.createClass({
         return {xBtnHover: false};
     },
     render: function() {
+        var self = this;
         var statusRows = [];
         this.props.statusDetails.forEach(function(status) {
             var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
-            statusRows.push(<tr><td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                <td className="command-status-td">{errMsg[0]}</td></tr>);
+            if (errMsg[1]) {
+                statusRows.push(<tr><td className="command-status-td">{status.from}</td>
+                                                    <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                                    <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={self.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
+            } else {
+                statusRows.push(<tr><td className="command-status-td">{status.from}</td>
+                                    <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                    <td className="command-status-td">{errMsg[0]}</td></tr>);
+            }
         });
 
         var xBtnHoverClass = this.state.xBtnHover ? "hover" : "";
@@ -1249,6 +1259,10 @@ var CommandStatusWidget = React.createClass({
                     </div>
                 </div>;
 
+    },
+    showDetails: function(msg) {
+        var myWindow = window.open("", "Error Details", "width=500, height=500");
+        myWindow.document.write(msg);
     },
     onXBtnClick: function() {
         this.props.closeCallback();

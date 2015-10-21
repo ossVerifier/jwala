@@ -242,7 +242,7 @@ var groupOperationsHelper = function(){
                 // if the group is opened or not. TODO: Check on this!
                 webServer.groups.forEach(
                     function(group) {
-                        result.push({groupId: group.id, webServerId: webServer.id, state: webServer.state})
+                        result.push({groupId: group.id, webServerId: webServer.id, state: webServer.state, name: webServer.name})
                     });
             });
             return result;
@@ -297,7 +297,8 @@ var groupOperationsHelper = function(){
             jvms.forEach(function(jvm) {
                 jvm.groups.forEach(function(group) { result.push( { groupId: group.id,
                                                                     jvmId: jvm.id,
-                                                                    state: jvm.state
+                                                                    state: jvm.state,
+                                                                    name: jvm.jvmName
                                                                   })});
             });
             return result;
