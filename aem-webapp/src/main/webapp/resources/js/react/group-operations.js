@@ -274,7 +274,13 @@ var GroupOperations = React.createClass({
         commandStatusMap: {},
         pushCommandStatus: function(groupId, status) {
             var statusArray = GroupOperations.commandStatusMap[groupId] === undefined ? [] : GroupOperations.commandStatusMap[groupId];
+
+            // only keep the latest 30 messages
+            if (statusArray.length >= 30) {
+                statusArray.splice(0, 1);
+            }
             statusArray.push(status);
+
             GroupOperations.commandStatusMap[groupId] = statusArray;
         },
         UNKNOWN_STATE: "UNKNOWN",
