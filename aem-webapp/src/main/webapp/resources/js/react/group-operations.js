@@ -56,10 +56,11 @@ var GroupOperations = React.createClass({
                                                            []));
     },
     updateStateData: function(newStates) {
-
         if (this.state.pollError) {
-            this.dataSink.stop();
-            location.reload(true); // TODO: Refactor by just reloading the states.
+            this.fetchCurrentGroupStates();
+            this.fetchCurrentWebServerStates();
+            this.fetchCurrentJvmStates();
+            this.setState({pollError: false});
             return;
         }
 
@@ -81,7 +82,6 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData(webServers);
         this.updateJvmStateData(jvms);
     },
-
     statePollingErrorHandler: function(response) {
         this.setState({pollError: true});
         for (var key in GroupOperations.groupStatusWidgetMap) {
@@ -120,7 +120,6 @@ var GroupOperations = React.createClass({
             }
         }
     },
-
     updateGroupsStateData: function(newGroupStates) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
@@ -219,8 +218,21 @@ var GroupOperations = React.createClass({
     },
     fetchCurrentGroupStates: function() {
         var self = this;
-        this.props.stateService.getCurrentGroupStates().then(function(data) { self.updateGroupsStateData(data.applicationResponseContent);})
-                                                       .caught(function(e) {console.log(e);});
+        this.props.stateService.getCurrentGroupStates()
+            .then(function(data) {self.updateGroupsStateData(data.applicationResponseContent);})
+            .caught(function(e) {console.log(e);});
+    },
+    fetchCurrentWebServerStates: function() {
+        var self = this;
+        this.props.stateService.getCurrentWebServerStates()
+            .then(function(data) {self.updateWebServerStateData(data.applicationResponseContent);})
+            .caught(function(e) {console.log(e);});
+    },
+    fetchCurrentJvmStates: function() {
+        var self = this;
+        this.props.stateService.getCurrentJvmStates()
+            .then(function(data) {self.updateJvmStateData(data.applicationResponseContent);})
+            .caught(function(e) {console.log(e);});
     },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
