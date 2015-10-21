@@ -289,6 +289,9 @@ var groupOperationsHelper = function(){
             return false;
         },
 
+        /**
+         * Transform to a wrapper {groupId, jvmIdm, state}.
+         */
         getJvmStatesByGroupIdAndJvmId: function(jvms) {
             var result = [];
             jvms.forEach(function(jvm) {
