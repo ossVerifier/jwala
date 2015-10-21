@@ -16,7 +16,8 @@ var GroupOperations = React.createClass({
             webServers: [],
             webServerStates: [],
             jvms: [],
-            jvmStates: []
+            jvmStates: [],
+            pollError: false
         };
     },
     render: function() {
@@ -54,8 +55,14 @@ var GroupOperations = React.createClass({
                                                            this.state.jvmStates,
                                                            []));
     },
-
     updateStateData: function(newStates) {
+
+        if (this.state.pollError) {
+            this.dataSink.stop();
+            location.reload(true); // TODO: Refactor by just reloading the states.
+            return;
+        }
+
         var groups = [];
         var webServers = [];
         var jvms = [];
@@ -74,6 +81,46 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData(webServers);
         this.updateJvmStateData(jvms);
     },
+
+    statePollingErrorHandler: function(response) {
+        this.setState({pollError: true});
+        for (var key in GroupOperations.groupStatusWidgetMap) {
+            var groupStatusWidget = GroupOperations.groupStatusWidgetMap[key];
+            if (groupStatusWidget !== undefined) {
+                // Can't afford to slip or else the polling stops
+                try {
+                    groupStatusWidget.setStatus("POLLING ERROR!",  new Date(), response.responseJSON.applicationResponseContent);
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+
+        for (var key in GroupOperations.jvmStatusWidgetMap) {
+            var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap[key];
+            if (jvmStatusWidget !== undefined) {
+                // Can't afford to slip or else the polling stops
+                try {
+                    jvmStatusWidget.setStatus("UNKNOWN",  new Date(), "");
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+
+        for (var key in GroupOperations.webServerStatusWidgetMap) {
+            var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap[key];
+            if (webServerStatusWidget !== undefined) {
+                // Can't afford to slip or else the polling stops
+                try {
+                    webServerStatusWidget.setStatus("UNKNOWN",  new Date(), "");
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+    },
+
     updateGroupsStateData: function(newGroupStates) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
@@ -107,7 +154,6 @@ var GroupOperations = React.createClass({
                                               asOf: newWebServerStates[i].asOf,
                                               message: newWebServerStates[i].message};
                                 GroupOperations.pushCommandStatus(webServer.groupId.id, status);
-                                console.log(GroupOperations.commandStatusMap[webServer.groupId.id]);
                                 React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[webServer.groupId.id]}
                                               closeCallback={
                                                   function(){
@@ -128,7 +174,11 @@ var GroupOperations = React.createClass({
     },
     updateJvmStateData: function(newJvmStates) {
         var self = this;
+
+
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
+
+
         jvmsToUpdate.forEach(function(jvm) {
             var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
             if (jvmStatusWidget !== undefined) {
@@ -142,7 +192,6 @@ var GroupOperations = React.createClass({
                                               asOf: newJvmStates[i].asOf,
                                               message: newJvmStates[i].message};
                                 GroupOperations.pushCommandStatus(jvm.groupId.id, status);
-                                console.log(GroupOperations.commandStatusMap[jvm.groupId.id]);
                                 React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[jvm.groupId.id]}
                                               closeCallback={
                                                   function(){
@@ -165,7 +214,7 @@ var GroupOperations = React.createClass({
         var self = this;
         this.dataSink = this.props.stateService.createDataSink(function(data) {
                                                                                     self.updateStateData(data);
-                                                                              });
+                                                                              }, this.statePollingErrorHandler);
         this.props.stateService.pollForUpdates(this.props.statePollTimeout, this.dataSink);
     },
     fetchCurrentGroupStates: function() {
@@ -1029,7 +1078,7 @@ var StatusWidget = React.createClass({
 
         var style = this.state.status === "STOPPED" ? {color: "#808080"} : {};
         return <div className="status-widget-container">
-                   <div ref="errorDlg" className="dataTables_wrapper"/>
+                   <div ref="errorDlg" className="react-dialog-container"/>
                    <span className="status-label" style={style}>{this.state.status}</span>
                    {errorBtn}
                </div>;

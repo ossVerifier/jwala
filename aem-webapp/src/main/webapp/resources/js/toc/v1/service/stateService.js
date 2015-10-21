@@ -54,19 +54,20 @@ var stateService = function() {
                 return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json")
                                         .then(sendToDataSinkThunk(dataSink))
                                         .then(recurseThunk(timeout, dataSink))
-                                        .caught(function(e) {
-                                                    console.log(e);
-                                                    return Promise.delay(30000).then(recurseThunk(timeout, dataSink));
+                                        .caught(function(response) {
+                                                    dataSink.err(response);
+                                                    return Promise.delay(5000).then(recurseThunk(timeout, dataSink));
                                                  });
 
             }
         },
-        createDataSink : function(consumeFunc) {
+        createDataSink : function(consumeFunc, errHandlerFunc) {
             var shouldKeepGoing = true;
             return {
                 shouldContinue: function() { return shouldKeepGoing;},
                 stop: function() { shouldKeepGoing = false;},
-                consume: consumeFunc
+                consume: consumeFunc,
+                err: errHandlerFunc
             };
         },
         getCurrentJvmStates : function(ids) {
