@@ -75,7 +75,7 @@ public class WebServerStateSetterWorker {
                 response = clientFactoryHelper.requestGet(webServer.getStatusUri());
                 LOGGER.info(">>> Response = {} from web server {}", response.getStatusCode(), webServer.getId().getId());
                 if (response.getStatusCode() == HttpStatus.OK) {
-                    setState(webServer, WebServerReachableState.WS_REACHABLE, null);
+                    setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
                 } else {
                     setState(webServer, WebServerReachableState.WS_FAILED,
                              "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
@@ -83,10 +83,14 @@ public class WebServerStateSetterWorker {
                 }
             } catch (IOException ioe) {
                 LOGGER.info(ioe.getMessage(), ioe);
-                setState(webServer, WebServerReachableState.WS_UNREACHABLE, null);
+                setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
             } catch (RuntimeException rte) {
                 LOGGER.error(rte.getMessage(), rte);
-                setState(webServer, WebServerReachableState.WS_FAILED, ExceptionUtils.getStackTrace(rte));
+                String msg = ExceptionUtils.getStackTrace(rte);
+                if (msg == null) {
+                    msg = rte.getMessage();
+                }
+                setState(webServer, WebServerReachableState.WS_FAILED, msg);
             } finally {
                 if (response != null) {
                     response.close();
