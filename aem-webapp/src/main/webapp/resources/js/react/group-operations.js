@@ -34,7 +34,8 @@ var GroupOperations = React.createClass({
                                                               webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
-                                                              stateService={this.props.stateService}/>
+                                                              stateService={this.props.stateService}
+                                                              pollError={this.state.pollError}/>
                                 </div>
                             </td>
                         </tr>
@@ -89,7 +90,7 @@ var GroupOperations = React.createClass({
             if (groupStatusWidget !== undefined) {
                 // Can't afford to slip or else the polling stops
                 try {
-                    groupStatusWidget.setStatus("POLLING ERROR!",  new Date(), response.responseJSON.applicationResponseContent);
+                    groupStatusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(), response.responseJSON.applicationResponseContent);
                 } catch (e) {
                     console.log(e);
                 }
@@ -101,7 +102,7 @@ var GroupOperations = React.createClass({
             if (jvmStatusWidget !== undefined) {
                 // Can't afford to slip or else the polling stops
                 try {
-                    jvmStatusWidget.setStatus("UNKNOWN",  new Date(), "");
+                    jvmStatusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
                 } catch (e) {
                     console.log(e);
                 }
@@ -113,7 +114,7 @@ var GroupOperations = React.createClass({
             if (webServerStatusWidget !== undefined) {
                 // Can't afford to slip or else the polling stops
                 try {
-                    webServerStatusWidget.setStatus("UNKNOWN",  new Date(), "");
+                    webServerStatusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
                 } catch (e) {
                     console.log(e);
                 }
@@ -273,7 +274,9 @@ var GroupOperations = React.createClass({
             var statusArray = GroupOperations.commandStatusMap[groupId] === undefined ? [] : GroupOperations.commandStatusMap[groupId];
             statusArray.push(status);
             GroupOperations.commandStatusMap[groupId] = statusArray;
-        }
+        },
+        UNKNOWN_STATE: "UNKNOWN",
+        POLL_ERR_STATE: "POLLING ERROR!"
     }
 });
 
@@ -565,25 +568,25 @@ var GroupOperationsDataTable = React.createClass({
                       var statusWidget = this;
                       self.props.stateService.getCurrentGroupStates(oData.id.id)
                                              .then(function(data) {
-                                                      statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                             data.applicationResponseContent[0].asOf,
-                                                                             data.applicationResponseContent[0].message);
+                                                      if (self.props.pollError) {
+                                                          statusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(),
+                                                                    response.responseJSON.applicationResponseContent);
+                                                      } else {
+                                                          statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                                 data.applicationResponseContent[0].asOf,
+                                                                                 data.applicationResponseContent[0].message);
+                                                      }
                                                    });
 
                   });
       }.bind(this);
    },
-
-
-
-    renderWebServerGenerateBtn: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+   renderWebServerGenerateBtn: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
         var self= this;
         aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
             return React.render(<a>Testing...</a>, nTd);
     }.bind(this);
    },
-
-
    renderWebServerControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
@@ -594,7 +597,6 @@ var GroupOperationsDataTable = React.createClass({
                    });
        }.bind(this);
    },
-
    renderWebServerStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
@@ -607,9 +609,13 @@ var GroupOperationsDataTable = React.createClass({
                        var statusWidget = this;
                        self.props.stateService.getCurrentWebServerStates(oData.id.id)
                                               .then(function(data) {
-                                                       statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                              data.applicationResponseContent[0].asOf,
-                                                                              data.applicationResponseContent[0].message);
+                                                        if (self.props.pollError) {
+                                                            statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
+                                                        } else {
+                                                            statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                                   data.applicationResponseContent[0].asOf,
+                                                                                   data.applicationResponseContent[0].message);
+                                                        }
                                                     });
 
                    });
@@ -627,11 +633,14 @@ var GroupOperationsDataTable = React.createClass({
                         var statusWidget = this;
                         self.props.stateService.getCurrentJvmStates(oData.id.id)
                                                .then(function(data) {
-                                                        statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                               data.applicationResponseContent[0].asOf,
-                                                                               data.applicationResponseContent[0].message);
-                                                     });
-
+                                                        if (self.props.pollError) {
+                                                            statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
+                                                        } else {
+                                                            statusWidget.setStatus(data.applicationResponseContent[0].stateString,
+                                                                                   data.applicationResponseContent[0].asOf,
+                                                                                   data.applicationResponseContent[0].message);
+                                                        }
+                                                    });
                     });
         }.bind(this);
    },
@@ -1055,19 +1064,6 @@ var GroupOperationsDataTable = React.createClass({
                                                           webServerControlService.stopWebServer,
                                                           cancelCallback,
                                                           "Web Server");
-    },
-    getStateForGroup: function(mData, type, fullData) {
-        var groupId = fullData.id.id;
-
-        if (this.groupsById !== undefined && this.groupsById[groupId] !== undefined) {
-            if (this.groupsById[groupId].state !== undefined) {
-                $(".group-state-" + groupId).html(this.groupsById[groupId].state.stateString);
-            } else  {
-                $(".group-state-" + groupId).html("UNKNOWN");
-            }
-        }
-
-        return "<span class='group-state-" + groupId + "'/>"
     }
 });
 
