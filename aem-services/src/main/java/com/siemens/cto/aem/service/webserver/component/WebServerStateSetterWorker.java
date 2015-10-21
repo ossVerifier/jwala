@@ -77,7 +77,7 @@ public class WebServerStateSetterWorker {
                 if (response.getStatusCode() == HttpStatus.OK) {
                     setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
                 } else {
-                    setState(webServer, WebServerReachableState.WS_FAILED,
+                    setState(webServer, WebServerReachableState.WS_UNREACHABLE,
                              "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
                              response.getStatusCode() + "'");
                 }
@@ -90,7 +90,7 @@ public class WebServerStateSetterWorker {
                 if (msg == null) {
                     msg = rte.getMessage();
                 }
-                setState(webServer, WebServerReachableState.WS_FAILED, msg);
+                setState(webServer, WebServerReachableState.WS_UNKNOWN, msg);
             } finally {
                 if (response != null) {
                     response.close();
