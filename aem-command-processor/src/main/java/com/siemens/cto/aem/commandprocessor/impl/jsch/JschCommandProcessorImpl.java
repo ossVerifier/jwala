@@ -1,6 +1,20 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
-import com.jcraft.jsch.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
@@ -8,14 +22,6 @@ import com.siemens.cto.aem.domain.model.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
@@ -28,8 +34,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     private final OutputStream localInput;
     private final RemoteExecCommand remoteCommand;
 
-    public JschCommandProcessorImpl(final JSch theJsch,
-                                    final RemoteExecCommand theCommand) throws RemoteCommandFailureException {
+    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand)
+            throws RemoteCommandFailureException {
 
         try {
             logger.debug("before executing command {}", theCommand);
@@ -110,10 +116,9 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         return new ExecReturnCode(returnCode);
     }
 
-    private Session prepareSession(final JSch aJsch,
-                                   final RemoteSystemConnection someConnectionInfo) throws JSchException {
-        return aJsch.getSession(someConnectionInfo.getUser(),
-                someConnectionInfo.getHost(),
+    private Session prepareSession(final JSch aJsch, final RemoteSystemConnection someConnectionInfo)
+            throws JSchException {
+        return aJsch.getSession(someConnectionInfo.getUser(), someConnectionInfo.getHost(),
                 someConnectionInfo.getPort());
     }
 }
