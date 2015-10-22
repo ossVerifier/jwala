@@ -19,7 +19,7 @@ var groupService = {
                                      errorCallback);
     },
 	deleteGroup: function(name, caughtCallback) {
-	    return serviceFoundation.del("v1.0/groups/" + encodeURI(name), "json", caughtCallback);
+	    return serviceFoundation.del("v1.0/groups/" + encodeURI(name) + "?byName=true", "json", caughtCallback);
 	},
 	getGroup: function(idOrName, responseCallback, byName) {
 	    var queryString = "";
