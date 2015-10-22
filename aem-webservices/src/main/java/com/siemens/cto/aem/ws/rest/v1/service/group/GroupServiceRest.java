@@ -40,8 +40,9 @@ public interface GroupServiceRest {
                          @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
-    @Path("/{name}")
-    Response removeGroup(@PathParam("name") String name);
+    @Path("/{groupIdOrName}")
+    Response removeGroup(@PathParam("groupIdOrName") String name,
+                         @QueryParam("byName") @DefaultValue("false") boolean byName);
 
     @POST
     @Path("/{groupId}/jvms")

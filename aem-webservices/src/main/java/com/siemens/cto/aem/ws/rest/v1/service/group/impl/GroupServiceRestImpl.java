@@ -121,9 +121,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response removeGroup(final String name) {
-        LOGGER.debug("Delete Group requested: {}", name);
-        groupService.removeGroup(name);
+    public Response removeGroup(final String name, final boolean byName) {
+        LOGGER.debug("Delete Group requested: {} byName={}", name, byName);
+        if (byName) {
+            groupService.removeGroup(name);
+        } else {
+            groupService.removeGroup(new Identifier<Group>(name));
+        }
         return ResponseBuilder.ok();
     }
 

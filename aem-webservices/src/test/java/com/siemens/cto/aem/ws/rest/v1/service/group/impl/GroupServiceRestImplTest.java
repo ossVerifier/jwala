@@ -238,12 +238,17 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testRemoveGroup() {
-        final Response response = cut.removeGroup("groupName");
+        Response response = cut.removeGroup("groupName", true);
         verify(impl, atLeastOnce()).removeGroup(eq("groupName"));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         assertNull(applicationResponse);
+
+        response = cut.removeGroup("1", false);
+        Identifier<Group> groupIdentifier = new Identifier<Group>("1");
+        verify(impl, atLeastOnce()).removeGroup(eq(groupIdentifier));
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
     @Test
