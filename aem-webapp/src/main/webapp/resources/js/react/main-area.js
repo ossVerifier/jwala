@@ -2,6 +2,7 @@
 var MainArea = React.createClass({
      render: function() {
         return <div className={this.props.className}>
+                    <div id="txt"></div>
                     <table className="main-area-table">
                         <tr>
                             <td><Banner/><br/><br/></td>
@@ -106,4 +107,6 @@ $(document).ready(function(){
     }, "The field must only contain letters, numbers, underscores, dashes or periods.");
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
+
+    wakeUpIE();
 });

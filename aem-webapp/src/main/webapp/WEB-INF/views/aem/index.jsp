@@ -46,10 +46,19 @@
 <script src="public-resources/js/modal-form-decorator.js"></script>
 <script src="public-resources/js/datatable-decorator.js"></script>
 <script src="public-resources/js/resizableTblColPlugin.js"></script>
+<script>
+function wakeUpIE() {
+    var t = setTimeout(startTime, 1000);
+}
+</script>
 
 </head>
 <body>
     <!-- Only the main display area component should render here.
          Please check main-area.js for more info. -->
 </body>
+
+<head>
+    <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+</head>
 </html>
