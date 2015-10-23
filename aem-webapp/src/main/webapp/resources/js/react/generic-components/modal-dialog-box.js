@@ -25,7 +25,7 @@
  *                 content={<JvmConfigForm ref="jvmEditForm"
  *                                         data={this.state.selectedJvmForEditing}/>}
  */
-ModalDialogBox = React.createClass({
+var ModalDialogBox = React.createClass({
     getInitialState: function() {
 
         var top = this.props.top === undefined ? -10000 : this.props.top;
