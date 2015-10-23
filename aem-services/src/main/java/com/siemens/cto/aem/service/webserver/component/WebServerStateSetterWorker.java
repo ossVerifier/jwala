@@ -90,7 +90,6 @@ public class WebServerStateSetterWorker {
                 if (msg == null) {
                     msg = rte.getMessage();
                 }
-                setState(webServer, WebServerReachableState.WS_UNKNOWN, msg);
             } finally {
                 if (response != null) {
                     response.close();
