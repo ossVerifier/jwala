@@ -2,7 +2,7 @@
  * A generic non-modal dialog box with a close button.
  * This can/will be enhanced iteratively.
  */
-DialogBox = React.createClass({
+var DialogBox = React.createClass({
     getInitialState: function() {
         var width = (this.props.width === undefined || parseInt(this.props.width) === NaN) ? 900 : this.props.width;
         var height = (this.props.height === undefined || parseInt(this.props.height) === NaN) ? 400 : this.props.height;
