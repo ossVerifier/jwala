@@ -107,6 +107,4 @@ $(document).ready(function(){
     }, "The field must only contain letters, numbers, underscores, dashes or periods.");
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
-
-    wakeUpIE();
 });

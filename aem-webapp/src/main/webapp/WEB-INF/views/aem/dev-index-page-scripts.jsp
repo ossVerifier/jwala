@@ -33,6 +33,7 @@
 <script src="public-resources/js/toc/v1/service/jvmControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerControlService.js"></script>
 <script src="public-resources/js/toc/v1/service/userService.js"></script>
+<script src="public-resources/js/toc/v1/service/PollerForAPromise.js"></script>
 <script src="public-resources/js/toc/v1/service/stateService.js"></script>
 <script src="public-resources/js/toc/v1/service/resourceService.js"></script>
 <script src="public-resources/js/toc/group-operations-helper.js"></script>

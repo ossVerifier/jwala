@@ -1,6 +1,7 @@
 
 /** @jsx React.DOM */
 var GroupOperations = React.createClass({
+    pollError: false,
     getInitialState: function() {
         selectedGroup = null;
 
@@ -16,8 +17,7 @@ var GroupOperations = React.createClass({
             webServers: [],
             webServerStates: [],
             jvms: [],
-            jvmStates: [],
-            pollError: false
+            jvmStates: []
         };
     },
     render: function() {
@@ -35,7 +35,7 @@ var GroupOperations = React.createClass({
                                                               jvms={this.state.jvms}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
                                                               stateService={this.props.stateService}
-                                                              pollError={this.state.pollError}/>
+                                                              parent={this}/>
                                 </div>
                             </td>
                         </tr>
@@ -56,15 +56,17 @@ var GroupOperations = React.createClass({
                                                            this.state.jvmStates,
                                                            []));
     },
-    updateStateData: function(newStates) {
-        if (this.state.pollError) {
+    updateStateData: function(response) {
+        if (this.pollError) {
+            // updateStateData is called when there's no longer an error therefore we do error recovery here.
             this.fetchCurrentGroupStates();
             this.fetchCurrentWebServerStates();
             this.fetchCurrentJvmStates();
-            this.setState({pollError: false});
+            this.pollError = false;
             return;
         }
 
+        var newStates = response.applicationResponseContent;
         var groups = [];
         var webServers = [];
         var jvms = [];
@@ -84,7 +86,13 @@ var GroupOperations = React.createClass({
         this.updateJvmStateData(jvms);
     },
     statePollingErrorHandler: function(response) {
-        this.setState({pollError: true});
+        if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
+            alert("The session has expired! You will be redirected to the login page.");
+            window.location.href = "login";
+            return;
+        }
+
+        this.pollError = true;
         for (var key in GroupOperations.groupStatusWidgetMap) {
             var groupStatusWidget = GroupOperations.groupStatusWidgetMap[key];
             if (groupStatusWidget !== undefined) {
@@ -213,11 +221,12 @@ var GroupOperations = React.createClass({
         });
     },
     pollStates: function() {
-        var self = this;
-        this.dataSink = this.props.stateService.createDataSink(function(data) {
-                                                                                    self.updateStateData(data);
-                                                                              }, this.statePollingErrorHandler);
-        this.props.stateService.pollForUpdates(this.props.statePollTimeout, this.dataSink);
+        if (GroupOperations.statePoller === null) {
+            GroupOperations.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
+                                                                this.updateStateData, this.statePollingErrorHandler);
+        }
+
+        GroupOperations.statePoller.start();
     },
     fetchCurrentGroupStates: function() {
         var self = this;
@@ -253,7 +262,7 @@ var GroupOperations = React.createClass({
         this.fetchCurrentGroupStates();
     },
     componentWillUnmount: function() {
-        this.dataSink.stop();
+        GroupOperations.statePoller.stop();
     },
     updateWebServerDataCallback: function(webServerData) {
         this.setState(groupOperationsHelper.processWebServerData([],
@@ -284,7 +293,9 @@ var GroupOperations = React.createClass({
             GroupOperations.commandStatusMap[groupId] = statusArray;
         },
         UNKNOWN_STATE: "UNKNOWN",
-        POLL_ERR_STATE: "POLLING ERROR!"
+        POLL_ERR_STATE: "POLLING ERROR!",
+        statePoller: null,
+        STATE_POLLER_INTERVAL: 1000
     }
 });
 
@@ -576,7 +587,7 @@ var GroupOperationsDataTable = React.createClass({
                       var statusWidget = this;
                       self.props.stateService.getCurrentGroupStates(oData.id.id)
                                              .then(function(data) {
-                                                      if (self.props.pollError) {
+                                                      if (self.props.parent.pollError) {
                                                           statusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(),
                                                                     response.responseJSON.applicationResponseContent);
                                                       } else {
@@ -617,7 +628,7 @@ var GroupOperationsDataTable = React.createClass({
                        var statusWidget = this;
                        self.props.stateService.getCurrentWebServerStates(oData.id.id)
                                               .then(function(data) {
-                                                        if (self.props.pollError) {
+                                                        if (self.props.parent.pollError) {
                                                             statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
                                                         } else {
                                                             statusWidget.setStatus(data.applicationResponseContent[0].stateString,
@@ -641,7 +652,7 @@ var GroupOperationsDataTable = React.createClass({
                         var statusWidget = this;
                         self.props.stateService.getCurrentJvmStates(oData.id.id)
                                                .then(function(data) {
-                                                        if (self.props.pollError) {
+                                                        if (self.props.parent.pollError) {
                                                             statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
                                                         } else {
                                                             statusWidget.setStatus(data.applicationResponseContent[0].stateString,

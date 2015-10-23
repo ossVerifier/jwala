@@ -12,34 +12,8 @@ var stateService = function() {
         }
     };
 
-    var addTimeoutParameter = function(timeout, params) {
-        if (timeout !== undefined) {
-            params.timeout = timeout;
-        }
-    };
-
     var addClientIdParameter = function(clientId, params) {
         params.clientId = clientId;
-    };
-
-    var sendToDataSinkThunk = function(dataSink) {
-        return function(response) {
-            dataSink.consume(response.applicationResponseContent);
-            return response.applicationResponseContent;
-        }
-    };
-
-    var recurseThunk = function(timeout, dataSink) {
-        return function() {
-            return stateService.pollForUpdates(timeout, dataSink);
-        }
-    };
-
-    var createPollingParametersOld = function(timeout, clientId) {
-        var params = {};
-        addTimeoutParameter(timeout, params);
-        addClientIdParameter(clientId, params);
-        return "?" + $.param(params);
     };
 
     var createPollingParameters = function(clientId) {
@@ -49,32 +23,6 @@ var stateService = function() {
     };
 
     return {
-        pollForUpdates : function(timeout, dataSink) {
-            if (dataSink.shouldContinue()) {
-                return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json")
-                                        .then(sendToDataSinkThunk(dataSink))
-                                        .then(recurseThunk(timeout, dataSink))
-                                        .caught(function(response) {
-                                                    if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
-                                                        alert("The session has expired! You will be redirected to the login page.");
-                                                        window.location.href = "login";
-                                                        return null;
-                                                    }
-                                                    dataSink.err(response);
-                                                    return Promise.delay(5000).then(recurseThunk(timeout, dataSink));
-                                                 });
-
-            }
-        },
-        createDataSink : function(consumeFunc, errHandlerFunc) {
-            var shouldKeepGoing = true;
-            return {
-                shouldContinue: function() { return shouldKeepGoing;},
-                stop: function() { shouldKeepGoing = false;},
-                consume: consumeFunc,
-                err: errHandlerFunc
-            };
-        },
         getCurrentJvmStates : function(ids) {
             return serviceFoundation.promisedGet("v1.0/jvms/states/current" + constructIdParameters("jvmId", ids),
                                                  "json");
@@ -86,6 +34,9 @@ var stateService = function() {
         getCurrentGroupStates : function(ids) {
             return serviceFoundation.promisedGet("v1.0/groups/states/current" + constructIdParameters("groupId", ids),
                                                  "json");
+        },
+        getNextStates: function() {
+            return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json");
         }
     };
 }();
