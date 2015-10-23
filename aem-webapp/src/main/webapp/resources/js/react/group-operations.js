@@ -295,7 +295,7 @@ var GroupOperations = React.createClass({
         UNKNOWN_STATE: "UNKNOWN",
         POLL_ERR_STATE: "POLLING ERROR!",
         statePoller: null,
-        STATE_POLLER_INTERVAL: 1000
+        STATE_POLLER_INTERVAL: 100
     }
 });
 
