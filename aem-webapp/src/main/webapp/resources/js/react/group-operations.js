@@ -1103,10 +1103,9 @@ var StatusWidget = React.createClass({
                                       callback={this.showErrorMsgCallback}/>
         }
 
-        var style = this.state.status === "STOPPED" ? {color: "#808080"} : {};
         return <div className="status-widget-container">
                    <div ref="errorDlg" className="react-dialog-container"/>
-                   <span className="status-label" style={style}>{this.state.status}</span>
+                   <span className="status-label">{this.state.status}</span>
                    {errorBtn}
                </div>;
     },
