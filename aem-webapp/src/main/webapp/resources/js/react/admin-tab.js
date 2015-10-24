@@ -4,6 +4,8 @@ var AdminTab = React.createClass({
 	getInitialState: function() { 
 		ServiceFactory.getAdminService().viewProperties(
 				this.onPropertiesRx);
+        ServiceFactory.getAdminService().viewManifest(
+                this.setManifestInfo);
 
         var theme = AdminTab.getCookie("theme");
 
@@ -13,6 +15,7 @@ var AdminTab = React.createClass({
 				 encryptLabelOr:"",
 				 encryptProp:"",
 				 properties:"",
+				 manifest:"",
 				 theme:theme === null ? "Redmond" : theme};
 	},
 	doEncrypt: function() {
@@ -33,6 +36,15 @@ var AdminTab = React.createClass({
 		this.setState({
 			properties: str
 		});
+	},
+	setManifestInfo: function (e) {
+	    var manifestValue = "";
+		$.each( e.applicationResponseContent, function(key, value) {
+			manifestValue = manifestValue+ (key+"="+value+"\n");
+		});
+	    this.setState({
+	        manifest: manifestValue
+	    });
 	},
 	onChange: function(event) {
 		this.setState({
@@ -92,6 +104,11 @@ var AdminTab = React.createClass({
                     <GenericButton label=">>> Reload >>>" callback={this.doReload} />                   
                     </p>
                     <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
+                    <br />
+                    <h3>MANIFEST.MF</h3>
+                    <p>
+                    <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="8" value={this.state.manifest}></textarea></p>
+                    </p>
 
                     {null
                     /* Uncomment code below and remove the curly braces and null to enable changeable themes.

@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
+import com.siemens.cto.aem.common.Version;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -13,9 +16,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public class AdminServiceRestImpl implements AdminServiceRest {
 
@@ -80,5 +90,20 @@ public class AdminServiceRestImpl implements AdminServiceRest {
         } else {
             return ResponseBuilder.ok(resourceService.encryptUsingPlatformBean(cleartext));
         }
+    }
+
+    @Override
+    public Response manifest(ServletContext context) {
+        Attributes attributes = null;
+        if (context != null) {
+            InputStream manifestStream = context.getResourceAsStream("META-INF/MANIFEST.MF");
+            try {
+                Manifest manifest = new Manifest(manifestStream);
+                attributes = manifest.getMainAttributes();
+            } catch (IOException e) {
+                throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to read MANIFEST.MF for " + context.getServletContextName());
+            }
+        }
+        return ResponseBuilder.ok(attributes);
     }
 }

@@ -10,6 +10,10 @@ var adminService = {
 
     viewProperties: function(successCallback) {
     	return  serviceFoundation.get("v1.0/admin/properties/view", "json", successCallback);
+    },
+
+    viewManifest: function(successCallback) {
+        return serviceFoundation.get("v1.0/admin/manifest", "json", successCallback);
     }
     
 }
