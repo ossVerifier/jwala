@@ -46,8 +46,9 @@ var DataTableButton = React.createClass({
                                                role:"button",
                                                ariaDisabled:false,
                                                className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only "
-                                                         + buttonClassName},
-                                               React.DOM.span({className:spanClassName, title:this.props.sTitle}, theLabel)));
+                                                         + buttonClassName,
+                                               title: this.props.sTitle},
+                                               React.DOM.span({className:spanClassName}, theLabel)));
     },
     setToNonBusyState: function() {
         var buttonClassName  = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
