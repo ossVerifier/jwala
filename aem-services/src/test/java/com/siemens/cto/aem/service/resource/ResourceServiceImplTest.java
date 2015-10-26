@@ -12,19 +12,21 @@ import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceServi
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ResourceServiceImplTest {
 
@@ -60,7 +62,18 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testDelete() {
-        assertNotNull("");
+        Group mockGroup = mock(Group.class);
+        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(11L));
+        when(groupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(resourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
+        when(mockResourceInstance.getResourceInstanceId()).thenReturn(new Identifier<ResourceInstance>(1L));
+        cut.deleteResourceInstance("resourceName", "groupName");
+        verify(resourcePersistenceService).deleteResourceInstance(any(Identifier.class));
+
+        final ArrayList<String> resourceNames = new ArrayList<>();
+        cut.deleteResources("groupName", resourceNames);
+        verify(resourcePersistenceService).deleteResources(anyString(), anyList());
     }
 
     @Test
@@ -78,11 +91,17 @@ public class ResourceServiceImplTest {
         Collection<ResourceType> resourceTypes = new ArrayList<>();
         ResourceType mockResourceType = mock(ResourceType.class);
         resourceTypes.add(mockResourceType);
-        HarmonyTemplate mockHarmonyTemplate = mock(HarmonyTemplate.class);
+        HarmonyTemplateEngine mockOwner = mock(HarmonyTemplateEngine.class);
+        Path mockPath = mock(Path.class);
+        HarmonyTemplate mockHarmonyTemplate = new HarmonyTemplate(new Object(), mockPath, mockOwner);
         when(mockResourceType.isValid()).thenReturn(true);
         when(templateEngine.getTemplate(mockResourceType)).thenReturn(mockHarmonyTemplate);
         when(fileManager.getResourceTypes()).thenReturn(resourceTypes);
         Collection<ResourceType> types = cut.getResourceTypes();
+        assertNotNull(types);
+
+        when(mockOwner.checkOnly(any(Path.class))).thenThrow(new TemplateNotFoundException("Test bad template", new FileNotFoundException("TEST")));
+        types = cut.getResourceTypes();
         assertNotNull(types);
 
         when(fileManager.getResourceTypes()).thenThrow(new IOException("Fail get resources"));
