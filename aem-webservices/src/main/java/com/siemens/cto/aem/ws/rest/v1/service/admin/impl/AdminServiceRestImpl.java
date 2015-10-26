@@ -99,8 +99,10 @@ public class AdminServiceRestImpl implements AdminServiceRest {
                 Manifest manifest = new Manifest(manifestStream);
                 attributes = manifest.getMainAttributes();
             } catch (IOException e) {
+                LOGGER.debug("Error getting manifest for " + context.getServletContextName() + " Error:"
+                        + e.getMessage());
                 throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to read MANIFEST.MF for "
-                        + context.getServletContextName() + " Error:" + e.getMessage());
+                        + context.getServletContextName());
             }
         }
         return ResponseBuilder.ok(attributes);
