@@ -79,6 +79,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response view() {
         return ResponseBuilder.ok(ApplicationProperties.getProperties());
     }
+    
 
     @Override
     public Response encrypt(String cleartext) {
@@ -94,8 +95,8 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response manifest(ServletContext context) {
         Attributes attributes = null;
         if (context != null) {
-            InputStream manifestStream = context.getResourceAsStream("META-INF/MANIFEST.MF");
             try {
+                InputStream manifestStream = context.getResourceAsStream("META-INF/MANIFEST.MF");
                 Manifest manifest = new Manifest(manifestStream);
                 attributes = manifest.getMainAttributes();
             } catch (IOException e) {
