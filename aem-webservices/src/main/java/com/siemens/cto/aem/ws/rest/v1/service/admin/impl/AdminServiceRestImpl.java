@@ -1,15 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Properties;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Response;
-
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
+import com.siemens.cto.toc.files.FilesConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -18,13 +15,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
-import com.siemens.cto.toc.files.FilesConfiguration;
+import javax.servlet.ServletContext;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 public class AdminServiceRestImpl implements AdminServiceRest {
 
@@ -79,7 +77,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response view() {
         return ResponseBuilder.ok(ApplicationProperties.getProperties());
     }
-    
+
 
     @Override
     public Response encrypt(String cleartext) {

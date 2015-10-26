@@ -22,6 +22,7 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -546,5 +547,28 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
         FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        final String updateValue = "<server>update</server>";
+        when(impl.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(updateValue);
+        Response response = cut.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
+        assertNotNull(response.getEntity());
+
+        when(impl.updateResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException(jvm.getJvmName(), "server.xml"));
+        response = cut.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testPreviewResourceTemplate() {
+        when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenReturn("<server>preview</server>");
+        Response response = cut.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        assertNotNull(response.getEntity());
+
+        when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test failed preview"));
+        response = cut.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        assertNotNull(response.getEntity());
     }
 }
