@@ -11,6 +11,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.jms.JMSException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
@@ -21,6 +24,7 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 
 public abstract class AbstractStateNotificationService implements StateNotificationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStateNotificationService.class);
     private final StateNotificationConsumerBuilder consumerBuilder;
     private final ConcurrentMap<StateNotificationConsumerId, StateNotificationConsumer> registeredConsumers;
     private final Lock pruneLock;
@@ -79,6 +83,7 @@ public abstract class AbstractStateNotificationService implements StateNotificat
                 return consumer.blockingGetNotification();
             }
         } catch (JMSException e) {
+            LOGGER.debug("Error calling cached NotificationConsumer. Creating a new consumer for retry.", e);
             // Try to create a new consumer
             try {
                 StateNotificationConsumer newConsumer = createConsumer();
@@ -89,6 +94,7 @@ public abstract class AbstractStateNotificationService implements StateNotificat
                 registeredConsumers.put(aConsumerId, newConsumer);
                 return ret;
             } catch (JMSException ex) {
+                LOGGER.error("Error creating new consumer. Rethrowing to caller...", ex);
                 throw ex;
             }
         }

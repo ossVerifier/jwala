@@ -59,11 +59,11 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -81,12 +81,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
 
-    public JvmServiceRestImpl(final JvmService theJvmService,
-                              final JvmControlService theJvmControlService,
-                              final StateService<Jvm, JvmState> theJvmStateService,
-                              final ResourceService theResourceService,
-                              final ExecutorService theExecutorService,
-                              final Map<String, ReentrantReadWriteLock> writeLockMap) {
+    public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
+            final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
+            final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
@@ -109,26 +106,25 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response createJvm(final JsonCreateJvm aJvmToCreate,
-                              final AuthenticatedUser aUser) {
+    public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
         logger.debug("Create JVM requested: {}", aJvmToCreate);
         final User user = aUser.getUser();
 
         // create the JVM in the database
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
-            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(),
-                    user);
+            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(), user);
         } else {
-            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(),
-                    user);
+            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(), user);
         }
 
-        // upload the default resource templates for the newly created JVM
+        // upload the default resource templates for the newly created
+        // JVM
         uploadAllJvmResourceTemplates(aUser, jvm);
 
         // set the state to NEW for the newly created JVM
-        final CurrentState<Jvm, JvmState> theNewState = new CurrentState<>(jvm.getId(), JvmState.JVM_NEW, DateTime.now(), StateType.JVM);
+        final CurrentState<Jvm, JvmState> theNewState =
+                new CurrentState<>(jvm.getId(), JvmState.JVM_NEW, DateTime.now(), StateType.JVM);
         SetStateCommand<Jvm, JvmState> setStateNewCommand = new JvmSetStateCommand(theNewState);
         jvmStateService.setCurrentState(setStateNewCommand, aUser.getUser());
 
@@ -140,28 +136,31 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(resourceType.getConfigFileName())) {
                 FileInputStream dataInputStream = null;
                 try {
-                    dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + resourceType.getTemplateName()));
-                    UploadJvmTemplateCommand uploadJvmTemplateCommand = new UploadJvmTemplateCommand(jvm, resourceType.getTemplateName(), dataInputStream) {
-                        @Override
-                        public String getConfFileName() {
-                            return resourceType.getConfigFileName();
-                        }
-                    };
+                    dataInputStream =
+                            new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
+                                    + resourceType.getTemplateName()));
+                    UploadJvmTemplateCommand uploadJvmTemplateCommand =
+                            new UploadJvmTemplateCommand(jvm, resourceType.getTemplateName(), dataInputStream) {
+                                @Override
+                                public String getConfFileName() {
+                                    return resourceType.getConfigFileName();
+                                }
+                            };
                     jvmService.uploadJvmTemplateXml(uploadJvmTemplateCommand, aUser.getUser());
                 } catch (FileNotFoundException e) {
-                    logger.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(), jvm.getJvmName(), e);
-                    throw new InternalErrorException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Could not find template " + resourceType.getTemplateName());
+                    logger.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(),
+                            jvm.getJvmName(), e);
+                    throw new InternalErrorException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Could not find template "
+                            + resourceType.getTemplateName());
                 }
             }
         }
     }
 
     @Override
-    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate,
-                              final AuthenticatedUser aUser) {
+    public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final AuthenticatedUser aUser) {
         logger.debug("Update JVM requested: {}", aJvmToUpdate);
-        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(),
-                aUser.getUser()));
+        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(), aUser.getUser()));
     }
 
     @Override
@@ -172,28 +171,29 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             logger.info("Removing JVM from the database and deleting the service");
             jvmService.removeJvm(aJvmId);
             if (!jvmStateService.getCurrentState(aJvmId).getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(user, new ControlJvmCommand(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
+                deleteJvmWindowsService(user, new ControlJvmCommand(aJvmId, JvmControlOperation.DELETE_SERVICE),
+                        jvm.getJvmName());
             }
         } else {
             logger.info("JVM was not in stopped state: NO-OP");
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target JVM must be stopped before attempting to delete it");
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    "The target JVM must be stopped before attempting to delete it");
         }
         return ResponseBuilder.ok();
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId,
-                               final JsonControlJvm aJvmToControl,
-                               final AuthenticatedUser aUser) {
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl,
+            final AuthenticatedUser aUser) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
-        final JvmControlHistory controlHistory = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
-                aUser.getUser());
+        final JvmControlHistory controlHistory =
+                jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
+                        aUser.getUser());
         final ExecData execData = controlHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(controlHistory);
         } else {
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL,
-                    execData.getStandardError());
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, execData.getStandardError());
         }
     }
 
@@ -211,7 +211,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response uploadConfigTemplate(final String jvmName, final AuthenticatedUser aUser, final String templateName) {
         logger.debug("Upload Archive requested: {} streaming (no size, count yet)", jvmName);
 
-        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        // iframe uploads from IE do not understand application/json
+        // as a response and will prompt for download. Fix: return
+        // text/html
         if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
             context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
         }
@@ -228,23 +230,25 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadJvmTemplateCommand command = new UploadJvmTemplateCommand(jvm,
-                            file1.getName(),
-                            data) {
+                    UploadJvmTemplateCommand command = new UploadJvmTemplateCommand(jvm, file1.getName(), data) {
                         @Override
                         public String getConfFileName() {
                             return templateName;
                         }
                     };
 
-                    return ResponseBuilder.created(
-                            jvmService.uploadJvmTemplateXml(command, aUser.getUser())); // early out on first attachment
+                    return ResponseBuilder.created(jvmService.uploadJvmTemplateXml(command, aUser.getUser())); // early
+                                                                                                               // out
+                                                                                                               // on
+                                                                                                               // first
+                                                                                                               // attachment
                 } finally {
                     assert data != null;
                     data.close();
                 }
             }
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_JVM_OPERATION, "No data"));
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
+                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
@@ -271,20 +275,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String serverXmlStr = jvmService.generateConfigFile(aJvmName, "server.xml");
             return Response.ok(serverXmlStr).build();
         } catch (TemplateNotFoundException e) {
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND,
-                    e.getMessage(),
-                    e);
+            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage(), e);
         }
     }
 
     @Override
-    public Response generateAndDeployConf(final String jvmName,
-                                          final AuthenticatedUser user) {
+    public Response generateAndDeployConf(final String jvmName, final AuthenticatedUser user) {
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("jvmName", jvmName);
         errorDetails.put("jvmId", jvmService.getJvm(jvmName).getId().getId().toString());
 
-        // TODO - re-evaluate async choice - since we call .get() there is no benefit.
+        // TODO - re-evaluate async choice - since we call .get()
+        // there is no benefit.
         try {
             Future<Jvm> futureJvm = executorService.submit(new Callable<Jvm>() {
                 @Override
@@ -295,27 +297,29 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             });
             return ResponseBuilder.ok(futureJvm.get());
         } catch (RuntimeException | InterruptedException | ExecutionException re) {
-            // TODO - just bubble getCause() for ExecutionException and let our Exception Providers handle it.
+            // TODO - just bubble getCause() for ExecutionException
+            // and let our Exception Providers handle it.
             logger.error("Failed to generate and deploy configuration files for JVM: {}", jvmName, re);
             if (re.getCause() != null && re.getCause() instanceof InternalErrorException
-                    && re.getCause().getCause() != null && re.getCause().getCause() instanceof RemoteCommandFailureException) {
+                    && re.getCause().getCause() != null
+                    && re.getCause().getCause() instanceof RemoteCommandFailureException) {
                 RemoteCommandFailureException rcfx = (RemoteCommandFailureException) (re.getCause().getCause());
-                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, rcfx.getMessage(), rcfx),
-                        errorDetails);
+                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                        AemFaultType.REMOTE_COMMAND_FAILURE, rcfx.getMessage(), rcfx), errorDetails);
             } else {
-                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage(), re),
-                        errorDetails);
+                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                        AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage(), re), errorDetails);
             }
         }
     }
 
     /**
      * Generate and deploy a JVM's configuration files.
-     *
-     * @param jvm                   - the JVM
-     * @param user                  - the user
+     * 
+     * @param jvm
+     *            - the JVM
+     * @param user
+     *            - the user
      * @param runtimeCommandBuilder
      */
     Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user, RuntimeCommandBuilder runtimeCommandBuilder) {
@@ -328,11 +332,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target JVM must be stopped before attempting to update the resource files");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
             }
 
             // delete the service
-            deleteJvmWindowsService(user, new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
+            deleteJvmWindowsService(user, new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE),
+                    jvm.getJvmName());
 
             // create the tar file
             final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName(), runtimeCommandBuilder);
@@ -340,20 +346,23 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // copy the tar file
             secureCopyJvmConfigTar(jvm, jvmConfigTar);
 
-            // call script to backup and tar the current directory and then untar the new tar
+            // call script to backup and tar the current directory and
+            // then untar the new tar
             deployJvmConfigTar(jvm, user, jvmConfigTar);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
 
             // set the state to stopped
-            CurrentState<Jvm, JvmState> stoppedState = new CurrentState<>(jvm.getId(), JvmState.SVC_STOPPED, DateTime.now(), StateType.JVM);
+            CurrentState<Jvm, JvmState> stoppedState =
+                    new CurrentState<>(jvm.getId(), JvmState.SVC_STOPPED, DateTime.now(), StateType.JVM);
             SetStateCommand<Jvm, JvmState> setStateStoppedCommand = new JvmSetStateCommand(stoppedState);
             jvmStateService.setCurrentState(setStateStoppedCommand, user.getUser());
 
         } catch (CommandFailureException e) {
             logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config", e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config",
+                    e);
         } finally {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
@@ -363,12 +372,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
         JvmControlHistory result;
         ExecData execData;
-        result = jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), user.getUser());
+        result =
+                jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
+                        user.getUser());
         execData = result.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Invoke of windows service {} was successful", jvm.getJvmName());
         } else {
-            String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             logger.error("Invoking windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
@@ -376,25 +388,34 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
         ExecData execData;
-        JvmControlHistory completeHistory = jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
+        JvmControlHistory completeHistory =
+                jvmControlService.controlJvm(
+                        new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
         execData = completeHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Deployment of config tar was successful: {}", jvmConfigTar);
         } else {
-            String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-            logger.error("Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}", jvm.getJvmName(), standardError);
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            logger.error(
+                    "Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}",
+                    jvm.getJvmName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
     }
 
     private void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
         ExecData execData;
-        execData = jvmService.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
+        execData =
+                jvmService.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar",
+                        stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Copy of config tar successful: {}", jvmConfigTar);
         } else {
-            String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-            logger.error("Copy command completed with error trying to copy config tar to {} :: ERROR: {}", jvm.getJvmName(), standardError);
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            logger.error("Copy command completed with error trying to copy config tar to {} :: ERROR: {}",
+                    jvm.getJvmName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
     }
@@ -405,7 +426,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Delete of windows service {} was successful", jvmName);
         } else {
-            String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             logger.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
@@ -423,7 +445,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target JVM must be stopped before attempting to update the resource files");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
             }
 
             ResourceType deployResource = getResourceTypeTemplate(jvmName, fileName);
@@ -444,13 +467,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    private void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource, String jvmResourcesDirDest) throws CommandFailureException {
-        final String destPath = stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
-        ExecData result = jvmService.secureCopyFile(new RuntimeCommandBuilder(), fileName, jvmResourcesDirDest, jvm.getHostName(), destPath);
+    private void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource,
+            String jvmResourcesDirDest) throws CommandFailureException {
+        final String destPath =
+                stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
+        ExecData result =
+                jvmService.secureCopyFile(new RuntimeCommandBuilder(), fileName, jvmResourcesDirDest,
+                        jvm.getHostName(), destPath);
         if (result.getReturnCode().wasSuccessful()) {
             logger.info("Successful generation and deploy of {}", fileName);
         } else {
-            String standardError = result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
+            String standardError =
+                    result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
             logger.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
@@ -459,7 +487,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private ResourceType getResourceTypeTemplate(String jvmName, String fileName) {
         ResourceType deployResource = null;
         for (ResourceType resourceType : resourceService.getResourceTypes()) {
-            if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType()) && fileName.equals(resourceType.getConfigFileName())) {
+            if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType())
+                    && fileName.equals(resourceType.getConfigFileName())) {
                 deployResource = resourceType;
                 break;
             }
@@ -493,7 +522,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType())) {
                     String generatedText;
                     if (CONFIG_FILENAME_INVOKE_BAT.equals(resourceType.getConfigFileName())) {
-                        // create the invoke.bat separately, since it's not configurable it's actually NOT in the database
+                        // create the invoke.bat separately, since
+                        // it's not configurable it's actually NOT in
+                        // the database
                         generatedText = jvmService.generateInvokeBat(jvmName);
                     } else {
                         generatedText = jvmService.generateConfigFile(jvmName, resourceType.getConfigFileName());
@@ -517,8 +548,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         RuntimeCommand tarCommand = rtCommandBuilder.build();
         ExecData tarResult = tarCommand.execute();
         if (!tarResult.getReturnCode().wasSuccessful()) {
-            String standardError = tarResult.getStandardError().isEmpty() ? tarResult.getStandardOutput() : tarResult.getStandardError();
-            logger.error("Tar create command completed with error trying to create config tar for {} :: ERROR: {}", jvmName, standardError);
+            String standardError =
+                    tarResult.getStandardError().isEmpty() ? tarResult.getStandardOutput() : tarResult
+                            .getStandardError();
+            logger.error("Tar create command completed with error trying to create config tar for {} :: ERROR: {}",
+                    jvmName, standardError);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, standardError);
         }
 
@@ -551,37 +585,33 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response getResourceTemplate(final String jvmName,
-                                        final String resourceTemplateName,
-                                        final boolean tokensReplaced) {
+    public Response getResourceTemplate(final String jvmName, final String resourceTemplateName,
+            final boolean tokensReplaced) {
         return ResponseBuilder.ok(jvmService.getResourceTemplate(jvmName, resourceTemplateName, tokensReplaced));
     }
 
     @Override
-    public Response updateResourceTemplate(final String jvmName,
-                                           final String resourceTemplateName,
-                                           final String content) {
+    public Response updateResourceTemplate(final String jvmName, final String resourceTemplateName,
+            final String content) {
 
         try {
             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             logger.debug("Failed to update the template {}", resourceTemplateName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
-                            e.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
 
     }
 
     @Override
-    public Response previewResourceTemplate(final String jvmName,
-                                            final String groupName,
-                                            final String template) {
+    public Response previewResourceTemplate(final String jvmName, final String groupName, final String template) {
         try {
             return ResponseBuilder.ok(jvmService.previewResourceTemplate(jvmName, groupName, template));
         } catch (RuntimeException rte) {
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+            logger.debug("Error previewing resource.", rte);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 

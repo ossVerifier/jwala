@@ -57,7 +57,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response getApplications(Identifier<Group> aGroupId) {
         LOGGER.debug("Get Apps requested with groupId: {}", aGroupId != null ? aGroupId : "null");
         final List<Application> apps;
-        if(aGroupId != null) {
+        if (aGroupId != null) {
             apps = service.findApplications(aGroupId);
         } else {
             apps = service.getApplications();
@@ -68,7 +68,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId) {
         LOGGER.debug("Find Apps requested with aJvmId: {}", aJvmId != null ? aJvmId : "null");
-        if(aJvmId != null) {
+        if (aJvmId != null) {
             final List<Application> apps = service.findApplicationsByJvmId(aJvmId);
             return ResponseBuilder.ok(apps);
         } else {
@@ -78,29 +78,23 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response createApplication(final JsonCreateApplication anAppToCreate,
-                                      final AuthenticatedUser aUser) {
+    public Response createApplication(final JsonCreateApplication anAppToCreate, final AuthenticatedUser aUser) {
         LOGGER.debug("Create Application requested: {}", anAppToCreate);
-        Application created = service.createApplication(anAppToCreate.toCreateCommand(),
-                                                        aUser.getUser());
+        Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
         return ResponseBuilder.created(created);
     }
 
     @Override
-    public Response updateApplication(final JsonUpdateApplication anAppToUpdate,
-                                      final AuthenticatedUser aUser) {
+    public Response updateApplication(final JsonUpdateApplication anAppToUpdate, final AuthenticatedUser aUser) {
         LOGGER.debug("Update Application requested: {}", anAppToUpdate);
-        Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(),
-                                                        aUser.getUser());
+        Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
         return ResponseBuilder.ok(updated);
     }
 
     @Override
-    public Response removeApplication(final Identifier<Application> anAppToRemove,
-                                      final AuthenticatedUser aUser) {
+    public Response removeApplication(final Identifier<Application> anAppToRemove, final AuthenticatedUser aUser) {
         LOGGER.debug("Delete JVM requested: {}", anAppToRemove);
-        service.removeApplication(anAppToRemove,
-                                  aUser.getUser());
+        service.removeApplication(anAppToRemove, aUser.getUser());
         return ResponseBuilder.ok();
     }
 
@@ -108,12 +102,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(final Identifier<Application> anAppToGet,
-                                     final AuthenticatedUser aUser) {
+    public Response uploadWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
-        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
-        if(!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+        // iframe uploads from IE do not understand application/json
+        // as a response and will prompt for download. Fix: return
+        // text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
             context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
         }
 
@@ -122,40 +117,40 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         ServletFileUpload sfu = new ServletFileUpload();
         InputStream data = null;
         try {
-            FileItemIterator iter = sfu.getItemIterator( context.getHttpServletRequest() );
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
             FileItemStream file1;
 
-            while(iter.hasNext()) {
-                file1 =  iter.next();
+            while (iter.hasNext()) {
+                file1 = iter.next();
                 try {
                     data = file1.openStream();
 
-                    UploadWebArchiveCommand command = new UploadWebArchiveCommand(app,
-                        file1.getName(),
-                        -1L,
-                        data);
+                    UploadWebArchiveCommand command = new UploadWebArchiveCommand(app, file1.getName(), -1L, data);
 
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
                     service.copyApplicationWarToGroupHosts(application, new RuntimeCommandBuilder());
 
-                    return ResponseBuilder.created(application); // early out on first attachment
+                    return ResponseBuilder.created(application); // early
+                                                                 // out
+                                                                 // on
+                                                                 // first
+                                                                 // attachment
                 } finally {
                     data.close();
                 }
             }
-            return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_APPLICATION_WAR, "No data"));
+            return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(
+                    AemFaultType.INVALID_APPLICATION_WAR, "No data"));
         } catch (IOException | FileUploadException e) {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
 
     @Override
-    public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR,
-                                     final AuthenticatedUser aUser) {
+    public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
         LOGGER.debug("Delete Archive requested: {}", appToRemoveWAR);
 
-        Application updated = service.deleteWebArchive(appToRemoveWAR,
-                                                       aUser.getUser());
+        Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
 
         return ResponseBuilder.ok(updated);
     }
@@ -166,49 +161,43 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getResourceTemplate(final String appName,
-                                        final String groupName,
-                                        final String jvmName,
-                                        final String resourceTemplateName,
-                                        final boolean tokensReplaced) {
+    public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
+            final String resourceTemplateName, final boolean tokensReplaced) {
         return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName,
-                                                              tokensReplaced));
+                tokensReplaced));
     }
 
     @Override
-    public Response updateResourceTemplate(final String appName,
-                                           final String resourceTemplateName,
-                                           final String content) {
+    public Response updateResourceTemplate(final String appName, final String resourceTemplateName,
+            final String content) {
 
         try {
             return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
-                            e.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
 
     }
 
     @Override
-    public Response deployConf(final String appName,
-                               final String groupName,
-                               final String jvmName,
-                               final String resourceTemplateName,
-                               final AuthenticatedUser authUser) {
+    public Response deployConf(final String appName, final String groupName, final String jvmName,
+            final String resourceTemplateName, final AuthenticatedUser authUser) {
         try {
-            final ExecData execData = service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
+            final ExecData execData =
+                    service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
             if (execData.getReturnCode().wasSuccessful()) {
-                return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to " + jvmName);
+                return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
+                        + jvmName);
             } else {
-                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                             new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                        AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
             }
         } catch (RuntimeException re) {
             LOGGER.error("Exception deploying application configuration", re);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                         new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
         }
 
     }
@@ -217,21 +206,24 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
 
-        // iframe uploads from IE do not understand application/json as a response and will prompt for download. Fix: return text/html
+        // iframe uploads from IE do not understand application/json
+        // as a response and will prompt for download. Fix: return
+        // text/html
         if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
             context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
         }
 
         List<Application> applications = service.getApplications();
         Application app = null;
-        for (Application resultApp : applications){
+        for (Application resultApp : applications) {
             if (resultApp.getName().equals(appName)) {
                 app = resultApp;
                 break;
             }
         }
-        if (null == app){
-            throw new InternalErrorException(AemFaultType.APPLICATION_NOT_FOUND, "Could not find Application with name " + appName);
+        if (null == app) {
+            throw new InternalErrorException(AemFaultType.APPLICATION_NOT_FOUND,
+                    "Could not find Application with name " + appName);
         }
 
         ServletFileUpload sfu = new ServletFileUpload();
@@ -244,31 +236,35 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadAppTemplateCommand command = new UploadAppTemplateCommand(app,
-                            file1.getName(),
-                            appXmlFileName,
-                            data);
+                    UploadAppTemplateCommand command =
+                            new UploadAppTemplateCommand(app, file1.getName(), appXmlFileName, data);
 
-                    return ResponseBuilder.created(
-                            service.uploadAppTemplate(command, aUser.getUser())); // early out on first attachment
+                    return ResponseBuilder.created(service.uploadAppTemplate(command, aUser.getUser())); // early
+                                                                                                         // out
+                                                                                                         // on
+                                                                                                         // first
+                                                                                                         // attachment
                 } finally {
                     assert data != null;
                     data.close();
                 }
             }
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(AemFaultType.INVALID_JVM_OPERATION, "No data"));
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
+                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
+
     @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
-                                            final String template) {
+            final String template) {
         try {
             return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
         } catch (RuntimeException rte) {
-            return  ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+            LOGGER.debug("Error previewing template.", rte);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 }

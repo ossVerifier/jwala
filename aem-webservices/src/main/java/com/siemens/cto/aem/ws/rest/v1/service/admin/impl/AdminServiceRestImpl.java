@@ -1,13 +1,15 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
-import com.siemens.cto.aem.common.Version;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
-import com.siemens.cto.toc.files.FilesConfiguration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
+import javax.servlet.ServletContext;
+import javax.ws.rs.core.Response;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -16,16 +18,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
+import com.siemens.cto.toc.files.FilesConfiguration;
 
 public class AdminServiceRestImpl implements AdminServiceRest {
 
@@ -33,41 +32,41 @@ public class AdminServiceRestImpl implements AdminServiceRest {
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
-    
+
     @Autowired
     PropertySourcesPlaceholderConfigurer configurer;
-    
+
     public AdminServiceRestImpl(FilesConfiguration theFilesConfiguration, ResourceService resourceService) {
         this.filesConfiguration = theFilesConfiguration;
         this.resourceService = resourceService;
     }
-    
+
     @Override
     public Response reload() {
         ApplicationProperties.reload();
         Properties copyToReturn = ApplicationProperties.getProperties();
         configurer.setProperties(copyToReturn);
-        
+
         filesConfiguration.reload();
-        
-        String logProperties = System.getProperty("log4j.configuration","");
-        if(logProperties.endsWith(".xml")) {
+
+        String logProperties = System.getProperty("log4j.configuration", "");
+        if (logProperties.endsWith(".xml")) {
             URL logPropsUrl = getClass().getClassLoader().getResource(logProperties);
-            if(logPropsUrl != null) {
+            if (logPropsUrl != null) {
                 LOGGER.info("Reloading logging configuration from " + logProperties);
                 copyToReturn.put("logging-reload-state", "failed reload from " + logPropsUrl.toString());
-                LogManager.resetConfiguration();     
+                LogManager.resetConfiguration();
                 DOMConfigurator.configure(logPropsUrl);
                 copyToReturn.put("logging-reload-state", "reloaded from " + logPropsUrl.toString());
             } else {
-                LOGGER.warn("Could not reload logging configuration from " + logProperties);                
+                LOGGER.warn("Could not reload logging configuration from " + logProperties);
                 copyToReturn.put("logging-reload-state", "failed, could not locate: " + logProperties);
             }
-        } else if(logProperties.endsWith(".properties")){ 
+        } else if (logProperties.endsWith(".properties")) {
             LogManager.resetConfiguration();
             PropertyConfigurator.configure(logProperties);
             copyToReturn.put("logging-reload-state", "reloaded from " + logProperties);
-        } else { 
+        } else {
             LOGGER.info("Reloading logging configuration from ApplicationProperties...");
             LogManager.resetConfiguration();
             PropertyConfigurator.configure(ApplicationProperties.getProperties());
@@ -80,12 +79,11 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response view() {
         return ResponseBuilder.ok(ApplicationProperties.getProperties());
     }
-    
 
     @Override
     public Response encrypt(String cleartext) {
-        
-        if(cleartext == null || cleartext.trim().length() == 0) {
+
+        if (cleartext == null || cleartext.trim().length() == 0) {
             return Response.status(Response.Status.NO_CONTENT).build();
         } else {
             return ResponseBuilder.ok(resourceService.encryptUsingPlatformBean(cleartext));
@@ -101,7 +99,8 @@ public class AdminServiceRestImpl implements AdminServiceRest {
                 Manifest manifest = new Manifest(manifestStream);
                 attributes = manifest.getMainAttributes();
             } catch (IOException e) {
-                throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to read MANIFEST.MF for " + context.getServletContextName());
+                throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to read MANIFEST.MF for "
+                        + context.getServletContextName() + " Error:" + e.getMessage());
             }
         }
         return ResponseBuilder.ok(attributes);
