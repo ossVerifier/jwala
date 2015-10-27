@@ -4,10 +4,13 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
@@ -45,21 +48,26 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceRestImplTest {
 
-    @Mock private MessageContext mockMc;
-    @Mock private HttpServletRequest mockHsr;
-    @Mock private HttpHeaders mockHh;
+    @Mock
+    private MessageContext mockMc;
+    @Mock
+    private HttpServletRequest mockHsr;
+    @Mock
+    private HttpHeaders mockHh;
     /*NoMock*/ private ApplicationService service;
-    @Mock private AuthenticatedUser authenticatedUser;
-    @InjectMocks @Spy
+    @Mock
+    private AuthenticatedUser authenticatedUser;
+    @InjectMocks
+    @Spy
     private ApplicationServiceRestImpl cutImpl = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
 
 
     private ApplicationServiceRest cut;
 
     Group group1 = new Group(Identifier.id(0L, Group.class), "");
-    Application application = new Application(Identifier.id(1L, Application.class), "","","", group1, true, true, "testWar.war");
-    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "","D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war","", group1, true, true, "testWar.war");
-    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "","","", group1, true, true, "testWar.war");
+    Application application = new Application(Identifier.id(1L, Application.class), "", "", "", group1, true, true, "testWar.war");
+    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "", "D:\\APACHE\\TOMCAT\\WEBAPPS\\aem-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war", "", group1, true, true, "testWar.war");
+    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "", "", "", group1, true, true, "testWar.war");
 
     List<Application> applications = new ArrayList<>(1);
     List<Application> applications2 = new ArrayList<>(2);
@@ -73,7 +81,7 @@ public class ApplicationServiceRestImplTest {
         applications2.add(application);
         applications2.add(newlyCreatedApp);
 
-        List<MediaType> mtOk =new ArrayList<>();
+        List<MediaType> mtOk = new ArrayList<>();
         mtOk.add(MediaType.APPLICATION_JSON_TYPE);
         when(mockHh.getAcceptableMediaTypes()).thenReturn(mtOk);
         when(mockMc.getHttpHeaders()).thenReturn(mockHh);
@@ -85,10 +93,10 @@ public class ApplicationServiceRestImplTest {
     public void testJsonSettersGetters() {
         JsonUpdateApplication testJua = new JsonUpdateApplication(2L, "name", "/ctx", 1L, true, true);
         JsonCreateApplication testJca = new JsonCreateApplication(2L, "name", "/ctx", true, true);
-        assertEquals(testJca,testJca.clone());
-        assertEquals(testJua,testJua.clone());
-        assertEquals(testJca.hashCode(),testJca.clone().hashCode());
-        assertEquals(testJua.hashCode(),testJua.clone().hashCode());
+        assertEquals(testJca, testJca.clone());
+        assertEquals(testJua, testJua.clone());
+        assertEquals(testJca.hashCode(), testJca.clone().hashCode());
+        assertEquals(testJua.hashCode(), testJua.clone().hashCode());
     }
 
     private class MyIS extends ServletInputStream {
@@ -110,7 +118,7 @@ public class ApplicationServiceRestImplTest {
 
         @Override
         public boolean matches(Object arg) {
-            UploadWebArchiveCommand uwac = (UploadWebArchiveCommand)arg;
+            UploadWebArchiveCommand uwac = (UploadWebArchiveCommand) arg;
             uwac.validateCommand();
             return true;
         }
@@ -123,15 +131,15 @@ public class ApplicationServiceRestImplTest {
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
-        String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
 
         @SuppressWarnings("unused")
         String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache"+ ls +
-                "Content-Type:multipart/form-data; boundary=--"+boundary+ ls +
-                "Origin:null"+ ls +
-                "Pragma:no-cache"+ ls +
-                "Referer:"+ ls +
+                "Cache-Control:no-cache" + ls +
+                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+                "Origin:null" + ls +
+                "Pragma:no-cache" + ls +
+                "Referer:" + ls +
                 "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 
         String dataText = "abcdef";
@@ -139,13 +147,13 @@ public class ApplicationServiceRestImplTest {
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: text/plain" + ls + ls +
                 dataText + ls +
-                "--" + boundary+"--" + ls;
+                "--" + boundary + "--" + ls;
 
         String charsetText = "UTF-8";
         ByteBuffer bbBuffer = Charset.forName(charsetText).encode(contentText);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetText);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
 
         Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
@@ -163,32 +171,32 @@ public class ApplicationServiceRestImplTest {
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
-        String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
 
         ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short)0xc0de);
+        file.asShortBuffer().put((short) 0xc0de);
         String data = Base64Utility.encode(file.array());
 
         @SuppressWarnings("unused")
         String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache"+ ls +
-                "Content-Type:multipart/form-data; boundary=--"+boundary+ ls +
-                "Origin:null"+ ls +
-                "Pragma:no-cache"+ ls +
-                "Referer:"+ ls +
+                "Cache-Control:no-cache" + ls +
+                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+                "Origin:null" + ls +
+                "Pragma:no-cache" + ls +
+                "Referer:" + ls +
                 "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 
         String content = "--" + boundary + ls +
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: application/octet-stream" + ls + ls +
                 data + ls +
-                "--" + boundary+"--" + ls;
+                "--" + boundary + "--" + ls;
 
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
 
         Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
@@ -206,32 +214,32 @@ public class ApplicationServiceRestImplTest {
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         // ISO8859-1
         String ls = System.lineSeparator();
-        String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
 
         ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short)0xc0de);
+        file.asShortBuffer().put((short) 0xc0de);
         String data = Base64Utility.encode(file.array());
 
         @SuppressWarnings("unused")
         String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache"+ ls +
-                "Content-Type:multipart/form-data; boundary=--"+boundary+ ls +
-                "Origin:null"+ ls +
-                "Pragma:no-cache"+ ls +
-                "Referer:"+ ls +
+                "Cache-Control:no-cache" + ls +
+                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+                "Origin:null" + ls +
+                "Pragma:no-cache" + ls +
+                "Referer:" + ls +
                 "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 
         String content = "--" + boundary + ls +
                 "Content-Disposition: form-data; name=\"files\"; filename=\"aem-webapp-1.0-SNAPSHOT.war\"" + ls +
                 "Content-Type: application/octet-stream" + ls + ls +
                 data + ls +
-                /*"--" + bad stream!*/ boundary+"--" + ls;
+                /*"--" + bad stream!*/ boundary + "--" + ls;
 
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
         cut.uploadWebArchive(application.getId(), authenticatedUser);
     }
@@ -242,7 +250,7 @@ public class ApplicationServiceRestImplTest {
         verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
 
         // ISO8859-1
-        String boundary= "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
 
         String content = "";
 
@@ -250,7 +258,7 @@ public class ApplicationServiceRestImplTest {
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA+";boundary=" + boundary);
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
 
         Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
@@ -285,7 +293,7 @@ public class ApplicationServiceRestImplTest {
     @SuppressWarnings("unchecked")
     private List<Application> getApplicationsFromResponse(Response resp) {
         assertNotNull(resp.getEntity());
-        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        ApplicationResponse appResponse = (ApplicationResponse) resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertTrue(entity instanceof List<?>);
 
@@ -294,12 +302,12 @@ public class ApplicationServiceRestImplTest {
 
     private Application getApplicationFromResponse(Response resp) {
         assertNotNull(resp.getEntity());
-        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        ApplicationResponse appResponse = (ApplicationResponse) resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertNotNull(entity);
         assertTrue(entity instanceof Application);
 
-        return (Application)entity;
+        return (Application) entity;
     }
 
     @Test
@@ -344,7 +352,7 @@ public class ApplicationServiceRestImplTest {
     }
 
     /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#createApplication(JsonCreateApplication, AuthenticatedUser)}
+     * Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#createApplication(JsonCreateApplication, AuthenticatedUser)}
      */
     @Test
     public void testCreate() {
@@ -354,14 +362,14 @@ public class ApplicationServiceRestImplTest {
 
         Response resp = cut.createApplication(jsonCreateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());
-        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        ApplicationResponse appResponse = (ApplicationResponse) resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertEquals(this.newlyCreatedApp, entity);
         assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
     }
 
     /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#updateApplication(JsonUpdateApplication, AuthenticatedUser)}
+     * Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#updateApplication(JsonUpdateApplication, AuthenticatedUser)}
      */
     @Test
     public void testUpdate() {
@@ -371,20 +379,72 @@ public class ApplicationServiceRestImplTest {
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
         Response resp = cut.updateApplication(jsonUpdateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());
-        ApplicationResponse appResponse = (ApplicationResponse)resp.getEntity();
+        ApplicationResponse appResponse = (ApplicationResponse) resp.getEntity();
         Object entity = appResponse.getApplicationResponseContent();
         assertEquals(this.newlyCreatedApp, entity);
     }
 
-    /**
-     *  Testing: {@link com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest#removeApplication(com.siemens.cto.aem.domain.model.id.Identifier}
-     */
     @Test
     @SuppressWarnings("unchecked")
     public void testRemove() {
         Response resp = cut.removeApplication(application.getId(), authenticatedUser);
-        Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class),  any(User.class));
+        Mockito.verify(service, Mockito.times(1)).removeApplication(any(Identifier.class), any(User.class));
         assertNull(resp.getEntity());
         assertEquals(Status.OK.getStatusCode(), resp.getStatus());
     }
+
+    @Test
+    public void testGetResourceNames() {
+        when(service.getResourceTemplateNames(anyString())).thenReturn(new ArrayList());
+        Response response = cut.getResourceNames(application.getName());
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testGetResourceTemplate() {
+        when(service.getResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyBoolean())).thenReturn("<server>template</server>");
+        Response response = cut.getResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", true);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testUpdateResourceTemplate() {
+        final String updateContent = "<server>updatedContent</server>";
+        when(service.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(updateContent);
+        Response response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent);
+        assertNotNull(response.getEntity());
+
+        when(service.updateResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("jvmName", "server"));
+        response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testDeployConf() {
+        ExecData mockExecData = mock(ExecData.class);
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenReturn(mockExecData);
+        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        Response response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
+        assertNotNull(response.getEntity());
+
+        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
+        response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
+        assertNotNull(response.getEntity());
+
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenThrow(new RuntimeException("Test fail deploy conf"));
+        response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
+        assertNotNull(response.getEntity());
+    }
+
+    @Test
+    public void testPreviewResourceTemplate(){
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("preview content");
+        Response response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
+        assertNotNull(response.getEntity());
+
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test fail preview"));
+        response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
+        assertNotNull(response.getEntity());
+    }
+
 }
