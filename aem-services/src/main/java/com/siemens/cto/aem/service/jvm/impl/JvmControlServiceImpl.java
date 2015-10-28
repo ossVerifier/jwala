@@ -111,7 +111,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                 "Error controlling JVM " + jvmName + ": " + result);
                     default:
-                        processDefaultReturnCode(aCommand, aUser, prevState, ctrlOp, execData, result, jvmName);
+                        processDefaultReturnCode(aCommand, aUser, prevState, ctrlOp, execData, jvmName, result);
                         break;
                 }
             }
@@ -136,7 +136,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     private void processDefaultReturnCode(ControlJvmCommand aCommand, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, ExecData execData, String jvmName, String result) {
-        if (aCommand.getControlOperation().checkForSuccess(result)) {
+        if (ctrlOp.checkForSuccess(result)) {
             logger.debug("exiting controlJvm for command {}: '{}'", aCommand, result);
             jvmControlServiceLifecycle.revertState(prevState, aUser);
         } else {
