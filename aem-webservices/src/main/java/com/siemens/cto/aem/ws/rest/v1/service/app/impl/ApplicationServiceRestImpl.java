@@ -38,7 +38,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRes
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
 
     private ApplicationService service;
 
@@ -48,14 +48,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response getApplication(Identifier<Application> anAppId) {
-        LOGGER.debug("Get App by id: {}", anAppId);
+        logger.debug("Get App by id: {}", anAppId);
         final Application app = service.getApplication(anAppId);
         return ResponseBuilder.ok(app);
     }
 
     @Override
     public Response getApplications(Identifier<Group> aGroupId) {
-        LOGGER.debug("Get Apps requested with groupId: {}", aGroupId != null ? aGroupId : "null");
+        logger.debug("Get Apps requested with groupId: {}", aGroupId != null ? aGroupId : "null");
         final List<Application> apps;
         if (aGroupId != null) {
             apps = service.findApplications(aGroupId);
@@ -67,7 +67,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response findApplicationsByJvmId(Identifier<Jvm> aJvmId) {
-        LOGGER.debug("Find Apps requested with aJvmId: {}", aJvmId != null ? aJvmId : "null");
+        logger.debug("Find Apps requested with aJvmId: {}", aJvmId != null ? aJvmId : "null");
         if (aJvmId != null) {
             final List<Application> apps = service.findApplicationsByJvmId(aJvmId);
             return ResponseBuilder.ok(apps);
@@ -79,21 +79,21 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response createApplication(final JsonCreateApplication anAppToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Create Application requested: {}", anAppToCreate);
+        logger.debug("Create Application requested: {}", anAppToCreate);
         Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
         return ResponseBuilder.created(created);
     }
 
     @Override
     public Response updateApplication(final JsonUpdateApplication anAppToUpdate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update Application requested: {}", anAppToUpdate);
+        logger.debug("Update Application requested: {}", anAppToUpdate);
         Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
         return ResponseBuilder.ok(updated);
     }
 
     @Override
     public Response removeApplication(final Identifier<Application> anAppToRemove, final AuthenticatedUser aUser) {
-        LOGGER.debug("Delete JVM requested: {}", anAppToRemove);
+        logger.debug("Delete JVM requested: {}", anAppToRemove);
         service.removeApplication(anAppToRemove, aUser.getUser());
         return ResponseBuilder.ok();
     }
@@ -103,7 +103,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response uploadWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
+        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -148,7 +148,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
-        LOGGER.debug("Delete Archive requested: {}", appToRemoveWAR);
+        logger.debug("Delete Archive requested: {}", appToRemoveWAR);
 
         Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
 
@@ -174,7 +174,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         try {
             return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
+            logger.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -195,7 +195,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                         AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
             }
         } catch (RuntimeException re) {
-            LOGGER.error("Exception deploying application configuration", re);
+            logger.error("Exception deploying application configuration", re);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
         }
@@ -204,7 +204,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
+        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -262,7 +262,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         try {
             return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
         } catch (RuntimeException rte) {
-            LOGGER.debug("Error previewing template.", rte);
+            logger.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }

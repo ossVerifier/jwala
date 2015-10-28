@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalRuntimeCommandProcessorImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalRuntimeCommandProcessorImpl.class);
 
     private final Process process;
     private boolean wasClosed;
@@ -63,7 +63,7 @@ public class LocalRuntimeCommandProcessorImpl implements CommandProcessor {
                 wasClosed = true;
                 process.exitValue();
             } catch (final IllegalThreadStateException itse) {
-                LOGGER.warn("Closing a Process that has not yet finished", itse);
+                logger.warn("Closing a Process that has not yet finished", itse);
                 process.destroy();
                 wasTerminatedAbnormally = true;
             }

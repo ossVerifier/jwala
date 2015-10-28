@@ -54,7 +54,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String STP_HTTPD_DATA_DIR = "paths.httpd.conf";
 
     private final WebServerService webServerService;
@@ -88,27 +88,27 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getWebServer(final Identifier<WebServer> aWsId) {
-        LOGGER.debug("Get WS requested: {}", aWsId);
+        logger.debug("Get WS requested: {}", aWsId);
         return ResponseBuilder.ok(webServerService.getWebServer(aWsId));
     }
 
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Create WS requested: {}", aWebServerToCreate);
+        logger.debug("Create WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerCommand(),
                 aUser.getUser()));
     }
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update WS requested: {}", aWebServerToCreate);
+        logger.debug("Update WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerCommand(),
                 aUser.getUser()));
     }
 
     @Override
     public Response removeWebServer(final Identifier<WebServer> aWsId) {
-        LOGGER.debug("Delete WS requested: {}", aWsId);
+        logger.debug("Delete WS requested: {}", aWsId);
         webServerService.removeWebServer(aWsId);
         return ResponseBuilder.ok();
     }
@@ -116,7 +116,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
             final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
-        LOGGER.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
+        logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
         final WebServerControlHistory controlHistory =
                 webServerControlService.controlWebServer(
                         new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
@@ -157,12 +157,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     webServerCommandService.secureCopyHttpdConf(aWebServerName, httpdUnixPath,
                             new RuntimeCommandBuilder());
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
+                logger.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
                                 .getStandardError();
-                LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}",
+                logger.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}",
                         aWebServerName, standardError);
                 Map<String, String> errorDetails = new HashMap<>();
                 errorDetails.put("webServerName", aWebServerName);
@@ -170,7 +170,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                         AemFaultType.REMOTE_COMMAND_FAILURE, standardError), errorDetails);
             }
         } catch (CommandFailureException e) {
-            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
+            logger.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
             Map<String, String> errorDetails = new HashMap<>();
             errorDetails.put("webServerName", aWebServerName);
             return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -202,7 +202,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final boolean useSSL = true;
             out.println(generateHttpdConfText(aWebServerName, useSSL));
         } catch (FileNotFoundException e) {
-            LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
+            logger.error("Unable to create temporary file {}", httpdConfAbsolutePath);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
         } finally {
             if (out != null) {
@@ -223,7 +223,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getCurrentWebServerStates(final WebServerIdsParameterProvider webServerIdsParameterProvider) {
-        LOGGER.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
+        logger.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
         final Set<Identifier<WebServer>> webServerIds = webServerIdsParameterProvider.valueOf();
         final Set<CurrentState<WebServer, WebServerReachableState>> currentWebServerStates;
 
@@ -241,7 +241,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
         } catch (CommandFailureException cmdFailEx) {
-            LOGGER.warn("Command Failure Occurred", cmdFailEx);
+            logger.warn("Command Failure Occurred", cmdFailEx);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, cmdFailEx.getMessage()));
         }
@@ -264,7 +264,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
+        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -321,7 +321,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return ResponseBuilder.ok(webServerService.updateResourceTemplate(wsName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
+            logger.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -333,7 +333,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
         } catch (RuntimeException rte) {
-            LOGGER.debug("Error previewing template.", rte);
+            logger.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }

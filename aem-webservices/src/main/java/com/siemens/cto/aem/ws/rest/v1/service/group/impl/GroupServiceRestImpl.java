@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.*;
@@ -50,7 +49,7 @@ import java.util.Set;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(GroupServiceRestImpl.class);
 
     private final GroupService groupService;
     private final ResourceService resourceService;
@@ -75,7 +74,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getGroups(final NameSearchParameterProvider aGroupNameSearch, final boolean fetchWebServers) {
-        LOGGER.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
+        logger.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
 
         final List<Group> groups;
         if (aGroupNameSearch.isNamePresent()) {
@@ -93,14 +92,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return  ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
         }
         final Identifier<Group> groupId = new Identifier<Group>(groupIdOrName);
-        LOGGER.debug("Get Group requested: {}", groupId);
+        logger.debug("Get Group requested: {}", groupId);
         return ResponseBuilder.ok(groupService.getGroup(groupId));
     }
 
     @Override
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
-        LOGGER.debug("Create Group requested: {}", aNewGroupName);
+        logger.debug("Create Group requested: {}", aNewGroupName);
         return ResponseBuilder.created(groupService.createGroup(new CreateGroupCommand(aNewGroupName),
                 aUser.getUser()));
     }
@@ -109,7 +108,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
-        LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
+        logger.debug("Update Group requested: {}", anUpdatedGroup);
 
         // TODO: Refactor adhoc conversion to process group name instead of Id.
         final Group group = groupService.getGroup(anUpdatedGroup.getId());
@@ -122,7 +121,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response removeGroup(final String name, final boolean byName) {
-        LOGGER.debug("Delete Group requested: {} byName={}", name, byName);
+        logger.debug("Delete Group requested: {} byName={}", name, byName);
         if (byName) {
             groupService.removeGroup(name);
         } else {
@@ -135,7 +134,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId,
                                        final AuthenticatedUser aUser) {
-        LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
+        logger.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupCommand(aGroupId,
                         aJvmId),
                 aUser.getUser()));
@@ -145,7 +144,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
                                    final JsonJvms someJvmsToAdd,
                                    final AuthenticatedUser aUser) {
-        LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
+        logger.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupCommand command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
                 aUser.getUser()));
@@ -155,7 +154,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
                                      final JsonControlJvm jsonControlJvm,
                                      final AuthenticatedUser aUser) {
-        LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
+        logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()));
@@ -203,7 +202,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupWebservers(final Identifier<Group> aGroupId,
                                            final JsonControlWebServer jsonControlWebServer,
                                            final AuthenticatedUser aUser) {
-        LOGGER.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
+        logger.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()));
@@ -217,7 +216,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                  final AuthenticatedUser aUser) {
 
         GroupControlOperation groupControlOperation = jsonControlGroup.toControlOperation();
-        LOGGER.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
+        logger.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
 
         ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation);
         return ResponseBuilder.ok(groupControlService.controlGroup(grpCommand,
@@ -233,7 +232,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getCurrentJvmStates(final GroupIdsParameterProvider aGroupIdsParameterProvider) {
-        LOGGER.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
+        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
         final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
         final Set<CurrentState<Group, GroupState>> currentGroupStates;
 
