@@ -46,7 +46,7 @@ class TocClientForJvm extends AbstractTocClient {
      * Generate a JVM instance as configured
      */
     public void deployJvmInstance(String jvmName) {
-        def jvmUrl = getV1Url() + "/${jvmName}/conf"
+        def jvmUrl = getV1Url() + "/${encodePathParam(jvmName)}/conf"
         println "url = ${jvmUrl}"
         tocHttpClient.put(jvmUrl, "");
     }
@@ -56,7 +56,7 @@ class TocClientForJvm extends AbstractTocClient {
      * @since 1.2
      */
     public String updateJvmTemplate(String jvmName, String templateName, String content) {
-        def jvmUrl = getV1Url() + "/"+jvmName+"/resources/template/" + templateName
+        def jvmUrl = getV1Url() + "/"+encodePathParam(jvmName)+"/resources/template/" + encodePathParam(templateName)
         println "url = ${jvmUrl}, content.length()=" + content.length();
         tocHttpClient.putText(jvmUrl, content);
     }

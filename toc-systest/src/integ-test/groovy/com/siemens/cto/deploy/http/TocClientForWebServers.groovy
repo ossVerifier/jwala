@@ -76,8 +76,20 @@ class TocClientForWebServers extends AbstractTocClient {
     }
 
     public String getWebServerConfig(String name) {
-        def wsUrl = getV1Url() + "/${name}/conf?ssl=true";
+        def wsUrl = getV1Url() + "/${encodePathParam(name)}/conf?ssl=true";
         println "url = ${wsUrl}";
         tocHttpClient.doGet(wsUrl);
+    }
+
+
+    public def uploadConfigTemplate(String name, String templateName) {
+        println "in uploadConfigTemplate name= ${name} file name = ${templateName}";
+
+        def wsUrl = getV1Url() + "/${name}/resources/uploadTemplate"
+        println "calling multipartPost url = ${wsUrl}";
+        File file = new File(templateName);
+        println "calling multipartPost url = ${wsUrl} file name = ${file.name}";
+
+        return tocHttpClient.multipartPostForFileUpload(wsUrl, file);
     }
 }

@@ -13,11 +13,15 @@ class TocClient implements TocClientLegacy {
         this("http",host,port,username,password);
     }
 
-
     public TocClient(String protocol, String host, String port, String username, String password) {
         this.connectors = new ClientConnectors(new TocHttpClient(host, port, username, password));
         println "Created new TocClient : protocol=$protocol, host=$host, port=$port, username=$username, password=$password"
     }
+
+    public void login() {
+      this.connectors.getClientForGroup(); // side-effect is that a login occurs.
+    }
+
     public TocClientForGroup getV1GroupClient() {
         return this.connectors.getClientForGroup();
     }
@@ -31,9 +35,6 @@ class TocClient implements TocClientLegacy {
         return this.connectors.getClientForJvm();
     }
     private synchronized int getCachedGroupId() {
-        if (this.cachedLiveGroupId == null) {
-            this.cachedLiveGroupId = this.connectors.getClientForGroup().createGroup("TestGroup");
-        }
         return this.cachedLiveGroupId;
     }
 
@@ -53,14 +54,20 @@ class TocClient implements TocClientLegacy {
     }
 
     @Override
-    void createGroup(String groupName) {
+    int createGroup(String groupName) {
         int groupId = this.connectors.getClientForGroup().createGroup(groupName);
         this.cachedLiveGroupId = groupId;
+        return groupId;
     }
 
     @Override
     String getGroups(String id) {
         return this.connectors.getClientForGroup().getGroups(id);
+    }
+
+    @Override
+    String getGroupsByName(String groupName) {
+      return this.connectors.getClientForGroup().getGroupsByName(groupName);
     }
 
     @Override
@@ -122,19 +129,20 @@ class TocClient implements TocClientLegacy {
     String getWebServerConfig(String name) {
         return this.connectors.getClientForWebservers().getWebServerConfig(name);
     }
-    
+
     @Override
-    public void deployJvmInstance(String jvmName) { 
+    public void deployJvmInstance(String jvmName) {
         this.connectors.getClientForJvm().deployJvmInstance(jvmName);
     }
-    
+
 
     private interface TocClientLegacy {
         // Groups
         void deleteGroup(int groupId);
         int getOrCreateGroup(String groupName);
-        void createGroup(String groupName);
+        int createGroup(String groupName);
         String getGroups(String id);
+        String getGroupsByName(String groupName);
         // JVM
         int addJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties);
         int getOrCreateJvm(String jvmName, String hostName, int httpPort, int httpsPort, int redirectPort, int shutdownPort, int ajpPort, String statusPath, String systemProperties);

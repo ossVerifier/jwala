@@ -41,6 +41,7 @@ class TocClientTest {
     def randGroupName2;
     def randJvmName;
     def randAppName;
+	def randWebServerName;
     def randAppContext;
     def jvmHttp;
     def jvmHttps;
@@ -54,9 +55,10 @@ class TocClientTest {
         randGroupName2 = "TestGroup" + java.util.UUID.randomUUID().toString();
         randJvmName = "TestJvm" + java.util.UUID.randomUUID().toString();
         randAppName = "TestApp" + java.util.UUID.randomUUID().toString();
+		randWebServerName = "TestWeb" + java.util.UUID.randomUUID().toString();
         randAppContext = "/testApp";
 
-                jvmHttp = jvmBase;
+        jvmHttp = jvmBase;
         jvmHttps = jvmBase+1
         jvmAjp = jvmBase+2
         jvmBase += 3;
@@ -96,20 +98,20 @@ class TocClientTest {
     @Test
     public void testCreateOneWS() {
         tocHttpClient.getOrCreateGroup(randGroupName)
-        wsId = tocHttpClient.addWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
+        wsId = tocHttpClient.addWebServer(randWebServerName, "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
     }
 
     @Test
     public void testCreateTwoWS() {
         tocHttpClient.getOrCreateGroup(randGroupName)
-        wsId = tocHttpClient.addWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
+        wsId = tocHttpClient.addWebServer(randWebServerName, "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
         wsId2 = tocHttpClient.addWebServer("TEST-WS2", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
     }
 
     @Test
     public void testGetAndEditWS() {
         tocHttpClient.getOrCreateGroup(randGroupName)
-        wsId = tocHttpClient.addWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
+        wsId = tocHttpClient.addWebServer(randWebServerName, "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
         tocHttpClient.getOrCreateGroup(randGroupName2)
         wsId2 = tocHttpClient.getOrCreateWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
         wsId2 = tocHttpClient.getOrCreateWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
@@ -119,10 +121,10 @@ class TocClientTest {
     public void testGetOrCreateWS() {
         tocHttpClient.getOrCreateGroup(randGroupName)
         wsId = -1
-        def id = tocHttpClient.getOrCreateWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
+        def id = tocHttpClient.getOrCreateWebServer(randWebServerName, "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
         wsId = id
         assertNotNull(id)
-        def id2 = tocHttpClient.getOrCreateWebServer("TEST-WS", "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
+        def id2 = tocHttpClient.getOrCreateWebServer(randWebServerName, "TESTHOST", jvmHttp, jvmHttps, "/stp.png", "/cygdrive/d/stp/apache-httpd-2.4.10/conf/httpd.conf", "testsvrroot", "testdocroot");
         assertEquals(id,id2)
     }
     
@@ -316,6 +318,7 @@ class TocClientTest {
         }
     }    
     
+	@Ignore // does not currently start up properly. Uncomment when healthcheck is fully configured and works 
     @Test
     public void testDeployHealthcheckAndStartStop() {
         try {
@@ -337,4 +340,22 @@ class TocClientTest {
             throw e;
         }
     }
+	
+	
+	@Test
+	public void testUploadWebTemplate() {
+		try {
+			def groupId = tocHttpClient.getV1GroupClient().getOrCreateGroup(randGroupName)
+			//String webServerName, String hostName, int httpPort, int httpsPort, String statusPath, String configPath, String svrRoot, String docRoot, int groupId
+			
+			def appId = tocHttpClient.getV1WebServerClient().addWebServer(randWebServerName, "localhost", 80, 443, "/stp.png", "/stp/app/data/httpd/conf/httpd.conf", "/stp/apache2.4", "/stp/apache2.4/htdocs", groupId)
+			def result = tocHttpClient.getV1WebServerClient().uploadConfigTemplate(randWebServerName, "resources/HttpdSslConfTemplate.tpl");
+			assertNotNull(result)
+			assertEquals("Success", result);
+			println ('Successfully uploaded')
+		} catch (RestException e) {
+			println (e)
+			throw e;
+		}
+	}
 }

@@ -19,12 +19,12 @@ class TocClientForWebApp extends AbstractTocClient {
     }
     
     /**
-     * @since 1.2 
+     * @since 1.2
      */
     public int addWebApp(String contextPath, String appName, int groupId, boolean isSecure, boolean shouldLoadBalanceAcrossServers) {
         println("Creating application ${appName}")
         def json = new JsonBuilder();
-        json name: appName, webappContext: contextPath, groupId: groupId, secure:isSecure,loadBalanceAcrossServers:shouldLoadBalanceAcrossServers  
+        json name: appName, webappContext: contextPath, groupId: groupId, secure:isSecure,loadBalanceAcrossServers:shouldLoadBalanceAcrossServers
 
         def response = tocHttpClient.execute(getV1Url(), json.toString())
         def slurper = new JsonSlurper()
@@ -40,9 +40,9 @@ class TocClientForWebApp extends AbstractTocClient {
     public int getOrCreateWebApp(String contextPath, String appName, int groupId) {
         return getOrCreateWebApp(contextPath, appName, groupId, false, false);
     }
-  
+
     /**
-     * @since 1.2 
+     * @since 1.2
      */
     public int getOrCreateWebApp(String contextPath, String appName, int groupId, boolean isSecure, boolean shouldLoadBalanceAcrossServers) {
         // there is no API for get by name, so will find it ourselves
@@ -56,11 +56,11 @@ class TocClientForWebApp extends AbstractTocClient {
             return apps[0].id.id
         }
     }
-    
+
     public void deleteApp(int appId) {
         tocHttpClient.delete(getV1Url() +"/" + appId)
     }
-    
+
     /**
      * https://localhost:9101/aem/v1.0/applications/Cluster3/resources/template/cluster.xml;groupName=null;jvmName=null?tokensReplaced=false&_=1444833670000
      * @param appName
@@ -71,64 +71,58 @@ class TocClientForWebApp extends AbstractTocClient {
     }
 
     /**
-     * Add groupName and jvmName as matrix parameters to a URL if not null
-     */
-    private String addMatrixForApplication(String url, String groupName, String jvmName) {
-        def appUrl = url;
-        def hasmatrix = false;
-        if(groupName != null) {
-            if(!hasmatrix) appUrl = appUrl + ";"
-            appUrl = appUrl + "groupName=" +groupName;
-        }
-        if(jvmName != null) {
-            if(!hasmatrix) appUrl = appUrl + ";"
-            appUrl = appUrl + "jvmName=" +jvmName;
-        }
-        return appUrl;
-    }
-    /**
      * GET https://localhost:9101/aem/v1.0/applications/<app>/resources/template/<context>.xml;groupName=<group>;jvmName=<jvm>?tokensReplaced=false&_=1444833670000
      * @param appName
      * @return
      */
     public String getApplicationXmlTemplate(String appName, String contextName, String groupName, String jvmName) {
-        def appUrl = getV1Url() + "/"+appName+"/resources/template/"+contextName+".xml"
+        def appUrl = getV1Url() + "/"+encodePathParam(appName)+"/resources/template/"+encodePathParam(contextName)+".xml"
         appUrl = addMatrixForApplication(appUrl, groupName, jvmName);
         appUrl = appUrl + "?tokensReplaced=false";
-        
+
         println "url = ${appUrl}"
         return tocHttpClient.get(appUrl);
     }
-    
+
     /**
      * GET https://localhost:9101/aem/v1.0/applications/<app>/resources/preview;groupName=<group>;jvmName=<jvm>
      */
     public String getApplicationXmlPreview(String appName, String contextName, String groupName, String jvmName) {
-        def appUrl = getV1Url() + "/"+appName+"/resources/preview/"+contextName+".xml"
+        def appUrl = getV1Url() + "/"+encodePathParam(appName)+"/resources/preview/"+encodePathParam(contextName)+".xml"
         appUrl = addMatrixForApplication(appUrl, groupName, jvmName);
         println "url = ${appUrl}"
         return tocHttpClient.get(appUrl);
     }
-    
+
     /**
      * PUT https://localhost:9101/aem/v1.0/applications/<app>/resources/template/<context>.xml
      */
     public String updateApplicationXml(String appName, String contextName, String groupName, String jvmName, String content) {
-        def appUrl = getV1Url() + "/"+appName+"/resources/template/"+contextName+".xml"
+        def appUrl = getV1Url() + "/"+encodePathParam(appName)+"/resources/template/"+encodePathParam(contextName)+".xml"
         appUrl = addMatrixForApplication(appUrl, groupName, jvmName);
         println "url = ${appUrl}, content.length()=" + content.length();
         tocHttpClient.putText(appUrl, content);
     }
-    
+
     /**
      * PUT https://localhost:9101/aem/v1.0/applications/<appName>/conf/<context>.xml;groupName=<groupName>;jvmName=<jvmName>
      */
     public String deployApplicationToInstance(String appName, String contextName, String groupName, String jvmName) {
-        def appUrl = getV1Url() + "/"+appName+"/conf/"+contextName+".xml"
+        def appUrl = getV1Url() + "/"+encodePathParam(appName)+"/conf/"+encodePathParam(contextName)+".xml"
         appUrl = addMatrixForApplication(appUrl, groupName, jvmName);
+        println "url = ${appUrl}"
         return tocHttpClient.put(appUrl,"");
     }
-    
+
+    /**
+     * PUT https://localhost:9101/aem/v1.0/applications/<appName>/conf/<context>RoleMapping.properties;groupName=<groupName>;jvmName=<jvmName>
+     */
+    public String deployRoleMappingToInstance(String appName, String contextName, String groupName, String jvmName) {
+        def appUrl = getV1Url() + "/"+encodePathParam(appName)+"/conf/"+encodePathParam(contextName)+"RoleMapping.properties"
+        appUrl = addMatrixForApplication(appUrl, groupName, jvmName);
+        println "url = ${appUrl}"
+        return tocHttpClient.put(appUrl,"");
+    }
     /**
      * @since 1.2
      */
@@ -144,24 +138,24 @@ class TocClientForWebApp extends AbstractTocClient {
         }
         return null;
     }
-    
+
     /**
      * @since 1.2
      */
     public Integer getApplicationIdForName(String appName) {
         return getApplication(appName).id.id;
     }
-    
+
     /**
      * Multipart form upload https://localhost:9101/aem/v1.0/applications/<appId>/war
-     * 
+     *
      */
     public def uploadWebArchive(String appName, File webapp) {
         def appId = getApplicationIdForName(appName);
         def appUrl = getV1Url() + "/" + appId + "/war"
-        return tocHttpClient.multipartPost(appUrl, webapp);
+        return tocHttpClient.multipartPostReturningJson(appUrl, webapp);
     }
-    
+
     /** Verify /app
      * @since 1.2 */
     public def checkApp(String jvmName, String appName) {

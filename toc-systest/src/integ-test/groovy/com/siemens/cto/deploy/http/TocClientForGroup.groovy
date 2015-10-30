@@ -15,8 +15,8 @@ class TocClientForGroup extends AbstractTocClient {
         tocHttpClient.delete(getV1Url() + "/" + groupId)
     }
 
-    public int getOrCreateGroup(String groupName) {
-        def groupsUrl = this.getV1Url() + "?name=" + groupName
+    public String getGroupsByName(String groupName) {
+        def groupsUrl = "${getV1Url()}?name=" + encodeQueryParam(groupName);
         println "url = ${groupsUrl}";
         def response = tocHttpClient.get(groupsUrl);
 
@@ -24,40 +24,55 @@ class TocClientForGroup extends AbstractTocClient {
         def result = slurper.parseText(response);
 
         if(result.msgCode == "0" && result.applicationResponseContent.size() > 0) {
-            def groupId = result.applicationResponseContent[0].id.id;
-            return groupId;
+            tocHttpClient.httpContext.groupId = result.applicationResponseContent[0];
+            return response; // returning unparsed string for now
         }
-        else {
-            // otherwise create
-            response = tocHttpClient.execute(getV1Url(), groupName);
 
-            result = slurper.parseText(response);
-            def groupId = result.applicationResponseContent.id.id;
-            println "groupId = ${groupId}"
-            return groupId;
-        }
+        throw new RestException("Group with name '${groupName}' not found.", response)
     }
 
-    public int createGroup(String groupName) {
+    public int getOrCreateGroup(String groupName) {
+        def groupsUrl = "${getV1Url()}?name=" + encodeQueryParam(groupName);
+        println "url = ${groupsUrl}";
+        def response = tocHttpClient.get(groupsUrl);
+
+        def slurper = new JsonSlurper()
+        def result = slurper.parseText(response);
+
+        if(result.msgCode == "0" && result.applicationResponseContent.size() > 0) {
+            tocHttpClient.httpContext.groupId = result.applicationResponseContent[0].id.id;
+            return result.applicationResponseContent[0].id.id;
+        }
+
+        // otherwise create
+        response = tocHttpClient.execute(getV1Url(), groupName);
+
+        result = slurper.parseText(response);
+        tocHttpClient.httpContext.groupId = result.applicationResponseContent.id.id;
+        println "groupId = ${tocHttpClient.httpContext.groupId}"
+        return result.applicationResponseContent.id.id;
+    }
+
+    public void createGroup(String groupName) {
         String response = tocHttpClient.execute(getV1Url(), groupName);
 
         def slurper = new JsonSlurper()
         def result = slurper.parseText(response);
-        def groupId = result.applicationResponseContent.id.id;
-        println "groupId = ${groupId}";
-        return groupId;
+        tocHttpClient.httpContext.groupId = result.applicationResponseContent.id.id;
+        println "groupId = ${tocHttpClient.httpContext.groupId}"
     }
 
     public String getGroups(String id = 'all') {
-        def groupsUrl = getV1Url();
+        def groupsUrl = getV1Url()
         if (id && id != 'all') {
             groupsUrl += "/" + id;
         }
         println "url = ${groupsUrl}";
         tocHttpClient.get(groupsUrl);
     }
+
     public Map<String,Integer> getJvmIdsForGroupAndServer(String groupName, String hostName) {
-        def groupsUrl = "${getV1Url()}?name=${groupName}"
+        def groupsUrl = "${getV1Url()}?name=" + encodeQueryParam(groupName);
         println "url = ${groupsUrl}";
         String response = tocHttpClient.get(groupsUrl);
 

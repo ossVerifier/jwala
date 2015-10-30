@@ -7,7 +7,16 @@ public abstract class AbstractTocClient {
 
     protected TocHttpClient tocHttpClient;
     private String apiPath;
-
+    
+    protected String encodeQueryParam(String param) {
+        return new URI(null,null,null,param,null).toASCIIString().substring(1)
+    }
+    protected String encodeMatrixParam(String param) {
+        return encodePathParam(param);
+    }
+    protected String encodePathParam(String param) {
+        return new URI(null,null,param,null,null).toASCIIString()
+    }
 
     public AbstractTocClient(TocHttpClient tocHttpClient, String apiPath) {
         this.tocHttpClient = tocHttpClient;
@@ -42,7 +51,7 @@ public abstract class AbstractTocClient {
      * @since 1.2
      */
     public Integer getJvmIdForName(String jvmName) {
-        def jvmUrl = getV1Url()
+        def jvmUrl = this.tocHttpClient.httpContext.getV1BaseUrl() + "/jvms" ;
         def responseString = tocHttpClient.get(jvmUrl);
         def slurper = new JsonSlurper();
         def result = slurper.parseText(responseString);
@@ -54,5 +63,22 @@ public abstract class AbstractTocClient {
         return null;
     }
 
+    
+    /**
+     * Add groupName and jvmName as matrix parameters to a URL if not null
+     */
+    protected String addMatrixForApplication(url, groupName, jvmName) {
+        def appUrl = url;
+        def hasmatrix = false;
+        if(groupName != null) {
+            if(!hasmatrix) appUrl = appUrl + ";"
+            appUrl = appUrl + "groupName=" +encodeMatrixParam(groupName);
+        }
+        if(jvmName != null) {
+            if(!hasmatrix) appUrl = appUrl + ";"
+            appUrl = appUrl + "jvmName=" +encodeMatrixParam(jvmName);
+        }
+        return appUrl;
+    }
 
 }
