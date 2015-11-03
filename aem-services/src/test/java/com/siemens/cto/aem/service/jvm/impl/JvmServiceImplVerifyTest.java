@@ -332,13 +332,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertTrue(isBadRequest);
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void testPerformDiagnosis() {
         Identifier<Jvm> aJvmId = new Identifier<>(11L);
         Jvm jvm = new Jvm(aJvmId, "testJvm", new HashSet<LiteGroup>());
         when(jvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
-        String diagnosis = impl.performDiagnosis(aJvmId);
-        assertTrue(!diagnosis.isEmpty());
+        impl.performDiagnosis(aJvmId);
     }
 
     @Test
