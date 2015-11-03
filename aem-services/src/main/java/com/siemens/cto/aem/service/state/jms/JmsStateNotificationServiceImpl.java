@@ -34,9 +34,8 @@ public class JmsStateNotificationServiceImpl extends AbstractStateNotificationSe
         LOGGER.debug("Notifying state updated: {}", anUpdatedThing);
         prune();
         final MessageCreatorKeyValueStateConsumer consumer = new MessageCreatorKeyValueStateConsumer();
-        anUpdatedThing.provideState(consumer);
-        template.send(destination,
-                      consumer);
+        anUpdatedThing.provideState(consumer); // puts state details in consumer
+        template.send(destination, consumer);
     }
 
 }
