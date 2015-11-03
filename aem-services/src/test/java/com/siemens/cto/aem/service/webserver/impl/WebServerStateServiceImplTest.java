@@ -71,22 +71,6 @@ public class WebServerStateServiceImplTest {
         assertEquals(WebServerReachableState.WS_UNKNOWN, result.getState());
     }
 
-    @Test
-    public void testStaleStates() {
-        List<CurrentState<WebServer, WebServerReachableState>> statesList = new ArrayList<>();
-        CurrentState<WebServer, WebServerReachableState> state = new CurrentState<>(wsTestId, WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER);
-        statesList.add(state);
-        when(persistenceService.markStaleStates(any(StateType.class), any(WebServerReachableState.class), any(Collection.class), any(Date.class), any(AuditEvent.class))).thenReturn(statesList);
-        stateService.checkForStaleStates();
-        boolean exceptionThrown = false;
-        try{
-            stateService.checkForStoppedStates();
-        } catch (UnsupportedOperationException e){
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-    }
-
     private void setupStateServiceMock() {
         when(stateService.getCurrentState(Matchers.<Identifier<WebServer>>anyObject())).thenAnswer(new Answer<CurrentState<WebServer, WebServerReachableState>>() {
             @Override

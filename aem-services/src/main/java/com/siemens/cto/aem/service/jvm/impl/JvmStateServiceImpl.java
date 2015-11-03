@@ -27,9 +27,6 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
     private ArrayList<JvmState> jvmStatesToCheck = new ArrayList<>(10);
     private ArrayList<JvmState> jvmStoppingStatesToCheck = new ArrayList<>(1);
     
-    @Value("${states.stale-check.jvm.stagnation.millis}")
-    private int stagnationMillis;
-
     @Value("${states.stopped-check.jvm.max-stop-time.millis}")
     private int serviceStoppedMillis;
 
@@ -65,28 +62,6 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
     @Override
     protected void sendNotification(final CurrentState<Jvm, JvmState> anUpdatedState) {
         getStateNotificationGateway().jvmStateChanged(anUpdatedState);
-    }
-    
-    
-    
-    /** 
-     * Periodically invoked by spring to convert states to STALE
-     * Parameterized in toc-defaults:
-     * states.stale-check.initial-delay.millis=45000
-     * states.stale-check.period.millis=60000
-     * states.stale-check.jvm.stagnation.millis=60000
-     */
-    @Scheduled(initialDelayString="${states.stale-check.initial-delay.millis}", fixedRateString="${states.stale-check.period.millis}")
-    @Transactional
-    @Override
-    public void checkForStaleStates() {
-        Calendar cutoff = GregorianCalendar.getInstance();
-        cutoff.add(Calendar.MILLISECOND, 0-stagnationMillis);        
-        List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.JVM_STALE, jvmStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
-        for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
-            getStateNotificationGateway().jvmStateChanged(anUpdatedState);
-            getNotificationService().notifyStateUpdated(anUpdatedState);
-        }
     }
 
     /** 
