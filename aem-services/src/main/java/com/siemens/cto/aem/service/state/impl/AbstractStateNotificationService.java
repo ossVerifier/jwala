@@ -118,6 +118,9 @@ public abstract class AbstractStateNotificationService implements StateNotificat
         }
     }
 
+    /**
+     * Removes stale consumers.
+     */
     protected void prune() {
         if (pruneLock.tryLock()) {
             try {
