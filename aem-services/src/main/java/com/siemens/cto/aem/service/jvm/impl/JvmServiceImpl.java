@@ -205,27 +205,7 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public String performDiagnosis(Identifier<Jvm> aJvmId) {
-
-        // if the Jvm does not exist, we'll get a 404 NotFoundException
-        Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
-
-        // this is a fire and forget gateway. There will be no response.
-        jvmStateGateway.initiateJvmStateRequest(jvm);
-
-        SimpleTemplateEngine engine = new SimpleTemplateEngine();
-        Map<String, Object> binding = new HashMap<String, Object>();
-        binding.put("jvm", jvm);
-
-        try {
-            return engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
-        } catch (CompilationFailedException | ClassNotFoundException | IOException e) {
-            throw new ApplicationException(DIAGNOSIS_INITIATED, e);
-            // why do this? Because if there was a problem with the template that made
-            // it past initial testing, then it is probably due to the jvm in the binding
-            // so just dump out the diagnosis template and the exception so it can be 
-            // debugged.
-        }
-
+        throw new UnsupportedOperationException("JVM diagnosis is not supported for now.");
     }
 
     @Override
