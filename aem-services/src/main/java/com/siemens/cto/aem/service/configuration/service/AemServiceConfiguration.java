@@ -99,7 +99,8 @@ public class AemServiceConfiguration {
     @Autowired
     private FileManager fileManager;
 
-    @Autowired
+    // @Autowired
+    // TODO: Deprecate!
     private StateNotificationGateway stateNotificationGateway;
 
     @Autowired

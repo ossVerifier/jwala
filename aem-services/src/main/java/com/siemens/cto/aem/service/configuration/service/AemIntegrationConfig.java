@@ -11,7 +11,6 @@ import java.util.concurrent.ThreadFactory;
 @Configuration
 @ImportResource({
     "classpath:META-INF/spring/integration.xml",
-    "classpath:META-INF/spring/integration-state.xml",
     "classpath:META-INF/spring/integration-jmx.xml",
     "classpath:META-INF/spring/jvm-heartbeat-integration.xml",
     "classpath:META-INF/spring/common-heartbeat-dependencies.xml"

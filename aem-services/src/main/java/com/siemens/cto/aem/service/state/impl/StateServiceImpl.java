@@ -54,7 +54,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         }
 
         // The internal bus is allowed to care about all state updates.
-        sendNotification(latestState);
+        // sendNotification(latestState); // TODO: Double check what this does and find out if we need to redo this in Java (it currently uses spring integration).
         return latestState;
     }
 
