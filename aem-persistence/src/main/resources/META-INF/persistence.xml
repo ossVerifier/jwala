@@ -44,10 +44,11 @@
             <property name="openjpa.TransactionMode" value="managed"/>
             <property name="openjpa.ManagedRuntime" value="jndi(TransactionManagerName=java:comp/UserTransaction)"/>
             <!--<property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)" />-->
-            <property name="openjpa.InitializeEagerly" value="true"/>
 
             <property name="openjpa.DataCache" value="true"/>
             <property name="openjpa.RemoteCommitProvider" value="sjvm"/>
+
+            <property name="openjpa.Multithreaded" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

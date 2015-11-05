@@ -20,14 +20,12 @@ import java.util.*;
 
 public class GroupServiceImpl implements GroupService {
 
-    private final StateNotificationGateway stateNotificationGateway;
     private final GroupPersistenceService groupPersistenceService;
     private WebServerService webServerService;
 
     public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
                             final StateNotificationGateway theStateNotificationGateway, WebServerService wSService) {
         groupPersistenceService = theGroupPersistenceService;
-        stateNotificationGateway = theStateNotificationGateway;
         webServerService = wSService;
     }
 
@@ -89,7 +87,6 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupPersistenceService.updateGroup(
                 createEvent(anUpdateGroupCommand, anUpdatingUser));
         
-        stateNotificationGateway.groupStateUpdateRequest(group);
         return group;
     }
 
@@ -113,7 +110,6 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.addJvmToGroup(createEvent(aCommand,
                                                                  anAddingUser));
-        stateNotificationGateway.groupStateUpdateRequest(group);
         return group;
     }
 
@@ -130,7 +126,6 @@ public class GroupServiceImpl implements GroupService {
 
         Group group = getGroup(aCommand.getGroupId());
 
-        stateNotificationGateway.groupStateUpdateRequest(group);
         return group;
     }
 
@@ -142,7 +137,6 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
                                                                       aRemovingUser));
-        stateNotificationGateway.groupStateUpdateRequest(group);
         return group;
     }
 

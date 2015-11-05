@@ -3,7 +3,9 @@ package com.siemens.cto.aem.service.jvm.impl;
 import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
+import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.audit.AuditUser;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmControlServiceImpl.class);
@@ -53,9 +57,6 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         try {
             aCommand.validateCommand();
-
-            final JvmControlHistory incompleteHistory = jvmControlServiceLifecycle.startHistory(aCommand,
-                    aUser);
             final Jvm jvm = jvmService.getJvm(aCommand.getJvmId());
             String jvmName = jvm.getJvmName();
 
@@ -75,11 +76,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 logger.info("shell command output{}", execData.getStandardOutput());
             }
 
-            final JvmControlHistory completeHistory = jvmControlServiceLifecycle.completeHistory(incompleteHistory,
-                    aCommand,
-                    execData,
-                    aUser);
-            if (execData.getReturnCode().wasSuccessful()) {
+            if (execData != null && execData.getReturnCode().wasSuccessful()) {
                 logger.debug("exiting controlJvm for command {}", aCommand);
                 jvmControlServiceLifecycle.completeState(
                         aCommand,
@@ -116,7 +113,16 @@ public class JvmControlServiceImpl implements JvmControlService {
                 }
             }
 
-            return completeHistory;
+            JvmControlHistory history = new JvmControlHistory(
+                    new Identifier<JvmControlHistory>(jvm.getId().getId()),
+                    jvm.getId(),
+                    ctrlOp,
+                    new AuditEvent(
+                            new AuditUser(aUser),
+                            new AuditDateTime(new Date())
+                    ),
+                    execData);
+            return history; // TODO remove jvm control history from project
         } catch (final CommandFailureException cfe) {
             /*
              * Even though there was a failure, we don't necessarily want to 
@@ -172,7 +178,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         @Override
         public CurrentState<Jvm, JvmState> startState(final ControlJvmCommand aCommand, final User aUser) {
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(aCommand.getJvmId());
-            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand),
+            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand), //TODO send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
                     aUser);
             return jvmState;
         }

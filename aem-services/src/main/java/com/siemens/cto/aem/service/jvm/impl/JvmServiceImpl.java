@@ -1,8 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -32,38 +30,24 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
-
-import groovy.text.SimpleTemplateEngine;
-
-import org.apache.http.conn.ConnectTimeoutException;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public class JvmServiceImpl implements JvmService {
 
-    private static final Logger logger = LoggerFactory.getLogger(JvmServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final FileManager fileManager;
-    private final JvmStateGateway jvmStateGateway;
-    private ClientFactoryHelper clientFactoryHelper;
     private final StateService<Jvm, JvmState> stateService;
     private SshConfiguration sshConfig;
 
@@ -75,8 +59,6 @@ public class JvmServiceImpl implements JvmService {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         fileManager = theFileManager;
-        jvmStateGateway = theJvmStateGateway;
-        clientFactoryHelper = factoryHelper;
         stateService = theJvmStateService;
         sshConfig = theSshConfig;
     }
@@ -115,7 +97,6 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional(readOnly = true)
     public Jvm getJvm(final Identifier<Jvm> aJvmId) {
-
         return jvmPersistenceService.getJvm(aJvmId);
     }
 

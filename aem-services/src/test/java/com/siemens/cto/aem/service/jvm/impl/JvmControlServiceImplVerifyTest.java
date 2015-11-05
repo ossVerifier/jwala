@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -9,7 +8,6 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.jvm.command.CompleteControlJvmCommand;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
@@ -26,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -73,6 +70,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final JvmControlOperation controlOperation = JvmControlOperation.START;
         final ExecData mockExecData = mock(ExecData.class);
 
+        when(jvm.getId()).thenReturn(new Identifier<Jvm>(1L));
         when(commandExecutor.controlJvm(controlCommand, jvm)).thenReturn(mockExecData);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
@@ -86,8 +84,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
         verify(controlCommand, times(1)).validateCommand();
         //TODO change to use @Captor instead, much easier
-        verify(persistenceService, times(1)).addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand));
-        verify(persistenceService, times(1)).completeControlHistoryEvent(Matchers.<Event<CompleteControlJvmCommand>>anyObject());
         verify(jvmService, times(1)).getJvm(eq(jvmId));
         verify(commandExecutor, times(1)).controlJvm(eq(controlCommand),
                 eq(jvm));
@@ -108,6 +104,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final Jvm mockJvm = mock(Jvm.class);
         final JvmControlHistory incompleteHistory = mock(JvmControlHistory.class);
 
+        when(mockJvm.getId()).thenReturn(jvmId);
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
@@ -120,12 +117,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(persistenceService.addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
         when(commandExecutor.controlJvm(controlCommand, mockJvm)).thenReturn(mockExecData);
         JvmControlHistory controlhist = impl.controlJvm(controlCommand, user);
-        assertNull(controlhist);
+        assertNotNull(controlhist);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<Jvm, JvmState>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
         controlhist = impl.controlJvm(controlCommand, user);
-        assertNull(controlhist);
+        assertNotNull(controlhist);
 
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
@@ -163,6 +160,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
         when(commandExecutor.controlJvm(any(ControlJvmCommand.class), any(Jvm.class))).thenReturn(new ExecData(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
         controlhist = impl.controlJvm(controlCommand, user);
-        assertNull(controlhist);
+        assertNotNull(controlhist);
     }
 }

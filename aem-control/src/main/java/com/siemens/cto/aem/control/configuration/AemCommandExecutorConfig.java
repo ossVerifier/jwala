@@ -2,6 +2,7 @@ package com.siemens.cto.aem.control.configuration;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.control.jvm.impl.RemoteJvmCommandExecutorImpl;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
@@ -35,7 +36,7 @@ public class AemCommandExecutorConfig {
 
     @Bean(destroyMethod = "shutdownNow")
     protected ExecutorService getExecutorService() {
-        return Executors.newFixedThreadPool(12);
+        return Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("command.executor.fixed.thread.pool", "150")));
     }
 
     @Bean

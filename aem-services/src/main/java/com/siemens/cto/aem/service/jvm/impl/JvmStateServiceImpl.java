@@ -78,11 +78,11 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
     @Override
     public void checkForStoppedStates() {
         Calendar cutoff = GregorianCalendar.getInstance();
-        cutoff.add(Calendar.MILLISECOND, 0-serviceStoppedMillis);        
+        cutoff.add(Calendar.MILLISECOND, 0-serviceStoppedMillis);
         List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.SVC_STOPPED, jvmStoppingStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
         for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
-            getStateNotificationGateway().jvmStateChanged(anUpdatedState);
-            getNotificationService().notifyStateUpdated(anUpdatedState);
+            // TODO test to see if we can uncomment this line
+//            getNotificationService().notifyStateUpdated(anUpdatedState);
         }
     }
 }
