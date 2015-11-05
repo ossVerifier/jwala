@@ -33,7 +33,7 @@
           type="com.atomikos.jdbc.AtomikosDataSourceBean"
           factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
           uniqueResourceName="AtomikosJndiXaDataSource"
-	  poolSize="20"
+	  poolSize="150"
           xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
           xaProperties.user="sa"
           xaProperties.password=""
