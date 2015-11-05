@@ -48,6 +48,8 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
         GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser,
                 controlHistoryEvent.getId());
+
+        // TODO: Deprecate spring integration stuff in the future!
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
 
         return controlHistoryEvent;
