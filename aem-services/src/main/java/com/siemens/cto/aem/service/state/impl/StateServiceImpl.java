@@ -9,9 +9,7 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,15 +25,18 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     private final StatePersistenceService<S, T> persistenceService;
     private final StateNotificationService      notificationService;
     private final StateType                     stateType;
-    private final StateNotificationGateway    stateNotificationGateway;
+    private StateNotificationWorker stateNotificationWorker;
+    private GroupStateService.API groupStateService;
 
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
-            final StateNotificationService theNotificationService, final StateType theStateType,
-            final StateNotificationGateway theStateNotificationGateway) {
+                            final StateNotificationService theNotificationService, final StateType theStateType,
+                            final GroupStateService.API groupStateService,
+                            final StateNotificationWorker stateNotificationWorker) {
         persistenceService = thePersistenceService;
         notificationService = theNotificationService;
         stateType = theStateType;
-        stateNotificationGateway = theStateNotificationGateway;
+        this.groupStateService = groupStateService;
+        this.stateNotificationWorker = stateNotificationWorker;
     }
 
     @Override
@@ -55,6 +56,9 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
         // The internal bus is allowed to care about all state updates.
         // sendNotification(latestState); // TODO: Double check what this does and find out if we need to redo this in Java (it currently uses spring integration).
+
+        stateNotificationWorker.sendStateChangeNotification(groupStateService, latestState);
+
         return latestState;
     }
 
@@ -101,15 +105,12 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     protected StatePersistenceService<S,T> getPersistenceService() {
         return persistenceService;
     }
-    
-    /**
-     * Accessor for derived class.
-     */
-    protected StateNotificationGateway getStateNotificationGateway() {
-        return stateNotificationGateway;
-    }
 
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);
 
     protected abstract void sendNotification(CurrentState<S, T> anUpdatedState);
+
+    protected StateNotificationWorker getStateNotificationWorker() {
+        return stateNotificationWorker;
+    }
 }

@@ -8,7 +8,8 @@ import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.state.GroupStateService;
+import com.siemens.cto.aem.service.state.StateNotificationWorker;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,17 +29,23 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private GroupServiceImpl impl;
     private GroupPersistenceService groupPersistenceService;
-    private StateNotificationGateway stateNotificationGateway;
+    private GroupStateService.API groupStateService;
+    private StateNotificationWorker stateNotificationWorker;
     private WebServerService webServerService;
     private User user;
 
     @Before
     public void setUp() {
-
         groupPersistenceService = mock(GroupPersistenceService.class);
-        stateNotificationGateway = mock(StateNotificationGateway.class);
+        stateNotificationWorker = mock(StateNotificationWorker.class);
+        groupStateService = mock(GroupStateService.API.class);
+        stateNotificationWorker = mock(StateNotificationWorker.class);
         webServerService = mock(WebServerService.class);
-        impl = new GroupServiceImpl(groupPersistenceService, stateNotificationGateway, webServerService);
+
+        impl = new GroupServiceImpl(groupPersistenceService,
+                                    webServerService,
+                                    groupStateService,
+                                    stateNotificationWorker);
         user = new User("unused");
     }
 
@@ -91,15 +98,13 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testUpdateGroup() {
-
+    public void testUpdateGroup() throws InterruptedException {
         final UpdateGroupCommand command = mock(UpdateGroupCommand.class);
+        impl.updateGroup(command, user);
 
-        impl.updateGroup(command,
-                         user);
-
-        verify(command, times(1)).validateCommand();
-        verify(groupPersistenceService, times(1)).updateGroup(matchCommandInEvent(command));
+        verify(command).validateCommand();
+        verify(groupPersistenceService).updateGroup(matchCommandInEvent(command));
+        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
@@ -122,6 +127,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(command, times(1)).validateCommand();
         verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(command));
+        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
@@ -152,6 +158,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(command, times(1)).validateCommand();
         verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
+        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test

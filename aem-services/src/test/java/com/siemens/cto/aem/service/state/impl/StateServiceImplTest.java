@@ -15,9 +15,7 @@ import com.siemens.cto.aem.persistence.service.jvm.impl.JvmJpaStatePersistenceSe
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,7 +169,8 @@ public class StateServiceImplTest {
         public StateService<Jvm, JvmState> getStateService() {
             return new JvmStateServiceImpl(getPersistenceService(),
                                            getStateNotificationService(),
-                                           getStateNotificationGateway());
+                                           getGroupStateService(),
+                                           getStateNotificationWorker());
         }
 
         @Bean
@@ -191,9 +190,13 @@ public class StateServiceImplTest {
         }
 
         @Bean
-        public StateNotificationGateway getStateNotificationGateway() {
-            final StateNotificationGateway gateway = mock(StateNotificationGateway.class);
-            return gateway;
+        public GroupStateService.API getGroupStateService() {
+            return mock(GroupStateService.API.class);
+        }
+
+        @Bean
+        public StateNotificationWorker getStateNotificationWorker() {
+            return mock(StateNotificationWorker.class);
         }
     }
 }

@@ -8,10 +8,7 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateNotificationServiceImpl;
 import org.joda.time.DateTime;
@@ -44,7 +41,10 @@ public class WebServerStateServiceImplTest {
     private StatePersistenceService<WebServer, WebServerReachableState> persistenceService;
 
     @Mock
-    private StateNotificationGateway notificationGateway;
+    private GroupStateService.API groupStateService;
+
+    @Mock
+    private StateNotificationWorker stateNotificationWorker;
 
     @Mock
     private StateService<WebServer, WebServerReachableState> stateService;
@@ -60,8 +60,9 @@ public class WebServerStateServiceImplTest {
                 new TimeDuration(30L, TimeUnit.SECONDS));
         notificationService = new InMemoryStateNotificationServiceImpl(notificationConsumerBuilder);
         stateService = new WebServerStateServiceImpl(persistenceService,
-                notificationService,
-                notificationGateway);
+                                                     notificationService,
+                                                     groupStateService,
+                                                     stateNotificationWorker);
     }
 
     @Test

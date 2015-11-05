@@ -38,6 +38,12 @@ public class InMemoryStateNotificationServiceImplTest {
     private StateNotificationGateway notificationGateway;
 
     @Mock
+    private GroupStateService.API groupStateService;
+
+    @Mock
+    private StateNotificationWorker stateNotificationWorker;
+
+    @Mock
     private StateService<WebServer, WebServerReachableState> stateService;
 
     private StateNotificationService notificationService;
@@ -50,7 +56,8 @@ public class InMemoryStateNotificationServiceImplTest {
         notificationService = new InMemoryStateNotificationServiceImpl(notificationConsumerBuilder);
         stateService = new WebServerStateServiceImpl(persistenceService,
                                                      notificationService,
-                                                     notificationGateway);
+                                                     groupStateService,
+                                                     stateNotificationWorker);
     }
 
     @Test

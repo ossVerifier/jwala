@@ -25,10 +25,7 @@ import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.Initializer;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.Lease;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.ReadWriteLease;
-import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -75,8 +72,9 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
                                  StateNotificationService theNotificationService, StateType theStateType,
-                                 StateNotificationGateway theStateNotificationGateway) {
-        super(thePersistenceService, theNotificationService, theStateType, theStateNotificationGateway);
+                                 final GroupStateService.API groupStateService,
+                                 final StateNotificationWorker stateNotificationWorker) {
+        super(thePersistenceService, theNotificationService, theStateType, groupStateService, stateNotificationWorker);
 
         systemUser = User.getSystemUser();
     }
@@ -84,7 +82,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    @Splitter
     public List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException {
 
         LOGGER.debug("Recalculating group state due to jvm update: " + cjs.toString());
@@ -160,7 +157,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    @Splitter
     public List<SetGroupStateCommand> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) throws InterruptedException {
         LOGGER.debug("GSS Recalc group state due to web server update: " + wsState.toString());
 
@@ -183,7 +179,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    @Splitter
     public SetGroupStateCommand stateUpdateRequest(Group group) throws InterruptedException {
         LOGGER.debug("GSS Recalc group state by request.");
 

@@ -6,9 +6,7 @@ import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 import org.joda.time.DateTime;
 
@@ -20,11 +18,9 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
 
     public WebServerStateServiceImpl(final StatePersistenceService<WebServer, WebServerReachableState> thePersistenceService,
                                      final StateNotificationService theNotificationService,
-                                     final StateNotificationGateway theStateNotificationGateway) {
-        super(thePersistenceService,
-              theNotificationService,
-              StateType.WEB_SERVER,
-              theStateNotificationGateway);
+                                     final GroupStateService.API groupStateService,
+                                     final StateNotificationWorker stateNotificationWorker) {
+        super(thePersistenceService, theNotificationService, StateType.WEB_SERVER, groupStateService, stateNotificationWorker);
 
         wsStatesToCheck.add(WebServerReachableState.WS_STARTING);
         wsStatesToCheck.add(WebServerReachableState.WS_STOPPING);
@@ -40,7 +36,7 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
 
     @Override
     protected void sendNotification(final CurrentState<WebServer, WebServerReachableState> anUpdatedState) {
-        getStateNotificationGateway().webServerStateChanged(anUpdatedState);
+        throw new UnsupportedOperationException("Deprecated!");
     }
 
     @Override

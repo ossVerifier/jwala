@@ -12,7 +12,8 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
+import com.siemens.cto.aem.service.state.GroupStateService;
+import com.siemens.cto.aem.service.state.StateNotificationWorker;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,18 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
-    private WebServerService webServerService;
+    private final WebServerService webServerService;
+    private final GroupStateService.API groupStateService;
+    private final StateNotificationWorker stateNotificationWorker;
 
     public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
-                            final StateNotificationGateway theStateNotificationGateway, WebServerService wSService) {
+                            final WebServerService wSService,
+                            final GroupStateService.API groupStateService,
+                            final StateNotificationWorker stateNotificationWorker) {
         groupPersistenceService = theGroupPersistenceService;
         webServerService = wSService;
+        this.groupStateService = groupStateService;
+        this.stateNotificationWorker = stateNotificationWorker;
     }
 
     @Override
@@ -86,7 +93,8 @@ public class GroupServiceImpl implements GroupService {
         anUpdateGroupCommand.validateCommand();
         Group group = groupPersistenceService.updateGroup(
                 createEvent(anUpdateGroupCommand, anUpdatingUser));
-        
+
+        stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -110,6 +118,7 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.addJvmToGroup(createEvent(aCommand,
                                                                  anAddingUser));
+        stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -126,6 +135,7 @@ public class GroupServiceImpl implements GroupService {
 
         Group group = getGroup(aCommand.getGroupId());
 
+        stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -137,6 +147,7 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
                                                                       aRemovingUser));
+        stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 

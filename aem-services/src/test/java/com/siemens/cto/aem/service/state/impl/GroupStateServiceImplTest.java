@@ -19,10 +19,7 @@ import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
-import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -59,6 +56,8 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {GroupStateServiceImplTest.CommonConfiguration.class})
+@Ignore
+@Deprecated
 public class GroupStateServiceImplTest {
 
     @Autowired
@@ -66,7 +65,11 @@ public class GroupStateServiceImplTest {
     SubscribableChannel stateUpdates;
 
     @Autowired
-    StateNotificationGateway stateNotificationGateway;
+    @Qualifier("groupStateService")
+    GroupStateService.API getGroupStateService;
+
+    @Autowired
+    StateNotificationWorker stateNotificationWorker;
 
     @Autowired
     JvmPersistenceService jvmPersistenceService;
@@ -103,7 +106,8 @@ public class GroupStateServiceImplTest {
         });
 
         synchronized (this) {
-            stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+            stateNotificationWorker.sendStateChangeNotification(groupStateService,
+                    new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
             this.wait(5000);
         }
 
@@ -134,7 +138,8 @@ public class GroupStateServiceImplTest {
         // test
         synchronized (this) {
             for (int i = 0; i < 3; ++i) {
-                stateNotificationGateway.jvmStateChanged(new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+                stateNotificationWorker.sendStateChangeNotification(groupStateService,
+                        new CurrentState<>(id(0L, Jvm.class), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
             }
             this.wait(250); // for the first one
         }
@@ -442,11 +447,10 @@ public class GroupStateServiceImplTest {
     }
 
     @Configuration
-    @ImportResource("classpath*:META-INF/spring/integration-state.xml")
     static class CommonConfiguration {
 
         @Autowired
-        StateNotificationGateway stateNotification;
+        public StateNotificationWorker stateNotificationWorker;
 
         @Bean(name = "groupStateMachine")
         public GroupStateMachine getGroupStateManagerTableImpl() {
@@ -493,7 +497,8 @@ public class GroupStateServiceImplTest {
                     getGroupPersistenceService(),
                     getStateNotificationService(),
                     StateType.GROUP,
-                    stateNotification
+                    getGroupStateService(),
+                    stateNotificationWorker
             );
         }
     }

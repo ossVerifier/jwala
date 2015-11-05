@@ -12,6 +12,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
  * Gateway into the integration engine for state updates
  *
  */
+@Deprecated
 public interface StateNotificationGateway {
 
     public void jvmStateChanged(CurrentState<Jvm, JvmState> jvmState);

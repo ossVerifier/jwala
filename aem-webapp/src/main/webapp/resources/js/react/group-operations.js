@@ -210,6 +210,9 @@ var GroupOperations = React.createClass({
                                                   }
                                               }/>, mountingNode.get(0));
                             }
+                        } else if (newJvmStates[i].stateString === GroupOperations.START_SENT ||
+                                   newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
+                            // TODO: Send to log window...
                         } else {
                             jvmStatusWidget.setStatus(newJvmStates[i].stateString,
                                                       newJvmStates[i].asOf,
@@ -277,6 +280,8 @@ var GroupOperations = React.createClass({
         webServerStatusWidgetMap: {},
         jvmStatusWidgetMap: {},
         FAILED: "FAILED",
+        START_SENT: "START SENT",
+        STOP_SENT: "STOP SENT",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
@@ -483,7 +488,6 @@ var GroupOperationsDataTable = React.createClass({
                                   customSpanClassName:"ui-icon ui-icon-mgr",
                                   buttonClassName:"ui-button-height",
                                   extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
-                                 {id:"spacediag", tocType:"space"},
                                  {tocType:"space"},
                                  {id:"threadDump",
                                   sTitle:"Thread Dump",

@@ -130,8 +130,8 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         // Unknown states
         Set<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
         for (OperationalState state : new OperationalState[]{
+                JVM_UNKNOWN, /* was reused for group state ? */
                 JVM_UNKNOWN,
-                JVM_STALE,
                 WS_UNKNOWN
         }) {
             unknownStates.add(state);

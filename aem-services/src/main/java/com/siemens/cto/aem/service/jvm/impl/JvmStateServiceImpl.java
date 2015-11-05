@@ -8,9 +8,7 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.service.state.StateNotificationGateway;
-import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,16 +25,17 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
     private ArrayList<JvmState> jvmStatesToCheck = new ArrayList<>(10);
     private ArrayList<JvmState> jvmStoppingStatesToCheck = new ArrayList<>(1);
     
+
     @Value("${states.stopped-check.jvm.max-stop-time.millis}")
     private int serviceStoppedMillis;
 
+    private final GroupStateService.API groupStateService;
+
     public JvmStateServiceImpl(final StatePersistenceService<Jvm, JvmState> thePersistenceService,
                                         final StateNotificationService theNotificationService,
-                                        final StateNotificationGateway theStateNotificationGateway) {
-        super(thePersistenceService,
-              theNotificationService,
-              StateType.JVM,
-              theStateNotificationGateway);
+                                        final GroupStateService.API groupStateService,
+                                        final StateNotificationWorker stateNotificationWorker) {
+        super(thePersistenceService, theNotificationService, StateType.JVM, groupStateService, stateNotificationWorker);
 
         jvmStatesToCheck.add(JvmState.JVM_INITIALIZING);
         jvmStatesToCheck.add(JvmState.JVM_INITIALIZED);
@@ -49,6 +48,8 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
         jvmStatesToCheck.add(JvmState.JVM_UNKNOWN);
 
         jvmStoppingStatesToCheck.add(JvmState.JVM_STOPPED);
+
+        this.groupStateService = groupStateService;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
 
     @Override
     protected void sendNotification(final CurrentState<Jvm, JvmState> anUpdatedState) {
-        getStateNotificationGateway().jvmStateChanged(anUpdatedState);
+        throw new UnsupportedOperationException("Deprecated!");
     }
 
     /** 
@@ -81,8 +82,8 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
         cutoff.add(Calendar.MILLISECOND, 0-serviceStoppedMillis);
         List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.SVC_STOPPED, jvmStoppingStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
         for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
-            // TODO test to see if we can uncomment this line
-//            getNotificationService().notifyStateUpdated(anUpdatedState);
+            getStateNotificationWorker().sendStateChangeNotification(groupStateService, anUpdatedState);
+            getNotificationService().notifyStateUpdated(anUpdatedState);
         }
     }
 }

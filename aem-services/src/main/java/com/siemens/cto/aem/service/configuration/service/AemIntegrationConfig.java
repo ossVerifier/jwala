@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadFactory;
 @ImportResource({
     "classpath:META-INF/spring/integration.xml",
     "classpath:META-INF/spring/integration-jmx.xml",
-    "classpath:META-INF/spring/jvm-heartbeat-integration.xml",
     "classpath:META-INF/spring/common-heartbeat-dependencies.xml"
 })
 public class AemIntegrationConfig {

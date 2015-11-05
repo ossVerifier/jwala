@@ -78,7 +78,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableAsync
 @EnableScheduling
-@ComponentScan("com.siemens.cto.aem.service.webserver.component")
+@ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -99,11 +99,14 @@ public class AemServiceConfiguration {
     @Autowired
     private FileManager fileManager;
 
-    // @Autowired
-    // TODO: Deprecate!
-    private StateNotificationGateway stateNotificationGateway;
+    @Autowired
+    private GroupStateService.API groupStateService;
 
     @Autowired
+    private StateNotificationWorker stateNotificationWorker;
+
+    // @Autowired
+    // TODO: Deprecate!
     private JvmStateGateway jvmStateGateway;
 
     @Autowired
@@ -149,7 +152,7 @@ public class AemServiceConfiguration {
                 persistenceServiceConfiguration.getGroupPersistenceService(),
                 getStateNotificationService(),
                 StateType.GROUP,
-                stateNotificationGateway
+                groupStateService, stateNotificationWorker
         );
     }
 
@@ -157,8 +160,7 @@ public class AemServiceConfiguration {
     public GroupService getGroupService() {
         return new GroupServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
-                stateNotificationGateway,
-                getWebServerService());
+                getWebServerService(), groupStateService, stateNotificationWorker);
     }
 
     @Bean(name = "jvmService")
@@ -293,14 +295,14 @@ public class AemServiceConfiguration {
     public StateService<Jvm, JvmState> getJvmStateService() {
         return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
                 getStateNotificationService(),
-                stateNotificationGateway);
+                groupStateService, stateNotificationWorker);
     }
 
     @Bean(name = "webServerStateService")
     public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
         return new WebServerStateServiceImpl(persistenceServiceConfiguration.getWebServerStatePersistenceService(),
                 getStateNotificationService(),
-                stateNotificationGateway);
+                groupStateService, stateNotificationWorker);
     }
 
     @Bean
@@ -315,6 +317,7 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerHttpRequestFactory")
     @DependsOn("aemServiceConfigurationPropertiesConfigurer")
+    // TODO: Check why the bean name says webServer while the parameter seems to be for JVM. Is this bean actively in used ?
     public HttpClientRequestFactory getHttpClientRequestFactory(
             @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
             @Value("${ping.jvm.readTimeout}") final int readTimeout,
@@ -356,6 +359,23 @@ public class AemServiceConfiguration {
                                                  @Value("${webserver.thread-task-executor.pool.max-size}") final int maxPoolSize,
                                                  @Value("${webserver.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
                                                  @Value("${webserver.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
+        final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
+        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        threadPoolTaskExecutor.setKeepAliveSeconds(keepAliveSeconds);
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        threadPoolTaskExecutor.setThreadFactory(threadFactory);
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "stateNotificationWorkerTaskExecutor")
+    @Autowired
+    public TaskExecutor getStateNotificationWorkerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
+                                                               @Value("${state-notification-worker.thread-task-executor.pool.size}") final int corePoolSize,
+                                                               @Value("${state-notification-worker.thread-task-executor.pool.max-size}") final int maxPoolSize,
+                                                               @Value("${state-notification-worker.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
+                                                               @Value("${state-notification-worker.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
         threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
