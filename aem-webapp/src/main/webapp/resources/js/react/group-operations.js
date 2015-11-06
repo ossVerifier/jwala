@@ -1279,6 +1279,12 @@ var CommandStatusWidget = React.createClass({
     },
     push: function(status, fontClassName) {
         var errMsg = status.message === "" ? [status.stateString] : groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
+
+        // Do simple cleanup when status array reaches 200 items.
+        if (this.state.statusRows.length >= 200) {
+            this.state.statusRows.splice(0, 50); // remove first 50 items
+        }
+
         if (errMsg[1]) {
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                                 <td>{status.userId}</td>
