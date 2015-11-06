@@ -20,6 +20,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
     private final DateTime asOf;
     private final StateType type;
     private final String message;
+    private String userId; // TODO: Have this set in the constructor.
 
     public CurrentState(final Identifier<S> theId,
                         final T theState,
@@ -72,6 +73,14 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
         return message;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     @Override
     public void provideState(final KeyValueStateConsumer aConsumer) {
         aConsumer.set(CommonStateKey.ID, id.getId().toString());
@@ -79,6 +88,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
         aConsumer.set(CommonStateKey.AS_OF, DATE_TIME_FORMATTER.print(asOf));
         aConsumer.set(CommonStateKey.STATE, state.toPersistentString());
         aConsumer.set(CommonStateKey.MESSAGE, message);
+        aConsumer.set(CommonStateKey.USERID, userId);
     }
 
     @SuppressWarnings("unchecked")
@@ -100,6 +110,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append(this.asOf, rhs.asOf)
                 .append(this.type, rhs.type)
                 .append(this.message, rhs.message)
+                .append(this.userId, rhs.userId)
                 .isEquals();
     }
 
@@ -111,6 +122,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append(asOf)
                 .append(type)
                 .append(message)
+                .append(userId)
                 .toHashCode();
     }
 
@@ -121,7 +133,9 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append("state", state)
                 .append("asOf", asOf)
                 .append("type", type)
-                .append("message", message) // Log the entire, because nobody else will report this message. 
+                .append("message", message)
+                .append("userId", userId) // Log the entire, because nobody else will report this message.
                 .toString();
     }
+
 }

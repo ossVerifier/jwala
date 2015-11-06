@@ -30,11 +30,13 @@ public abstract class AbstractCurrentStateMessageExtractor<T extends Operational
                                       getAsOf(aMessage),
                                       stateType);
         } else {
-            return new CurrentState<>(getId(aMessage),
-                                      getState(aMessage),
-                                      getAsOf(aMessage),
-                                      stateType,
-                                      stateMessage);
+            final CurrentState currentState = new CurrentState<>(getId(aMessage),
+                                                                 getState(aMessage),
+                                                                 getAsOf(aMessage),
+                                                                 stateType,
+                                                                 stateMessage);
+            currentState.setUserId(aMessage.getString("USERID")); // TODO: Define in the constructor in the future. For now this will do since were in a tight schedule!
+            return currentState;
         }
     }
 

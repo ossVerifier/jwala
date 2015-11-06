@@ -12,6 +12,7 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

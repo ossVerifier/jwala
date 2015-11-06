@@ -51,6 +51,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
         if (currentState == null || !currentState.getState().equals(latestState.getState()) ||
             !currentState.getMessage().equalsIgnoreCase(latestState.getMessage())) {
+            latestState.setUserId(aUser.getId());
             notificationService.notifyStateUpdated(latestState);
         }
 
