@@ -158,7 +158,12 @@ var GroupOperations = React.createClass({
                 for (var i = 0; i < newWebServerStates.length; i++) {
                     if (newWebServerStates[i].id.id === webServer.webServerId.id) {
                         if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-
+                            if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
+                                newWebServerStates[i].stateString = GroupOperations.START_SENT;
+                            }
+                            if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
+                            }
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
