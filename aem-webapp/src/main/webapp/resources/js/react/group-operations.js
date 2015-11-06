@@ -157,14 +157,15 @@ var GroupOperations = React.createClass({
             if (webServerStatusWidget !== undefined) {
                 for (var i = 0; i < newWebServerStates.length; i++) {
                     if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                        if (newWebServerStates[i].stateString === GroupOperations.FAILED) {
+                        if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
 
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
                                                           asOf: newWebServerStates[i].asOf,
                                                           message: newWebServerStates[i].message,
-                                                          from: "Web Server " + webServer.name}, "error-status-font");
+                                                          from: "Web Server " + webServer.name},
+                                                          newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
                             }
 
 
@@ -275,6 +276,8 @@ var GroupOperations = React.createClass({
         FAILED: "FAILED",
         START_SENT: "START SENT",
         STOP_SENT: "STOP SENT",
+        STARTING: "STARTING",
+        STOPPING: "STOPPING",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
