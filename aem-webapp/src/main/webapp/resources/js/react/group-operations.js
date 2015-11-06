@@ -164,7 +164,7 @@ var GroupOperations = React.createClass({
                                 commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
                                                           asOf: newWebServerStates[i].asOf,
                                                           message: newWebServerStates[i].message,
-                                                          from: webServer.name}, "error-status-font");
+                                                          from: "Web Server " + webServer.name}, "error-status-font");
                             }
 
 
@@ -198,7 +198,7 @@ var GroupOperations = React.createClass({
                                 commandStatusWidget.push({stateString: newJvmStates[i].stateString,
                                                           asOf: newJvmStates[i].asOf,
                                                           message: newJvmStates[i].message,
-                                                          from: jvm.name},
+                                                          from: "JVM " + jvm.name},
                                                           newJvmStates[i].stateString === GroupOperations.FAILED ?
                                                                 "error-status-font" : "action-status-font");
                             }
