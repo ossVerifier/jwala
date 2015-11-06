@@ -53,26 +53,6 @@
     color: #2e6e9e;
 }
 
-.command-status-background {
-    /* background: url("../../img/react/x.png") right bottom no-repeat !important; */
-}
-
-/* TODO: Convert this to a collapse button.
-.command-status-close-btn {
-    float: right;
-    display: block;
-    background: url("../../img/react/red-xbtn.png") no-repeat;
-    width: 16px;
-    height: 16px;
-    border: none;
-}
-
-.command-status-close-btn.hover {
-    border: 1px solid rgb(232, 176, 176);
-    cursor: pointer;
-}
-*/
-
 .ui-icon-gear-custom {
     background-image: url("../../img/react/gear-icon.png") !important;
     background-position: -1px;
