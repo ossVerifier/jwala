@@ -35,6 +35,7 @@ var GroupOperations = React.createClass({
                                                               jvms={this.state.jvms}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
                                                               stateService={this.props.stateService}
+                                                              commandStatusWidgetMap={this.commandStatusWidgetMap}
                                                               parent={this}/>
                                 </div>
                             </td>
@@ -146,8 +147,10 @@ var GroupOperations = React.createClass({
             }
         });
     },
+    commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
     updateWebServerStateData: function(newWebServerStates) {
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
+        var self = this;
         webServersToUpdate.forEach(
         function(webServer) {
             var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
@@ -155,22 +158,16 @@ var GroupOperations = React.createClass({
                 for (var i = 0; i < newWebServerStates.length; i++) {
                     if (newWebServerStates[i].id.id === webServer.webServerId.id) {
                         if (newWebServerStates[i].stateString === GroupOperations.FAILED) {
-                            // Reroute to command status component.
-                            var mountingNode = $("#" + GroupOperations.getExtDivCompId(webServer.groupId.id));
-                            if (mountingNode.length > 0) {
-                                var status = {stateString: newWebServerStates[i].stateString,
-                                              asOf: newWebServerStates[i].asOf,
-                                              message: newWebServerStates[i].message,
-                                              from: webServer.name};
-                                GroupOperations.pushCommandStatus(webServer.groupId.id, status);
-                                React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[webServer.groupId.id]}
-                                              closeCallback={
-                                                  function(){
-                                                      GroupOperations.commandStatusMap[webServer.groupId.id] = [];
-                                                      React.unmountComponentAtNode (mountingNode.get(0));
-                                                  }
-                                              }/>, mountingNode.get(0));
+
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                            if (commandStatusWidget !== undefined) {
+                                commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
+                                                          asOf: newWebServerStates[i].asOf,
+                                                          message: newWebServerStates[i].message,
+                                                          from: webServer.name}, "error-status-font");
                             }
+
+
                         } else {
                             webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
                                                             newWebServerStates[i].asOf,
@@ -184,40 +181,36 @@ var GroupOperations = React.createClass({
     updateJvmStateData: function(newJvmStates) {
         var self = this;
 
-
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
-
 
         jvmsToUpdate.forEach(function(jvm) {
             var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
             if (jvmStatusWidget !== undefined) {
                 for (var i = 0; i < newJvmStates.length; i++) {
                     if (newJvmStates[i].id.id === jvm.jvmId.id) {
-                        if (newJvmStates[i].stateString === GroupOperations.FAILED) {
-                            // Reroute to command status component.
-                            var mountingNode = $("#" + GroupOperations.getExtDivCompId(jvm.groupId.id));
-                            if (mountingNode.length > 0) {
-                                var status = {stateString: newJvmStates[i].stateString,
-                                              asOf: newJvmStates[i].asOf,
-                                              message: newJvmStates[i].message,
-                                              from: jvm.name};
-                                GroupOperations.pushCommandStatus(jvm.groupId.id, status);
-                                React.render(<CommandStatusWidget statusDetails={GroupOperations.commandStatusMap[jvm.groupId.id]}
-                                              closeCallback={
-                                                  function(){
-                                                      GroupOperations.commandStatusMap[jvm.groupId.id] = [];
-                                                      React.unmountComponentAtNode (mountingNode.get(0));
-                                                  }
-                                              }/>, mountingNode.get(0));
+
+                        if (newJvmStates[i].stateString === GroupOperations.FAILED ||
+                            newJvmStates[i].stateString === GroupOperations.START_SENT ||
+                            newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
+
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                            if (commandStatusWidget !== undefined) {
+                                commandStatusWidget.push({stateString: newJvmStates[i].stateString,
+                                                          asOf: newJvmStates[i].asOf,
+                                                          message: newJvmStates[i].message,
+                                                          from: jvm.name},
+                                                          newJvmStates[i].stateString === GroupOperations.FAILED ?
+                                                                "error-status-font" : "action-status-font");
                             }
-                        } else if (newJvmStates[i].stateString === GroupOperations.START_SENT ||
-                                   newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
-                            // TODO: Send to log window...
+
                         } else {
                             jvmStatusWidget.setStatus(newJvmStates[i].stateString,
                                                       newJvmStates[i].asOf,
                                                       newJvmStates[i].message);
                         }
+
+
+
                     }
                 }
             }
@@ -672,6 +665,15 @@ var GroupOperationsDataTable = React.createClass({
    },
    getWebServersOfGrp: function(idObj, responseCallback) {
         var self = this;
+        var key = GroupOperations.getExtDivCompId(idObj.parentId);
+
+        // Mount a status window where one can see action events and status errors.
+        var mountingNode = $("#" + key);
+        if (mountingNode.length > 0) {
+            React.render(<CommandStatusWidget key={key} />, mountingNode.get(0), function(){
+                self.props.commandStatusWidgetMap[key] = this;
+            });
+        }
 
         webServerService.getWebServerByGroupId(idObj.parentId, function(response) {
             // This is when the row is initially opened.
@@ -1236,35 +1238,22 @@ var WebServerControlPanelWidget = React.createClass({
  */
 var CommandStatusWidget = React.createClass({
     getInitialState: function() {
-        return {xBtnHover: false};
+        return {xBtnHover: false, statusRows: []};
     },
     render: function() {
         var self = this;
-        var statusRows = [];
-        this.props.statusDetails.forEach(function(status) {
-            var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
-            if (errMsg[1]) {
-                statusRows.push(<tr><td className="command-status-td">{status.from}</td>
-                                                    <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                                    <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={self.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
-            } else {
-                statusRows.push(<tr><td className="command-status-td">{status.from}</td>
-                                    <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                    <td className="command-status-td">{errMsg[0]}</td></tr>);
-            }
-        });
 
         var xBtnHoverClass = this.state.xBtnHover ? "hover" : "";
         return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
                     <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
-                        <span className="ui-dialog-title">Error</span>
+                        <span className="ui-dialog-title">Action and Event Logs</span>
                         <span ref="xBtn" className={"command-status-close-btn " + xBtnHoverClass}
                             onClick={this.onXBtnClick} onMouseOver={this.onXBtnMouseOver} onMouseOut={this.onXBtnMouseOut}
                             title="Closing the error message window will also clear the error message list related to this group."/>
                     </div>
                     <div className="ui-dialog-content ui-widget-content command-status-background command-status-content">
                         <table>
-                            {statusRows}
+                            {this.state.statusRows}
                         </table>
                     </div>
                 </div>;
@@ -1282,5 +1271,18 @@ var CommandStatusWidget = React.createClass({
     },
     onXBtnMouseOut: function() {
         this.setState({xBtnHover: false});
+    },
+    push: function(status, fontClassName) {
+        var errMsg = status.message === "" ? [status.stateString] : groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
+        if (errMsg[1]) {
+            this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
+                                                <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
+        } else {
+            this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
+                                <td className="command-status-td">{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                <td className="command-status-td">{errMsg[0]}</td></tr>);
+        }
+        this.forceUpdate();
     }
 });

@@ -28,32 +28,36 @@
 
 .command-status-container {
     padding: 0 0 0 0 !important;
-    border: 1px solid rgb(232, 176, 176) !important;
     position: relative !important;
 }
 
 .command-status-header {
-    /* border: 1px solid rgb(174, 79, 81) !important; */
     border: none !important;
-    background: #CC5C5C url("../../img/react/ui-redgradient.png") 50% 2% repeat-x !important;
-    color: rgb(174, 79, 81) !important;
     padding: 1px 2px !important;
 }
 
 .command-status-content {
-    min-height: 120px !important;
+    height: 120px !important;
 }
 
 .command-status-td {
     vertical-align: top;
     min-width: 120px;
+}
+
+.error-status-font {
     color: rgb(154, 79, 81);
 }
 
-.command-status-background {
-    background: url("../../img/react/x.png") right bottom no-repeat !important;
+.action-status-font {
+    color: #2e6e9e;
 }
 
+.command-status-background {
+    /* background: url("../../img/react/x.png") right bottom no-repeat !important; */
+}
+
+/* TODO: Convert this to a collapse button.
 .command-status-close-btn {
     float: right;
     display: block;
@@ -67,6 +71,7 @@
     border: 1px solid rgb(232, 176, 176);
     cursor: pointer;
 }
+*/
 
 .ui-icon-gear-custom {
     background-image: url("../../img/react/gear-icon.png") !important;
