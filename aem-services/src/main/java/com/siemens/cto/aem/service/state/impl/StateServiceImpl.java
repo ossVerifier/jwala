@@ -54,9 +54,6 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
             notificationService.notifyStateUpdated(latestState);
         }
 
-        // The internal bus is allowed to care about all state updates.
-        // sendNotification(latestState); // TODO: Double check what this does and find out if we need to redo this in Java (it currently uses spring integration).
-
         stateNotificationWorker.sendStateChangeNotification(groupStateService, latestState);
 
         return latestState;
