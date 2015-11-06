@@ -25,7 +25,7 @@ var stateService = function() {
     return {
         getCurrentJvmStates : function(ids) {
             return serviceFoundation.promisedGet("v1.0/jvms/states/current" + constructIdParameters("jvmId", ids),
-                                                 "json");
+                                                 "json", true);
         },
         getCurrentWebServerStates : function(ids) {
             return serviceFoundation.promisedGet("v1.0/webservers/states/current" + constructIdParameters("webServerId", ids),

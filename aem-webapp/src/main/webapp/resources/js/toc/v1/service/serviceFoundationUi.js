@@ -1,7 +1,7 @@
 var serviceFoundationUi = function(theActualLoadingFunc, theActualHidingFunc) {
 
     var noOpFunc = function() {};
-    var gracePeriod = 500; //milliseconds before the loading indicator is actually shown
+    var gracePeriod = 0; //milliseconds before the loading indicator is actually shown
     var loadingTimeout;
 
     var setLoadingTimeout = function(aFunc) {
