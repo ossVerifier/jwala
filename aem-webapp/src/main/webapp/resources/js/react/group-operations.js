@@ -1238,26 +1238,34 @@ var WebServerControlPanelWidget = React.createClass({
  */
 var CommandStatusWidget = React.createClass({
     getInitialState: function() {
-        return {xBtnHover: false, statusRows: []};
+        return {xBtnHover: false, statusRows: [], isOpen: true};
     },
     render: function() {
         var self = this;
 
+        var openCloseBtnClassName = "ui-icon-triangle-1-e";
+        var content = null;
+        if (this.state.isOpen) {
+            openCloseBtnClassName = "ui-icon-triangle-1-s";
+            content = <div className="ui-dialog-content ui-widget-content command-status-background command-status-content">
+                          <table>
+                              {this.state.statusRows}
+                          </table>
+                      </div>;
+        }
+
         var xBtnHoverClass = this.state.xBtnHover ? "hover" : "";
         return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
                     <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
-                        <span className="ui-dialog-title">Action and Event Logs</span>
-                        <span ref="xBtn" className={"command-status-close-btn " + xBtnHoverClass}
-                            onClick={this.onXBtnClick} onMouseOver={this.onXBtnMouseOver} onMouseOut={this.onXBtnMouseOut}
-                            title="Closing the error message window will also clear the error message list related to this group."/>
+                        <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
+                        <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
                     </div>
-                    <div className="ui-dialog-content ui-widget-content command-status-background command-status-content">
-                        <table>
-                            {this.state.statusRows}
-                        </table>
-                    </div>
+                    {content}
                 </div>;
 
+    },
+    clickOpenCloseWindowHandler: function() {
+        this.setState({isOpen: !this.state.isOpen});
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
