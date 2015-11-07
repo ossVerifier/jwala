@@ -1,5 +1,14 @@
 /** @jsx React.DOM */
 var ExpandCollapseControl = React.createClass({
+    dataTableRenderParams: {subDataTable: null, data: null, defaultSorting: null, isCollapsible: null, headerComponents: null},
+    initDataTableRenderParams: function() {
+        this.dataTableRenderParams.subDataTable = [];
+        this.dataTableRenderParams.data = [];
+        this.dataTableRenderParams.defaultSorting = [];
+        this.dataTableRenderParams.isCollapsible = [];
+        this.dataTableRenderParams.headerComponents = [];
+    },
+    renderTableCountDown: 0,
     render: function() {
         var dataSources = [];
         var childTableDetailsArray = [];
@@ -131,8 +140,10 @@ var ExpandCollapseControl = React.createClass({
                                            this.fnFormatDetails(),
                                            this.props.rowSubComponentContainerClassName);
 
-              $(rowNode).addClass($(nTr).attr("class"));
+            $(rowNode).addClass($(nTr).attr("class"));
 
+            this.initDataTableRenderParams();
+            this.renderTableCountDown = dataSources.length;
             for (var i = 0; i < dataSources.length; i++) {
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
 
@@ -147,11 +158,14 @@ var ExpandCollapseControl = React.createClass({
                         o["parentItemId"] = self.props.parentItemId;
                     });
 
-                    this.drawDataTable(subDataTable,
-                                       data,
-                                       childTableDetailsArray[i].defaultSorting,
-                                       childTableDetailsArray[i].isCollapsible,
-                                       childTableDetailsArray[i].headerComponents);
+                    this.dataTableRenderParams.subDataTable.push(subDataTable);
+                    this.dataTableRenderParams.data.push(data);
+                    this.dataTableRenderParams.defaultSorting.push(childTableDetailsArray[i].defaultSorting);
+                    this.dataTableRenderParams.isCollapsible.push(childTableDetailsArray[i].isCollapsible);
+                    this.dataTableRenderParams.headerComponents.push(childTableDetailsArray[i].headerComponents);
+
+                    this.renderTables();
+
                 } else {
                     if (dataSources[i].dataCallback !== undefined) {
                             dataSources[i].dataCallback({rootId: this.props.rootId, parentId: this.props.parentItemId},
@@ -203,7 +217,50 @@ var ExpandCollapseControl = React.createClass({
         return function(resp) {
             var data = resp.applicationResponseContent;
             if (data !== undefined) {
-                self.drawDataTable(subDataTable, data, defaultSorting, isCollapsible, headerComponents);
+
+                self.dataTableRenderParams.subDataTable.push(subDataTable);
+                self.dataTableRenderParams.data.push(data);
+                self.dataTableRenderParams.defaultSorting.push(defaultSorting);
+                self.dataTableRenderParams.isCollapsible.push(isCollapsible);
+                self.dataTableRenderParams.headerComponents.push(headerComponents);
+
+                self.renderTables();
+            }
+        }
+    },
+    renderTables: function() {
+        this.renderTableCountDown--;
+        if (this.renderTableCountDown !== 0) {
+            return;
+        }
+
+        var self = this;
+        var i = 0;
+
+        try {
+            ExpandCollapseControl.suspendPolling();
+            this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
+                self.drawDataTable(subDataTable,
+                                   self.dataTableRenderParams.data[i],
+                                   self.dataTableRenderParams.defaultSorting[i],
+                                   self.dataTableRenderParams.isCollapsible[i],
+                                   self.dataTableRenderParams.headerComponents[i]);
+                i++;
+            })
+        } finally {
+            ExpandCollapseControl.resumePolling();
+        }
+
+    },
+    statics: {
+        suspendPolling: function() {
+            if (GroupOperations.statePoller !== null) {
+                GroupOperations.statePoller.stop();
+            }
+        },
+        resumePolling: function() {
+            if (GroupOperations.statePoller !== null) {
+                GroupOperations.statePoller.start();
             }
         }
     }
