@@ -287,7 +287,7 @@ var GroupOperations = React.createClass({
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
-        UNKNOWN_STATE: "UNKNOWN",
+        UNKNOWN_STATE: "",
         POLL_ERR_STATE: "POLLING ERROR!",
         statePoller: null,
         STATE_POLLER_INTERVAL: 1
