@@ -87,6 +87,10 @@ var GroupOperations = React.createClass({
         this.updateJvmStateData(jvms);
     },
     statePollingErrorHandler: function(response) {
+        if (!GroupOperations.statePoller.isActive()) {
+            return;
+        }
+
         if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
             alert("The session has expired! You will be redirected to the login page.");
             window.location.href = "login";

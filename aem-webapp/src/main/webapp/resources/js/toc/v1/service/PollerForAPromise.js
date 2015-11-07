@@ -15,6 +15,7 @@
  */
 function PollerForAPromise(interval, runner, thenCallback, caughtCallback) {
     this.interval = interval;
+    this.isStarted = false;
     this.isRunning = false;
     this.runner = runner;
     var self = this;
@@ -32,6 +33,7 @@ function PollerForAPromise(interval, runner, thenCallback, caughtCallback) {
  */
 PollerForAPromise.prototype.start = function() {
     this.intervalHandle = setInterval(this.runnerWrapper, this.interval);
+    this.isStarted = true;
 }
 
 /**
@@ -39,4 +41,9 @@ PollerForAPromise.prototype.start = function() {
  */
 PollerForAPromise.prototype.stop = function() {
     clearInterval(this.intervalHandle);
+    this.isStarted = false;
+}
+
+PollerForAPromise.prototype.isActive = function() {
+    return this.isStarted;
 }
