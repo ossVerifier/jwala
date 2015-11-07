@@ -17,6 +17,13 @@ var MainArea = React.createClass({
                             </td>
                         </tr>
                     </table>
+                    <div className="preload">
+                        {/* This fixes icon loading issues when opening a row with many items e.g. jvms, web servers and apps */}
+                        <img src="public-resources/img/react/gear-icon.png" />
+                        <img src="public-resources/img/icons/heap-dump.png" />
+                        <img src="public-resources/img/icons/thread-dump.png" />
+                        <img src="public-resources/img/icons/mgr.png" />
+                    </div>
                </div>
     },
     statics: {

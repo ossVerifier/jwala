@@ -166,3 +166,7 @@ div .state {
 .react-dialog-container {
     position: absolute; /* Makes sure that the child dialog's position is relative to it's container! */
 }
+
+div.preload {
+    display: none;
+}
