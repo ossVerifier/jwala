@@ -23,6 +23,7 @@ var MainArea = React.createClass({
                         <img src="public-resources/img/icons/heap-dump.png" />
                         <img src="public-resources/img/icons/thread-dump.png" />
                         <img src="public-resources/img/icons/mgr.png" />
+                        <img src="public-resources/img/blue-and-light-blue-gears.gif"/>
                     </div>
                </div>
     },

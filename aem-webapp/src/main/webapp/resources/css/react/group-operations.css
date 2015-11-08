@@ -57,3 +57,12 @@
     background-image: url("../../img/react/gear-icon.png") !important;
     background-position: -1px;
 }
+
+div.expand-collapse-loading-indicator {
+    padding: 5px 0 5px 0;
+}
+
+img.expand-collapse-loading-indicator {
+    display:block;
+    margin:auto;
+}

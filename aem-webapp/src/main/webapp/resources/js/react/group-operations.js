@@ -695,11 +695,11 @@ var GroupOperationsDataTable = React.createClass({
             // This will set the state which triggers DOM rendering thus the state will be updated
             // TODO: Find out if the code below is still necessary since removing it seems to have no effect whatsoever.
             self.props.updateWebServerDataCallback(response.applicationResponseContent);
-        });
+        }, false);
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
         // TODO: Verify if we need to display the applications on a group. If we need to, I think this needs fixing. For starters, we need to include the group id in the application response.
-        webAppService.getWebAppsByGroup(idObj.parentId, responseCallback);
+        webAppService.getWebAppsByGroup(idObj.parentId, responseCallback, false);
    },
    getApplicationsOfJvm: function(idObj, responseCallback) {
 

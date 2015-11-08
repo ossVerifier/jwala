@@ -1,7 +1,7 @@
 var serviceFoundation = {
 
-    get : function (url, dataType, thenCallback) {
-        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
+    get : function (url, dataType, thenCallback, loadingVisible) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(loadingVisible === undefined ? true : loadingVisible);
         return Promise.cast($.ajax({url: url,
                                     dataType: dataType,
                                     type: 'GET',

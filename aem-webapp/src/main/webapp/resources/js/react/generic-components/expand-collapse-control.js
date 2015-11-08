@@ -8,6 +8,7 @@ var ExpandCollapseControl = React.createClass({
         this.dataTableRenderParams.isCollapsible = [];
         this.dataTableRenderParams.headerComponents = [];
     },
+    loadingIndicatorClassName: null,
     renderTableCountDown: 0,
     render: function() {
         var dataSources = [];
@@ -141,6 +142,8 @@ var ExpandCollapseControl = React.createClass({
                                            this.props.rowSubComponentContainerClassName);
 
             $(rowNode).addClass($(nTr).attr("class"));
+            this.loadingIndicatorClassName = this.props.id + "-loading-indicator";
+            $(rowNode.children[0]).append("<div class='" + this.loadingIndicatorClassName  + " expand-collapse-loading-indicator'><img class='expand-collapse-loading-indicator' src='public-resources/img/blue-and-light-blue-gears.gif'/></div>");
 
             this.initDataTableRenderParams();
             this.renderTableCountDown = dataSources.length;
@@ -241,6 +244,8 @@ var ExpandCollapseControl = React.createClass({
             ExpandCollapseControl.suspendPolling();
 
             this.props.openRowLoadDataDoneCallback(this.props.parentItemId);
+
+            $("." + this.loadingIndicatorClassName).remove();
 
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
                 self.drawDataTable(subDataTable,
