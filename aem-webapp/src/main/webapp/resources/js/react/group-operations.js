@@ -560,7 +560,20 @@ var GroupOperationsDataTable = React.createClass({
                              childTableDetails={childTableDetailsArray}
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}
-                             isColResizable={true}/>
+                             isColResizable={true}
+                             openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
+   },
+   openRowLoadDataDoneCallbackHandler: function(groupId) {
+       var self = this;
+       var key = GroupOperations.getExtDivCompId(groupId);
+
+       // Mount a status window where one can see action events and status errors.
+       var mountingNode = $("#" + key);
+       if (mountingNode.length > 0) {
+           React.render(<CommandStatusWidget key={key} />, mountingNode.get(0), function(){
+               self.props.commandStatusWidgetMap[key] = this;
+           });
+       }
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;
@@ -666,15 +679,6 @@ var GroupOperationsDataTable = React.createClass({
    },
    getWebServersOfGrp: function(idObj, responseCallback) {
         var self = this;
-        var key = GroupOperations.getExtDivCompId(idObj.parentId);
-
-        // Mount a status window where one can see action events and status errors.
-        var mountingNode = $("#" + key);
-        if (mountingNode.length > 0) {
-            React.render(<CommandStatusWidget key={key} />, mountingNode.get(0), function(){
-                self.props.commandStatusWidgetMap[key] = this;
-            });
-        }
 
         webServerService.getWebServerByGroupId(idObj.parentId, function(response) {
             // This is when the row is initially opened.

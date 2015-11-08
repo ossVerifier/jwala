@@ -239,6 +239,9 @@ var ExpandCollapseControl = React.createClass({
 
         try {
             ExpandCollapseControl.suspendPolling();
+
+            this.props.openRowLoadDataDoneCallback(this.props.parentItemId);
+
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
                 self.drawDataTable(subDataTable,
                                    self.dataTableRenderParams.data[i],

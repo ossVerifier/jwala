@@ -48,7 +48,12 @@ var TocDataTable = React.createClass({
                                                       this.props.expandIcon,
                                                       this.props.collapseIcon,
                                                       this.props.childTableDetails,
-                                                      this.props.initialSortColumn);
+                                                      this.props.initialSortColumn,
+                                                      undefined,
+                                                      undefined,
+                                                      undefined,
+                                                      undefined,
+                                                      this.props.openRowLoadDataDoneCallback);
         }
 
         if (this.dataTable !== null) {
