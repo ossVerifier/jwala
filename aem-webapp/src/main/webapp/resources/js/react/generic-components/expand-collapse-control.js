@@ -143,7 +143,7 @@ var ExpandCollapseControl = React.createClass({
 
             $(rowNode).addClass($(nTr).attr("class"));
             this.loadingIndicatorClassName = this.props.id + "-loading-indicator";
-            $(rowNode.children[0]).append("<div class='" + this.loadingIndicatorClassName  + " expand-collapse-loading-indicator'><img class='expand-collapse-loading-indicator' src='public-resources/img/blue-and-light-blue-gears.gif'/></div>");
+            $(rowNode.children[0]).append("<div class='" + this.loadingIndicatorClassName  + " expand-collapse-loading-indicator-container'><div class='expand-collapse-loading-indicator-img'><span class='expand-collapse-loading-indicator-text'>LOADING...</span></div>");
 
             this.initDataTableRenderParams();
             this.renderTableCountDown = dataSources.length;
@@ -245,8 +245,6 @@ var ExpandCollapseControl = React.createClass({
 
             this.props.openRowLoadDataDoneCallback(this.props.parentItemId);
 
-            $("." + this.loadingIndicatorClassName).remove();
-
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
                 self.drawDataTable(subDataTable,
                                    self.dataTableRenderParams.data[i],
@@ -256,6 +254,7 @@ var ExpandCollapseControl = React.createClass({
                 i++;
             })
         } finally {
+            $("." + this.loadingIndicatorClassName).remove();
             ExpandCollapseControl.resumePolling();
         }
 

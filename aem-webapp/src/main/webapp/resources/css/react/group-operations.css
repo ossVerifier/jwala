@@ -58,11 +58,21 @@
     background-position: -1px;
 }
 
-div.expand-collapse-loading-indicator {
-    padding: 5px 0 5px 0;
+.expand-collapse-loading-indicator-container {
+    height: 60px;
 }
 
-img.expand-collapse-loading-indicator {
-    display:block;
-    margin:auto;
+.expand-collapse-loading-indicator-img {
+    width: 50px;
+    height: 40px;
+    padding: 5px 0 5px 0;
+    background: url("../../img/blue-and-light-blue-gears.gif") no-repeat center;
+    vertical-align: middle;
+    margin-left: 450px;
+}
+
+.expand-collapse-loading-indicator-text {
+    color: #2498da;
+    font-size: 18px;
+    padding-left: 50px;
 }
