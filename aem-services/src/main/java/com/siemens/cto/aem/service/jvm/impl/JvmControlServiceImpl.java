@@ -73,7 +73,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         aUser);
             }
 
-            final ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
+            ExecData execData = jvmCommandExecutor.controlJvm(aCommand,
                     jvm);
             if (execData != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
                 execData.cleanStandardOutput();
@@ -81,7 +81,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
 
             if (execData != null && execData.getReturnCode().wasSuccessful()) {
-                logger.debug("exiting controlJvm for command {}", aCommand);
+                logger.info("exiting controlJvm for command {}", aCommand);
                 jvmControlServiceLifecycle.completeState(
                         aCommand,
                         aUser);
@@ -92,8 +92,12 @@ public class JvmControlServiceImpl implements JvmControlService {
                 }
                 switch (execData.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
-                        logger.error("exiting controlJvm for ABNORMAL_SUCCESS command {} :: {}", aCommand, result);
-                        jvmControlServiceLifecycle.startStateWithMessage(jvmId, ctrlOp.getConfirmedState(), result, aUser);
+                        logger.info("exiting controlJvm for ABNORMAL_SUCCESS command {} :: {}", aCommand, result);
+                        final ExecData newExecData = new ExecData(new ExecReturnCode(0),
+                                                                  execData.getStandardOutput(),
+                                                                  execData.getStandardError());
+                        execData = newExecData;
+                        jvmControlServiceLifecycle.completeState(aCommand, aUser);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_NO_OP:
                         logger.debug("exiting controlJvm with result NOOP for command {}: '{}'", aCommand, result);
