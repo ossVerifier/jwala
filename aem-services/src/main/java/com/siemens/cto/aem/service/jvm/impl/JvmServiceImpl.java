@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -19,6 +20,9 @@ import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.state.command.JvmSetStateCommand;
+import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -30,11 +34,22 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+import groovy.text.SimpleTemplateEngine;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
@@ -50,6 +65,9 @@ public class JvmServiceImpl implements JvmService {
     private final FileManager fileManager;
     private final StateService<Jvm, JvmState> stateService;
     private SshConfiguration sshConfig;
+
+    @Autowired
+    private ClientFactoryHelper clientFactoryHelper;
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
@@ -186,7 +204,96 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public String performDiagnosis(Identifier<Jvm> aJvmId) {
-        throw new UnsupportedOperationException("JVM diagnosis is not supported for now.");
+        // if the Jvm does not exist, we'll get a 404 NotFoundException
+        Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
+
+        pingJvm(jvm);
+
+        SimpleTemplateEngine engine = new SimpleTemplateEngine();
+        Map<String, Object> binding = new HashMap<String, Object>();
+        binding.put("jvm", jvm);
+
+        try {
+            return engine.createTemplate(DIAGNOSIS_INITIATED).make(binding).toString();
+        } catch (CompilationFailedException | ClassNotFoundException | IOException e) {
+            throw new ApplicationException(DIAGNOSIS_INITIATED, e);
+            // why do this? Because if there was a problem with the template that made
+            // it past initial testing, then it is probably due to the jvm in the binding
+            // so just dump out the diagnosis template and the exception so it can be
+            // debugged.
+        }
+    }
+
+    /**
+     * Ping the JVM via http get.
+     * Used by diagnose button.
+     * TODO: Run asynchronously if the dianose button will be a main stay.
+     * @param jvm the web server to ping.
+     */
+    public void pingJvm(final Jvm jvm) {
+        ClientHttpResponse response = null;
+
+        try {
+            response = clientFactoryHelper.requestGet(jvm.getStatusUri());
+            LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                setState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+            } else {
+                setState(jvm, JvmState.SVC_STOPPED,
+                        "Request for '" + jvm.getStatusUri() + "' failed with a response code of '" +
+                                response.getStatusCode() + "'");
+            }
+        } catch (IOException ioe) {
+            LOGGER.info(ioe.getMessage(), ioe);
+            setState(jvm, JvmState.SVC_STOPPED, StringUtils.EMPTY);
+        } catch (RuntimeException rte) {
+            LOGGER.error(rte.getMessage(), rte);
+            String msg = ExceptionUtils.getStackTrace(rte);
+            if (msg == null) {
+                msg = rte.getMessage();
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+
+    }
+
+    /**
+     * Sets the web server state if the web server is not starting or stopping.
+     * @param jvm the jvm
+     * @param state {@link JvmState}
+     * @param msg a message
+     */
+    private void setState(final Jvm jvm,
+                          final JvmState state,
+                          final String msg) {
+            stateService.setCurrentState(createStateCommand(jvm.getId(), state, msg),
+                    User.getSystemUser());
+    }
+
+    /**
+     * Sets the jvm state.
+     * @param id the jvm id {@link com.siemens.cto.aem.domain.model.id.Identifier}
+     * @param state the state {@link JvmState}
+     * @param msg a message
+     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     */
+    private SetStateCommand<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
+                                                                                   final JvmState state,
+                                                                                   final String msg) {
+        if (StringUtils.isEmpty(msg)) {
+            return new JvmSetStateCommand(new CurrentState<>(id,
+                                         state,
+                                         DateTime.now(),
+                                         StateType.JVM));
+        }
+        return new JvmSetStateCommand(new CurrentState<>(id,
+                                      state,
+                                      DateTime.now(),
+                                      StateType.JVM,
+                                      msg));
     }
 
     @Override

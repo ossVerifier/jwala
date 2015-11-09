@@ -483,6 +483,17 @@ var GroupOperationsDataTable = React.createClass({
                                   buttonClassName:"ui-button-height",
                                   extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
                                  {tocType:"space"},
+                                 {id:"diagnose",
+                                  sTitle:"Diagnose and resolve state",
+                                  mData:null,
+                                  tocType:"button",
+                                  btnLabel:"",
+                                  btnCallback:this.jvmDiagnose,
+                                  className:"inline-block",
+                                  customSpanClassName:"ui-icon ui-icon-wrench",
+                                  buttonClassName:"ui-button-height",
+                                  extraDataToPassOnCallback:["jvmName","groups"]},
+                                 {tocType:"space"},
                                  {id:"threadDump",
                                   sTitle:"Thread Dump",
                                   mData:null,
@@ -1028,6 +1039,15 @@ var GroupOperationsDataTable = React.createClass({
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
     jvmDiagnose: function(id, buttonSelector, data, parentItemId, cancelCallback) {
+        var commandStatusWidget = this.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(parentItemId)];
+        if (commandStatusWidget !== undefined) {
+            commandStatusWidget.push({stateString: "Diagnose and resolve state",
+                                      asOf: new Date().getTime(),
+                                      message: "",
+                                      from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
+                                      "action-status-font");
+        }
+
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                 parentItemId,
                 buttonSelector,

@@ -56,6 +56,7 @@ var LoginArea = React.createClass({
         }
     },
     successCallback: function() {
+        document.cookie = "userName=" + $("#userName").val(); // This is a quick fix to get the user id to the diagnose and resolve status.
         window.location = window.location.href.replace("/login", "");
     },
     errorCallback: function(e) {
