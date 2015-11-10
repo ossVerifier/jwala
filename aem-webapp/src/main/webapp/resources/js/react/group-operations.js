@@ -1264,7 +1264,7 @@ var WebServerControlPanelWidget = React.createClass({
  */
 var CommandStatusWidget = React.createClass({
     getInitialState: function() {
-        return {xBtnHover: false, statusRows: [], isOpen: true};
+        return {statusRows: [], isOpen: true};
     },
     render: function() {
         var self = this;
@@ -1273,14 +1273,13 @@ var CommandStatusWidget = React.createClass({
         var content = null;
         if (this.state.isOpen) {
             openCloseBtnClassName = "ui-icon-triangle-1-s";
-            content = <div className="ui-dialog-content ui-widget-content command-status-background command-status-content">
+            content = <div ref="content" className="ui-dialog-content ui-widget-content command-status-background command-status-content">
                           <table>
                               {this.state.statusRows}
                           </table>
                       </div>;
         }
 
-        var xBtnHoverClass = this.state.xBtnHover ? "hover" : "";
         return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
                     <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
                         <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
@@ -1289,6 +1288,11 @@ var CommandStatusWidget = React.createClass({
                     {content}
                 </div>;
 
+    },
+    componentDidUpdate: function(prevProps, prevState) {
+        if (this.refs.content) {
+            this.refs.content.getDOMNode().scrollTop = this.refs.content.getDOMNode().scrollHeight;
+        }
     },
     clickOpenCloseWindowHandler: function() {
         this.setState({isOpen: !this.state.isOpen});
