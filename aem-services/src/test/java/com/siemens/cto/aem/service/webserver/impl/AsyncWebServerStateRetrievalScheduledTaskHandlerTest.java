@@ -116,6 +116,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     }
 
     @Test
+    @Ignore
     public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
         when(Config.webServerService.getWebServers()).thenReturn(webServers);
         when(Config.webServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
