@@ -31,7 +31,7 @@ ext {
                  ant: '1.8.2',
                  groovy: '2.4.3',
                  jacoco: '0.6.5.201403032054',
-                 devbundle: '1.2-SNAPSHOT'
+                 devbundle: '1.1-SNAPSHOT'
                 ]
 }
 
