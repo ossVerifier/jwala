@@ -104,7 +104,9 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(command).validateCommand();
         verify(groupPersistenceService).updateGroup(matchCommandInEvent(command));
-        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
+
+        // TODO: Remove if this is no londer needed.
+        // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
@@ -123,11 +125,13 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         final AddJvmToGroupCommand command = mock(AddJvmToGroupCommand.class);
 
         impl.addJvmToGroup(command,
-                           user);
+                user);
 
         verify(command, times(1)).validateCommand();
         verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(command));
-        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
+
+        // TODO: Remove if this is no londer needed.
+        // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
@@ -154,11 +158,13 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         final RemoveJvmFromGroupCommand command = mock(RemoveJvmFromGroupCommand.class);
 
         impl.removeJvmFromGroup(command,
-                                user);
+                user);
 
         verify(command, times(1)).validateCommand();
         verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
-        verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
+
+        // TODO: Remove if this is no londer needed.
+        // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
