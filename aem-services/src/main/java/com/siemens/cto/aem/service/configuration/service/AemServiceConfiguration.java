@@ -34,7 +34,6 @@ import com.siemens.cto.aem.service.group.impl.*;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
@@ -105,10 +104,6 @@ public class AemServiceConfiguration {
     @Autowired
     private StateNotificationWorker stateNotificationWorker;
 
-    // @Autowired
-    // TODO: Deprecate!
-    private JvmStateGateway jvmStateGateway;
-
     @Autowired
     private CommandExecutor commandExecutor;
 
@@ -168,7 +163,6 @@ public class AemServiceConfiguration {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                 getGroupService(),
                 fileManager,
-                jvmStateGateway,
                 factoryHelper,
                 getJvmStateService(),
                 aemSshConfig.getSshConfiguration());

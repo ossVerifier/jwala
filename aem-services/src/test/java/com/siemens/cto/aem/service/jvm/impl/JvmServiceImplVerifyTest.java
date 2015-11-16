@@ -1,32 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.internal.verification.Times;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.client.MockClientHttpResponse;
-
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -50,15 +23,36 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.internal.verification.Times;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.client.MockClientHttpResponse;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmServiceImpl impl;
-    private JvmStateGateway jvmStateGateway;
     private JvmPersistenceService jvmPersistenceService;
     private GroupService groupService;
     private User user;
@@ -74,13 +68,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void setup() {
         jvmPersistenceService = mock(JvmPersistenceService.class);
         groupService = mock(GroupService.class);
-        jvmStateGateway = mock(JvmStateGateway.class);
         user = new User("unused");
         fileManager = mock(FileManager.class);
         factoryHelper = mock(ClientFactoryHelper.class);
         sshConfig = mock(SshConfiguration.class);
         stateService = (StateService<Jvm, JvmState>)mock(StateService.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, jvmStateGateway, factoryHelper, stateService, sshConfig);
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, factoryHelper, stateService, sshConfig);
         rtCommandBuilder = mock(RuntimeCommandBuilder.class);
         command = mock(RuntimeCommand.class);
     }
