@@ -109,6 +109,18 @@ var GroupOperations = React.createClass({
                     console.log(e);
                 }
             }
+            // update the Action and Events log
+            // TODO this should get pulled from the history table
+            var commandStatusWidget = this.commandStatusWidgetMap[GroupOperations.getExtDivCompId(key.replace("grp",""))];
+            if (commandStatusWidget !== undefined) {
+                var responseMessage = response.responseJSON.applicationResponseContent;
+                commandStatusWidget.push({stateString: GroupOperations.FAILED,
+                                          asOf: new Date(),
+                                          message: responseMessage,
+                                          from: "Web Server and JVM State Notification Service",
+                                          userId: ""},
+                                          "error-status-font");
+            }
         }
 
         for (var key in GroupOperations.jvmStatusWidgetMap) {
@@ -1280,7 +1292,7 @@ var CommandStatusWidget = React.createClass({
                       </div>;
         }
 
-        return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
+        return  <div ref="commandStatusContainer" className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
                     <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
                         <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
                         <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
@@ -1299,7 +1311,12 @@ var CommandStatusWidget = React.createClass({
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
-        myWindow.document.write(msg);
+        myWindow.document.write(msg[1]);
+        // TODO make this pop-up work more better
+//        React.render(<DialogBox title="Error"
+//                                contentDivClassName="maxHeight400px"
+//                                content={<ErrorMsgList msgList={[msg]}/>} />,
+//                     this.refs.commandStatusContainer.getDOMNode().parentNode.parentNode);
     },
     onXBtnClick: function() {
         this.props.closeCallback();
@@ -1322,7 +1339,7 @@ var CommandStatusWidget = React.createClass({
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                                 <td>{status.userId}</td>
                                                 <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
+                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg)}>{errMsg[0]}</td></tr>);
         } else {
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                 <td>{status.userId}</td>
