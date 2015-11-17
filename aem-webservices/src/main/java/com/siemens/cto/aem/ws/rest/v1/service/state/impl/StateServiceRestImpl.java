@@ -67,7 +67,7 @@ public class StateServiceRestImpl implements StateServiceRest {
             LOGGER.error("Can't poll for state(s)!", e);
             final Throwable cause = e.getCause();
             String message = e.getMessage();
-            message = cause != null && !cause.getMessage().isEmpty() ? message + "\r\n" + cause.getMessage() : message;
+            message = cause != null && !cause.getMessage().isEmpty() ? message + ": " + cause.getMessage() : message;
             // TODO this should also be pushed to the history table
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                          new FaultCodeException(AemFaultType.CANNOT_CONNECT, message));

@@ -1339,7 +1339,7 @@ var CommandStatusWidget = React.createClass({
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                                 <td>{status.userId}</td>
                                                 <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg)}>{errMsg[0]}</td></tr>);
+                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
         } else {
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                 <td>{status.userId}</td>
