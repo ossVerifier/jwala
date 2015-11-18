@@ -172,77 +172,80 @@ var GroupOperations = React.createClass({
     updateWebServerStateData: function(newWebServerStates) {
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         var self = this;
-        webServersToUpdate.forEach(
-        function(webServer) {
-            var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
-            if (webServerStatusWidget !== undefined) {
-                for (var i = 0; i < newWebServerStates.length; i++) {
-                    if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                        if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-                            if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
-                                newWebServerStates[i].stateString = GroupOperations.START_SENT;
-                            }
-                            if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-                                newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
-                            }
-                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
-                            if (commandStatusWidget !== undefined) {
-                                commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
-                                                          asOf: newWebServerStates[i].asOf,
-                                                          message: newWebServerStates[i].message,
-                                                          from: "Web Server " + webServer.name, userId: newWebServerStates[i].userId},
-                                                          newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
-                            }
+
+        if (newWebServerStates && newWebServerStates.length > 0) {
+            webServersToUpdate.forEach(
+                function(webServer) {
+                    var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
+                    if (webServerStatusWidget !== undefined) {
+                        for (var i = 0; i < newWebServerStates.length; i++) {
+                            if (newWebServerStates[i].id.id === webServer.webServerId.id) {
+                                if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                    if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
+                                        newWebServerStates[i].stateString = GroupOperations.START_SENT;
+                                    }
+                                    if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                        newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
+                                    }
+                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                                    if (commandStatusWidget !== undefined) {
+                                        commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
+                                                                  asOf: newWebServerStates[i].asOf,
+                                                                  message: newWebServerStates[i].message,
+                                                                  from: "Web Server " + webServer.name, userId: newWebServerStates[i].userId},
+                                                                  newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
+                                    }
 
 
-                        } else {
-                            webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
-                                                            newWebServerStates[i].asOf,
-                                                            newWebServerStates[i].message);
+                                } else {
+                                    webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
+                                                                    newWebServerStates[i].asOf,
+                                                                    newWebServerStates[i].message);
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+            );
+        }
     },
     updateJvmStateData: function(newJvmStates) {
         var self = this;
-
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
 
-        jvmsToUpdate.forEach(function(jvm) {
-            var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
-            if (jvmStatusWidget !== undefined) {
-                for (var i = 0; i < newJvmStates.length; i++) {
-                    if (newJvmStates[i].id.id === jvm.jvmId.id) {
+        if (newJvmStates && newJvmStates.length > 0) {
+            jvmsToUpdate.forEach(
+                function(jvm) {
+                    var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
+                    if (jvmStatusWidget !== undefined) {
+                        for (var i = 0; i < newJvmStates.length; i++) {
+                            if (newJvmStates[i].id.id === jvm.jvmId.id) {
+                                if (newJvmStates[i].stateString === GroupOperations.FAILED ||
+                                    newJvmStates[i].stateString === GroupOperations.START_SENT ||
+                                    newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
 
-                        if (newJvmStates[i].stateString === GroupOperations.FAILED ||
-                            newJvmStates[i].stateString === GroupOperations.START_SENT ||
-                            newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
+                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                                    if (commandStatusWidget !== undefined) {
+                                        commandStatusWidget.push({stateString: newJvmStates[i].stateString,
+                                                                  asOf: newJvmStates[i].asOf,
+                                                                  message: newJvmStates[i].message,
+                                                                  from: "JVM " + jvm.name,
+                                                                  userId: newJvmStates[i].userId},
+                                                                  newJvmStates[i].stateString === GroupOperations.FAILED ?
+                                                                  "error-status-font" : "action-status-font");
+                                    }
 
-                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
-                            if (commandStatusWidget !== undefined) {
-                                commandStatusWidget.push({stateString: newJvmStates[i].stateString,
-                                                          asOf: newJvmStates[i].asOf,
-                                                          message: newJvmStates[i].message,
-                                                          from: "JVM " + jvm.name,
-                                                          userId: newJvmStates[i].userId},
-                                                          newJvmStates[i].stateString === GroupOperations.FAILED ?
-                                                                "error-status-font" : "action-status-font");
+                                } else {
+                                    jvmStatusWidget.setStatus(newJvmStates[i].stateString,
+                                                              newJvmStates[i].asOf,
+                                                              newJvmStates[i].message);
+                                }
                             }
-
-                        } else {
-                            jvmStatusWidget.setStatus(newJvmStates[i].stateString,
-                                                      newJvmStates[i].asOf,
-                                                      newJvmStates[i].message);
                         }
-
-
-
                     }
                 }
-            }
-        });
+            );
+        }
     },
     pollStates: function() {
         if (this.statePoller === null) {
