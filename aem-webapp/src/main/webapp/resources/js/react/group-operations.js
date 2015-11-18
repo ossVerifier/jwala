@@ -22,6 +22,7 @@ var GroupOperations = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
+
         return  <div className={this.props.className}>
                     <table style={{width:"1084px"}}>
                         <tr>
@@ -46,16 +47,18 @@ var GroupOperations = React.createClass({
     retrieveData: function() {
         var self = this;
         this.props.service.getGroups(function(response){
-                                        self.setState({groupTableData:response.applicationResponseContent});
-                                        self.updateJvmData(self.state.groupTableData);
-                                        self.setState({ groups: response.applicationResponseContent});
+                                        var theGroups = response.applicationResponseContent;
+                                        var state = self.getUpdatedJvmData(theGroups);
+                                        state["groupTableData"] = theGroups;
+                                        state["groups"] = theGroups;
+                                        self.setState(state);
                                      });
     },
-    updateJvmData: function(jvmDataInGroups) {
-        this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
-                                                           groupOperationsHelper.extractJvmDataFromGroups(jvmDataInGroups),
-                                                           this.state.jvmStates,
-                                                           []));
+    getUpdatedJvmData: function(groups) {
+        return groupOperationsHelper.processJvmData(this.state.jvms,
+                                                    groupOperationsHelper.extractJvmDataFromGroups(groups),
+                                                    this.state.jvmStates,
+                                                    []);
     },
     updateStateData: function(response) {
         if (this.pollError) {
@@ -87,12 +90,13 @@ var GroupOperations = React.createClass({
         this.updateJvmStateData(jvms);
     },
     statePollingErrorHandler: function(response) {
-        if (!GroupOperations.statePoller.isActive()) {
+        if (!this.statePoller.isActive()) {
             return;
         }
 
         if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
-            GroupOperations.statePoller.stop();
+            this.statePoller.stop();
+            this.statePoller = null;
             alert("The session has expired! You will be redirected to the login page.");
             window.location.href = "login";
             return;
@@ -150,19 +154,19 @@ var GroupOperations = React.createClass({
     updateGroupsStateData: function(newGroupStates) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
-        groupsToUpdate.forEach(
-        function(group) {
-            var groupStatusWidget = GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id];
-            if (newGroupStates !== undefined) {
-                for (var i = 0; i < newGroupStates.length; i++) {
-                    if (newGroupStates[i].id.id === group.groupId.id) {
-                        groupStatusWidget.setStatus(newGroupStates[i].stateString,
-                                                    newGroupStates[i].asOf,
-                                                    newGroupStates[i].message);
+        if (newGroupStates && newGroupStates.length > 0) {
+            groupsToUpdate.forEach(
+                function(group) {
+                    for (var i = 0; i < newGroupStates.length; i++) {
+                        if (newGroupStates[i].id.id === group.groupId.id) {
+                            GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupStates[i].stateString,
+                                                                                           newGroupStates[i].asOf,
+                                                                                           newGroupStates[i].message);
+                        }
                     }
                 }
-            }
-        });
+            )
+        };
     },
     commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
     updateWebServerStateData: function(newWebServerStates) {
@@ -241,12 +245,12 @@ var GroupOperations = React.createClass({
         });
     },
     pollStates: function() {
-        if (GroupOperations.statePoller === null) {
-            GroupOperations.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
+        if (this.statePoller === null) {
+            this.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
                                                                 this.updateStateData, this.statePollingErrorHandler);
         }
 
-        GroupOperations.statePoller.start();
+        this.statePoller.start();
     },
     fetchCurrentGroupStates: function() {
         var self = this;
@@ -282,7 +286,7 @@ var GroupOperations = React.createClass({
         this.fetchCurrentGroupStates();
     },
     componentWillUnmount: function() {
-        GroupOperations.statePoller.stop();
+        this.statePoller.stop();
     },
     updateWebServerDataCallback: function(webServerData) {
         this.setState(groupOperationsHelper.processWebServerData([],
@@ -291,6 +295,7 @@ var GroupOperations = React.createClass({
                                                                  []));
         this.updateWebServerStateData([]);
     },
+    statePoller: null,
     statics: {
         // Used in place of ref since ref will not work without a React wrapper (in the form a data table)
         groupStatusWidgetMap: {},
@@ -306,7 +311,6 @@ var GroupOperations = React.createClass({
         },
         UNKNOWN_STATE: "",
         POLL_ERR_STATE: "POLLING ERROR!",
-        statePoller: null,
         STATE_POLLER_INTERVAL: 1
     }
 });
@@ -603,7 +607,7 @@ var GroupOperationsDataTable = React.createClass({
       var self= this;
       aoColumnDefs[itemIndex].bSortable = false;
       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
-           var key = type + oData.id.id;
+           var key = "grp" + oData.id.id;
            return React.render(<StatusWidget key={key} defaultStatus=""
                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                       GroupOperations.groupStatusWidgetMap[key] = this;

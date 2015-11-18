@@ -241,8 +241,6 @@ var ExpandCollapseControl = React.createClass({
         var i = 0;
 
         try {
-            ExpandCollapseControl.suspendPolling();
-
             this.props.openRowLoadDataDoneCallback(this.props.parentItemId);
 
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
@@ -255,20 +253,7 @@ var ExpandCollapseControl = React.createClass({
             })
         } finally {
             $("." + this.loadingIndicatorClassName).remove();
-            ExpandCollapseControl.resumePolling();
         }
 
-    },
-    statics: {
-        suspendPolling: function() {
-            if (GroupOperations.statePoller !== null) {
-                GroupOperations.statePoller.stop();
-            }
-        },
-        resumePolling: function() {
-            if (GroupOperations.statePoller !== null) {
-                GroupOperations.statePoller.start();
-            }
-        }
     }
 });
