@@ -43,7 +43,7 @@ public class LockableGroupStateMachine {
         LOGGER.trace("GSM Write locked " + this);
     }
 
-    private boolean tryWriteLock(int timeout, TimeUnit units) throws InterruptedException {
+    private boolean tryWriteLock(long timeout, TimeUnit units) throws InterruptedException {
         LOGGER.trace("GSM tryWrite lock " + this);
         if (writeLock.tryAcquire(1, timeout, units)) {
             readLock.acquireUninterruptibly(10);
@@ -100,30 +100,7 @@ public class LockableGroupStateMachine {
         return true;
     }
 
-    public ReadWriteLease persistentLock(LockableGroupStateMachine.Initializer initCallback) {
-        initializeLocks();
-
-        writeLock();
-
-        if (writeLease != null) {
-            // you got the lock, so you must already own writeLease
-            writeUnlock();
-            return writeLease;
-        }
-
-        writeUnlock();
-
-        if (!initializeDelegate(initCallback)) {
-            writeLock();
-        }
-
-        writeLease = new ReadWriteLease(this.delegate, false);
-        return writeLease;
-        // writeLock is still yours on exit
-    }
-
-
-    public ReadWriteLease tryPersistentLock(LockableGroupStateMachine.Initializer initCallback, int timeout, TimeUnit units) throws InterruptedException {
+    public ReadWriteLease tryPersistentLock(LockableGroupStateMachine.Initializer initCallback, long timeout, TimeUnit units) throws InterruptedException {
         initializeLocks();
 
         if (!tryWriteLock(timeout, units)) {
@@ -156,6 +133,11 @@ public class LockableGroupStateMachine {
 
     public ReadWriteLease lockForWriteWithResources(LockableGroupStateMachine.Initializer initCallback) {
         initializeLocks();
+
+        // Note: initializeDelegate calls writeLock when initCallback is null. If initCallback is not null
+        //       initializeDelegate returns false then we do a writeLock. In short, we always call writeLock
+        //       here!
+        // TODO: Verify if the logic described above is correct ?
         if (!initializeDelegate(initCallback)) {
             writeLock();
         }
