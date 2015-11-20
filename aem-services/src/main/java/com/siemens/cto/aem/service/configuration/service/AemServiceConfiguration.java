@@ -19,6 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
@@ -142,13 +143,15 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "groupStateService")
-    public GroupStateService.API getGroupStateService() {
+    @Autowired
+    public GroupStateService.API getGroupStateService(final GroupPersistenceService groupPersistenceService,
+                                                      final JvmPersistenceService jvmPersistenceService) {
         return new GroupStateServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
                 getStateNotificationService(),
                 StateType.GROUP,
-                groupStateService, stateNotificationWorker
-        );
+                groupStateService, stateNotificationWorker,
+                groupPersistenceService, jvmPersistenceService, webServerDao);
     }
 
     @Bean
@@ -223,11 +226,13 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "groupControlService")
-    public GroupControlService getGroupControlService() {
+    @Autowired
+    public GroupControlService getGroupControlService(final GroupPersistenceService groupPersistenceService,
+                                                      final JvmPersistenceService jvmPersistenceService) {
         return new GroupControlServiceImpl(
                 getGroupWebServerControlService(),
                 getGroupJvmControlService(),
-                getGroupStateService());
+                getGroupStateService(groupPersistenceService, jvmPersistenceService));
     }
 
     @Bean(name = "groupJvmControlService")
