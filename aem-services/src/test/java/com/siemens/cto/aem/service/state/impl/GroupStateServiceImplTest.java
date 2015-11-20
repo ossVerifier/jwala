@@ -166,7 +166,10 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testSignalReset() {
-            
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        groupStateServiceImpl.signalReset(new Identifier<Group>(1l), User.getSystemUser());
+        verify(groupStateMachine).signalReset(User.getSystemUser());
     }
 
     @Test
