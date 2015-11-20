@@ -8,6 +8,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
@@ -31,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -154,13 +156,17 @@ public class GroupStateServiceImplTest {
     }
 
     @Test
-    public void testStateUpdateRequest() {
-
+    public void testStateUpdateRequest() throws InterruptedException {
+        final Group group = new Group(new Identifier<Group>(1l), "theGroup");
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        assertNotNull(groupStateServiceImpl.stateUpdateRequest(group));
+        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
     }
 
     @Test
     public void testSignalReset() {
-
+            
     }
 
     @Test
