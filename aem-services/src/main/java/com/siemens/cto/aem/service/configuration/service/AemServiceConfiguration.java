@@ -19,6 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
@@ -34,7 +35,6 @@ import com.siemens.cto.aem.service.group.impl.*;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
@@ -105,10 +105,6 @@ public class AemServiceConfiguration {
     @Autowired
     private StateNotificationWorker stateNotificationWorker;
 
-    // @Autowired
-    // TODO: Deprecate!
-    private JvmStateGateway jvmStateGateway;
-
     @Autowired
     private CommandExecutor commandExecutor;
 
@@ -147,13 +143,15 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "groupStateService")
-    public GroupStateService.API getGroupStateService() {
+    @Autowired
+    public GroupStateService.API getGroupStateService(final GroupPersistenceService groupPersistenceService,
+                                                      final JvmPersistenceService jvmPersistenceService) {
         return new GroupStateServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
                 getStateNotificationService(),
                 StateType.GROUP,
-                groupStateService, stateNotificationWorker
-        );
+                groupStateService, stateNotificationWorker,
+                groupPersistenceService, jvmPersistenceService, webServerDao);
     }
 
     @Bean
@@ -168,7 +166,6 @@ public class AemServiceConfiguration {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                 getGroupService(),
                 fileManager,
-                jvmStateGateway,
                 factoryHelper,
                 getJvmStateService(),
                 aemSshConfig.getSshConfiguration());
@@ -227,11 +224,13 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "groupControlService")
-    public GroupControlService getGroupControlService() {
+    @Autowired
+    public GroupControlService getGroupControlService(final GroupPersistenceService groupPersistenceService,
+                                                      final JvmPersistenceService jvmPersistenceService) {
         return new GroupControlServiceImpl(
                 getGroupWebServerControlService(),
                 getGroupJvmControlService(),
-                getGroupStateService());
+                getGroupStateService(groupPersistenceService, jvmPersistenceService));
     }
 
     @Bean(name = "groupJvmControlService")
@@ -331,8 +330,9 @@ public class AemServiceConfiguration {
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
         return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
-                webServerStateSetterWorker,
-                webServerFutureMap);
+                                                               webServerStateSetterWorker,
+                                                               webServerFutureMap,
+                                                               true);
     }
 
     @Bean

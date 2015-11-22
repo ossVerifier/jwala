@@ -40,6 +40,8 @@ public class StateNotificationWorkerImpl implements StateNotificationWorker {
 
     @Override
     @Async("stateNotificationWorkerTaskExecutor")
+    // Note: This causes the group unknown problem (New group status does not change to the proper state).
+    // TODO: Find out if we really need this, if not remove it.
     public void refreshState(final GroupStateService.API groupStateService, final Group group) {
         try {
             groupStateService.stateUpdateRequest(group);

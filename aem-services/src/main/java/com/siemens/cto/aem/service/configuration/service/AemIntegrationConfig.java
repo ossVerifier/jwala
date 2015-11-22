@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.configuration.service;
 
-import com.siemens.cto.aem.service.configuration.lifecycle.HeartbeatStartupLifecycleListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
@@ -11,16 +10,10 @@ import java.util.concurrent.ThreadFactory;
 @Configuration
 @ImportResource({
     "classpath:META-INF/spring/integration.xml",
-    "classpath:META-INF/spring/integration-jmx.xml",
-    "classpath:META-INF/spring/common-heartbeat-dependencies.xml"
+    "classpath:META-INF/spring/integration-jmx.xml"
 })
 public class AemIntegrationConfig {
 
-    @Bean
-    public HeartbeatStartupLifecycleListener getHeartbeatStartupLifecycleListener() {
-        return new HeartbeatStartupLifecycleListener();
-    }
-    
     /**
      * Bean method to create a thread factory that creates daemon threads.
      * <code>

@@ -34,6 +34,16 @@ public class WebServerStateRetrievalScheduledTaskHandler {
         this.webServerFutureMap = webServerFutureMap;
     }
 
+    public WebServerStateRetrievalScheduledTaskHandler(final WebServerService webServerService,
+                                                       final WebServerStateSetterWorker webServerStateSetterWorker,
+                                                       final Map<Identifier<WebServer>, Future<?>> webServerFutureMap,
+                                                       final boolean enabled) {
+        this.webServerService = webServerService;
+        this.webServerStateSetterWorker = webServerStateSetterWorker;
+        this.webServerFutureMap = webServerFutureMap;
+        this.enabled = enabled;
+    }
+
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() {
         if (isEnabled()) {

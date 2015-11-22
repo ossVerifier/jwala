@@ -55,13 +55,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     public static final String GSS_UNLOCKED_AFFECTED_GROUPS_DUE_TO_EXCEPTION = "GSS Unlocked affected groups due to exception.";
     public static final String GROUP_STATE_MACHINE = "groupStateMachine";
 
-    @Autowired
     private GroupPersistenceService groupPersistenceService;
 
-    @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
-    @Autowired
     private WebServerDao webServerDao;
 
     private Map<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
@@ -73,10 +70,17 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
                                  StateNotificationService theNotificationService, StateType theStateType,
                                  final GroupStateService.API groupStateService,
-                                 final StateNotificationWorker stateNotificationWorker) {
+                                 final StateNotificationWorker stateNotificationWorker,
+                                 final GroupPersistenceService groupPersistenceService,
+                                 final JvmPersistenceService jvmPersistenceService,
+                                 final WebServerDao webServerDao) {
         super(thePersistenceService, theNotificationService, theStateType, groupStateService, stateNotificationWorker);
 
         systemUser = User.getSystemUser();
+
+        this.groupPersistenceService = groupPersistenceService;
+        this.jvmPersistenceService = jvmPersistenceService;
+        this.webServerDao = webServerDao;
     }
 
 
@@ -421,4 +425,5 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     public void checkForStoppedStates() {
         throw new UnsupportedOperationException("Group terminated state checking not implemented, supported, or required.");
     }
+
 }

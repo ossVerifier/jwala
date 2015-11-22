@@ -22,6 +22,7 @@ var GroupOperations = React.createClass({
     },
     render: function() {
         var btnDivClassName = this.props.className + "-btn-div";
+
         return  <div className={this.props.className}>
                     <table style={{width:"1084px"}}>
                         <tr>
@@ -46,16 +47,18 @@ var GroupOperations = React.createClass({
     retrieveData: function() {
         var self = this;
         this.props.service.getGroups(function(response){
-                                        self.setState({groupTableData:response.applicationResponseContent});
-                                        self.updateJvmData(self.state.groupTableData);
-                                        self.setState({ groups: response.applicationResponseContent});
+                                        var theGroups = response.applicationResponseContent;
+                                        var state = self.getUpdatedJvmData(theGroups);
+                                        state["groupTableData"] = theGroups;
+                                        state["groups"] = theGroups;
+                                        self.setState(state);
                                      });
     },
-    updateJvmData: function(jvmDataInGroups) {
-        this.setState(groupOperationsHelper.processJvmData(this.state.jvms,
-                                                           groupOperationsHelper.extractJvmDataFromGroups(jvmDataInGroups),
-                                                           this.state.jvmStates,
-                                                           []));
+    getUpdatedJvmData: function(groups) {
+        return groupOperationsHelper.processJvmData(this.state.jvms,
+                                                    groupOperationsHelper.extractJvmDataFromGroups(groups),
+                                                    this.state.jvmStates,
+                                                    []);
     },
     updateStateData: function(response) {
         if (this.pollError) {
@@ -87,12 +90,13 @@ var GroupOperations = React.createClass({
         this.updateJvmStateData(jvms);
     },
     statePollingErrorHandler: function(response) {
-        if (!GroupOperations.statePoller.isActive()) {
+        if (!this.statePoller.isActive()) {
             return;
         }
 
         if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
-            GroupOperations.statePoller.stop();
+            this.statePoller.stop();
+            this.statePoller = null;
             alert("The session has expired! You will be redirected to the login page.");
             window.location.href = "login";
             return;
@@ -108,6 +112,18 @@ var GroupOperations = React.createClass({
                 } catch (e) {
                     console.log(e);
                 }
+            }
+            // update the Action and Events log
+            // TODO this should get pulled from the history table
+            var commandStatusWidget = this.commandStatusWidgetMap[GroupOperations.getExtDivCompId(key.replace("grp",""))];
+            if (commandStatusWidget !== undefined) {
+                var responseMessage = response.responseJSON.applicationResponseContent;
+                commandStatusWidget.push({stateString: GroupOperations.FAILED,
+                                          asOf: new Date(),
+                                          message: responseMessage,
+                                          from: "Web Server and JVM State Notification Service",
+                                          userId: ""},
+                                          "error-status-font");
             }
         }
 
@@ -138,103 +154,106 @@ var GroupOperations = React.createClass({
     updateGroupsStateData: function(newGroupStates) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
-        groupsToUpdate.forEach(
-        function(group) {
-            var groupStatusWidget = GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id];
-            if (newGroupStates !== undefined) {
-                for (var i = 0; i < newGroupStates.length; i++) {
-                    if (newGroupStates[i].id.id === group.groupId.id) {
-                        groupStatusWidget.setStatus(newGroupStates[i].stateString,
-                                                    newGroupStates[i].asOf,
-                                                    newGroupStates[i].message);
+        if (newGroupStates && newGroupStates.length > 0) {
+            groupsToUpdate.forEach(
+                function(group) {
+                    for (var i = 0; i < newGroupStates.length; i++) {
+                        if (newGroupStates[i].id.id === group.groupId.id) {
+                            GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupStates[i].stateString,
+                                                                                           newGroupStates[i].asOf,
+                                                                                           newGroupStates[i].message);
+                        }
                     }
                 }
-            }
-        });
+            )
+        };
     },
     commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
     updateWebServerStateData: function(newWebServerStates) {
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         var self = this;
-        webServersToUpdate.forEach(
-        function(webServer) {
-            var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
-            if (webServerStatusWidget !== undefined) {
-                for (var i = 0; i < newWebServerStates.length; i++) {
-                    if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                        if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-                            if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
-                                newWebServerStates[i].stateString = GroupOperations.START_SENT;
-                            }
-                            if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-                                newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
-                            }
-                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
-                            if (commandStatusWidget !== undefined) {
-                                commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
-                                                          asOf: newWebServerStates[i].asOf,
-                                                          message: newWebServerStates[i].message,
-                                                          from: "Web Server " + webServer.name, userId: newWebServerStates[i].userId},
-                                                          newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
-                            }
+
+        if (newWebServerStates && newWebServerStates.length > 0) {
+            webServersToUpdate.forEach(
+                function(webServer) {
+                    var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
+                    if (webServerStatusWidget !== undefined) {
+                        for (var i = 0; i < newWebServerStates.length; i++) {
+                            if (newWebServerStates[i].id.id === webServer.webServerId.id) {
+                                if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                    if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
+                                        newWebServerStates[i].stateString = GroupOperations.START_SENT;
+                                    }
+                                    if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                        newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
+                                    }
+                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                                    if (commandStatusWidget !== undefined) {
+                                        commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
+                                                                  asOf: newWebServerStates[i].asOf,
+                                                                  message: newWebServerStates[i].message,
+                                                                  from: "Web Server " + webServer.name, userId: newWebServerStates[i].userId},
+                                                                  newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
+                                    }
 
 
-                        } else {
-                            webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
-                                                            newWebServerStates[i].asOf,
-                                                            newWebServerStates[i].message);
+                                } else {
+                                    webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
+                                                                    newWebServerStates[i].asOf,
+                                                                    newWebServerStates[i].message);
+                                }
+                            }
                         }
                     }
                 }
-            }
-        });
+            );
+        }
     },
     updateJvmStateData: function(newJvmStates) {
         var self = this;
-
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
 
-        jvmsToUpdate.forEach(function(jvm) {
-            var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
-            if (jvmStatusWidget !== undefined) {
-                for (var i = 0; i < newJvmStates.length; i++) {
-                    if (newJvmStates[i].id.id === jvm.jvmId.id) {
+        if (newJvmStates && newJvmStates.length > 0) {
+            jvmsToUpdate.forEach(
+                function(jvm) {
+                    var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
+                    if (jvmStatusWidget !== undefined) {
+                        for (var i = 0; i < newJvmStates.length; i++) {
+                            if (newJvmStates[i].id.id === jvm.jvmId.id) {
+                                if (newJvmStates[i].stateString === GroupOperations.FAILED ||
+                                    newJvmStates[i].stateString === GroupOperations.START_SENT ||
+                                    newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
 
-                        if (newJvmStates[i].stateString === GroupOperations.FAILED ||
-                            newJvmStates[i].stateString === GroupOperations.START_SENT ||
-                            newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
+                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                                    if (commandStatusWidget !== undefined) {
+                                        commandStatusWidget.push({stateString: newJvmStates[i].stateString,
+                                                                  asOf: newJvmStates[i].asOf,
+                                                                  message: newJvmStates[i].message,
+                                                                  from: "JVM " + jvm.name,
+                                                                  userId: newJvmStates[i].userId},
+                                                                  newJvmStates[i].stateString === GroupOperations.FAILED ?
+                                                                  "error-status-font" : "action-status-font");
+                                    }
 
-                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
-                            if (commandStatusWidget !== undefined) {
-                                commandStatusWidget.push({stateString: newJvmStates[i].stateString,
-                                                          asOf: newJvmStates[i].asOf,
-                                                          message: newJvmStates[i].message,
-                                                          from: "JVM " + jvm.name,
-                                                          userId: newJvmStates[i].userId},
-                                                          newJvmStates[i].stateString === GroupOperations.FAILED ?
-                                                                "error-status-font" : "action-status-font");
+                                } else {
+                                    jvmStatusWidget.setStatus(newJvmStates[i].stateString,
+                                                              newJvmStates[i].asOf,
+                                                              newJvmStates[i].message);
+                                }
                             }
-
-                        } else {
-                            jvmStatusWidget.setStatus(newJvmStates[i].stateString,
-                                                      newJvmStates[i].asOf,
-                                                      newJvmStates[i].message);
                         }
-
-
-
                     }
                 }
-            }
-        });
+            );
+        }
     },
     pollStates: function() {
-        if (GroupOperations.statePoller === null) {
-            GroupOperations.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
+        if (this.statePoller === null) {
+            this.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
                                                                 this.updateStateData, this.statePollingErrorHandler);
         }
 
-        GroupOperations.statePoller.start();
+        this.statePoller.start();
     },
     fetchCurrentGroupStates: function() {
         var self = this;
@@ -270,7 +289,7 @@ var GroupOperations = React.createClass({
         this.fetchCurrentGroupStates();
     },
     componentWillUnmount: function() {
-        GroupOperations.statePoller.stop();
+        this.statePoller.stop();
     },
     updateWebServerDataCallback: function(webServerData) {
         this.setState(groupOperationsHelper.processWebServerData([],
@@ -279,6 +298,7 @@ var GroupOperations = React.createClass({
                                                                  []));
         this.updateWebServerStateData([]);
     },
+    statePoller: null,
     statics: {
         // Used in place of ref since ref will not work without a React wrapper (in the form a data table)
         groupStatusWidgetMap: {},
@@ -294,7 +314,6 @@ var GroupOperations = React.createClass({
         },
         UNKNOWN_STATE: "",
         POLL_ERR_STATE: "POLLING ERROR!",
-        statePoller: null,
         STATE_POLLER_INTERVAL: 1
     }
 });
@@ -591,7 +610,7 @@ var GroupOperationsDataTable = React.createClass({
       var self= this;
       aoColumnDefs[itemIndex].bSortable = false;
       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
-           var key = type + oData.id.id;
+           var key = "grp" + oData.id.id;
            return React.render(<StatusWidget key={key} defaultStatus=""
                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                       GroupOperations.groupStatusWidgetMap[key] = this;
@@ -1280,7 +1299,7 @@ var CommandStatusWidget = React.createClass({
                       </div>;
         }
 
-        return  <div className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
+        return  <div ref="commandStatusContainer" className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
                     <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
                         <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
                         <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
@@ -1299,7 +1318,12 @@ var CommandStatusWidget = React.createClass({
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
-        myWindow.document.write(msg);
+        myWindow.document.write(msg[1]);
+        // TODO make this pop-up work more better
+//        React.render(<DialogBox title="Error"
+//                                contentDivClassName="maxHeight400px"
+//                                content={<ErrorMsgList msgList={[msg]}/>} />,
+//                     this.refs.commandStatusContainer.getDOMNode().parentNode.parentNode);
     },
     onXBtnClick: function() {
         this.props.closeCallback();

@@ -29,7 +29,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.JvmStateGateway;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
@@ -72,7 +71,7 @@ public class JvmServiceImpl implements JvmService {
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
                           final FileManager theFileManager,
-                          final JvmStateGateway theJvmStateGateway, ClientFactoryHelper factoryHelper,
+                          ClientFactoryHelper factoryHelper,
                           final StateService<Jvm, JvmState> theJvmStateService, final SshConfiguration theSshConfig) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;

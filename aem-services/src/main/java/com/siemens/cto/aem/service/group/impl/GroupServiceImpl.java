@@ -94,7 +94,8 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupPersistenceService.updateGroup(
                 createEvent(anUpdateGroupCommand, anUpdatingUser));
 
-        stateNotificationWorker.refreshState(groupStateService, group);
+        // TODO: Remove if this is no londer needed.
+        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -118,7 +119,8 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.addJvmToGroup(createEvent(aCommand,
                                                                  anAddingUser));
-        stateNotificationWorker.refreshState(groupStateService, group);
+        // TODO: Remove if this is no londer needed.
+        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -135,7 +137,8 @@ public class GroupServiceImpl implements GroupService {
 
         Group group = getGroup(aCommand.getGroupId());
 
-        stateNotificationWorker.refreshState(groupStateService, group);
+        // TODO: Remove if this is no londer needed.
+        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -147,7 +150,8 @@ public class GroupServiceImpl implements GroupService {
         aCommand.validateCommand();
         Group group = groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
                                                                       aRemovingUser));
-        stateNotificationWorker.refreshState(groupStateService, group);
+        // TODO: Remove if this is no londer needed.
+        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
