@@ -7,7 +7,7 @@ import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
 import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
@@ -28,7 +28,7 @@ public class RemoteWebServerCommandExecutorImpl implements WebServerCommandExecu
     }
 
     @Override
-    public ExecData controlWebServer(final ControlWebServerCommand aCommand,
+    public CommandOutput controlWebServer(final ControlWebServerCommand aCommand,
                                      final WebServer aWebServer) throws CommandFailureException {
 
         final WebServerExecCommandBuilder commandBuilder = new DefaultWebServerExecCommandBuilderImpl();

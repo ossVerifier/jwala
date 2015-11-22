@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.jvm;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -42,7 +42,7 @@ public interface JvmService {
 
     String performDiagnosis(Identifier<Jvm> aJvmId);
 
-    ExecData secureCopyFile(RuntimeCommandBuilder runtimeCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException;
+    CommandOutput secureCopyFile(RuntimeCommandBuilder runtimeCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException;
 
     JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateCommand command, User user);
 

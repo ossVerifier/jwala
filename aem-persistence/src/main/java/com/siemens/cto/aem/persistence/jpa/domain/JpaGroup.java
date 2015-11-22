@@ -44,7 +44,11 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
             inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
             uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "WEBSERVER_ID"}))
     private List<JpaWebServer> webServers;
-    
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "groupId")
+    private List<JpaHistory> history;
+
     @Override
     public Long getId() {
         return id;
@@ -84,6 +88,14 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     public void setWebServers(List<JpaWebServer> webServers) {
         this.webServers = webServers;
+    }
+
+    public List<JpaHistory> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<JpaHistory> history) {
+        this.history = history;
     }
 
     @Override

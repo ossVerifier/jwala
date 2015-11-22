@@ -4,8 +4,8 @@ import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -71,13 +71,10 @@ public class WebServerServiceRestImplTest {
     private WebServerServiceImpl impl;
 
     @Mock
-    private WebServerControlService controlImpl;
+    private WebServerControlService webServerControlService;
 
     @Mock
     private WebServerCommandService commandImpl;
-
-    @Mock
-    private WebServerControlHistory webServerControlHistory;
 
     @Mock
     private StateService<WebServer, WebServerReachableState> webServerStateService;
@@ -91,7 +88,7 @@ public class WebServerServiceRestImplTest {
     @Mock
     private RuntimeCommand rtCommand;
 
-    private WebServerServiceRestImpl cut;
+    private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
 
     private static List<WebServer> createWebServerList() {
@@ -111,7 +108,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = new WebServerServiceRestImpl(impl, controlImpl, commandImpl, webServerStateService, writeLockMap);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, webServerStateService, writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
@@ -119,7 +116,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServerList() {
         when(impl.getWebServers()).thenReturn(webServerList);
 
-        final Response response = cut.getWebServers(null);
+        final Response response = webServerServiceRest.getWebServers(null);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -135,7 +132,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServer() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
 
-        final Response response = cut.getWebServer(Identifier.id(1l, WebServer.class));
+        final Response response = webServerServiceRest.getWebServer(Identifier.id(1l, WebServer.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -151,7 +148,7 @@ public class WebServerServiceRestImplTest {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
         when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
-        final Response response = cut.createWebServer(jsonCreateWebServer, authenticatedUser);
+        final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -167,7 +164,7 @@ public class WebServerServiceRestImplTest {
         final JsonUpdateWebServer jsonUpdateWebServer = mock(JsonUpdateWebServer.class);
         when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(webServer);
 
-        final Response response = cut.updateWebServer(jsonUpdateWebServer, authenticatedUser);
+        final Response response = webServerServiceRest.updateWebServer(jsonUpdateWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -181,7 +178,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testRemoveWebServer() {
-        final Response response = cut.removeWebServer(Identifier.id(1l, WebServer.class));
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class));
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -191,29 +188,22 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testControlWebServer() {
-        when(controlImpl.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(webServerControlHistory);
 
-        final ExecData execData = mock(ExecData.class);
+        final CommandOutput execData = mock(CommandOutput.class);
         final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
         when(execDataReturnCode.wasSuccessful()).thenReturn(true);
         when(execData.getReturnCode()).thenReturn(execDataReturnCode);
-        when(webServerControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
-        final Response response = cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
+        when(webServerControlService.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(execData);
+        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        final Object content = applicationResponse.getApplicationResponseContent();
-        assertTrue(content instanceof WebServerControlHistory);
-
-        final WebServerControlHistory received = (WebServerControlHistory) content;
-        assertEquals(webServerControlHistory, received);
-
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
+        when(webServerControlService.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(execData);
         boolean exceptionThrown = false;
         try {
-            cut.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
+            webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -223,7 +213,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testGenerateHttpdConfig() {
         when(impl.generateHttpdConfig(anyString(), anyBoolean())).thenReturn("httpd configuration");
-        Response response = cut.generateConfig("any-server-name", null);
+        Response response = webServerServiceRest.generateConfig("any-server-name", null);
         assertEquals("httpd configuration", response.getEntity());
     }
 
@@ -231,7 +221,7 @@ public class WebServerServiceRestImplTest {
     public void testGenerateWorkerProperties() {
         when(impl.generateWorkerProperties(anyString()))
                 .thenReturn("worker properties");
-        Response response = cut.generateLoadBalancerConfig("");
+        Response response = webServerServiceRest.generateLoadBalancerConfig("");
         assertEquals("worker properties", response.getEntity());
     }
 
@@ -244,7 +234,7 @@ public class WebServerServiceRestImplTest {
         final Identifier<Group> groupId = new Identifier<>("1");
 
         when(impl.findWebServers(Matchers.eq(groupId))).thenReturn(webServers);
-        final Response response = cut.getWebServers(groupId);
+        final Response response = webServerServiceRest.getWebServers(groupId);
 
         final List<WebServer> result =
                 (List<WebServer>) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent();
@@ -256,11 +246,11 @@ public class WebServerServiceRestImplTest {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
-        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(retSuccessExecData);
-        Response response = cut.generateAndDeployConfig(webServer.getName());
+        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
         System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
@@ -271,14 +261,14 @@ public class WebServerServiceRestImplTest {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
-        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
         try {
-            response = cut.generateAndDeployConfig(webServer.getName());
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         } catch (InternalErrorException e) {
             failedSecureCopy = true;
         } finally {
@@ -295,13 +285,13 @@ public class WebServerServiceRestImplTest {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
-        ExecData retSuccessExecData = new ExecData(new ExecReturnCode(0), "", "");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try{
-            response = cut.generateAndDeployConfig(webServer.getName());
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         } finally {
             FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
@@ -319,7 +309,7 @@ public class WebServerServiceRestImplTest {
         Set<String> wsIds = new HashSet<>();
         wsIds.add(webServer.getId().getId() + "");
         WebServerIdsParameterProvider wsIdParamProvider = new WebServerIdsParameterProvider(wsIds);
-        Response response = cut.getCurrentWebServerStates(wsIdParamProvider);
+        Response response = webServerServiceRest.getCurrentWebServerStates(wsIdParamProvider);
         assertTrue(response.hasEntity());
     }
 
@@ -331,21 +321,21 @@ public class WebServerServiceRestImplTest {
         when(webServerStateService.getCurrentStates()).thenReturn(currentStates);
         Set<String> wsIds = new HashSet<>();
         WebServerIdsParameterProvider wsIdParamProvider = new WebServerIdsParameterProvider(wsIds);
-        Response response = cut.getCurrentWebServerStates(wsIdParamProvider);
+        Response response = webServerServiceRest.getCurrentWebServerStates(wsIdParamProvider);
         assertTrue(response.hasEntity());
     }
 
     @Test
     public void testGetHttpdConfig() throws CommandFailureException {
-        when(commandImpl.getHttpdConf(webServer.getId())).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        Response response = cut.getHttpdConfig(webServer.getId());
+        when(commandImpl.getHttpdConf(webServer.getId())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        Response response = webServerServiceRest.getHttpdConfig(webServer.getId());
         assertTrue(response.hasEntity());
     }
 
     @Test
     public void testGetHttpdConfigThrowsException() throws CommandFailureException {
         when(commandImpl.getHttpdConf(webServer.getId())).thenThrow(CommandFailureException.class);
-        Response response = cut.getHttpdConfig(webServer.getId());
+        Response response = webServerServiceRest.getHttpdConfig(webServer.getId());
         assertTrue(response.hasEntity());
     }
 
@@ -354,7 +344,7 @@ public class WebServerServiceRestImplTest {
         List<String> resourceNames = new ArrayList<>();
         resourceNames.add("httpd-test.tpl");
         when(impl.getResourceTemplateNames(webServer.getName())).thenReturn(resourceNames);
-        Response response = cut.getResourceNames(webServer.getName());
+        Response response = webServerServiceRest.getResourceNames(webServer.getName());
         assertTrue(response.hasEntity());
     }
 
@@ -362,7 +352,7 @@ public class WebServerServiceRestImplTest {
     public void testGetResourceTemplates() {
         String resourceTemplateName = "httpd-conf.tpl";
         when(impl.getResourceTemplate(webServer.getName(), resourceTemplateName, false)).thenReturn("ServerRoot=./test");
-        Response response = cut.getResourceTemplate(webServer.getName(), resourceTemplateName, false);
+        Response response = webServerServiceRest.getResourceTemplate(webServer.getName(), resourceTemplateName, false);
         assertTrue(response.hasEntity());
     }
 
@@ -371,7 +361,7 @@ public class WebServerServiceRestImplTest {
         String resourceTemplateName = "httpd-conf.tpl";
         String content = "ServerRoot=./test-update";
         when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenReturn(content);
-        Response response = cut.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
+        Response response = webServerServiceRest.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
         assertTrue(response.hasEntity());
     }
 
@@ -380,7 +370,7 @@ public class WebServerServiceRestImplTest {
         String resourceTemplateName = "httpd-conf.tpl";
         String content = "ServerRoot=./test-update";
         when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenThrow(ResourceTemplateUpdateException.class);
-        Response response = cut.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
+        Response response = webServerServiceRest.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
         assertTrue(response.hasEntity());
     }
 
@@ -395,9 +385,9 @@ public class WebServerServiceRestImplTest {
         when(mockMessageContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
         when(mockMessageContext.getHttpServletRequest()).thenReturn(mockHttpServletReq);
         when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
-        cut.setMessageContext(mockMessageContext);
+        webServerServiceRest.setMessageContext(mockMessageContext);
         try {
-            cut.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
+            webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
         } catch (Exception e) {
             assertEquals("Error receiving data", e.getMessage());
         }

@@ -3,7 +3,7 @@ package com.siemens.cto.aem.service.dispatch.impl;
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 
@@ -23,16 +23,14 @@ public class JvmCommandExecutorBean {
 
         LOGGER.debug("Execute command : " + jvmDispatchCommand.toString());
 
-        JvmControlHistory jvmControlHistory = null;
         Boolean wasSuccessful = false;
 
         try {
             ControlJvmCommand controlJvmCommand = new ControlJvmCommand(jvmDispatchCommand.getJvm().getId(),
                     groupDispatchCommand.getCommand().getControlOperation());
 
-            jvmControlHistory = jvmControlService.controlJvm(controlJvmCommand, groupDispatchCommand.getUser());
-            
-            wasSuccessful = jvmControlHistory.getExecData().getReturnCode().getWasSuccessful();
+            CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmCommand, groupDispatchCommand.getUser());
+            wasSuccessful = commandOutput.getReturnCode().getWasSuccessful();
             LOGGER.debug("ControlJvmCommand complete.  Success = {}", wasSuccessful);
             
         } catch (RuntimeException e) {
@@ -40,13 +38,6 @@ public class JvmCommandExecutorBean {
             LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmCommand (" + jvmDispatchCommand.toString() + ") failed: ", e);
         }
 
-        if(jvmControlHistory != null) {
-            JvmDispatchCommandResult result = new JvmDispatchCommandResult(wasSuccessful, jvmControlHistory.getId(),
-                    groupDispatchCommand);
-    
-            return result;
-        } else { 
-            return null;
-        }
+        return new JvmDispatchCommandResult(wasSuccessful, groupDispatchCommand);
     }
 }

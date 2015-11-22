@@ -4,7 +4,7 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -421,7 +421,7 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testDeployConf() {
-        ExecData mockExecData = mock(ExecData.class);
+        CommandOutput mockExecData = mock(CommandOutput.class);
         when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenReturn(mockExecData);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         Response response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);

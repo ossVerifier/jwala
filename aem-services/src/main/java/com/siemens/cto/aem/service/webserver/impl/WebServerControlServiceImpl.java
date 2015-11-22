@@ -2,9 +2,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -13,14 +11,11 @@ import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.model.webserver.command.CompleteControlWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -34,25 +29,22 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     private final WebServerService webServerService;
     private final WebServerCommandExecutor webServerCommandExecutor;
-    private final WebServerControlHistoryService controlHistoryService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final WebServerCommandExecutor theExecutor,
-                                       final WebServerControlHistoryService theControlHistoryService,
                                        final StateService<WebServer, WebServerReachableState> theWebServerStateService,
                                        final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap) {
         webServerService = theWebServerService;
         webServerCommandExecutor = theExecutor;
-        controlHistoryService = theControlHistoryService;
         webServerStateService = theWebServerStateService;
         webServerReachableStateMap = theWebServerReachableStateMap;
     }
 
     @Override
-    public WebServerControlHistory controlWebServer(final ControlWebServerCommand aCommand,
+    public CommandOutput controlWebServer(final ControlWebServerCommand aCommand,
                                                     final User aUser) {
 
         try {
@@ -61,37 +53,31 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final SetStateCommand<WebServer, WebServerReachableState> setStateCommand = createStateCommand(aCommand);
             webServerReachableStateMap.put(aCommand.getWebServerId(), setStateCommand.getNewState().getState());
 
-            final WebServerControlHistory incompleteHistory = controlHistoryService.beginIncompleteControlHistory(new Event<>(aCommand,
-                    AuditEvent.now(aUser)));
-
             webServerStateService.setCurrentState(setStateCommand, aUser);
 
-            final ExecData execData = webServerCommandExecutor.controlWebServer(aCommand,
+            final CommandOutput commandOutput = webServerCommandExecutor.controlWebServer(aCommand,
                     webServerService.getWebServer(aCommand.getWebServerId()));
 
-            if (execData != null &&
+            if (commandOutput != null &&
                 (aCommand.getControlOperation().equals(WebServerControlOperation.START) ||
                  aCommand.getControlOperation().equals(WebServerControlOperation.STOP))) {
-                    execData.cleanStandardOutput();
-                    LOGGER.info("shell command output{}", execData.getStandardOutput());
+                    commandOutput.cleanStandardOutput();
+                    LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
 
                     // Set the states after sending out the control command.
-                    if (execData.getReturnCode().wasSuccessful() || execData.getReturnCode().wasAbnormallySuccessful()) {
+                    if (commandOutput.getReturnCode().wasSuccessful() || commandOutput.getReturnCode().wasAbnormallySuccessful()) {
                         final WebServerReachableState finalWebServerState =
                                 aCommand.getControlOperation().equals(WebServerControlOperation.START) ?
                                         WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
                         webServerStateService.setCurrentState(createStateCommand(aCommand.getWebServerId(),
                                                                                  finalWebServerState), aUser);
                     } else {
-                        setFailedState(aCommand, aUser, execData.extractMessageFromStandardOutput());
+                        setFailedState(aCommand, aUser, commandOutput.extractMessageFromStandardOutput());
                     }
 
             }
 
-            return controlHistoryService.completeControlHistory(
-                        new Event<>(new CompleteControlWebServerCommand(incompleteHistory.getId(), execData),
-                        AuditEvent.now(aUser)));
-
+            return commandOutput;
         } catch (final CommandFailureException cfe) {
             setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

@@ -39,9 +39,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     @Override
     public Group createGroup(final Event<CreateGroupCommand> anEvent) {
-
         final JpaGroup group = groupCrudService.createGroup(anEvent);
-
         return groupFrom(group, false);
     }
 
@@ -53,17 +51,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     @Override
     public Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException {
-
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
-
         return groupFrom(group, false);
     }
 
     @Override
     public Group getGroupWithWebServers(final Identifier<Group> aGroupId) throws NotFoundException {
-
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
-
         return groupFrom(group, true);
     }
 
@@ -75,9 +69,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     @Override
     public Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException {
-
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
-
         return new JpaGroupBuilder(group).setFetchWebServers(fetchWebServers).build();
     }
 

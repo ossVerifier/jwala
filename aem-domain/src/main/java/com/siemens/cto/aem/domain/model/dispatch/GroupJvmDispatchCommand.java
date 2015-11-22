@@ -1,9 +1,7 @@
 package com.siemens.cto.aem.domain.model.dispatch;
 
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
-import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
@@ -13,13 +11,11 @@ public class GroupJvmDispatchCommand extends DispatchCommand {
     private final Group group;
     private final ControlGroupJvmCommand command;
     private final User user;
-    private final Identifier<GroupControlHistory> groupControlHistoryId;
 
-    public GroupJvmDispatchCommand(Group theGroup, ControlGroupJvmCommand theCommand, User theUser, Identifier<GroupControlHistory> theHistoryId) {
+    public GroupJvmDispatchCommand(Group theGroup, ControlGroupJvmCommand theCommand, User theUser) {
         group = theGroup;
         command = theCommand;
         user = theUser;
-        groupControlHistoryId = theHistoryId;
     }
     
     public Group getGroup() {
@@ -34,14 +30,10 @@ public class GroupJvmDispatchCommand extends DispatchCommand {
         return user;
     }
 
-    public Identifier<GroupControlHistory> getGroupControlHistoryId() {
-        return groupControlHistoryId;
-    }
 
     @Override
     public String toString() {
-        return "GroupJvmDispatchCommand [group=" + group + ", command=" + command + ", user=" + user
-                + ", groupControlHistoryId=" + groupControlHistoryId + "]";
+        return "GroupJvmDispatchCommand [group=" + group + ", command=" + command + ", user=" + user + "]";
     }
 
     @Override
@@ -50,7 +42,6 @@ public class GroupJvmDispatchCommand extends DispatchCommand {
         int result = 1;
         result = prime * result + ((command == null) ? 0 : command.hashCode());
         result = prime * result + ((group == null) ? 0 : group.hashCode());
-        result = prime * result + ((groupControlHistoryId == null) ? 0 : groupControlHistoryId.hashCode());
         result = prime * result + ((user == null) ? 0 : user.hashCode());
         return result;
     }
@@ -70,7 +61,6 @@ public class GroupJvmDispatchCommand extends DispatchCommand {
         return new EqualsBuilder()
         .append(this.group, rhs.group)
         .append(this.command, rhs.command)
-        .append(this.groupControlHistoryId, rhs.groupControlHistoryId)
         .append(this.user,rhs.user)
         .isEquals();
     }

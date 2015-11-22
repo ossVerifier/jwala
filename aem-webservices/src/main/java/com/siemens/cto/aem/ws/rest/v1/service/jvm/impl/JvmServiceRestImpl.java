@@ -21,6 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -35,12 +36,10 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
@@ -183,17 +182,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl,
-            final AuthenticatedUser aUser) {
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final AuthenticatedUser aUser) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
-        final JvmControlHistory controlHistory =
-                jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()),
-                        aUser.getUser());
-        final ExecData execData = controlHistory.getExecData();
-        if (execData.getReturnCode().wasSuccessful()) {
-            return ResponseBuilder.ok(controlHistory);
+        final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            return ResponseBuilder.ok(commandOutput);
         } else {
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, execData.getStandardError());
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.getStandardError());
         }
     }
 
@@ -370,12 +365,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
-        JvmControlHistory result;
-        ExecData execData;
-        result =
-                jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
+        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
                         user.getUser());
-        execData = result.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Invoke of windows service {} was successful", jvm.getJvmName());
         } else {
@@ -387,11 +378,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
-        ExecData execData;
-        JvmControlHistory completeHistory =
-                jvmControlService.controlJvm(
+        CommandOutput execData =jvmControlService.controlJvm(
                         new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
-        execData = completeHistory.getExecData();
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Deployment of config tar was successful: {}", jvmConfigTar);
         } else {
@@ -405,7 +393,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
-        ExecData execData;
+        CommandOutput execData;
         execData =
                 jvmService.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar",
                         stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
@@ -421,13 +409,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmCommand aCommand, String jvmName) {
-        JvmControlHistory result = jvmControlService.controlJvm(aCommand, user.getUser());
-        ExecData execData = result.getExecData();
-        if (execData.getReturnCode().wasSuccessful()) {
+        CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, user.getUser());
+        if (commandOutput.getReturnCode().wasSuccessful()) {
             logger.info("Delete of windows service {} was successful", jvmName);
         } else {
             String standardError =
-                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                    commandOutput.getStandardError().isEmpty() ?
+                            commandOutput.getStandardOutput() : commandOutput.getStandardError();
             logger.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
         }
@@ -471,7 +459,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String jvmResourcesDirDest) throws CommandFailureException {
         final String destPath =
                 stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
-        ExecData result =
+        CommandOutput result =
                 jvmService.secureCopyFile(new RuntimeCommandBuilder(), fileName, jvmResourcesDirDest,
                         jvm.getHostName(), destPath);
         if (result.getReturnCode().wasSuccessful()) {
@@ -546,7 +534,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         rtCommandBuilder.addParameter(jvmConfigTar);
         rtCommandBuilder.addCygwinPathParameter(jvmResourcesNameDir);
         RuntimeCommand tarCommand = rtCommandBuilder.build();
-        ExecData tarResult = tarCommand.execute();
+        CommandOutput tarResult = tarCommand.execute();
         if (!tarResult.getReturnCode().wasSuccessful()) {
             String standardError =
                     tarResult.getStandardError().isEmpty() ? tarResult.getStandardOutput() : tarResult

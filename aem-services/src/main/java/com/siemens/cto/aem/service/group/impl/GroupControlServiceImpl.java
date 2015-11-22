@@ -2,7 +2,6 @@ package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -37,13 +36,11 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     @Transactional
     @Override
-    public GroupControlHistory controlGroup(ControlGroupCommand aCommand, User aUser) {
+    public void controlGroup(ControlGroupCommand aCommand, User aUser) {
 
         LOGGER.info("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(),
                 aCommand.getGroupId());
 
-        // TODO: incomplete controlHistory 
-        
         aCommand.validateCommand(
                 groupStateService.canStart(aCommand.getGroupId(), aUser), 
                 groupStateService.canStop(aCommand.getGroupId(), aUser));
@@ -52,10 +49,6 @@ public class GroupControlServiceImpl implements GroupControlService {
 
         controlWebServers(aCommand, aUser);
         controlJvms(aCommand, aUser);
-
-        // TODO: complete control history - really should be a callback after all commands. 
-        
-        return null;
     }
 
     private void controlWebServers(ControlGroupCommand aCommand, User aUser) {

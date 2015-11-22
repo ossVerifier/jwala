@@ -6,7 +6,7 @@ import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -103,14 +103,14 @@ public class WebServerCommandServiceImplTest {
         when(webServerService.getWebServer(eq(id))).thenReturn(aWebServer);
         when(jschBuilder.build()).thenReturn(jSch);
         when(executor.execute(any(CommandProcessorBuilder.class)))
-                .thenReturn(new ExecData(new ExecReturnCode(1), "The content of httpd.conf", ""));
+                .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
         assertNotNull(factoryHelper);
         impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, factoryHelper);
     }
 
     @Test
     public void testGetHttpdConf() throws CommandFailureException {
-        final ExecData execData = impl.getHttpdConf(id);
+        final CommandOutput execData = impl.getHttpdConf(id);
         assertEquals(execData.getStandardOutput(), "The content of httpd.conf");
     }
 
@@ -122,9 +122,9 @@ public class WebServerCommandServiceImplTest {
         when(webServerService.getWebServer(anyString())).thenReturn(aWebServer);
         when(aWebServer.getStatusUri()).thenReturn(new URI("http://context/status.png"));
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(rtCommand.execute()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
+        when(rtCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
-        final ExecData execData = impl.secureCopyHttpdConf("ANY-SERVER-NAME", "d:/path/with/forward/slashes/new-httpd.conf", rtCommandBuilder);
+        final CommandOutput execData = impl.secureCopyHttpdConf("ANY-SERVER-NAME", "d:/path/with/forward/slashes/new-httpd.conf", rtCommandBuilder);
         assertEquals("Expecting no errors so standard out should be empty", "", execData.getStandardOutput());
         assertEquals("Expecting no errors so standard error should be empty", "", execData.getStandardError());
     }

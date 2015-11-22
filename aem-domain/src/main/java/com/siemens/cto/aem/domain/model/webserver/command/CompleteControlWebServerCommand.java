@@ -2,9 +2,7 @@ package com.siemens.cto.aem.domain.model.webserver.command;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.command.Command;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -15,20 +13,13 @@ public class CompleteControlWebServerCommand implements Serializable, Command {
 
     private static final long serialVersionUID = 1L;
 
-    private final Identifier<WebServerControlHistory> controlHistoryId;
-    private final ExecData execData;
+    private final CommandOutput execData;
 
-    public CompleteControlWebServerCommand(final Identifier<WebServerControlHistory> theControlHistoryId,
-                                           final ExecData theExecData) {
-        controlHistoryId = theControlHistoryId;
+    public CompleteControlWebServerCommand(final CommandOutput theExecData) {
         execData = theExecData;
     }
 
-    public Identifier<WebServerControlHistory> getControlHistoryId() {
-        return controlHistoryId;
-    }
-
-    public ExecData getExecData() {
+    public CommandOutput getExecData() {
         return execData;
     }
 
@@ -50,7 +41,6 @@ public class CompleteControlWebServerCommand implements Serializable, Command {
         }
         CompleteControlWebServerCommand rhs = (CompleteControlWebServerCommand) obj;
         return new EqualsBuilder()
-                .append(this.controlHistoryId, rhs.controlHistoryId)
                 .append(this.execData, rhs.execData)
                 .isEquals();
     }
@@ -58,7 +48,6 @@ public class CompleteControlWebServerCommand implements Serializable, Command {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(controlHistoryId)
                 .append(execData)
                 .toHashCode();
     }
@@ -66,7 +55,6 @@ public class CompleteControlWebServerCommand implements Serializable, Command {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("controlHistoryId", controlHistoryId)
                 .append("execData", execData)
                 .toString();
     }

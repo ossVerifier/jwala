@@ -4,8 +4,8 @@ import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.impl.cli.LocalRuntimeCommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
 import org.junit.*;
 
@@ -42,7 +42,7 @@ public class ThreadedCommandExecutorImplTest {
     @Test
     public void testSuccessfulLocalExecution() throws Exception {
         final ExecCommand command = new ExecCommand("ipconfig");
-        final ExecData results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
+        final CommandOutput results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
 
         assertTrue(results.getReturnCode().wasSuccessful());
         assertTrue(results.getStandardOutput().contains("Windows IP Configuration"));
@@ -53,7 +53,7 @@ public class ThreadedCommandExecutorImplTest {
     @Test
     public void testUnsuccessfulLocalExecution() throws Exception {
         final ExecCommand command = new ExecCommand("net", "/gibberishParametersThatShouldNotWork");
-        final ExecData results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
+        final CommandOutput results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
 
         assertFalse(results.getReturnCode().wasSuccessful());
         assertTrue(results.getStandardError().contains("The syntax of this command is"));
@@ -67,7 +67,7 @@ public class ThreadedCommandExecutorImplTest {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(config.getRemoteSystemConnection(),
                                                                           new ExecCommand("uname", "-a"));
         final JSch jsch = config.getBuilder().build();
-        final ExecData results = impl.execute(new JschCommandProcessorBuilder().setJsch(jsch).setRemoteCommand(remoteExecCommand));
+        final CommandOutput results = impl.execute(new JschCommandProcessorBuilder().setJsch(jsch).setRemoteCommand(remoteExecCommand));
 
         assertTrue(results.getReturnCode().wasSuccessful());
         assertTrue(results.getStandardOutput().contains(config.getRemoteSystemConnection()
@@ -84,7 +84,7 @@ public class ThreadedCommandExecutorImplTest {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(config.getRemoteSystemConnection(),
                                                                           new ExecCommand("cat", "abcdef.g.does.not.exist"));
         final JSch jsch = config.getBuilder().build();
-        final ExecData results = impl.execute(new JschCommandProcessorBuilder().setJsch(jsch).setRemoteCommand(remoteExecCommand));
+        final CommandOutput results = impl.execute(new JschCommandProcessorBuilder().setJsch(jsch).setRemoteCommand(remoteExecCommand));
 
         assertFalse(results.getReturnCode().wasSuccessful());
         assertTrue(results.getStandardError().contains("No such file or directory"));

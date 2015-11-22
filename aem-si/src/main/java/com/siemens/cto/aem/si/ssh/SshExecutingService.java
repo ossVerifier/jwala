@@ -5,8 +5,8 @@ import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorBuilder;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
 import com.siemens.cto.aem.domain.model.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
@@ -64,10 +64,10 @@ public class SshExecutingService {
         evaluationContext = ExpressionUtils.createStandardEvaluationContext(beanFactory);
     }
 
-    public ExecData handleSshMessage(final Message<?> aMessage) {
+    public CommandOutput handleSshMessage(final Message<?> aMessage) {
         try {
             final CommandProcessorBuilder commandProcessorBuilder = createCommandProcessorBuilder(aMessage);
-            final ExecData execData = commandExecutor.execute(commandProcessorBuilder);
+            final CommandOutput execData = commandExecutor.execute(commandProcessorBuilder);
             return execData;
         } catch (final CommandFailureException | JSchException e) {
             throw new MessagingException(aMessage,

@@ -34,7 +34,7 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
             return this.total == 0 ? 1.0f : (((float)started) / total);
         }
         @Override // webservers: {started: 1, total: 2}
-        public String toString() { return "{started: " + started + ", total: "+total + "}"; }
+        public String toString() { return "{started: " + started + ", total: "+ total + "}"; }
     }
 
     private final StateDetail webServers;

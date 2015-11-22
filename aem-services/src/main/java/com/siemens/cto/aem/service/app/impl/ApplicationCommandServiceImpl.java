@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -22,7 +22,7 @@ public class ApplicationCommandServiceImpl implements ApplicationCommandService 
     }
 
     @Override
-    public ExecData secureCopyConfFile(final String host, final String sourcePath, final String appConfPath,
+    public CommandOutput secureCopyConfFile(final String host, final String sourcePath, final String appConfPath,
                                        final RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
         rtCommandBuilder.setOperation(SCP_WITH_TARGET_BK);
         rtCommandBuilder.addParameter(sourcePath);

@@ -35,7 +35,7 @@ dependencies {
     */
 
     integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"
-    integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
+//    integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
 
     testCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"

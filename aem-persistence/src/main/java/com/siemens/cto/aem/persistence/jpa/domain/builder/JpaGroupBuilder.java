@@ -3,11 +3,13 @@ package com.siemens.cto.aem.persistence.jpa.domain.builder;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
+import com.siemens.cto.aem.domain.model.group.History;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import org.joda.time.Chronology;
@@ -20,7 +22,7 @@ public class JpaGroupBuilder {
 
     public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaGroup group;
-    private CurrentGroupState stateDetailSource = null;
+    private CurrentGroupState currentGroupState = null;
     private boolean fetchWebServers = false;
 
     public JpaGroupBuilder() {
@@ -36,13 +38,14 @@ public class JpaGroupBuilder {
     }
 
     public Group build() {
-        if(stateDetailSource == null) {
+        if(currentGroupState == null) {
             if (fetchWebServers) {
                 return new Group(new Identifier<Group>(group.getId()),
-                                     group.getName(),
-                                     getJvms(),
-                                     getWebServers(),
-                                     stateDetailSource);
+                                 group.getName(),
+                                 getJvms(),
+                                 getWebServers(),
+                                 currentGroupState,
+                                 getHistory());
             }
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
@@ -53,7 +56,7 @@ public class JpaGroupBuilder {
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
                              getJvms(),
-                             stateDetailSource,
+                             currentGroupState,
                              getAsOf());
         }
     }
@@ -68,7 +71,6 @@ public class JpaGroupBuilder {
     }
 
     private GroupState getState() {
-
         if (group.getState() != null) {
             return group.getState();
         }
@@ -99,8 +101,19 @@ public class JpaGroupBuilder {
         return webServers;
     }
 
+    protected Set<History> getHistory() {
+        final Set<History> history = new HashSet<>();
+        if (group.getHistory() != null) {
+            for (final JpaHistory jpaHistory : group.getHistory()) {
+                history.add(new JpaHistoryBuilder(jpaHistory).build());
+            }
+        }
+
+        return history;
+    }
+
     public JpaGroupBuilder setStateDetail(CurrentGroupState originalStatus) {
-        this.stateDetailSource = originalStatus;
+        this.currentGroupState = originalStatus;
         return this;
     }
 

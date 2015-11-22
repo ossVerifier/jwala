@@ -3,7 +3,7 @@ package com.siemens.cto.aem.commandprocessor.impl;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
@@ -28,7 +28,7 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
     }
 
     @Override
-    public ExecData execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException {
+    public CommandOutput execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException {
 
         try (final CommandProcessor processor = aBuilder.build()) {
 
@@ -39,7 +39,7 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
                                                                         standardError);
             
             LOGGER.debug("after consuming standard output and standard err");
-            return new ExecData(returnCode,
+            return new CommandOutput(returnCode,
                                 get(standardOutput),
                                 get(standardError));
         } catch (final NotYetReturnedException nyre) {

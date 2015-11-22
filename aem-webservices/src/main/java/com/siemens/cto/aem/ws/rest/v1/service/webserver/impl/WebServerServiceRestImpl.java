@@ -29,13 +29,12 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.command.UploadHttpdConfTemplateCommand;
@@ -117,15 +116,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
             final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
         logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
-        final WebServerControlHistory controlHistory =
-                webServerControlService.controlWebServer(
-                        new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
-                        aUser.getUser());
-        final ExecData execData = controlHistory.getExecData();
-        if (execData.getReturnCode().wasSuccessful()) {
-            return ResponseBuilder.ok(controlHistory);
+        final CommandOutput commandOutput = webServerControlService.controlWebServer(
+                new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
+                aUser.getUser());
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, execData.getStandardError());
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.getStandardError());
         }
     }
 
@@ -150,7 +147,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final File httpdConfFile = createTempHttpdConf(aWebServerName);
 
             // copy the file
-            final ExecData execData;
+            final CommandOutput execData;
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
 
             execData =

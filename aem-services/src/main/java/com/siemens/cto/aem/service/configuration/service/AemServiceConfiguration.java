@@ -223,9 +223,7 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmControlServiceLifecycle")
     public JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
-        return new JvmControlServiceImpl.LifecycleImpl(
-                persistenceServiceConfiguration.getJvmControlPersistenceService(),
-                getJvmStateService());
+        return new JvmControlServiceImpl.LifecycleImpl(getJvmStateService());
     }
 
     @Bean(name = "groupControlService")
@@ -254,7 +252,6 @@ public class AemServiceConfiguration {
     public WebServerControlService getWebServerControlService() {
         return new WebServerControlServiceImpl(getWebServerService(),
                 aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                getWebServerControlHistoryService(),
                 getWebServerStateService(),
                 webServerReachableStateMap);
     }
@@ -277,11 +274,6 @@ public class AemServiceConfiguration {
     @Bean
     public ApplicationCommandService getApplicationCommandService() {
         return new ApplicationCommandServiceImpl(aemSshConfig.getSshConfiguration());
-    }
-
-    @Bean
-    public WebServerControlHistoryService getWebServerControlHistoryService() {
-        return new WebServerControlHistoryServiceImpl(persistenceServiceConfiguration.getWebServerControlPersistenceService());
     }
 
     @Bean(name = "stateNotificationService")

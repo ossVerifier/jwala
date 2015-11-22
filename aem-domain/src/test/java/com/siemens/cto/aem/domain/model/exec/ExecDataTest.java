@@ -43,14 +43,14 @@ public class ExecDataTest {
 
     @Test
     public void testCleanStandardOutput(){
-        ExecData testObject = new ExecData(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        CommandOutput testObject = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
         testObject.cleanStandardOutput();
         assertEquals(STANDARD_OUTPUT_WITH_SPECIAL_CHARS_REMOVED, testObject.getStandardOutput());
     }
 
     @Test
     public void testExtractMessageFromStandardOutput(){
-        ExecData testObject = new ExecData(new ExecReturnCode(36), STANDARD_OUTPUT_WITH_SHELL_INFO,"");
+        CommandOutput testObject = new CommandOutput(new ExecReturnCode(36), STANDARD_OUTPUT_WITH_SHELL_INFO,"");
         testObject.cleanStandardOutput();
         assertEquals(STANDARD_OUTPUT_WITH_SHELL_INFO_REMOVED, testObject.extractMessageFromStandardOutput());
     }

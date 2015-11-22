@@ -10,7 +10,7 @@ import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -258,7 +258,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional(readOnly = true)
     // TODO: Have an option to do a hot deploy or not.
-    public ExecData deployConf(final String appName, final String groupName, final String jvmName,
+    public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, User user) {
 
         final StringBuilder key = new StringBuilder();
@@ -300,7 +300,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             target.append(resourceTemplateName);
 
-            final ExecData execData = applicationCommandService.secureCopyConfFile(jvm.getHostName(),
+            final CommandOutput execData = applicationCommandService.secureCopyConfFile(jvm.getHostName(),
                     confFile.getAbsolutePath().replace("\\", "/"),
                     target.toString(),
                     new RuntimeCommandBuilder());
@@ -313,10 +313,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                         resourceTemplateName, appName, standardError);
                 throw new DeployApplicationConfException(standardError);
             }
-        } catch (FileNotFoundException fileNotFoundEx) {
-            throw new DeployApplicationConfException(fileNotFoundEx);
-        } catch (CommandFailureException cfe) {
-            throw new DeployApplicationConfException(cfe);
+        } catch (FileNotFoundException | CommandFailureException ex) {
+            throw new DeployApplicationConfException(ex);
         } finally {
             writeLock.get(key.toString()).writeLock().unlock();
         }
@@ -365,7 +363,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     rtCommandBuilder.addCygwinPathParameter(destPath);
                     RuntimeCommand rtCommand = rtCommandBuilder.build();
 
-                    ExecData execData = rtCommand.execute();
+                    CommandOutput execData = rtCommand.execute();
                     if (execData.getReturnCode().wasSuccessful()) {
                         LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), host);
                     } else {

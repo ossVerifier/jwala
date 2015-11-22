@@ -1,5 +1,6 @@
 apply plugin: "sonar-runner"
 
+//test 
 ext {
     versions = [
                  junit : "4.+",
@@ -30,8 +31,8 @@ ext {
                  tomcat : '7.0.55',
                  ant: '1.8.2',
                  groovy: '2.4.3',
-                 jacoco: '0.6.5.201403032054',
-                 devbundle: '1.1-SNAPSHOT'
+                 jacoco: '0.6.5.201403032054'// ,
+//                 devbundle: '1.1-SNAPSHOT'
                 ]
 }
 

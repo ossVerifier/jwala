@@ -206,7 +206,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
                                        null,
                                        null));
 
-        groupSet.add(new Group(new Identifier<Group>("1"), "Group1", new HashSet<Jvm>(), webServerSet, null));
+        groupSet.add(new Group(new Identifier<Group>("1"), "Group1", new HashSet<Jvm>(), webServerSet, null, null));
 
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(true))).thenReturn(groupSet.get(2));
 

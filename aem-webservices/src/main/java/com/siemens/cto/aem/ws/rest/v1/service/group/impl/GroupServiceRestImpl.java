@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -70,6 +71,24 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public GroupServiceRestImpl(final GroupService theGroupService, ResourceService theResourceService) {
         groupService = theGroupService;
         resourceService = theResourceService;
+    }
+
+
+    public Response getGroupHistory(String groupName) {
+        logger.debug("Get Groups History requested for group : {}", groupName);
+        Group group = groupService.getGroup(groupName);
+
+        // SMG: 11/15/15
+        // TODO: Is this needed or is the proper response sent back to the client using the error from the persistence layer
+        if (group == null) {
+            logger.warn("Group with name {} not found.", groupName);
+            return ResponseBuilder.notOk(
+                    Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(
+                    AemFaultType.GROUP_NOT_FOUND, "Group " + groupName + " not found."));
+        }
+
+        return ResponseBuilder.ok(group.getHistory());
     }
 
     @Override
@@ -158,8 +177,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmCommand grpCommand = new ControlGroupJvmCommand(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()));
-        return ResponseBuilder.ok(groupJvmControlService.controlGroup(grpCommand,
-                aUser.getUser()));
+        groupJvmControlService.controlGroup(grpCommand, aUser.getUser());
+        return ResponseBuilder.ok();
     }
 
     @Override
@@ -168,7 +187,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         for (Jvm jvm : groupService.getGroup(aGroupId).getJvms()) {
             for (final ResourceType resourceType : resourceService.getResourceTypes()) {
                 if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(resourceType.getConfigFileName())) {
-                    FileInputStream dataInputStream = null;
+                    FileInputStream dataInputStream;
                     try {
                         dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + resourceType.getTemplateName()));
                         UploadJvmTemplateCommand uploadJvmTemplateCommand = new UploadJvmTemplateCommand(jvm, resourceType.getTemplateName(), dataInputStream) {
@@ -206,8 +225,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerCommand grpCommand = new ControlGroupWebServerCommand(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()));
-        return ResponseBuilder.ok(groupWebServerControlService.controlGroup(grpCommand,
-                aUser.getUser()));
+        groupWebServerControlService.controlGroup(grpCommand, aUser.getUser());
+        return ResponseBuilder.ok();
     }
 
     @Override
@@ -219,8 +238,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         logger.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
 
         ControlGroupCommand grpCommand = new ControlGroupCommand(aGroupId, groupControlOperation);
-        return ResponseBuilder.ok(groupControlService.controlGroup(grpCommand,
-                aUser.getUser()));
+        groupControlService.controlGroup(grpCommand, aUser.getUser());
+        return ResponseBuilder.ok();
     }
 
     @Override

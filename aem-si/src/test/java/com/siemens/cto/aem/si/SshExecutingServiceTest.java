@@ -7,7 +7,7 @@ import com.jcraft.jsch.Session;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
@@ -57,7 +57,7 @@ public class SshExecutingServiceTest {
         final String expectedCommand = "This is my Command";
         final Integer successfulExit = 0;
         final String sshInputData = "this is my command's output";
-        final ExecData expectedExecData = new ExecData(new ExecReturnCode(successfulExit),
+        final CommandOutput expectedExecData = new CommandOutput(new ExecReturnCode(successfulExit),
                                                        sshInputData,
                                                        "");
 
@@ -93,7 +93,7 @@ public class SshExecutingServiceTest {
         final String actualCommand = new String(commandCaptor.getValue(), StandardCharsets.UTF_8);
         assertTrue(actualCommand.startsWith(expectedCommand));
 
-        final ExecData actualExecData = adapter.getExecData();
+        final CommandOutput actualExecData = adapter.getExecData();
         assertEquals(expectedExecData,
                      actualExecData);
     }

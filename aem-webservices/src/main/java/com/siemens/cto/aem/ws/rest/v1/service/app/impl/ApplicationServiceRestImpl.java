@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -23,7 +24,6 @@ import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.app.UploadAppTemplateCommand;
 import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -185,7 +185,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployConf(final String appName, final String groupName, final String jvmName,
             final String resourceTemplateName, final AuthenticatedUser authUser) {
         try {
-            final ExecData execData =
+            final CommandOutput execData =
                     service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
             if (execData.getReturnCode().wasSuccessful()) {
                 return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "

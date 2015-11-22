@@ -4,15 +4,14 @@ import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.*;
@@ -81,8 +80,6 @@ public class JvmServiceRestImplTest {
     @Mock
     private JvmControlService controlImpl;
     @Mock
-    private JvmControlHistory jvmControlHistory;
-    @Mock
     private StateService<Jvm, JvmState> jvmStateService;
     @Mock
     private AuthenticatedUser authenticatedUser;
@@ -91,7 +88,7 @@ public class JvmServiceRestImplTest {
 
     private Map<String, ReentrantReadWriteLock> writeLockMap;
 
-    private JvmServiceRestImpl cut;
+    private JvmServiceRestImpl jvmServiceRest;
 
     private static List<Jvm> createJvmList() {
         final Set<LiteGroup> groups = new HashSet<>();
@@ -115,7 +112,7 @@ public class JvmServiceRestImplTest {
     public void setUp() {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
-        cut = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
+        jvmServiceRest = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
     }
 
@@ -128,7 +125,7 @@ public class JvmServiceRestImplTest {
     public void testGetJvmList() {
         when(impl.getJvms()).thenReturn(jvmList);
 
-        final Response response = cut.getJvms();
+        final Response response = jvmServiceRest.getJvms();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -144,7 +141,7 @@ public class JvmServiceRestImplTest {
     public void testGetJvm() {
         when(impl.getJvm(any(Identifier.class))).thenReturn(jvm);
 
-        final Response response = cut.getJvm(Identifier.id(1l, Jvm.class));
+        final Response response = jvmServiceRest.getJvm(Identifier.id(1l, Jvm.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -161,7 +158,7 @@ public class JvmServiceRestImplTest {
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
                 shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties);
-        final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
+        final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -188,7 +185,7 @@ public class JvmServiceRestImplTest {
                 ajpPort,
                 statusPath.getUriPath(),
                 systemProperties);
-        final Response response = cut.createJvm(jsonCreateJvm, authenticatedUser);
+        final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -213,7 +210,7 @@ public class JvmServiceRestImplTest {
         updateJvmCommand.equals(jsonUpdateJvm.toUpdateJvmCommand());
         String check = updateJvmCommand.toString();
 
-        final Response response = cut.updateJvm(jsonUpdateJvm, authenticatedUser);
+        final Response response = jvmServiceRest.updateJvm(jsonUpdateJvm, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -229,10 +226,11 @@ public class JvmServiceRestImplTest {
     public void testRemoveJvm() {
         when(impl.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(impl.getJvm(jvm.getId())).thenReturn(jvm);
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
+
+        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+
         when(jvmStateService.getCurrentState(jvm.getId())).thenReturn(new CurrentState<Jvm, JvmState>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM));
-        Response response = cut.removeJvm(jvm.getId(), authenticatedUser);
+        Response response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
         verify(impl, atLeastOnce()).removeJvm(jvm.getId());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -242,7 +240,7 @@ public class JvmServiceRestImplTest {
         when(impl.isJvmStarted(any(Jvm.class))).thenReturn(true);
         boolean exceptionThrown = false;
         try {
-            response = cut.removeJvm(jvm.getId(), authenticatedUser);
+            response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
         } catch (Exception e) {
             assertEquals("The target JVM must be stopped before attempting to delete it", e.getMessage());
             exceptionThrown = true;
@@ -252,31 +250,28 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testControlJvm() {
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
+        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
-        final ExecData execData = mock(ExecData.class);
+        final CommandOutput execData = mock(CommandOutput.class);
         final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
         when(execDataReturnCode.wasSuccessful()).thenReturn(true);
         when(execData.getReturnCode()).thenReturn(execDataReturnCode);
-        when(jvmControlHistory.getExecData()).thenReturn(execData);
 
         final JsonControlJvm jsonControlJvm = new JsonControlJvm("start");
-        final Response response = cut.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
+        final Response response = jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         final Object content = applicationResponse.getApplicationResponseContent();
-        assertTrue(content instanceof JvmControlHistory);
-
-        final JvmControlHistory received = (JvmControlHistory) content;
-        assertEquals(jvmControlHistory, received);
+        assertTrue(content instanceof CommandOutput);
 
         when(execDataReturnCode.wasSuccessful()).thenReturn(false);
-        when(execData.getStandardError()).thenReturn("Jvm Control Failed");
         boolean exceptionThrown = false;
+
+        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(new CommandOutput(execDataReturnCode, "", "Jvm Control Failed"));
         try {
-            cut.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
+            jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
             assertEquals("Jvm Control Failed", e.getMessage());
@@ -289,25 +284,25 @@ public class JvmServiceRestImplTest {
         Set<String> jvmIds = new HashSet<>();
         jvmIds.add(jvm.getId().getId() + "");
         JvmIdsParameterProvider jvmIdProvider = new JvmIdsParameterProvider(jvmIds);
-        assertTrue(cut.getCurrentJvmStates(jvmIdProvider).hasEntity());
+        assertTrue(jvmServiceRest.getCurrentJvmStates(jvmIdProvider).hasEntity());
 
         when(jvmStateService.getCurrentStates()).thenReturn(new HashSet<CurrentState<Jvm, JvmState>>());
         JvmIdsParameterProvider mockJvmProvider = mock(JvmIdsParameterProvider.class);
         when(mockJvmProvider.valueOf()).thenReturn(new HashSet<Identifier<Jvm>>());
-        Response response = cut.getCurrentJvmStates(mockJvmProvider);
+        Response response = jvmServiceRest.getCurrentJvmStates(mockJvmProvider);
         assertNotNull(response.getEntity());
     }
 
     @Test
     public void testGenerateConfig() {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
-        Response responseObj = cut.generateConfig(jvm.getJvmName());
+        Response responseObj = jvmServiceRest.generateConfig(jvm.getJvmName());
         assertTrue(responseObj.hasEntity());
 
         when(impl.generateConfigFile(anyString(), anyString())).thenThrow(new TemplateNotFoundException("server.xml", mock(FileNotFoundException.class)));
         boolean exceptionThrown = false;
         try {
-            cut.generateConfig(jvm.getJvmName());
+            jvmServiceRest.generateConfig(jvm.getJvmName());
         } catch (InternalErrorException e) {
             exceptionThrown = true;
             assertEquals(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessageResponseStatus());
@@ -322,14 +317,12 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         boolean failsScp = false;
         Response response = null;
         try {
-            response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
+            response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
         } catch (InternalErrorException e) {
             failsScp = true;
         }
@@ -340,47 +333,46 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
-        JvmControlHistory mockControlHistory = mock(JvmControlHistory.class);
         Collection<ResourceType> mockResourceTypes = new ArrayList<>();
         ResourceType mockResource = mock(ResourceType.class);
         mockResourceTypes.add(mockResource);
-        ExecData mockExecData = mock(ExecData.class);
+        CommandOutput commandOutput = mock(CommandOutput.class);
         RuntimeCommandBuilder runtimeCommandBuilder = mock(RuntimeCommandBuilder.class);
         RuntimeCommand mockRuntimeCommand = mock(RuntimeCommand.class);
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
-        when(mockControlHistory.getExecData()).thenReturn(mockExecData);
         when(impl.isJvmStarted(jvm)).thenReturn(false);
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecData);
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(mockControlHistory);
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(mockControlHistory);
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(mockControlHistory);
+        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(commandOutput);
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
+
         when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
-        when(mockRuntimeCommand.execute()).thenReturn(mockExecData);
+        when(mockRuntimeCommand.execute()).thenReturn(commandOutput);
         when(runtimeCommandBuilder.build()).thenReturn(mockRuntimeCommand);
-        Jvm response = cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+        Jvm response = jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         assertEquals(response, jvm);
 
-        ExecData mockExecDataFail = mock(ExecData.class);
-        JvmControlHistory mockControlHistoryFail = mock(JvmControlHistory.class);
+        CommandOutput mockExecDataFail = mock(CommandOutput.class);
         when(mockExecDataFail.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecDataFail.getStandardError()).thenReturn("ERROR");
-        when(mockControlHistoryFail.getExecData()).thenReturn(mockExecDataFail);
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(mockControlHistoryFail);
+
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(mockExecDataFail);
+
         boolean exceptionThrown = false;
         try {
-            cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         } catch (Exception e) {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
 
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(mockControlHistoryFail);
         exceptionThrown = false;
         try {
-            cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -389,7 +381,7 @@ public class JvmServiceRestImplTest {
         when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
         try {
-            cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -401,7 +393,7 @@ public class JvmServiceRestImplTest {
         when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenThrow(commandFailureException);
         exceptionThrown = false;
         try {
-            cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -410,7 +402,7 @@ public class JvmServiceRestImplTest {
         when(impl.isJvmStarted(jvm)).thenReturn(true);
         exceptionThrown = false;
         try {
-            cut.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -426,10 +418,11 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
-        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
-        final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+
+        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
+
+        final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
         assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: FAIL CONTROL SERVICE", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
@@ -440,10 +433,11 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
-        when(jvmControlHistory.getExecData()).thenReturn(new ExecData(new ExecReturnCode(0), "", ""));
-        when(controlImpl.controlJvm(any(ControlJvmCommand.class), any(User.class))).thenReturn(jvmControlHistory);
-        final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
+
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+
+        final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
         assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
@@ -454,17 +448,20 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new ExecData(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
-        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new JvmControlHistory(null, null, null, null, new ExecData(new ExecReturnCode(0), "", "")));
+        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
+
+
+        when(controlImpl.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+
         when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
-        final Response response = cut.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
+        final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
         assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
     public void testDiagnoseJvm() {
         when(impl.performDiagnosis(jvm.getId())).thenReturn("Good Diagnosis!");
-        Response response = cut.diagnoseJvm(jvm.getId());
+        Response response = jvmServiceRest.diagnoseJvm(jvm.getId());
         assertTrue(response.hasEntity());
     }
 
@@ -473,7 +470,7 @@ public class JvmServiceRestImplTest {
         List<String> resourceNames = new ArrayList<>();
         resourceNames.add("a resource name");
         when(impl.getResourceTemplateNames(jvm.getJvmName())).thenReturn(resourceNames);
-        Response response = cut.getResourceNames(jvm.getJvmName());
+        Response response = jvmServiceRest.getResourceNames(jvm.getJvmName());
         assertTrue(response.hasEntity());
     }
 
@@ -481,7 +478,7 @@ public class JvmServiceRestImplTest {
     public void testGetResourceTemplate() {
         String resourceTemplateName = "template.tpl";
         when(impl.getResourceTemplate(jvm.getJvmName(), resourceTemplateName, false)).thenReturn("${jvm.jvmName");
-        Response response = cut.getResourceTemplate(jvm.getJvmName(), resourceTemplateName, false);
+        Response response = jvmServiceRest.getResourceTemplate(jvm.getJvmName(), resourceTemplateName, false);
         assertTrue(response.hasEntity());
     }
 
@@ -494,7 +491,7 @@ public class JvmServiceRestImplTest {
         when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         resourceList.add(mockResourceType);
         when(resourceService.getResourceTypes()).thenReturn(resourceList);
-        cut.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
+        jvmServiceRest.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
         verify(impl, times(1)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateCommand.class), any(User.class));
     }
 
@@ -509,9 +506,9 @@ public class JvmServiceRestImplTest {
         when(mockContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
         when(mockContext.getHttpServletRequest()).thenReturn(mockHttpServletReq);
         when(impl.getJvm(jvm.getJvmName())).thenReturn(jvm);
-        cut.setContext(mockContext);
+        jvmServiceRest.setContext(mockContext);
         try {
-            Response response = cut.uploadConfigTemplate(jvm.getJvmName(), authenticatedUser, "server.xml");
+            Response response = jvmServiceRest.uploadConfigTemplate(jvm.getJvmName(), authenticatedUser, "server.xml");
             assertNotNull(response.getEntity());
         } catch (Exception e) {
             assertEquals("Error receiving data", e.getMessage());
@@ -523,7 +520,7 @@ public class JvmServiceRestImplTest {
         Collection<ResourceType> resourceTypes = new ArrayList<>();
         ResourceType mockResourceType = mock(ResourceType.class);
         resourceTypes.add(mockResourceType);
-        ExecData mockExecData = mock(ExecData.class);
+        CommandOutput mockExecData = mock(CommandOutput.class);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResourceType.getEntityType()).thenReturn("jvm");
@@ -533,7 +530,7 @@ public class JvmServiceRestImplTest {
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         when(impl.generateConfigFile(anyString(),anyString())).thenReturn("<server>xml</server>");
         when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecData);
-        Response response = cut.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
+        Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
@@ -541,7 +538,7 @@ public class JvmServiceRestImplTest {
         when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         boolean exceptionThrown = false;
         try {
-            cut.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
+            jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -553,22 +550,22 @@ public class JvmServiceRestImplTest {
     public void testUpdateResourceTemplate() {
         final String updateValue = "<server>update</server>";
         when(impl.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(updateValue);
-        Response response = cut.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
+        Response response = jvmServiceRest.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
         assertNotNull(response.getEntity());
 
         when(impl.updateResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException(jvm.getJvmName(), "server.xml"));
-        response = cut.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
+        response = jvmServiceRest.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
         assertNotNull(response.getEntity());
     }
 
     @Test
     public void testPreviewResourceTemplate() {
         when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenReturn("<server>preview</server>");
-        Response response = cut.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        Response response = jvmServiceRest.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
 
         when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test failed preview"));
-        response = cut.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        response = jvmServiceRest.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
     }
 }

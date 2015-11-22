@@ -5,7 +5,7 @@ import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
@@ -62,7 +62,7 @@ public class RemoteJvmCommandExecutorImplTest {
         when(jvm.getJvmName()).thenReturn("jvm-integration-1");
         when(jvm.getHostName()).thenReturn("usmlvv1cto989");
 
-        final ExecData exec = impl.controlJvm(command,
+        final CommandOutput exec = impl.controlJvm(command,
                                               jvm);
         final String output = exec.getStandardOutput();
         final String error = exec.getStandardError();

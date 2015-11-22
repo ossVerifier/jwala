@@ -1,15 +1,9 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupControlHistory;
-import com.siemens.cto.aem.domain.model.group.command.CompleteControlGroupCommand;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
-import com.siemens.cto.aem.domain.model.group.command.GroupCommand;
-import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
@@ -37,22 +31,16 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
     @Transactional
     @Override
-    public GroupControlHistory controlGroup(ControlGroupJvmCommand aCommand, User aUser) {
+    public void controlGroup(ControlGroupJvmCommand aCommand, User aUser) {
 
         aCommand.validateCommand();
 
-        GroupControlHistory controlHistoryEvent = persistenceService.addIncompleteControlHistoryEvent(new Event<GroupCommand>(
-                aCommand, AuditEvent.now(aUser)));
-
         Group group = groupService.getGroup(aCommand.getGroupId());
 
-        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser,
-                controlHistoryEvent.getId());
+        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser);
 
         // TODO: Deprecate spring integration stuff in the future!
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
-
-        return controlHistoryEvent;
     }
 
     @Transactional
@@ -60,28 +48,20 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
         LOGGER.debug("entering dispatchCommandComplete with results {}", results);
         
-        GroupControlHistory completeHistory = null;
-
         if (results != null && !results.isEmpty()) {
 
-            GroupJvmDispatchCommand aCommand = null;
             long successCount = 0;
             long totalCount = 0;
             
             for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
-                aCommand = jvmDispatchCommandResult.getGroupJvmDispatchCommand();
+                jvmDispatchCommandResult.getGroupJvmDispatchCommand();
                 if (jvmDispatchCommandResult.wasSuccessful()) {
                     successCount++;
                 }
                 ++totalCount;
             }
-            
-            Identifier<GroupControlHistory> groupControlHistoryId = aCommand.getGroupControlHistoryId();
-            completeHistory = persistenceService.completeControlHistoryEvent(new Event<>(
-                    new CompleteControlGroupCommand(groupControlHistoryId, totalCount, successCount), AuditEvent.now(aCommand
-                            .getUser())));
 
-            String logMsg = "Group Dispatch " + groupControlHistoryId + ": Command Complete: " + successCount + " of " + totalCount + " succeeded.";
+            String logMsg = "Group Dispatch : Command Complete: " + successCount + " of " + totalCount + " succeeded.";
             if(successCount == results.size()) {
                 LOGGER.info(logMsg);
             } else {

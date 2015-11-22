@@ -1,26 +1,21 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlHistory;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.model.webserver.command.CompleteControlWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.webserver.WebServerControlHistoryService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -42,9 +37,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private WebServerCommandExecutor commandExecutor;
 
     @Mock
-    private WebServerControlHistoryService controlHistoryService;
-
-    @Mock
     private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     @Mock
@@ -59,7 +51,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     public void setup() {
         impl = new WebServerControlServiceImpl(webServerService,
                                                commandExecutor,
-                                               controlHistoryService,
                                                webServerStateService,
                                                webServerReachableStateMap);
 
@@ -72,24 +63,16 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         final ControlWebServerCommand controlCommand = mock(ControlWebServerCommand.class);
         final WebServer webServer = mock(WebServer.class);
         final Identifier<WebServer> webServerId = mock(Identifier.class);
-        final Identifier<WebServerControlHistory> historyId = mock(Identifier.class);
-        final WebServerControlHistory incompleteHistory = mock(WebServerControlHistory.class);
         final WebServerControlOperation controlOperation = WebServerControlOperation.START;
 
         when(controlCommand.getWebServerId()).thenReturn(webServerId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(webServerService.getWebServer(eq(webServerId))).thenReturn(webServer);
-        when(incompleteHistory.getId()).thenReturn(historyId);
-
-        when(controlHistoryService.beginIncompleteControlHistory(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
 
         impl.controlWebServer(controlCommand,
                               user);
 
         verify(controlCommand, times(1)).validateCommand();
-
-        verify(controlHistoryService, times(1)).beginIncompleteControlHistory(matchCommandInEvent(controlCommand));
-        verify(controlHistoryService, times(1)).completeControlHistory(Matchers.<Event<CompleteControlWebServerCommand>>anyObject());
 
         verify(webServerService, times(1)).getWebServer(eq(webServerId));
         verify(commandExecutor, times(1)).controlWebServer(eq(controlCommand),

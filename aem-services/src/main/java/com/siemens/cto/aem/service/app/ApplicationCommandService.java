@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 /**
@@ -10,6 +10,6 @@ import com.siemens.cto.aem.exception.CommandFailureException;
  * Created by z003bpej on 9/9/2015.
  */
 public interface ApplicationCommandService {
-    ExecData secureCopyConfFile(String host, String sourcePath, String appConfPath,
+    CommandOutput secureCopyConfFile(String host, String sourcePath, String appConfPath,
                                 RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException;
 }

@@ -17,7 +17,7 @@ public class RuntimeCommand {
         command = commandToExecute;
     }
 
-    public ExecData execute() {
+    public CommandOutput execute() {
         Runtime rt = Runtime.getRuntime();
         LOGGER.info("Running command: {}", command);
         try {
@@ -32,7 +32,7 @@ public class RuntimeCommand {
 
             proc.waitFor();
 
-            return new ExecData(new ExecReturnCode(proc.exitValue()),
+            return new CommandOutput(new ExecReturnCode(proc.exitValue()),
                     inputBuffer.toString(),
                     errorBuffer.toString());
         } catch (IOException e) {

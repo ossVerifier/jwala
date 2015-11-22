@@ -5,7 +5,7 @@ import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
@@ -60,7 +60,7 @@ public class RemoteWebServerCommandExecutorImplTest {
         when(command.getControlOperation()).thenReturn(WebServerControlOperation.START);
         when(webServer.getName()).thenReturn("USMLVV1CTOWEB05");
         when(webServer.getHost()).thenReturn("usmlvv1cto989");
-        final ExecData exec = impl.controlWebServer(command, webServer);
+        final CommandOutput exec = impl.controlWebServer(command, webServer);
         final String error = exec.getStandardError();
         assumeFalse(error.contains("The requested service has already been started"));
         assertTrue(exec.getReturnCode().wasSuccessful());

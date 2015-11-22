@@ -9,7 +9,7 @@ import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
 import com.siemens.cto.aem.control.webserver.impl.WebServerRemoteCommandProcessorBuilder;
 import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -60,7 +60,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     }
 
     @Override
-    public ExecData getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException {
+    public CommandOutput getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerId);
         final ExecCommand execCommand = createExecCommand(aWebServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE, aWebServer.getHttpConfigFile().getUriPath());
 
@@ -68,7 +68,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     }
 
     @Override
-    public ExecData secureCopyHttpdConf(String aWebServerName, String sourcePath, RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
+    public CommandOutput secureCopyHttpdConf(String aWebServerName, String sourcePath, RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
 
@@ -77,7 +77,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         try {
             response = clientFactoryHelper.requestGet(aWebServer.getStatusUri());
             if (response.getStatusCode() == HttpStatus.OK) {
-                return new ExecData(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
+                return new CommandOutput(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
             }
         } catch (ConnectException e) {
             logger.info("Ignore connect exception when attempting to replace resource files for the web server", e);
@@ -107,7 +107,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         return rtCommand.execute();
     }
 
-    private ExecData executeCommand(WebServer aWebServer, ExecCommand execCommand) throws CommandFailureException {
+    private CommandOutput executeCommand(WebServer aWebServer, ExecCommand execCommand) throws CommandFailureException {
         try {
             final WebServerRemoteCommandProcessorBuilder processorBuilder = new WebServerRemoteCommandProcessorBuilder();
             processorBuilder.setCommand(execCommand);

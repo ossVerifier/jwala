@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
@@ -36,7 +35,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
     private JvmControlServiceImpl impl;
     private JvmControlServiceImpl.LifecycleImpl lifecycleImpl;
-    private JvmControlPersistenceService persistenceService;
     private JvmService jvmService;
     private JvmCommandExecutor commandExecutor;
     private User user;
@@ -49,10 +47,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
     @Before
     public void setup() {
-        persistenceService = mock(JvmControlPersistenceService.class);
         jvmService = mock(JvmService.class);
         commandExecutor = mock(JvmCommandExecutor.class);
-        lifecycleImpl = new JvmControlServiceImpl.LifecycleImpl(persistenceService, jvmStateService);
+        lifecycleImpl = new JvmControlServiceImpl.LifecycleImpl(jvmStateService);
         impl = new JvmControlServiceImpl(jvmService,
                 commandExecutor,
                 lifecycleImpl);
@@ -65,20 +62,15 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final ControlJvmCommand controlCommand = mock(ControlJvmCommand.class);
         final Jvm jvm = mock(Jvm.class);
         final Identifier<Jvm> jvmId = mock(Identifier.class);
-        final Identifier<JvmControlHistory> historyId = mock(Identifier.class);
-        final JvmControlHistory incompleteHistory = mock(JvmControlHistory.class);
         final JvmControlOperation controlOperation = JvmControlOperation.START;
-        final ExecData mockExecData = mock(ExecData.class);
+        final CommandOutput mockExecData = mock(CommandOutput.class);
 
         when(jvm.getId()).thenReturn(new Identifier<Jvm>(1L));
         when(commandExecutor.controlJvm(controlCommand, jvm)).thenReturn(mockExecData);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(jvmService.getJvm(eq(jvmId))).thenReturn(jvm);
-        when(incompleteHistory.getId()).thenReturn(historyId);
-        when(incompleteHistory.getExecData()).thenReturn(mockExecData);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(persistenceService.addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
 
         impl.controlJvm(controlCommand, user);
 
@@ -99,10 +91,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Test
     public void testVerificationOfBehaviorForFailures() throws CommandFailureException {
         final ControlJvmCommand controlCommand = mock(ControlJvmCommand.class);
-        final ExecData mockExecData = mock(ExecData.class);
+        final CommandOutput mockExecData = mock(CommandOutput.class);
         final Identifier<Jvm> jvmId = new Identifier<Jvm>(1L);
         final Jvm mockJvm = mock(Jvm.class);
-        final JvmControlHistory incompleteHistory = mock(JvmControlHistory.class);
 
         when(mockJvm.getId()).thenReturn(jvmId);
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
@@ -112,17 +103,10 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockExecData.getStandardOutput()).thenReturn("Test standard out when START or STOP");
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS));
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(incompleteHistory.getId()).thenReturn(new Identifier<JvmControlHistory>(88L));
-        when(incompleteHistory.getExecData()).thenReturn(mockExecData);
-        when(persistenceService.addIncompleteControlHistoryEvent(matchCommandInEvent(controlCommand))).thenReturn(incompleteHistory);
         when(commandExecutor.controlJvm(controlCommand, mockJvm)).thenReturn(mockExecData);
-        JvmControlHistory controlhist = impl.controlJvm(controlCommand, user);
-        assertNotNull(controlhist);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<Jvm, JvmState>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
-        controlhist = impl.controlJvm(controlCommand, user);
-        assertNotNull(controlhist);
 
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
@@ -158,8 +142,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         assertFalse(isNPE); // NPE = unacceptable!
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(commandExecutor.controlJvm(any(ControlJvmCommand.class), any(Jvm.class))).thenReturn(new ExecData(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
-        controlhist = impl.controlJvm(controlCommand, user);
-        assertNotNull(controlhist);
+        when(commandExecutor.controlJvm(any(ControlJvmCommand.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
     }
 }

@@ -12,16 +12,12 @@ import com.siemens.cto.aem.persistence.jpa.service.group.impl.GroupCrudServiceIm
 import com.siemens.cto.aem.persistence.jpa.service.group.impl.JpaGroupControlCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl.GroupJvmRelationshipServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmControlCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmControlCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmStateCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.resource.impl.ResourceInstanceCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.webserver.WebServerControlCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.webserver.impl.WebServerControlCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.webserver.impl.WebServerStateCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.app.impl.JpaApplicationPersistenceServiceImpl;
@@ -29,16 +25,12 @@ import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceServ
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.group.impl.JpaGroupControlPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.group.impl.JpaGroupPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.jvm.JvmControlPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmControlPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JvmJpaStatePersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.impl.JpaResourcePersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.persistence.service.webserver.WebServerControlPersistenceService;
-import com.siemens.cto.aem.persistence.service.webserver.impl.JpaWebServerControlPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.webserver.impl.WebServerJpaStatePersistenceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -69,11 +61,6 @@ public class AemPersistenceServiceConfiguration {
     }
 
     @Bean
-    public JvmControlPersistenceService getJvmControlPersistenceService() {
-        return new JpaJvmControlPersistenceServiceImpl(getJvmControlCrudService());
-    }
-
-    @Bean
     public GroupControlPersistenceService getGroupControlPersistenceService() {
         return new JpaGroupControlPersistenceServiceImpl(getGroupControlCrudService());
     }
@@ -100,11 +87,6 @@ public class AemPersistenceServiceConfiguration {
     }
 
     @Bean
-    protected JvmControlCrudService getJvmControlCrudService() {
-        return new JvmControlCrudServiceImpl();
-    }
-
-    @Bean
     protected GroupControlCrudService getGroupControlCrudService() {
         return new JpaGroupControlCrudServiceImpl();
     }
@@ -117,16 +99,6 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     public ApplicationPersistenceService getApplicationPersistenceService() {
         return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
-    }
-
-    @Bean
-    public WebServerControlPersistenceService getWebServerControlPersistenceService() {
-        return new JpaWebServerControlPersistenceServiceImpl(getWebServerControlCrudService());
-    }
-
-    @Bean
-    protected WebServerControlCrudService getWebServerControlCrudService() {
-        return new WebServerControlCrudServiceImpl();
     }
 
     @Bean(name = "webServerStatePersistenceService")

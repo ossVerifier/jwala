@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.web.controller;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.command.Command;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -43,11 +43,11 @@ public class CommandController {
         Identifier<Jvm> jvmIdentifier = getJvmIdParameter(request);
         ControlJvmCommand aCommand = getControlOperation(request, jvmIdentifier);
 
-        JvmControlHistory jvmControlHistory = jvmControlService.controlJvm(aCommand, User.getSystemUser());
+        CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, User.getSystemUser());
 
         ModelAndView mv = new ModelAndView("cmd/textOutput");
-        mv.addObject("stdErr", jvmControlHistory.getExecData().getStandardError());
-        mv.addObject("stdOut", jvmControlHistory.getExecData().getStandardOutput());
+        mv.addObject("stdErr", commandOutput.getStandardError());
+        mv.addObject("stdOut", commandOutput.getStandardOutput());
 
         return mv;
     }
@@ -58,7 +58,7 @@ public class CommandController {
         final String ERROR_MSG_PREFIX = "Error reading httpd.conf: ";
         response.setContentType("text/plain");
         try {
-            final ExecData execData = webServerCommandService.getHttpdConf(id);
+            final CommandOutput execData = webServerCommandService.getHttpdConf(id);
             if (execData.getReturnCode().wasSuccessful()) {
                 response.getWriter().print(execData.getStandardOutput());
             } else {

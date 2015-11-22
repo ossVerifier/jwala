@@ -13,7 +13,7 @@ public class PersistenceApplicationListener implements ApplicationListener<Conte
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (event instanceof ContextRefreshedEvent) {
-            ApplicationContext applicationContext = ((ContextRefreshedEvent) event).getApplicationContext();
+            ApplicationContext applicationContext = event.getApplicationContext();
             ApplicationDao simpleDao = applicationContext.getBean(ApplicationDao.class);
             simpleDao.getApplications(); // read nothing.
         }      

@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.web.controller;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlHistory;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.temporary.User;
@@ -61,17 +60,13 @@ public class CommandControllerTest {
         when(request.getParameter(eq("jvmId"))).thenReturn("1");
         when(request.getParameter(eq("operation"))).thenReturn("threadDump");
 
-        final ExecData execData = mock(ExecData.class);
-        when(execData.getStandardOutput()).thenReturn("Standard Output");
-        when(execData.getStandardError()).thenReturn("Standard Error");
+        final CommandOutput commandOutput = mock(CommandOutput.class);
+        when(commandOutput.getStandardOutput()).thenReturn("Standard Output");
+        when(commandOutput.getStandardError()).thenReturn("Standard Error");
 
-        final JvmControlHistory controlHistory = mock(JvmControlHistory.class);
-        when(controlHistory.getExecData()).thenReturn(execData);
+        final ControlJvmCommand cmd = new ControlJvmCommand(new Identifier<Jvm>("1"), JvmControlOperation.THREAD_DUMP);
 
-        final ControlJvmCommand cmd =
-                new ControlJvmCommand(new Identifier<Jvm>("1"), JvmControlOperation.THREAD_DUMP);
-
-        when(jvmControlService.controlJvm(eq(cmd), any(User.class))).thenReturn(controlHistory);
+        when(jvmControlService.controlJvm(eq(cmd), any(User.class))).thenReturn(commandOutput);
 
         final ModelAndView mv = commandController.jvmCommand(request, response);
 
@@ -83,7 +78,7 @@ public class CommandControllerTest {
     public void webServerCommandTest() throws CommandFailureException, IOException {
         when(request.getParameter(eq("webServerId"))).thenReturn("1");
 
-        final ExecData execData = mock(ExecData.class);
+        final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(mock(ExecReturnCode.class));
         when(execData.getReturnCode().wasSuccessful()).thenReturn(true);
         when(execData.getStandardOutput()).thenReturn("The contents of httpd.conf...");
@@ -105,7 +100,7 @@ public class CommandControllerTest {
     public void webServerCommandTestWithStandardErr() throws CommandFailureException, IOException {
         when(request.getParameter(eq("webServerId"))).thenReturn("1");
 
-        final ExecData execData = mock(ExecData.class);
+        final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(mock(ExecReturnCode.class));
         when(execData.getReturnCode().wasSuccessful()).thenReturn(false);
         when(execData.getStandardError()).thenReturn("Error!");

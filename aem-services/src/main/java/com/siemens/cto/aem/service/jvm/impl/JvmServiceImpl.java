@@ -5,7 +5,7 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
@@ -297,7 +297,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public ExecData secureCopyFile(RuntimeCommandBuilder rtCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFile(RuntimeCommandBuilder rtCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException {
 
         rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
         rtCommandBuilder.addCygwinPathParameter(srcDirPath + "/" + fileName);

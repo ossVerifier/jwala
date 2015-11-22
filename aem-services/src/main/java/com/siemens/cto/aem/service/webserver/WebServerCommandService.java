@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -13,7 +13,7 @@ import com.siemens.cto.aem.exception.CommandFailureException;
  */
 public interface WebServerCommandService {
 
-    ExecData getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException;
+    CommandOutput getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException;
 
-    ExecData secureCopyHttpdConf(String aWebServerName, String sourcePath, RuntimeCommandBuilder rtCommandBuidler) throws CommandFailureException;
+    CommandOutput secureCopyHttpdConf(String aWebServerName, String sourcePath, RuntimeCommandBuilder rtCommandBuidler) throws CommandFailureException;
 }

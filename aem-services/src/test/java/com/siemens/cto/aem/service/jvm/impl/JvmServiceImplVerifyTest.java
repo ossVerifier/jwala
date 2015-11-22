@@ -31,7 +31,7 @@ import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
@@ -349,12 +349,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         Jvm jvm = mock(Jvm.class);//new Jvm(new Identifier<Jvm>(99L), "testJvm", "testHostName", new HashSet<LiteGroup>(), 12, 13, 14, 15, 16,new Path("./stp-test.png"),"");
         when(jvm.getStatusUri()).thenReturn(new URI("http://server/testUri.png"));
         when(jvm.getJvmName()).thenReturn("testJvm");
-        ExecData successReturnData = new ExecData(new ExecReturnCode(0), "", "");
+        CommandOutput successReturnData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(command.execute()).thenReturn(successReturnData);
         when(rtCommandBuilder.build()).thenReturn(command);
         when(factoryHelper.requestGet(any(URI.class))).thenReturn(new MockClientHttpResponse(new byte[]{}, HttpStatus.REQUEST_TIMEOUT));
 //        boolean commandFailed = false;
-//        ExecData result = null;
+//        CommandOutput result = null;
 //        try {
 //            result = impl.secureCopyFile(jvm, rtCommandBuilder);
 //        } catch (CommandFailureException e) {

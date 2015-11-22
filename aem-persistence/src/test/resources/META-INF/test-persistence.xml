@@ -12,12 +12,11 @@
 
         <class>com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroup</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvm</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvmControlHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaApplication</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerControlHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance</class>

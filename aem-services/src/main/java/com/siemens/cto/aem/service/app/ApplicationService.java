@@ -2,7 +2,7 @@ package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.app.*;
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -42,9 +42,9 @@ public interface ApplicationService {
      * @param groupName
      * @param jvmName - the jvm name where the application resides.
      * @param resourceTemplateName - the resource template in which the configuration file is based on.
-     * @param user - the user.    @return {@link com.siemens.cto.aem.domain.model.exec.ExecData}
+     * @param user - the user.    @return {@link CommandOutput}
      */
-    ExecData deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
+    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
 
     JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateCommand command, User user);	
     /**

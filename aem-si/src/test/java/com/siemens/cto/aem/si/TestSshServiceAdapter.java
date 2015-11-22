@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.si;
 
-import com.siemens.cto.aem.domain.model.exec.ExecData;
+import com.siemens.cto.aem.domain.model.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 public class TestSshServiceAdapter {
 
-    private ExecData execData;
+    private CommandOutput execData;
     private Jvm jvmInError;
 
-    public void completeRequest(final ExecData someExecData) {
+    public void completeRequest(final CommandOutput someExecData) {
         execData = someExecData;
     }
 
@@ -16,7 +16,7 @@ public class TestSshServiceAdapter {
         jvmInError = aJvmInError;
     }
 
-    public ExecData getExecData() {
+    public CommandOutput getExecData() {
         return execData;
     }
 
