@@ -1,8 +1,10 @@
 package com.siemens.cto.aem.service.state.impl;
 
 import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -224,12 +226,42 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testCreateUnknown() {
-        
+        final CurrentState currentState = groupStateServiceImpl.createUnknown(null);
+        assertEquals(GroupState.GRP_UNKNOWN, currentState.getState());
     }
 
     @Test
-    public void testSignal() {
+    public void testSignalStart() {
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).
+                thenReturn(groupStateMachine);
+        final Identifier<Group> groupId = new Identifier<>(1l);
+        final Group group = new Group(groupId, "theGroup");
 
+        when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        final ControlGroupCommand controlGroupCommand = new ControlGroupCommand(groupId, GroupControlOperation.START);
+        groupStateServiceImpl.signal(controlGroupCommand, User.getSystemUser());
+
+        verify(groupPersistenceService).getGroup(groupId);
+        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
+        verify(groupStateMachine).signalStartRequested(User.getSystemUser());
+    }
+
+    @Test
+    public void testSignalStop() {
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).
+                thenReturn(groupStateMachine);
+        final Identifier<Group> groupId = new Identifier<>(1l);
+        final Group group = new Group(groupId, "theGroup");
+
+        when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        final ControlGroupCommand controlGroupCommand = new ControlGroupCommand(groupId, GroupControlOperation.STOP);
+        groupStateServiceImpl.signal(controlGroupCommand, User.getSystemUser());
+
+        verify(groupPersistenceService).getGroup(groupId);
+        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
+        verify(groupStateMachine).signalStopRequested(User.getSystemUser());
     }
 
     @Test
