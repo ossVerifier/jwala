@@ -200,17 +200,31 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testCanStart() {
-
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
+        final Identifier<Group> groupId = new Identifier<>(1l);
+        final Group group = new Group(groupId, "theGroup");
+        when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        groupStateServiceImpl.canStart(groupId, User.getSystemUser());
+        verify(groupPersistenceService).getGroup(groupId);
+        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
     }
 
     @Test
     public void testCanStop() {
-
+        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
+        final Identifier<Group> groupId = new Identifier<>(1l);
+        final Group group = new Group(groupId, "theGroup");
+        when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
+        groupStateServiceImpl.setApplicationContext(applicationContext);
+        groupStateServiceImpl.canStop(groupId, User.getSystemUser());
+        verify(groupPersistenceService).getGroup(groupId);
+        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
     }
 
     @Test
     public void testCreateUnknown() {
-
+        
     }
 
     @Test
