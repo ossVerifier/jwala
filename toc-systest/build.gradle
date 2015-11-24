@@ -35,7 +35,7 @@ dependencies {
     */
 
     integTestConf group: "org.jacoco", name: "org.jacoco.agent", version: "$project.versions.jacoco"
-//    integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
+    integTestConf group: "com.siemens.cto", name: "dev-bundle", version: "$project.versions.devbundle"
     integTestConf group: "com.h2database", name: "h2", version: "$project.versions.h2"
 
     testCompile group: "org.apache.ant", name: "ant", version: "$project.versions.ant"
@@ -56,17 +56,18 @@ buildscript {
         maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
     }
     dependencies {
-        classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.1.2-SNAPSHOT"
+//        classpath group: "com.siemens.cto.infrastructure", name: "infrastructure-gradle", version: "1.1.2-SNAPSHOT"
 
         // Enable for local development and don't forget to disable the classpath definition that also has "infrastructure-gradle"
-        // classpath files("D:/view_store/workspace/git/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.0-SNAPSHOT.jar")
+//         classpath files("D:/view_store/workspace/git/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.0-SNAPSHOT.jar")
+        classpath files("c:/projects/CTO-TIM/infrastructure-gradle/build/libs/infrastructure-gradle-1.1.5-SNAPSHOT.jar")
 
         classpath group: "com.h2database", name: "h2", version: "$project.versions.h2"
     }
 }
 
 def now = new Date()
-def STP_TEMP_PATH = "D:/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
+def STP_TEMP_PATH = "C:/Temp/aem-integ-test-temp-${now.format("yyyyMMdd-HHmmss")}"
 def JVM_INSTANCE_PATH = "stp/app/instances/jvm-1"
 def WEB_APP_PATH = "stp/app/webapps"
 def AEM_CONTEXT_FILE = "aem.xml"
@@ -202,8 +203,7 @@ task mergeIntegTestReport(type: JacocoMerge) {
     }
 }
 
-def h2TcpServer = null
-task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
+task runContainerTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     stpTempPath STP_TEMP_PATH
     configName "integTestConf"
     childProjectName "${ROOT_NAME}-webapp"
@@ -212,6 +212,12 @@ task runIntegTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     webAppPath WEB_APP_PATH
     jvmShutdownWaitTime 60000 // Make it 1 minutes to make sure that the JVM has shutdown and the Jacoco agent lock removed.
     pingUrl "https://localhost:9101/stp.png"
+
+    //set this to true to keep the STP dir and windows service around,
+    //otherwise remove it so everything starts from scratch next time
+    doCleanup = false;
+
+    def h2TcpServer = null
 
     beforeJvmStart {
         addTocLibs.execute();
