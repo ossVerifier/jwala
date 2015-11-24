@@ -245,5 +245,5 @@ task runContainerTests(type: com.siemens.cto.gradle.StpIntegTestTask) {
     }
 }
 
-runIntegTests.dependsOn     compileIntegTestSuiteGroovy
-runIntegTests.finalizedBy   mergeIntegTestReport
+runContainerTests.dependsOn     compileIntegTestSuiteGroovy
+runContainerTests.finalizedBy   mergeIntegTestReport
