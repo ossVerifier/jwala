@@ -1,10 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
+import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -30,12 +33,10 @@ import org.springframework.context.ApplicationContext;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * JUnit test for {@link GroupStateServiceImpl}
@@ -266,12 +267,21 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testGroupStatePersist() {
-
+        final SetGroupStateCommand setGroupStateCommand = new SetGroupStateCommand(new Identifier<Group>(1l),
+                                                                                   GroupState.GRP_STOPPED);
+        groupStateServiceImpl.groupStatePersist(setGroupStateCommand);
+        verify(groupPersistenceService).updateGroupStatus(Event.create(setGroupStateCommand, any(AuditEvent.class)));
     }
 
     @Test
+    // Note: groupStateNotify is hard to test since we need to set lockable group state (which is private) to dirty
+    //       before notification is invoked. The existing test is not substantial.
+    //       TODO: Find a way how make the test more meaningful.
     public void testGroupStateNotify() {
-
+        final SetGroupStateCommand setGroupStateCommand = new SetGroupStateCommand(new Identifier<Group>(1l),
+                GroupState.GRP_STOPPED);
+        final Object obj = groupStateServiceImpl.groupStateNotify(setGroupStateCommand);
+        assertTrue(SetGroupStateCommand.class.isInstance(obj));
     }
 
     @Test
