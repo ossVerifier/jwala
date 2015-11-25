@@ -411,6 +411,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
+    // TODO: Deprecate
     protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
         // Do NOT forward the notification on, since we are the ones who created it, it would come right back in.
     }
@@ -418,10 +419,10 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-
     }
 
     @Override
+    // TODO: Deprecate
     public void checkForStoppedStates() {
         throw new UnsupportedOperationException("Group terminated state checking not implemented, supported, or required.");
     }

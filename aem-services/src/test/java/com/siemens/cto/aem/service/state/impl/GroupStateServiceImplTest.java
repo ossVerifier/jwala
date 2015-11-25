@@ -284,23 +284,4 @@ public class GroupStateServiceImplTest {
         assertTrue(SetGroupStateCommand.class.isInstance(obj));
     }
 
-    @Test
-    public void testGroupStateUnlock() {
-
-    }
-
-    @Test
-    public void testSendNotification() {
-
-    }
-
-    @Test
-    public void testSetApplicationContext() {
-
-    }
-
-    @Test
-    public void testCheckForStoppedStates() {
-
-    }
 }
