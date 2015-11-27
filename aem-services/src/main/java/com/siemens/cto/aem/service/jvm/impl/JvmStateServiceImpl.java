@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;

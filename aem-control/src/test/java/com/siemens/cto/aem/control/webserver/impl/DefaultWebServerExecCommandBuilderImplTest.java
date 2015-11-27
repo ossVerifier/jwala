@@ -2,8 +2,8 @@ package com.siemens.cto.aem.control.webserver.impl;
 
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ShellCommand;
+import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.domain.command.exec.ShellCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import org.junit.Before;

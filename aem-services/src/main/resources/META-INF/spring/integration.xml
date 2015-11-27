@@ -16,10 +16,10 @@
 
 	<int:payload-type-router input-channel="gatewayChannel">
 		<int:mapping
-			type="com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand"
+			type="com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand"
 			channel="splitJvms" />
 		<int:mapping
-			type="com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand"
+			type="com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand"
 			channel="splitWebServers" />
 	</int:payload-type-router>
 

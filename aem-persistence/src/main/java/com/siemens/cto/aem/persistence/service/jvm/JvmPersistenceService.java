@@ -5,9 +5,9 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;

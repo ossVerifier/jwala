@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.si;
 
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 
 public class TestSshServiceAdapter {

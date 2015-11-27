@@ -2,18 +2,18 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.domain.command.state.WebServerSetStateCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -106,7 +106,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     /**
      * Sets the web server state.
      * @param aCommand {@link ControlWebServerCommand}
-     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     * @return {@link SetStateCommand}
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerCommand aCommand) {
         return new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
@@ -120,7 +120,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
      * @param aMessage a message e.g. error message etc.
-     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     * @return {@link SetStateCommand}
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState,
@@ -136,7 +136,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      * Sets the web server state.
      * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
-     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     * @return {@link SetStateCommand}
      */
     SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState) {

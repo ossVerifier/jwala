@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.webserver;
 
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.temporary.User;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
 
 public interface WebServerControlService {
 

@@ -1,13 +1,16 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.domain.command.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.command.group.RemoveJvmFromGroupCommand;
+import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;

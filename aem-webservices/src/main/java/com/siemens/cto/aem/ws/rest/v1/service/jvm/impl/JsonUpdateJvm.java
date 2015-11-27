@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;

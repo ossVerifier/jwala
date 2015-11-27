@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.model.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.command.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;

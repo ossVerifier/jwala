@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.app;
 
+import com.siemens.cto.aem.domain.command.app.*;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;

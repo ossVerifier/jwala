@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 
 import java.util.Collection;
 import java.util.Date;

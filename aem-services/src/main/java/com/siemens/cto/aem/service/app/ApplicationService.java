@@ -1,12 +1,16 @@
 package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
+import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.app.*;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 
 import java.util.List;
@@ -46,7 +50,7 @@ public interface ApplicationService {
      */
     CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateCommand command, User user);	
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateCommand command, User user);
     /**
      * Gets a preview of a resource file.
      * @param appName application name

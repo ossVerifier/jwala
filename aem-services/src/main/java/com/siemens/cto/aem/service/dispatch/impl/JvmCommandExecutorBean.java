@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 
 public class JvmCommandExecutorBean {

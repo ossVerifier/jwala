@@ -5,10 +5,10 @@ import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import org.junit.*;
 

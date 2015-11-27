@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.service.group;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.domain.command.group.*;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 
 import java.util.List;

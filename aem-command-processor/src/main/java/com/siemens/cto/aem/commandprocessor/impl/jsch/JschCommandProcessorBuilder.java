@@ -3,7 +3,7 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
+import com.siemens.cto.aem.domain.command.exec.RemoteExecCommand;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 
 public class JschCommandProcessorBuilder implements CommandProcessorBuilder {

@@ -5,13 +5,12 @@ configurations {
 }
 
 dependencies {
-    compile project(":aem-domain")
+    compile project(":aem-common")
     compile project(":toc-filemanager")
     
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: "$project.versions.groovy"
 
     testCompile project(":aem-common")
-    testCompile project(":aem-domain")
     testCompile project(":aem-persistence")
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"

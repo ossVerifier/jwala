@@ -5,7 +5,7 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
+import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 
 import java.util.Collection;

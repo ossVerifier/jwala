@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.state.impl;
 
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.command.SetGroupStateCommand;
+import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;

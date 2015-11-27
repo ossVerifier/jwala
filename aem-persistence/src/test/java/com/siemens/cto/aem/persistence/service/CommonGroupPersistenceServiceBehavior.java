@@ -1,11 +1,15 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
+import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.command.group.RemoveJvmFromGroupCommand;
+import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 
 public class CommonGroupPersistenceServiceBehavior {

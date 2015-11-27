@@ -2,8 +2,8 @@ package com.siemens.cto.aem.persistence.service.resource;
 
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;

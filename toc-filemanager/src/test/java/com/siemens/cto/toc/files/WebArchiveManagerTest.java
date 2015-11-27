@@ -1,11 +1,11 @@
 package com.siemens.cto.toc.files;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.app.RemoveWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;

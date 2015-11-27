@@ -1,12 +1,13 @@
 package com.siemens.cto.aem.service.group;
 
+import com.siemens.cto.aem.domain.command.group.*;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.command.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.exec.RuntimeCommand;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;

@@ -6,7 +6,6 @@ configurations {
 
 dependencies {
     compile project(":aem-common")
-    compile project(":aem-domain")
 
     compile("org.apache.openjpa:openjpa:$project.versions.jpa"){
         exclude group: "junit"

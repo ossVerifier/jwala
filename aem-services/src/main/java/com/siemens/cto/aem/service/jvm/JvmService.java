@@ -1,15 +1,15 @@
 package com.siemens.cto.aem.service.jvm;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.CreateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.model.jvm.command.UploadJvmTemplateCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.jvm.CreateJvmAndAddToGroupsCommand;
+import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 

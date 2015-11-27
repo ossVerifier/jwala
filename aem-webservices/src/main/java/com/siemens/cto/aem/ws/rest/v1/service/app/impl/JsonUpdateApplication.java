@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.apache.commons.lang.builder.EqualsBuilder;

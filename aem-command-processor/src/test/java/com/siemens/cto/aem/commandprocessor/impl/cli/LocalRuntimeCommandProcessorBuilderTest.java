@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.cli;
 
 import com.siemens.cto.aem.commandprocessor.impl.WindowsTest;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.command.exec.ExecCommand;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import org.junit.Test;
 

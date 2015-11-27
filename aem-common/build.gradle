@@ -1,5 +1,6 @@
 configurations {
     commonTest
+    javaAgentOpenJpa
 }
 
 task commonTestJar(type: Jar) {
@@ -11,4 +12,14 @@ task commonTestJar(type: Jar) {
 
 artifacts {
     commonTest commonTestJar
+}
+
+dependencies {
+
+    compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+    compile group: "joda-time", name: "joda-time", version: "$project.versions.jodaTime"
+
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 }

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.control.jvm.command.linux;
 
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
+import com.siemens.cto.aem.domain.command.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 
 import java.util.EnumMap;

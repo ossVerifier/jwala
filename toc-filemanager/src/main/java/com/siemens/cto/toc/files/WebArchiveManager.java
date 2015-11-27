@@ -1,7 +1,7 @@
 package com.siemens.cto.toc.files;
 
-import com.siemens.cto.aem.domain.model.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.app.RemoveWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 
 import java.io.IOException;

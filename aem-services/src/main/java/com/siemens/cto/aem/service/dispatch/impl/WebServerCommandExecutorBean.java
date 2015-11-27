@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlWebServerCommand;
+import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 
 public class WebServerCommandExecutorBean {

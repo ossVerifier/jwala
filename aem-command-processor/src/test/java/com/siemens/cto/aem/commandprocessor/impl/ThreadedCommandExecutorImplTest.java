@@ -4,9 +4,9 @@ import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.impl.cli.LocalRuntimeCommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.RemoteExecCommand;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.domain.command.exec.RemoteExecCommand;
 import org.junit.*;
 
 import java.util.concurrent.ExecutorService;

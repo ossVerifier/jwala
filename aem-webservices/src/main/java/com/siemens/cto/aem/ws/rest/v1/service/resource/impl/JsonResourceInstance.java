@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;

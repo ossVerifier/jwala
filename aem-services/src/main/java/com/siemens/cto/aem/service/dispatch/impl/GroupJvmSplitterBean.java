@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 

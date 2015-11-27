@@ -20,7 +20,6 @@ artifacts {
 dependencies {
 
     compile project(":aem-common")
-    compile project(":aem-domain")
 
     compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
 

@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.domain.model.webserver.command.ControlGroupWebServerCommand;
+import com.siemens.cto.aem.domain.command.webserver.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;

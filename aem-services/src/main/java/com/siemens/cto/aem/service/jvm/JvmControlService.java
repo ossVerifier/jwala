@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.jvm;
 
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.jvm.command.ControlJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 
 public interface JvmControlService {
 

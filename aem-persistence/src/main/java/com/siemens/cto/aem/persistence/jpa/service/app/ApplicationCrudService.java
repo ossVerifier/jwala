@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.jpa.service.app;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UploadAppTemplateCommand;
+import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;

@@ -5,7 +5,6 @@ ext {
 dependencies {
 
     compile project(":aem-common")
-    compile project(":aem-domain")
     compile project(":aem-command-processor")
 
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"

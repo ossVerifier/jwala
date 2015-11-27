@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.dispatch;
 
-import com.siemens.cto.aem.domain.model.dispatch.DispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.DispatchCommand;
 
 /**
  * Gateway into the integration engine for command dispatch

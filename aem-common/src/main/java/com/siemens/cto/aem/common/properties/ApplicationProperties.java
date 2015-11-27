@@ -18,6 +18,8 @@ public class ApplicationProperties {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationProperties.class);
 
+    public static final String PROPERTIES_FILE_NAME = "toc.properties";
+
     public static ApplicationProperties getInstance() {
         if (SELF == null) {
             synchronized (ApplicationProperties.class) {
@@ -62,7 +64,7 @@ public class ApplicationProperties {
     }
 
     private void init() {
-        String propertiesFile = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH) + "/" + AemConstants.PROPERTIES_FILE_NAME;
+        String propertiesFile = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH) + "/" + PROPERTIES_FILE_NAME;
         Properties tempProperties = new Properties();
         try {
             tempProperties.load(new FileReader(new File(propertiesFile)));

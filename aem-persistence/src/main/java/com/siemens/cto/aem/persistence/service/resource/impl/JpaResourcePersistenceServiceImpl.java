@@ -3,7 +3,7 @@ package com.siemens.cto.aem.persistence.service.resource.impl;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.command.ResourceInstanceCommand;
+import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaResourceInstanceBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;

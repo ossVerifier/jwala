@@ -3,9 +3,9 @@ package com.siemens.cto.aem.service.webserver.component;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.state.command.WebServerSetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.domain.command.state.WebServerSetStateCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
@@ -131,7 +131,7 @@ public class WebServerStateSetterWorker {
      * @param id the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param state the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
      * @param msg a message
-     * @return {@link com.siemens.cto.aem.domain.model.state.command.SetStateCommand}
+     * @return {@link SetStateCommand}
      */
     private SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
                                                                                    final WebServerReachableState state,

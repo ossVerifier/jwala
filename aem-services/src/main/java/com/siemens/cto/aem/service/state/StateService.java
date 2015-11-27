@@ -3,8 +3,8 @@ package com.siemens.cto.aem.service.state;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.command.SetStateCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 
 import java.util.Set;
 

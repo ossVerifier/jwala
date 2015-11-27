@@ -1,7 +1,6 @@
 dependencies {
 
     compile project(":aem-common")
-    compile project(":aem-domain")
     compile project(":aem-command-processor")
 
     compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"

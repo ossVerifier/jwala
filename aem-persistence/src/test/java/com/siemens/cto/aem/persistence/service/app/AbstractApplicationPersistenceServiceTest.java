@@ -1,13 +1,17 @@
 package com.siemens.cto.aem.persistence.service.app;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.RemoveWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.CreateGroupCommand;
+import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;

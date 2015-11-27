@@ -1,15 +1,16 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.model.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.model.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
+import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -356,7 +357,7 @@ public class ApplicationServiceRestImplTest {
      */
     @Test
     public void testCreate() {
-        when(service.createApplication(any(com.siemens.cto.aem.domain.model.app.CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        when(service.createApplication(any(CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
 
         JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
 
@@ -373,7 +374,7 @@ public class ApplicationServiceRestImplTest {
      */
     @Test
     public void testUpdate() {
-        when(service.updateApplication(any(com.siemens.cto.aem.domain.model.app.UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        when(service.updateApplication(any(UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
         ArrayList<UpdateApplicationCommand> multiUpdate = new ArrayList<>();
         multiUpdate.add(new UpdateApplicationCommand(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", "", true, true));
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();

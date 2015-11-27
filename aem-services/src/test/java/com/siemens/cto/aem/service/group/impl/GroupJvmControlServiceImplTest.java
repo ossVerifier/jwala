@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.command.group.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;

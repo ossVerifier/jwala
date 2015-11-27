@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.commandprocessor;
 
-import com.siemens.cto.aem.domain.model.exec.ExecReturnCode;
+import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
 
 import java.io.Closeable;

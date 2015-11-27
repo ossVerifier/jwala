@@ -4,10 +4,6 @@ import junit.framework.TestCase;
 
 public class VersionTest extends TestCase {
 
-    public void testConstructor() {
-        ObjectsTest.constructorTest(Version.class);
-    }
-
     public void testGetTitle() {
         final String title = Version.getTitle();
         assertEquals("aem-common", title);

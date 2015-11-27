@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.group;
 
-import com.siemens.cto.aem.domain.model.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.model.group.command.ControlGroupJvmCommand;
-import com.siemens.cto.aem.domain.model.temporary.User;
+import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.domain.command.group.ControlGroupJvmCommand;
+import com.siemens.cto.aem.domain.model.user.User;
 
 import java.util.List;
 

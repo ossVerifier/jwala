@@ -2,8 +2,8 @@ package com.siemens.cto.aem.control.webserver.command.windows;
 
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
-import com.siemens.cto.aem.domain.model.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.exec.ShellCommand;
+import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.domain.command.exec.ShellCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 
 import java.util.EnumMap;
