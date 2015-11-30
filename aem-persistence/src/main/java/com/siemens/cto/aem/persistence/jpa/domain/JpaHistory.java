@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.History;
 
 import javax.persistence.*;
