@@ -131,8 +131,8 @@ war{
         )
     }
 
-    // dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
-    dependsOn(babel)
+    dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
+    // dependsOn(babel) // Disable babel for now until presets are installed in Jenkins
 
     webInf {
          from reactCompiledOutputPath
