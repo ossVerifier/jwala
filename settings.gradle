@@ -6,5 +6,4 @@ include "aem-common",
         "aem-command-processor",
         "aem-control",
         "toc-filemanager",
-        "aem-config",
         "toc-template"
