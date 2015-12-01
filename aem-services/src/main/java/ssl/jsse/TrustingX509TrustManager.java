@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl.jsse;
+package ssl.jsse;
 
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
@@ -6,7 +6,7 @@ import java.security.cert.X509Certificate;
 
 /**
  * For use with self-signed certificates.
- * @see com.siemens.cto.aem.si.ssl.jsse.SslClientHttpRequestFactory
+ * @see SslClientHttpRequestFactory
  */
 @Deprecated
 public class TrustingX509TrustManager implements X509TrustManager {

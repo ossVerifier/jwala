@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl.jsse;
+package ssl.jsse;
 
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 

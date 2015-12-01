@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl.jsse;
+package ssl.jsse;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 /**
  * Ping using JSSE and HttpUrlConnection
  * <code>
- *     <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.jsse.SslClientHttpRequestFactory">
+ *     <bean id="webServerHttpRequestFactory" class="SslClientHttpRequestFactory">
  *       <property name="verifier" value="#{nullHostNameVerifier}"/>
  *       <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
  *       <property name="readTimeout" value="${ping.jvm.readTimeout}"/>

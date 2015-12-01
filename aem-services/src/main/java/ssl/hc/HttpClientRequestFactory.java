@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.si.ssl.hc;
+package ssl.hc;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
@@ -22,7 +22,7 @@ import java.security.UnrecoverableKeyException;
 /**
  * Use a pooling connection manager for HTTP and HTTPS ping connections
  * <code>
- *   <bean id="webServerHttpRequestFactory" class="com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory">
+ *   <bean id="webServerHttpRequestFactory" class="HttpClientRequestFactory">
  *     <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>
  *     <property name="readTimeout" value="${ping.jvm.readTimeout}"/>
  *     <property name="periodMillis" value="${ping.jvm.period.millis}"/>

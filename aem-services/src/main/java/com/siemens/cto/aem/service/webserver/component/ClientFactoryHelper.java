@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.webserver.component;
 
-import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
+import ssl.hc.HttpClientRequestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;

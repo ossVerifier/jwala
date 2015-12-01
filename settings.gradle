@@ -7,6 +7,4 @@ include "aem-common",
         "aem-control",
         "toc-filemanager",
         "aem-config",
-        "toc-template",
-        "aem-si",
-        "toc-systest"
+        "toc-template"

@@ -9,7 +9,7 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
-import com.siemens.cto.aem.si.ssl.hc.HttpClientRequestFactory;
+import ssl.hc.HttpClientRequestFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
