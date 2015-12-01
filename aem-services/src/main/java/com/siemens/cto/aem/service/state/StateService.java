@@ -3,14 +3,14 @@ package com.siemens.cto.aem.service.state;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 
 import java.util.Set;
 
 public interface StateService<S, T extends OperationalState> {
 
-    CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand,
+    CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> aCommand,
                                        final User aUser);
 
     CurrentState<S, T> getCurrentState(final Identifier<S> anId);

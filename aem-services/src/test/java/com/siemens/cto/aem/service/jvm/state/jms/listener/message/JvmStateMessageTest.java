@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener.message;
 
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
@@ -22,7 +22,7 @@ public class JvmStateMessageTest {
                                                                              JvmState.JVM_STARTED,
                                                                              DateTime.now(),
                                                                              StateType.JVM);
-        final JvmSetStateCommand expectedCommand = new JvmSetStateCommand(expectedState);
+        final JvmSetStateRequest expectedCommand = new JvmSetStateRequest(expectedState);
         final String expectedId = expectedState.getId().getId().toString();
         final JvmStateMessage message = new JvmStateMessage(expectedId,
                                                             expectedId,
@@ -30,7 +30,7 @@ public class JvmStateMessageTest {
                                                             expectedState.getState().toPersistentString(),
                                                             ISODateTimeFormat.dateTime().print(expectedState.getAsOf()));
 
-        final SetStateCommand<Jvm, JvmState> actualCommand = message.toCommand();
+        final SetStateRequest<Jvm, JvmState> actualCommand = message.toCommand();
 
         assertEquals(expectedCommand,
                      actualCommand);

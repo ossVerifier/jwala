@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.state.*;
@@ -41,9 +41,9 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public CurrentState<S, T> setCurrentState(final SetStateCommand<S, T> aCommand, final User aUser) {
+    public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> aCommand, final User aUser) {
         LOGGER.trace("Attempting to set state for {} {} ", stateType, aCommand);
-        aCommand.validateCommand();
+        aCommand.validate();
 
         final CurrentState<S, T> currentState = persistenceService.getState(aCommand.getNewState().getId());
         final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(aCommand, AuditEvent

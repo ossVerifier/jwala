@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateService;
@@ -49,7 +49,7 @@ public class JvmStateMessageListener implements MessageListener {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.debug("Processing message: {}", message);
 
-        SetStateCommand<Jvm, JvmState> setStateCommand = message.toCommand();
+        SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
 
         jvmStateService.setCurrentState(setStateCommand,
                                         User.getSystemUser());

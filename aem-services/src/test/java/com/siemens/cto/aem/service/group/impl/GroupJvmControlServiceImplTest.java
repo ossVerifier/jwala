@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.request.group.ControlGroupJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.request.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.user.User;
@@ -31,7 +31,7 @@ public class GroupJvmControlServiceImplTest {
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
     private User testUser = new User("testUser");
-    private ControlGroupJvmCommand aCommand;
+    private ControlGroupJvmRequest aCommand;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -43,14 +43,14 @@ public class GroupJvmControlServiceImplTest {
         cut = new GroupJvmControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
-        aCommand = new ControlGroupJvmCommand(groupId, JvmControlOperation.START);
+        aCommand = new ControlGroupJvmRequest(groupId, JvmControlOperation.START);
 
         when(mockGroupService.getGroup(groupId)).thenReturn(mockGroup);
     }
 
     @Test(expected = BadRequestException.class)
     public void testControlGroupWithInvalidGroup() {
-        ControlGroupJvmCommand aCommand = new ControlGroupJvmCommand(null, JvmControlOperation.START);
+        ControlGroupJvmRequest aCommand = new ControlGroupJvmRequest(null, JvmControlOperation.START);
         cut.controlGroup(aCommand, testUser);
     }
 

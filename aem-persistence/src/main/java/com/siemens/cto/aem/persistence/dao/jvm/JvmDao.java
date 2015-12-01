@@ -5,16 +5,16 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 
 import java.util.List;
 
 public interface JvmDao {
 
-    Jvm createJvm(final Event<CreateJvmCommand> aJvmToCreate);
+    Jvm createJvm(final Event<CreateJvmRequest> aJvmToCreate);
 
-    Jvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate);
+    Jvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 

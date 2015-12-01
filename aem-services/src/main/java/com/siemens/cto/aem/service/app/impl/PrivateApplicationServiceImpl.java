@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service.app.impl;
 
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
@@ -30,8 +30,8 @@ public class PrivateApplicationServiceImpl implements PrivateApplicationService 
      * Helper method - non-transactional upload.
      */
     @Override
-    public RepositoryFileInformation uploadWebArchiveData(final Event<UploadWebArchiveCommand> event) {
-        UploadWebArchiveCommand command = event.getCommand();
+    public RepositoryFileInformation uploadWebArchiveData(final Event<UploadWebArchiveRequest> event) {
+        UploadWebArchiveRequest command = event.getRequest();
         RepositoryFileInformation result = null;
 
         try {
@@ -58,7 +58,7 @@ public class PrivateApplicationServiceImpl implements PrivateApplicationService 
      */
     @Override
     @Transactional
-    public Application uploadWebArchiveUpdateDB(final Event<UploadWebArchiveCommand> event, final RepositoryFileInformation result) {
+    public Application uploadWebArchiveUpdateDB(final Event<UploadWebArchiveRequest> event, final RepositoryFileInformation result) {
 
         return applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
 

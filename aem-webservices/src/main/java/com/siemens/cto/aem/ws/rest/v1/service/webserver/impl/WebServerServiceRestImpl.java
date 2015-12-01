@@ -17,6 +17,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.request.webserver.UploadHttpdConfTemplateRequest;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -29,16 +31,14 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UploadHttpdConfTemplateCommand;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -117,7 +117,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
         logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
-                new ControlWebServerCommand(aWebServerId, aWebServerToControl.toControlOperation()),
+                new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
                 aUser.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
@@ -238,7 +238,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
         } catch (CommandFailureException cmdFailEx) {
-            logger.warn("Command Failure Occurred", cmdFailEx);
+            logger.warn("Request Failure Occurred", cmdFailEx);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, cmdFailEx.getMessage()));
         }
@@ -286,8 +286,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadWebServerTemplateCommand command =
-                            new UploadHttpdConfTemplateCommand(webServer, file1.getName(), data);
+                    UploadWebServerTemplateRequest command =
+                            new UploadHttpdConfTemplateRequest(webServer, file1.getName(), data);
 
                     return ResponseBuilder.created(webServerService.uploadWebServerConfig(command, aUser.getUser())); // early
                                                                                                                       // out

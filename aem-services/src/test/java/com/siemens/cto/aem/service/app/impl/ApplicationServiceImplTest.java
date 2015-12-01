@@ -1,18 +1,17 @@
 package com.siemens.cto.aem.service.app.impl;
 
+import com.siemens.cto.aem.request.app.*;
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.ExecReturnCode;
+import com.siemens.cto.aem.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -210,7 +209,7 @@ public class ApplicationServiceImplTest {
     public void testCreateBadRequest() {
         when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
-        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "", "", true, true);
+        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "", "", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -221,7 +220,7 @@ public class ApplicationServiceImplTest {
     public void testCreate() {
         when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
-        CreateApplicationCommand cac = new CreateApplicationCommand(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
+        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -233,7 +232,7 @@ public class ApplicationServiceImplTest {
     public void testUpdate() {
         when(applicationPersistenceService.updateApplication(any(Event.class))).thenReturn(mockApplication2);
 
-        UpdateApplicationCommand cac = new UpdateApplicationCommand(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true, true);
+        UpdateApplicationRequest cac = new UpdateApplicationRequest(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.updateApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -248,14 +247,14 @@ public class ApplicationServiceImplTest {
         verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));
     }
 
-    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveCommand>> {
+    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveRequest>> {
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean matches(Object arg) {
-            Event<UploadWebArchiveCommand> event = (Event<UploadWebArchiveCommand>) arg;
-            UploadWebArchiveCommand uwac = event.getCommand();
-            uwac.validateCommand();
+            Event<UploadWebArchiveRequest> event = (Event<UploadWebArchiveRequest>) arg;
+            UploadWebArchiveRequest uwac = event.getRequest();
+            uwac.validate();
             return true;
         }
 
@@ -264,7 +263,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUploadWebArchive() throws IOException {
-        UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);
+        UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
 
         when(webArchiveManager.store(any(Event.class))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
 
@@ -454,9 +453,9 @@ public class ApplicationServiceImplTest {
 
     @Test
     public void testUploadTemplate() {
-        final UploadAppTemplateCommand cmd = mock(UploadAppTemplateCommand.class);
+        final UploadAppTemplateRequest cmd = mock(UploadAppTemplateRequest.class);
         applicationService.uploadAppTemplate(cmd, testUser);
-        verify(cmd).validateCommand();
+        verify(cmd).validate();
         verify(applicationPersistenceService).uploadAppTemplate(any(Event.class));
     }
 

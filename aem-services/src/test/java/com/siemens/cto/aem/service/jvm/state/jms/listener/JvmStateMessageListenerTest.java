@@ -5,7 +5,7 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateService;
@@ -32,7 +32,7 @@ public class JvmStateMessageListenerTest {
     private StateService<Jvm, JvmState> jvmStateService;
 
     @Mock
-    private JvmSetStateCommand stateCommand;
+    private JvmSetStateRequest stateCommand;
     
     @Mock
     private CurrentState<Jvm, JvmState> currentState;
@@ -75,7 +75,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, never()).processMessage(Matchers.<MapMessage>anyObject());
-        verify(jvmStateService, never()).setCurrentState(Matchers.<JvmSetStateCommand>anyObject(), Matchers.<User>anyObject());
+        verify(jvmStateService, never()).setCurrentState(Matchers.<JvmSetStateRequest>anyObject(), Matchers.<User>anyObject());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import com.siemens.cto.aem.domain.command.group.AddJvmsToGroupCommand;
+import com.siemens.cto.aem.request.group.AddJvmsToGroupRequest;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
@@ -26,8 +26,8 @@ public class JsonJvms {
         jvmIds = Collections.unmodifiableSet(new HashSet<>(someJvmIds));
     }
 
-    public AddJvmsToGroupCommand toCommand(final Identifier<Group> aGroupId) {
-        return new AddJvmsToGroupCommand(aGroupId,
+    public AddJvmsToGroupRequest toCommand(final Identifier<Group> aGroupId) {
+        return new AddJvmsToGroupRequest(aGroupId,
                                          convertJvmIds());
     }
 

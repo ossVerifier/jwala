@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -53,7 +53,7 @@ public class ResourceServiceRestImplTest {
         resourceInstance = new ResourceInstance(new Identifier<ResourceInstance>(1L), "resourceName", "resourceType", new LiteGroup(group.getId(), group.getName()), new HashMap<String, String>());
         cut = new ResourceServiceRestImpl(impl, groupService, jvmService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceCommand("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
+        when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
     }
 
     @Test
@@ -87,14 +87,14 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testCreateResourceInstance() {
-        when(impl.createResourceInstance(any(ResourceInstanceCommand.class), any(User.class))).thenReturn(resourceInstance);
+        when(impl.createResourceInstance(any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
         Response response = cut.createResourceInstance(jsonResourceInstance, authenticatedUser);
         assertNotNull(response.getEntity());
     }
 
     @Test
     public void testUpdateResourceInstanceAttributes(){
-        when(impl.updateResourceInstance(anyString(), anyString(), any(ResourceInstanceCommand.class), any(User.class))).thenReturn(resourceInstance);
+        when(impl.updateResourceInstance(anyString(), anyString(), any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
         Response response = cut.updateResourceInstanceAttributes("resourceName", group.getName(), jsonResourceInstance, authenticatedUser);
         assertNotNull(response.getEntity());
     }

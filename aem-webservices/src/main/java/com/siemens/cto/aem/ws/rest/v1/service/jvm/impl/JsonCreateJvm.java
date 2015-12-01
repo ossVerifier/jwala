@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
@@ -81,9 +81,9 @@ public class JsonCreateJvm {
         return !groupIds.isEmpty();
     }
 
-    public CreateJvmCommand toCreateJvmCommand() throws BadRequestException {
+    public CreateJvmRequest toCreateJvmCommand() throws BadRequestException {
 
-        return new CreateJvmCommand(jvmName,
+        return new CreateJvmRequest(jvmName,
                                     hostName,
                                     JsonUtilJvm.stringToInteger(httpPort),
                                     JsonUtilJvm.stringToInteger(httpsPort),
@@ -94,10 +94,10 @@ public class JsonCreateJvm {
                                     systemProperties);
     }
 
-    public CreateJvmAndAddToGroupsCommand toCreateAndAddCommand() throws BadRequestException {
+    public CreateJvmAndAddToGroupsRequest toCreateAndAddCommand() throws BadRequestException {
         final Set<Identifier<Group>> groups = convertGroupIds();
 
-        return new CreateJvmAndAddToGroupsCommand(jvmName,
+        return new CreateJvmAndAddToGroupsRequest(jvmName,
                                                   hostName,
                                                   groups,
                                                   JsonUtilJvm.stringToInteger(httpPort),

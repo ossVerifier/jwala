@@ -3,7 +3,7 @@ package com.siemens.cto.aem.control.webserver.command.impl;
 import com.siemens.cto.aem.control.command.PlatformCommandProvider;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
-import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.exec.ExecCommand;
 import com.siemens.cto.aem.domain.model.platform.Platform;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;

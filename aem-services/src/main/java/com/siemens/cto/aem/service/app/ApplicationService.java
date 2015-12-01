@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.service.app;
 
+import com.siemens.cto.aem.request.app.*;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.domain.model.app.*;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -19,8 +18,8 @@ public interface ApplicationService {
 
     Application getApplication(Identifier<Application> aApplicationId);
 
-    Application updateApplication(UpdateApplicationCommand anAppToUpdate, User user);
-    Application createApplication(CreateApplicationCommand anAppToCreate, User user);
+    Application updateApplication(UpdateApplicationRequest anAppToUpdate, User user);
+    Application createApplication(CreateApplicationRequest anAppToCreate, User user);
     void removeApplication(Identifier<Application> anAppIdToRemove, User user);
 
     List<Application> getApplications();
@@ -29,7 +28,7 @@ public interface ApplicationService {
 
     List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
 
-    Application uploadWebArchive(UploadWebArchiveCommand command, User user);
+    Application uploadWebArchive(UploadWebArchiveRequest command, User user);
 
     Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 
@@ -50,7 +49,7 @@ public interface ApplicationService {
      */
     CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateCommand command, User user);
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command, User user);
     /**
      * Gets a preview of a resource file.
      * @param appName application name

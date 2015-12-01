@@ -4,12 +4,12 @@ import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.ExecCommand;
-import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.ExecCommand;
+import com.siemens.cto.aem.exec.ExecReturnCode;
+import com.siemens.cto.aem.exec.RuntimeCommand;
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
@@ -18,7 +18,7 @@ import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.*;
-import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
+import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.state.StateService;
@@ -148,7 +148,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testCreateWebServer() {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
-        when(impl.createWebServer(any(CreateWebServerCommand.class), any(User.class))).thenReturn(webServer);
+        when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer);
 
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -164,7 +164,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testUpdateWebServer() {
         final JsonUpdateWebServer jsonUpdateWebServer = mock(JsonUpdateWebServer.class);
-        when(impl.updateWebServer(any(UpdateWebServerCommand.class), any(User.class))).thenReturn(webServer);
+        when(impl.updateWebServer(any(UpdateWebServerRequest.class), any(User.class))).thenReturn(webServer);
 
         final Response response = webServerServiceRest.updateWebServer(jsonUpdateWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -197,12 +197,12 @@ public class WebServerServiceRestImplTest {
         when(execData.getReturnCode()).thenReturn(execDataReturnCode);
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
-        when(webServerControlService.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(execData);
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
         final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
-        when(webServerControlService.controlWebServer(any(ControlWebServerCommand.class), any(User.class))).thenReturn(execData);
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
         boolean exceptionThrown = false;
         try {
             webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);

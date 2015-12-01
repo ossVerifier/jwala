@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.command.group.ControlGroupCommand;
-import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -84,7 +84,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    public List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException {
+    public List<SetGroupStateRequest> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException {
 
         LOGGER.debug("Recalculating group state due to jvm update: " + cjs.toString());
 
@@ -93,20 +93,20 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         Jvm jvm = jvmPersistenceService.getJvm(jvmId);
 
         if (jvm == null) {
-            return Collections.<SetGroupStateCommand>emptyList();
+            return Collections.<SetGroupStateRequest>emptyList();
         }
 
         Set<LiteGroup> groups = jvm.getGroups();
 
         if (groups == null || groups.isEmpty()) {
-            return Collections.<SetGroupStateCommand>emptyList();
+            return Collections.<SetGroupStateRequest>emptyList();
         }
 
         return refreshLiteGroups(groups);
     }
 
-    private List<SetGroupStateCommand> refreshLiteGroups(Set<LiteGroup> groups) throws InterruptedException {
-        List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
+    private List<SetGroupStateRequest> refreshLiteGroups(Set<LiteGroup> groups) throws InterruptedException {
+        List<SetGroupStateRequest> result = new ArrayList<>(groups.size());
         List<ReadWriteLease> lockedGsms = new ArrayList<>(groups.size());
 
         try {
@@ -133,8 +133,8 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         return result;
     }
 
-    private List<SetGroupStateCommand> refreshCollectionGroups(Collection<Group> groups) throws InterruptedException {
-        List<SetGroupStateCommand> result = new ArrayList<>(groups.size());
+    private List<SetGroupStateRequest> refreshCollectionGroups(Collection<Group> groups) throws InterruptedException {
+        List<SetGroupStateRequest> result = new ArrayList<>(groups.size());
         List<ReadWriteLease> lockedGsms = new ArrayList<>(groups.size());
 
         try {
@@ -159,7 +159,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    public List<SetGroupStateCommand> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) throws InterruptedException {
+    public List<SetGroupStateRequest> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> wsState) throws InterruptedException {
         LOGGER.debug("GSS Recalc group state due to web server update: " + wsState.toString());
 
         // lookup children
@@ -167,13 +167,13 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         WebServer ws = webServerDao.getWebServer(wsId);
 
         if (ws == null) {
-            return Collections.<SetGroupStateCommand>emptyList();
+            return Collections.<SetGroupStateRequest>emptyList();
         }
 
         Collection<Group> groups = ws.getGroups();
 
         if (groups == null || groups.isEmpty()) {
-            return Collections.<SetGroupStateCommand>emptyList();
+            return Collections.<SetGroupStateRequest>emptyList();
         }
 
         return refreshCollectionGroups(groups);
@@ -181,7 +181,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Transactional(readOnly = true)
     @Override
-    public SetGroupStateCommand stateUpdateRequest(Group group) throws InterruptedException {
+    public SetGroupStateRequest stateUpdateRequest(Group group) throws InterruptedException {
         LOGGER.debug("GSS Recalc group state by request.");
 
         List<ReadWriteLease> lockedGsms = new ArrayList<>(1);
@@ -207,7 +207,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
      * @param lockedGsms a collection of active leases
      * @return null for a null message
      */
-    private SetGroupStateCommand refreshGroupState(
+    private SetGroupStateRequest refreshGroupState(
             List<ReadWriteLease> lockedGsms,
             Group group)
             throws InterruptedException {
@@ -242,7 +242,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         }
 
         // Construct an update. 
-        return new SetGroupStateCommand(gsm.getCurrentStateDetail());
+        return new SetGroupStateRequest(gsm.getCurrentStateDetail());
     }
 
     /**
@@ -355,7 +355,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
-    public CurrentGroupState signal(ControlGroupCommand aCommand, User aUser) {
+    public CurrentGroupState signal(ControlGroupRequest aCommand, User aUser) {
         switch (aCommand.getControlOperation()) {
             case START:
                 return signalStartRequested(aCommand.getGroupId(), aUser);
@@ -368,7 +368,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Override
     @Transactional
-    public SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc) {
+    public SetGroupStateRequest groupStatePersist(SetGroupStateRequest sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
         try {
             if (sgsc != null && sgsc.getNewState() != null) {
@@ -384,7 +384,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
-    public SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc) {
+    public SetGroupStateRequest groupStateNotify(SetGroupStateRequest sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
         if (sgsc != null && sgsc.getNewState() != null) {
             if (getLockableGsm(sgsc.getNewState().getId()).isDirty()) {
@@ -399,7 +399,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
-    public SetGroupStateCommand groupStateUnlock(SetGroupStateCommand sgsc) {
+    public SetGroupStateRequest groupStateUnlock(SetGroupStateRequest sgsc) {
         // If an empty list is returned by the splitter, it will be treated as single null item, so check
         if (sgsc != null && sgsc.getNewState() != null) {
             LOGGER.trace(GSS_UNLOCK, sgsc.getNewState());

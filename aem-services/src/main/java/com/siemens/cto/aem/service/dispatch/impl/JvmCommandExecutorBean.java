@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
+import com.siemens.cto.aem.request.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.JvmDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 
 public class JvmCommandExecutorBean {
@@ -26,16 +26,16 @@ public class JvmCommandExecutorBean {
         Boolean wasSuccessful = false;
 
         try {
-            ControlJvmCommand controlJvmCommand = new ControlJvmCommand(jvmDispatchCommand.getJvm().getId(),
-                    groupDispatchCommand.getCommand().getControlOperation());
+            ControlJvmRequest controlJvmCommand = new ControlJvmRequest(jvmDispatchCommand.getJvm().getId(),
+                    groupDispatchCommand.getRequest().getControlOperation());
 
             CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmCommand, groupDispatchCommand.getUser());
             wasSuccessful = commandOutput.getReturnCode().getWasSuccessful();
-            LOGGER.debug("ControlJvmCommand complete.  Success = {}", wasSuccessful);
+            LOGGER.debug("ControlJvmRequest complete.  Success = {}", wasSuccessful);
             
         } catch (RuntimeException e) {
             wasSuccessful = false;
-            LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmCommand (" + jvmDispatchCommand.toString() + ") failed: ", e);
+            LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmRequest (" + jvmDispatchCommand.toString() + ") failed: ", e);
         }
 
         return new JvmDispatchCommandResult(wasSuccessful, groupDispatchCommand);

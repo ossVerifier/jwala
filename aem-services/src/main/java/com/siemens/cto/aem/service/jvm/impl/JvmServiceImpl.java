@@ -1,28 +1,27 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.jvm.*;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -82,11 +81,11 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm createJvm(final CreateJvmCommand aCreateJvmCommand,
+    public Jvm createJvm(final CreateJvmRequest aCreateJvmCommand,
                          final User aCreatingUser) {
 
-        aCreateJvmCommand.validateCommand();
-        final Event<CreateJvmCommand> event = new Event<>(aCreateJvmCommand,
+        aCreateJvmCommand.validate();
+        final Event<CreateJvmRequest> event = new Event<>(aCreateJvmCommand,
                 AuditEvent.now(aCreatingUser));
         Jvm jvm = jvmPersistenceService.createJvm(event);
         // TODO add JVM_NEW state to JVM state table (already done? Appears as NEW on UI)
@@ -96,7 +95,7 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsCommand aCreateAndAssignCommand,
+    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignCommand,
                                   final User aCreatingUser) {
 
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
@@ -104,7 +103,7 @@ public class JvmServiceImpl implements JvmService {
         final Jvm newJvm = createJvm(aCreateAndAssignCommand.getCreateCommand(),
                 aCreatingUser);
 
-        final Set<AddJvmToGroupCommand> addCommands = aCreateAndAssignCommand.toAddCommandsFor(newJvm.getId());
+        final Set<AddJvmToGroupRequest> addCommands = aCreateAndAssignCommand.toAddCommandsFor(newJvm.getId());
         addJvmToGroups(addCommands,
                 aCreatingUser);
 
@@ -147,12 +146,12 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm updateJvm(final UpdateJvmCommand anUpdateJvmCommand,
+    public Jvm updateJvm(final UpdateJvmRequest anUpdateJvmCommand,
                          final User anUpdatingUser) {
 
-        anUpdateJvmCommand.validateCommand();
+        anUpdateJvmCommand.validate();
 
-        final Event<UpdateJvmCommand> event = new Event<>(anUpdateJvmCommand,
+        final Event<UpdateJvmRequest> event = new Event<>(anUpdateJvmCommand,
                 AuditEvent.now(anUpdatingUser));
 
         jvmPersistenceService.removeJvmFromGroups(anUpdateJvmCommand.getId());
@@ -169,9 +168,9 @@ public class JvmServiceImpl implements JvmService {
         jvmPersistenceService.removeJvm(aJvmId);
     }
 
-    protected void addJvmToGroups(final Set<AddJvmToGroupCommand> someAddCommands,
+    protected void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands,
                                   final User anAddingUser) {
-        for (final AddJvmToGroupCommand command : someAddCommands) {
+        for (final AddJvmToGroupRequest command : someAddCommands) {
             groupService.addJvmToGroup(command,
                     anAddingUser);
         }
@@ -277,18 +276,18 @@ public class JvmServiceImpl implements JvmService {
      * @param id the jvm id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param state the state {@link JvmState}
      * @param msg a message
-     * @return {@link SetStateCommand}
+     * @return {@link SetStateRequest}
      */
-    private SetStateCommand<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
+    private SetStateRequest<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
                                                                                    final JvmState state,
                                                                                    final String msg) {
         if (StringUtils.isEmpty(msg)) {
-            return new JvmSetStateCommand(new CurrentState<>(id,
+            return new JvmSetStateRequest(new CurrentState<>(id,
                                          state,
                                          DateTime.now(),
                                          StateType.JVM));
         }
-        return new JvmSetStateCommand(new CurrentState<>(id,
+        return new JvmSetStateRequest(new CurrentState<>(id,
                                       state,
                                       DateTime.now(),
                                       StateType.JVM,
@@ -324,9 +323,9 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateCommand command, User user) {
-        command.validateCommand();
-        final Event<UploadJvmTemplateCommand> event = new Event<>(command, AuditEvent.now(user));
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest command, User user) {
+        command.validate();
+        final Event<UploadJvmTemplateRequest> event = new Event<>(command, AuditEvent.now(user));
         return jvmPersistenceService.uploadJvmTemplateXml(event);
     }
 

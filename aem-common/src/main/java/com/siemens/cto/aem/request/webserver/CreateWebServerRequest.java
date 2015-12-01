@@ -1,0 +1,157 @@
+package com.siemens.cto.aem.request.webserver;
+
+import com.siemens.cto.aem.request.Request;
+import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.domain.model.group.Group;
+import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.rule.*;
+import com.siemens.cto.aem.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.rule.webserver.HttpConfigFileRule;
+import com.siemens.cto.aem.rule.webserver.WebServerNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
+import java.util.Collection;
+
+public class CreateWebServerRequest implements Serializable, Request {
+
+    private static final long serialVersionUID = 1L;
+
+    private final Collection<Identifier<Group>> groupIds;
+    private final String host;
+    private final String name;
+    private final Integer port;
+    private final Integer httpsPort;
+    private final Path statusPath;
+    private final FileSystemPath httpConfigFile;
+    private final Path svrRoot;
+    private final Path docRoot;
+
+    public CreateWebServerRequest(final Collection<Identifier<Group>> theGroupIds,
+                                  final String theName,
+                                  final String theHost,
+                                  final Integer thePort,
+                                  final Integer theHttpsPort,
+                                  final Path theStatusPath,
+                                  final FileSystemPath theHttpConfigFile,
+                                  final Path theSvrRoot,
+                                  final Path theDocRoot) {
+        host = theHost;
+        port = thePort;
+        httpsPort = theHttpsPort;
+        name = theName;
+        groupIds = theGroupIds;
+        statusPath = theStatusPath;
+        httpConfigFile = theHttpConfigFile;
+        svrRoot = theSvrRoot;
+        docRoot = theDocRoot;
+    }
+
+    public Collection<Identifier<Group>> getGroups() {
+        return groupIds;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public Integer getHttpsPort() {
+        return httpsPort;
+    }
+
+    public Path getStatusPath() {
+        return statusPath;
+    }
+
+    public FileSystemPath getHttpConfigFile() {
+        return httpConfigFile;
+    }
+
+    public Path getSvrRoot() {
+        return svrRoot;
+    }
+
+    public Path getDocRoot() {
+        return docRoot;
+    }
+
+    @Override
+    public void validate() {
+        new MultipleRules(new WebServerNameRule(name),
+                          new HostNameRule(host),
+                          new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
+                          new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
+                          new GroupIdsRule(groupIds),
+                          new StatusPathRule(statusPath),
+                          new HttpConfigFileRule(httpConfigFile),
+                          new PathRule(svrRoot),
+                          new PathRule(docRoot)).validate();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        CreateWebServerRequest rhs = (CreateWebServerRequest) obj;
+        return new EqualsBuilder()
+                .append(this.groupIds, rhs.groupIds)
+                .append(this.host, rhs.host)
+                .append(this.name, rhs.name)
+                .append(this.port, rhs.port)
+                .append(this.httpsPort, rhs.httpsPort)
+                .append(this.statusPath, rhs.statusPath)
+                .append(this.httpConfigFile, rhs.httpConfigFile)
+                .append(this.svrRoot, rhs.svrRoot)
+                .append(this.docRoot, rhs.docRoot)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(groupIds)
+                .append(host)
+                .append(name)
+                .append(port)
+                .append(httpsPort)
+                .append(statusPath)
+                .append(httpConfigFile)
+                .append(svrRoot)
+                .append(docRoot)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("groupIds", groupIds)
+                .append("host", host)
+                .append("name", name)
+                .append("port", port)
+                .append("httpsPort", httpsPort)
+                .append("statusPath", statusPath)
+                .append("httpConfigFile", httpConfigFile)
+                .append("svrRoot", svrRoot)
+                .append("docRoot", docRoot)
+                .toString();
+    }
+}

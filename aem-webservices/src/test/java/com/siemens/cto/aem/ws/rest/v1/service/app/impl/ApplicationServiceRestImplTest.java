@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
+import com.siemens.cto.aem.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -115,12 +115,12 @@ public class ApplicationServiceRestImplTest {
 
     }
 
-    private class IsValidUploadCommand extends ArgumentMatcher<UploadWebArchiveCommand> {
+    private class IsValidUploadCommand extends ArgumentMatcher<UploadWebArchiveRequest> {
 
         @Override
         public boolean matches(Object arg) {
-            UploadWebArchiveCommand uwac = (UploadWebArchiveCommand) arg;
-            uwac.validateCommand();
+            UploadWebArchiveRequest uwac = (UploadWebArchiveRequest) arg;
+            uwac.validate();
             return true;
         }
 
@@ -357,7 +357,7 @@ public class ApplicationServiceRestImplTest {
      */
     @Test
     public void testCreate() {
-        when(service.createApplication(any(CreateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
+        when(service.createApplication(any(CreateApplicationRequest.class), any(User.class))).thenReturn(newlyCreatedApp);
 
         JsonCreateApplication jsonCreateAppRequest = new JsonCreateApplication();
 
@@ -374,9 +374,9 @@ public class ApplicationServiceRestImplTest {
      */
     @Test
     public void testUpdate() {
-        when(service.updateApplication(any(UpdateApplicationCommand.class), any(User.class))).thenReturn(newlyCreatedApp);
-        ArrayList<UpdateApplicationCommand> multiUpdate = new ArrayList<>();
-        multiUpdate.add(new UpdateApplicationCommand(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", "", true, true));
+        when(service.updateApplication(any(UpdateApplicationRequest.class), any(User.class))).thenReturn(newlyCreatedApp);
+        ArrayList<UpdateApplicationRequest> multiUpdate = new ArrayList<>();
+        multiUpdate.add(new UpdateApplicationRequest(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", "", true, true));
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
         Response resp = cut.updateApplication(jsonUpdateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());

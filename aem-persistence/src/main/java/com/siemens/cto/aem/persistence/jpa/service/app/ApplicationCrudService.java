@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.jpa.service.app;
 
+import com.siemens.cto.aem.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
+import com.siemens.cto.aem.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
@@ -14,9 +14,9 @@ import java.util.List;
 
 public interface ApplicationCrudService {
 
-    JpaApplication createApplication(final Event<CreateApplicationCommand> anAppToCreate, JpaGroup jpaGroup);
+    JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup);
 
-    JpaApplication updateApplication(final Event<UpdateApplicationCommand> anAppToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup);
+    JpaApplication updateApplication(final Event<UpdateApplicationRequest> anAppToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup);
 
     void removeApplication(final Identifier<Application> anAppId);
     
@@ -30,5 +30,5 @@ public interface ApplicationCrudService {
 
     void createConfigTemplate(JpaApplication app, String resourceTemplateName, String resourceTemplateContent);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateCommand> event);
+    JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event);
 }

@@ -1,22 +1,22 @@
 package com.siemens.cto.aem.persistence.jpa.service.group;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
 import java.util.List;
 
 public interface GroupCrudService {
 
-    JpaGroup createGroup(final Event<CreateGroupCommand> aGroupToCreate);
+    JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate);
 
-    void updateGroup(final Event<UpdateGroupCommand> aGroupToUpdate);
+    void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate);
 
     JpaGroup getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
@@ -28,7 +28,7 @@ public interface GroupCrudService {
 
     void removeGroup(final Identifier<Group> aGroupId);
     
-    JpaGroup updateGroupStatus(Event<SetStateCommand<Group, GroupState>> aGroupToUpdate);
+    JpaGroup updateGroupStatus(Event<SetStateRequest<Group, GroupState>> aGroupToUpdate);
 
     Long getGroupId(String name);
 

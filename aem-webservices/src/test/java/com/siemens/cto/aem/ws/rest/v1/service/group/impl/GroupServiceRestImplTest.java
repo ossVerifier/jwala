@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.request.group.*;
 import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.domain.command.group.AddJvmsToGroupCommand;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.command.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -193,7 +192,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testCreateGroup() {
-        when(impl.createGroup(any(CreateGroupCommand.class), any(User.class))).thenReturn(group);
+        when(impl.createGroup(any(CreateGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Response response = groupServiceRest.createGroup(name, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -209,7 +208,7 @@ public class GroupServiceRestImplTest {
     @Test
     public void testUpdateGroup() {
         final JsonUpdateGroup jsonUpdateGroup = new JsonUpdateGroup("currentName", name);
-        when(impl.updateGroup(any(UpdateGroupCommand.class), any(User.class))).thenReturn(group);
+        when(impl.updateGroup(any(UpdateGroupRequest.class), any(User.class))).thenReturn(group);
         when(impl.getGroup(eq("currentName"))).thenReturn(group);
 
         final Response response = groupServiceRest.updateGroup(jsonUpdateGroup, authenticatedUser);
@@ -241,7 +240,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testAddJvmsToGroup() {
-        when(impl.addJvmsToGroup(any(AddJvmsToGroupCommand.class), any(User.class))).thenReturn(group);
+        when(impl.addJvmsToGroup(any(AddJvmsToGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Set<String> jvmIds = new HashSet<String>();
         jvmIds.add("1");
@@ -259,7 +258,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testRemoveJvmsFromGroup() {
-        when(impl.removeJvmFromGroup(any(RemoveJvmFromGroupCommand.class), any(User.class))).thenReturn(group);
+        when(impl.removeJvmFromGroup(any(RemoveJvmFromGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Response response =
                 groupServiceRest.removeJvmFromGroup(Identifier.id(1l, Group.class),

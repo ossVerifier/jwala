@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.app.impl;
 
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -92,14 +92,14 @@ public class PrivateApplicationServiceImplTest {
         uploadedFile = new ByteArrayInputStream(buf.array());
     }
 
-    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveCommand>> {
+    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveRequest>> {
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean matches(Object arg) {
-            Event<UploadWebArchiveCommand> event = (Event<UploadWebArchiveCommand>)arg;
-            UploadWebArchiveCommand uwac = event.getCommand();
-            uwac.validateCommand();
+            Event<UploadWebArchiveRequest> event = (Event<UploadWebArchiveRequest>)arg;
+            UploadWebArchiveRequest uwac = event.getRequest();
+            uwac.validate();
             return true;
         } 
         
@@ -107,8 +107,8 @@ public class PrivateApplicationServiceImplTest {
     
     @Test
     public void testUploadWebArchiveData() throws IOException { 
-        UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);
-        Event<UploadWebArchiveCommand> event = Event.create(uwac, AuditEvent.now(testUser));
+        UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
+        Event<UploadWebArchiveRequest> event = Event.create(uwac, AuditEvent.now(testUser));
 
         when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
 
@@ -120,8 +120,8 @@ public class PrivateApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUploadWebArchiveUpdateDB() throws IOException { 
-        UploadWebArchiveCommand uwac = new UploadWebArchiveCommand(mockApplication, "fn.war", 2L, uploadedFile);        
-        Event<UploadWebArchiveCommand> event = Event.create(uwac, AuditEvent.now(testUser));
+        UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
+        Event<UploadWebArchiveRequest> event = Event.create(uwac, AuditEvent.now(testUser));
         
         when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
         

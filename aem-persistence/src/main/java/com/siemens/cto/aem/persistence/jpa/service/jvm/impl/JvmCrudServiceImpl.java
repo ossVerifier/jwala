@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -8,9 +10,7 @@ import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -32,14 +32,14 @@ public class JvmCrudServiceImpl implements JvmCrudService {
     private EntityManager entityManager;
 
     @Override
-    public JpaJvm createJvm(final Event<CreateJvmCommand> aJvmToCreate) {
+    public JpaJvm createJvm(final Event<CreateJvmRequest> aJvmToCreate) {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
             final AuditEvent auditEvent = aJvmToCreate.getAuditEvent();
             final Calendar updateTime = auditEvent.getDateTime().getCalendar();
             final String userId = auditEvent.getUser().getUserId();
-            final CreateJvmCommand command = aJvmToCreate.getCommand();
+            final CreateJvmRequest command = aJvmToCreate.getRequest();
 
             jpaJvm.setName(command.getJvmName());
             jpaJvm.setHostName(command.getHostName());
@@ -62,16 +62,16 @@ public class JvmCrudServiceImpl implements JvmCrudService {
             return jpaJvm;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + aJvmToCreate.getCommand().getJvmName(),
+                    "JVM with name already exists: " + aJvmToCreate.getRequest().getJvmName(),
                     eee);
         }
     }
 
     @Override
-    public JpaJvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate) {
+    public JpaJvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate) {
 
         try {
-            final UpdateJvmCommand command = aJvmToUpdate.getCommand();
+            final UpdateJvmRequest command = aJvmToUpdate.getRequest();
             final Identifier<Jvm> jvmId = command.getId();
             final JpaJvm jvm = getJvm(jvmId);
 
@@ -90,7 +90,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
             return jvm;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + aJvmToUpdate.getCommand().getNewJvmName(),
+                    "JVM with name already exists: " + aJvmToUpdate.getRequest().getNewJvmName(),
                     eee);
         }
     }
@@ -139,9 +139,9 @@ public class JvmCrudServiceImpl implements JvmCrudService {
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event) {
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateRequest> event) {
 
-        final UploadJvmTemplateCommand command = event.getCommand();
+        final UploadJvmTemplateRequest command = event.getRequest();
         final Jvm jvm = command.getJvm();
         Identifier<Jvm> id = jvm.getId();
         final JpaJvm jpaJvm = getJvm(id);

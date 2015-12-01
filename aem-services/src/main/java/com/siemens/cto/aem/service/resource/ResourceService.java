@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 
 import java.util.Collection;
@@ -27,9 +27,9 @@ public interface ResourceService {
 
     List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
 
-    ResourceInstance createResourceInstance(final ResourceInstanceCommand createResourceInstanceCommand, final User creatingUser);
+    ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceCommand, final User creatingUser);
 
-    ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceAttributesCommand, final User updatingUser);
+    ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceAttributesCommand, final User updatingUser);
 
     void deleteResourceInstance(final String name, final String groupName);
 

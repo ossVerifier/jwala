@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.resource.impl;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -8,7 +9,6 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
@@ -121,16 +121,16 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public ResourceInstance createResourceInstance(final ResourceInstanceCommand createResourceInstanceCommand, final User creatingUser) {
+    public ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceCommand, final User creatingUser) {
         this.groupPersistenceService.getGroup(createResourceInstanceCommand.getGroupName());
-        return this.resourcePersistenceService.createResourceInstance(new Event<ResourceInstanceCommand>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
+        return this.resourcePersistenceService.createResourceInstance(new Event<ResourceInstanceRequest>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
     }
 
     @Override
     @Transactional
-    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceCommand updateResourceInstanceCommand, final User updatingUser) {
+    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceCommand, final User updatingUser) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceCommand>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));
+        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceRequest>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));
     }
 
     @Override

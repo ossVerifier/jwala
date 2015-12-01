@@ -1,19 +1,19 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
+import com.siemens.cto.aem.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -165,7 +165,7 @@ public class MoreGroupStateMachineTest {
 
         });
 
-        groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupCommand(mockGroup.getId(), jvm.getId()),  AuditEvent.now(testUser)));
+        groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(mockGroup.getId(), jvm.getId()),  AuditEvent.now(testUser)));
 
         when(jvmStatePersistenceService.getState(eq(jvm.getId()))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
 
@@ -189,8 +189,8 @@ public class MoreGroupStateMachineTest {
 
             @Override
             public CurrentState<Jvm, JvmState> answer(InvocationOnMock invocation) throws Throwable {
-                Event<JvmSetStateCommand> event = (Event<JvmSetStateCommand>) invocation.getArguments()[0];
-                currentJvmState = new CurrentState<>(jvm.getId(), event.getCommand().getNewState().getState(), DateTime.now(), StateType.JVM);
+                Event<JvmSetStateRequest> event = (Event<JvmSetStateRequest>) invocation.getArguments()[0];
+                currentJvmState = new CurrentState<>(jvm.getId(), event.getRequest().getNewState().getState(), DateTime.now(), StateType.JVM);
                 return currentJvmState;
            }
 
@@ -201,8 +201,8 @@ public class MoreGroupStateMachineTest {
             @Override
             public Group answer(InvocationOnMock invocation) throws Throwable {
 
-                Event<SetGroupStateCommand> event = (Event<SetGroupStateCommand>) invocation.getArguments()[0];
-                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), event.getCommand().getNewState().getState(), DateTime.now());
+                Event<SetGroupStateRequest> event = (Event<SetGroupStateRequest>) invocation.getArguments()[0];
+                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), event.getRequest().getNewState().getState(), DateTime.now());
                 return mockGroup;
             }
 

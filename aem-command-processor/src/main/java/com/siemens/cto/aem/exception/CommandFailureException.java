@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.exception;
 
-import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.exec.ExecCommand;
 
 public class CommandFailureException extends Exception {
 

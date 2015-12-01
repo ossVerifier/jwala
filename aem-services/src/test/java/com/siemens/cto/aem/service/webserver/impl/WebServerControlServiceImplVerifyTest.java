@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
+import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
 import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -43,7 +43,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
 
     @Captor
-    private ArgumentCaptor<SetStateCommand<WebServer, WebServerReachableState>> setStateCommandCaptor;
+    private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
 
     private User user;
 
@@ -60,7 +60,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Test
     @SuppressWarnings("unchecked")
     public void testVerificationOfBehaviorForSuccess() throws Exception {
-        final ControlWebServerCommand controlCommand = mock(ControlWebServerCommand.class);
+        final ControlWebServerRequest controlCommand = mock(ControlWebServerRequest.class);
         final WebServer webServer = mock(WebServer.class);
         final Identifier<WebServer> webServerId = mock(Identifier.class);
         final WebServerControlOperation controlOperation = WebServerControlOperation.START;
@@ -72,7 +72,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         impl.controlWebServer(controlCommand,
                               user);
 
-        verify(controlCommand, times(1)).validateCommand();
+        verify(controlCommand, times(1)).validate();
 
         verify(webServerService, times(1)).getWebServer(eq(webServerId));
         verify(commandExecutor, times(1)).controlWebServer(eq(controlCommand),
@@ -80,7 +80,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         verify(webServerStateService, times(1)).setCurrentState(setStateCommandCaptor.capture(),
                                                                 eq(user));
 
-        final SetStateCommand<WebServer, WebServerReachableState> actualSetStateCommand = setStateCommandCaptor.getValue();
+        final SetStateRequest<WebServer, WebServerReachableState> actualSetStateCommand = setStateCommandCaptor.getValue();
         assertEquals(webServerId,
                      actualSetStateCommand.getNewState().getId());
         assertEquals(controlOperation.getOperationState(),

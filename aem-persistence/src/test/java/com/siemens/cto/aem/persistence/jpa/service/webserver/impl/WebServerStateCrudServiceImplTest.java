@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.jpa.service.webserver.impl;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
-import com.siemens.cto.aem.domain.command.state.WebServerSetStateCommand;
+import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -126,7 +126,7 @@ public class WebServerStateCrudServiceImplTest {
     private JpaCurrentState updateState(final Identifier<WebServer> anId,
                                         final WebServerReachableState aState,
                                         final DateTime anAsOf) {
-        return impl.updateState(new Event<SetStateCommand<WebServer, WebServerReachableState>>(new WebServerSetStateCommand(new CurrentState<>(anId,
+        return impl.updateState(new Event<SetStateRequest<WebServer, WebServerReachableState>>(new WebServerSetStateRequest(new CurrentState<>(anId,
                                                                                                                                                aState,
                                                                                                                                                anAsOf,
                                                                                                                                                StateType.WEB_SERVER)),

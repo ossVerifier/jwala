@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -10,10 +12,8 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
@@ -37,10 +37,10 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public WebServer createWebServer(final Event<CreateWebServerCommand> aWebServer) {
+    public WebServer createWebServer(final Event<CreateWebServerRequest> aWebServer) {
 
         try {
-            final CreateWebServerCommand createWebServerCommand = aWebServer.getCommand();
+            final CreateWebServerRequest createWebServerCommand = aWebServer.getRequest();
             final AuditEvent auditEvent = aWebServer.getAuditEvent();
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
@@ -76,15 +76,15 @@ public class JpaWebServerDaoImpl implements WebServerDao {
             return webServerFrom(jpaWebServer);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
-                    + aWebServer.getCommand().getName(), eee);
+                    + aWebServer.getRequest().getName(), eee);
         }
     }
 
     @Override
-    public WebServer updateWebServer(final Event<UpdateWebServerCommand> aWebServerToUpdate) {
+    public WebServer updateWebServer(final Event<UpdateWebServerRequest> aWebServerToUpdate) {
 
         try {
-            final UpdateWebServerCommand updateWebServerCommand = aWebServerToUpdate.getCommand();
+            final UpdateWebServerRequest updateWebServerCommand = aWebServerToUpdate.getRequest();
             final AuditEvent auditEvent = aWebServerToUpdate.getAuditEvent();
             final Identifier<WebServer> webServerId = updateWebServerCommand.getId();
             final JpaWebServer jpaWebServer = getJpaWebServer(webServerId);
@@ -117,7 +117,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
         } catch (final PersistenceException eee) {
             // We have to catch the generalized exception because OpenJPA can throw a rollback instead.
             throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
-                    + aWebServerToUpdate.getCommand().getNewName(), eee);
+                    + aWebServerToUpdate.getRequest().getNewName(), eee);
         }
     }
 
@@ -302,8 +302,8 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
-        for (UploadWebServerTemplateCommand command : uploadWSTemplateCommands) {
+    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
+        for (UploadWebServerTemplateRequest command : uploadWSTemplateCommands) {
             final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);
             q.setParameter("webServerName", command.getWebServer().getName());
             q.setParameter("templateName", command.getConfFileName());
@@ -315,12 +315,12 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
-    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateCommand> event) {
+    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateRequest> event) {
         return uploadWebServerTemplate(event);
     }
 
-    private JpaWebServerConfigTemplate uploadWebServerTemplate(Event<UploadWebServerTemplateCommand> event) {
-        final UploadWebServerTemplateCommand command = event.getCommand();
+    private JpaWebServerConfigTemplate uploadWebServerTemplate(Event<UploadWebServerTemplateRequest> event) {
+        final UploadWebServerTemplateRequest command = event.getRequest();
         final WebServer webServer = command.getWebServer();
         Identifier<WebServer> id = webServer.getId();
         final JpaWebServer jpaWebServer = getJpaWebServer(id);

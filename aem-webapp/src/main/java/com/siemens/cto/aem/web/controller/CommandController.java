@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.web.controller;
 
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -40,7 +40,7 @@ public class CommandController {
     public ModelAndView jvmCommand(HttpServletRequest request, HttpServletResponse response) {
 
         Identifier<Jvm> jvmIdentifier = getJvmIdParameter(request);
-        ControlJvmCommand aCommand = getControlOperation(request, jvmIdentifier);
+        ControlJvmRequest aCommand = getControlOperation(request, jvmIdentifier);
 
         CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, User.getSystemUser());
 
@@ -64,15 +64,15 @@ public class CommandController {
                 response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
             }
         } catch (CommandFailureException cmdFailEx) {
-            LOGGER.warn("Command Failure occurred", cmdFailEx);
+            LOGGER.warn("Request Failure occurred", cmdFailEx);
             response.getWriter().print(ERROR_MSG_PREFIX + cmdFailEx.getMessage());
         }
     }
 
-    protected ControlJvmCommand getControlOperation(HttpServletRequest request, Identifier<Jvm> jvmIdentifier) {
+    protected ControlJvmRequest getControlOperation(HttpServletRequest request, Identifier<Jvm> jvmIdentifier) {
         String operation = request.getParameter("operation");
         JvmControlOperation theControlOperation = JvmControlOperation.convertFrom(operation);
-        ControlJvmCommand jvmCommand = new ControlJvmCommand(jvmIdentifier, theControlOperation);
+        ControlJvmRequest jvmCommand = new ControlJvmRequest(jvmIdentifier, theControlOperation);
         return jvmCommand;
     }
 

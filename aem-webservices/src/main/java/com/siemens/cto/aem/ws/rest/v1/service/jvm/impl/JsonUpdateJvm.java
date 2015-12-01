@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
@@ -59,12 +59,12 @@ public class JsonUpdateJvm {
         systemProperties = theSystemProperties;
     }
 
-    public UpdateJvmCommand toUpdateJvmCommand() throws BadRequestException {
+    public UpdateJvmRequest toUpdateJvmCommand() throws BadRequestException {
 
         final Identifier<Jvm> id = convertJvmId();
         final Set<Identifier<Group>> groupIds = convertGroupIds();
 
-        return new UpdateJvmCommand(id,
+        return new UpdateJvmRequest(id,
                                     jvmName,
                                     hostName,
                                     groupIds,

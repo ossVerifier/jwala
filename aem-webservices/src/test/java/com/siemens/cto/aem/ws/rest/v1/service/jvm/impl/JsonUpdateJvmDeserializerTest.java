@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -275,7 +275,7 @@ public class JsonUpdateJvmDeserializerTest {
                                     final String aSystemProperties,
                                     final String ... someGroupIds) {
 
-        final UpdateJvmCommand update = anUpdate.toUpdateJvmCommand();
+        final UpdateJvmRequest update = anUpdate.toUpdateJvmCommand();
 
         assertEquals(new Identifier<Jvm>(aJvmId),
                      update.getId());
@@ -300,7 +300,7 @@ public class JsonUpdateJvmDeserializerTest {
         assertEquals(someGroupIds.length,
                      update.getAssignmentCommands().size());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
-        for (final AddJvmToGroupCommand addCommand : update.getAssignmentCommands()) {
+        for (final AddJvmToGroupRequest addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));
         }
     }

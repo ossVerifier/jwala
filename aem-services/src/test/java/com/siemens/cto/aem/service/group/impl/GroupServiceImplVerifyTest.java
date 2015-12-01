@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.group.*;
+import com.siemens.cto.aem.request.group.*;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
@@ -53,12 +53,12 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testCreateGroup() {
 
-        final CreateGroupCommand command = mock(CreateGroupCommand.class);
+        final CreateGroupRequest command = mock(CreateGroupRequest.class);
 
         impl.createGroup(command,
                          user);
 
-        verify(command, times(1)).validateCommand();
+        verify(command, times(1)).validate();
         verify(groupPersistenceService, times(1)).createGroup(matchCommandInEvent(command));
     }
 
@@ -100,10 +100,10 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testUpdateGroup() throws InterruptedException {
-        final UpdateGroupCommand command = mock(UpdateGroupCommand.class);
+        final UpdateGroupRequest command = mock(UpdateGroupRequest.class);
         impl.updateGroup(command, user);
 
-        verify(command).validateCommand();
+        verify(command).validate();
         verify(groupPersistenceService).updateGroup(matchCommandInEvent(command));
 
         // TODO: Remove if this is no londer needed.
@@ -123,12 +123,12 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testAddJvmToGroup() {
 
-        final AddJvmToGroupCommand command = mock(AddJvmToGroupCommand.class);
+        final AddJvmToGroupRequest command = mock(AddJvmToGroupRequest.class);
 
         impl.addJvmToGroup(command,
                 user);
 
-        verify(command, times(1)).validateCommand();
+        verify(command, times(1)).validate();
         verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(command));
 
         // TODO: Remove if this is no londer needed.
@@ -138,17 +138,17 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testAddJvmsToGroup() {
 
-        final AddJvmsToGroupCommand command = mock(AddJvmsToGroupCommand.class);
+        final AddJvmsToGroupRequest command = mock(AddJvmsToGroupRequest.class);
 
-        final Set<AddJvmToGroupCommand> addCommands = createMockedAddCommands(5);
+        final Set<AddJvmToGroupRequest> addCommands = createMockedAddCommands(5);
         when(command.toCommands()).thenReturn(addCommands);
 
         impl.addJvmsToGroup(command,
                             user);
 
-        verify(command, times(1)).validateCommand();
-        for (final AddJvmToGroupCommand addCommand : addCommands) {
-            verify(addCommand, times(1)).validateCommand();
+        verify(command, times(1)).validate();
+        for (final AddJvmToGroupRequest addCommand : addCommands) {
+            verify(addCommand, times(1)).validate();
             verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(addCommand));
         }
     }
@@ -156,12 +156,12 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testRemoveJvmFromGroup() {
 
-        final RemoveJvmFromGroupCommand command = mock(RemoveJvmFromGroupCommand.class);
+        final RemoveJvmFromGroupRequest command = mock(RemoveJvmFromGroupRequest.class);
 
         impl.removeJvmFromGroup(command,
                 user);
 
-        verify(command, times(1)).validateCommand();
+        verify(command, times(1)).validate();
         verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
 
         // TODO: Remove if this is no londer needed.

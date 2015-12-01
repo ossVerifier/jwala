@@ -21,7 +21,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -36,19 +38,17 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
+import com.siemens.cto.aem.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
@@ -124,7 +124,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // set the state to NEW for the newly created JVM
         final CurrentState<Jvm, JvmState> theNewState =
                 new CurrentState<>(jvm.getId(), JvmState.JVM_NEW, DateTime.now(), StateType.JVM);
-        SetStateCommand<Jvm, JvmState> setStateNewCommand = new JvmSetStateCommand(theNewState);
+        SetStateRequest<Jvm, JvmState> setStateNewCommand = new JvmSetStateRequest(theNewState);
         jvmStateService.setCurrentState(setStateNewCommand, aUser.getUser());
 
         return ResponseBuilder.created(jvm);
@@ -138,8 +138,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     dataInputStream =
                             new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
                                     + resourceType.getTemplateName()));
-                    UploadJvmTemplateCommand uploadJvmTemplateCommand =
-                            new UploadJvmTemplateCommand(jvm, resourceType.getTemplateName(), dataInputStream) {
+                    UploadJvmTemplateRequest uploadJvmTemplateCommand =
+                            new UploadJvmTemplateRequest(jvm, resourceType.getTemplateName(), dataInputStream) {
                                 @Override
                                 public String getConfFileName() {
                                     return resourceType.getConfigFileName();
@@ -170,7 +170,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             logger.info("Removing JVM from the database and deleting the service");
             jvmService.removeJvm(aJvmId);
             if (!jvmStateService.getCurrentState(aJvmId).getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(user, new ControlJvmCommand(aJvmId, JvmControlOperation.DELETE_SERVICE),
+                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),
                         jvm.getJvmName());
             }
         } else {
@@ -184,7 +184,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final AuthenticatedUser aUser) {
         logger.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
-        final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmCommand(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
+        final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput);
         } else {
@@ -225,7 +225,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadJvmTemplateCommand command = new UploadJvmTemplateCommand(jvm, file1.getName(), data) {
+                    UploadJvmTemplateRequest command = new UploadJvmTemplateRequest(jvm, file1.getName(), data) {
                         @Override
                         public String getConfFileName() {
                             return templateName;
@@ -332,7 +332,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             // delete the service
-            deleteJvmWindowsService(user, new ControlJvmCommand(jvm.getId(), JvmControlOperation.DELETE_SERVICE),
+            deleteJvmWindowsService(user, new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE),
                     jvm.getJvmName());
 
             // create the tar file
@@ -351,7 +351,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // set the state to stopped
             CurrentState<Jvm, JvmState> stoppedState =
                     new CurrentState<>(jvm.getId(), JvmState.SVC_STOPPED, DateTime.now(), StateType.JVM);
-            SetStateCommand<Jvm, JvmState> setStateStoppedCommand = new JvmSetStateCommand(stoppedState);
+            SetStateRequest<Jvm, JvmState> setStateStoppedCommand = new JvmSetStateRequest(stoppedState);
             jvmStateService.setCurrentState(setStateStoppedCommand, user.getUser());
 
         } catch (CommandFailureException e) {
@@ -365,7 +365,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
-        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmCommand(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
+        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
                         user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Invoke of windows service {} was successful", jvm.getJvmName());
@@ -379,7 +379,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
         CommandOutput execData =jvmControlService.controlJvm(
-                        new ControlJvmCommand(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
+                        new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Deployment of config tar was successful: {}", jvmConfigTar);
         } else {
@@ -408,7 +408,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmCommand aCommand, String jvmName) {
+    private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest aCommand, String jvmName) {
         CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, user.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             logger.info("Delete of windows service {} was successful", jvmName);

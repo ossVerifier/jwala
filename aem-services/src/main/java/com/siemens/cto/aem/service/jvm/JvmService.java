@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.service.jvm;
 
+import com.siemens.cto.aem.request.jvm.*;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -17,10 +16,10 @@ import java.util.List;
 
 public interface JvmService {
 
-    Jvm createJvm(final CreateJvmCommand aCreateJvmCommand,
+    Jvm createJvm(final CreateJvmRequest aCreateJvmCommand,
                   final User aCreatingUser);
 
-    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsCommand aCreateAndAssignCommand,
+    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignCommand,
                            final User aCreatingUser);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
@@ -33,7 +32,7 @@ public interface JvmService {
 
     List<Jvm> findJvms(final Identifier<Group> aJvmId);
 
-    Jvm updateJvm(final UpdateJvmCommand anUpdateJvmCommand,
+    Jvm updateJvm(final UpdateJvmRequest anUpdateJvmCommand,
                   final User anUpdatingUser);
 
     void removeJvm(final Identifier<Jvm> aJvmId);
@@ -44,7 +43,7 @@ public interface JvmService {
 
     CommandOutput secureCopyFile(RuntimeCommandBuilder runtimeCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException;
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateCommand command, User user);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest command, User user);
 
     List<String> getResourceTemplateNames(final String jvmName);
 

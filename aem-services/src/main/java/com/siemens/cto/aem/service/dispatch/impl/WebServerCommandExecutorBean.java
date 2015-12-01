@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
+import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 
 public class WebServerCommandExecutorBean {
@@ -29,8 +29,8 @@ public class WebServerCommandExecutorBean {
 
         try {
 
-            ControlWebServerCommand controlWebServerCommand = new ControlWebServerCommand(webServerDispatchCommand
-                    .getWebServer().getId(), groupDispatchCommand.getCommand().getControlOperation());
+            ControlWebServerRequest controlWebServerCommand = new ControlWebServerRequest(webServerDispatchCommand
+                    .getWebServer().getId(), groupDispatchCommand.getRequest().getControlOperation());
 
             CommandOutput output = webServerControlService.controlWebServer(controlWebServerCommand,
                     groupDispatchCommand.getUser());
@@ -39,7 +39,7 @@ public class WebServerCommandExecutorBean {
 
         } catch (RuntimeException e) {
             wasSuccessful = false;
-            LOGGER.warn("Group dispatch (" + groupDispatchCommand.toString() + "): ControlJvmCommand ("
+            LOGGER.warn("Group dispatch (" + groupDispatchCommand.toString() + "): ControlJvmRequest ("
                     + webServerDispatchCommand.toString() + ") failed: ", e);
         }
 

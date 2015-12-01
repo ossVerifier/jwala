@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 
@@ -11,7 +11,7 @@ import com.siemens.cto.toc.files.RepositoryFileInformation;
  */
 public interface PrivateApplicationService {
 
-    RepositoryFileInformation uploadWebArchiveData(Event<UploadWebArchiveCommand> event);
+    RepositoryFileInformation uploadWebArchiveData(Event<UploadWebArchiveRequest> event);
 
-    Application uploadWebArchiveUpdateDB(Event<UploadWebArchiveCommand> event, RepositoryFileInformation result);
+    Application uploadWebArchiveUpdateDB(Event<UploadWebArchiveRequest> event, RepositoryFileInformation result);
 }

@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
@@ -32,7 +32,7 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Path aStatusPath,
                          final String aSystemProperties) {
 
-        final Event<CreateJvmCommand> event = createCreateJvmEvent(aJvmName,
+        final Event<CreateJvmRequest> event = createCreateJvmEvent(aJvmName,
                                                                    aHostName,
                                                                    aHttpPort,
                                                                    aHttpsPort,
@@ -58,7 +58,7 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Path aStatusPath,
                          final String aSystemProperties) {
 
-        final Event<UpdateJvmCommand> event = createUpdateJvmEvent(aJvmId,
+        final Event<UpdateJvmRequest> event = createUpdateJvmEvent(aJvmId,
                                                                    aNewJvmName,
                                                                    aNewHostName,
                                                                    aNewHttpPort,
@@ -73,7 +73,7 @@ public class CommonJvmPersistenceServiceBehavior {
         return jvmPersistenceService.updateJvm(event);
     }
 
-    protected Event<CreateJvmCommand> createCreateJvmEvent(final String aJvmName,
+    protected Event<CreateJvmRequest> createCreateJvmEvent(final String aJvmName,
                                                            final String aJvmHostName,
                                                            final Integer httpPort,
                                                            final Integer httpsPort,
@@ -84,7 +84,7 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Path aStatusPath,
                                                            final String aSystemProperties) {
 
-        final Event<CreateJvmCommand> createJvm = new Event<>(new CreateJvmCommand(aJvmName,
+        final Event<CreateJvmRequest> createJvm = new Event<>(new CreateJvmRequest(aJvmName,
                                                                                    aJvmHostName,
                                                                                    httpPort,
                                                                                    httpsPort,
@@ -99,7 +99,7 @@ public class CommonJvmPersistenceServiceBehavior {
         return createJvm;
     }
 
-    protected Event<UpdateJvmCommand> createUpdateJvmEvent(final Identifier<Jvm> aJvmId,
+    protected Event<UpdateJvmRequest> createUpdateJvmEvent(final Identifier<Jvm> aJvmId,
                                                            final String aNewJvmName,
                                                            final String aNewHostName,
                                                            final Integer aNewHttpPort,
@@ -111,7 +111,7 @@ public class CommonJvmPersistenceServiceBehavior {
                                                            final Path aStatusPath,
                                                            final String systemProperties) {
 
-        final Event<UpdateJvmCommand> event = new Event<>(new UpdateJvmCommand(aJvmId,
+        final Event<UpdateJvmRequest> event = new Event<>(new UpdateJvmRequest(aJvmId,
                                                                                aNewJvmName,
                                                                                aNewHostName,
                                                                                Collections.<Identifier<Group>>emptySet(),

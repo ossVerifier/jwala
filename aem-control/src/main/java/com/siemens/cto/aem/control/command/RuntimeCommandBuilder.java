@@ -2,7 +2,7 @@ package com.siemens.cto.aem.control.command;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
+import com.siemens.cto.aem.exec.RuntimeCommand;
 
 import java.util.ArrayList;
 import java.util.List;

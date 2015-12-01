@@ -3,7 +3,7 @@ package com.siemens.cto.aem.persistence.service.resource.impl;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaResourceInstanceBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
@@ -30,7 +30,7 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> resourceInstanceCreateEvent) {
+    public ResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> resourceInstanceCreateEvent) {
         return parseFromJpa(this.resourceInstanceCrudService.createResourceInstance(resourceInstanceCreateEvent));
     }
 
@@ -50,11 +50,11 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final Event<ResourceInstanceCommand> resourceInstanceUpdateEvent) {
-        if (resourceInstanceUpdateEvent.getCommand().getAttributes() != null) {
+    public ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final Event<ResourceInstanceRequest> resourceInstanceUpdateEvent) {
+        if (resourceInstanceUpdateEvent.getRequest().getAttributes() != null) {
             this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
         }
-        if (!resourceInstanceUpdateEvent.getCommand().getName().equals(resourceInstance.getName())){
+        if (!resourceInstanceUpdateEvent.getRequest().getName().equals(resourceInstance.getName())){
             this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
         }
         return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstance.getResourceInstanceId()));

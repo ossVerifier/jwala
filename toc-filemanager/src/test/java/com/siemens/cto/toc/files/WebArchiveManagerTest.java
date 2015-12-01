@@ -1,8 +1,8 @@
 package com.siemens.cto.toc.files;
 
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
+import com.siemens.cto.aem.request.app.RemoveWebArchiveRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.user.User;
@@ -179,29 +179,29 @@ public class WebArchiveManagerTest {
     @Test
     public void testWriteArchive() throws IOException { 
                 
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validateCommand();        
+        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validate();
         
         testResults(
                 1*1024*1024L,
-                webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER))));  
+                webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER))));
     }
 
     @Test
     public void testWriteArchiveTwice() throws IOException { 
                 
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validateCommand();        
-        RepositoryFileInformation result1 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER)));
+        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validate();
+        RepositoryFileInformation result1 = webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER)));
 
         app.setWarPath(result1.getPath().toAbsolutePath().toString());
         
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
         
-        UploadWebArchiveCommand cmd2 = new UploadWebArchiveCommand(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
-        cmd2.validateCommand();        
-        RepositoryFileInformation result2 = webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd2, AuditEvent.now(TEST_USER)));
+        UploadWebArchiveRequest cmd2 = new UploadWebArchiveRequest(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
+        cmd2.validate();
+        RepositoryFileInformation result2 = webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd2, AuditEvent.now(TEST_USER)));
 
         assertNotNull(result2.getCauses());
         assertEquals(1, result2.getCauses().length);
@@ -220,19 +220,19 @@ public class WebArchiveManagerTest {
     @Test
     public void testDeleteArchive() throws IOException {
         
-        UploadWebArchiveCommand cmd = new UploadWebArchiveCommand(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validateCommand();        
+        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        cmd.validate();
         
         Path expectedPath = 
                 testResults(
                     1*1024*1024L,
-                    webArchiveManager.store(Event.<UploadWebArchiveCommand>create(cmd, AuditEvent.now(TEST_USER))),
+                    webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER))),
                     true);  
 
         app.setWarPath(expectedPath.toString());
         
-        RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
-        rwac.validateCommand();
+        RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
+        rwac.validate();
         
         RepositoryFileInformation result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
         

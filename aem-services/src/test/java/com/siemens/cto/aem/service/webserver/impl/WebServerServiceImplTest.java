@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -10,10 +12,8 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.toc.files.FileManager;
@@ -179,7 +179,7 @@ public class WebServerServiceImplTest {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         when(wsDao.createWebServer(any(Event.class))).thenReturn(mockWebServer);
-        CreateWebServerCommand cmd = new CreateWebServerCommand(mockWebServer.getGroupIds(),
+        CreateWebServerRequest cmd = new CreateWebServerRequest(mockWebServer.getGroupIds(),
                                                                 mockWebServer.getName(),
                                                                 mockWebServer.getHost(),
                                                                 mockWebServer.getPort(),
@@ -212,7 +212,7 @@ public class WebServerServiceImplTest {
     public void testUpdateWebServers() {
         when(wsDao.updateWebServer(any(Event.class))).thenReturn(mockWebServer2);
 
-        UpdateWebServerCommand cmd = new UpdateWebServerCommand(mockWebServer2.getId(), groupIds2,
+        UpdateWebServerRequest cmd = new UpdateWebServerRequest(mockWebServer2.getId(), groupIds2,
                                                                 mockWebServer2.getName(),
                                                                 mockWebServer2.getHost(),
                                                                 mockWebServer2.getPort(),
@@ -472,7 +472,7 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testPopulateWebServerConfig() {
-        final List<UploadWebServerTemplateCommand> theList = new ArrayList<>();
+        final List<UploadWebServerTemplateRequest> theList = new ArrayList<>();
         final User user = new User("id");
         final boolean overwriteExisting = false;
         wsService.populateWebServerConfig(theList, user, overwriteExisting);

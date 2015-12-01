@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
@@ -65,7 +65,7 @@ public class JsonResourceInstance {
         return groupName;
     }
 
-    public ResourceInstanceCommand getCommand() {
-        return new ResourceInstanceCommand(this.resourceTypeName, this.name, this.groupName, attributes);
+    public ResourceInstanceRequest getCommand() {
+        return new ResourceInstanceRequest(this.resourceTypeName, this.name, this.groupName, attributes);
     }
 }

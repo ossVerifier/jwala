@@ -3,7 +3,7 @@ package com.siemens.cto.aem.persistence.jpa.service.resource;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 
 import java.util.List;
@@ -13,9 +13,9 @@ import java.util.List;
  */
 public interface ResourceInstanceCrudService {
 
-    JpaResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> createResourceInstanceCommandEvent);
-    JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceCommandEvent);
-    JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceNameCommandEvent);
+    JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> createResourceInstanceCommandEvent);
+    JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceCommandEvent);
+    JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceNameCommandEvent);
     JpaResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
     List<JpaResourceInstance> getResourceInstancesByGroupId(final Long groupId);
     JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, String name);

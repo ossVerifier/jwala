@@ -15,6 +15,6 @@ public class EventMatcher<T> extends ArgumentMatcher<Event<T>> {
     @SuppressWarnings("unchecked")
     public boolean matches(final Object argument) {
         final Event<T> event = (Event<T>)argument;
-        return expectedCommand.equals(event.getCommand());
+        return expectedCommand.equals(event.getRequest());
     }
 }

@@ -7,12 +7,12 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.domain.command.app.*;
+import com.siemens.cto.aem.request.app.*;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.RuntimeCommand;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -149,10 +149,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Transactional
     @Override
-    public Application updateApplication(UpdateApplicationCommand anUpdateCommand, User anUpdatingUser) {
-        anUpdateCommand.validateCommand();
+    public Application updateApplication(UpdateApplicationRequest anUpdateCommand, User anUpdatingUser) {
+        anUpdateCommand.validate();
 
-        final Event<UpdateApplicationCommand> event = new Event<>(anUpdateCommand,
+        final Event<UpdateApplicationRequest> event = new Event<>(anUpdateCommand,
                 AuditEvent.now(anUpdatingUser));
 
         return applicationPersistenceService.updateApplication(event);
@@ -160,11 +160,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Transactional
     @Override
-    public Application createApplication(final CreateApplicationCommand aCreateAppCommand,
+    public Application createApplication(final CreateApplicationRequest aCreateAppCommand,
                                          final User aCreatingUser) {
 
-        aCreateAppCommand.validateCommand();
-        final Event<CreateApplicationCommand> event = new Event<>(aCreateAppCommand,
+        aCreateAppCommand.validate();
+        final Event<CreateApplicationRequest> event = new Event<>(aCreateAppCommand,
                 AuditEvent.now(aCreatingUser));
 
         final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
@@ -183,10 +183,10 @@ public class ApplicationServiceImpl implements ApplicationService {
      * Non-transactional entry point, utilizes {@link PrivateApplicationServiceImpl}
      */
     @Override
-    public Application uploadWebArchive(UploadWebArchiveCommand command, User user) {
-        command.validateCommand();
+    public Application uploadWebArchive(UploadWebArchiveRequest command, User user) {
+        command.validate();
 
-        Event<UploadWebArchiveCommand> event = Event.create(command, AuditEvent.now(user));
+        Event<UploadWebArchiveRequest> event = Event.create(command, AuditEvent.now(user));
 
         return privateApplicationService.uploadWebArchiveUpdateDB(event, privateApplicationService.uploadWebArchiveData(event));
     }
@@ -196,8 +196,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Application deleteWebArchive(Identifier<Application> appId, User user) {
 
         Application app = this.getApplication(appId);
-        RemoveWebArchiveCommand rwac = new RemoveWebArchiveCommand(app);
-        Event<RemoveWebArchiveCommand> event = Event.create(rwac, AuditEvent.now(user));
+        RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
+        Event<RemoveWebArchiveRequest> event = Event.create(rwac, AuditEvent.now(user));
 
         RepositoryFileInformation result = RepositoryFileInformation.none();
 
@@ -323,9 +323,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateCommand command, User user) {
-        command.validateCommand();
-        final Event<UploadAppTemplateCommand> event = new Event<>(command, AuditEvent.now(user));
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command, User user) {
+        command.validate();
+        final Event<UploadAppTemplateRequest> event = new Event<>(command, AuditEvent.now(user));
         return applicationPersistenceService.uploadAppTemplate(event);
     }
 

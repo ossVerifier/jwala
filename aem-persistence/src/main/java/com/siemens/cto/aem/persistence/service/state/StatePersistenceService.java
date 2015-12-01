@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.persistence.service.state;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 
 import java.util.Collection;
 import java.util.Date;
@@ -15,7 +15,7 @@ import java.util.Set;
 
 public interface StatePersistenceService<S, T  extends OperationalState> {
 
-    CurrentState<S, T> updateState(final Event<SetStateCommand<S, T>> aNewState);
+    CurrentState<S, T> updateState(final Event<SetStateRequest<S, T>> aNewState);
 
     CurrentState<S, T> getState(final Identifier<S> anId);
 

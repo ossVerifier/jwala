@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.command.group.ControlGroupCommand;
-import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
+import com.siemens.cto.aem.request.group.ControlGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -240,7 +240,7 @@ public class GroupStateServiceImplTest {
 
         when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
         groupStateServiceImpl.setApplicationContext(applicationContext);
-        final ControlGroupCommand controlGroupCommand = new ControlGroupCommand(groupId, GroupControlOperation.START);
+        final ControlGroupRequest controlGroupCommand = new ControlGroupRequest(groupId, GroupControlOperation.START);
         groupStateServiceImpl.signal(controlGroupCommand, User.getSystemUser());
 
         verify(groupPersistenceService).getGroup(groupId);
@@ -257,7 +257,7 @@ public class GroupStateServiceImplTest {
 
         when(groupPersistenceService.getGroup(eq(groupId))).thenReturn(group);
         groupStateServiceImpl.setApplicationContext(applicationContext);
-        final ControlGroupCommand controlGroupCommand = new ControlGroupCommand(groupId, GroupControlOperation.STOP);
+        final ControlGroupRequest controlGroupCommand = new ControlGroupRequest(groupId, GroupControlOperation.STOP);
         groupStateServiceImpl.signal(controlGroupCommand, User.getSystemUser());
 
         verify(groupPersistenceService).getGroup(groupId);
@@ -267,7 +267,7 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testGroupStatePersist() {
-        final SetGroupStateCommand setGroupStateCommand = new SetGroupStateCommand(new Identifier<Group>(1l),
+        final SetGroupStateRequest setGroupStateCommand = new SetGroupStateRequest(new Identifier<Group>(1l),
                                                                                    GroupState.GRP_STOPPED);
         groupStateServiceImpl.groupStatePersist(setGroupStateCommand);
         verify(groupPersistenceService).updateGroupStatus(Event.create(setGroupStateCommand, any(AuditEvent.class)));
@@ -278,10 +278,10 @@ public class GroupStateServiceImplTest {
     //       before notification is invoked. The existing test is not substantial.
     //       TODO: Find a way how make the test more meaningful.
     public void testGroupStateNotify() {
-        final SetGroupStateCommand setGroupStateCommand = new SetGroupStateCommand(new Identifier<Group>(1l),
+        final SetGroupStateRequest setGroupStateCommand = new SetGroupStateRequest(new Identifier<Group>(1l),
                 GroupState.GRP_STOPPED);
         final Object obj = groupStateServiceImpl.groupStateNotify(setGroupStateCommand);
-        assertTrue(SetGroupStateCommand.class.isInstance(obj));
+        assertTrue(SetGroupStateRequest.class.isInstance(obj));
     }
 
 }

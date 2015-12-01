@@ -5,9 +5,9 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
@@ -30,13 +30,13 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public Jvm createJvm(final Event<CreateJvmCommand> aJvmToCreate) {
+    public Jvm createJvm(final Event<CreateJvmRequest> aJvmToCreate) {
         final JpaJvm jpaJvm = jvmCrudService.createJvm(aJvmToCreate);
         return jvmFrom(jpaJvm);
     }
 
     @Override
-    public Jvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate) {
+    public Jvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate) {
         final JpaJvm jpaJvm = jvmCrudService.updateJvm(aJvmToUpdate);
         return jvmFrom(jpaJvm);
     }
@@ -75,7 +75,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event) {
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateRequest> event) {
         final JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmCrudService.uploadJvmTemplateXml(event);
         return jpaJvmConfigTemplate;
     }

@@ -1,19 +1,19 @@
 package com.siemens.cto.aem.service.group;
 
-import com.siemens.cto.aem.domain.command.group.*;
+import com.siemens.cto.aem.request.group.*;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.domain.model.group.*;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
 
 public interface GroupService {
 
-    Group createGroup(final CreateGroupCommand aCreateGroupCommand,
+    Group createGroup(final CreateGroupRequest aCreateGroupCommand,
                       final User aCreatingUser);
 
     Group getGroup(final Identifier<Group> aGroupId);
@@ -28,20 +28,20 @@ public interface GroupService {
 
     List<Group> findGroups(final String aGroupNameFragment);
 
-    Group updateGroup(final UpdateGroupCommand anUpdateGroupCommand,
+    Group updateGroup(final UpdateGroupRequest anUpdateGroupCommand,
                       final User anUpdatingUser);
 
     void removeGroup(final Identifier<Group> aGroupId);
 
     void removeGroup(String name);
 
-    Group addJvmToGroup(final AddJvmToGroupCommand aCommand,
+    Group addJvmToGroup(final AddJvmToGroupRequest aCommand,
                         final User anAddingUser);
 
-    Group addJvmsToGroup(final AddJvmsToGroupCommand aCommand,
+    Group addJvmsToGroup(final AddJvmsToGroupRequest aCommand,
                          final User anAddingUser);
 
-    Group removeJvmFromGroup(final RemoveJvmFromGroupCommand aCommand,
+    Group removeJvmFromGroup(final RemoveJvmFromGroupRequest aCommand,
                              final User aRemovingUser);
 
     /**
@@ -58,7 +58,7 @@ public interface GroupService {
      */
     List<WebServer> getOtherGroupingDetailsOfWebServers(final Identifier<Group> id);
 
-    Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateCommand> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
+    Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 
-    Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting);
+    Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 }

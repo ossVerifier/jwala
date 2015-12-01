@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
@@ -25,8 +25,8 @@ public abstract class JpaStatePersistenceServiceImpl<S, T extends OperationalSta
         stateCrudService = theService;
     }
 
-    public CurrentState<S, T> updateState(final Event<SetStateCommand<S, T>> aNewState) {
-        final SetStateCommand<S, T> command = aNewState.getCommand();
+    public CurrentState<S, T> updateState(final Event<SetStateRequest<S, T>> aNewState) {
+        final SetStateRequest<S, T> command = aNewState.getRequest();
         LOGGER.debug("Persisting new state {}", command);
         final JpaCurrentState currentState = stateCrudService.updateState(aNewState);
         return build(currentState);

@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
-import com.siemens.cto.aem.domain.command.group.RemoveJvmFromGroupCommand;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.group.RemoveJvmFromGroupRequest;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.*;
@@ -23,7 +23,7 @@ public class CommonGroupPersistenceServiceBehavior {
     public Group createGroup(final String aGroupName,
                                 final String aUserId) {
 
-        final Event<CreateGroupCommand> event = createCreateGroupEvent(aGroupName,
+        final Event<CreateGroupRequest> event = createCreateGroupEvent(aGroupName,
                                                                        aUserId);
 
         return groupPersistenceService.createGroup(event);
@@ -33,7 +33,7 @@ public class CommonGroupPersistenceServiceBehavior {
                                 final String aNewGroupName,
                                 final String aUserId) {
 
-        final Event<UpdateGroupCommand> event = createUpdateGroupEvent(aGroupId,
+        final Event<UpdateGroupRequest> event = createUpdateGroupEvent(aGroupId,
                                                                        aNewGroupName,
                                                                        aUserId);
 
@@ -44,7 +44,7 @@ public class CommonGroupPersistenceServiceBehavior {
                               final Identifier<Jvm> aJvmId,
                               final String aUserId) {
 
-        final Event<AddJvmToGroupCommand> event = createAddJvmToGroupEvent(aGroupId,
+        final Event<AddJvmToGroupRequest> event = createAddJvmToGroupEvent(aGroupId,
                                                                            aJvmId,
                                                                            aUserId);
 
@@ -55,49 +55,49 @@ public class CommonGroupPersistenceServiceBehavior {
                                       final Identifier<Jvm> aJvmId,
                                       final String aUserId) {
 
-        final Event<RemoveJvmFromGroupCommand> event = createRemoveJvmFromGroupEvent(aGroupId,
+        final Event<RemoveJvmFromGroupRequest> event = createRemoveJvmFromGroupEvent(aGroupId,
                                                                                      aJvmId,
                                                                                      aUserId);
 
         groupPersistenceService.removeJvmFromGroup(event);
     }
 
-    protected Event<CreateGroupCommand> createCreateGroupEvent(final String aGroupName,
+    protected Event<CreateGroupRequest> createCreateGroupEvent(final String aGroupName,
                                                                final String aUserId) {
 
-        final Event<CreateGroupCommand> createGroup = new Event<>(new CreateGroupCommand(aGroupName),
+        final Event<CreateGroupRequest> createGroup = new Event<>(new CreateGroupRequest(aGroupName),
                                                                   createAuditEvent(aUserId));
 
         return createGroup;
     }
 
-    protected Event<UpdateGroupCommand> createUpdateGroupEvent(final Identifier<Group> aGroupId,
+    protected Event<UpdateGroupRequest> createUpdateGroupEvent(final Identifier<Group> aGroupId,
                                                                final String aNewGroupName,
                                                                final String aUserId) {
 
-        final Event<UpdateGroupCommand> updateGroup = new Event<>(new UpdateGroupCommand(aGroupId,
+        final Event<UpdateGroupRequest> updateGroup = new Event<>(new UpdateGroupRequest(aGroupId,
                                                                                          aNewGroupName),
                                                                   createAuditEvent(aUserId));
 
         return updateGroup;
     }
 
-    protected Event<AddJvmToGroupCommand> createAddJvmToGroupEvent(final Identifier<Group> aGroupId,
+    protected Event<AddJvmToGroupRequest> createAddJvmToGroupEvent(final Identifier<Group> aGroupId,
                                                                    final Identifier<Jvm> aJvmId,
                                                                    final String aUserId) {
 
-        final Event<AddJvmToGroupCommand> addJvm = new Event<>(new AddJvmToGroupCommand(aGroupId,
+        final Event<AddJvmToGroupRequest> addJvm = new Event<>(new AddJvmToGroupRequest(aGroupId,
                                                                                         aJvmId),
                                                                createAuditEvent(aUserId));
 
         return addJvm;
     }
 
-    protected Event<RemoveJvmFromGroupCommand> createRemoveJvmFromGroupEvent(final Identifier<Group> aGroupId,
+    protected Event<RemoveJvmFromGroupRequest> createRemoveJvmFromGroupEvent(final Identifier<Group> aGroupId,
                                                                              final Identifier<Jvm> aJvmId,
                                                                              final String aUserId) {
 
-        final Event<RemoveJvmFromGroupCommand> removeJvm = new Event<>(new RemoveJvmFromGroupCommand(aGroupId,
+        final Event<RemoveJvmFromGroupRequest> removeJvm = new Event<>(new RemoveJvmFromGroupRequest(aGroupId,
                                                                                                      aJvmId),
                                                                        createAuditEvent(aUserId));
 

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
@@ -54,7 +54,7 @@ public class StateNotificationWorkerImpl implements StateNotificationWorker {
                                  final CurrentState<Jvm, JvmState> jvmState) {
 
         try {
-            final List<SetGroupStateCommand> setGroupStateCommandList = groupStateService.stateUpdateJvm(jvmState);
+            final List<SetGroupStateRequest> setGroupStateCommandList = groupStateService.stateUpdateJvm(jvmState);
             updateGroupState(groupStateService, setGroupStateCommandList);
         } catch (InterruptedException e) {
             // Log it for now!
@@ -66,7 +66,7 @@ public class StateNotificationWorkerImpl implements StateNotificationWorker {
     private void webServerStateChanged(final GroupStateService.API groupStateService,
                                        final CurrentState<WebServer, WebServerReachableState> webServerState) {
         try {
-            final List<SetGroupStateCommand> setGroupStateCommandList =  groupStateService.stateUpdateWebServer(webServerState);
+            final List<SetGroupStateRequest> setGroupStateCommandList =  groupStateService.stateUpdateWebServer(webServerState);
             updateGroupState(groupStateService, setGroupStateCommandList);
         } catch (InterruptedException e) {
             // Log it for now!
@@ -76,8 +76,8 @@ public class StateNotificationWorkerImpl implements StateNotificationWorker {
     }
 
     private void updateGroupState(final GroupStateService.API groupStateService,
-                                  final List<SetGroupStateCommand> setGroupStateCommandList) {
-        for (SetGroupStateCommand setGroupStateCommand: setGroupStateCommandList) {
+                                  final List<SetGroupStateRequest> setGroupStateCommandList) {
+        for (SetGroupStateRequest setGroupStateCommand: setGroupStateCommandList) {
             try {
                 groupStateService.groupStatePersist(setGroupStateCommand);
             } finally {

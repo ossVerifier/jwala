@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.group.AddJvmsToGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.group.AddJvmToGroupCommand;
-import com.siemens.cto.aem.domain.command.group.AddJvmsToGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
@@ -93,14 +93,14 @@ public class JsonJvmsDeserializerTest {
                                     final String... expectedIds) {
 
         final Identifier<Group> groupId = new Identifier<>(123456L);
-        final AddJvmsToGroupCommand addCommand = someJvms.toCommand(groupId);
-        final Set<AddJvmToGroupCommand> jvmCommands = addCommand.toCommands();
+        final AddJvmsToGroupRequest addCommand = someJvms.toCommand(groupId);
+        final Set<AddJvmToGroupRequest> jvmCommands = addCommand.toCommands();
         final Set<Identifier<Jvm>> expectedJvmIds = new IdentifierSetBuilder(Arrays.asList(expectedIds)).build();
 
         assertEquals(expectedJvmIds.size(),
                      jvmCommands.size());
 
-        for (final AddJvmToGroupCommand jvmCommand : jvmCommands) {
+        for (final AddJvmToGroupRequest jvmCommand : jvmCommands) {
             assertTrue(expectedJvmIds.contains(jvmCommand.getJvmId()));
             assertEquals(groupId,
                          jvmCommand.getGroupId());

@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.webserver.component;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
+import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
-import com.siemens.cto.aem.domain.command.state.WebServerSetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
@@ -131,18 +131,18 @@ public class WebServerStateSetterWorker {
      * @param id the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param state the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
      * @param msg a message
-     * @return {@link SetStateCommand}
+     * @return {@link SetStateRequest}
      */
-    private SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
+    private SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
                                                                                    final WebServerReachableState state,
                                                                                    final String msg) {
             if (StringUtils.isEmpty(msg)) {
-                return new WebServerSetStateCommand(new CurrentState<>(id,
+                return new WebServerSetStateRequest(new CurrentState<>(id,
                                                                        state,
                                                                        DateTime.now(),
                                                                        StateType.WEB_SERVER));
             }
-            return new WebServerSetStateCommand(new CurrentState<>(id,
+            return new WebServerSetStateRequest(new CurrentState<>(id,
                                                     state,
                                                     DateTime.now(),
                                                     StateType.WEB_SERVER,

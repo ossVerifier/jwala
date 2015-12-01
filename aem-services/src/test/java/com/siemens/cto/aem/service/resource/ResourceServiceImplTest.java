@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
@@ -174,7 +174,7 @@ public class ResourceServiceImplTest {
     public void testCreateResourceInstance(){
         User mockUser = mock(User.class);
         ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        ResourceInstanceCommand mockResourceInstanceCommand = mock(ResourceInstanceCommand.class);
+        ResourceInstanceRequest mockResourceInstanceCommand = mock(ResourceInstanceRequest.class);
         when(mockUser.getId()).thenReturn("userId");
         when(groupPesistenceService.getGroup(anyString())).thenReturn(mock(Group.class));
         when(resourcePersistenceService.createResourceInstance(any(Event.class))).thenReturn(mockResourceInstance);
@@ -185,7 +185,7 @@ public class ResourceServiceImplTest {
     @Test
     public void testUpdateResourceInstance(){
         User mockUser = mock(User.class);
-        ResourceInstanceCommand mockResourceInstanceCommand = mock(ResourceInstanceCommand.class);
+        ResourceInstanceRequest mockResourceInstanceCommand = mock(ResourceInstanceRequest.class);
         when(mockUser.getId()).thenReturn("userId");
         final String groupName = "groupName";
         String name = "name";

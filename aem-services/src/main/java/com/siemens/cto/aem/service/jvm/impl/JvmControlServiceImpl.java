@@ -1,18 +1,18 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -40,7 +40,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput controlJvm(final ControlJvmCommand aCommand, final User aUser) {
+    public CommandOutput controlJvm(final ControlJvmRequest aCommand, final User aUser) {
         logger.info("entering controlJvm for command {}", aCommand);
         long start = System.currentTimeMillis();
         CurrentState<Jvm, JvmState> prevState = null;
@@ -48,7 +48,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Identifier<Jvm> jvmId = aCommand.getJvmId();
         final Jvm jvm;
         try {
-            aCommand.validateCommand();
+            aCommand.validate();
             jvm = jvmService.getJvm(jvmId);
             String jvmName = jvm.getJvmName();
             prevState = null;
@@ -129,7 +129,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
     }
 
-    private void processDefaultReturnCode(ControlJvmCommand aCommand, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
+    private void processDefaultReturnCode(ControlJvmRequest aCommand, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
         if (ctrlOp.checkForSuccess(result)) {
             logger.debug("exiting controlJvm for command {}: '{}'", aCommand, result);
             jvmControlServiceLifecycle.revertState(prevState, aUser);
@@ -154,7 +154,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public CurrentState<Jvm, JvmState> startState(final ControlJvmCommand aCommand, final User aUser) {
+        public CurrentState<Jvm, JvmState> startState(final ControlJvmRequest aCommand, final User aUser) {
             final Identifier<Jvm> jvmId = aCommand.getJvmId();
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(jvmId);
             jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand), //TODO send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
@@ -176,12 +176,12 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
         }
 
-        protected JvmSetStateCommand createNewSetJvmStateCommand(final ControlJvmCommand aControlCommand) {
+        protected JvmSetStateRequest createNewSetJvmStateCommand(final ControlJvmRequest aControlCommand) {
             return new JvmSetStateCommandBuilder().setControlCommandComposite(aControlCommand)
                     .build();
         }
 
-        protected JvmSetStateCommand createNewSetJvmStateCommand(final Identifier<Jvm> aJvmId,
+        protected JvmSetStateRequest createNewSetJvmStateCommand(final Identifier<Jvm> aJvmId,
                                                                  final JvmState aJvmState,
                                                                  final String aMessage) {
             return new JvmSetStateCommandBuilder().setJvmId(aJvmId)
@@ -193,7 +193,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
         public void revertState(CurrentState<Jvm, JvmState> aJvmState, User aUser) {
-            JvmSetStateCommand command = new JvmSetStateCommandBuilder()
+            JvmSetStateRequest command = new JvmSetStateCommandBuilder()
                     .setJvmId(aJvmState.getId())
                     .setJvmState(aJvmState.getState())
                     .setAsOf(aJvmState.getAsOf())
@@ -220,10 +220,10 @@ public class JvmControlServiceImpl implements JvmControlService {
          */
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public void completeState(ControlJvmCommand aCommand, User aUser) {
+        public void completeState(ControlJvmRequest aCommand, User aUser) {
             JvmState jcs = aCommand.getControlOperation().getConfirmedState();
             if (jcs != null) {
-                JvmSetStateCommand jssc = new JvmSetStateCommandBuilder()
+                JvmSetStateRequest jssc = new JvmSetStateCommandBuilder()
                         .setJvmId(aCommand.getJvmId())
                         .setJvmState(jcs)
                         .build();

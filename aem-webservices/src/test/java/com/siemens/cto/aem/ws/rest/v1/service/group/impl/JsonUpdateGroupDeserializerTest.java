@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -70,7 +70,7 @@ public class JsonUpdateGroupDeserializerTest {
                                     final String aGroupId,
                                     final String aGroupName) {
 
-        final UpdateGroupCommand updateCommand = anUpdate.toUpdateGroupCommand();
+        final UpdateGroupRequest updateCommand = anUpdate.toUpdateGroupCommand();
 
         assertEquals(new Identifier<Group>(aGroupId),
                      updateCommand.getId());

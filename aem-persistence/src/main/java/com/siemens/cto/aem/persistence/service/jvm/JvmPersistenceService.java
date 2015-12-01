@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.service.jvm;
 
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
@@ -15,9 +15,9 @@ import java.util.List;
 // TODO: Get rid of this...stick with the DAO
 public interface JvmPersistenceService {
 
-    Jvm createJvm(final Event<CreateJvmCommand> aJvmToCreate);
+    Jvm createJvm(final Event<CreateJvmRequest> aJvmToCreate);
 
-    Jvm updateJvm(final Event<UpdateJvmCommand> aJvmToUpdate);
+    Jvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 
@@ -31,7 +31,7 @@ public interface JvmPersistenceService {
 
     Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateCommand> event);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateRequest> event);
 
     String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 

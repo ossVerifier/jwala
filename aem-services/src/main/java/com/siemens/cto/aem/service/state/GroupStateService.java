@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.state;
 
+import com.siemens.cto.aem.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.ControlGroupCommand;
-import com.siemens.cto.aem.domain.command.group.SetGroupStateCommand;
+import com.siemens.cto.aem.request.group.ControlGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
@@ -17,11 +17,11 @@ import java.util.List;
 public interface GroupStateService {
 
     interface Events {
-        List<SetGroupStateCommand> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException;
+        List<SetGroupStateRequest> stateUpdateJvm(CurrentState<Jvm, JvmState> cjs) throws InterruptedException;
 
-        List<SetGroupStateCommand> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> state) throws InterruptedException;
+        List<SetGroupStateRequest> stateUpdateWebServer(CurrentState<WebServer, WebServerReachableState> state) throws InterruptedException;
         
-        SetGroupStateCommand stateUpdateRequest(Group group) throws InterruptedException;
+        SetGroupStateRequest stateUpdateRequest(Group group) throws InterruptedException;
     }
 
     interface Triggers {
@@ -31,7 +31,7 @@ public interface GroupStateService {
 
         CurrentGroupState signalStartRequested(Identifier<Group> groupId, User user);
 
-        CurrentGroupState signal(ControlGroupCommand aCommand, User aUser);
+        CurrentGroupState signal(ControlGroupRequest aCommand, User aUser);
 
     }
 
@@ -44,10 +44,10 @@ public interface GroupStateService {
 
     interface API extends Events, Triggers, Query {
 
-        SetGroupStateCommand groupStateNotify(SetGroupStateCommand sgsc);
+        SetGroupStateRequest groupStateNotify(SetGroupStateRequest sgsc);
 
-        SetGroupStateCommand groupStatePersist(SetGroupStateCommand sgsc);
+        SetGroupStateRequest groupStatePersist(SetGroupStateRequest sgsc);
 
-        SetGroupStateCommand groupStateUnlock(SetGroupStateCommand sgsc);
+        SetGroupStateRequest groupStateUnlock(SetGroupStateRequest sgsc);
     }
 }

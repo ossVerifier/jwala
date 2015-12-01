@@ -3,17 +3,17 @@ package com.siemens.cto.aem.service.webserver;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
 public interface WebServerService {
 
-    WebServer createWebServer(final CreateWebServerCommand aCreateWebServerCommand,
+    WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,
             final User aCreatingUser);
 
 	WebServer getWebServer(final Identifier<WebServer> aWebServerId);
@@ -26,7 +26,7 @@ public interface WebServerService {
 	
 	List<WebServer> findWebServers(final Identifier<Group> aGroupId);
 	
-	WebServer updateWebServer(final UpdateWebServerCommand anUpdateWebServerCommand,
+	WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand,
 	            final User anUpdatingUser);
 	
 	void removeWebServer(final Identifier<WebServer> aWebServerId);
@@ -41,9 +41,9 @@ public interface WebServerService {
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced);
 
-	void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting);
+	void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
-	JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateCommand uploadWebServerTemplateCommand, User user);
+	JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
 
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 

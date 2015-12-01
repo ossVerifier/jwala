@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.control.command;
 
-import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.exec.ExecCommand;
 
 public interface ServiceCommandBuilder {
 

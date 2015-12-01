@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.domain.model.jvm.message;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -61,8 +61,8 @@ public class JvmStateMessage implements Serializable {
         return asOf;
     }
 
-    public SetStateCommand<Jvm, JvmState> toCommand() {
-        return new JvmSetStateCommand(getCurrentJvmState());
+    public SetStateRequest<Jvm, JvmState> toCommand() {
+        return new JvmSetStateRequest(getCurrentJvmState());
     }
 
     protected CurrentState<Jvm, JvmState> getCurrentJvmState() {

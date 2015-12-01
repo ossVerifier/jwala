@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
@@ -7,7 +8,6 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
@@ -56,13 +56,13 @@ public class JsonUpdateWebServer {
         docRoot = aDocRoot;
     }
 
-    public UpdateWebServerCommand toUpdateWebServerCommand() throws BadRequestException {
+    public UpdateWebServerRequest toUpdateWebServerCommand() throws BadRequestException {
 
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
         final Identifier<WebServer> webServerId = convertWebServerId();
         final Integer port = convertPortNumber();
         final Integer httpsPort = convertHttpsPortNumber();
-        return new UpdateWebServerCommand(webServerId,
+        return new UpdateWebServerRequest(webServerId,
                                           groups,
                                           webServerName,
                                           hostName,

@@ -9,7 +9,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
+import com.siemens.cto.aem.exec.CommandOutput;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -22,8 +24,6 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -125,7 +125,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 try {
                     data = file1.openStream();
 
-                    UploadWebArchiveCommand command = new UploadWebArchiveCommand(app, file1.getName(), -1L, data);
+                    UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
 
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
                     service.copyApplicationWarToGroupHosts(application, new RuntimeCommandBuilder());
@@ -236,8 +236,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadAppTemplateCommand command =
-                            new UploadAppTemplateCommand(app, file1.getName(), appXmlFileName, data);
+                    UploadAppTemplateRequest command =
+                            new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, data);
 
                     return ResponseBuilder.created(service.uploadAppTemplate(command, aUser.getUser())); // early
                                                                                                          // out

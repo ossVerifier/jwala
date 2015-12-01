@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmStateCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
@@ -83,10 +83,10 @@ public class StateServiceImplTest {
     @Test
     public void testGetCurrentState() throws Exception {
         final Identifier<Jvm> jvmId = new Identifier<>(123456L);
-        final List<SetStateCommand<Jvm, JvmState>> commands = createCommandsToPersist(jvmId,
+        final List<SetStateRequest<Jvm, JvmState>> commands = createCommandsToPersist(jvmId,
                                                                                       10);
-        SetStateCommand<Jvm, JvmState> lastCommand = null;
-        for (final SetStateCommand<Jvm, JvmState> command : commands) {
+        SetStateRequest<Jvm, JvmState> lastCommand = null;
+        for (final SetStateRequest<Jvm, JvmState> command : commands) {
             stateService.setCurrentState(command,
                                          user);
             lastCommand = command;
@@ -103,9 +103,9 @@ public class StateServiceImplTest {
         final Set<Identifier<Jvm>> jvmIds = createJvmIds(10);
         final Map<Identifier<Jvm>, CurrentState<Jvm, JvmState>> expectedStates = new HashMap<>();
         for (final Identifier<Jvm> jvmId : jvmIds) {
-            final List<SetStateCommand<Jvm, JvmState>> commands = createCommandsToPersist(jvmId,
+            final List<SetStateRequest<Jvm, JvmState>> commands = createCommandsToPersist(jvmId,
                                                                                           10);
-            for (final SetStateCommand<Jvm, JvmState> command : commands) {
+            for (final SetStateRequest<Jvm, JvmState> command : commands) {
                 stateService.setCurrentState(command,
                                              user);
                 expectedStates.put(jvmId, command.getNewState());
@@ -133,23 +133,23 @@ public class StateServiceImplTest {
     }
 
     private void verifySetCurrentState(final CurrentState<Jvm, JvmState> aStateToPersist) {
-        final SetStateCommand<Jvm, JvmState> command = new JvmSetStateCommand(aStateToPersist);
+        final SetStateRequest<Jvm, JvmState> command = new JvmSetStateRequest(aStateToPersist);
         final CurrentState<Jvm, JvmState> persistedState = stateService.setCurrentState(command,
                                                                                         user);
         assertEquals(aStateToPersist,
                      persistedState);
     }
 
-    private List<SetStateCommand<Jvm, JvmState>> createCommandsToPersist(final Identifier<Jvm> aJvmId,
+    private List<SetStateRequest<Jvm, JvmState>> createCommandsToPersist(final Identifier<Jvm> aJvmId,
                                                              final int aNumberToCreate) {
-        final List<SetStateCommand<Jvm, JvmState>> commands = new ArrayList<>(aNumberToCreate);
+        final List<SetStateRequest<Jvm, JvmState>> commands = new ArrayList<>(aNumberToCreate);
         for (int i = 0; i < aNumberToCreate; i++) {
             final CurrentState<Jvm, JvmState> newCurrentState = new CurrentState<>(aJvmId,
                                                                                    JvmState.values()[aNumberToCreate % JvmState.values().length],
                                                                                    DateTime.now(),
                                                                                    StateType.JVM,
                                                                                    "This is the message to persist along with this state " + i);
-            final SetStateCommand<Jvm, JvmState> command = new JvmSetStateCommand(newCurrentState);
+            final SetStateRequest<Jvm, JvmState> command = new JvmSetStateRequest(newCurrentState);
             commands.add(command);
         }
         return commands;

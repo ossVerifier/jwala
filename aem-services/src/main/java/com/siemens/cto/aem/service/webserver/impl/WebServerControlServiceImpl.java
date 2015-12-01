@@ -1,19 +1,19 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.request.state.SetStateRequest;
+import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
+import com.siemens.cto.aem.exec.CommandOutput;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
-import com.siemens.cto.aem.domain.command.state.WebServerSetStateCommand;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.domain.command.webserver.ControlWebServerCommand;
+import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -44,13 +44,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput controlWebServer(final ControlWebServerCommand aCommand,
+    public CommandOutput controlWebServer(final ControlWebServerRequest aCommand,
                                                     final User aUser) {
 
         try {
-            aCommand.validateCommand();
+            aCommand.validate();
 
-            final SetStateCommand<WebServer, WebServerReachableState> setStateCommand = createStateCommand(aCommand);
+            final SetStateRequest<WebServer, WebServerReachableState> setStateCommand = createStateCommand(aCommand);
             webServerReachableStateMap.put(aCommand.getWebServerId(), setStateCommand.getNewState().getState());
 
             webServerStateService.setCurrentState(setStateCommand, aUser);
@@ -90,11 +90,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     /**
      * Set web server state to failed.
-     * @param aCommand {@link ControlWebServerCommand} which contains the id of the web server whose status is to be set to failed.
+     * @param aCommand {@link ControlWebServerRequest} which contains the id of the web server whose status is to be set to failed.
      * @param aUser the user who issued the control command.
      * @param msg the message that details the cause of the failed state.
      */
-    private void setFailedState(final ControlWebServerCommand aCommand, final User aUser, String msg) {
+    private void setFailedState(final ControlWebServerRequest aCommand, final User aUser, String msg) {
         final WebServer webServer = webServerService.getWebServer(aCommand.getWebServerId());
         msg = webServer.getName() + " at " + webServer.getHost() + ": " + msg;
         webServerReachableStateMap.put(aCommand.getWebServerId(), WebServerReachableState.WS_FAILED);
@@ -105,11 +105,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     /**
      * Sets the web server state.
-     * @param aCommand {@link ControlWebServerCommand}
-     * @return {@link SetStateCommand}
+     * @param aCommand {@link ControlWebServerRequest}
+     * @return {@link SetStateRequest}
      */
-    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerCommand aCommand) {
-        return new WebServerSetStateCommand(new CurrentState<>(aCommand.getWebServerId(),
+    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerRequest aCommand) {
+        return new WebServerSetStateRequest(new CurrentState<>(aCommand.getWebServerId(),
                                                                aCommand.getControlOperation().getOperationState(),
                                                                DateTime.now(),
                                                                StateType.WEB_SERVER));
@@ -120,12 +120,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
      * @param aMessage a message e.g. error message etc.
-     * @return {@link SetStateCommand}
+     * @return {@link SetStateRequest}
      */
-    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
+    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState,
                                                                            final String aMessage) {
-        return new WebServerSetStateCommand(new CurrentState<>(anId,
+        return new WebServerSetStateRequest(new CurrentState<>(anId,
                                                                aState,
                                                                DateTime.now(),
                                                                StateType.WEB_SERVER,
@@ -136,11 +136,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      * Sets the web server state.
      * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
      * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
-     * @return {@link SetStateCommand}
+     * @return {@link SetStateRequest}
      */
-    SetStateCommand<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
+    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
                                                                            final WebServerReachableState aState) {
-        return new WebServerSetStateCommand(new CurrentState<>(anId,
+        return new WebServerSetStateRequest(new CurrentState<>(anId,
                                             aState,
                                             DateTime.now(),
                                             StateType.WEB_SERVER));

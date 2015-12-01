@@ -1,23 +1,22 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.webserver.*;
 import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommandBuilder;
+import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -108,7 +107,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testCreateDuplicateWebServer() {
 
-        final Event<CreateWebServerCommand> createWebServer = createCreateWebServerEvent(
+        final Event<CreateWebServerRequest> createWebServer = createCreateWebServerEvent(
                 preCreatedGroupIds, TEST_WS_NAME, UNCHECKED_WS_HOST,
                 UNCHECKED_WS_PORT, TEST_WS_HTTPS_PORT, userName,
                 STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT);
@@ -119,7 +118,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     @Test
     public void testUpdateWebServer() {
 
-        final Event<UpdateWebServerCommand> updateWebServer = createUpdateWebServerEvent(
+        final Event<UpdateWebServerRequest> updateWebServer = createUpdateWebServerEvent(
                 preCreatedWebServer.getId(), preCreatedGroupIds,
                 "My New Name", "My New Host", 1, 2, userName,
                 STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT);
@@ -127,17 +126,17 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         final WebServer actualWebServer = webServerDao
                 .updateWebServer(updateWebServer);
 
-        assertEquals(updateWebServer.getCommand().getNewName(),
+        assertEquals(updateWebServer.getRequest().getNewName(),
                 actualWebServer.getName());
-        assertEquals(updateWebServer.getCommand().getNewHost(),
+        assertEquals(updateWebServer.getRequest().getNewHost(),
                 actualWebServer.getHost());
-        assertEquals(updateWebServer.getCommand().getNewPort(),
+        assertEquals(updateWebServer.getRequest().getNewPort(),
                 actualWebServer.getPort());
-        assertEquals(updateWebServer.getCommand().getNewHttpsPort(),
+        assertEquals(updateWebServer.getRequest().getNewHttpsPort(),
                 actualWebServer.getHttpsPort());
-        assertEquals(updateWebServer.getCommand().getId(),
+        assertEquals(updateWebServer.getRequest().getId(),
                 actualWebServer.getId());
-        assertEquals(updateWebServer.getCommand().getNewHttpConfigFile(), actualWebServer.getHttpConfigFile());
+        assertEquals(updateWebServer.getRequest().getNewHttpConfigFile(), actualWebServer.getHttpConfigFile());
 
     }
 
@@ -308,32 +307,32 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
     class GeneralizedDao {
         <R> R update(Event<?> updateCommand) {
-            return this.updateInternal(updateCommand.getCommand(),
+            return this.updateInternal(updateCommand.getRequest(),
                     updateCommand);
         }
 
         @SuppressWarnings("unchecked")
         private <R> R updateInternal(Object updateCommand,
                                      @SuppressWarnings("rawtypes") Event eventObj) {
-            if (updateCommand instanceof UpdateGroupCommand) {
+            if (updateCommand instanceof UpdateGroupRequest) {
                 return (R) groupDao.updateGroup(eventObj);
-            } else if (updateCommand instanceof UpdateWebServerCommand) {
+            } else if (updateCommand instanceof UpdateWebServerRequest) {
                 return (R) webServerDao.updateWebServer(eventObj);
             }
             return null;
         }
 
         <R> R create(Event<?> createCommand) {
-            return this.createInternal(createCommand.getCommand(),
+            return this.createInternal(createCommand.getRequest(),
                     createCommand);
         }
 
         @SuppressWarnings({"unchecked"})
         private <R> R createInternal(Object createCommand,
                                      @SuppressWarnings("rawtypes") Event eventObj) {
-            if (createCommand instanceof CreateGroupCommand) {
+            if (createCommand instanceof CreateGroupRequest) {
                 return (R) groupDao.createGroup(eventObj);
-            } else if (createCommand instanceof CreateWebServerCommand) {
+            } else if (createCommand instanceof CreateWebServerRequest) {
                 return (R) webServerDao.createWebServer(eventObj);
             }
             return null;
@@ -680,7 +679,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     public void testPopulateWebserverConfig() {
         System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
         UploadWebServerTemplateCommandBuilder builder = new UploadWebServerTemplateCommandBuilder();
-        ArrayList<UploadWebServerTemplateCommand> uploadWSTemplateCommands = new ArrayList<>();
+        ArrayList<UploadWebServerTemplateRequest> uploadWSTemplateCommands = new ArrayList<>();
         uploadWSTemplateCommands.add(builder.buildHttpdConfCommand(preCreatedWebServer));
         final boolean overwriteExisting = false;
         webServerDao.populateWebServerConfig(uploadWSTemplateCommands, new User(TEST_USER_NAME), overwriteExisting);

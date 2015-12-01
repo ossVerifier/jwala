@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.request.webserver.*;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -9,12 +10,8 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.command.webserver.UploadHttpdConfTemplateCommand;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommand;
-import com.siemens.cto.aem.domain.command.webserver.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -47,18 +44,18 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional
-    public WebServer createWebServer(final CreateWebServerCommand aCreateWebServerCommand,
+    public WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,
                                      final User aCreatingUser) {
 
-        aCreateWebServerCommand.validateCommand();
+        aCreateWebServerCommand.validate();
 
-        final Event<CreateWebServerCommand> event = new Event<>(aCreateWebServerCommand,
+        final Event<CreateWebServerRequest> event = new Event<>(aCreateWebServerCommand,
                 AuditEvent.now(aCreatingUser));
 
         WebServer webServer = dao.createWebServer(event);
 
         UploadWebServerTemplateCommandBuilder builder = new UploadWebServerTemplateCommandBuilder();
-        UploadHttpdConfTemplateCommand uploadHttpdConfTemplateCommand = builder.buildHttpdConfCommand(webServer);
+        UploadHttpdConfTemplateRequest uploadHttpdConfTemplateCommand = builder.buildHttpdConfCommand(webServer);
         uploadWebServerConfig(uploadHttpdConfTemplateCommand, aCreatingUser);
 
         return webServer;
@@ -100,12 +97,12 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional
-    public WebServer updateWebServer(final UpdateWebServerCommand anUpdateWebServerCommand,
+    public WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand,
                                      final User anUpdatingUser) {
 
-        anUpdateWebServerCommand.validateCommand();
+        anUpdateWebServerCommand.validate();
 
-        final Event<UpdateWebServerCommand> event = new Event<>(anUpdateWebServerCommand,
+        final Event<UpdateWebServerRequest> event = new Event<>(anUpdateWebServerCommand,
                 AuditEvent.now(anUpdatingUser));
 
         return dao.updateWebServer(event);
@@ -195,15 +192,15 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public void populateWebServerConfig(List<UploadWebServerTemplateCommand> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
+    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
         dao.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
     }
 
     @Override
     @Transactional
-    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateCommand uploadWebServerTemplateCommand, User user) {
-        uploadWebServerTemplateCommand.validateCommand();
-        final Event<UploadWebServerTemplateCommand> event = new Event<>(uploadWebServerTemplateCommand, AuditEvent.now(user));
+    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user) {
+        uploadWebServerTemplateCommand.validate();
+        final Event<UploadWebServerTemplateRequest> event = new Event<>(uploadWebServerTemplateCommand, AuditEvent.now(user));
         return dao.uploadWebserverConfigTemplate(event);
     }
 

@@ -1,8 +1,8 @@
 package com.siemens.cto.toc.files.impl;
 
+import com.siemens.cto.aem.request.app.RemoveWebArchiveRequest;
+import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.RemoveWebArchiveCommand;
-import com.siemens.cto.aem.domain.command.app.UploadWebArchiveCommand;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.toc.files.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,10 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     private RepositoryService fileSystemStorage;
     
     @Override
-    public RepositoryFileInformation store(Event<UploadWebArchiveCommand> event) throws IOException {
+    public RepositoryFileInformation store(Event<UploadWebArchiveRequest> event) throws IOException {
  
-        UploadWebArchiveCommand cmd = event.getCommand();       
-        Application app = event.getCommand().getApplication();
+        UploadWebArchiveRequest cmd = event.getRequest();
+        Application app = event.getRequest().getApplication();
         String existing = app.getWarPath();
         
         Path place = synth.unique(platformFileSystem.getPath(cmd.getFilename()));
@@ -49,10 +49,10 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     }
 
     @Override
-    public RepositoryFileInformation remove(Event<RemoveWebArchiveCommand> event) throws IOException {
+    public RepositoryFileInformation remove(Event<RemoveWebArchiveRequest> event) throws IOException {
         RepositoryFileInformation action = RepositoryFileInformation.none();
         
-        RemoveWebArchiveCommand cmd = event.getCommand();       
+        RemoveWebArchiveRequest cmd = event.getRequest();
         Application app = cmd.getApplication();
                 
         String existing = app.getWarPath();

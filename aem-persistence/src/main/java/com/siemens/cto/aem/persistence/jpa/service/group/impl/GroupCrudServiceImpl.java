@@ -1,17 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.service.group.impl;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import org.joda.time.DateTime;
@@ -32,10 +32,10 @@ public class GroupCrudServiceImpl implements GroupCrudService {
     }
 
     @Override
-    public JpaGroup createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
+    public JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate) {
 
         try {
-            final CreateGroupCommand createGroupCommand = aGroupToCreate.getCommand();
+            final CreateGroupRequest createGroupCommand = aGroupToCreate.getRequest();
             final AuditEvent auditEvent = aGroupToCreate.getAuditEvent();
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
@@ -55,16 +55,16 @@ public class GroupCrudServiceImpl implements GroupCrudService {
             return jpaGroup;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName(),
+                                          "Group Name already exists: " + aGroupToCreate.getRequest().getGroupName(),
                                           eee);
         }
     }
 
     @Override
-    public void updateGroup(final Event<UpdateGroupCommand> aGroupToUpdate) {
+    public void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate) {
 
         try {
-            final UpdateGroupCommand updateGroupCommand = aGroupToUpdate.getCommand();
+            final UpdateGroupRequest updateGroupCommand = aGroupToUpdate.getRequest();
             final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
             final Identifier<Group> groupId = updateGroupCommand.getId();
             final JpaGroup jpaGroup = getGroup(groupId);
@@ -76,7 +76,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
             entityManager.flush();
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName(),
+                                          "Group Name already exists: " + aGroupToUpdate.getRequest().getNewName(),
                                           eee);
         }
     }
@@ -142,9 +142,9 @@ public class GroupCrudServiceImpl implements GroupCrudService {
     }
 
     @Override
-    public JpaGroup updateGroupStatus(Event<SetStateCommand<Group, GroupState>> aGroupToUpdate) {
+    public JpaGroup updateGroupStatus(Event<SetStateRequest<Group, GroupState>> aGroupToUpdate) {
 
-        final SetStateCommand<Group, GroupState> updateGroupCommand = aGroupToUpdate.getCommand();
+        final SetStateRequest<Group, GroupState> updateGroupCommand = aGroupToUpdate.getRequest();
         final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
         final CurrentState<Group, GroupState> newState = updateGroupCommand.getNewState();
         final Identifier<Group> groupId = newState.getId();

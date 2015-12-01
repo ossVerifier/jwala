@@ -1,18 +1,18 @@
 package com.siemens.cto.aem.service;
 
-import com.siemens.cto.aem.domain.command.Command;
+import com.siemens.cto.aem.request.Request;
 import org.mockito.ArgumentMatcher;
 
 public class CommandMatcher<T> extends ArgumentMatcher<T> {
 
-    private final Command expectedCommand;
+    private final Request expectedRequest;
 
-    public CommandMatcher(final Command theExpectedCommand) {
-        expectedCommand = theExpectedCommand;
+    public CommandMatcher(final Request theExpectedRequest) {
+        expectedRequest = theExpectedRequest;
     }
 
     @Override
     public boolean matches(final Object argument) {
-        return expectedCommand.equals(argument);
+        return expectedRequest.equals(argument);
     }
 }

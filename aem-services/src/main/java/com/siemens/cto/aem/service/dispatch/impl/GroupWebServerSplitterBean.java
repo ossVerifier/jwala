@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.WebServerService;

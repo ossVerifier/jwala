@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
 import org.joda.time.DateTime;
 
 class JvmSetStateCommandBuilder {
@@ -20,7 +20,7 @@ class JvmSetStateCommandBuilder {
         asOf = DateTime.now();
     }
 
-    JvmSetStateCommandBuilder setControlCommandComposite(final ControlJvmCommand aControlCommand) {
+    JvmSetStateCommandBuilder setControlCommandComposite(final ControlJvmRequest aControlCommand) {
         setJvmId(aControlCommand.getJvmId());
         setJvmState(aControlCommand.getControlOperation().getOperationState());
         return this;
@@ -46,8 +46,8 @@ class JvmSetStateCommandBuilder {
         return this;
     }
 
-    JvmSetStateCommand build() {
-        return new JvmSetStateCommand(createCurrentJvmState());
+    JvmSetStateRequest build() {
+        return new JvmSetStateRequest(createCurrentJvmState());
     }
 
     private CurrentState<Jvm, JvmState> createCurrentJvmState() {

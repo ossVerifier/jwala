@@ -2,7 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.command.webserver.CreateWebServerCommand;
+import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -121,7 +121,7 @@ public class JsonCreateWebServerDeserializerTest {
 
     protected void verifyAssertions(final JsonCreateWebServer aCreate, final String aWebServerName,
             final String aHostName, final String... groupIds) {
-        CreateWebServerCommand createCommand = aCreate.toCreateWebServerCommand();
+        CreateWebServerRequest createCommand = aCreate.toCreateWebServerCommand();
 
         assertEquals(aWebServerName, createCommand.getName());
         assertEquals(aHostName, createCommand.getHost());

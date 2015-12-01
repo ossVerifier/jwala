@@ -6,7 +6,7 @@ import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.OperationalState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.SetStateCommand;
+import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
@@ -32,10 +32,10 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     }
 
     @Override
-    public JpaCurrentState updateState(final Event<SetStateCommand<S, T>> anEvent) {
+    public JpaCurrentState updateState(final Event<SetStateRequest<S, T>> anEvent) {
 
         final JpaCurrentState currentState = new JpaCurrentState();
-        final CurrentState<S,T> newState = anEvent.getCommand().getNewState();
+        final CurrentState<S,T> newState = anEvent.getRequest().getNewState();
         final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(),
                                                            stateType);
         currentState.setId(id);

@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.service.resource;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
@@ -38,7 +38,7 @@ public abstract class ResourcePersistenceServiceTest {
         map.put("Attribute_key", "attribute_value");
         map.put("Attribute_key1", "attribute_value1");
         map.put("Attribute_key2", "attribute_value2");
-        final Event<ResourceInstanceCommand> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("TestResourceTypeName", "TestFriendlyName", jpaGroup.getName(), map, userName);
+        final Event<ResourceInstanceRequest> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("TestResourceTypeName", "TestFriendlyName", jpaGroup.getName(), map, userName);
         final ResourceInstance storedResourceInstance = getResourcePersistenceService().createResourceInstance(resourceInstanceEvent);
 
         assertEquals(storedResourceInstance.getName(), "TestFriendlyName");
@@ -66,14 +66,14 @@ public abstract class ResourcePersistenceServiceTest {
         updatedMap.put("Attribute_key", "attribute_value_updated");
         updatedMap.put("Attribute_key1", "attribute_value1_updated");
         updatedMap.put("Attribute_key2", "attribute_value2_updated");
-        final Event<ResourceInstanceCommand> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", "FriendlyName", jpaGroup.getName(), updatedMap, userName);
+        final Event<ResourceInstanceRequest> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", "FriendlyName", jpaGroup.getName(), updatedMap, userName);
         final ResourceInstance storedResourceInstance = getResourcePersistenceService().updateResourceInstance(preCreateResourceInstance, resourceInstanceEvent);
         //Check to see if everything else remained the same
         Assert.assertEquals(preCreateResourceInstance.getGroup().getId(), storedResourceInstance.getGroup().getId());
         Assert.assertEquals(preCreateResourceInstance.getResourceTypeName(), storedResourceInstance.getResourceTypeName());
         Assert.assertEquals(preCreateResourceInstance.getResourceInstanceId(), storedResourceInstance.getResourceInstanceId());
 
-        Assert.assertEquals(resourceInstanceEvent.getCommand().getAttributes(), storedResourceInstance.getAttributes());
+        Assert.assertEquals(resourceInstanceEvent.getRequest().getAttributes(), storedResourceInstance.getAttributes());
     }
     @Test
     public void testUpdateResourceInstanceName() throws Exception {
@@ -84,10 +84,10 @@ public abstract class ResourcePersistenceServiceTest {
 
         ResourceInstance preCreateResourceInstance = getResourcePersistenceService().createResourceInstance(ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", oldName, jpaGroup.getName(), null, userName));
 
-        final Event<ResourceInstanceCommand> resourceInstanceUpdateEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", newName, jpaGroup.getName(), null, userName);
+        final Event<ResourceInstanceRequest> resourceInstanceUpdateEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", newName, jpaGroup.getName(), null, userName);
         ResourceInstance resourceInstance = getResourcePersistenceService().updateResourceInstance(preCreateResourceInstance, resourceInstanceUpdateEvent);
         Assert.assertEquals(resourceInstance.getResourceInstanceId(), preCreateResourceInstance.getResourceInstanceId());
-        Assert.assertEquals(resourceInstanceUpdateEvent.getCommand().getName(), newName);
+        Assert.assertEquals(resourceInstanceUpdateEvent.getRequest().getName(), newName);
     }
     @Test
     public void testGetResourceInstance() {
@@ -98,7 +98,7 @@ public abstract class ResourcePersistenceServiceTest {
         map.put("Attribute_key", "attribute_value");
         map.put("Attribute_key1", "attribute_value1");
         map.put("Attribute_key2", "attribute_value2");
-        final Event<ResourceInstanceCommand> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("TestResourceTypeName", "TestFriendlyName", jpaGroup.getName(), map, userName);
+        final Event<ResourceInstanceRequest> resourceInstanceEvent = ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("TestResourceTypeName", "TestFriendlyName", jpaGroup.getName(), map, userName);
         final ResourceInstance storedResourceInstance = getResourcePersistenceService().createResourceInstance(resourceInstanceEvent);
 
         ResourceInstance jpaResourceInstance = this.getResourcePersistenceService().getResourceInstance(storedResourceInstance.getResourceInstanceId());

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.resource.impl;
 
+import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.exception.NotUniqueException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
@@ -7,7 +8,6 @@ import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.command.resource.ResourceInstanceCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
@@ -33,13 +33,13 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
     }
 
     @Override
-    public JpaResourceInstance createResourceInstance(final Event<ResourceInstanceCommand> aResourceInstanceToCreate) throws NotUniqueException {
+    public JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> aResourceInstanceToCreate) throws NotUniqueException {
 
         JpaResourceInstance jpaResourceInstance = new JpaResourceInstance();
         final AuditEvent auditEvent = aResourceInstanceToCreate.getAuditEvent();
         final Calendar updateTime = auditEvent.getDateTime().getCalendar();
         final String userId = auditEvent.getUser().getUserId();
-        ResourceInstanceCommand command = aResourceInstanceToCreate.getCommand();
+        ResourceInstanceRequest command = aResourceInstanceToCreate.getRequest();
 
         final JpaGroup group = groupCrudService.getGroup(command.getGroupName());
 
@@ -59,8 +59,8 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
     }
 
     @Override
-    public JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> aResourceInstanceToUpdate) {
-        ResourceInstanceCommand command = aResourceInstanceToUpdate.getCommand();
+    public JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> aResourceInstanceToUpdate) {
+        ResourceInstanceRequest command = aResourceInstanceToUpdate.getRequest();
 
         JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setAttributes(command.getAttributes());
@@ -69,8 +69,8 @@ public class ResourceInstanceCrudServiceImpl implements ResourceInstanceCrudServ
         return jpaResourceInstance;
     }
     @Override
-    public JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceCommand> updateResourceInstanceNameCommandEvent) {
-        ResourceInstanceCommand command = updateResourceInstanceNameCommandEvent.getCommand();
+    public JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceNameCommandEvent) {
+        ResourceInstanceRequest command = updateResourceInstanceNameCommandEvent.getRequest();
 
         JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setName(command.getName());

@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.persistence.dao.group;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,12 +37,12 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test
     public void testCreateGroup() {
 
-        final Event<CreateGroupCommand> createGroup = GroupEventsTestHelper.createCreateGroupEvent("newGroupName",
+        final Event<CreateGroupRequest> createGroup = GroupEventsTestHelper.createCreateGroupEvent("newGroupName",
                                                                              userName);
 
         final Group actualGroup = groupDao.createGroup(createGroup);
 
-        assertEquals(createGroup.getCommand().getGroupName(),
+        assertEquals(createGroup.getRequest().getGroupName(),
                      actualGroup.getName());
         assertNotNull(actualGroup.getId());
     }
@@ -50,7 +50,7 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testCreateDuplicateGroup() {
 
-        final Event<CreateGroupCommand> createGroup = GroupEventsTestHelper.createCreateGroupEvent(preCreatedGroup.getName(),
+        final Event<CreateGroupRequest> createGroup = GroupEventsTestHelper.createCreateGroupEvent(preCreatedGroup.getName(),
                                                                              userName);
 
         groupDao.createGroup(createGroup);
@@ -59,15 +59,15 @@ public abstract class AbstractGroupDaoIntegrationTest {
     @Test
     public void testUpdateGroup() {
 
-        final Event<UpdateGroupCommand> updateGroup = GroupEventsTestHelper.createUpdateGroupEvent(preCreatedGroup.getId(),
+        final Event<UpdateGroupRequest> updateGroup = GroupEventsTestHelper.createUpdateGroupEvent(preCreatedGroup.getId(),
                                                                              "My New Name",
                                                                              userName);
 
         final Group actualGroup = groupDao.updateGroup(updateGroup);
 
-        assertEquals(updateGroup.getCommand().getNewName(),
+        assertEquals(updateGroup.getRequest().getNewName(),
                      actualGroup.getName());
-        assertEquals(updateGroup.getCommand().getId(),
+        assertEquals(updateGroup.getRequest().getId(),
                      actualGroup.getId());
     }
 

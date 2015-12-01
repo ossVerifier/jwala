@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UploadJvmTemplateCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
@@ -55,8 +55,8 @@ public class JvmCrudServiceImplTest {
         user = new User("unused");
 
         String testJvmName = "testJvmName";
-        CreateJvmCommand createCommand = new CreateJvmCommand(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
-        Event<CreateJvmCommand> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
+        CreateJvmRequest createCommand = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
+        Event<CreateJvmRequest> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
         JpaJvm jpaJvm = impl.createJvm(createJvmEvent);
         jvm = new Jvm(jpaJvm.id(), jpaJvm.getName(), new HashSet<LiteGroup>());
     }
@@ -65,13 +65,13 @@ public class JvmCrudServiceImplTest {
     public void testUploadJvmTemplateXml() throws FileNotFoundException {
         final String expectedTemplateName = SERVER_XML;
         File testTemplate = new File("./src/test/resources/HttpdSslConfTemplate.tpl");
-        UploadJvmTemplateCommand uploadCommand = new UploadJvmTemplateCommand(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
+        UploadJvmTemplateRequest uploadCommand = new UploadJvmTemplateRequest(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
             @Override
             public String getConfFileName() {
                 return SERVER_XML;
             }
         };
-        Event<UploadJvmTemplateCommand> uploadEvent = new Event<>(uploadCommand, AuditEvent.now(user));
+        Event<UploadJvmTemplateRequest> uploadEvent = new Event<>(uploadCommand, AuditEvent.now(user));
         JpaJvmConfigTemplate result = impl.uploadJvmTemplateXml(uploadEvent);
         assertEquals(expectedTemplateName, result.getTemplateName());
 

@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.command.webserver.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -29,9 +29,9 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
     
     @Transactional
     @Override
-    public void controlGroup(ControlGroupWebServerCommand aCommand, User aUser) {
+    public void controlGroup(ControlGroupWebServerRequest aCommand, User aUser) {
 
-        aCommand.validateCommand();
+        aCommand.validate();
 
         Group group = groupService.getGroup(aCommand.getGroupId());
 

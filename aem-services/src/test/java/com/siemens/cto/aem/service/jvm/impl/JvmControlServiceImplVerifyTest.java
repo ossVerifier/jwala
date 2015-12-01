@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.domain.command.exec.CommandOutput;
-import com.siemens.cto.aem.domain.command.exec.ExecReturnCode;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.ExecReturnCode;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.command.jvm.ControlJvmCommand;
+import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.command.state.JvmSetStateCommand;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
@@ -39,7 +39,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private User user;
 
     @Captor
-    private ArgumentCaptor<JvmSetStateCommand> setJvmStateCommand;
+    private ArgumentCaptor<JvmSetStateRequest> setJvmStateCommand;
 
     @Mock
     private StateService<Jvm, JvmState> jvmStateService;
@@ -58,7 +58,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Test
     @SuppressWarnings("unchecked")
     public void testVerificationOfBehaviorForSuccess() throws Exception {
-        final ControlJvmCommand controlCommand = mock(ControlJvmCommand.class);
+        final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final Jvm jvm = mock(Jvm.class);
         final Identifier<Jvm> jvmId = mock(Identifier.class);
         final JvmControlOperation controlOperation = JvmControlOperation.START;
@@ -73,7 +73,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
         impl.controlJvm(controlCommand, user);
 
-        verify(controlCommand, times(1)).validateCommand();
+        verify(controlCommand, times(1)).validate();
         //TODO change to use @Captor instead, much easier
         verify(jvmService, times(1)).getJvm(eq(jvmId));
         verify(commandExecutor, times(1)).controlJvm(eq(controlCommand),
@@ -89,7 +89,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
     @Test
     public void testVerificationOfBehaviorForFailures() throws CommandFailureException {
-        final ControlJvmCommand controlCommand = mock(ControlJvmCommand.class);
+        final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final CommandOutput mockExecData = mock(CommandOutput.class);
         final Identifier<Jvm> jvmId = new Identifier<Jvm>(1L);
         final Jvm mockJvm = mock(Jvm.class);
@@ -141,6 +141,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         assertFalse(isNPE); // NPE = unacceptable!
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(commandExecutor.controlJvm(any(ControlJvmCommand.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
+        when(commandExecutor.controlJvm(any(ControlJvmRequest.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
     }
 }

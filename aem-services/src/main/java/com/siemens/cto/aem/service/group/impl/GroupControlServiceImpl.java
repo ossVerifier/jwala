@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.request.group.ControlGroupJvmRequest;
+import com.siemens.cto.aem.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.ControlGroupCommand;
-import com.siemens.cto.aem.domain.command.group.ControlGroupJvmCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.domain.command.webserver.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
@@ -36,7 +36,7 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     @Transactional
     @Override
-    public void controlGroup(ControlGroupCommand aCommand, User aUser) {
+    public void controlGroup(ControlGroupRequest aCommand, User aUser) {
 
         LOGGER.info("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(),
                 aCommand.getGroupId());
@@ -51,24 +51,24 @@ public class GroupControlServiceImpl implements GroupControlService {
         controlJvms(aCommand, aUser);
     }
 
-    private void controlWebServers(ControlGroupCommand aCommand, User aUser) {
+    private void controlWebServers(ControlGroupRequest aCommand, User aUser) {
 
         WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(aCommand
                 .getControlOperation().getExternalValue());
 
-        ControlGroupWebServerCommand controlGroupWebServerCommand = new ControlGroupWebServerCommand(
+        ControlGroupWebServerRequest controlGroupWebServerCommand = new ControlGroupWebServerRequest(
                 aCommand.getGroupId(), wsControlOperation);
 
         groupWebServerControlService.controlGroup(controlGroupWebServerCommand, aUser);
     }
 
-    private void controlJvms(ControlGroupCommand aCommand, User aUser) {
+    private void controlJvms(ControlGroupRequest aCommand, User aUser) {
   
         JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(aCommand.getControlOperation()
                 .getExternalValue()); // TODO address this mapping between
                                       // operations
 
-        ControlGroupJvmCommand controlGroupJvmCommand = new ControlGroupJvmCommand(aCommand.getGroupId(),
+        ControlGroupJvmRequest controlGroupJvmCommand = new ControlGroupJvmRequest(aCommand.getGroupId(),
                 jvmControlOperation);
 
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);

@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.dispatch;
 
-import com.siemens.cto.aem.domain.command.exec.ExecCommand;
+import com.siemens.cto.aem.exec.ExecCommand;
 import org.springframework.integration.annotation.Payload;
 
 public interface ExecutorGatewayBean {

@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmAndAddToGroupsCommand;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -178,8 +178,8 @@ public class JsonCreateJvmDeserializerTest {
                                     final String aHostName,
                                     final String... groupIds) {
 
-        final CreateJvmAndAddToGroupsCommand createAndAddCommand = aCreate.toCreateAndAddCommand();
-        final CreateJvmCommand createCommand = createAndAddCommand.getCreateCommand();
+        final CreateJvmAndAddToGroupsRequest createAndAddCommand = aCreate.toCreateAndAddCommand();
+        final CreateJvmRequest createCommand = createAndAddCommand.getCreateCommand();
 
         assertEquals(aCreate.toCreateJvmCommand(),
                      createCommand);

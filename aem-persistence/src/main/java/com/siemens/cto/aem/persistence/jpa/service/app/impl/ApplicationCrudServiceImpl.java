@@ -2,9 +2,9 @@ package com.siemens.cto.aem.persistence.jpa.service.app.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
-import com.siemens.cto.aem.domain.command.app.UploadAppTemplateCommand;
+import com.siemens.cto.aem.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
@@ -29,10 +29,10 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     @Override
-    public JpaApplication createApplication(final Event<CreateApplicationCommand> anAppToCreate, JpaGroup jpaGroup) {
+    public JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup) {
 
         try {
-            final CreateApplicationCommand createAppCommand = anAppToCreate.getCommand();
+            final CreateApplicationRequest createAppCommand = anAppToCreate.getRequest();
             final AuditEvent auditEvent = anAppToCreate.getAuditEvent();
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
@@ -55,7 +55,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             return jpaApp;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
-                                          "App already exists: " + anAppToCreate.getCommand().getName(),
+                                          "App already exists: " + anAppToCreate.getRequest().getName(),
                                           eee);
         }
     }
@@ -88,9 +88,9 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     @Override
-    public JpaApplication updateApplication(final Event<UpdateApplicationCommand> anApplicationToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup) {
+    public JpaApplication updateApplication(final Event<UpdateApplicationRequest> anApplicationToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup) {
 
-        final UpdateApplicationCommand updateApplicationCommand = anApplicationToUpdate.getCommand();
+        final UpdateApplicationRequest updateApplicationCommand = anApplicationToUpdate.getRequest();
         final AuditEvent auditEvent = anApplicationToUpdate.getAuditEvent();
         final Identifier<Application> appId = updateApplicationCommand.getId();
 
@@ -153,8 +153,8 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateCommand> event) {
-        UploadAppTemplateCommand command = event.getCommand();
+    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event) {
+        UploadAppTemplateRequest command = event.getRequest();
         Application application = command.getApp();
         Identifier<Application> id = application.getId();
         JpaApplication jpaApp = getExisting(id);

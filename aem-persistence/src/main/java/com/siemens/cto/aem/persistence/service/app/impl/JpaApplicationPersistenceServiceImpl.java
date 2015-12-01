@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.service.app.impl;
 
-import com.siemens.cto.aem.domain.command.app.*;
+import com.siemens.cto.aem.request.app.*;
 import com.siemens.cto.aem.domain.model.app.*;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.id.Identifier;
@@ -26,9 +26,9 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application createApplication(final Event<CreateApplicationCommand> anAppToCreate, final String appContextTemplate,
+    public Application createApplication(final Event<CreateApplicationRequest> anAppToCreate, final String appContextTemplate,
                                          final String roleMappingPropertiesTemplate, String appPropertiesTemplate) {
-        JpaGroup jpaGroup = groupCrudService.getGroup(anAppToCreate.getCommand().getGroupId());
+        JpaGroup jpaGroup = groupCrudService.getGroup(anAppToCreate.getRequest().getGroupId());
         final JpaApplication jpaApp = applicationCrudService.createApplication(anAppToCreate, jpaGroup);
         final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
         final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
@@ -39,9 +39,9 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application updateApplication(Event<UpdateApplicationCommand> anAppToUpdate) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getId());
-        final JpaGroup jpaGroup = groupCrudService.getGroup(anAppToUpdate.getCommand().getNewGroupId());
+    public Application updateApplication(Event<UpdateApplicationRequest> anAppToUpdate) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getRequest().getId());
+        final JpaGroup jpaGroup = groupCrudService.getGroup(anAppToUpdate.getRequest().getNewGroupId());
         final JpaApplication jpaApp = applicationCrudService.updateApplication(anAppToUpdate, jpaOriginal, jpaGroup);
         return JpaAppBuilder.appFrom(jpaApp);
     }
@@ -62,8 +62,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application updateWARPath(final Event<UploadWebArchiveCommand> anAppToUpdate, String warPath) {
-        final UploadWebArchiveCommand command = anAppToUpdate.getCommand();
+    public Application updateWARPath(final Event<UploadWebArchiveRequest> anAppToUpdate, String warPath) {
+        final UploadWebArchiveRequest command = anAppToUpdate.getRequest();
         final JpaApplication jpaOriginal = applicationCrudService.getExisting(command.getApplication().getId());
         jpaOriginal.setWarPath(warPath);
         jpaOriginal.setWarName(command.getFilename());
@@ -71,8 +71,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application removeWARPath(final Event<RemoveWebArchiveCommand> anAppToUpdate) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getCommand().getApplication().getId());
+    public Application removeWARPath(final Event<RemoveWebArchiveRequest> anAppToUpdate) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getRequest().getApplication().getId());
         jpaOriginal.setWarPath(null);
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
@@ -84,7 +84,7 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateCommand> event) {
+    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event) {
         return applicationCrudService.uploadAppTemplate(event);
     }
 

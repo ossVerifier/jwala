@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.domain.command.webserver.ControlGroupWebServerCommand;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -28,7 +28,7 @@ public class GroupWebServerControlServiceImplTest {
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
     private User testUser = new User("testUser");
-    private ControlGroupWebServerCommand aCommand;
+    private ControlGroupWebServerRequest aCommand;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -40,14 +40,14 @@ public class GroupWebServerControlServiceImplTest {
         cut = new GroupWebServerControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
-        aCommand = new ControlGroupWebServerCommand(groupId, WebServerControlOperation.START);
+        aCommand = new ControlGroupWebServerRequest(groupId, WebServerControlOperation.START);
 
         when(mockGroupService.getGroup(groupId)).thenReturn(mockGroup);
     }
 
     @Test(expected = BadRequestException.class)
     public void testControlGroupWithInvalidGroup() {
-        ControlGroupWebServerCommand aCommand = new ControlGroupWebServerCommand(null, WebServerControlOperation.START);
+        ControlGroupWebServerRequest aCommand = new ControlGroupWebServerRequest(null, WebServerControlOperation.START);
         cut.controlGroup(aCommand, testUser);
     }
 

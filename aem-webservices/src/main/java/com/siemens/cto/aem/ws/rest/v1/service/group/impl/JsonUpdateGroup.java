@@ -3,7 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -25,10 +25,10 @@ public class JsonUpdateGroup {
         name = theName;
     }
 
-    public UpdateGroupCommand toUpdateGroupCommand() throws BadRequestException {
+    public UpdateGroupRequest toUpdateGroupCommand() throws BadRequestException {
         try {
             final Identifier<Group> groupId = new Identifier<>(id);
-            return new UpdateGroupCommand(groupId,
+            return new UpdateGroupRequest(groupId,
                                           name);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import com.siemens.cto.aem.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.command.app.CreateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -26,8 +26,8 @@ public class JsonCreateApplication {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
-    public CreateApplicationCommand toCreateCommand() throws BadRequestException {
-        return new CreateApplicationCommand(
+    public CreateApplicationRequest toCreateCommand() throws BadRequestException {
+        return new CreateApplicationRequest(
                 Identifier.id(groupId, Group.class), name, webappContext, secure, loadBalanceAcrossServers);
     }
 

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.command.app.UpdateApplicationCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -32,8 +32,8 @@ public class JsonUpdateApplication {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
-    public UpdateApplicationCommand toUpdateCommand() {
-        return  new UpdateApplicationCommand(
+    public UpdateApplicationRequest toUpdateCommand() {
+        return  new UpdateApplicationRequest(
                     Identifier.id(webappId, Application.class),
                     Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers);
     }

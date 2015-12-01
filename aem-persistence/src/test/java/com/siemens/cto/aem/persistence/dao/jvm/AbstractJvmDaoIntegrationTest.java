@@ -1,15 +1,15 @@
 package com.siemens.cto.aem.persistence.dao.jvm;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.command.jvm.CreateJvmCommand;
-import com.siemens.cto.aem.domain.command.jvm.UpdateJvmCommand;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.domain.model.path.Path;
 import com.siemens.cto.aem.domain.model.user.User;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
 
     @Test
     public void testCreateNewJvm() {
-        final Event<CreateJvmCommand> command = createCreateJvmCommand("New Jvm Name",
+        final Event<CreateJvmRequest> command = createCreateJvmCommand("New Jvm Name",
                                                                        "New Host Name",
                                                                         5,
                                                                         4,
@@ -62,13 +62,13 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                                         "EXAMPLE_OPTS=%someEnv%/someVal");
         final Jvm createdJvm = jvmDao.createJvm(command);
 
-        assertEquals(command.getCommand().getJvmName(), createdJvm.getJvmName());
+        assertEquals(command.getRequest().getJvmName(), createdJvm.getJvmName());
     }
 
     @Test(expected = BadRequestException.class)
     public void testCreateDuplicateJvm() {
 
-        final Event<CreateJvmCommand> commandEvent =
+        final Event<CreateJvmRequest> commandEvent =
                 createCreateJvmCommand(preCreatedJvm.getJvmName(),
                                        preCreatedJvm.getHostName(),
                                        preCreatedJvm.getHttpPort(),
@@ -92,19 +92,19 @@ public abstract class AbstractJvmDaoIntegrationTest {
 
     @Test
     public void testUpdateJvm() {
-        final Event<UpdateJvmCommand> update =
+        final Event<UpdateJvmRequest> update =
                 createUpdateJvmCommand(preCreatedJvm.getId(), "New Jvm Name", "New Host Name", 5, 4, 3, 2, 1, userName,
                         new Path("/abc"), "EXAMPLE_OPTS=%someEnv%/someVal");
         final Jvm actualJvm = jvmDao.updateJvm(update);
 
-        assertEquals(update.getCommand().getNewJvmName(), actualJvm.getJvmName());
-        assertEquals(update.getCommand().getNewHostName(), actualJvm.getHostName());
-        assertEquals(update.getCommand().getNewHttpPort(), actualJvm.getHttpPort());
-        assertEquals(update.getCommand().getNewHttpsPort(), actualJvm.getHttpsPort());
-        assertEquals(update.getCommand().getNewRedirectPort(), actualJvm.getRedirectPort());
-        assertEquals(update.getCommand().getNewShutdownPort(), actualJvm.getShutdownPort());
-        assertEquals(update.getCommand().getNewAjpPort(), actualJvm.getAjpPort());
-        assertEquals(update.getCommand().getNewStatusPath(), actualJvm.getStatusPath());
+        assertEquals(update.getRequest().getNewJvmName(), actualJvm.getJvmName());
+        assertEquals(update.getRequest().getNewHostName(), actualJvm.getHostName());
+        assertEquals(update.getRequest().getNewHttpPort(), actualJvm.getHttpPort());
+        assertEquals(update.getRequest().getNewHttpsPort(), actualJvm.getHttpsPort());
+        assertEquals(update.getRequest().getNewRedirectPort(), actualJvm.getRedirectPort());
+        assertEquals(update.getRequest().getNewShutdownPort(), actualJvm.getShutdownPort());
+        assertEquals(update.getRequest().getNewAjpPort(), actualJvm.getAjpPort());
+        assertEquals(update.getRequest().getNewStatusPath(), actualJvm.getStatusPath());
     }
 
     @Test(expected = BadRequestException.class)
@@ -157,11 +157,11 @@ public abstract class AbstractJvmDaoIntegrationTest {
         assertTrue(jvms.size() > numberToCreate);
     }
 
-    protected Event<CreateGroupCommand> createGroupCommandEvent(final String aGroupName, final String aUserName) {
-        return new Event<>(new CreateGroupCommand(aGroupName), AuditEvent.now(new User(aUserName)));
+    protected Event<CreateGroupRequest> createGroupCommandEvent(final String aGroupName, final String aUserName) {
+        return new Event<>(new CreateGroupRequest(aGroupName), AuditEvent.now(new User(aUserName)));
     }
 
-    protected Event<CreateJvmCommand> createCreateJvmCommand(final String aJvmName,
+    protected Event<CreateJvmRequest> createCreateJvmCommand(final String aJvmName,
                                                              final String aHostName,
                                                              final Integer httpPort,
                                                              final Integer httpsPort,
@@ -171,7 +171,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final String aUserName,
                                                              final Path aStatusPath,
                                                              final String aSystemProperties) {
-        return new Event<>(new CreateJvmCommand(aJvmName,
+        return new Event<>(new CreateJvmRequest(aJvmName,
                                                 aHostName,
                                                 httpPort,
                                                 httpsPort,
@@ -183,7 +183,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
                            AuditEvent.now(new User(aUserName)));
     }
 
-    protected Event<UpdateJvmCommand> createUpdateJvmCommand(final Identifier<Jvm> aJvmId,
+    protected Event<UpdateJvmRequest> createUpdateJvmCommand(final Identifier<Jvm> aJvmId,
                                                              final String aNewJvmName,
                                                              final String aNewHostName,
                                                              final Integer aNewHttpPort,
@@ -194,7 +194,7 @@ public abstract class AbstractJvmDaoIntegrationTest {
                                                              final String aUserName,
                                                              final Path aStatusPath,
                                                              final String aSystemProperties) {
-        return new Event<>(new UpdateJvmCommand(aJvmId,
+        return new Event<>(new UpdateJvmRequest(aJvmId,
                                                 aNewJvmName,
                                                 aNewHostName,
                                                 Collections.<Identifier<Group>> emptySet(),

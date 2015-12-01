@@ -11,16 +11,16 @@ public class Event<T> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final T command;
+	private final T request;
 	private final AuditEvent auditEvent;
 
-	public Event(final T theCommand, final AuditEvent theAuditEvent) {
-		command = theCommand;
+	public Event(final T theRequest, final AuditEvent theAuditEvent) {
+		request = theRequest;
 		auditEvent = theAuditEvent;
 	}
 
-	public T getCommand() {
-		return command;
+	public T getRequest() {
+		return request;
 	}
 
 	public AuditEvent getAuditEvent() {
@@ -44,7 +44,7 @@ public class Event<T> implements Serializable {
         }
         Event<?> rhs = (Event<?>) obj;
         return new EqualsBuilder()
-                .append(this.command, rhs.command)
+                .append(this.request, rhs.request)
                 .append(this.auditEvent, rhs.auditEvent)
                 .isEquals();
     }
@@ -52,7 +52,7 @@ public class Event<T> implements Serializable {
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(command)
+                .append(request)
                 .append(auditEvent)
                 .toHashCode();
     }
@@ -60,7 +60,7 @@ public class Event<T> implements Serializable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("command", command)
+                .append("request", request)
                 .append("auditEvent", auditEvent)
                 .toString();
     }

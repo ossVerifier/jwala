@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.command.webserver.UpdateWebServerCommand;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -181,7 +181,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerCommand updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
     }
 
     @Test(expected = BadRequestException.class)
@@ -210,7 +210,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerCommand updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
     }
 
     @Test(expected = BadRequestException.class)
@@ -239,7 +239,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerCommand updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
     }
 
     @Test(expected = BadRequestException.class)
@@ -268,7 +268,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerCommand updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
     }
 
     protected void verifyAssertions(final JsonUpdateWebServer anUpdate,
@@ -281,7 +281,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                     final String aHttpConfigFile,
                                     final String... groupIds) {
 
-        final UpdateWebServerCommand updateCommand = anUpdate.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = anUpdate.toUpdateWebServerCommand();
 
         assertEquals(new Identifier<WebServer>(aWebServerId),
                      updateCommand.getId());

@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.domain.command.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.domain.command.dispatch.JvmDispatchCommandResult;
+import com.siemens.cto.aem.request.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.request.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.ControlGroupJvmCommand;
+import com.siemens.cto.aem.request.group.ControlGroupJvmRequest;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
@@ -31,9 +31,9 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
     @Transactional
     @Override
-    public void controlGroup(ControlGroupJvmCommand aCommand, User aUser) {
+    public void controlGroup(ControlGroupJvmRequest aCommand, User aUser) {
 
-        aCommand.validateCommand();
+        aCommand.validate();
 
         Group group = groupService.getGroup(aCommand.getGroupId());
 

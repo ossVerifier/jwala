@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
 
+import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.command.group.CreateGroupCommand;
 import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.command.group.UpdateGroupCommand;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -31,10 +31,10 @@ public class JpaGroupDaoImpl implements GroupDao {
     }
 
     @Override
-    public Group createGroup(final Event<CreateGroupCommand> aGroupToCreate) {
+    public Group createGroup(final Event<CreateGroupRequest> aGroupToCreate) {
 
         try {
-            final CreateGroupCommand createGroupCommand = aGroupToCreate.getCommand();
+            final CreateGroupRequest createGroupCommand = aGroupToCreate.getRequest();
             final AuditEvent auditEvent = aGroupToCreate.getAuditEvent();
             final String userId = auditEvent.getUser().getUserId();
             final Calendar updateDate = auditEvent.getDateTime().getCalendar();
@@ -52,16 +52,16 @@ public class JpaGroupDaoImpl implements GroupDao {
             return groupFrom(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getCommand().getGroupName(),
+                                          "Group Name already exists: " + aGroupToCreate.getRequest().getGroupName(),
                                           eee);
         }
     }
 
     @Override
-    public Group updateGroup(final Event<UpdateGroupCommand> aGroupToUpdate) {
+    public Group updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate) {
 
         try {
-            final UpdateGroupCommand updateGroupCommand = aGroupToUpdate.getCommand();
+            final UpdateGroupRequest updateGroupCommand = aGroupToUpdate.getRequest();
             final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
             final Identifier<Group> groupId = updateGroupCommand.getId();
             final JpaGroup jpaGroup = getJpaGroup(groupId);
@@ -75,7 +75,7 @@ public class JpaGroupDaoImpl implements GroupDao {
             return groupFrom(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToUpdate.getCommand().getNewName(),
+                                          "Group Name already exists: " + aGroupToUpdate.getRequest().getNewName(),
                                           eee);
         }
     }
