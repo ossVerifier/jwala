@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.History;
 
 import javax.persistence.*;
 
 @Entity
-@Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
+@Table(name = "event", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
 public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     @Id
@@ -17,7 +16,12 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
     @JoinColumn(name = "groupId")
     private JpaGroup group;
 
-    private String history;
+    private String event;
+
+    public JpaHistory(final JpaGroup group, final String event) {
+        this.group = group;
+        this.event = event;
+    }
 
     @Override
     public Long getId() {
@@ -36,12 +40,12 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
         this.group = group;
     }
 
-    public String getHistory() {
-        return history;
+    public String getEvent() {
+        return event;
     }
 
-    public void setHistory(String history) {
-        this.history = history;
+    public void setEvent(String event) {
+        this.event = event;
     }
 
     @Override
@@ -49,17 +53,14 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
         if (this == o) {
             return true;
         }
+
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
         final JpaHistory jpaHistory = (JpaHistory) o;
 
-        if (id != null ? !id.equals(jpaHistory.id) : jpaHistory.id != null) {
-            return false;
-        }
-
-        return true;
+        return id != null ? id.equals(jpaHistory.id) : jpaHistory.id == null;
     }
 
     @Override

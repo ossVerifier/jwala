@@ -104,6 +104,20 @@ task watchJsx(type:Exec) {
     }
 }
 
+task babel(type:Exec) {
+    build.mustRunAfter clean
+    workingDir "."
+
+    commandLine "cmd",
+            "/c",
+            "babel ./src/main/webapp/resources/js/react --optional reactCompat --out-dir ./build/react/js --blacklist useStrict"
+
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
+
 war{
 
     manifest {
@@ -117,7 +131,8 @@ war{
         )
     }
 
-    dependsOn(compileJsx)
+    dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
+    // dependsOn(babel) // Disable babel for now until presets are installed in Jenkins
 
     webInf {
          from reactCompiledOutputPath
