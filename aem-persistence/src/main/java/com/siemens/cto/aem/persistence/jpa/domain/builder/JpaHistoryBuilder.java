@@ -13,6 +13,6 @@ public class JpaHistoryBuilder {
     }
 
     public History build() {
-        return new History(new Identifier<History>(jpaHistory.getId()), jpaHistory.getHistory());
+        return new History(new Identifier<History>(jpaHistory.getId()), jpaHistory.getEvent());
     }
 }
