@@ -19,7 +19,7 @@ public class HistoryDaoImpl implements HistoryDao {
 
     @Override
     public void write(final JpaGroup group, final String event) {
-        em.persist(new JpaHistory(null, event));
+        em.persist(new JpaHistory(group, event));
     }
 
 }
