@@ -1,0 +1,71 @@
+configurations {
+    javaAgentOpenJpa
+}
+
+dependencies {
+    compile project(":toc-persistence")
+    compile project(":toc-control")
+    compile project(":toc-filemanager")
+    compile project(":toc-template")
+    compile project(":toc-common")
+    compile project(":toc-command-processor")
+
+    compile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
+    compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-jms", version: "$project.versions.spring"
+    compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
+    compile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
+
+    compile(group: 'commons-logging', name: 'commons-logging', version: "$project.versions.commons_logging")
+    compile(group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core")
+    compile(group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client")
+
+    compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
+    compile group: 'javax', name: 'jms', version: "$project.versions.jms"
+    compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
+
+    javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
+        exclude group: "junit"
+    }
+
+
+    testCompile project(path: ":toc-common", configuration: "commonTest")
+
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+    testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+    testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"
+    testCompile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
+
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
+    testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
+
+    testRuntime group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
+    testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
+    testRuntime group: 'org.apache.tomcat', name: 'tomcat-util', version: "$project.versions.tomcat"
+}
+
+test {
+    // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
+    jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
+
+    jacoco {
+      excludes = ["com.siemens.cto.aem.persistence.configuration.*",
+                  "com.siemens.cto.aem.persistence.domain.*",
+                  "com.siemens.cto.aem.domain.model.*",
+                  "com.siemens.cto.aem.common.*",
+                  "*.configuration.*",
+                  "**.configuration.**",
+                  "com.siemens.cto.aem.service.configuration.service.*"]
+    }
+}
+
+test {
+    systemProperty 'com.siemens.cto.infrastructure.keyfile', 'src/test/resources/META-INF/keyfile'
+    systemProperty 'com.siemens.cto.infrastructure.iv', '025f9fbcfa17ea27a7715ab449ee81f9'
+    systemProperty 'com.siemens.cto.infrastructure.bits', '128'
+}

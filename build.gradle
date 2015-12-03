@@ -78,12 +78,12 @@ subprojects {
             }
             publications {
                 mavenJava(MavenPublication) {
-                    if(project.name.equals('aem-webapp')) {
+                    if(project.name.equals('toc-webapp')) {
                         from components.web
                     } else {
                         from components.java
                     }
-                    if(project.name.equals('aem-persistence')) {
+                    if(project.name.equals('toc-persistence')) {
                         artifact("drop.sql") {
                             classifier "drop"
                             extension "sql"

@@ -16,9 +16,9 @@
   limitations under the License.
 -->
 <!-- The contents of this file will be loaded for each web application -->
-<Context docBase="../../../webapps/aem-webapp-1.0-SNAPSHOT.war">
+<Context docBase="../../../webapps/tocA-webapp-1.0-SNAPSHOT.war">
     <!--  This version applies to unpacked wars.
-        docBase="${STP_HOME}/siemens/webapps/aem-webapp-1.0-SNAPSHOT.war"> -->
+        docBase="${STP_HOME}/siemens/webapps/toc-webapp-1.0-SNAPSHOT.war"> -->
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="${STP_HOME}/siemens/data/toc/conf"/>

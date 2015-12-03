@@ -1,0 +1,16 @@
+dependencies {
+
+    compile project(":toc-common")
+    compile project(":toc-command-processor")
+
+    compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"
+
+    testCompile project(path: ":toc-common", configuration: "commonTest")
+    testCompile project(path: ":toc-command-processor", configuration: "commonTestSshConfig")
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+}
+
+test {
+    workingDir(rootProject.projectDir)
+}

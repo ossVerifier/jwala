@@ -1,0 +1,33 @@
+ext {
+    localVersions = [jsch : "0.1.51"]
+}
+
+configurations {
+    commonTestSshConfig
+}
+
+task commonTestSshConfigJar(type: Jar) {
+    baseName = 'commonTestSshConfig'
+    dependsOn classes
+    from sourceSets.test.output
+    include('com/siemens/cto/aem/commandprocessor/impl/CommonSshTestConfiguration*')
+}
+
+artifacts {
+    commonTestSshConfig commonTestSshConfigJar
+}
+
+dependencies {
+
+    compile project(":toc-common")
+
+    compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
+
+    testCompile project(path: ":toc-common", configuration: "commonTest")
+    testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+}
+
+test {
+    workingDir(rootProject.projectDir)
+}
