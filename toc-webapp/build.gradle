@@ -109,7 +109,7 @@ task babel(type:Exec) {
 
     commandLine "cmd",
             "/c",
-            "babel ./src/main/webapp/resources/js/react --optional reactCompat --out-dir ./build/react/js --blacklist useStrict"
+            "babel ./src/main/webapp/resources/js/react --out-dir ./build/react/js --blacklist useStrict"
 
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
@@ -130,8 +130,8 @@ war{
         )
     }
 
-    dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
-    // dependsOn(babel) // Disable babel for now until presets are installed in Jenkins
+    // dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
+    dependsOn(babel)
 
     webInf {
          from reactCompiledOutputPath

@@ -5,7 +5,7 @@ import com.siemens.cto.aem.domain.model.group.History;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "event", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
+@Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
 public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     @Id
