@@ -4,6 +4,7 @@ import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * {@link HistoryService} implementation.
@@ -20,6 +21,7 @@ class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
+    @Transactional
     public void write(final JpaGroup group, final String event) {
         historyDao.write(group, event);
     }
