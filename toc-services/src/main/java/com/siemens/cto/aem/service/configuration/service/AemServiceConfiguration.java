@@ -48,7 +48,7 @@ import com.siemens.cto.aem.service.webserver.*;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import com.siemens.cto.aem.service.webserver.impl.*;
-import ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;

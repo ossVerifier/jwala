@@ -1,4 +1,4 @@
-package ssl.jsse;
+package com.siemens.cto.aem.service.ssl.jsse;
 
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;

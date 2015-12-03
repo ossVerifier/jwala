@@ -9,7 +9,7 @@ import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
-import ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;

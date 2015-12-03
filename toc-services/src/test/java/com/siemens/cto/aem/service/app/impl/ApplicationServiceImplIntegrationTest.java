@@ -27,7 +27,7 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
-import ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.RepositoryService;

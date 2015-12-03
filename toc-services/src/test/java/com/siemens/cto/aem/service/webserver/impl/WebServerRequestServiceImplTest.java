@@ -16,7 +16,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
-import ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

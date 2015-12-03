@@ -1,4 +1,4 @@
-package ssl.hc;
+package com.siemens.cto.aem.service.ssl.hc;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;

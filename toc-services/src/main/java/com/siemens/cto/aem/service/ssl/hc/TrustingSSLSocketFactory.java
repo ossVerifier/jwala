@@ -1,6 +1,6 @@
-package ssl.hc;
+package com.siemens.cto.aem.service.ssl.hc;
 
-import ssl.jsse.NullHostNameVerifier;
+import com.siemens.cto.aem.service.ssl.jsse.NullHostNameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 
