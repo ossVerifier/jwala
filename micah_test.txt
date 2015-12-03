@@ -1,4 +1,0 @@
-Testing git bridge for CTO-AEM  6/17/2015  8:32AM
-Testing git bridge for CTO-AEM  10/20/2015  9:02AM
-Testing git bridge for CTO-AEM  10/20/2015  11:13AM
-Testing git bridge from git for CTO-AEM  10/20/2015  11:18AM
