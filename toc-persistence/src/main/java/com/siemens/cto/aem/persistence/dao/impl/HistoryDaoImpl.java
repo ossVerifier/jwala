@@ -18,8 +18,8 @@ public class HistoryDaoImpl implements HistoryDao {
     private EntityManager em;
 
     @Override
-    public void write(final JpaGroup group, final String event) {
-        em.persist(new JpaHistory(group, event));
+    public void write(final String name, final JpaGroup group, final String event, String user) {
+        em.persist(new JpaHistory(name, group, event, user));
     }
 
 }

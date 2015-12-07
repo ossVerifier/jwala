@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.control.jvm.impl;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
@@ -32,19 +33,18 @@ public class RemoteJvmRequestExecutorImplTest {
 
     @Before
     public void setup() throws Exception {
-
         executorService = Executors.newFixedThreadPool(3);
         final CommonSshTestConfiguration testConfiguration = new CommonSshTestConfiguration();
         final CommandExecutor executor = new ThreadedCommandExecutorImpl(executorService);
         final SshConfiguration sshConfig = new SshConfiguration(testConfiguration.getRemoteSystemConnection().getUser(),
-                                                                testConfiguration.getRemoteSystemConnection().getPort(),
-                                                                testConfiguration.getPrivateKey(),
-                                                                testConfiguration.getKnownHostsFile());
+                testConfiguration.getRemoteSystemConnection().getPort(),
+                testConfiguration.getPrivateKey(),
+                testConfiguration.getKnownHostsFile());
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
-                                                         .setKnownHostsFileName(sshConfig.getKnownHostsFile());
+                .setKnownHostsFileName(sshConfig.getKnownHostsFile());
         impl = new RemoteJvmCommandExecutorImpl(executor,
-                                                jschBuilder,
-                                                sshConfig);
+                jschBuilder,
+                sshConfig);
     }
 
     @After
@@ -55,15 +55,13 @@ public class RemoteJvmRequestExecutorImplTest {
 
     @Test
     public void testControlJvm() throws Exception {
-
         final ControlJvmRequest command = mock(ControlJvmRequest.class);
-        final Jvm jvm = mock(Jvm.class);
+        final JpaJvm jvm = mock(JpaJvm.class);
         when(command.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(jvm.getJvmName()).thenReturn("jvm-integration-1");
+        when(jvm.getName()).thenReturn("jvm-integration-1");
         when(jvm.getHostName()).thenReturn("usmlvv1cto989");
 
-        final CommandOutput exec = impl.controlJvm(command,
-                                              jvm);
+        final CommandOutput exec = impl.controlJvm(command, jvm);
         final String output = exec.getStandardOutput();
         final String error = exec.getStandardError();
         assumeFalse(error.contains("The requested service has already been started"));

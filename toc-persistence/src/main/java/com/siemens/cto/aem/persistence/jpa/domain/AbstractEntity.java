@@ -1,11 +1,9 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Calendar;
 
@@ -78,10 +76,18 @@ public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> im
     public void setName(final String name) {
         this.name = name;
     }
-    
+
     public abstract Long getId();
-    
+
     public Identifier<POJO> id() {
         return Identifier.<POJO>id(this.getId());
     }
+
+    @PrePersist
+    private void createdOn() {
+        if (this.getCreateDate() == null) {
+            this.setCreateDate(AuditDateTime.now().getCalendar());
+        }
+    }
+
 }

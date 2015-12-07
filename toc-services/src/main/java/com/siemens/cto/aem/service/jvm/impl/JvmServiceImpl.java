@@ -1,31 +1,33 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.request.jvm.*;
-import com.siemens.cto.aem.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.RuntimeCommand;
 import com.siemens.cto.aem.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
 import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.exec.RuntimeCommand;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.request.state.SetStateRequest;
+import com.siemens.cto.aem.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -114,6 +116,12 @@ public class JvmServiceImpl implements JvmService {
     @Transactional(readOnly = true)
     public Jvm getJvm(final Identifier<Jvm> aJvmId) {
         return jvmPersistenceService.getJvm(aJvmId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JpaJvm getJpaJvm(final Identifier<Jvm> aJvmId, final boolean fetchGroups) {
+        return jvmPersistenceService.getJpaJvm(aJvmId, fetchGroups);
     }
 
     @Override
@@ -267,8 +275,8 @@ public class JvmServiceImpl implements JvmService {
     private void setState(final Jvm jvm,
                           final JvmState state,
                           final String msg) {
-            stateService.setCurrentState(createStateCommand(jvm.getId(), state, msg),
-                    User.getSystemUser());
+        stateService.setCurrentState(createStateCommand(jvm.getId(), state, msg),
+                User.getSystemUser());
     }
 
     /**
@@ -279,19 +287,19 @@ public class JvmServiceImpl implements JvmService {
      * @return {@link SetStateRequest}
      */
     private SetStateRequest<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
-                                                                                   final JvmState state,
-                                                                                   final String msg) {
+                                                              final JvmState state,
+                                                              final String msg) {
         if (StringUtils.isEmpty(msg)) {
             return new JvmSetStateRequest(new CurrentState<>(id,
-                                         state,
-                                         DateTime.now(),
-                                         StateType.JVM));
+                    state,
+                    DateTime.now(),
+                    StateType.JVM));
         }
         return new JvmSetStateRequest(new CurrentState<>(id,
-                                      state,
-                                      DateTime.now(),
-                                      StateType.JVM,
-                                      msg));
+                state,
+                DateTime.now(),
+                StateType.JVM,
+                msg));
     }
 
     @Override
@@ -307,18 +315,18 @@ public class JvmServiceImpl implements JvmService {
     }
 
     public boolean isJvmStarted(Jvm jvm) {
-        
+
         CurrentState<Jvm, JvmState> jvmCurrentState = stateService.getCurrentState(jvm.getId());
         JvmState jvmState = jvmCurrentState.getState();
-        return jvmState.isStartedState();        
+        return jvmState.isStartedState();
     }
 
     @Override
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
         // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
         return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template,
-                                                                 jvmPersistenceService.findJvms(jvmName).get(0),
-                                                                 jvmPersistenceService.getJvms());
+                jvmPersistenceService.findJvms(jvmName).get(0),
+                jvmPersistenceService.getJvms());
     }
 
     @Override

@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
+import java.util.List;
+
 /**
  * History service.
  *
@@ -9,6 +11,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
  */
 public interface HistoryService {
 
-    void write(JpaGroup group, String event);
+    void write(String name, List<JpaGroup> groups, String event, String user);
 
 }

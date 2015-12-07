@@ -6,12 +6,14 @@ import com.siemens.cto.aem.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * {@link HistoryService} implementation.
  *
  * Created by JC043760 on 12/2/2015.
  */
-class HistoryServiceImpl implements HistoryService {
+public class HistoryServiceImpl implements HistoryService {
 
     private final HistoryDao historyDao;
 
@@ -22,8 +24,12 @@ class HistoryServiceImpl implements HistoryService {
 
     @Override
     @Transactional
-    public void write(final JpaGroup group, final String event) {
-        historyDao.write(group, event);
+    public void write(final String name, final List<JpaGroup> groups, final String event, String user) {
+        if (groups != null) {
+            for (JpaGroup group : groups) {
+                historyDao.write(name, group, event, user);
+            }
+        }
     }
 
 }

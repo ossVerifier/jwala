@@ -2,6 +2,7 @@ dependencies {
 
     compile project(":toc-common")
     compile project(":toc-command-processor")
+    compile project(":toc-persistence");
 
     compile group: "com.siemens.cac", name: "csa", version: "$project.versions.csa"
 

@@ -4,17 +4,17 @@ import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorImpl;
+import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exec.ExecCommand;
 import com.siemens.cto.aem.exec.RemoteExecCommand;
 import com.siemens.cto.aem.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder {
 
     private ExecCommand command;
-    private Jvm jvm;
+    private JpaJvm jvm;
     private JSch jsch;
     private SshConfiguration sshConfig;
 
@@ -26,8 +26,8 @@ public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder
         return this;
     }
 
-    public JvmRemoteCommandProcessorBuilder setJvm(final Jvm aJvm) {
-        jvm = aJvm;
+    public JvmRemoteCommandProcessorBuilder setJvm(final JpaJvm jvm) {
+        this.jvm = jvm;
         return this;
     }
 
@@ -45,15 +45,15 @@ public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder
     public CommandProcessor build() throws CommandFailureException {
 
         final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(),
-                                                                      command);
+                command);
         return new JschCommandProcessorImpl(jsch,
-                                            remoteCommand);
+                remoteCommand);
     }
 
     protected RemoteSystemConnection getRemoteSystemConnection() {
         final RemoteSystemConnection connection = new RemoteSystemConnection(sshConfig.getUserName(),
-                                                                             jvm.getHostName(),
-                                                                             sshConfig.getPort());
+                jvm.getHostName(),
+                sshConfig.getPort());
         return connection;
     }
 }

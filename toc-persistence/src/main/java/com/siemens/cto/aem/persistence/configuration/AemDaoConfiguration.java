@@ -1,9 +1,11 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.app.impl.jpa.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.impl.HistoryDaoImpl;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.dao.jvm.impl.jpa.JpaJvmDaoImpl;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
@@ -37,6 +39,11 @@ public class AemDaoConfiguration {
     @Bean
     public ApplicationDao getApplicationDao() {
         return new JpaApplicationDaoImpl();
+    }
+
+    @Bean
+    public HistoryDao getHistoryDao() {
+        return new HistoryDaoImpl();
     }
 
 }

@@ -3,18 +3,18 @@ package com.siemens.cto.aem.control.jvm.command.impl;
 import com.siemens.cto.aem.control.command.PlatformCommandProvider;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.JvmExecCommandBuilder;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.platform.Platform;
+import com.siemens.cto.aem.exec.ExecCommand;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public class DefaultJvmExecCommandBuilderImpl implements JvmExecCommandBuilder {
 
-    private Jvm jvm;
+    private JpaJvm jvm;
     private JvmControlOperation controlOperation;
 
     @Override
-    public JvmExecCommandBuilder setJvm(final Jvm aJvm) {
+    public JvmExecCommandBuilder setJvm(final JpaJvm aJvm) {
         jvm = aJvm;
         return this;
     }
@@ -30,6 +30,6 @@ public class DefaultJvmExecCommandBuilderImpl implements JvmExecCommandBuilder {
         //TODO The platform must come from the Jvm in the future (i.e. once it's ready and available)
         final PlatformCommandProvider provider = PlatformCommandProvider.lookup(Platform.WINDOWS);
         final ServiceCommandBuilder builder = provider.getServiceCommandBuilderFor(controlOperation);
-        return builder.buildCommandForService(jvm.getJvmName());
+        return builder.buildCommandForService(jvm.getName());
     }
 }

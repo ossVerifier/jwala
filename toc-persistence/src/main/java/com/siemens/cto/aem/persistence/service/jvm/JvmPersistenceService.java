@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.jvm;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.domain.model.event.Event;
@@ -20,6 +21,8 @@ public interface JvmPersistenceService {
     Jvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
+
+    JpaJvm getJpaJvm(Identifier<Jvm> aJvmId, boolean fetchGroups);
 
     List<Jvm> getJvms();
 

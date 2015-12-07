@@ -48,6 +48,16 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
+    public JpaJvm getJpaJvm(final Identifier<Jvm> aJvmId, final boolean fetchGroups) {
+        final JpaJvm jvm = jvmCrudService.getJvm(aJvmId);
+        if (fetchGroups) {
+            // groups are lazy loaded so we need this.
+            jvm.getGroups().size();
+        }
+        return jvm;
+    }
+
+    @Override
     public List<Jvm> getJvms() {
         return jvmsFrom(jvmCrudService.getJvms());
     }

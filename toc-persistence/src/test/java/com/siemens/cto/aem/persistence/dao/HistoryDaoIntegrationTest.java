@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Created by JC043760 on 11/30/2015.
  */
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
-                      classes = {HistoryDaoIntegrationTest.Config.class, TestJpaConfiguration.class})
+        classes = {HistoryDaoIntegrationTest.Config.class, TestJpaConfiguration.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
@@ -43,7 +43,7 @@ public class HistoryDaoIntegrationTest {
 
     @Test
     public void testWriteHistory() {
-        historyDao.write(null, "Testing...");
+        historyDao.write("any", null, "Testing...", "any");
     }
 
 }

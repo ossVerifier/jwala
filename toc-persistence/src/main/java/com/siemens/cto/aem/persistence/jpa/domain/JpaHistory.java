@@ -6,6 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
+@AttributeOverride(name="name", column=@Column(unique = false))
 public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     @Id
@@ -18,9 +19,13 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     private String event;
 
-    public JpaHistory(final JpaGroup group, final String event) {
+    public JpaHistory() {}
+
+    public JpaHistory(final String name, final JpaGroup group, final String event, String user) {
+        this.name = name;
         this.group = group;
         this.event = event;
+        this.createBy = user;
     }
 
     @Override

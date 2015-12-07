@@ -97,7 +97,6 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
     @Override
     public JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException {
-
         final JpaJvm jvm = entityManager.find(JpaJvm.class,
                 aJvmId.getId());
 

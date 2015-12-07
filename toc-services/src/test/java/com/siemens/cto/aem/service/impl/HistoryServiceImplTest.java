@@ -1,11 +1,17 @@
 package com.siemens.cto.aem.service.impl;
 
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.service.HistoryService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -29,7 +35,10 @@ public class HistoryServiceImplTest {
 
     @Test
     public void testWrite() {
-        historyService.write(null, "Testing...");
-        verify(mockHistoryDao).write(null, "Testing...");
+        final List<JpaGroup> groups = new ArrayList<>();
+        groups.add(new JpaGroup());
+        historyService.write("any", groups, "Testing...", "user");
+        verify(mockHistoryDao).write(eq("any"), any(JpaGroup.class), eq("Testing..."), eq("user"));
     }
+
 }

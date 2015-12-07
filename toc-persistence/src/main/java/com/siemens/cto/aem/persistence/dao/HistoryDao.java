@@ -9,6 +9,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
  */
 public interface HistoryDao {
 
-    void write(JpaGroup group, String event);
+    void write(String name, JpaGroup group, String event, String user);
 
 }

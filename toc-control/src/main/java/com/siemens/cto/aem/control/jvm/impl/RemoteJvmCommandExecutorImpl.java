@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.control.jvm.impl;
 
 import com.jcraft.jsch.JSchException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
@@ -29,24 +30,24 @@ public class RemoteJvmCommandExecutorImpl implements JvmCommandExecutor {
 
     @Override
     public CommandOutput controlJvm(final ControlJvmRequest aCommand,
-                               final Jvm aJvm) throws CommandFailureException {
+                                    final JpaJvm jvm) throws CommandFailureException {
 
         final JvmExecCommandBuilder commandBuilder = new DefaultJvmExecCommandBuilderImpl();
         commandBuilder.setOperation(aCommand.getControlOperation());
-        commandBuilder.setJvm(aJvm);
+        commandBuilder.setJvm(jvm);
         final ExecCommand execCommand = commandBuilder.build();
 
         try {
             final JvmRemoteCommandProcessorBuilder processorBuilder = new JvmRemoteCommandProcessorBuilder();
             processorBuilder.setCommand(execCommand);
-            processorBuilder.setJvm(aJvm);
+            processorBuilder.setJvm(jvm);
             processorBuilder.setJsch(jschBuilder.build());
             processorBuilder.setSshConfig(sshConfig);
 
             return executor.execute(processorBuilder);
         } catch (JSchException jsche) {
             throw new CommandFailureException(execCommand,
-                                              jsche);
+                    jsche);
         }
     }
 }

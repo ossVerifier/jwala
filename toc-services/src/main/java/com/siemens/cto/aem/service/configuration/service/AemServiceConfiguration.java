@@ -14,6 +14,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
+import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
@@ -22,6 +23,7 @@ import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -32,6 +34,7 @@ import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.*;
 import com.siemens.cto.aem.service.group.impl.*;
+import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -123,6 +126,7 @@ public class AemServiceConfiguration {
     @Resource
     private Environment env;
 
+
     /**
      * Make toc.properties available to spring integration configuration
      * System properties are only used if there is no setting in toc.properties.
@@ -201,8 +205,8 @@ public class AemServiceConfiguration {
                 null,
                 null,
                 aemSshConfig,
-                getGroupService(), 
-		fileManager, null, null);
+                getGroupService(),
+                fileManager, null, null);
     }
 
     @Bean
@@ -212,10 +216,10 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmControlService")
     @Autowired
-    public JvmControlService getJvmControlService(ClientFactoryHelper factoryHelper) {
+    public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryDao historyDao) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper),
                 aemCommandExecutorConfig.getJvmCommandExecutor(),
-                getJvmControlServiceLifecycle());
+                getJvmControlServiceLifecycle(), getHistoryService(historyDao));
     }
 
     @Bean(name = "jvmControlServiceLifecycle")
@@ -248,7 +252,8 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "webServerControlService")
-    public WebServerControlService getWebServerControlService() {
+    @Autowired
+    public WebServerControlService getWebServerControlService(final HistoryDao historyDao) {
         return new WebServerControlServiceImpl(getWebServerService(),
                 aemCommandExecutorConfig.getWebServerCommandExecutor(),
                 getWebServerStateService(),
@@ -330,9 +335,9 @@ public class AemServiceConfiguration {
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
         return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
-                                                               webServerStateSetterWorker,
-                                                               webServerFutureMap,
-                                                               true);
+                webServerStateSetterWorker,
+                webServerFutureMap,
+                true);
     }
 
     @Bean
@@ -378,4 +383,8 @@ public class AemServiceConfiguration {
         return threadPoolTaskExecutor;
     }
 
+    @Bean
+    public HistoryService getHistoryService(final HistoryDao historyDao) {
+        return new HistoryServiceImpl(historyDao);
+    }
 }
