@@ -40,11 +40,13 @@ import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import com.siemens.cto.toc.files.FilesConfiguration;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -101,6 +103,9 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private HistoryDao historyDao;
+
+    @Value("${history.max-findHistory-rec-count:30}")
+    private String maxReadRecCount;
 
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
@@ -176,7 +181,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public HistoryService getHistoryService() {
-        return new HistoryServiceImpl(historyDao);
+        return new HistoryServiceImpl(historyDao, NumberUtils.toLong(maxReadRecCount));
     }
 
     @Bean

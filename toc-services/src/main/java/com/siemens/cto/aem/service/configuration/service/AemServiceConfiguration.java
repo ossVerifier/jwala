@@ -54,6 +54,7 @@ import com.siemens.cto.aem.service.webserver.impl.*;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -119,6 +120,9 @@ public class AemServiceConfiguration {
 
     @Autowired
     private WebServerDao webServerDao;
+
+    @Value("${history.max-findHistory-rec-count:30}")
+    private String maxReadRecCount;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -386,6 +390,6 @@ public class AemServiceConfiguration {
 
     @Bean
     public HistoryService getHistoryService(final HistoryDao historyDao) {
-        return new HistoryServiceImpl(historyDao);
+        return new HistoryServiceImpl(historyDao, NumberUtils.toLong(maxReadRecCount));
     }
 }
