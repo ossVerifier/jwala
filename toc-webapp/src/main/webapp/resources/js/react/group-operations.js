@@ -1312,8 +1312,7 @@ var CommandStatusWidget = React.createClass({
         var self = this;
         historyService.read(this.props.groupName).then(
             function(data) {
-                console.log(data);
-                for (var i = 0; i < data.length; i++) {
+                 for (var i = 0; i < data.length; i++) {
                     var status = {};
                     status["from"] = data[i].name;
                     status["userId"] = data[i].createBy;
