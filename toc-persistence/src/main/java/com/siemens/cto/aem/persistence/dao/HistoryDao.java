@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.persistence.dao;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
+
+import java.util.List;
 
 /**
  * History DAO.
@@ -10,5 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 public interface HistoryDao {
 
     void write(String name, JpaGroup group, String event, String user);
+
+    List<JpaHistory> read(String groupName, long numOfRecs);
 
 }

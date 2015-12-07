@@ -51,8 +51,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         CurrentState<Jvm, JvmState> prevState = null;
 
         final Identifier<Jvm> jvmId = aCommand.getJvmId();
+        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
         try {
-            final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
             final String event = aCommand.getControlOperation().getOperationState() == null ?
                     aCommand.getControlOperation().name() :
                     aCommand.getControlOperation().getOperationState().toStateString();
@@ -128,9 +128,12 @@ public class JvmControlServiceImpl implements JvmControlService {
              */
             jvmControlServiceLifecycle.startStateWithMessage(
                     jvmId,
-                    prevState != null ? prevState.getState() : JvmState.JVM_FAILED,
+                    JvmState.JVM_FAILED,
                     cfe.getMessage(),
                     aUser);
+
+            historyService.write(jvm.getName(), jvm.getGroups(), cfe.getMessage(), aUser.getId());
+
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + aCommand,
                     cfe);

@@ -7,7 +7,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
 @AttributeOverride(name="name", column=@Column(unique = false))
+@NamedQueries({
+    @NamedQuery(name = JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME,
+                query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName")
+})
 public class JpaHistory extends AbstractEntity<JpaHistory, History> {
+
+    public static final String QRY_GET_HISTORY_BY_GROUP_NAME = "getHistoryByGroupName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

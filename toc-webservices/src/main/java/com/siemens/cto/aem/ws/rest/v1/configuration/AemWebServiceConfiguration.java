@@ -4,8 +4,11 @@ import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -15,8 +18,10 @@ import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.exceptionmapper.*;
+import com.siemens.cto.aem.ws.rest.v1.impl.HistoryServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseMessageBodyWriter;
+import com.siemens.cto.aem.ws.rest.v1.service.HistoryServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
@@ -94,6 +99,9 @@ public class AemWebServiceConfiguration {
     @Qualifier("stateNotificationService")
     private StateNotificationService stateNotificationService;
 
+    @Autowired
+    private HistoryDao historyDao;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -122,6 +130,7 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1AdminServiceRest());
         serviceBeans.add(getV1StateServiceRest());
         serviceBeans.add(getV1ResourceServiceRest());
+        serviceBeans.add(getV1HistoryServiceRest());
 
         return serviceBeans;
     }
@@ -163,6 +172,16 @@ public class AemWebServiceConfiguration {
                 webServerCommandService,
                 webServerStateService,
                 wsWriteLockMap);
+    }
+
+    @Bean
+    public HistoryService getHistoryService() {
+        return new HistoryServiceImpl(historyDao);
+    }
+
+    @Bean
+    public HistoryServiceRest getV1HistoryServiceRest() {
+        return new HistoryServiceRestImpl(getHistoryService());
     }
 
     @Bean

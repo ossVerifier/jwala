@@ -1308,6 +1308,21 @@ var CommandStatusWidget = React.createClass({
                 </div>;
 
     },
+    componentDidMount: function() {
+        var self = this;
+        historyService.read("HEALTH CHECK 4.0").then(
+            function(data) {
+                console.log(data);
+                for (var i = 0; i < data.length; i++) {
+                    var status = {};
+                    status["from"] = data[i].name;
+                    status["userId"] = data[i].createBy;
+                    status["asOf"] = data[i].createDate;
+                    status["message"] = data[i].event;
+                    self.push(status, undefined, (i === data.length - 1));
+                }
+            }).caught(function(response) {console.log(response)});
+    },
     componentDidUpdate: function(prevProps, prevState) {
         if (this.refs.content) {
             this.refs.content.getDOMNode().scrollTop = this.refs.content.getDOMNode().scrollHeight;
@@ -1334,7 +1349,7 @@ var CommandStatusWidget = React.createClass({
     onXBtnMouseOut: function() {
         this.setState({xBtnHover: false});
     },
-    push: function(status, fontClassName) {
+    push: function(status, fontClassName, forceUpdate) {
         var errMsg = status.message === "" ? [status.stateString] : groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(status.message);
 
         // Do simple cleanup when status array reaches 200 items.
@@ -1353,6 +1368,9 @@ var CommandStatusWidget = React.createClass({
                                 <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
                                 <td>{errMsg[0]}</td></tr>);
         }
-        this.forceUpdate();
+
+        if (forceUpdate === undefined || forceUpdate === true) {
+            this.forceUpdate();
+        }
     }
 });
