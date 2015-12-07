@@ -104,8 +104,8 @@ public class AemWebServiceConfiguration {
     @Autowired
     private HistoryDao historyDao;
 
-    @Value("${history.max-findHistory-rec-count:30}")
-    private String maxReadRecCount;
+    @Autowired
+    private HistoryService historyService;
 
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
@@ -180,13 +180,9 @@ public class AemWebServiceConfiguration {
     }
 
     @Bean
-    public HistoryService getHistoryService() {
-        return new HistoryServiceImpl(historyDao, NumberUtils.toLong(maxReadRecCount));
-    }
-
-    @Bean
+    @Autowired
     public HistoryServiceRest getV1HistoryServiceRest() {
-        return new HistoryServiceRestImpl(getHistoryService());
+        return new HistoryServiceRestImpl(historyService);
     }
 
     @Bean

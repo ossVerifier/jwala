@@ -14,6 +14,6 @@ public interface HistoryDao {
 
     void createHistory(String name, JpaGroup group, String event, String user);
 
-    List<JpaHistory> findHistory(String groupName, long numOfRecs);
+    List<JpaHistory> findHistory(String groupName, int numOfRecs);
 
 }

@@ -17,10 +17,10 @@ import java.util.List;
 public class HistoryServiceImpl implements HistoryService {
 
     private final HistoryDao historyDao;
-    private final long maxReadRecCount;
+    private final int maxReadRecCount;
 
     @Autowired
-    public HistoryServiceImpl(final HistoryDao historyDao, final long maxReadRecCount) {
+    public HistoryServiceImpl(final HistoryDao historyDao, final int maxReadRecCount) {
         this.historyDao = historyDao;
         this.maxReadRecCount = maxReadRecCount;
     }

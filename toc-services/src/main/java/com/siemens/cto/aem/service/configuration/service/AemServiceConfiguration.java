@@ -121,7 +121,7 @@ public class AemServiceConfiguration {
     @Autowired
     private WebServerDao webServerDao;
 
-    @Value("${history.max-findHistory-rec-count:30}")
+    @Value("${history.max-read-rec-count:30}")
     private String maxReadRecCount;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
@@ -390,6 +390,6 @@ public class AemServiceConfiguration {
 
     @Bean
     public HistoryService getHistoryService(final HistoryDao historyDao) {
-        return new HistoryServiceImpl(historyDao, NumberUtils.toLong(maxReadRecCount));
+        return new HistoryServiceImpl(historyDao, NumberUtils.toInt(maxReadRecCount));
     }
 }

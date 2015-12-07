@@ -27,9 +27,10 @@ public class HistoryDaoImpl implements HistoryDao {
     }
 
     @Override
-    public List<JpaHistory> findHistory(String groupName, long numOfRecs) {
+    public List<JpaHistory> findHistory(final String groupName, final int numOfRecs) {
         final Query q = em.createNamedQuery(JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME);
         q.setParameter(PARAM_GROUP_NAME, groupName);
+        q.setMaxResults(numOfRecs);
         return q.getResultList();
     }
 }
