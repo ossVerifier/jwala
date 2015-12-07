@@ -7,6 +7,7 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -25,6 +26,8 @@ public interface WebServerDao {
 
 	WebServer getWebServer(final Identifier<WebServer> aWebServerId)
 			throws NotFoundException;
+
+	JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups);
 
 	List<WebServer> getWebServers();
 

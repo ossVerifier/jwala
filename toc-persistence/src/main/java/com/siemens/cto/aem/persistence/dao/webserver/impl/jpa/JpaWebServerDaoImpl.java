@@ -127,6 +127,15 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
+    public JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups) {
+        final JpaWebServer webServer = entityManager.find(JpaWebServer.class, webServerId);
+        if (fetchGroups) {
+            webServer.getGroups().size();
+        }
+        return webServer;
+    }
+
+    @Override
     public List<WebServer> getWebServers() {
 
         final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -223,13 +232,11 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     @SuppressWarnings("unchecked")
     @Override
     public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroup) {
-
-        final Query query =
-                entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY);
-
+        final Query query = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUP);
         query.setParameter("groupId", aGroup.getId());
-
-        return webserversFrom(query.getResultList());
+        final JpaGroup group = (JpaGroup) query.getSingleResult();
+        group.getWebServers().size();
+        return webserversFrom(group.getWebServers()); // TODO: Verify if we need to sort web servers by name.
     }
 
     protected WebServer webserverFrom(final JpaWebServer aJpaWebServer) {
@@ -252,8 +259,14 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     @Override
     public List<Application> findApplications(final String aWebServerName) {
-        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_APPLICATIONS_QUERY);
-        q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, aWebServerName);
+        // TODO: Use named query
+        Query q = entityManager.createQuery("SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName");
+        q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
+        final JpaWebServer webServer = (JpaWebServer) q.getSingleResult();
+        final long size = webServer.getGroups().size();
+
+        q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_NAME);
+        q.setParameter(JpaApplication.GROUP_LIST_PARAM, webServer.getGroups());
 
         final List<Application> apps = new ArrayList<>(q.getResultList().size());
         for (final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
@@ -272,8 +285,14 @@ public class JpaWebServerDaoImpl implements WebServerDao {
 
     @Override
     public List<Jvm> findJvms(final String aWebServerName) {
-        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
-        q.setParameter("wsName", aWebServerName);
+        // TODO: Use named query
+        Query q = entityManager.createQuery("SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName");
+        q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
+        final JpaWebServer webServer = (JpaWebServer) q.getSingleResult();
+        final long size = webServer.getGroups().size();
+
+        q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
+        q.setParameter("groups", webServer.getGroups());
 
         final List<Jvm> jvms = new ArrayList<>(q.getResultList().size());
         for (final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {

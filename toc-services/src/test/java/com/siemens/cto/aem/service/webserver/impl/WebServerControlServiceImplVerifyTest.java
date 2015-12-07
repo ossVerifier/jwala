@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
@@ -8,6 +9,7 @@ import com.siemens.cto.aem.domain.model.user.User;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -45,6 +47,9 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Captor
     private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
 
+    @Mock
+    private HistoryService mockHistoryService;
+
     private User user;
 
     @Before
@@ -52,9 +57,11 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         impl = new WebServerControlServiceImpl(webServerService,
                                                commandExecutor,
                                                webServerStateService,
-                                               webServerReachableStateMap);
+                                               webServerReachableStateMap,
+                mockHistoryService);
 
         user = new User("unused");
+        when(webServerService.getJpaWebServer(anyLong(), eq(true))).thenReturn(new JpaWebServer());
     }
 
     @Test
@@ -85,5 +92,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
                      actualSetStateCommand.getNewState().getId());
         assertEquals(controlOperation.getOperationState(),
                      actualSetStateCommand.getNewState().getState());
+
+        verify(mockHistoryService).write(anyString(), anyList(), anyString(), anyString());
     }
 }

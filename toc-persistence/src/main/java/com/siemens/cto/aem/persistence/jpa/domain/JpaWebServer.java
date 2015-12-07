@@ -9,17 +9,12 @@ import java.util.List;
 @Entity
 @Table(name = "webserver", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedQueries({
-    @NamedQuery(name = JpaWebServer.FIND_APPLICATIONS_QUERY,
-                query = "SELECT a FROM JpaApplication a WHERE a.group in " +
-                        "(SELECT ws.groups FROM JpaWebServer ws WHERE ws.name =:wsName)"),
     @NamedQuery(name = JpaWebServer.FIND_WEB_SERVER_BY_QUERY,
-                query ="SELECT ws FROM JpaWebServer ws WHERE ws.name =:wsName"),
+                query ="SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName"),
     @NamedQuery(name = JpaWebServer.FIND_JVMS_QUERY,
                 query = "SELECT DISTINCT jvm FROM JpaJvm jvm JOIN jvm.groups g " +
                         "WHERE g.id IN (SELECT a.group FROM JpaApplication a " +
-                        "WHERE a.group IN (SELECT w.groups FROM JpaWebServer w WHERE w.name = :wsName))"),
-    @NamedQuery(name=JpaWebServer.FIND_WEB_SERVER_BY_GROUP_QUERY,
-                query="SELECT ws FROM JpaWebServer ws WHERE :groupId MEMBER OF ws.groups.id ORDER BY ws.name")
+                        "WHERE a.group IN (:groups))")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
@@ -49,17 +44,11 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     @Column(nullable = false)
     private String docRoot;
 
-    public static final String FIND_APPLICATIONS_QUERY = "findApplicationsQuery";
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
     public static final String FIND_JVMS_QUERY = "findJvmsQuery";
-    public static final String FIND_WEB_SERVER_BY_GROUP_QUERY = "findWebServerByGroupQuery";
 
-    @ManyToMany
-    @JoinTable(name = "WEBSERVER_GRP",
-               joinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
-               inverseJoinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
-               uniqueConstraints = @UniqueConstraint(columnNames = {"WEBSERVER_ID", "GROUP_ID"}))
+    @ManyToMany(mappedBy = "webServers")
     private List<JpaGroup> groups = new ArrayList<>();
 
 	public Long getId() {

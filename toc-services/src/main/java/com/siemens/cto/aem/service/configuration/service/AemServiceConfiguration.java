@@ -253,11 +253,12 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerControlService")
     @Autowired
-    public WebServerControlService getWebServerControlService(final HistoryDao historyDao) {
+    public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(),
-                aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                getWebServerStateService(),
-                webServerReachableStateMap);
+                                               aemCommandExecutorConfig.getWebServerCommandExecutor(),
+                                               getWebServerStateService(),
+                                               webServerReachableStateMap,
+                historyService);
     }
 
     @Bean(name = "webServerCommandService")

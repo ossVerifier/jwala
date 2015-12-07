@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.request.webserver.*;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.domain.model.app.Application;
@@ -220,6 +221,12 @@ public class WebServerServiceImpl implements WebServerService {
                                                                        dao.findWebServerByName(webServerName),
                                                                        dao.findJvms(webServerName),
                                                                        dao.findApplications(webServerName));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups) {
+        return dao.getJpaWebServer(webServerId, fetchGroups);
     }
 
 }

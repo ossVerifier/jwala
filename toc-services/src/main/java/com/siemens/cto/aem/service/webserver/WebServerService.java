@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver;
 import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.id.Identifier;
 import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.domain.model.webserver.WebServer;
@@ -49,4 +50,5 @@ public interface WebServerService {
 
     String previewResourceTemplate(String webServerName, String groupName, String template);
 
+	JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups);
 }

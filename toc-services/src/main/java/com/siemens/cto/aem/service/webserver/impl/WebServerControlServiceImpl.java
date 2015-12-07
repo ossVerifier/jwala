@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -15,6 +16,7 @@ import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -32,22 +34,54 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
+    private final HistoryService historyService;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final WebServerCommandExecutor theExecutor,
                                        final StateService<WebServer, WebServerReachableState> theWebServerStateService,
-                                       final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap) {
+                                       final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
+                                       final HistoryService historyService) {
         webServerService = theWebServerService;
         webServerCommandExecutor = theExecutor;
         webServerStateService = theWebServerStateService;
         webServerReachableStateMap = theWebServerReachableStateMap;
+        this.historyService = historyService;
+    }
+
+    /**
+     * Since the querying of the web server status only depends on pinging to tell if it's alive or not, we can't tell for sure
+     * if the web server is really starting or stopping. Therefore it is assumed that if the user sends a signal for the
+     * web server to start or to stop, then the said web server is starting or stopping. So unlike the JVMs where we
+     * initially display START SENT or STOP SENT upon starting or stopping and getting a starting/stopping status afterwards,
+     * with the web servers we just say that the operational state is already STARTING/STOPPING since the web server
+     * will not return a status that is STARTING/STOPPING ( IMHO, we should just say START SENT or STOP SENT
+     * and let the UI display that as well and then explain to the user that the Web Server status is determined via pinging
+     * that is why we can't really say if the web server is starting/stopping.)
+     *
+     * This method translates STARTING/STOPPING to START SENT/STOP SENT.
+     *
+     * @return
+     */
+    private String translateEvent(final String event) {
+        if (event.equalsIgnoreCase("STARTING")) {
+            return "START SENT";
+        } else if (event.equalsIgnoreCase("STOPPING")) {
+            return "STOP SENT";
+        }
+        return event;
     }
 
     @Override
     public CommandOutput controlWebServer(final ControlWebServerRequest aCommand,
-                                                    final User aUser) {
+                                          final User aUser) {
 
+        final JpaWebServer webServer = webServerService.getJpaWebServer(aCommand.getWebServerId().getId(), true);
         try {
+            final String event = aCommand.getControlOperation().getOperationState() == null ?
+                aCommand.getControlOperation().name() :
+                aCommand.getControlOperation().getOperationState().toStateString();
+            historyService.write(webServer.getName(), webServer.getGroups(), translateEvent(event), aUser.getId());
+
             aCommand.validate();
 
             final SetStateRequest<WebServer, WebServerReachableState> setStateCommand = createStateCommand(aCommand);
@@ -79,6 +113,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
+            historyService.write(webServer.getName(), webServer.getGroups(), cfe.getMessage(), aUser.toString());
+
             setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                              "CommandFailureException when attempting to control a Web Server: " + aCommand,

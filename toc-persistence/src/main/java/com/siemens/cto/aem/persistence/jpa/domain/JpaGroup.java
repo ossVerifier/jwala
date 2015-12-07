@@ -4,19 +4,22 @@ import com.siemens.cto.aem.domain.model.group.Group;
 import com.siemens.cto.aem.domain.model.group.GroupState;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 @Entity
 @Table(name = "grp", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedQueries({
-        @NamedQuery(name = JpaGroup.QUERY_GET_GROUP_ID, query = "SELECT g.id FROM JpaGroup g WHERE g.name = :name")
+        @NamedQuery(name = JpaGroup.QUERY_GET_GROUP_ID, query = "SELECT g.id FROM JpaGroup g WHERE g.name = :name"),
+        @NamedQuery(name = JpaGroup.QUERY_GET_GROUP, query = "SELECT g FROM JpaGroup g WHERE g.id = :groupId")
 })
 public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     private static final long serialVersionUID = -2125399708516728584L;
 
     static public final String QUERY_GET_GROUP_ID = "getGroupId";
+    static public final String QUERY_GET_GROUP = "getGroup";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,10 +43,9 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",
-            joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
-            inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
-            uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "WEBSERVER_ID"}))
-    private List<JpaWebServer> webServers;
+            joinColumns = {@JoinColumn(name = "GROUP_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID")})
+    private List<JpaWebServer> webServers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "groupId")
