@@ -594,14 +594,14 @@ var GroupOperationsDataTable = React.createClass({
                              isColResizable={true}
                              openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
    },
-   openRowLoadDataDoneCallbackHandler: function(groupId) {
+   openRowLoadDataDoneCallbackHandler: function(groupId, groupName) {
        var self = this;
        var key = GroupOperations.getExtDivCompId(groupId);
 
        // Mount a status window where one can see action events and status errors.
        var mountingNode = $("#" + key);
        if (mountingNode.length > 0) {
-           React.render(<CommandStatusWidget key={key} />, mountingNode.get(0), function(){
+           React.render(<CommandStatusWidget key={key} groupName={groupName} />, mountingNode.get(0), function(){
                self.props.commandStatusWidgetMap[key] = this;
            });
        }
@@ -1310,7 +1310,7 @@ var CommandStatusWidget = React.createClass({
     },
     componentDidMount: function() {
         var self = this;
-        historyService.read("HEALTH CHECK 4.0").then(
+        historyService.read(this.props.groupName).then(
             function(data) {
                 console.log(data);
                 for (var i = 0; i < data.length; i++) {

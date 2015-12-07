@@ -241,7 +241,10 @@ var ExpandCollapseControl = React.createClass({
         var i = 0;
 
         try {
-            this.props.openRowLoadDataDoneCallback(this.props.parentItemId);
+            // Note: Future refactoring will use entity names (or client side IDs) instead of database IDs since db ids
+            //       shouldn't be exposed to the client. This is the reason why the parentItemName is also passed since
+            //       names are used by newer REST services.
+            this.props.openRowLoadDataDoneCallback(this.props.parentItemId, this.props.parentItemName);
 
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
                 self.drawDataTable(subDataTable,
