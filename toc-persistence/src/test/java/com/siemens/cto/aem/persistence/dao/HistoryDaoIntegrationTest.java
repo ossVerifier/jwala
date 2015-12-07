@@ -43,7 +43,7 @@ public class HistoryDaoIntegrationTest {
 
     @Test
     public void testWriteHistory() {
-        historyDao.write("any", null, "Testing...", "any");
+        historyDao.createHistory("any", null, "Testing...", "any");
     }
 
 }

@@ -18,6 +18,6 @@ public interface HistoryServiceRest {
 
     @GET
     @Path("/{groupName}")
-    Response read(@PathParam("groupName") String groupName);
+    Response findHistory(@PathParam("groupName") String groupName);
 
 }

@@ -16,18 +16,18 @@ import java.util.List;
  */
 public class HistoryDaoImpl implements HistoryDao {
 
-    private static String PARAM_GROUP_NAME = "groupName";
+    private static final String PARAM_GROUP_NAME = "groupName";
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager em;
 
     @Override
-    public void write(final String name, final JpaGroup group, final String event, String user) {
+    public void createHistory(final String name, final JpaGroup group, final String event, String user) {
         em.persist(new JpaHistory(name, group, event, user));
     }
 
     @Override
-    public List<JpaHistory> read(String groupName, long numOfRecs) {
+    public List<JpaHistory> findHistory(String groupName, long numOfRecs) {
         final Query q = em.createNamedQuery(JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME);
         q.setParameter(PARAM_GROUP_NAME, groupName);
         return q.getResultList();

@@ -93,6 +93,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         assertEquals(controlOperation.getOperationState(),
                      actualSetStateCommand.getNewState().getState());
 
-        verify(mockHistoryService).write(anyString(), anyList(), anyString(), anyString());
+        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
     }
 }

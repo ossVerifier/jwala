@@ -80,7 +80,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final String event = aCommand.getControlOperation().getOperationState() == null ?
                 aCommand.getControlOperation().name() :
                 aCommand.getControlOperation().getOperationState().toStateString();
-            historyService.write(webServer.getName(), webServer.getGroups(), translateEvent(event), aUser.getId());
+            historyService.createHistory(webServer.getName(), webServer.getGroups(), translateEvent(event), aUser.getId());
 
             aCommand.validate();
 
@@ -113,7 +113,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
-            historyService.write(webServer.getName(), webServer.getGroups(), cfe.getMessage(), aUser.toString());
+            historyService.createHistory(webServer.getName(), webServer.getGroups(), cfe.getMessage(), aUser.toString());
 
             setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

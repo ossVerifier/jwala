@@ -100,7 +100,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         assertEquals(controlOperation.getOperationState(),
                 setJvmStateCommand.getValue().getNewState().getState());
 
-        verify(mockHistoryService).write(anyString(), anyList(), anyString(), anyString());
+        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         boolean exceptionThrown = false;
         try {
             impl.controlJvm(controlCommand, user);
-            verify(mockHistoryService).write(anyString(), anyList(), anyString(), anyString());
+            verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
         } catch (Exception e) {
             exceptionThrown = true;
         }

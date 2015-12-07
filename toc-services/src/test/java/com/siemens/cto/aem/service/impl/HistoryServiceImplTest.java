@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -30,15 +31,21 @@ public class HistoryServiceImplTest {
     @Before
     public void setUp() {
         initMocks(this);
-        historyService = new HistoryServiceImpl(mockHistoryDao);
+        historyService = new HistoryServiceImpl(mockHistoryDao, 1);
     }
 
     @Test
     public void testWrite() {
         final List<JpaGroup> groups = new ArrayList<>();
         groups.add(new JpaGroup());
-        historyService.write("any", groups, "Testing...", "user");
-        verify(mockHistoryDao).write(eq("any"), any(JpaGroup.class), eq("Testing..."), eq("user"));
+        historyService.createHistory("any", groups, "Testing...", "user");
+        verify(mockHistoryDao).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."), eq("user"));
+    }
+
+    @Test
+    public void testRead() {
+        historyService.findHistory("any");
+        verify(mockHistoryDao).findHistory(eq("any"), anyLong());
     }
 
 }

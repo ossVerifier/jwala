@@ -12,8 +12,8 @@ import java.util.List;
  */
 public interface HistoryDao {
 
-    void write(String name, JpaGroup group, String event, String user);
+    void createHistory(String name, JpaGroup group, String event, String user);
 
-    List<JpaHistory> read(String groupName, long numOfRecs);
+    List<JpaHistory> findHistory(String groupName, long numOfRecs);
 
 }

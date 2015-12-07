@@ -56,7 +56,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = aCommand.getControlOperation().getOperationState() == null ?
                     aCommand.getControlOperation().name() :
                     aCommand.getControlOperation().getOperationState().toStateString();
-            historyService.write(jvm.getName(), jvm.getGroups(), event, aUser.getId());
+            historyService.createHistory(jvm.getName(), jvm.getGroups(), event, aUser.getId());
 
             aCommand.validate();
             prevState = null;
@@ -132,7 +132,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                     cfe.getMessage(),
                     aUser);
 
-            historyService.write(jvm.getName(), jvm.getGroups(), cfe.getMessage(), aUser.getId());
+            historyService.createHistory(jvm.getName(), jvm.getGroups(), cfe.getMessage(), aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + aCommand,

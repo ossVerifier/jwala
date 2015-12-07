@@ -12,8 +12,8 @@ import java.util.List;
  */
 public interface HistoryService {
 
-    void write(String name, List<JpaGroup> groups, String event, String user);
+    void createHistory(String name, List<JpaGroup> groups, String event, String user);
 
-    List<JpaHistory> read(String groupName);
+    List<JpaHistory> findHistory(String groupName);
 
 }
