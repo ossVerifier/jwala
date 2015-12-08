@@ -10,8 +10,8 @@ public enum WebServerReachableState implements OperationalState {
     WS_REACHABLE        ("STARTED"),
     WS_UNREACHABLE      ("STOPPED"),
     WS_UNKNOWN          ("UNKNOWN"),
-    WS_STARTING         ("STARTING"),
-    WS_STOPPING         ("STOPPING"),
+    WS_START_SENT       ("START SENT"),
+    WS_STOP_SENT        ("STOP SENT"),
     WS_FAILED           ("FAILED");
 
     private static final Map<String, WebServerReachableState> LOOKUP_MAP = new HashMap<>(values().length);

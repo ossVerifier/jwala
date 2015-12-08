@@ -98,7 +98,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                 JVM_STARTING,
                 JVM_STARTED,
                 WS_REACHABLE,
-                WS_STARTING
+                WS_START_SENT
         }) {
             startingStates.add(state);
         }
@@ -113,7 +113,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
                 JVM_DESTROYED,
                 SVC_STOPPED,
                 WS_UNREACHABLE,
-                WS_STOPPING
+                WS_STOP_SENT
         }) {
             stoppingStates.add(state);
         }

@@ -180,7 +180,7 @@ var GroupOperations = React.createClass({
                     if (webServerStatusWidget !== undefined) {
                         for (var i = 0; i < newWebServerStates.length; i++) {
                             if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                                if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.STARTING || newWebServerStates[i].stateString === GroupOperations.STOPPING) {
+                                if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.START_SENT || newWebServerStates[i].stateString === GroupOperations.STOP_SENT) {
                                     if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
                                         newWebServerStates[i].stateString = GroupOperations.START_SENT;
                                     }
@@ -307,8 +307,6 @@ var GroupOperations = React.createClass({
         FAILED: "FAILED",
         START_SENT: "START SENT",
         STOP_SENT: "STOP SENT",
-        STARTING: "STARTING",
-        STOPPING: "STOPPING",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
@@ -1332,12 +1330,7 @@ var CommandStatusWidget = React.createClass({
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
-        myWindow.document.write(msg[1]);
-        // TODO make this pop-up work more better
-//        React.render(<DialogBox title="Error"
-//                                contentDivClassName="maxHeight400px"
-//                                content={<ErrorMsgList msgList={[msg]}/>} />,
-//                     this.refs.commandStatusContainer.getDOMNode().parentNode.parentNode);
+        myWindow.document.write(msg);
     },
     onXBtnClick: function() {
         this.props.closeCallback();
@@ -1356,7 +1349,7 @@ var CommandStatusWidget = React.createClass({
             this.state.statusRows.splice(0, 50); // remove first 50 items
         }
 
-        if (errMsg[1]) {
+        if (errMsg[1] && errMsg[1].trim() !== "") {
             this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
                                                 <td>{status.userId}</td>
                                                 <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>

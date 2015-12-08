@@ -107,8 +107,8 @@ public class WebServerStateSetterWorker {
      * @return true if web server is starting or stopping
      */
     private boolean isWebServerBusy(final WebServer webServer) {
-        return  webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STARTING ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOPPING;
+        return  webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_START_SENT ||
+                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOP_SENT;
     }
 
     /**

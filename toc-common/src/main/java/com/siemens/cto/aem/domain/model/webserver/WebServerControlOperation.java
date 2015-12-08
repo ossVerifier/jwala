@@ -8,8 +8,8 @@ import java.util.Map;
 
 public enum WebServerControlOperation {
 
-    START("start", WebServerReachableState.WS_STARTING),
-    STOP("stop", WebServerReachableState.WS_STOPPING),
+    START("start", WebServerReachableState.WS_START_SENT),
+    STOP("stop", WebServerReachableState.WS_STOP_SENT),
     VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();

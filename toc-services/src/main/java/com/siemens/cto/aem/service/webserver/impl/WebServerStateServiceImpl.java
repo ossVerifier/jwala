@@ -22,8 +22,8 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
                                      final StateNotificationWorker stateNotificationWorker) {
         super(thePersistenceService, theNotificationService, StateType.WEB_SERVER, groupStateService, stateNotificationWorker);
 
-        wsStatesToCheck.add(WebServerReachableState.WS_STARTING);
-        wsStatesToCheck.add(WebServerReachableState.WS_STOPPING);
+        wsStatesToCheck.add(WebServerReachableState.WS_START_SENT);
+        wsStatesToCheck.add(WebServerReachableState.WS_STOP_SENT);
     }
 
     @Override
