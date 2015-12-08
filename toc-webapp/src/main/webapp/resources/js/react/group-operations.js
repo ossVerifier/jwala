@@ -1350,15 +1350,19 @@ var CommandStatusWidget = React.createClass({
         }
 
         if (errMsg[1] && errMsg[1].trim() !== "") {
-            this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
-                                                <td>{status.userId}</td>
-                                                <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                                <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td></tr>);
+            this.state.statusRows.push(<tr className={fontClassName}>
+                                           <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                           <td className="command-status-td">{status.from}</td>
+                                           <td>{status.userId}</td>
+                                           <td className="command-status-td" style={{textDecoration: "underline", cursor: "pointer"}} onClick={this.showDetails.bind(this, errMsg[1])}>{errMsg[0]}</td>
+                                       </tr>);
         } else {
-            this.state.statusRows.push(<tr className={fontClassName}><td className="command-status-td">{status.from}</td>
-                                <td>{status.userId}</td>
-                                <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
-                                <td>{errMsg[0]}</td></tr>);
+            this.state.statusRows.push(<tr className={fontClassName}>
+                                           <td>{moment(status.asOf).format("MM/DD/YYYY hh:mm:ss")}</td>
+                                           <td className="command-status-td">{status.from}</td>
+                                           <td>{status.userId}</td>
+                                           <td>{errMsg[0]}</td>
+                                       </tr>);
         }
 
         if (forceUpdate === undefined || forceUpdate === true) {
