@@ -10,6 +10,7 @@ public class CommonSshTestConfiguration {
 
     private final JschBuilder builder;
     private final RemoteSystemConnection remoteSystemConnection;
+    private String password;
 
     public CommonSshTestConfiguration() {
         //TODO (Corey) generalize this so that %HOME% works
@@ -17,6 +18,7 @@ public class CommonSshTestConfiguration {
         builder = new JschBuilder(KNOWN_HOSTS_FILE,
                                   PRIVATE_KEY);
         remoteSystemConnection = new RemoteSystemConnection("z002xuvs",
+                "ppp123",
                                                             "usmlvv1cto989",
                                                             22);
     }
@@ -35,5 +37,9 @@ public class CommonSshTestConfiguration {
 
     public String getPrivateKey() {
         return PRIVATE_KEY;
+    }
+
+    public String getPassword() {
+        return remoteSystemConnection.getPassword();
     }
 }

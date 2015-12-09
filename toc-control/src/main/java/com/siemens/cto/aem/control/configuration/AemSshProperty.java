@@ -5,7 +5,8 @@ public enum AemSshProperty {
     USER_NAME("AemSsh.userName"),
     PORT("AemSsh.port"),
     PRIVATE_KEY_FILE("AemSsh.privateKeyFile"),
-    KNOWN_HOSTS_FILE("AemSsh.knownHostsFile");
+    KNOWN_HOSTS_FILE("AemSsh.knownHostsFile"),
+    ENCRYPTED_PASSWORD("AemSsh.encrypted.password");
 
     private final String propertyName;
 

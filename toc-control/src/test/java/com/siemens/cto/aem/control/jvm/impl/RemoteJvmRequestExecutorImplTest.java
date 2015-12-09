@@ -37,9 +37,9 @@ public class RemoteJvmRequestExecutorImplTest {
         final CommonSshTestConfiguration testConfiguration = new CommonSshTestConfiguration();
         final CommandExecutor executor = new ThreadedCommandExecutorImpl(executorService);
         final SshConfiguration sshConfig = new SshConfiguration(testConfiguration.getRemoteSystemConnection().getUser(),
-                testConfiguration.getRemoteSystemConnection().getPort(),
-                testConfiguration.getPrivateKey(),
-                testConfiguration.getKnownHostsFile());
+                                                                testConfiguration.getRemoteSystemConnection().getPort(),
+                                                                testConfiguration.getPrivateKey(),
+                                                                testConfiguration.getKnownHostsFile(), testConfiguration.getPassword());
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
         impl = new RemoteJvmCommandExecutorImpl(executor,

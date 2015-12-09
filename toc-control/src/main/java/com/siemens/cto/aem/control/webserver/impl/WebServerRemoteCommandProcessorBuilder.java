@@ -45,15 +45,17 @@ public class WebServerRemoteCommandProcessorBuilder implements CommandProcessorB
     public CommandProcessor build() throws CommandFailureException {
 
         final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(),
-                                                                      command);
+                command);
         return new JschCommandProcessorImpl(jsch,
-                                            remoteCommand);
+                remoteCommand);
     }
 
     protected RemoteSystemConnection getRemoteSystemConnection() {
-        final RemoteSystemConnection connection = new RemoteSystemConnection(sshConfig.getUserName(),
-                                                                             webServer.getHost(),
-                                                                             sshConfig.getPort());
+        final RemoteSystemConnection connection = new RemoteSystemConnection(
+                sshConfig.getUserName(),
+                sshConfig.getPassword(),
+                webServer.getHost(),
+                sshConfig.getPort());
         return connection;
     }
 }

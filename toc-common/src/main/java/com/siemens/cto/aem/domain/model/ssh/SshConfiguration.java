@@ -7,29 +7,37 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import java.io.Serializable;
 
 public class SshConfiguration implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER  = LoggerFactory.getLogger(SshConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
 
     private final String userName;
     private final Integer port;
     private final String privateKeyFile;
     private final String knownHostsFile;
+    private final String iAmNotThePasswordYoureLookingFor;
+    private final Expression decryptExpression;
+    private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().decryptBase64( #stringToDecrypt )";
+    private final SpelExpressionParser expressionParser;
 
     public SshConfiguration(final String theUserName,
                             final Integer thePort,
                             final String thePrivateKeyFile,
-                            final String theKnownHostsFile) {
-        
-        
-        if(theUserName == null
+                            final String theKnownHostsFile,
+                            final String theEncPassword) {
+
+
+        if (theUserName == null
                 || thePort == null
                 || thePrivateKeyFile == null
-                || theKnownHostsFile == null ) {
+                || theKnownHostsFile == null) {
             String message = "Startup Aborted: Aem SSH Properties Not Set in Application Properties file";
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.SSH_CONFIG_MISSING, message);
@@ -38,6 +46,19 @@ public class SshConfiguration implements Serializable {
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
+        if (theEncPassword == null) {
+            decryptExpression = null;
+            expressionParser = null;
+            iAmNotThePasswordYoureLookingFor = null;
+        } else {
+            expressionParser = new SpelExpressionParser();
+            decryptExpression = expressionParser.parseExpression(encryptExpressionString);
+
+            // crypto bash
+            StandardEvaluationContext context = new StandardEvaluationContext();
+            context.setVariable("stringToDecrypt", theEncPassword);
+            iAmNotThePasswordYoureLookingFor = decryptExpression.getValue(context, String.class);
+        }
     }
 
     public String getUserName() {
@@ -55,6 +76,8 @@ public class SshConfiguration implements Serializable {
     public String getKnownHostsFile() {
         return knownHostsFile;
     }
+
+    public String getPassword() { return iAmNotThePasswordYoureLookingFor; }
 
     @Override
     public boolean equals(Object obj) {
@@ -95,4 +118,5 @@ public class SshConfiguration implements Serializable {
                 .append("knownHostsFile", knownHostsFile)
                 .toString();
     }
+
 }

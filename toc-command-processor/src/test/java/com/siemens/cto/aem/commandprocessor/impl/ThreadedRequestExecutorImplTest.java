@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
 import com.jcraft.jsch.JSch;
-import com.siemens.cto.aem.commandprocessor.impl.cli.LocalRuntimeCommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.exec.CommandOutput;
@@ -37,28 +36,6 @@ public class ThreadedRequestExecutorImplTest {
     public void tearDown() {
         executorService.shutdown();
         executorService.shutdownNow();
-    }
-
-    @Test
-    public void testSuccessfulLocalExecution() throws Exception {
-        final ExecCommand command = new ExecCommand("ipconfig");
-        final CommandOutput results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
-
-        assertTrue(results.getReturnCode().wasSuccessful());
-        assertTrue(results.getStandardOutput().contains("Windows IP Configuration"));
-        assertEquals("",
-                     results.getStandardError());
-    }
-
-    @Test
-    public void testUnsuccessfulLocalExecution() throws Exception {
-        final ExecCommand command = new ExecCommand("net", "/gibberishParametersThatShouldNotWork");
-        final CommandOutput results = impl.execute(new LocalRuntimeCommandProcessorBuilder(command));
-
-        assertFalse(results.getReturnCode().wasSuccessful());
-        assertTrue(results.getStandardError().contains("The syntax of this command is"));
-        assertEquals("",
-                     results.getStandardOutput());
     }
 
     @Test

@@ -92,6 +92,7 @@ public class JschRequestProcessorImplTest {
     @Test(expected = RemoteCommandFailureException.class)
     public void testBadRemoteCommand() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection("abc",
+                "123546",
                                                                                                      "example.com",
                                                                                                      123456),
                                                                           new ExecCommand("vi"));

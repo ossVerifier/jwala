@@ -39,7 +39,7 @@ public class RemoteWebServerRequestExecutorImplTest {
         final SshConfiguration sshConfig = new SshConfiguration(testConfiguration.getRemoteSystemConnection().getUser(),
                                                                 testConfiguration.getRemoteSystemConnection().getPort(),
                                                                 testConfiguration.getPrivateKey(),
-                                                                testConfiguration.getKnownHostsFile());
+                                                                testConfiguration.getKnownHostsFile(), testConfiguration.getPassword());
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                                                          .setKnownHostsFileName(sshConfig.getKnownHostsFile());
         impl = new RemoteWebServerCommandExecutorImpl(executor,

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.commandprocessor;
 
+import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
 
@@ -16,4 +17,6 @@ public interface CommandProcessor extends Closeable {
     OutputStream getCommandInput();
 
     ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException;
+
+    void processCommand() throws RemoteCommandFailureException;
 }

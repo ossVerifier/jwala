@@ -31,7 +31,7 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
     public CommandOutput execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException {
 
         try (final CommandProcessor processor = aBuilder.build()) {
-
+            processor.processCommand();
             final Future<String> standardOutput = consumeOutput(processor.getCommandOutput());
             final Future<String> standardError = consumeOutput(processor.getErrorOutput());
             final ExecReturnCode returnCode = getReturnCodeWhenFinished(processor,

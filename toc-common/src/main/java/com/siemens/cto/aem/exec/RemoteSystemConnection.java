@@ -13,13 +13,16 @@ public class RemoteSystemConnection implements Serializable {
     private final String user;
     private final String host;
     private final Integer port;
+    private final String password;
 
     public RemoteSystemConnection(final String theUser,
+                                  final String thePassword,
                                   final String theHost,
                                   final Integer thePort) {
         user = theUser;
         host = theHost;
         port = thePort;
+        password = thePassword;
     }
 
     public String getUser() {
@@ -69,5 +72,9 @@ public class RemoteSystemConnection implements Serializable {
                 .append("host", host)
                 .append("port", port)
                 .toString();
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

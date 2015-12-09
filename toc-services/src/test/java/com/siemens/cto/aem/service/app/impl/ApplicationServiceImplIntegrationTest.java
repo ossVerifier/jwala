@@ -108,7 +108,7 @@ public class ApplicationServiceImplIntegrationTest {
 
         @Bean
         public ApplicationCommandService getApplicationCommandService() {
-            final SshConfiguration sshConfiguration = new SshConfiguration("z003bpej", 22, "", "");
+            final SshConfiguration sshConfiguration = new SshConfiguration("z003bpej", 22, "", "", "MrI6SA43vbcIws0pJygEDA==");
             return new ApplicationCommandServiceImpl(sshConfiguration);
         }
 

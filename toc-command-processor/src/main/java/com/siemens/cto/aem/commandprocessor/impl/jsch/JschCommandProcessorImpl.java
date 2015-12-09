@@ -27,15 +27,20 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
 
-    private final Session session;
-    private final Channel channel;
-    private final InputStream remoteOutput;
-    private final InputStream remoteError;
-    private final OutputStream localInput;
-    private final RemoteExecCommand remoteCommand;
+    private Session session;
+    private Channel channel;
+    private InputStream remoteOutput;
+    private InputStream remoteError;
+    private OutputStream localInput;
+    private final JSch theJsch;
+    private final RemoteExecCommand theCommand;
 
-    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand)
-            throws RemoteCommandFailureException {
+    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand) {
+        this.theJsch = theJsch;
+        this.theCommand = theCommand;
+    }
+
+    public void processCommand() throws RemoteCommandFailureException {
 
         try {
             logger.debug("before executing command {}", theCommand);
@@ -43,8 +48,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             String commandString = theCommand.getCommand().toCommandString();
             logger.debug("remote Jsch command string is {}", commandString);
 
-            remoteCommand = theCommand;
             final RemoteSystemConnection remoteSystemConnection = theCommand.getRemoteSystemConnection();
+
             session = prepareSession(theJsch, remoteSystemConnection);
             session.connect();
 
@@ -110,7 +115,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
         final int returnCode = channel.getExitStatus();
         if (returnCode == -1) {
-            throw new RemoteNotYetReturnedException(remoteCommand);
+            throw new RemoteNotYetReturnedException(theCommand);
         }
 
         return new ExecReturnCode(returnCode);
@@ -118,7 +123,14 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     private Session prepareSession(final JSch aJsch, final RemoteSystemConnection someConnectionInfo)
             throws JSchException {
-        return aJsch.getSession(someConnectionInfo.getUser(), someConnectionInfo.getHost(),
+        final Session session = aJsch.getSession(someConnectionInfo.getUser(), someConnectionInfo.getHost(),
                 someConnectionInfo.getPort());
+        final String password = someConnectionInfo.getPassword();
+        if (password != null) {
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
+        }
+        return session;
     }
 }

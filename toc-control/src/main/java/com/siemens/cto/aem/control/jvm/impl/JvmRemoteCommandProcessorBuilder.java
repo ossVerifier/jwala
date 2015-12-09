@@ -51,7 +51,9 @@ public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder
     }
 
     protected RemoteSystemConnection getRemoteSystemConnection() {
-        final RemoteSystemConnection connection = new RemoteSystemConnection(sshConfig.getUserName(),
+        final RemoteSystemConnection connection = new RemoteSystemConnection(
+                sshConfig.getUserName(),
+                sshConfig.getPassword(),
                 jvm.getHostName(),
                 sshConfig.getPort());
         return connection;

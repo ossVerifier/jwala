@@ -23,7 +23,9 @@ public class AemSshConfig {
                                                                     getStringPropertyFrom(sshProperties,
                                                                                           AemSshProperty.PRIVATE_KEY_FILE),
                                                                     getStringPropertyFrom(sshProperties,
-                                                                                          AemSshProperty.KNOWN_HOSTS_FILE));
+                                                                                          AemSshProperty.KNOWN_HOSTS_FILE),
+                                                                    getStringPropertyFrom(sshProperties,
+                                                                                           AemSshProperty.ENCRYPTED_PASSWORD));
 
         return configuration;
     }
@@ -39,7 +41,7 @@ public class AemSshConfig {
 
     protected String getStringPropertyFrom(final Properties someProperties,
                                            final AemSshProperty aProperty) {
-        return someProperties.getProperty(aProperty.getPropertyName());
+        return someProperties.getProperty(aProperty.getPropertyName(), null);
     }
 
     protected Integer getIntegerPropertyFrom(final Properties someProperties,
