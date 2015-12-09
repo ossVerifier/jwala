@@ -47,7 +47,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
             inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID")})
     private List<JpaWebServer> webServers = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "groupId")
     private List<JpaHistory> history;
 
@@ -111,11 +111,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
         final JpaGroup jpaGroup = (JpaGroup) o;
 
-        if (id != null ? !id.equals(jpaGroup.id) : jpaGroup.id != null) {
-            return false;
-        }
-
-        return true;
+        return id != null ? id.equals(jpaGroup.id) : jpaGroup.id == null;
     }
 
     @Override

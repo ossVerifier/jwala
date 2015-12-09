@@ -24,15 +24,6 @@ public class HistoryServiceRestImpl implements HistoryServiceRest {
     @Override
     public Response findHistory(final String groupName, final Integer numOfRec) {
         final List<JpaHistory> historyList = historyService.findHistory(groupName, numOfRec);
-
-        // Prevent circular relationships (history has groups and groups has history) to manifest in the JSON response.
-        // TODO: Do above via JPA or when data is serialized to the UI (whichever is the best approach).
-        for (JpaHistory history: historyList) {
-            final JpaGroup group = new JpaGroup();
-            group.setName(groupName);
-            history.setGroup(group);
-        }
-
         return Response.ok(historyList).build();
     }
 
