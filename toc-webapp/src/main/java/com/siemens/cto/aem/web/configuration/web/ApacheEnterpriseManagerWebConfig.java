@@ -74,16 +74,14 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
     @Bean
     LocaleResolver localeResolver() {
-        final AcceptHeaderLocaleResolver resolver = new AcceptHeaderLocaleResolver();
-        return resolver;
+        return new AcceptHeaderLocaleResolver();
     }
 
     @Bean(name = "variableSource")
     public JavaScriptVariableSource variableSource() {
-        final JavaScriptVariableSource compositeSource = new CompositeJavaScriptVariableSource(applicationPropertySource(),
-                                                                                               contextPathSource(),
-                                                                                               loginStatusSource());
-        return compositeSource;
+        return new CompositeJavaScriptVariableSource(applicationPropertySource(),
+                                                     contextPathSource(),
+                                                     loginStatusSource());
     }
 
     @Bean
@@ -98,8 +96,7 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
     @Bean(name = "loginVariableSource")
     public JavaScriptVariableSource loginVariableSource() {
-        final JavaScriptVariableSource compositeSource = new CompositeJavaScriptVariableSource(loginStatusSource());
-        return compositeSource;
+        return new CompositeJavaScriptVariableSource(loginStatusSource());
     }
 
     @Bean
@@ -107,4 +104,5 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
     JavaScriptVariableSource loginStatusSource() {
         return new LoginStatusSource(request);
     }
+
 }
