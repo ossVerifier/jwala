@@ -1,7 +1,0 @@
-{
-	"name":"Application Properties File",
-	"templateName":"AppPropsTemplate.tpl",
-	"contentType":"text/plain",
-	"configFileName":"[appName].properties",
-	"relativeDir":"/properties"
-}
