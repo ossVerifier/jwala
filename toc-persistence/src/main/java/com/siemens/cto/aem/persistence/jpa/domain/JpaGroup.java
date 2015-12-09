@@ -26,6 +26,9 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     @Column(name = "ID")
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    public String name;
+
     @ManyToMany
     @JoinTable(name = "GRP_JVM",
                joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
@@ -58,6 +61,14 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     public void setId(final Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<JpaJvm> getJvms() {

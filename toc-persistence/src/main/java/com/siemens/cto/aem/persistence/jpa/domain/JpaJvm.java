@@ -21,6 +21,9 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
+    public String name;
+
     private String hostName;
 
     @ManyToMany(mappedBy = "jvms")
@@ -47,6 +50,14 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
     public Long getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setId(final Long id) {
@@ -136,11 +147,7 @@ public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
 
         final JpaJvm jpaJvm = (JpaJvm) o;
 
-        if (id != null ? !id.equals(jpaJvm.id) : jpaJvm.id != null) {
-            return false;
-        }
-
-        return true;
+        return id != null ? id.equals(jpaJvm.id) : jpaJvm.id == null;
     }
 
     @Override

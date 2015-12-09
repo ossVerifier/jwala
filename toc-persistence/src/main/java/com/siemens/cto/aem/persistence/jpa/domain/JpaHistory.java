@@ -6,7 +6,6 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
-@AttributeOverride(name="name", column=@Column(unique = false))
 @NamedQueries({
     @NamedQuery(name = JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME,
                 query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName")
@@ -19,6 +18,9 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    public String serverName;
+
     @ManyToOne
     @JoinColumn(name = "groupId")
     private JpaGroup group;
@@ -27,8 +29,8 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     public JpaHistory() {}
 
-    public JpaHistory(final String name, final JpaGroup group, final String event, String user) {
-        this.name = name;
+    public JpaHistory(final String serverName, final JpaGroup group, final String event, String user) {
+        this.serverName = serverName;
         this.group = group;
         this.event = event;
         this.createBy = user;
@@ -37,6 +39,14 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
     @Override
     public Long getId() {
         return id;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
     }
 
     public void setId(final Long id) {

@@ -26,9 +26,6 @@ public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> im
     @Column(name = "updateBy")
     public String updateBy;
 
-    @Column(nullable = false, unique = true)
-    public String name;
-
     @Override
     public Calendar getCreateDate() {
         return createDate;
@@ -69,18 +66,10 @@ public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> im
         this.updateBy = updateBy;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
     public abstract Long getId();
 
     public Identifier<POJO> id() {
-        return Identifier.<POJO>id(this.getId());
+        return Identifier.id(this.getId());
     }
 
     @PrePersist

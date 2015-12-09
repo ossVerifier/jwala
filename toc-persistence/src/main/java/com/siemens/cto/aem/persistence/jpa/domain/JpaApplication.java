@@ -78,6 +78,9 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     public Long id;
+
+    @Column(nullable = false, unique = true)
+    public String name;
     
     /**
      * Relationship stored in app.group to allow operations across a group
@@ -130,6 +133,14 @@ public class JpaApplication extends AbstractEntity<JpaApplication, Application> 
     @Override
     public Long getId() {
         return this.id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isSecure() {
