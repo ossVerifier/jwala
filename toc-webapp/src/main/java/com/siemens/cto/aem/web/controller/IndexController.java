@@ -106,8 +106,7 @@ public class IndexController {
     @RequestMapping(value = "/page-constants")
     public String pageConstants(final Model aModel) {
         final Set<JavaScriptVariable> variables = variableSource.createVariables();
-        return addJavaScriptVariablesToModel(aModel,
-                                             variables);
+        return addJavaScriptVariablesToModel(aModel, variables);
     }
 
     @RequestMapping(value = "/login-page-constants")
