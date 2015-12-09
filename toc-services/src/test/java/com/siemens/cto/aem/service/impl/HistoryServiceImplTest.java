@@ -31,7 +31,7 @@ public class HistoryServiceImplTest {
     @Before
     public void setUp() {
         initMocks(this);
-        historyService = new HistoryServiceImpl(mockHistoryDao, 1);
+        historyService = new HistoryServiceImpl(mockHistoryDao);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class HistoryServiceImplTest {
 
     @Test
     public void testRead() {
-        historyService.findHistory("any");
+        historyService.findHistory("any", null);
         verify(mockHistoryDao).findHistory(eq("any"), anyInt());
     }
 

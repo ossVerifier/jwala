@@ -12,8 +12,21 @@ import java.util.List;
  */
 public interface HistoryService {
 
-    void createHistory(String name, List<JpaGroup> groups, String event, String user);
+    /**
+     * Create history data.
+     * @param serverName the server name
+     * @param groups list of {@link JpaGroup}
+     * @param event the event
+     * @param user the user name/id
+     */
+    void createHistory(String serverName, List<JpaGroup> groups, String event, String user);
 
-    List<JpaHistory> findHistory(String groupName);
+    /**
+     * Retrieve history data.
+     * @param groupName the group name
+     * @param numOfRec The Number of records to fetch. If null, all records are retrieved.
+     * @return a list of {@link JpaHistory}
+     */
+    List<JpaHistory> findHistory(String groupName, Integer numOfRec);
 
 }

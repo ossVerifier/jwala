@@ -17,27 +17,25 @@ import java.util.List;
 public class HistoryServiceImpl implements HistoryService {
 
     private final HistoryDao historyDao;
-    private final int maxReadRecCount;
 
     @Autowired
-    public HistoryServiceImpl(final HistoryDao historyDao, final int maxReadRecCount) {
+    public HistoryServiceImpl(final HistoryDao historyDao) {
         this.historyDao = historyDao;
-        this.maxReadRecCount = maxReadRecCount;
     }
 
     @Override
     @Transactional
-    public void createHistory(final String name, final List<JpaGroup> groups, final String event, final String user) {
+    public void createHistory(final String serverName, final List<JpaGroup> groups, final String event, final String user) {
         if (groups != null) {
             for (JpaGroup group : groups) {
-                historyDao.createHistory(name, group, event, user);
+                historyDao.createHistory(serverName, group, event, user);
             }
         }
     }
 
     @Override
-    public List<JpaHistory> findHistory(final String groupName) {
-        return historyDao.findHistory(groupName, maxReadRecCount);
+    public List<JpaHistory> findHistory(final String groupName, final Integer numOfRec) {
+        return historyDao.findHistory(groupName, numOfRec);
     }
 
 }

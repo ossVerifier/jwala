@@ -7,6 +7,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,15 +23,19 @@ public class HistoryDaoImpl implements HistoryDao {
     private EntityManager em;
 
     @Override
-    public void createHistory(final String name, final JpaGroup group, final String event, String user) {
-        em.persist(new JpaHistory(name, group, event, user));
+    public void createHistory(final String serverName, final JpaGroup group, final String event, final String user) {
+        em.persist(new JpaHistory(serverName, group, event, user));
     }
 
     @Override
-    public List<JpaHistory> findHistory(final String groupName, final int numOfRecs) {
+    @SuppressWarnings("unchecked")
+    public List<JpaHistory> findHistory(final String groupName, final Integer numOfRec) {
         final Query q = em.createNamedQuery(JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME);
         q.setParameter(PARAM_GROUP_NAME, groupName);
-        q.setMaxResults(numOfRecs);
+        if (numOfRec != null) {
+            q.setMaxResults(numOfRec);
+        }
         return q.getResultList();
     }
+
 }

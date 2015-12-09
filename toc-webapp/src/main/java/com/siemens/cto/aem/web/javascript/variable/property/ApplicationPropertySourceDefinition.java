@@ -10,14 +10,15 @@ public enum ApplicationPropertySourceDefinition {
     LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-manager", VariableStyle.STRING),
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
     START_STOP_TIMEOUT("startStopTimeout", "start.stop.timeout", "180000", VariableStyle.STRING),
-    HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING);
+    HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING),
+    HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;
     private final String defaultValue;
     private final VariableStyle style;
 
-    private ApplicationPropertySourceDefinition(final String theVariableName,
+    ApplicationPropertySourceDefinition(final String theVariableName,
                                                 final String thePropertyKey,
                                                 final String theDefaultValue,
                                                 final VariableStyle theStyle) {
@@ -62,7 +63,7 @@ public enum ApplicationPropertySourceDefinition {
                 .toString();
     }
 
-    private static enum VariableStyle {
+    private enum VariableStyle {
         STRING {
             @Override
             public JavaScriptVariable create(final String aVariableName,

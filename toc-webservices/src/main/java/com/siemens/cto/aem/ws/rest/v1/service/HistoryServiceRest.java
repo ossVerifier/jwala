@@ -1,9 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -16,8 +13,14 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public interface HistoryServiceRest {
 
+    /**
+     * Retrieve history data.
+     * @param groupName the group name
+     * @param numOfRec The Number of records to fetch. If null, all records are retrieved.
+     * @return {@link Response} containing history data.
+     */
     @GET
     @Path("/{groupName}")
-    Response findHistory(@PathParam("groupName") String groupName);
+    Response findHistory(@PathParam("groupName") String groupName, @QueryParam("numOfRec") Integer numOfRec);
 
 }

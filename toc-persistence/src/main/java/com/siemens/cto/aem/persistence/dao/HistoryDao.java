@@ -12,8 +12,21 @@ import java.util.List;
  */
 public interface HistoryDao {
 
-    void createHistory(String name, JpaGroup group, String event, String user);
+    /**
+     * Create history data.
+     * @param serverName the server name
+     * @param group {@link JpaGroup}
+     * @param event the event
+     * @param user the user name/id
+     */
+    void createHistory(String serverName, JpaGroup group, String event, String user);
 
-    List<JpaHistory> findHistory(String groupName, int numOfRecs);
+    /**
+     * Retrieve history data.
+     * @param groupName the group name
+     * @param numOfRec The Number of records to fetch. If null, all records are retrieved.
+     * @return a list of {@link JpaHistory}
+     */
+    List<JpaHistory> findHistory(String groupName, Integer numOfRec);
 
 }
