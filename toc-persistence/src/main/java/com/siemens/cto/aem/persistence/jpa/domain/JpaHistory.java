@@ -26,6 +26,7 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
     @JoinColumn(name = "groupId")
     private JpaGroup group;
 
+    @Lob
     private String event;
 
     @Column(name = "EVENTTYPE", length = 2)

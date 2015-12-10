@@ -1312,11 +1312,12 @@ var CommandStatusWidget = React.createClass({
             function(data) {
                  for (var i = 0; i < data.length; i++) {
                     var status = {};
-                    status["from"] = data[i].name;
+                    status["from"] = data[i].serverName;
                     status["userId"] = data[i].createBy;
                     status["asOf"] = data[i].createDate;
                     status["message"] = data[i].event;
-                    self.push(status, undefined, (i === data.length - 1));
+                    self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
+                        (i === data.length - 1));
                 }
             }).caught(function(response) {console.log(response)});
     },

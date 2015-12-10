@@ -92,10 +92,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
-            historyService.createHistory(webServer.getName(), webServer.getGroups(), cfe.getMessage(),
+            final String stackTrace = ExceptionUtils.getStackTrace(cfe);
+            historyService.createHistory(webServer.getName(), webServer.getGroups(), stackTrace,
                     EventType.APPLICATION_ERROR, aUser.getId());
 
-            setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
+            setFailedState(aCommand, aUser, stackTrace);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                              "CommandFailureException when attempting to control a Web Server: " + aCommand,
                                              cfe);
