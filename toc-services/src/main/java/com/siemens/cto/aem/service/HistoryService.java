@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 
 import java.util.List;
 
@@ -17,9 +18,10 @@ public interface HistoryService {
      * @param serverName the server name
      * @param groups list of {@link JpaGroup}
      * @param event the event
+     * @param eventType @{link EventType}
      * @param user the user name/id
      */
-    void createHistory(String serverName, List<JpaGroup> groups, String event, String user);
+    void createHistory(String serverName, List<JpaGroup> groups, String event, EventType eventType, String user);
 
     /**
      * Retrieve history data.

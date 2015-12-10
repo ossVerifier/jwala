@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
 import com.siemens.cto.aem.domain.model.group.History;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 
 import javax.persistence.*;
 
@@ -27,12 +28,17 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
 
     private String event;
 
+    @Column(name = "EVENTTYPE", length = 2)
+    private String eventTypeValue;
+
     public JpaHistory() {}
 
-    public JpaHistory(final String serverName, final JpaGroup group, final String event, String user) {
+    public JpaHistory(final String serverName, final JpaGroup group, final String event, final EventType eventType,
+                      final String user) {
         this.serverName = serverName;
         this.group = group;
         this.event = event;
+        this.eventTypeValue = eventType.toValue();
         this.createBy = user;
     }
 
@@ -41,23 +47,23 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
         return id;
     }
 
+    public void setId(final Long id) {
+        this.id = id;
+    }
+
     public String getServerName() {
         return serverName;
     }
 
-    public void setServerName(String serverName) {
+    public void setServerName(final String serverName) {
         this.serverName = serverName;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
     }
 
     public JpaGroup getGroup() {
         return group;
     }
 
-    public void setGroup(JpaGroup group) {
+    public void setGroup(final JpaGroup group) {
         this.group = group;
     }
 
@@ -65,8 +71,16 @@ public class JpaHistory extends AbstractEntity<JpaHistory, History> {
         return event;
     }
 
-    public void setEvent(String event) {
+    public void setEvent(final String event) {
         this.event = event;
+    }
+
+    public EventType getEventType() {
+        return EventType.fromValue(eventTypeValue);
+    }
+
+    public void setEventType(final EventType eventType) {
+        this.eventTypeValue = eventType.toValue();
     }
 
     @Override

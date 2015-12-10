@@ -3,6 +3,7 @@ package com.siemens.cto.aem.persistence.dao;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.dao.impl.HistoryDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class HistoryDaoIntegrationTest {
 
     @Test
     public void testWriteHistory() {
-        historyDao.createHistory("any", null, "Testing...", "any");
+        historyDao.createHistory("any", null, "Testing...", EventType.USER_ACTION, "any");
     }
 
 }

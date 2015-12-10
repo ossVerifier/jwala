@@ -9,6 +9,7 @@ import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.domain.model.state.CurrentState;
 import com.siemens.cto.aem.domain.model.state.StateType;
@@ -100,14 +101,14 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         assertEquals(controlOperation.getOperationState(),
                 setJvmStateCommand.getValue().getNewState().getState());
 
-        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
+        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
     public void testVerificationOfBehaviorForFailures() throws CommandFailureException {
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final CommandOutput mockExecData = mock(CommandOutput.class);
-        final Identifier<Jvm> jvmId = new Identifier<Jvm>(1L);
+        final Identifier<Jvm> jvmId = new Identifier<>(1L);
         final JpaJvm mockJvm = mock(JpaJvm.class);
 
         when(mockJvm.getId()).thenReturn(jvmId.getId());
@@ -121,14 +122,14 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.controlJvm(controlCommand, mockJvm)).thenReturn(mockExecData);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
-        when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<Jvm, JvmState>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+        when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
 
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
         boolean exceptionThrown = false;
         try {
             impl.controlJvm(controlCommand, user);
-            verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
+            verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         } catch (Exception e) {
             exceptionThrown = true;
         }

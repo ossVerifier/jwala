@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
@@ -93,6 +94,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         assertEquals(controlOperation.getOperationState(),
                      actualSetStateCommand.getNewState().getState());
 
-        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), anyString());
+        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 }

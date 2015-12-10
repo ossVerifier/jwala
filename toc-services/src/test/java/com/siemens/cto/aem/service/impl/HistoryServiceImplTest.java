@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.impl;
 
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +39,9 @@ public class HistoryServiceImplTest {
     public void testWrite() {
         final List<JpaGroup> groups = new ArrayList<>();
         groups.add(new JpaGroup());
-        historyService.createHistory("any", groups, "Testing...", "user");
-        verify(mockHistoryDao).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."), eq("user"));
+        historyService.createHistory("any", groups, "Testing...", EventType.USER_ACTION, "user");
+        verify(mockHistoryDao).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."),
+                eq(EventType.USER_ACTION), eq("user"));
     }
 
     @Test

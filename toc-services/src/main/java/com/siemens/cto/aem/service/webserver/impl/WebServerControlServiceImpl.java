@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.request.state.SetStateRequest;
 import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -57,7 +58,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final String event = aCommand.getControlOperation().getOperationState() == null ?
                 aCommand.getControlOperation().name() :
                 aCommand.getControlOperation().getOperationState().toStateString();
-            historyService.createHistory(webServer.getName(), webServer.getGroups(), event, aUser.getId());
+            historyService.createHistory(webServer.getName(), webServer.getGroups(), event, EventType.USER_ACTION,
+                    aUser.getId());
 
             aCommand.validate();
 
@@ -90,7 +92,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
-            historyService.createHistory(webServer.getName(), webServer.getGroups(), cfe.getMessage(), aUser.getId());
+            historyService.createHistory(webServer.getName(), webServer.getGroups(), cfe.getMessage(),
+                    EventType.APPLICATION_ERROR, aUser.getId());
 
             setFailedState(aCommand, aUser, ExceptionUtils.getStackTrace(cfe));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

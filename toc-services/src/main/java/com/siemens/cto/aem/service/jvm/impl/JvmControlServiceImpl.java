@@ -14,6 +14,7 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exec.CommandOutput;
 import com.siemens.cto.aem.exec.ExecReturnCode;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.service.HistoryService;
@@ -56,7 +57,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = aCommand.getControlOperation().getOperationState() == null ?
                     aCommand.getControlOperation().name() :
                     aCommand.getControlOperation().getOperationState().toStateString();
-            historyService.createHistory(jvm.getName(), jvm.getGroups(), event, aUser.getId());
+            historyService.createHistory(jvm.getName(), jvm.getGroups(), event, EventType.USER_ACTION, aUser.getId());
 
             aCommand.validate();
             prevState = null;
@@ -132,7 +133,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                     cfe.getMessage(),
                     aUser);
 
-            historyService.createHistory(jvm.getName(), jvm.getGroups(), cfe.getMessage(), aUser.getId());
+            historyService.createHistory(jvm.getName(), jvm.getGroups(), cfe.getMessage(), EventType.APPLICATION_ERROR,
+                    aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + aCommand,

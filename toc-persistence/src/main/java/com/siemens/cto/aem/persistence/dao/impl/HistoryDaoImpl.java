@@ -3,11 +3,11 @@ package com.siemens.cto.aem.persistence.dao.impl;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,8 +23,9 @@ public class HistoryDaoImpl implements HistoryDao {
     private EntityManager em;
 
     @Override
-    public void createHistory(final String serverName, final JpaGroup group, final String event, final String user) {
-        em.persist(new JpaHistory(serverName, group, event, user));
+    public void createHistory(final String serverName, final JpaGroup group, final String event, EventType eventType,
+                              final String user) {
+        em.persist(new JpaHistory(serverName, group, event, eventType, user));
     }
 
     @Override
