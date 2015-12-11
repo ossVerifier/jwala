@@ -1,0 +1,100 @@
+/**
+ * A panel widget for web server buttons.
+ */
+var WebServerControlPanelWidget = React.createClass({
+    doneCallback: {},
+    render: function() {
+        return <div className="web-server-control-panel-widget">
+
+                    <RButton ref="stopBtn"
+                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            spanClassName="ui-icon ui-icon-stop"
+                            onClick={this.webServerStop}
+                            title="Stop"/>
+
+                    <RButton ref="startBtn"
+                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             spanClassName="ui-icon ui-icon-play"
+                             onClick={this.webServerStart}
+                             title="Start"/>
+
+                    <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             spanClassName="ui-icon ui-icon-gear-custom"
+                             onClick={this.generateHttpdConf}
+                             title="Generate httpd.conf"
+                             busyClassName="busy-button"/>
+
+                    <button className="button-link anchor-font-style" onClick={this.onClickHttpdConf}>httpd.conf</button>
+
+                    <a href={"https://" + this.props.data.host + ":" + this.props.data.httpsPort + tocVars.loadBalancerStatusMount}>status</a>
+
+               </div>
+    },
+
+    webServerStart: function() {
+        this.showFadingStatusClickedLabel("Starting...", this.refs.startBtn.getDOMNode(), this.props.data.id.id);
+        this.props.webServerStartCallback(this.props.data.id.id,
+                                          this.refs.stopBtn.getDOMNode(),
+                                          this.props.data,
+                                          WebServerControlPanelWidget.getReactId(this.refs.stopBtn.getDOMNode()).replace(/\./g, "-"),
+                                          function() { /* cancel callback */ });
+    },
+
+    webServerStop: function() {
+        this.showFadingStatusClickedLabel("Stopping...", this.refs.stopBtn.getDOMNode(), this.props.data.id.id);
+        this.props.webServerStopCallback(this.props.data.id.id,
+                                         this.refs.stopBtn.getDOMNode(),
+                                         this.props.data,
+                                         WebServerControlPanelWidget.getReactId(this.refs.stopBtn.getDOMNode()).replace(/\./g, "-"),
+                                         function() { /* cancel callback */ });
+    },
+
+    onClickHttpdConf: function() {
+        var url = "webServerCommand?webServerId=" + this.props.data.id.id + "&operation=viewHttpdConf";
+        window.open(url)
+    },
+
+    generateHttpdConf: function(doneCallback) {
+        this.doneCallback[this.props.data.name] = doneCallback;
+        this.props.webServerService.deployHttpdConf(this.props.data.name,
+                                                    this.generateHttpdConfSucccessCallback,
+                                                    this.generateHttpdConfErrorCallback);
+    },
+
+    generateHttpdConfSucccessCallback: function(response) {
+        this.doneCallback[response.applicationResponseContent.name]();
+         $.alert("Successfully generated and deployed httpd.conf",
+                 "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+    },
+
+    generateHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
+        this.doneCallback[applicationResponseContent.webServerName]();
+        $.errorAlert(applicationResponseContent.message, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+    },
+
+    /**
+     * Uses jquery to take advantage of the fade out effect and to reuse the old code...for now.
+     */
+    showFadingStatusClickedLabel: function(msg, btnDom, webServerId) {
+        var tooTipId = "tooltip" +  WebServerControlPanelWidget.getReactId(btnDom).replace(/\./g, "-") + webServerId;
+        if (msg !== undefined && $("#" + tooTipId).length === 0) {
+            var top = $(btnDom).position().top - $(btnDom).height()/2;
+            var left = $(btnDom).position().left + $(btnDom).width()/2;
+            $(btnDom).parent().append("<div id='" + tooTipId +
+                "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
+                "style='top:" + top + "px;left:" + left + "px'>" + msg + "</div>");
+
+            $("#" + tooTipId).fadeOut(3000, function() {
+                $("#" + tooTipId).remove();
+            });
+
+        }
+    },
+
+    statics: {
+        getReactId: function(dom) {
+            return $(dom).attr("data-reactid");
+        }
+    }
+
+});
