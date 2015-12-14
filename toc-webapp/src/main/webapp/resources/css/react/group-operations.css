@@ -26,6 +26,18 @@
     margin-left: 3px !important;
 }
 
+.jvm-control-panel-widget {
+    width: 100%;
+    padding-right: 0px;
+    text-align: right;
+}
+
+.jvm-control-panel-widget > button {
+    display: inline-block;
+    float: right;
+    margin-left: 3px !important;
+}
+
 .command-status-container {
     padding: 0 0 0 0 !important;
     position: relative !important;

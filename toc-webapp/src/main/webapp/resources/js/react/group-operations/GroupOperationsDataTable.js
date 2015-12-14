@@ -1,5 +1,4 @@
 var GroupOperationsDataTable = React.createClass({
-   doneCallback: {},
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -173,85 +172,9 @@ var GroupOperationsDataTable = React.createClass({
                                  displayProperty:"name",
                                  maxDisplayTextLen:20,
                                  colWidth:"138px"},
-                                [{id:"tomcatManager",
-                                  sTitle:"Manager",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.onClickMgr,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-mgr",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:["hostName","httpPort", "httpsPort"]},
-                                 {tocType:"space"},
-                                 {id:"diagnose",
-                                  sTitle:"Diagnose and resolve state",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.jvmDiagnose,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-wrench",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:["jvmName","groups"]},
-                                 {tocType:"space"},
-                                 {id:"threadDump",
-                                  sTitle:"Thread Dump",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.onClickThreadDump,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-thread-dump",
-                                  buttonClassName:"ui-button-height"},
-                                  {tocType:"space"},
-                                 {id:"heapDump",
-                                  sTitle:"Heap Dump",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.jvmHeapDump,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-heap-dump",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:"hostName"},
-                                 {tocType:"space"},
-                                 {id:"generateJvmConfig",
-                                  sTitle:"Generate JVM resources files",
-                                  mData:"name",
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.jvmGenerateJvmConfig,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-gear-custom",
-                                  buttonClassName:"ui-button-height",
-                                  clickedStateClassName:"busy-button",
-                                  busyStatusTimeout:30000,
-                                  extraDataToPassOnCallback:["jvmName"]},
-                                 {tocType:"space"},
-                                  {id:"startJvm",
-                                  sTitle:"Start",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.jvmStart,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-play",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:["jvmName","groups"],
-                                  onClickMessage:"Starting..."},
-                                 {tocType:"space"},
-                                 {id:"stopJvm",
-                                  sTitle:"Stop",
-                                  mData:null,
-                                  tocType:"button",
-                                  btnLabel:"",
-                                  btnCallback:this.jvmStop,
-                                  className:"inline-block",
-                                  customSpanClassName:"ui-icon ui-icon-stop",
-                                  buttonClassName:"ui-button-height",
-                                  extraDataToPassOnCallback:["jvmName","groups"],
-                                  onClickMessage:"Stopping..."}],
+                                {mData:null,
+                                 tocType:"custom",
+                                 tocRenderCfgFn: this.renderJvmControlPanelWidget.bind(this, "grp", "jvm")},
                                 {sTitle:"State",
                                  mData:null,
                                  tocType:"custom",
@@ -317,6 +240,19 @@ var GroupOperationsDataTable = React.createClass({
 
                   });
       }.bind(this);
+   },
+   renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+       var self= this;
+       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+           return React.render(<JvmControlPanelWidget data={oData}
+                                                      jvmService={jvmService}
+                                                      jvmStartCallback={this.jvmStart}
+                                                      jvmStopCallback={this.jvmStop}
+                                                      jvmGenerateConfigCallback={this.jvmGenerateConfig}
+                                                      jvmHeapDumpCallback={this.jvmHeapDump}
+                                                      jvmDiagnoseCallback={this.jvmDiagnose}/>, nTd, function() {
+                  });
+       }.bind(this);
    },
    renderWebServerGenerateBtn: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
         var self= this;
@@ -653,20 +589,19 @@ var GroupOperationsDataTable = React.createClass({
 
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
-    jvmGenerateJvmConfig: function(jvmId,jqClassSelector,extraData,groupId,doneCallback) {
-        this.doneCallback[extraData.jvmName + "__cto" + jvmId] = doneCallback;
-        ServiceFactory.getJvmService().deployJvmConfAllFiles(extraData.jvmName,
-                                                         this.generateJvmConfigSucccessCallback,
-                                                         this.generateJvmConfigErrorCallback);
+    jvmGenerateConfig: function(data) {
+        ServiceFactory.getJvmService().deployJvmConfAllFiles(data.jvmName,
+                                                             this.generateJvmConfigSucccessCallback,
+                                                             this.generateJvmConfigErrorCallback);
     },
     generateJvmConfigSucccessCallback: function(response) {
-        this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
-         $.alert("Successfully generated and deployed JVM resource files",
-                 response.applicationResponseContent.jvmName, false);
+        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
+        $.alert("Successfully generated and deployed JVM resource files",
+                response.applicationResponseContent.jvmName, false);
     },
 
-    generateJvmConfigErrorCallback: function(applicationResponseContent, doneCallback) {
-        this.doneCallback[applicationResponseContent.jvmName + "__cto" + applicationResponseContent.jvmId]();
+    generateJvmConfigErrorCallback: function(applicationResponseContent) {
+        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
         $.errorAlert(applicationResponseContent.message, "Error deploying JVM resource files", false);
     },
 
@@ -716,9 +651,9 @@ var GroupOperationsDataTable = React.createClass({
             operationCallback(id);
         }
     },
-    jvmStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
-        this.verifyAndConfirmJvmWebServerControlOperation(id,
-                                                          parentItemId,
+    jvmStart: function(data, buttonSelector, cancelCallback) {
+        this.verifyAndConfirmJvmWebServerControlOperation(data.id.id,
+                                                          data.parentItemId,
                                                           buttonSelector,
                                                           data.jvmName,
                                                           data.groups,
@@ -727,9 +662,9 @@ var GroupOperationsDataTable = React.createClass({
                                                           cancelCallback,
                                                           "JVM");
     },
-    jvmStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
-        this.verifyAndConfirmJvmWebServerControlOperation(id,
-                                                          parentItemId,
+    jvmStop: function(data, buttonSelector, cancelCallback) {
+        this.verifyAndConfirmJvmWebServerControlOperation(data.id.id,
+                                                          data.parentItemId,
                                                           buttonSelector,
                                                           data.jvmName,
                                                           data.groups,
@@ -744,33 +679,26 @@ var GroupOperationsDataTable = React.createClass({
                 data.hostName + ":" +
                 (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
    },
-    jvmDiagnose: function(id, buttonSelector, data, parentItemId, cancelCallback) {
-        var commandStatusWidget = this.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(parentItemId)];
-        if (commandStatusWidget !== undefined) {
-            commandStatusWidget.push({stateString: "Diagnose and resolve state",
-                                      asOf: new Date().getTime(),
-                                      message: "",
-                                      from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
-                                      "action-status-font");
-        }
+   jvmDiagnose: function(data, buttonSelector, cancelCallback) {
+       var commandStatusWidget = this.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+       if (commandStatusWidget !== undefined) {
+           commandStatusWidget.push({stateString: "Diagnose and resolve state",
+                                     asOf: new Date().getTime(),
+                                     message: "",
+                                     from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
+                                     "action-status-font");
+           }
 
-        this.verifyAndConfirmJvmWebServerControlOperation(id,
-                parentItemId,
-                buttonSelector,
-                data.jvmName,
-                data.groups,
-                "diganose",
-                ServiceFactory.getJvmService().diagnoseJvm,
-                cancelCallback,
-                "JVM");
-    },
-    onClickMgr: function(unused1, unused2, data) {
-        var url = "idp?saml_redirectUrl=" +
-                  window.location.protocol + "//" +
-                  data.hostName + ":" +
-                  (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
-        window.open(url);
-    },
+           this.verifyAndConfirmJvmWebServerControlOperation(data.id.id,
+                                                             data.parentItemId,
+                                                             buttonSelector,
+                                                             data.jvmName,
+                                                             data.groups,
+                                                             "diganose",
+                                                             ServiceFactory.getJvmService().diagnoseJvm,
+                                                             cancelCallback,
+                                                             "JVM");
+   },
     onClickHealthCheck: function(unused1, unused2, data) {
         var url = window.location.protocol + "//" +
                   data.hostName +
@@ -779,11 +707,6 @@ var GroupOperationsDataTable = React.createClass({
                   tocVars.healthCheckApp;
         window.open(url)
     },
-    onClickThreadDump: function(id, unused1) {
-        var url = "jvmCommand?jvmId=" + id + "&operation=threadDump";
-        window.open(url)
-    },
-
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function(data) {
         return "https://" + data.host + ":" + data.httpsPort + tocVars.loadBalancerStatusMount;
