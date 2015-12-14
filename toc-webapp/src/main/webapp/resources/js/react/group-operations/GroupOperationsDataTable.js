@@ -92,7 +92,7 @@ var GroupOperationsDataTable = React.createClass({
                                                ],
                                                initialSortColumn: [[2, "asc"]],
                                                isColResizable: true,
-                                               rowSelectCallback: this.onSelectWebServerTableRow};
+                                               selectItemCallback: this.onSelectWebServerTableRow};
 
         webServerOfGrpChildTableDetails["tableDef"] = webServerOfGrpChildTableDef;
 
@@ -157,7 +157,8 @@ var GroupOperationsDataTable = React.createClass({
                                          {tocType:"label", className:"inline-block header-component-label", text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]],
-                                    isColResizable: true};
+                                    isColResizable: true,
+                                    selectItemCallback: this.onSelectJvmTableRow};
 
         var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
                                 {mData:null, colWidth:"10px"},
@@ -198,22 +199,22 @@ var GroupOperationsDataTable = React.createClass({
                              isColResizable={true}
                              openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
    },
-
-   onSelectWebServerTableRow: function(data) {
-       console.log(data);
+   onSelectWebServerTableRow: function(group, data) {
+        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.name);
    },
-
-   openRowLoadDataDoneCallbackHandler: function(groupId, groupName) {
+   onSelectJvmTableRow: function(group, data) {
+        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.jvmName);
+   },
+   openRowLoadDataDoneCallbackHandler: function(groupId, groupName, serverName) {
        var self = this;
        var key = GroupOperations.getExtDivCompId(groupId);
 
        // Mount a status window where one can see action events and status errors.
        var mountingNode = $("#" + key);
-       if (mountingNode.length > 0) {
-           React.render(<CommandStatusWidget key={key} groupName={groupName} />, mountingNode.get(0), function(){
-               self.props.commandStatusWidgetMap[key] = this;
-           });
-       }
+       mountingNode.empty(); // Remove the node. TODO: Use react's unmount.
+       React.render(<CommandStatusWidget key={key} groupName={groupName} serverName={serverName}/>, mountingNode.get(0), function(){
+           self.props.commandStatusWidgetMap[key] = this;
+       });
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;

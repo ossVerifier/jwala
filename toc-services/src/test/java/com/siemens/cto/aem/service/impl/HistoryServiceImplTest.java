@@ -46,8 +46,8 @@ public class HistoryServiceImplTest {
 
     @Test
     public void testRead() {
-        historyService.findHistory("any", null);
-        verify(mockHistoryDao).findHistory(eq("any"), anyInt());
+        historyService.findHistory("any", "any", null);
+        verify(mockHistoryDao).findHistory(eq("any"), eq("any"), anyInt());
     }
 
 }

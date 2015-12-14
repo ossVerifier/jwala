@@ -36,8 +36,8 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    public List<JpaHistory> findHistory(final String groupName, final Integer numOfRec) {
-        return historyDao.findHistory(groupName, numOfRec);
+    public List<JpaHistory> findHistory(final String groupName, final String serverName, final Integer numOfRec) {
+        return historyDao.findHistory(groupName, serverName, numOfRec);
     }
 
 }

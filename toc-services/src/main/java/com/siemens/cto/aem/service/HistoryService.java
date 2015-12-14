@@ -26,9 +26,10 @@ public interface HistoryService {
     /**
      * Retrieve history data.
      * @param groupName the group name
+     * @param serverName The server name, if null the history of all the servers belonging to the group will be queried.
      * @param numOfRec The Number of records to fetch. If null, all records are retrieved.
      * @return a list of {@link JpaHistory}
      */
-    List<JpaHistory> findHistory(String groupName, Integer numOfRec);
+    List<JpaHistory> findHistory(String groupName, String serverName, Integer numOfRec);
 
 }

@@ -1,12 +1,13 @@
 /** @jsx React.DOM */
 var ExpandCollapseControl = React.createClass({
-    dataTableRenderParams: {subDataTable: null, data: null, defaultSorting: null, isCollapsible: null, headerComponents: null},
+    dataTableRenderParams: {subDataTable: null, data: null, defaultSorting: null, isCollapsible: null, headerComponents: null, selectItemCallback: null},
     initDataTableRenderParams: function() {
         this.dataTableRenderParams.subDataTable = [];
         this.dataTableRenderParams.data = [];
         this.dataTableRenderParams.defaultSorting = [];
         this.dataTableRenderParams.isCollapsible = [];
         this.dataTableRenderParams.headerComponents = [];
+        this.dataTableRenderParams.selectItemCallback = [];
     },
     loadingIndicatorClassName: null,
     renderTableCountDown: 0,
@@ -149,7 +150,6 @@ var ExpandCollapseControl = React.createClass({
             this.renderTableCountDown = dataSources.length;
             for (var i = 0; i < dataSources.length; i++) {
                 var subDataTable = this.decorateTable(childTableDetailsArray[i]);
-
                 if (childTableDetailsArray[i].isColResizable) {
                     subDataTable.makeColumnsResizable();
                 }
@@ -167,6 +167,8 @@ var ExpandCollapseControl = React.createClass({
                     this.dataTableRenderParams.isCollapsible.push(childTableDetailsArray[i].isCollapsible);
                     this.dataTableRenderParams.headerComponents.push(childTableDetailsArray[i].headerComponents);
 
+                    this.dataTableRenderParams.selectItemCallback.push(childTableDetailsArray[i].selectItemCallback);
+
                     this.renderTables();
 
                 } else {
@@ -175,7 +177,8 @@ var ExpandCollapseControl = React.createClass({
                                                         self.retrieveDataAndRenderTableCallback(subDataTable,
                                                         childTableDetailsArray[i].defaultSorting,
                                                         childTableDetailsArray[i].isCollapsible,
-                                                        childTableDetailsArray[i].headerComponents));
+                                                        childTableDetailsArray[i].headerComponents,
+                                                        childTableDetailsArray[i].selectItemCallback));
                     }
 
                 }
@@ -215,7 +218,7 @@ var ExpandCollapseControl = React.createClass({
         }
 
     },
-    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting, isCollapsible, headerComponents) {
+    retrieveDataAndRenderTableCallback: function(subDataTable, defaultSorting, isCollapsible, headerComponents, selectItemCallback) {
         var self = this;
         return function(resp) {
             var data = resp.applicationResponseContent;
@@ -226,6 +229,7 @@ var ExpandCollapseControl = React.createClass({
                 self.dataTableRenderParams.defaultSorting.push(defaultSorting);
                 self.dataTableRenderParams.isCollapsible.push(isCollapsible);
                 self.dataTableRenderParams.headerComponents.push(headerComponents);
+                self.dataTableRenderParams.selectItemCallback.push(selectItemCallback);
 
                 self.renderTables();
             }
@@ -246,12 +250,38 @@ var ExpandCollapseControl = React.createClass({
             //       names are used by newer REST services.
             this.props.openRowLoadDataDoneCallback(this.props.parentItemId, this.props.parentItemName);
 
+            var parentItemName = this.props.parentItemName;
+
             this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
                 self.drawDataTable(subDataTable,
                                    self.dataTableRenderParams.data[i],
                                    self.dataTableRenderParams.defaultSorting[i],
                                    self.dataTableRenderParams.isCollapsible[i],
                                    self.dataTableRenderParams.headerComponents[i]);
+
+                var selectItemCallback = self.dataTableRenderParams.selectItemCallback[i];
+                if (selectItemCallback !== undefined) {
+                       // bind row selection callback.
+                       // select row callback binding does not work with sub tables due to sub tables are not rendered
+                       // using React. TODO: This should be refactored in the future.
+                       $(subDataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function(e) {
+                           if ($(this).hasClass("row_selected") ) {
+                               $(this).removeClass("row_selected");
+                           } else {
+                               $(subDataTable).find("thead > tr, tbody > tr, > tr").removeClass("row_selected");
+                               $(this).addClass("row_selected");
+
+                               var cell = subDataTable.find("tbody > tr.row_selected")[0];
+                               if (cell !== undefined) {
+                                   var i = subDataTable.fnGetPosition(cell);
+                                   var item = subDataTable.fnGetData(i);
+                                   selectItemCallback(parentItemName, item);
+                               }
+                           }
+                       });
+                }
+
+
                 i++;
             })
         } finally {
