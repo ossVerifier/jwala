@@ -265,18 +265,23 @@ var ExpandCollapseControl = React.createClass({
                        // select row callback binding does not work with sub tables due to sub tables are not rendered
                        // using React. TODO: This should be refactored in the future.
                        $(subDataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function(e) {
+                           var isActive = false;
+                           var cell;
+
                            if ($(this).hasClass("row_selected") ) {
+                               cell = subDataTable.find("tbody > tr.row_selected")[0];
                                $(this).removeClass("row_selected");
                            } else {
                                $(subDataTable).find("thead > tr, tbody > tr, > tr").removeClass("row_selected");
                                $(this).addClass("row_selected");
+                               isActive = true;
+                               cell = subDataTable.find("tbody > tr.row_selected")[0];
+                           }
 
-                               var cell = subDataTable.find("tbody > tr.row_selected")[0];
-                               if (cell !== undefined) {
-                                   var i = subDataTable.fnGetPosition(cell);
-                                   var item = subDataTable.fnGetData(i);
-                                   selectItemCallback(parentItemName, item);
-                               }
+
+                           if (cell !== undefined) {
+                               var i = subDataTable.fnGetPosition(cell);
+                               selectItemCallback(parentItemName, subDataTable.fnGetData(i), isActive);
                            }
                        });
                 }

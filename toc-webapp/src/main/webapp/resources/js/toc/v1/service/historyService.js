@@ -1,7 +1,7 @@
 var historyService = {
 
     read: function(groupName, serverName) {
-        if (serverName === undefined) {
+        if (serverName === undefined || serverName === null) {
             return serviceFoundation.promisedGet("v1.0/history/" + groupName + "?numOfRec=" + tocVars["historyReadMaxRecCount"],
                                                  "json", true);
         }

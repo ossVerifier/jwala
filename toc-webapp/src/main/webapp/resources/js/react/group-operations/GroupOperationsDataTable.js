@@ -199,10 +199,12 @@ var GroupOperationsDataTable = React.createClass({
                              isColResizable={true}
                              openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
    },
-   onSelectWebServerTableRow: function(group, data) {
-        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.name);
+   onSelectWebServerTableRow: function(group, data, isActive) {
+        var serverName = isActive ? data.name : null;
+        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, serverName);
    },
-   onSelectJvmTableRow: function(group, data) {
+   onSelectJvmTableRow: function(group, data, isActive) {
+        var serverName = isActive ? data.jvmName : null;
         this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.jvmName);
    },
    openRowLoadDataDoneCallbackHandler: function(groupId, groupName, serverName) {
