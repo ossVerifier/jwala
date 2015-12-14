@@ -4,11 +4,11 @@ import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorImpl;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.RemoteExecCommand;
-import com.siemens.cto.aem.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
+import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder {

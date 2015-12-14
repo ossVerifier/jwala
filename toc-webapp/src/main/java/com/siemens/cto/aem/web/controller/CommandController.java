@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.web.controller;
 
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;

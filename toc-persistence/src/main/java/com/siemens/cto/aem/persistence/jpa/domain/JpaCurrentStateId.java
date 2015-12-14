@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 

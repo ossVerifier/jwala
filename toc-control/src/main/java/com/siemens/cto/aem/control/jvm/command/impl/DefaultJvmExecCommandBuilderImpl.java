@@ -3,9 +3,9 @@ package com.siemens.cto.aem.control.jvm.command.impl;
 import com.siemens.cto.aem.control.command.PlatformCommandProvider;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.JvmExecCommandBuilder;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.platform.Platform;
-import com.siemens.cto.aem.exec.ExecCommand;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.platform.Platform;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public class DefaultJvmExecCommandBuilderImpl implements JvmExecCommandBuilder {

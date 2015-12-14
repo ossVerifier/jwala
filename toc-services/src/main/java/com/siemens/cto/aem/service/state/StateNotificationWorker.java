@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.state;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 
 /**
  * Created by JC043760 on 11/4/2015.

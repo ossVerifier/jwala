@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.group;
 
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.request.group.ControlGroupRequest;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 public interface GroupControlService {
 

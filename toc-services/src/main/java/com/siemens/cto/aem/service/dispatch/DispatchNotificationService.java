@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.dispatch;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 
 public interface DispatchNotificationService<T> {
 

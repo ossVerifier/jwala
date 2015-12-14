@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 

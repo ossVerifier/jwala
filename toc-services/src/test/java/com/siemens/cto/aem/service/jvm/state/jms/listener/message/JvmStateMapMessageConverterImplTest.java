@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener.message;
 
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 import org.junit.Before;
 import org.junit.Test;

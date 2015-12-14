@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;

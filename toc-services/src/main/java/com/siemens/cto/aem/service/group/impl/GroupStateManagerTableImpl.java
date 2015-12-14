@@ -1,18 +1,18 @@
 package com.siemens.cto.aem.service.group.impl;
 
 
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState.StateDetail;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState.StateDetail;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
@@ -28,9 +28,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.siemens.cto.aem.domain.model.group.GroupState.*;
-import static com.siemens.cto.aem.domain.model.jvm.JvmState.*;
-import static com.siemens.cto.aem.domain.model.webserver.WebServerReachableState.*;
+import static com.siemens.cto.aem.common.domain.model.group.GroupState.*;
+import static com.siemens.cto.aem.common.domain.model.jvm.JvmState.*;
+import static com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState.*;
 
 /**
  * Instantaneous FSM for calculating group state at a particular time

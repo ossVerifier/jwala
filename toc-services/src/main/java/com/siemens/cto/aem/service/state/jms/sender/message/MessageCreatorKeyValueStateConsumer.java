@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import com.siemens.cto.aem.domain.model.state.KeyValueStateConsumer;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import com.siemens.cto.aem.common.domain.model.state.KeyValueStateConsumer;
+import com.siemens.cto.aem.common.domain.model.state.message.StateKey;
 import org.springframework.jms.core.MessageCreator;
 
 import javax.jms.JMSException;

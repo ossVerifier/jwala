@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common;
 
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import junit.framework.TestCase;
 import org.slf4j.Logger;
@@ -12,12 +13,12 @@ public class ApplicationPropertiesTest extends TestCase {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationPropertiesTest.class);
 
     public void setUp() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties");
-        LOGGER.debug("Loading properties from dir " + System.getProperty(AemConstants.PROPERTIES_ROOT_PATH));
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties");
+        LOGGER.debug("Loading properties from dir " + System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH));
     }
 
     public void testBadPropertiesPath() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/blah");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/blah");
         try {
             ApplicationProperties.get("doesn't matter");
         } catch (ApplicationException e) {
@@ -39,7 +40,7 @@ public class ApplicationPropertiesTest extends TestCase {
     }
 
     public void testReload() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties/reload");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties/reload");
         ApplicationProperties.reload();
         assertEquals("reloaded", ApplicationProperties.get("reload.property"));
         assertNull(ApplicationProperties.get("home team"));

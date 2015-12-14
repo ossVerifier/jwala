@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.persistence.dao;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 public class AuditTestHelper {
 

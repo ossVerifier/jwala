@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.template.jvm
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplate
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplateText

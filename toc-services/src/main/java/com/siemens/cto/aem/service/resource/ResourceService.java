@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.resource;
 
-import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 import java.util.Collection;
 import java.util.List;

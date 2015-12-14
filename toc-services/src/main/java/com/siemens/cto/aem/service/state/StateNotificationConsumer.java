@@ -5,7 +5,7 @@ import java.util.List;
 import javax.jms.JMSException;
 
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 
 public interface StateNotificationConsumer {
 

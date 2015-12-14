@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;

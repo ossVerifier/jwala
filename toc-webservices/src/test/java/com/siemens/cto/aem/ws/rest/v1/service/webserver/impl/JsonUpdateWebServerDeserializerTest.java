@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;

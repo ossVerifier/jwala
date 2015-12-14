@@ -1,15 +1,15 @@
 package com.siemens.cto.aem.persistence.dao.webserver;
 
-import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 
 import java.util.Collection;
 

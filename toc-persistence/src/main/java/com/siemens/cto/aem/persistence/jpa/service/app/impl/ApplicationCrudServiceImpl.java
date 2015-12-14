@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.jpa.service.app.impl;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;

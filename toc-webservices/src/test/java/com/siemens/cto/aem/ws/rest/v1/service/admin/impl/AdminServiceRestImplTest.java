@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
-import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import org.junit.After;
@@ -48,12 +48,12 @@ public class AdminServiceRestImplTest {
 
     @Before
     public void setUp() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
     }
 
     @After
     public void tearDown() {
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test

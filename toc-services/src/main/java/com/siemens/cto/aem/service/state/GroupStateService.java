@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.service.state;
 
-import com.siemens.cto.aem.request.group.SetGroupStateRequest;
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.request.group.ControlGroupRequest;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 
 import java.util.List;
 

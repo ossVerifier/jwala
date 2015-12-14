@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.request.group.*;
-import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.rule.group.GroupNameRule;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.rule.group.GroupNameRule;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.GroupStateService;

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor;
 
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import com.siemens.cto.aem.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.exception.NotYetReturnedException;
 
 import java.io.Closeable;

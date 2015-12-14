@@ -11,7 +11,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 
 /**
  * An application is usually a web application stored in a war file

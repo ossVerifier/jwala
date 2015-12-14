@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 
 import javax.persistence.*;
 import java.util.List;

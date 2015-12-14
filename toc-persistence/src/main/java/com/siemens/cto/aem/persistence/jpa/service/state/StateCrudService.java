@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.persistence.jpa.service.state;
 
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 
 import java.util.Collection;

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 
 /**

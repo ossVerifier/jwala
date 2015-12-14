@@ -2,16 +2,15 @@ package com.siemens.cto.aem.control.jvm.impl;
 
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.JvmExecCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.DefaultJvmExecCommandBuilderImpl;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class RemoteJvmCommandExecutorImpl implements JvmCommandExecutor {

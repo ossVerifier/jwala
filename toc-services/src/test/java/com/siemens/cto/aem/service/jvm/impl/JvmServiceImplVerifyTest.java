@@ -1,24 +1,24 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.ExecReturnCode;
-import com.siemens.cto.aem.exec.RuntimeCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
@@ -81,7 +81,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreateValidate() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         final CreateJvmRequest command = mock(CreateJvmRequest.class);
         final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>());
@@ -92,7 +92,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(command, times(1)).validate();
         verify(jvmPersistenceService, times(1)).createJvm(matchCommandInEvent(command));
 
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test

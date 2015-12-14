@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import com.siemens.cto.aem.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 

@@ -1,6 +1,6 @@
 package com.siemens.cto.toc.files.resources;
 
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;

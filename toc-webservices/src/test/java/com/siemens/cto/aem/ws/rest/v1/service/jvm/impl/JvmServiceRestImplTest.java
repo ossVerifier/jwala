@@ -1,25 +1,25 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.jcraft.jsch.JSchException;
-import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.ExecReturnCode;
-import com.siemens.cto.aem.exec.RuntimeCommand;
-import com.siemens.cto.aem.request.jvm.*;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -110,7 +110,7 @@ public class JvmServiceRestImplTest {
 
     @Before
     public void setUp() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
         jvmServiceRest = new JvmServiceRestImpl(impl, controlImpl, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
@@ -118,7 +118,7 @@ public class JvmServiceRestImplTest {
 
     @After
     public void cleanUp() {
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -312,7 +312,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigExecutorService() throws CommandFailureException, IOException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         when(impl.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
@@ -413,7 +413,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigFailControlService() throws CommandFailureException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         when(impl.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
@@ -428,7 +428,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigFailSecureCopyService() throws CommandFailureException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         when(impl.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
@@ -443,7 +443,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigFailsRuntimeCommand() throws CommandFailureException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         when(impl.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");

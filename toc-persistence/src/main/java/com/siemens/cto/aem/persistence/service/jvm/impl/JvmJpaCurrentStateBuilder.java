@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.service.jvm.impl;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.service.state.impl.AbstractJpaCurrentStateBuilder;
 

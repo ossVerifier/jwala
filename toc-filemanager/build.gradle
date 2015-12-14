@@ -30,7 +30,7 @@ test {
     jacoco {
       excludes = ["com.siemens.cto.aem.persistence.configuration.*",
                   "com.siemens.cto.aem.persistence.domain.*",
-                  "com.siemens.cto.aem.domain.model.*",
+                  "com.siemens.cto.aem.common.domain.model.*",
                   "com.siemens.cto.aem.common.*",
                   "*.configuration.*",
                   "**.configuration.**",

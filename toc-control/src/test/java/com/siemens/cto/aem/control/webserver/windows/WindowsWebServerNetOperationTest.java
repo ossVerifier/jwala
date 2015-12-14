@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.control.webserver.windows;
 
 import com.siemens.cto.aem.control.webserver.command.windows.WindowsWebServerNetOperation;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import org.junit.Test;
 
 import java.util.Collections;

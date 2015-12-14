@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 
 import java.util.Collections;

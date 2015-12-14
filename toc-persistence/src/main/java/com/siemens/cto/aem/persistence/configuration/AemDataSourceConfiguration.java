@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;

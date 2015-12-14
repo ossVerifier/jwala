@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.request.dispatch.GroupJvmDispatchCommand;
-import com.siemens.cto.aem.request.dispatch.JvmDispatchCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.dispatch.GroupJvmDispatchCommand;
+import com.siemens.cto.aem.common.dispatch.JvmDispatchCommand;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 
 import java.util.ArrayList;
 import java.util.List;

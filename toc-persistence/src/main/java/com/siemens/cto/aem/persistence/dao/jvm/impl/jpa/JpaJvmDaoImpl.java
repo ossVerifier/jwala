@@ -1,15 +1,15 @@
 package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
-import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;

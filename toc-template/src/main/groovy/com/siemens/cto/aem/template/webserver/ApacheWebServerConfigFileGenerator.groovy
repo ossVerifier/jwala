@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.template.webserver
 
-import com.siemens.cto.aem.domain.model.app.Application
-import com.siemens.cto.aem.domain.model.jvm.Jvm
-import com.siemens.cto.aem.domain.model.webserver.WebServer
+import com.siemens.cto.aem.common.domain.model.app.Application
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplate
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplateText

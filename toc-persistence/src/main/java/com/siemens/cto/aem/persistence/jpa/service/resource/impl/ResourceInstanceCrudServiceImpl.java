@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.jpa.service.resource.impl;
 
-import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.exception.NotUniqueException;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;

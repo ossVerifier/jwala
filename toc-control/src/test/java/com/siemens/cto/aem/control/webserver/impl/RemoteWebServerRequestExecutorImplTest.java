@@ -5,11 +5,11 @@ import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.IntegrationTestRule;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import org.junit.*;
 
 import java.util.concurrent.ExecutorService;

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.exceptionmapper;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import org.apache.openjpa.persistence.TransactionRequiredException;
 

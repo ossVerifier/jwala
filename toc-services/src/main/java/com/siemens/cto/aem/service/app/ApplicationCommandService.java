@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 /**

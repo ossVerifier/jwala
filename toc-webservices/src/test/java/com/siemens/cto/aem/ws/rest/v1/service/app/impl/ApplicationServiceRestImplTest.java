@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.request.app.UploadWebArchiveRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.ExecReturnCode;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -40,7 +40,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;

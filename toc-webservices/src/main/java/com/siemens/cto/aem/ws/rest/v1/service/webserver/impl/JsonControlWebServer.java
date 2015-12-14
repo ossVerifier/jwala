@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;

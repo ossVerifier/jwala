@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;

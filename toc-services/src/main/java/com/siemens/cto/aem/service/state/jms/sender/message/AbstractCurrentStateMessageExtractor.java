@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.state.message.CommonStateKey;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;

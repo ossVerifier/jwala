@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
 public class JpaLiteGroupBuilder {

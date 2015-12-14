@@ -2,9 +2,9 @@ package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.CurrentStateChronologicalComparator;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentStateChronologicalComparator;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;

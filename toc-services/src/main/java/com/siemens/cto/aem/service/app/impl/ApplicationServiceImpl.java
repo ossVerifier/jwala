@@ -1,23 +1,22 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.request.app.*;
-import com.siemens.cto.aem.domain.model.app.*;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.RuntimeCommand;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.common.domain.model.app.*;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
@@ -278,7 +277,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final StringBuilder target = new StringBuilder();
             if (getFileExtension(resourceTemplateName).equalsIgnoreCase(STR_PROPERTIES)) {
-                target.append(System.getProperty(AemConstants.PROPERTIES_ROOT_PATH).replace("\\", "/")).append('/');
+                target.append(System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH).replace("\\", "/")).append('/');
             } else {
                 String appConfPath;
                 if (app.isSecure()) {

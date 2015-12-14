@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.state.message.CommonStateKey;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import com.siemens.cto.aem.service.state.impl.AbstractStateNotificationConsumerImpl;
 import com.siemens.cto.aem.service.state.jms.sender.CurrentStateExtractorMap;

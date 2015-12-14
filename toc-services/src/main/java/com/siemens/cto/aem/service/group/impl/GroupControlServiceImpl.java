@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.request.group.ControlGroupJvmRequest;
-import com.siemens.cto.aem.request.group.ControlGroupRequest;
-import com.siemens.cto.aem.request.webserver.ControlGroupWebServerRequest;
-import com.siemens.cto.aem.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.request.group.ControlGroupJvmRequest;
+import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;

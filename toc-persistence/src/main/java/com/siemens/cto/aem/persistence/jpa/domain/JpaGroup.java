@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
 
 import javax.persistence.*;
 import java.util.ArrayList;

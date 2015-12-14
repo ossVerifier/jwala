@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.control.jvm.command.impl;
 
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.ShellCommand;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ShellCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import org.junit.After;
 import org.junit.Before;
@@ -30,19 +29,19 @@ public class DefaultJvmExecRequestBuilderImplTest {
     @After
     public void tearDown() {
         if (originalPRP != null) {
-            System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, originalPRP);
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, originalPRP);
         }
     }
 
     @Before
     public void setup() {
-        originalPRP = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH);
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "aem-control/src/test/resources");
+        originalPRP = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "aem-control/src/test/resources");
         try {
             ApplicationProperties.getInstance();
         } catch (ApplicationException e) {
             LOGGER.trace("Attempting to load properties without project in path", e);
-            System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "src/test/resources");
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "src/test/resources");
             ApplicationProperties.getInstance();
         }
 

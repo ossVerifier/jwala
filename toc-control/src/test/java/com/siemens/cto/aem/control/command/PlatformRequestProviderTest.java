@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.control.command;
 
-import com.siemens.cto.aem.domain.model.platform.Platform;
+import com.siemens.cto.aem.common.domain.model.platform.Platform;
 import org.junit.Test;
 
 import java.util.Collections;

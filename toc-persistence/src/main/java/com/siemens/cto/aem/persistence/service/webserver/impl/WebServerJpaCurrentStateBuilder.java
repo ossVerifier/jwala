@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.service.webserver.impl;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.service.state.impl.AbstractJpaCurrentStateBuilder;
 

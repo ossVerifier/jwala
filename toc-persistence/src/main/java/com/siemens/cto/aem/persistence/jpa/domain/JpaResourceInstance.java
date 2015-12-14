@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 
 import javax.persistence.*;
 import java.util.Map;

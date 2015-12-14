@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.service.jvm.state.jms.listener;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateService;
 import org.junit.Before;

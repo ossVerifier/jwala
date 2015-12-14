@@ -2,7 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.user.impl;
 
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 import com.sun.jndi.ldap.LdapCtxFactory;

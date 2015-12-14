@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.control.jvm.command;
 
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.exec.ExecCommand;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public interface JvmExecCommandBuilder {

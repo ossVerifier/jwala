@@ -2,20 +2,20 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -134,8 +134,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     /**
      * Sets the web server state.
-     * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
-     * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param anId the web server id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
+     * @param aState the state {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
      * @param aMessage a message e.g. error message etc.
      * @return {@link SetStateRequest}
      */
@@ -151,8 +151,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     /**
      * Sets the web server state.
-     * @param anId the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
-     * @param aState the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param anId the web server id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
+     * @param aState the state {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
      * @return {@link SetStateRequest}
      */
     SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,

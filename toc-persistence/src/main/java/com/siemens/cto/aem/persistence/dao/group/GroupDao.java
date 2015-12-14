@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.persistence.dao.group;
 
-import com.siemens.cto.aem.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 /**

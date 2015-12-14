@@ -6,11 +6,11 @@ import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
 import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 
 public class RemoteWebServerCommandExecutorImpl implements WebServerCommandExecutor {

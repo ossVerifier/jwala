@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.request.webserver.ControlGroupWebServerRequest;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommandResult;
+import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;

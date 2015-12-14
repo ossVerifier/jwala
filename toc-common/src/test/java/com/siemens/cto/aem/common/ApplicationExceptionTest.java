@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common;
 
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

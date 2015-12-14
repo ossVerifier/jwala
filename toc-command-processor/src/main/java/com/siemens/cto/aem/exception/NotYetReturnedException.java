@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.exception;
 
-import com.siemens.cto.aem.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 
 public class NotYetReturnedException extends Exception {
 

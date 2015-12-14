@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.domain.model.audit.AuditDateTime;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.audit.AuditDateTime;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 
 import javax.persistence.*;
 import java.io.Serializable;

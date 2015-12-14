@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import com.siemens.cto.aem.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.service.jvm.impl.JvmStateCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
 import com.siemens.cto.aem.persistence.service.jvm.impl.JvmJpaStatePersistenceServiceImpl;

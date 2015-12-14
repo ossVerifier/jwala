@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.service.state.*;
 import org.slf4j.Logger;

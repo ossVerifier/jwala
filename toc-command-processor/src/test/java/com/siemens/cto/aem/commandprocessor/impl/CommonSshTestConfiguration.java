@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 
 public class CommonSshTestConfiguration {
 

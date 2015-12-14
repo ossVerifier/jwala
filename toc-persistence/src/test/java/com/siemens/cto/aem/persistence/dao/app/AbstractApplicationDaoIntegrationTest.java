@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.dao.app;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 import static org.apache.commons.lang.RandomStringUtils.randomAscii;
 import static org.junit.Assert.*;

@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.ws.rs.QueryParam;

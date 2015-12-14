@@ -2,7 +2,7 @@ package com.siemens.cto.aem.service.state.impl;
 
 import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import com.siemens.cto.aem.request.group.AddJvmsToGroupRequest;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.request.group.AddJvmsToGroupRequest;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;

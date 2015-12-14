@@ -1,19 +1,19 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.toc.files.FileManager;
@@ -176,7 +176,7 @@ public class WebServerServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreateWebServers() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         when(wsDao.createWebServer(any(Event.class))).thenReturn(mockWebServer);
         CreateWebServerRequest cmd = new CreateWebServerRequest(mockWebServer.getGroupIds(),
@@ -196,7 +196,7 @@ public class WebServerServiceImplTest {
         assertEquals("the-ws-group-name", webServer.getGroups().iterator().next().getName());
         assertEquals("the-ws-hostname", webServer.getHost());
 
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test

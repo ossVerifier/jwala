@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.state.jms.sender;
 
-import com.siemens.cto.aem.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.service.state.jms.sender.message.CurrentStateMessageExtractor;
 import com.siemens.cto.aem.service.state.jms.sender.message.GroupCurrentStateMessageExtractor;
 import com.siemens.cto.aem.service.state.jms.sender.message.JvmCurrentStateMessageExtractor;

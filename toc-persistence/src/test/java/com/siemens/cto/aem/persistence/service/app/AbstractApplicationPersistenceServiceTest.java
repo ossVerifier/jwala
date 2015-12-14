@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.persistence.service.app;
 
-import com.siemens.cto.aem.request.app.*;
-import com.siemens.cto.aem.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.domain.model.app.*;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.domain.model.app.*;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;

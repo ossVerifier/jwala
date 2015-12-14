@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.dispatch.impl;
 
-import com.siemens.cto.aem.request.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.request.dispatch.WebServerDispatchCommand;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.dispatch.GroupWebServerDispatchCommand;
+import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommand;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 
 import java.util.ArrayList;

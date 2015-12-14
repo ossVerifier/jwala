@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.provider;
 
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import org.junit.Test;
 
 import java.util.Arrays;

@@ -2,9 +2,9 @@ package com.siemens.cto.aem.control.command;
 
 import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.siemens.cto.aem.control.webserver.command.windows.WindowsWebServerNetOperation;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.domain.model.platform.Platform;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.platform.Platform;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 
 import java.util.EnumMap;
 import java.util.Map;

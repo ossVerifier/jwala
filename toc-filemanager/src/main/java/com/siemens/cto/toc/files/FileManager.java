@@ -1,6 +1,6 @@
 package com.siemens.cto.toc.files;
 
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 
 import java.io.IOException;
 import java.io.InputStream;

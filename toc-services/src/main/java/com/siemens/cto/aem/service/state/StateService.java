@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.service.state;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 import java.util.Set;
 

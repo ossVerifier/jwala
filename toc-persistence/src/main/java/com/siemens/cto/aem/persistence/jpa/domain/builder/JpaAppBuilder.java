@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
-import com.siemens.cto.aem.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 
 public class JpaAppBuilder {

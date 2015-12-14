@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;

@@ -1,16 +1,16 @@
 package com.siemens.cto.aem.persistence.jpa.service.webserver.impl;
 
-import com.siemens.cto.aem.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import org.joda.time.DateTime;

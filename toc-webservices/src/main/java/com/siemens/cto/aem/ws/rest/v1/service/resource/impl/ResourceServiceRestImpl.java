@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;

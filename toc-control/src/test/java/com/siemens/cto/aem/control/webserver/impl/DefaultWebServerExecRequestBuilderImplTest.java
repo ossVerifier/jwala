@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.control.webserver.impl;
 
-import com.siemens.cto.aem.common.AemConstants;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.ShellCommand;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ShellCommand;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
     @Before
     public void setup() throws IOException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/toc-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/toc-control/src/test/resources");
         impl = new DefaultWebServerExecCommandBuilderImpl();
         webServer = mock(WebServer.class);
         webServerName = "theWebServerName";

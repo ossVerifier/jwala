@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.service;
 
-import com.siemens.cto.aem.request.Request;
-import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.domain.model.event.Event;
+import com.siemens.cto.aem.common.request.Request;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.domain.model.event.Event;
 
 import java.util.HashSet;
 import java.util.Set;

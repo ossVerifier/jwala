@@ -1,14 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v1.configuration;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -40,13 +39,11 @@ import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import com.siemens.cto.toc.files.FilesConfiguration;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

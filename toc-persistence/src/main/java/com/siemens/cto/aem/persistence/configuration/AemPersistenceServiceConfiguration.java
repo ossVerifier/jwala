@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.app.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.group.GroupControlCrudService;

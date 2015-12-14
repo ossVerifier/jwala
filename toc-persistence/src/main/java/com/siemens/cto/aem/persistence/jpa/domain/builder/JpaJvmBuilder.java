@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
-import com.siemens.cto.aem.domain.model.group.LiteGroup;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmBuilder;
-import com.siemens.cto.aem.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmBuilder;
+import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 

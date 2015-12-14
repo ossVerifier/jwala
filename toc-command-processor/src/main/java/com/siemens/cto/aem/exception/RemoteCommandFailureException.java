@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.exception;
 
-import com.siemens.cto.aem.exec.RemoteExecCommand;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 
 public class RemoteCommandFailureException extends CommandFailureException {
 

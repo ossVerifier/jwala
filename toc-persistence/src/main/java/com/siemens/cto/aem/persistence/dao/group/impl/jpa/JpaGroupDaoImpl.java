@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
 
-import com.siemens.cto.aem.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.dao.group.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;

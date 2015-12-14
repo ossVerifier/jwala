@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.RuntimeCommand;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import static com.siemens.cto.aem.control.AemControl.Properties.SCP_WITH_TARGET_BK;

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.control.jvm.windows;
 
 import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
-import com.siemens.cto.aem.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import org.junit.Test;
 
 import java.util.Collections;

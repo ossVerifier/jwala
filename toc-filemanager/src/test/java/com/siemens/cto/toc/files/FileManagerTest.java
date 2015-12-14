@@ -1,7 +1,7 @@
 package com.siemens.cto.toc.files;
 
-import com.siemens.cto.aem.domain.model.app.Application;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.toc.files.impl.FileManagerImpl;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;

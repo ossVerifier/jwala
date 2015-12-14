@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.service.webserver.component;
 
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.request.state.WebServerSetStateRequest;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -114,7 +114,7 @@ public class WebServerStateSetterWorker {
     /**
      * Sets the web server state if the web server is not starting or stopping.
      * @param webServer the web server
-     * @param webServerReachableState {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param webServerReachableState {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
      * @param msg a message
      */
     private void setState(final WebServer webServer,
@@ -128,8 +128,8 @@ public class WebServerStateSetterWorker {
 
     /**
      * Sets the web server state.
-     * @param id the web server id {@link com.siemens.cto.aem.domain.model.id.Identifier}
-     * @param state the state {@link com.siemens.cto.aem.domain.model.webserver.WebServerReachableState}
+     * @param id the web server id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
+     * @param state the state {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
      * @param msg a message
      * @return {@link SetStateRequest}
      */

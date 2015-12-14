@@ -1,24 +1,23 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import com.siemens.cto.aem.common.AemConstants;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.ExecCommand;
-import com.siemens.cto.aem.exec.ExecReturnCode;
-import com.siemens.cto.aem.exec.RuntimeCommand;
-import com.siemens.cto.aem.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.request.webserver.UpdateWebServerRequest;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.domain.model.path.Path;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.*;
-import com.siemens.cto.aem.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.*;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.state.StateService;
@@ -245,7 +244,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
@@ -255,12 +254,12 @@ public class WebServerServiceRestImplTest {
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
@@ -279,12 +278,12 @@ public class WebServerServiceRestImplTest {
         assertFalse(failedSecureCopy);
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployConfigThrowsException() throws IOException, CommandFailureException {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
@@ -299,7 +298,7 @@ public class WebServerServiceRestImplTest {
         }
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test

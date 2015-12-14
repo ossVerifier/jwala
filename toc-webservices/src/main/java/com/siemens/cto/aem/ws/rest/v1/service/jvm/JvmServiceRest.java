@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm;
 
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;

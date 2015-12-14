@@ -1,17 +1,17 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import com.siemens.cto.aem.request.group.*;
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.request.group.UpdateGroupRequest;
-import com.siemens.cto.aem.domain.model.group.*;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.user.User;
-import com.siemens.cto.aem.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
@@ -41,7 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
-import static com.siemens.cto.aem.domain.model.id.Identifier.id;
+import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -137,7 +137,7 @@ public class GroupServiceRestImplTest {
 
     @After
     public void cleanUp() {
-        System.clearProperty(AemConstants.PROPERTIES_ROOT_PATH);
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -331,7 +331,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testPopulateJvmConfig() {
-        System.setProperty(AemConstants.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(mockJvm);
         Collection<ResourceType> resourceTypes = new ArrayList<>();

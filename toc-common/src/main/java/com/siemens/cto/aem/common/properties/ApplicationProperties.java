@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.common.properties;
 
-import com.siemens.cto.aem.common.AemConstants;
-import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +11,7 @@ import java.util.Properties;
 
 public class ApplicationProperties {
 
+    public static final String PROPERTIES_ROOT_PATH = "STP_PROPERTIES_DIR";
     private volatile Properties properties;
 
     private static volatile ApplicationProperties SELF;
@@ -64,7 +64,7 @@ public class ApplicationProperties {
     }
 
     private void init() {
-        String propertiesFile = System.getProperty(AemConstants.PROPERTIES_ROOT_PATH) + "/" + PROPERTIES_FILE_NAME;
+        String propertiesFile = System.getProperty(PROPERTIES_ROOT_PATH) + "/" + PROPERTIES_FILE_NAME;
         Properties tempProperties = new Properties();
         try {
             tempProperties.load(new FileReader(new File(propertiesFile)));

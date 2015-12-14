@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.service.state.jms.sender.message;
 
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.OperationalState;
-import com.siemens.cto.aem.domain.model.state.message.CommonStateKey;
-import com.siemens.cto.aem.domain.model.state.message.StateKey;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import com.siemens.cto.aem.common.domain.model.state.message.CommonStateKey;
+import com.siemens.cto.aem.common.domain.model.state.message.StateKey;
 import org.joda.time.format.ISODateTimeFormat;
 import org.mockito.Mock;
 

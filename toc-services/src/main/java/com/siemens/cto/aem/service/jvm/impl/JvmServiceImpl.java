@@ -1,33 +1,33 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.ApplicationException;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.domain.model.event.Event;
-import com.siemens.cto.aem.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.domain.model.group.Group;
-import com.siemens.cto.aem.domain.model.id.Identifier;
-import com.siemens.cto.aem.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
-import com.siemens.cto.aem.domain.model.state.StateType;
-import com.siemens.cto.aem.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.exec.CommandOutput;
-import com.siemens.cto.aem.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
-import com.siemens.cto.aem.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.request.state.SetStateRequest;
-import com.siemens.cto.aem.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -281,7 +281,7 @@ public class JvmServiceImpl implements JvmService {
 
     /**
      * Sets the jvm state.
-     * @param id the jvm id {@link com.siemens.cto.aem.domain.model.id.Identifier}
+     * @param id the jvm id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
      * @param state the state {@link JvmState}
      * @param msg a message
      * @return {@link SetStateRequest}

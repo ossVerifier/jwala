@@ -1,9 +1,9 @@
 package com.siemens.cto.aem.template
 
-import com.siemens.cto.aem.domain.model.group.Group
-import com.siemens.cto.aem.domain.model.group.LiteGroup
-import com.siemens.cto.aem.domain.model.id.Identifier
-import com.siemens.cto.aem.domain.model.resource.ResourceInstance
+import com.siemens.cto.aem.common.domain.model.group.Group
+import com.siemens.cto.aem.common.domain.model.group.LiteGroup
+import com.siemens.cto.aem.common.domain.model.id.Identifier
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance
 import groovy.text.SimpleTemplateEngine;
 
 /**

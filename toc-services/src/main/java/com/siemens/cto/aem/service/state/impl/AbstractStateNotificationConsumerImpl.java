@@ -9,7 +9,7 @@ import com.siemens.cto.aem.common.time.Stale;
 import com.siemens.cto.aem.common.time.TimeDuration;
 import com.siemens.cto.aem.common.time.TimeRemaining;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
-import com.siemens.cto.aem.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.service.state.StateNotificationConsumer;
 
 public abstract class AbstractStateNotificationConsumerImpl implements StateNotificationConsumer {
