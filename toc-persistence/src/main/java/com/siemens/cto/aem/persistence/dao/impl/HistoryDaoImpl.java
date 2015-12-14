@@ -34,7 +34,7 @@ public class HistoryDaoImpl implements HistoryDao {
     @SuppressWarnings("unchecked")
     public List<JpaHistory> findHistory(final String groupName, final String serverName, final Integer numOfRec) {
         final Query q = em.createNamedQuery(StringUtils.isEmpty(serverName) ? JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME :
-                                            JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME_AND_SERVER_NAME);
+                                            JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME_AND_SERVER_NAME, JpaHistory.class);
 
         q.setParameter(PARAM_GROUP_NAME, groupName);
 
