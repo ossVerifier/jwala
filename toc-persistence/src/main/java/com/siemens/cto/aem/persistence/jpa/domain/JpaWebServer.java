@@ -19,6 +19,9 @@ import java.util.List;
 public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
 
     private static final long serialVersionUID = 1L;
+    public static final String WEB_SERVER_PARAM_NAME = "wsName";
+    public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
+    public static final String FIND_JVMS_QUERY = "findJvmsQuery";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,40 +47,43 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
     @Column(nullable = false)
     private String docRoot;
 
-    public static final String WEB_SERVER_PARAM_NAME = "wsName";
-    public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
-    public static final String FIND_JVMS_QUERY = "findJvmsQuery";
-
     @ManyToMany(mappedBy = "webServers")
     private List<JpaGroup> groups = new ArrayList<>();
 
 	public Long getId() {
 		return id;
 	}
+
 	public String getHost() {
 		return host;
 	}
+
 	public void setHost(String host) {
 		this.host = host;
 	}
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public Integer getPort() {
 		return port;
 	}
+
 	public void setPort(Integer port) {
 		this.port = port;
 	}
+
 	public List<JpaGroup> getGroups() {
 		return groups;
 	}
+
 	public void setGroups(List<JpaGroup> newGroups) {
-	    groups.clear();
-	    groups.addAll(newGroups);
+        groups = newGroups;
 	}
 
     public Integer getHttpsPort() {
