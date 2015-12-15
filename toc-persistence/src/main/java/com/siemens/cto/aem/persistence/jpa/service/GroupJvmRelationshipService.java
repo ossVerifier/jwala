@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.groupjvm;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.domain.model.event.Event;

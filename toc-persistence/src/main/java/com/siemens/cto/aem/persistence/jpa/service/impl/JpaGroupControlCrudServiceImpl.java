@@ -1,6 +1,6 @@
-package com.siemens.cto.aem.persistence.jpa.service.group.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.persistence.jpa.service.group.GroupControlCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupControlCrudService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

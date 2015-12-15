@@ -11,8 +11,8 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 
 import java.util.ArrayList;

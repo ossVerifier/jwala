@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.state.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
@@ -9,7 +9,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
-import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

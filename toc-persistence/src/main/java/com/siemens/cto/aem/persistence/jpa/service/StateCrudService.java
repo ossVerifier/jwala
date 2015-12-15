@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.state;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;

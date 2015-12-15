@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.resource;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;

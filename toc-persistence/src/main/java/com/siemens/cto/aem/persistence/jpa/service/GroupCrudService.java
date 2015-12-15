@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.group;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;

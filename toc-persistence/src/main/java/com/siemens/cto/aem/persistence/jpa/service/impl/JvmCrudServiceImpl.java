@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -15,7 +15,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;

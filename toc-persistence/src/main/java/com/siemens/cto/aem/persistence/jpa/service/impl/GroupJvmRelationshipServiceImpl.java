@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.groupjvm.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -11,9 +11,9 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.groupjvm.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.jvm.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

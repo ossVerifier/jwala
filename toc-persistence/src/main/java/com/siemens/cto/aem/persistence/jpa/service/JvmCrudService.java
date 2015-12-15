@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.jvm;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;

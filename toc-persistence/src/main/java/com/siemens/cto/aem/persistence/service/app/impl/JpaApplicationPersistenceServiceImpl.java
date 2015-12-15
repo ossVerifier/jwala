@@ -8,8 +8,8 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.app.ApplicationCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
 
 import java.util.List;

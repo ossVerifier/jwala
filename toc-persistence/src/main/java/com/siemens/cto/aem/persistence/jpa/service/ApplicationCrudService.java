@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.app;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.domain.model.app.Application;

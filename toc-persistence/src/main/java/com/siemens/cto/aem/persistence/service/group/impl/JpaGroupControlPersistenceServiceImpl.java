@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.service.group.impl;
 
-import com.siemens.cto.aem.persistence.jpa.service.group.GroupControlCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupControlCrudService;
 import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
 
 public class JpaGroupControlPersistenceServiceImpl implements GroupControlPersistenceService {

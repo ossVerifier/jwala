@@ -6,7 +6,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaResourceInstanceBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.ResourceInstanceCrudService;
 import com.siemens.cto.aem.persistence.service.resource.ResourcePersistenceService;
 
 import javax.persistence.EntityManager;

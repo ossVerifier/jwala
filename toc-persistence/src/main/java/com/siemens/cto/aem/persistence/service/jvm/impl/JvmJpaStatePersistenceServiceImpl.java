@@ -4,7 +4,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
-import com.siemens.cto.aem.persistence.jpa.service.state.StateCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
 import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
 import com.siemens.cto.aem.persistence.service.state.impl.JpaStatePersistenceServiceImpl;
 

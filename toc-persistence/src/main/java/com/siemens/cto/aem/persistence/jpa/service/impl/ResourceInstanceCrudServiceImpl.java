@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.resource.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
@@ -10,8 +10,8 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
-import com.siemens.cto.aem.persistence.jpa.service.group.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.resource.ResourceInstanceCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.ResourceInstanceCrudService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
