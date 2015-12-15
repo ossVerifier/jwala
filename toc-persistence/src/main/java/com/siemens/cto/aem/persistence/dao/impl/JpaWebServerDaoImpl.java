@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
+package com.siemens.cto.aem.persistence.dao.impl;
 
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
@@ -14,7 +14,8 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.builder.JpaWebServerBuilder;
+import com.siemens.cto.aem.persistence.dao.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;

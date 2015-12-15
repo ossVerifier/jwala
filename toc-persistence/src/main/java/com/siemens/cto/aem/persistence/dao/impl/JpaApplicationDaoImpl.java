@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.app.impl.jpa;
+package com.siemens.cto.aem.persistence.dao.impl;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
@@ -6,7 +6,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.jvm;
+package com.siemens.cto.aem.persistence.dao;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.event.Event;

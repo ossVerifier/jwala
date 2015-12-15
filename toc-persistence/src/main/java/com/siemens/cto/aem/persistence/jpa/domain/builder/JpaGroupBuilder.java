@@ -7,7 +7,7 @@ import com.siemens.cto.aem.common.domain.model.group.History;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.webserver.impl.jpa.JpaWebServerBuilder;
+import com.siemens.cto.aem.persistence.dao.builder.JpaWebServerBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;

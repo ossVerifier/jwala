@@ -13,7 +13,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.service.webserver.WebServerService;

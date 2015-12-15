@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
+package com.siemens.cto.aem.persistence.dao.impl;
 
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
@@ -10,7 +10,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.persistence.dao.jvm.JvmDao;
+import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 

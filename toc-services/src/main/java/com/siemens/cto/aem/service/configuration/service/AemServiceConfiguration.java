@@ -15,7 +15,7 @@ import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.WebServerDao;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;

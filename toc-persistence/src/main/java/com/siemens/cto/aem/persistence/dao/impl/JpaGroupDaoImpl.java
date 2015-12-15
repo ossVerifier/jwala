@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.group.impl.jpa;
+package com.siemens.cto.aem.persistence.dao.impl;
 
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
@@ -9,7 +9,7 @@ import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
+import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 
