@@ -24,11 +24,17 @@ var WebServerControlPanelWidget = React.createClass({
                              title="Generate httpd.conf"
                              busyClassName="busy-button"/>
 
-                    <button className="button-link anchor-font-style" onClick={this.onClickHttpdConf}>httpd.conf</button>
+                    <button ref="httpdConfBtn" className="button-link anchor-font-style">httpd.conf</button>
 
-                    <a href={"https://" + this.props.data.host + ":" + this.props.data.httpsPort + tocVars.loadBalancerStatusMount}>status</a>
+                    <a ref="statusLink" href={"https://" + this.props.data.host + ":" + this.props.data.httpsPort
+                            + tocVars.loadBalancerStatusMount}>status</a>
 
                </div>
+    },
+
+    componentDidMount: function() {
+        $(this.refs.httpdConfBtn.getDOMNode()).click(this.onClickHttpdConf);
+        $(this.refs.statusLink.getDOMNode()).click(this.onClickStatusLink);
     },
 
     webServerStart: function() {
@@ -51,7 +57,8 @@ var WebServerControlPanelWidget = React.createClass({
 
     onClickHttpdConf: function() {
         var url = "webServerCommand?webServerId=" + this.props.data.id.id + "&operation=viewHttpdConf";
-        window.open(url)
+        window.open(url);
+        return false;
     },
 
     generateHttpdConf: function(doneCallback) {
@@ -70,6 +77,10 @@ var WebServerControlPanelWidget = React.createClass({
     generateHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
         this.doneCallback[applicationResponseContent.webServerName]();
         $.errorAlert(applicationResponseContent.message, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+    },
+
+    onClickStatusLink: function(e) {
+        return e.stopPropagation();
     },
 
     /**

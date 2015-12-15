@@ -38,18 +38,25 @@ var RButton = React.createClass({
                                  type:"button",
                                  role:"button",
                                  ariaDisabled:false,
-                                 onClick:this.handleClick,
                                  onMouseOver:this.mouseOverHandler,
                                  onMouseOut:this.mouseOutHandler},
                                  React.DOM.span({className:spanClassName}, this.props.label));
     },
-    handleClick: function() {
+    componentDidMount: function() {
+        // This is to fix the bug wherein the containing parent's click event is fired first when defining the onClick
+        // event via react property eg {onClick: clickHandler}.
+        // TODO: Define the click event handler as a React property when the table which contains it is already written in React.
+        // TODO: Check with React if this is a known issue, see if it is resolved in the latest version. If not try to resolve and contribute.
+        $(this.getDOMNode()).click(this.handleClick);
+    },
+    handleClick: function(e) {
         if (!this.state.busy) {
             if (this.props.busyClassName !== undefined) {
                 this.setState({busy: true});
             }
             this.props.onClick(this.doneCallback);
         }
+        return false;
     },
     mouseOverHandler: function() {
         if (!this.state.busy) {
