@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.common.domain.model.webserver;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.BadRequestException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,9 @@ public enum WebServerControlOperation {
 
     START("start", WebServerReachableState.WS_START_SENT),
     STOP("stop", WebServerReachableState.WS_STOP_SENT),
-    VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null);
+    VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null),
+    DEPLOY_HTTP_CONFIG_FILE("deployHttpConfigFile", null),
+    BACK_UP_HTTP_CONFIG_FILE("backUpHttpConfigFile", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();
 
@@ -36,7 +38,7 @@ public enum WebServerControlOperation {
         }
 
         throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_OPERATION,
-                                      "Invalid operation: " + aValue);
+                "Invalid operation: " + aValue);
     }
 
     public String getExternalValue() {

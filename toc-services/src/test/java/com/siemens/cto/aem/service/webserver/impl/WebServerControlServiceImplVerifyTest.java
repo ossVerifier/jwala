@@ -14,6 +14,7 @@ import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 
+import java.net.URI;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -53,13 +57,17 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     private User user;
 
+    @Mock
+    private ClientFactoryHelper mockClientFactory;
+
     @Before
     public void setup() {
         impl = new WebServerControlServiceImpl(webServerService,
                                                commandExecutor,
                                                webServerStateService,
                                                webServerReachableStateMap,
-                mockHistoryService);
+                mockHistoryService,
+                mockClientFactory);
 
         user = new User("unused");
         when(webServerService.getJpaWebServer(anyLong(), eq(true))).thenReturn(new JpaWebServer());
@@ -72,10 +80,13 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         final WebServer webServer = mock(WebServer.class);
         final Identifier<WebServer> webServerId = mock(Identifier.class);
         final WebServerControlOperation controlOperation = WebServerControlOperation.START;
+        final ClientHttpResponse mockClientHttpResponse = mock(ClientHttpResponse.class);
 
         when(controlCommand.getWebServerId()).thenReturn(webServerId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(webServerService.getWebServer(eq(webServerId))).thenReturn(webServer);
+        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
+        when(mockClientFactory.requestGet(any(URI.class))).thenReturn(mockClientHttpResponse);
 
         impl.controlWebServer(controlCommand,
                               user);

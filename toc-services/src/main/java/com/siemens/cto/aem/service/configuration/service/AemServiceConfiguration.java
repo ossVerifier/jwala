@@ -2,9 +2,6 @@ package com.siemens.cto.aem.service.configuration.service;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
-import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -12,6 +9,9 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
@@ -43,15 +43,21 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
-import com.siemens.cto.aem.service.webserver.*;
+import com.siemens.cto.aem.service.webserver.WebServerCommandService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
-import com.siemens.cto.aem.service.webserver.impl.*;
-import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
+import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -253,17 +259,18 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerControlService")
     @Autowired
-    public WebServerControlService getWebServerControlService(final HistoryService historyService) {
+    public WebServerControlService getWebServerControlService(final HistoryService historyService, ClientFactoryHelper factoryHelper) {
         return new WebServerControlServiceImpl(getWebServerService(),
-                                               aemCommandExecutorConfig.getWebServerCommandExecutor(),
-                                               getWebServerStateService(),
-                                               webServerReachableStateMap,
-                historyService);
+                aemCommandExecutorConfig.getWebServerCommandExecutor(),
+                getWebServerStateService(),
+                webServerReachableStateMap,
+                historyService,
+                factoryHelper);
     }
 
     @Bean(name = "webServerCommandService")
     @Autowired
-    public WebServerCommandService getWebServerCommandService(ClientFactoryHelper factoryHelper) {
+    public WebServerCommandService getWebServerCommandService() {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
@@ -272,8 +279,7 @@ public class AemServiceConfiguration {
         return new WebServerCommandServiceImpl(getWebServerService(),
                 commandExecutor,
                 jschBuilder,
-                sshConfig,
-                factoryHelper);
+                sshConfig);
     }
 
     @Bean
