@@ -1,29 +1,37 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
+import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exception.RemoteCommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
+import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -34,35 +42,21 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.service.jvm.JvmControlService;
-import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
-import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -81,8 +75,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
-            final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
-            final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                              final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
+                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
@@ -233,10 +227,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     };
 
                     return ResponseBuilder.created(jvmService.uploadJvmTemplateXml(command, aUser.getUser())); // early
-                                                                                                               // out
-                                                                                                               // on
-                                                                                                               // first
-                                                                                                               // attachment
+                    // out
+                    // on
+                    // first
+                    // attachment
                 } finally {
                     assert data != null;
                     data.close();
@@ -310,11 +304,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     /**
      * Generate and deploy a JVM's configuration files.
-     * 
-     * @param jvm
-     *            - the JVM
-     * @param user
-     *            - the user
+     *
+     * @param jvm                   - the JVM
+     * @param user                  - the user
      * @param runtimeCommandBuilder
      */
     Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user, RuntimeCommandBuilder runtimeCommandBuilder) {
@@ -366,7 +358,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
         CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
-                        user.getUser());
+                user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Invoke of windows service {} was successful", jvm.getJvmName());
         } else {
@@ -378,8 +370,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
-        CommandOutput execData =jvmControlService.controlJvm(
-                        new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
+        CommandOutput execData = jvmControlService.controlJvm(
+                new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Deployment of config tar was successful: {}", jvmConfigTar);
         } else {
@@ -393,10 +385,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
+        ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         CommandOutput execData;
         execData =
-                jvmService.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar",
-                        stpJvmResourcesDir, jvm.getHostName(), ApplicationProperties.get("paths.instances"));
+                jvmControlService.secureCopyFile(secureCopyRequest, stpJvmResourcesDir + "/" + jvm.getJvmName() + "_config.tar", ApplicationProperties.get("paths.instances"));
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Copy of config tar successful: {}", jvmConfigTar);
         } else {
@@ -456,12 +448,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource,
-            String jvmResourcesDirDest) throws CommandFailureException {
+                                     String jvmResourcesDirDest) throws CommandFailureException {
         final String destPath =
                 stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
         CommandOutput result =
-                jvmService.secureCopyFile(new RuntimeCommandBuilder(), fileName, jvmResourcesDirDest,
-                        jvm.getHostName(), destPath);
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
         if (result.getReturnCode().wasSuccessful()) {
             logger.info("Successful generation and deploy of {}", fileName);
         } else {
@@ -574,13 +565,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getResourceTemplate(final String jvmName, final String resourceTemplateName,
-            final boolean tokensReplaced) {
+                                        final boolean tokensReplaced) {
         return ResponseBuilder.ok(jvmService.getResourceTemplate(jvmName, resourceTemplateName, tokensReplaced));
     }
 
     @Override
     public Response updateResourceTemplate(final String jvmName, final String resourceTemplateName,
-            final String content) {
+                                           final String content) {
 
         try {
             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, content));

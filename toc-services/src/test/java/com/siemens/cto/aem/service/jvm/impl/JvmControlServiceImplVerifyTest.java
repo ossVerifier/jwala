@@ -1,21 +1,21 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
-import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -162,4 +162,17 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
         when(commandExecutor.controlJvm(any(ControlJvmRequest.class), any(JpaJvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", "The requested service has already been started."));
     }
+
+    @Test
+    public void testSecureCopyConfFile() throws CommandFailureException {
+        ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        CommandOutput mockCommandOutput = mock(CommandOutput.class);
+        when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
+        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(commandExecutor.controlJvm(any(ControlJvmRequest.class), any(JpaJvm.class), anyString(), anyString())).thenReturn(mockCommandOutput);
+        impl.secureCopyFile(mockControlJvmRequest, "src path", "dest path");
+    }
+
+
 }

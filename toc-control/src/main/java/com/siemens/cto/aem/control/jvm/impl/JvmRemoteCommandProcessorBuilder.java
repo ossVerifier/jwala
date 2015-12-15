@@ -4,11 +4,12 @@ import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorImpl;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder {
@@ -44,10 +45,12 @@ public class JvmRemoteCommandProcessorBuilder implements CommandProcessorBuilder
     @Override
     public CommandProcessor build() throws CommandFailureException {
 
-        final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(),
-                command);
-        return new JschCommandProcessorImpl(jsch,
-                remoteCommand);
+        final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(), command);
+        if (command.getCommandFragments().get(0).contains("secure-copy")) {
+            return new JschScpCommandProcessorImpl(jsch, remoteCommand);
+        } else {
+            return new JschCommandProcessorImpl(jsch, remoteCommand);
+        }
     }
 
     protected RemoteSystemConnection getRemoteSystemConnection() {

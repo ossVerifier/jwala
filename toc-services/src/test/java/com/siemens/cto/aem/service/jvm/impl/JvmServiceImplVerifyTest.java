@@ -392,16 +392,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testSecureCopyConfFile() throws CommandFailureException {
-        when(rtCommandBuilder.build()).thenReturn(command);
-        impl.secureCopyFile(rtCommandBuilder, "host", "src", "conf", "dest");
-        verify(rtCommandBuilder).setOperation(SCP_SCRIPT_NAME);
-        verify(rtCommandBuilder, new Times(2)).addParameter(anyString());
-        verify(rtCommandBuilder, new Times(2)).addCygwinPathParameter(anyString());
-        verify(sshConfig).getUserName();
-    }
-
-    @Test
     public void testGenerateInvokeBat() {
         final Jvm jvm = mock(Jvm.class);
         final List<Jvm> jvms = new ArrayList<>();

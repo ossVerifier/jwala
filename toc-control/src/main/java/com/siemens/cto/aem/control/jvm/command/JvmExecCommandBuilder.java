@@ -10,5 +10,7 @@ public interface JvmExecCommandBuilder {
 
     JvmExecCommandBuilder setOperation(final JvmControlOperation anOperation);
 
+    JvmExecCommandBuilder setParameter(String... aParams);
+
     ExecCommand build();
 }

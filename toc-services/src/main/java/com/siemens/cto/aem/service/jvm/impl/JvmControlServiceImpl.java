@@ -1,8 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -10,13 +7,16 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
+import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
@@ -145,6 +145,15 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
     }
 
+    @Override
+    public CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException {
+        final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
+        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
+
+        return jvmCommandExecutor.controlJvm(secureCopyRequest, jvm, sourcePath, destPath);
+    }
+
+
     private void processDefaultReturnCode(ControlJvmRequest aCommand, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
         if (ctrlOp.checkForSuccess(result)) {
             logger.debug("exiting controlJvm for command {}: '{}'", aCommand, result);
@@ -186,8 +195,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                                           final User aUser) {
             if (aJvmState != null) {
                 jvmStateService.setCurrentState(createNewSetJvmStateCommand(aJvmId,
-                        aJvmState,
-                        aMessage),
+                                aJvmState,
+                                aMessage),
                         aUser);
             }
         }

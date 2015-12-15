@@ -1,8 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.exception.ApplicationException;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
@@ -14,12 +11,8 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.common.exception.ApplicationException;
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -28,6 +21,9 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -51,8 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public class JvmServiceImpl implements JvmService {
 
@@ -234,6 +228,7 @@ public class JvmServiceImpl implements JvmService {
      * Ping the JVM via http get.
      * Used by diagnose button.
      * TODO: Run asynchronously if the dianose button will be a main stay.
+     *
      * @param jvm the web server to ping.
      */
     public void pingJvm(final Jvm jvm) {
@@ -268,9 +263,10 @@ public class JvmServiceImpl implements JvmService {
 
     /**
      * Sets the web server state if the web server is not starting or stopping.
-     * @param jvm the jvm
+     *
+     * @param jvm   the jvm
      * @param state {@link JvmState}
-     * @param msg a message
+     * @param msg   a message
      */
     private void setState(final Jvm jvm,
                           final JvmState state,
@@ -281,9 +277,10 @@ public class JvmServiceImpl implements JvmService {
 
     /**
      * Sets the jvm state.
-     * @param id the jvm id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
+     *
+     * @param id    the jvm id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
      * @param state the state {@link JvmState}
-     * @param msg a message
+     * @param msg   a message
      * @return {@link SetStateRequest}
      */
     private SetStateRequest<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
@@ -300,18 +297,6 @@ public class JvmServiceImpl implements JvmService {
                 DateTime.now(),
                 StateType.JVM,
                 msg));
-    }
-
-    @Override
-    public CommandOutput secureCopyFile(RuntimeCommandBuilder rtCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException {
-
-        rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
-        rtCommandBuilder.addCygwinPathParameter(srcDirPath + "/" + fileName);
-        rtCommandBuilder.addParameter(sshConfig.getUserName());
-        rtCommandBuilder.addParameter(destHostName);
-        rtCommandBuilder.addCygwinPathParameter(destPath);
-        RuntimeCommand rtCommand = rtCommandBuilder.build();
-        return rtCommand.execute();
     }
 
     public boolean isJvmStarted(Jvm jvm) {

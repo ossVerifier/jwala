@@ -317,7 +317,7 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         boolean failsScp = false;
         Response response = null;
@@ -344,7 +344,7 @@ public class JvmServiceRestImplTest {
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
         when(impl.isJvmStarted(jvm)).thenReturn(false);
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(commandOutput);
 
         when(controlImpl.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
         when(controlImpl.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(commandOutput);
@@ -378,7 +378,7 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecDataFail);
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
@@ -390,7 +390,7 @@ public class JvmServiceRestImplTest {
         ExecCommand execCommand = new ExecCommand("fail command");
         Throwable throwable = new JSchException("Failed scp");
         final CommandFailureException commandFailureException = new CommandFailureException(execCommand, throwable);
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenThrow(commandFailureException);
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(commandFailureException);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
@@ -418,7 +418,7 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         when(controlImpl.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
 
@@ -433,7 +433,7 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
 
         when(controlImpl.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
@@ -448,7 +448,7 @@ public class JvmServiceRestImplTest {
         when(impl.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(impl.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(impl.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(impl.secureCopyFile(new RuntimeCommandBuilder(), jvm.getJvmName() + "_config.tar", ".", jvm.getHostName(), ".")).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
 
 
         when(controlImpl.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
@@ -529,13 +529,13 @@ public class JvmServiceRestImplTest {
         when(impl.isJvmStarted(jvm)).thenReturn(false);
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         when(impl.generateConfigFile(anyString(),anyString())).thenReturn("<server>xml</server>");
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecData);
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("ERROR");
-        when(impl.secureCopyFile(any(RuntimeCommandBuilder.class), anyString(), anyString(), anyString(), anyString())).thenReturn(mockExecData);
+        when(controlImpl.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
         boolean exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
