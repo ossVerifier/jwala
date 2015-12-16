@@ -28,11 +28,11 @@ public class RemoteJvmCommandExecutorImpl implements JvmCommandExecutor {
     }
 
     @Override
-    public CommandOutput controlJvm(final ControlJvmRequest aCommand,
+    public CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest,
                                     final JpaJvm jvm) throws CommandFailureException {
 
         final JvmExecCommandBuilder commandBuilder = new DefaultJvmExecCommandBuilderImpl();
-        commandBuilder.setOperation(aCommand.getControlOperation());
+        commandBuilder.setOperation(controlJvmRequest.getControlOperation());
         commandBuilder.setJvm(jvm);
         final ExecCommand execCommand = commandBuilder.build();
 

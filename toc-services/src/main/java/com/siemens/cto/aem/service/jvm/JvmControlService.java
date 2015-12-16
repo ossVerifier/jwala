@@ -6,5 +6,5 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 
 public interface JvmControlService {
 
-    CommandOutput controlJvm(final ControlJvmRequest aCommand, final User aUser);
+    CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser);
 }

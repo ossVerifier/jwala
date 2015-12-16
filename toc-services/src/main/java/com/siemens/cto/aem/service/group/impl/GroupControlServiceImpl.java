@@ -36,39 +36,39 @@ public class GroupControlServiceImpl implements GroupControlService {
 
     @Transactional
     @Override
-    public void controlGroup(ControlGroupRequest aCommand, User aUser) {
+    public void controlGroup(ControlGroupRequest controlGroupRequest, User aUser) {
 
-        LOGGER.info("begin controlGroup operation {} for groupId {}", aCommand.getControlOperation(),
-                aCommand.getGroupId());
+        LOGGER.info("begin controlGroup operation {} for groupId {}", controlGroupRequest.getControlOperation(),
+                controlGroupRequest.getGroupId());
 
-        aCommand.validateCommand(
-                groupStateService.canStart(aCommand.getGroupId(), aUser), 
-                groupStateService.canStop(aCommand.getGroupId(), aUser));
+        controlGroupRequest.validateCommand(
+                groupStateService.canStart(controlGroupRequest.getGroupId(), aUser),
+                groupStateService.canStop(controlGroupRequest.getGroupId(), aUser));
         
-        groupStateService.signal(aCommand, aUser);
+        groupStateService.signal(controlGroupRequest, aUser);
 
-        controlWebServers(aCommand, aUser);
-        controlJvms(aCommand, aUser);
+        controlWebServers(controlGroupRequest, aUser);
+        controlJvms(controlGroupRequest, aUser);
     }
 
-    private void controlWebServers(ControlGroupRequest aCommand, User aUser) {
+    private void controlWebServers(ControlGroupRequest controlGroupRequest, User aUser) {
 
-        WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(aCommand
+        WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(controlGroupRequest
                 .getControlOperation().getExternalValue());
 
         ControlGroupWebServerRequest controlGroupWebServerCommand = new ControlGroupWebServerRequest(
-                aCommand.getGroupId(), wsControlOperation);
+                controlGroupRequest.getGroupId(), wsControlOperation);
 
         groupWebServerControlService.controlGroup(controlGroupWebServerCommand, aUser);
     }
 
-    private void controlJvms(ControlGroupRequest aCommand, User aUser) {
+    private void controlJvms(ControlGroupRequest controlGroupRequest, User aUser) {
   
-        JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(aCommand.getControlOperation()
+        JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(controlGroupRequest.getControlOperation()
                 .getExternalValue()); // TODO address this mapping between
                                       // operations
 
-        ControlGroupJvmRequest controlGroupJvmCommand = new ControlGroupJvmRequest(aCommand.getGroupId(),
+        ControlGroupJvmRequest controlGroupJvmCommand = new ControlGroupJvmRequest(controlGroupRequest.getGroupId(),
                 jvmControlOperation);
 
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);

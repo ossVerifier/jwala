@@ -41,12 +41,12 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> aCommand, final User aUser) {
-        LOGGER.trace("Attempting to set state for {} {} ", stateType, aCommand);
-        aCommand.validate();
+    public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest, final User aUser) {
+        LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
+        setStateRequest.validate();
 
-        final CurrentState<S, T> currentState = persistenceService.getState(aCommand.getNewState().getId());
-        final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(aCommand, AuditEvent
+        final CurrentState<S, T> currentState = persistenceService.getState(setStateRequest.getNewState().getId());
+        final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(setStateRequest, AuditEvent
                 .now(aUser)));
 
         if (currentState == null || !currentState.getState().equals(latestState.getState()) ||

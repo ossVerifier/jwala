@@ -28,11 +28,11 @@ public class RemoteWebServerCommandExecutorImpl implements WebServerCommandExecu
     }
 
     @Override
-    public CommandOutput controlWebServer(final ControlWebServerRequest aCommand,
+    public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
                                      final WebServer aWebServer) throws CommandFailureException {
 
         final WebServerExecCommandBuilder commandBuilder = new DefaultWebServerExecCommandBuilderImpl();
-        commandBuilder.setOperation(aCommand.getControlOperation());
+        commandBuilder.setOperation(controlWebServerRequest.getControlOperation());
         commandBuilder.setWebServer(aWebServer);
         final ExecCommand execCommand = commandBuilder.build();
 

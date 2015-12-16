@@ -40,9 +40,9 @@ public class CommandController {
     public ModelAndView jvmCommand(HttpServletRequest request, HttpServletResponse response) {
 
         Identifier<Jvm> jvmIdentifier = getJvmIdParameter(request);
-        ControlJvmRequest aCommand = getControlOperation(request, jvmIdentifier);
+        ControlJvmRequest controlJvmRequest = getControlOperation(request, jvmIdentifier);
 
-        CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, User.getSystemUser());
+        CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, User.getSystemUser());
 
         ModelAndView mv = new ModelAndView("cmd/textOutput");
         mv.addObject("stdErr", commandOutput.getStandardError());

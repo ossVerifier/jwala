@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface GroupJvmControlService {
 
-    void controlGroup(final ControlGroupJvmRequest aCommand, final User aUser);
+    void controlGroup(final ControlGroupJvmRequest controlGroupJvmRequest, final User aUser);
     
     void dispatchCommandComplete(List<JvmDispatchCommandResult> results);
 }

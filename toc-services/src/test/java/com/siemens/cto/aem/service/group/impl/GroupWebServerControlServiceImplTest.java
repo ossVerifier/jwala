@@ -28,7 +28,7 @@ public class GroupWebServerControlServiceImplTest {
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
     private User testUser = new User("testUser");
-    private ControlGroupWebServerRequest aCommand;
+    private ControlGroupWebServerRequest controlGroupWebServerRequest;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -40,22 +40,22 @@ public class GroupWebServerControlServiceImplTest {
         cut = new GroupWebServerControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
-        aCommand = new ControlGroupWebServerRequest(groupId, WebServerControlOperation.START);
+        controlGroupWebServerRequest = new ControlGroupWebServerRequest(groupId, WebServerControlOperation.START);
 
         when(mockGroupService.getGroup(groupId)).thenReturn(mockGroup);
     }
 
     @Test(expected = BadRequestException.class)
     public void testControlGroupWithInvalidGroup() {
-        ControlGroupWebServerRequest aCommand = new ControlGroupWebServerRequest(null, WebServerControlOperation.START);
-        cut.controlGroup(aCommand, testUser);
+        ControlGroupWebServerRequest controlGroupWebServerRequest = new ControlGroupWebServerRequest(null, WebServerControlOperation.START);
+        cut.controlGroup(controlGroupWebServerRequest, testUser);
     }
 
     @Test
     public void testControlGroup() {
-        cut.controlGroup(aCommand, testUser);
+        cut.controlGroup(controlGroupWebServerRequest, testUser);
 
-        GroupWebServerDispatchCommand dispatchCommand = new GroupWebServerDispatchCommand(mockGroup, aCommand, testUser);
+        GroupWebServerDispatchCommand dispatchCommand = new GroupWebServerDispatchCommand(mockGroup, controlGroupWebServerRequest, testUser);
         verify(mockCommandDispatchGateway).asyncDispatchCommand(dispatchCommand);
     }
 
@@ -63,7 +63,7 @@ public class GroupWebServerControlServiceImplTest {
     public void testDispatchCommandComplete() {
         List<WebServerDispatchCommandResult> results = new ArrayList<>();
         GroupWebServerDispatchCommand groupWebServerDispatchCommand = new GroupWebServerDispatchCommand(mockGroup,
-                aCommand, testUser);
+                controlGroupWebServerRequest, testUser);
         WebServerDispatchCommandResult commandResult = new WebServerDispatchCommandResult(true, groupWebServerDispatchCommand);
         results.add(commandResult);
 

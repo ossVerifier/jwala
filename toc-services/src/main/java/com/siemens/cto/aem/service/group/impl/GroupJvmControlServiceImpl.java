@@ -31,13 +31,13 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
     @Transactional
     @Override
-    public void controlGroup(ControlGroupJvmRequest aCommand, User aUser) {
+    public void controlGroup(ControlGroupJvmRequest controlGroupJvmRequest, User aUser) {
 
-        aCommand.validate();
+        controlGroupJvmRequest.validate();
 
-        Group group = groupService.getGroup(aCommand.getGroupId());
+        Group group = groupService.getGroup(controlGroupJvmRequest.getGroupId());
 
-        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, aCommand, aUser);
+        GroupJvmDispatchCommand dispatchCommand = new GroupJvmDispatchCommand(group, controlGroupJvmRequest, aUser);
 
         // TODO: Deprecate spring integration stuff in the future!
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);

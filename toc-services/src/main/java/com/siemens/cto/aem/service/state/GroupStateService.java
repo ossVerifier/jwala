@@ -31,7 +31,7 @@ public interface GroupStateService {
 
         CurrentGroupState signalStartRequested(Identifier<Group> groupId, User user);
 
-        CurrentGroupState signal(ControlGroupRequest aCommand, User aUser);
+        CurrentGroupState signal(ControlGroupRequest controlGroupRequest, User aUser);
 
     }
 

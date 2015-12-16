@@ -8,7 +8,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 
 public interface GroupControlService {
 
-    void controlGroup(ControlGroupRequest aCommand, User aUser);
+    void controlGroup(ControlGroupRequest controlGroupRequest, User aUser);
 
     CurrentGroupState resetState(Identifier<Group> aGroupId, User fromContext);
 }

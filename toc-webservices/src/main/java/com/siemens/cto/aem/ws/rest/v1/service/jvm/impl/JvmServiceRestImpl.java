@@ -408,8 +408,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest aCommand, String jvmName) {
-        CommandOutput commandOutput = jvmControlService.controlJvm(aCommand, user.getUser());
+    private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest controlJvmRequest, String jvmName) {
+        CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             logger.info("Delete of windows service {} was successful", jvmName);
         } else {

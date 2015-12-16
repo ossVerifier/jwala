@@ -6,6 +6,6 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 
 public interface WebServerControlService {
 
-    CommandOutput controlWebServer(final ControlWebServerRequest aCommand,
+    CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
                                              final User aUser);
 }

@@ -31,7 +31,7 @@ public class GroupJvmControlServiceImplTest {
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
     private User testUser = new User("testUser");
-    private ControlGroupJvmRequest aCommand;
+    private ControlGroupJvmRequest controlGroupJvmRequest;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -43,22 +43,22 @@ public class GroupJvmControlServiceImplTest {
         cut = new GroupJvmControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
-        aCommand = new ControlGroupJvmRequest(groupId, JvmControlOperation.START);
+        controlGroupJvmRequest = new ControlGroupJvmRequest(groupId, JvmControlOperation.START);
 
         when(mockGroupService.getGroup(groupId)).thenReturn(mockGroup);
     }
 
     @Test(expected = BadRequestException.class)
     public void testControlGroupWithInvalidGroup() {
-        ControlGroupJvmRequest aCommand = new ControlGroupJvmRequest(null, JvmControlOperation.START);
-        cut.controlGroup(aCommand, testUser);
+        ControlGroupJvmRequest controlGroupJvmRequest = new ControlGroupJvmRequest(null, JvmControlOperation.START);
+        cut.controlGroup(controlGroupJvmRequest, testUser);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testDispatchCommandComplete() {
         List<JvmDispatchCommandResult> results = new ArrayList<>();
-        GroupJvmDispatchCommand groupJvmDispatchCommand = new GroupJvmDispatchCommand(mockGroup, aCommand, testUser);
+        GroupJvmDispatchCommand groupJvmDispatchCommand = new GroupJvmDispatchCommand(mockGroup, controlGroupJvmRequest, testUser);
         JvmDispatchCommandResult commandResult = new JvmDispatchCommandResult(true, groupJvmDispatchCommand);
         results.add(commandResult);
         

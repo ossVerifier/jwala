@@ -29,13 +29,13 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
     
     @Transactional
     @Override
-    public void controlGroup(ControlGroupWebServerRequest aCommand, User aUser) {
+    public void controlGroup(ControlGroupWebServerRequest controlGroupWebServerRequest, User aUser) {
 
-        aCommand.validate();
+        controlGroupWebServerRequest.validate();
 
-        Group group = groupService.getGroup(aCommand.getGroupId());
+        Group group = groupService.getGroup(controlGroupWebServerRequest.getGroupId());
 
-        GroupWebServerDispatchCommand dispatchCommand = new GroupWebServerDispatchCommand(group, aCommand, aUser);
+        GroupWebServerDispatchCommand dispatchCommand = new GroupWebServerDispatchCommand(group, controlGroupWebServerRequest, aUser);
         
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
     }

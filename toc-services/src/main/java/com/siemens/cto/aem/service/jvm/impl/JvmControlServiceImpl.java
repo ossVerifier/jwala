@@ -48,36 +48,36 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     // TODO: Refactor
-    public CommandOutput controlJvm(final ControlJvmRequest aCommand, final User aUser) {
-        logger.info("entering controlJvm for command {}", aCommand);
+    public CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser) {
+        logger.info("entering controlJvm for command {}", controlJvmRequest);
         long start = System.currentTimeMillis();
         CurrentState<Jvm, JvmState> prevState = null;
 
-        final Identifier<Jvm> jvmId = aCommand.getJvmId();
+        final Identifier<Jvm> jvmId = controlJvmRequest.getJvmId();
         final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
         try {
-            final String event = aCommand.getControlOperation().getOperationState() == null ?
-                    aCommand.getControlOperation().name() :
-                    aCommand.getControlOperation().getOperationState().toStateString();
+            final String event = controlJvmRequest.getControlOperation().getOperationState() == null ?
+                    controlJvmRequest.getControlOperation().name() :
+                    controlJvmRequest.getControlOperation().getOperationState().toStateString();
             historyService.createHistory(jvm.getName(), jvm.getGroups(), event, EventType.USER_ACTION, aUser.getId());
 
-            aCommand.validate();
+            controlJvmRequest.validate();
 
-            JvmControlOperation ctrlOp = aCommand.getControlOperation();
+            JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
 
             if (ctrlOp.getOperationState() != null) {
-                prevState = jvmControlServiceLifecycle.startState(aCommand, aUser);
+                prevState = jvmControlServiceLifecycle.startState(controlJvmRequest, aUser);
             }
 
-            CommandOutput commandOutput = jvmCommandExecutor.controlJvm(aCommand, jvm);
+            CommandOutput commandOutput = jvmCommandExecutor.controlJvm(controlJvmRequest, jvm);
             if (commandOutput != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
                 commandOutput.cleanStandardOutput();
                 logger.info("shell command output{}", commandOutput.getStandardOutput());
             }
 
             if (commandOutput != null && commandOutput.getReturnCode().wasSuccessful()) {
-                logger.info("exiting controlJvm for command {}", aCommand);
-                jvmControlServiceLifecycle.completeState(aCommand, aUser);
+                logger.info("exiting controlJvm for command {}", controlJvmRequest);
+                jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser);
             } else {
                 if (commandOutput != null) {
                     final String result;
@@ -89,22 +89,22 @@ public class JvmControlServiceImpl implements JvmControlService {
 
                     switch (commandOutput.getReturnCode().getReturnCode()) {
                         case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
-                            logger.info("exiting controlJvm for ABNORMAL_SUCCESS command {} :: {}", aCommand, result);
+                            logger.info("exiting controlJvm for ABNORMAL_SUCCESS command {} :: {}", controlJvmRequest, result);
                             commandOutput = new CommandOutput(new ExecReturnCode(0),
                                     commandOutput.getStandardOutput(),
                                     commandOutput.getStandardError());
-                            jvmControlServiceLifecycle.completeState(aCommand, aUser);
+                            jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser);
                             break;
                         case ExecReturnCode.STP_EXIT_CODE_NO_OP:
-                            logger.debug("exiting controlJvm with result NOOP for command {}: '{}'", aCommand, result);
+                            logger.debug("exiting controlJvm with result NOOP for command {}: '{}'", controlJvmRequest, result);
                             jvmControlServiceLifecycle.revertState(prevState, aUser);
                             break;
                         case ExecReturnCode.STP_EXIT_CODE_FAST_FAIL:
-                            logger.error("exiting controlJvm FAST FAIL command {} :: {}", aCommand, result);
+                            logger.error("exiting controlJvm FAST FAIL command {} :: {}", controlJvmRequest, result);
                             jvmControlServiceLifecycle.startStateWithMessage(jvmId, ctrlOp.getFailureStateOrPrevious(prevState), result, aUser);
                             throw new ExternalSystemErrorException(AemFaultType.FAST_FAIL, "Remote JVM startup health checks failed for jvm with id " + jvmId.getId() + ": " + result);
                         case ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE:
-                            logger.error("exiting controlJVM NO SUCH SERVICE command {} :: {}", aCommand, result);
+                            logger.error("exiting controlJVM NO SUCH SERVICE command {} :: {}", controlJvmRequest, result);
                             jvmControlServiceLifecycle.startStateWithMessage(jvmId,
                                     ctrlOp.getFailureStateOrPrevious(prevState),
                                     result,
@@ -112,7 +112,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                             throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                     "Error controlling JVM " + jvm.getName() + ": " + result);
                         default:
-                            processDefaultReturnCode(aCommand, aUser, prevState, ctrlOp, commandOutput, jvm.getName(), result);
+                            processDefaultReturnCode(controlJvmRequest, aUser, prevState, ctrlOp, commandOutput, jvm.getName(), result);
                             break;
                     }
 
@@ -120,7 +120,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             }
 
-            logger.info("exiting controlJvm for command {} elapsedTime:{}", aCommand, System.currentTimeMillis() - start);
+            logger.info("exiting controlJvm for command {} elapsedTime:{}", controlJvmRequest, System.currentTimeMillis() - start);
             return commandOutput;
         } catch (final CommandFailureException cfe) {
             /*
@@ -140,18 +140,18 @@ public class JvmControlServiceImpl implements JvmControlService {
                     aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "CommandFailureException when attempting to control a JVM: " + aCommand,
+                    "CommandFailureException when attempting to control a JVM: " + controlJvmRequest,
                     cfe);
         }
     }
 
-    private void processDefaultReturnCode(ControlJvmRequest aCommand, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
+    private void processDefaultReturnCode(ControlJvmRequest controlJvmRequest, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
         if (ctrlOp.checkForSuccess(result)) {
-            logger.debug("exiting controlJvm for command {}: '{}'", aCommand, result);
+            logger.debug("exiting controlJvm for command {}: '{}'", controlJvmRequest, result);
             jvmControlServiceLifecycle.revertState(prevState, aUser);
         } else {
-            logger.error("exiting controlJvm for FAILING ({}) command {} :: {}", execData.getReturnCode().getReturnCode(), aCommand, result);
-            jvmControlServiceLifecycle.startStateWithMessage(aCommand.getJvmId(),
+            logger.error("exiting controlJvm for FAILING ({}) command {} :: {}", execData.getReturnCode().getReturnCode(), controlJvmRequest, result);
+            jvmControlServiceLifecycle.startStateWithMessage(controlJvmRequest.getJvmId(),
                     ctrlOp.getFailureStateOrPrevious(prevState),
                     "Return code: " + execData.getReturnCode().getReturnCode() + "; " + result,
                     aUser);
@@ -170,10 +170,10 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public CurrentState<Jvm, JvmState> startState(final ControlJvmRequest aCommand, final User aUser) {
-            final Identifier<Jvm> jvmId = aCommand.getJvmId();
+        public CurrentState<Jvm, JvmState> startState(final ControlJvmRequest controlJvmRequest, final User aUser) {
+            final Identifier<Jvm> jvmId = controlJvmRequest.getJvmId();
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(jvmId);
-            jvmStateService.setCurrentState(createNewSetJvmStateCommand(aCommand), //TODO send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
+            jvmStateService.setCurrentState(createNewSetJvmStateCommand(controlJvmRequest), //TODO send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
                     aUser);
             return jvmState;
         }
@@ -236,11 +236,11 @@ public class JvmControlServiceImpl implements JvmControlService {
          */
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public void completeState(ControlJvmRequest aCommand, User aUser) {
-            JvmState jcs = aCommand.getControlOperation().getConfirmedState();
+        public void completeState(ControlJvmRequest controlJvmRequest, User aUser) {
+            JvmState jcs = controlJvmRequest.getControlOperation().getConfirmedState();
             if (jcs != null) {
                 JvmSetStateRequest jssc = new JvmSetStateCommandBuilder()
-                        .setJvmId(aCommand.getJvmId())
+                        .setJvmId(controlJvmRequest.getJvmId())
                         .setJvmState(jcs)
                         .build();
                 jvmStateService.setCurrentState(jssc, aUser);

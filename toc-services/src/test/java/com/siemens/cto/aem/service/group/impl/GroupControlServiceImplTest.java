@@ -42,10 +42,10 @@ public class GroupControlServiceImplTest {
 
     @Test
     public void testControlGroup() {
-        ControlGroupRequest aCommand = new ControlGroupRequest(testGroupId, GroupControlOperation.START);
+        ControlGroupRequest controlGroupRequest= new ControlGroupRequest(testGroupId, GroupControlOperation.START);
         when(mockGroupStateService.canStart(testGroupId, systemUser)).thenReturn(true);
         
-        cut.controlGroup(aCommand, systemUser);
+        cut.controlGroup(controlGroupRequest, systemUser);
         
         ControlGroupWebServerRequest wsCommand = new ControlGroupWebServerRequest(testGroupId, WebServerControlOperation.START);
         verify(mockGroupWebServerControlService).controlGroup(wsCommand, systemUser);
@@ -57,10 +57,10 @@ public class GroupControlServiceImplTest {
 
     @Test(expected = BadRequestException.class)
     public void testControlGroupWhenBadState() {
-        ControlGroupRequest aCommand = new ControlGroupRequest(testGroupId, GroupControlOperation.START);
+        ControlGroupRequest controlGroupRequest= new ControlGroupRequest(testGroupId, GroupControlOperation.START);
         when(mockGroupStateService.canStart(testGroupId, systemUser)).thenReturn(false);
         
-        cut.controlGroup(aCommand, systemUser);        
+        cut.controlGroup(controlGroupRequest, systemUser);
     }
 
 }

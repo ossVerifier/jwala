@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface GroupWebServerControlService {
 
-    void controlGroup(final ControlGroupWebServerRequest aCommand, final User aUser);
+    void controlGroup(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User aUser);
     
     void dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
 

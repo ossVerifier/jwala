@@ -114,11 +114,11 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group addJvmToGroup(final AddJvmToGroupRequest aCommand,
+    public Group addJvmToGroup(final AddJvmToGroupRequest addJvmToGroupRequest,
                                final User anAddingUser) {
 
-        aCommand.validate();
-        Group group = groupPersistenceService.addJvmToGroup(createEvent(aCommand,
+        addJvmToGroupRequest.validate();
+        Group group = groupPersistenceService.addJvmToGroup(createEvent(addJvmToGroupRequest,
                                                                  anAddingUser));
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);
@@ -127,16 +127,16 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group addJvmsToGroup(final AddJvmsToGroupRequest aCommand,
+    public Group addJvmsToGroup(final AddJvmsToGroupRequest addJvmsToGroupRequest,
                                 final User anAddingUser) {
 
-        aCommand.validate();
-        for (final AddJvmToGroupRequest command : aCommand.toCommands()) {
+        addJvmsToGroupRequest.validate();
+        for (final AddJvmToGroupRequest command : addJvmsToGroupRequest.toCommands()) {
             addJvmToGroup(command,
                           anAddingUser);
         }
 
-        Group group = getGroup(aCommand.getGroupId());
+        Group group = getGroup(addJvmsToGroupRequest.getGroupId());
 
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);
@@ -145,11 +145,11 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group removeJvmFromGroup(final RemoveJvmFromGroupRequest aCommand,
+    public Group removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest,
                                     final User aRemovingUser) {
 
-        aCommand.validate();
-        Group group = groupPersistenceService.removeJvmFromGroup(createEvent(aCommand,
+        removeJvmFromGroupRequest.validate();
+        Group group = groupPersistenceService.removeJvmFromGroup(createEvent(removeJvmFromGroupRequest,
                                                                       aRemovingUser));
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);

@@ -7,6 +7,6 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 
 public interface WebServerCommandExecutor {
 
-    CommandOutput controlWebServer(final ControlWebServerRequest aCommand,
+    CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
                               final WebServer aJvm) throws CommandFailureException;
 }

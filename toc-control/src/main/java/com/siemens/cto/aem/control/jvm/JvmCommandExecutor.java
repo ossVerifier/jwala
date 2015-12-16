@@ -7,7 +7,7 @@ import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 
 public interface JvmCommandExecutor {
 
-    CommandOutput controlJvm(final ControlJvmRequest aCommand,
+    CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest,
                              final JpaJvm aJvm) throws CommandFailureException;
 
 }

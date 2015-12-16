@@ -355,12 +355,12 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     }
 
     @Override
-    public CurrentGroupState signal(ControlGroupRequest aCommand, User aUser) {
-        switch (aCommand.getControlOperation()) {
+    public CurrentGroupState signal(ControlGroupRequest controlGroupRequest, User aUser) {
+        switch (controlGroupRequest.getControlOperation()) {
             case START:
-                return signalStartRequested(aCommand.getGroupId(), aUser);
+                return signalStartRequested(controlGroupRequest.getGroupId(), aUser);
             case STOP:
-                return signalStopRequested(aCommand.getGroupId(), aUser);
+                return signalStopRequested(controlGroupRequest.getGroupId(), aUser);
             default:
                 return null;
         }

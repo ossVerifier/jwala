@@ -12,7 +12,7 @@ public interface JvmControlServiceLifecycle {
     /**
      * Set state, return previous state.
      */
-    CurrentState<Jvm, JvmState> startState(final ControlJvmRequest aCommand,
+    CurrentState<Jvm, JvmState> startState(final ControlJvmRequest controlJvmRequest,
                     final User aUser);
 
     /**
@@ -30,5 +30,5 @@ public interface JvmControlServiceLifecycle {
     void notifyMessageOnly(Identifier<Jvm> jvmId, String result, User aUser);
 
     /* Set completed state to confirmed state, no message. */
-    void completeState(ControlJvmRequest aCommand, User aUser);
+    void completeState(ControlJvmRequest controlJvmRequest, User aUser);
 }
