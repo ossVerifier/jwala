@@ -5,7 +5,7 @@ import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommandResult;
 import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;

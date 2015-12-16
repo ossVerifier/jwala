@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
+import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerStateCrudServiceImpl;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;

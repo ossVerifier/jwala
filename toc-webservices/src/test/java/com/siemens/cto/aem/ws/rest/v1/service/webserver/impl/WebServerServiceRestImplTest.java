@@ -250,7 +250,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
@@ -265,7 +265,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
         try {
@@ -289,7 +289,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(commandImpl.secureCopyHttpdConf(anyString(), anyString(), any(RuntimeCommandBuilder.class))).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try{
             response = webServerServiceRest.generateAndDeployConfig(webServer.getName());

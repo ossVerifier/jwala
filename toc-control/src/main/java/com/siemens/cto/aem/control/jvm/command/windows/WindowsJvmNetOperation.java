@@ -1,11 +1,11 @@
 package com.siemens.cto.aem.control.jvm.command.windows;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ShellCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.ShellCommand;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -18,7 +18,7 @@ import static com.siemens.cto.aem.control.AemControl.Properties.*;
 
 /**
  * Windows JVM Net Operations
- * <p>
+ * <p/>
  * When calling out to a script located on the disk
  * the path is located from the toc.properties file
  */
@@ -96,6 +96,12 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                     aServiceName,
                     ApplicationProperties.get("paths.instances")
             );
+        }
+    },
+    SECURE_COPY(JvmControlOperation.SECURE_COPY) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
     };
 

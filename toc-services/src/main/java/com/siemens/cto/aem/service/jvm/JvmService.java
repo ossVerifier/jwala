@@ -1,18 +1,15 @@
 package com.siemens.cto.aem.service.jvm;
 
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
@@ -44,8 +41,6 @@ public interface JvmService {
     String generateConfigFile(String aJvmName, String templateName);
 
     String performDiagnosis(Identifier<Jvm> aJvmId);
-
-    CommandOutput secureCopyFile(RuntimeCommandBuilder runtimeCommandBuilder, String fileName, String srcDirPath, String destHostName, String destPath) throws CommandFailureException;
 
     JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest command, User user);
 

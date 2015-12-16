@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.control.webserver.command.windows;
 
-import com.siemens.cto.aem.control.AemControl;
-import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ShellCommand;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.control.AemControl;
+import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -36,6 +36,18 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ExecCommand("cat", aParams[0]);
+        }
+    },
+    DEPLOY_HTTP_CONFIG_FILE(WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
+        }
+    },
+    BACK_UP_HTTTP_CONFIG_FILE(WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
         }
     };
 

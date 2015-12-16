@@ -2,10 +2,11 @@ package com.siemens.cto.aem.persistence.dao.webserver.impl.jpa;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.dao.group.GroupDao;
-import com.siemens.cto.aem.persistence.dao.group.impl.jpa.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.GroupDao;
+import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.dao.impl.JpaWebServerDaoImpl;
 import com.siemens.cto.aem.persistence.dao.webserver.AbstractWebServerDaoIntegrationTest;
-import com.siemens.cto.aem.persistence.dao.webserver.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.WebServerDao;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

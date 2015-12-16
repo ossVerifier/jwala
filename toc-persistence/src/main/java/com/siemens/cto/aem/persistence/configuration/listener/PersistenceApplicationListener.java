@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.configuration.listener;
 
-import com.siemens.cto.aem.persistence.dao.app.ApplicationDao;
+import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;

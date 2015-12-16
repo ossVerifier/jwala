@@ -1,43 +1,17 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
-import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -50,6 +24,21 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
@@ -63,10 +52,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
-            final WebServerControlService theWebServerControlService,
-            final WebServerCommandService theWebServerCommandService,
-            final StateService<WebServer, WebServerReachableState> theWebServerStateService,
-            final Map<String, ReentrantReadWriteLock> theWriteLocks) {
+                                    final WebServerControlService theWebServerControlService,
+                                    final WebServerCommandService theWebServerCommandService,
+                                    final StateService<WebServer, WebServerReachableState> theWebServerStateService,
+                                    final Map<String, ReentrantReadWriteLock> theWriteLocks) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
@@ -114,7 +103,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
-            final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
+                                     final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
         logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
                 new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
@@ -144,15 +133,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         try {
             // create the file
-            final File httpdConfFile = createTempHttpdConf(aWebServerName);
+            final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+            final File httpdConfFile = createTempHttpdConf(aWebServerName, httpdDataDir);
 
             // copy the file
             final CommandOutput execData;
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
 
-            execData =
-                    webServerCommandService.secureCopyHttpdConf(aWebServerName, httpdUnixPath,
-                            new RuntimeCommandBuilder());
+            execData = webServerControlService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
             if (execData.getReturnCode().wasSuccessful()) {
                 logger.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
@@ -173,23 +161,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf"), errorDetails);
         } finally {
-            wsWriteLocks.get(aWebServerName).writeLock().unlock(); // potential
-                                                                   // memory
-                                                                   // leak:
-                                                                   // could
-                                                                   // clean
-                                                                   // it
-                                                                   // up
-                                                                   // but
-                                                                   // adds
-                                                                   // complexity
+            wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
-    private File createTempHttpdConf(String aWebServerName) {
+    private File createTempHttpdConf(String aWebServerName, String httpdDataDir) {
         PrintWriter out = null;
-        final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
         final File httpdConfFile =
                 new File((httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_httpd."
                         + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".conf").replace("\\", "/"));
@@ -290,10 +268,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                             new UploadHttpdConfTemplateRequest(webServer, file1.getName(), data);
 
                     return ResponseBuilder.created(webServerService.uploadWebServerConfig(command, aUser.getUser())); // early
-                                                                                                                      // out
-                                                                                                                      // on
-                                                                                                                      // first
-                                                                                                                      // attachment
+                    // out
+                    // on
+                    // first
+                    // attachment
                 } finally {
                     assert data != null;
                     data.close();
@@ -308,7 +286,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getResourceTemplate(final String wsName, final String resourceTemplateName,
-            final boolean tokensReplaced) {
+                                        final boolean tokensReplaced) {
         return ResponseBuilder.ok(webServerService.getResourceTemplate(wsName, resourceTemplateName, tokensReplaced));
     }
 
