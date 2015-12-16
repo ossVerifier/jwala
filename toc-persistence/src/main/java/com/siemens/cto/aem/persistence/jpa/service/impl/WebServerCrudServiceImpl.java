@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
@@ -15,7 +15,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.dao.builder.JpaWebServerBuilder;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
@@ -29,15 +29,53 @@ import javax.persistence.criteria.Root;
 import java.io.InputStream;
 import java.util.*;
 
-public class JpaWebServerDaoImpl implements WebServerDao {
+public class WebServerCrudServiceImpl implements WebServerCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
 
-    public JpaWebServerDaoImpl() {
+    public WebServerCrudServiceImpl() {
     }
 
     @Override
+    public WebServer createWebServer(final WebServer webServer) {
+        final JpaWebServer jpaWebServer = new JpaWebServer();
+
+        jpaWebServer.setName(webServer.getName());
+        jpaWebServer.setGroups((List) webServer.getGroups());
+        jpaWebServer.setHost(webServer.getHost());
+        jpaWebServer.setPort(webServer.getPort());
+        jpaWebServer.setHttpsPort(webServer.getHttpsPort());
+        jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
+        jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
+        jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
+        jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
+        entityManager.persist(jpaWebServer);
+        entityManager.flush();
+
+        return webServerFrom(jpaWebServer);
+    }
+
+    @Override
+    public WebServer updateWebServer(final WebServer webServer) {
+        final JpaWebServer jpaWebServer = getJpaWebServer(webServer.getId());
+
+        jpaWebServer.setName(webServer.getName());
+        jpaWebServer.setGroups((List) webServer.getGroups());
+        jpaWebServer.setHost(webServer.getHost());
+        jpaWebServer.setPort(webServer.getPort());
+        jpaWebServer.setHttpsPort(webServer.getHttpsPort());
+        jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
+        jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
+        jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
+        jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
+        entityManager.flush();
+
+        return webServerFrom(jpaWebServer);
+    }
+
+    @Override
+    @Deprecated
     public WebServer createWebServer(final Event<CreateWebServerRequest> aWebServer) {
 
         try {
@@ -82,6 +120,7 @@ public class JpaWebServerDaoImpl implements WebServerDao {
     }
 
     @Override
+    @Deprecated
     public WebServer updateWebServer(final Event<UpdateWebServerRequest> aWebServerToUpdate) {
 
         try {

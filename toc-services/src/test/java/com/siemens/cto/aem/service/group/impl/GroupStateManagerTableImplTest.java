@@ -20,7 +20,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
@@ -66,8 +66,8 @@ public class GroupStateManagerTableImplTest {
         }
 
         @Bean
-        public WebServerDao getWebServerDao() {
-            return Mockito.mock(WebServerDao.class);
+        public WebServerCrudService getWebServerDao() {
+            return Mockito.mock(WebServerCrudService.class);
         }
         @SuppressWarnings("unchecked")
         @Bean

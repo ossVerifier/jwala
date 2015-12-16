@@ -17,7 +17,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
@@ -75,8 +75,8 @@ public class MoreGroupStateMachineTest {
         }
 
         @Bean
-        public WebServerDao getWebServerDao() {
-            return Mockito.mock(WebServerDao.class);
+        public WebServerCrudService getWebServerDao() {
+            return Mockito.mock(WebServerCrudService.class);
         }
 
         @SuppressWarnings("unchecked")
@@ -104,7 +104,7 @@ public class MoreGroupStateMachineTest {
     JvmPersistenceService jvmPersistenceService;
 
     @Autowired
-    WebServerDao webServerDao;
+    WebServerCrudService webServerCrudService;
 
     @Autowired
     @Qualifier("jvmStatePersistenceService")
@@ -150,9 +150,9 @@ public class MoreGroupStateMachineTest {
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.GRP_INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER));
 
-        when(webServerDao.getWebServer(eq(ws.getId()))).thenReturn(ws);
+        when(webServerCrudService.getWebServer(eq(ws.getId()))).thenReturn(ws);
 
-        when(webServerDao.findWebServersBelongingTo(eq(mockGroup.getId()))).thenReturn(wsList);
+        when(webServerCrudService.findWebServersBelongingTo(eq(mockGroup.getId()))).thenReturn(wsList);
 
         when(jvmPersistenceService.getJvm(eq(jvm.getId()))).thenReturn(jvm);
 

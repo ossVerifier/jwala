@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
@@ -16,10 +16,15 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
-public interface WebServerDao {
+public interface WebServerCrudService {
 
+	@Deprecated
 	WebServer createWebServer(
 			final Event<CreateWebServerRequest> aWebServerToCreate);
+
+	WebServer createWebServer(WebServer webServer);
+
+	WebServer updateWebServer(WebServer webServer);
 
 	WebServer updateWebServer(
 			final Event<UpdateWebServerRequest> aWebServerToUpdate);

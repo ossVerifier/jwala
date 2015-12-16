@@ -15,7 +15,7 @@ import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -124,7 +124,7 @@ public class AemServiceConfiguration {
     private HarmonyTemplateEngine harmonyTemplateEngine;
 
     @Autowired
-    private WebServerDao webServerDao;
+    private WebServerCrudService webServerCrudService;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -161,7 +161,7 @@ public class AemServiceConfiguration {
                 getStateNotificationService(),
                 StateType.GROUP,
                 groupStateService, stateNotificationWorker,
-                groupPersistenceService, jvmPersistenceService, webServerDao);
+                groupPersistenceService, jvmPersistenceService, webServerCrudService);
     }
 
     @Bean

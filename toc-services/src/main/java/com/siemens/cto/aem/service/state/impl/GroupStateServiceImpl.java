@@ -16,7 +16,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
@@ -57,7 +57,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     private JvmPersistenceService jvmPersistenceService;
 
-    private WebServerDao webServerDao;
+    private WebServerCrudService webServerCrudService;
 
     private Map<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
 
@@ -71,14 +71,14 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                                  final StateNotificationWorker stateNotificationWorker,
                                  final GroupPersistenceService groupPersistenceService,
                                  final JvmPersistenceService jvmPersistenceService,
-                                 final WebServerDao webServerDao) {
+                                 final WebServerCrudService webServerCrudService) {
         super(thePersistenceService, theNotificationService, theStateType, groupStateService, stateNotificationWorker);
 
         systemUser = User.getSystemUser();
 
         this.groupPersistenceService = groupPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.webServerDao = webServerDao;
+        this.webServerCrudService = webServerCrudService;
     }
 
 
@@ -164,7 +164,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
         // lookup children
         Identifier<WebServer> wsId = wsState.getId();
-        WebServer ws = webServerDao.getWebServer(wsId);
+        WebServer ws = webServerCrudService.getWebServer(wsId);
 
         if (ws == null) {
             return Collections.<SetGroupStateRequest>emptyList();

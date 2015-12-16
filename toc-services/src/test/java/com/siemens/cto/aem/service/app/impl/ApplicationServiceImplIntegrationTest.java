@@ -10,15 +10,12 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.impl.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.*;
+import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
@@ -77,8 +74,8 @@ public class ApplicationServiceImplIntegrationTest {
     static class CommonConfiguration {
 
         @Bean
-        public WebServerDao getWebServerDao() {
-            return new JpaWebServerDaoImpl();
+        public WebServerCrudService getWebServerDao() {
+            return new WebServerCrudServiceImpl();
         }
 
         @Bean

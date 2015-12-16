@@ -16,7 +16,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
@@ -64,7 +64,7 @@ public class GroupStateServiceImplTest {
     private JvmPersistenceService jvmPersistenceService;
 
     @Mock
-    private WebServerDao webServerDao;
+    private WebServerCrudService webServerCrudService;
 
     @Mock
     private ApplicationContext applicationContext;
@@ -84,7 +84,7 @@ public class GroupStateServiceImplTest {
                                                           stateNotificationWorker,
                                                           groupPersistenceService,
                                                           jvmPersistenceService,
-                                                          webServerDao);
+                webServerCrudService);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class GroupStateServiceImplTest {
         final Set<Group> groups = new HashSet<>();
         groups.add(group);
         when(webServer.getGroups()).thenReturn(groups);
-        when(webServerDao.getWebServer(eq(id))).thenReturn(webServer);
+        when(webServerCrudService.getWebServer(eq(id))).thenReturn(webServer);
         when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
         groupStateServiceImpl.setApplicationContext(applicationContext);
         assertNotNull(groupStateServiceImpl.stateUpdateWebServer(cjs));

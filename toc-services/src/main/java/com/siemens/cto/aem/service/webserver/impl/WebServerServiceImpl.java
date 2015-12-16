@@ -13,7 +13,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -32,13 +32,13 @@ public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
 
-    private final WebServerDao dao;
+    private final WebServerCrudService dao;
 
     private final FileManager fileManager;
 
     private final String HTTPD_CONF = "httpd.conf";
 
-    public WebServerServiceImpl(final WebServerDao theDao, final FileManager theFileManager) {
+    public WebServerServiceImpl(final WebServerCrudService theDao, final FileManager theFileManager) {
         dao = theDao;
         fileManager = theFileManager;
     }

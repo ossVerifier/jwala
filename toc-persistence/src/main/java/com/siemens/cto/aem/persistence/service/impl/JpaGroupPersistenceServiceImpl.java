@@ -11,8 +11,8 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
@@ -28,13 +28,13 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
-    private final WebServerDao webServerDao;
+    private final WebServerCrudService webServerCrudService;
 
     public JpaGroupPersistenceServiceImpl(final GroupCrudService theGroupCrudService,
                                           final GroupJvmRelationshipService theGroupJvmRelationshipService) {
         groupCrudService = theGroupCrudService;
         groupJvmRelationshipService = theGroupJvmRelationshipService;
-        webServerDao = new JpaWebServerDaoImpl();
+        webServerCrudService = new WebServerCrudServiceImpl();
     }
 
     @Override

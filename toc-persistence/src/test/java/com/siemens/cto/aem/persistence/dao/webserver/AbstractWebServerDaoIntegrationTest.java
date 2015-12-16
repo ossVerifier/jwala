@@ -17,7 +17,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
 public abstract class AbstractWebServerDaoIntegrationTest {
 
     @Autowired
-    private WebServerDao webServerDao;
+    private WebServerCrudService webServerCrudService;
 
     @Autowired
     private GroupDao groupDao;
@@ -89,7 +89,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         preCreatedGroupIds = new ArrayList<>(1);
         preCreatedGroupIds.add(preCreatedGroup.getId());
 
-        preCreatedWebServer = webServerDao
+        preCreatedWebServer = webServerCrudService
                 .createWebServer(createCreateWebServerEvent(
                         preCreatedGroupIds, TEST_WS_NAME, TEST_WS_HOST,
                         TEST_WS_PORT, TEST_WS_HTTPS_PORT, userName,
@@ -114,7 +114,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
                 UNCHECKED_WS_PORT, TEST_WS_HTTPS_PORT, userName,
                 STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT);
 
-        webServerDao.createWebServer(createWebServer);
+        webServerCrudService.createWebServer(createWebServer);
     }
 
     @Test
@@ -125,7 +125,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
                 "My New Name", "My New Host", 1, 2, userName,
                 STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT);
 
-        final WebServer actualWebServer = webServerDao
+        final WebServer actualWebServer = webServerCrudService
                 .updateWebServer(updateWebServer);
 
         assertEquals(updateWebServer.getRequest().getNewName(),
@@ -148,7 +148,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         final Identifier<WebServer> nonExistentWebServerId = new Identifier<>(
                 NONEXISTANT_WS_ID);
 
-        webServerDao.updateWebServer(createUpdateWebServerEvent(
+        webServerCrudService.updateWebServer(createUpdateWebServerEvent(
                 nonExistentWebServerId, preCreatedGroupIds,
                 UNCHECKED_WS_NAME, UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT,
                 userName,
@@ -158,13 +158,13 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     @Test(expected = BadRequestException.class)
     public void testUpdateDuplicateWebServer() {
 
-        final WebServer newWebServer = webServerDao
+        final WebServer newWebServer = webServerCrudService
                 .createWebServer(createCreateWebServerEvent(
                         preCreatedGroupIds, UNIQUE_NEW_WS_NAME,
                         UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, userName,
                         STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT));
 
-        webServerDao.updateWebServer(createUpdateWebServerEvent(
+        webServerCrudService.updateWebServer(createUpdateWebServerEvent(
                 newWebServer.getId(), preCreatedGroupIds,
                 preCreatedWebServer.getName(), UNCHECKED_WS_HOST, UNCHECKED_WS_HTTPS_PORT,
                 UNCHECKED_WS_PORT, userName,
@@ -177,7 +177,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         final Identifier<WebServer> expectedWebServerIdentifier = preCreatedWebServer
                 .getId();
 
-        final WebServer webServer = webServerDao
+        final WebServer webServer = webServerCrudService
                 .getWebServer(expectedWebServerIdentifier);
 
         assertTrue(webServer.getGroupIds().containsAll(preCreatedGroupIds));
@@ -196,20 +196,20 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     @Test(expected = NotFoundException.class)
     public void testGetNonExistentWebServer() {
 
-        webServerDao.getWebServer(new Identifier<WebServer>(NONEXISTANT_WS_ID));
+        webServerCrudService.getWebServer(new Identifier<WebServer>(NONEXISTANT_WS_ID));
     }
 
     @Test
     public void testGetWebServers() {
 
         for (int i = 0; i <= 5; i++) {
-            webServerDao.createWebServer(createCreateWebServerEvent(
+            webServerCrudService.createWebServer(createCreateWebServerEvent(
                     preCreatedGroupIds, TEST_WS_NAME + (i + 1),
                     UNCHECKED_WS_HOST, UNCHECKED_WS_PORT, UNCHECKED_WS_HTTPS_PORT, TEST_USER_NAME + (i + 1),
                     STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT));
         }
 
-        final List<WebServer> actualWebServers = webServerDao.getWebServers();
+        final List<WebServer> actualWebServers = webServerCrudService.getWebServers();
 
         assertTrue(actualWebServers.size() > 0);
     }
@@ -220,7 +220,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         final String expectedContains = preCreatedWebServer.getName()
                 .substring(3, 5);
 
-        final List<WebServer> actualWebServers = webServerDao.findWebServers(expectedContains);
+        final List<WebServer> actualWebServers = webServerCrudService.findWebServers(expectedContains);
 
         for (final WebServer WebServer : actualWebServers) {
             assertTrue(WebServer.getName().contains(expectedContains));
@@ -232,10 +232,10 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
         final Identifier<WebServer> webServerId = preCreatedWebServer.getId();
 
-        webServerDao.removeWebServer(webServerId);
+        webServerCrudService.removeWebServer(webServerId);
 
         try {
-            webServerDao.getWebServer(webServerId);
+            webServerCrudService.getWebServer(webServerId);
         } catch (final NotFoundException nfe) {
             // Success
             return;
@@ -248,12 +248,12 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         final Identifier<WebServer> nonExistentWebServerId = new Identifier<>(
                 NONEXISTANT_WS_ID);
 
-        webServerDao.removeWebServer(nonExistentWebServerId);
+        webServerCrudService.removeWebServer(nonExistentWebServerId);
     }
 
     @Test(expected = NotFoundException.class)
     public void testWebServerWithNotFoundGroup() {
-        WebServer webServer = webServerDao
+        WebServer webServer = webServerCrudService
                 .createWebServer(createCreateWebServerEvent(NONEXISTANT_GROUP_IDS,
                         TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT,
                         TEST_USER_NAME,
@@ -265,7 +265,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
     @Test
     public void testWebServerWithNullGroup() {
-        WebServer webServer = webServerDao
+        WebServer webServer = webServerCrudService
                 .createWebServer(createCreateWebServerEvent(null, SECOND_TEST_WS_NAME,
                         TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT, TEST_USER_NAME,
                         STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT));
@@ -276,7 +276,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
 
     @Test
     public void testWebServerWithEmptyGroup() {
-        WebServer webServer = webServerDao
+        WebServer webServer = webServerCrudService
                 .createWebServer(createCreateWebServerEvent(new ArrayList<Identifier<Group>>(0), SECOND_TEST_WS_NAME,
                         TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT, TEST_USER_NAME,
                         STATUS_PATH, HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT));
@@ -293,7 +293,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         ArrayList<Identifier<Group>> newGroupIds = new ArrayList<>(1);
         newGroupIds.add(newGroup.getId());
 
-        WebServer webServer = webServerDao
+        WebServer webServer = webServerCrudService
                 .updateWebServer(createUpdateWebServerEvent(
                         preCreatedWebServer.getId(), newGroupIds,
                         TEST_WS_NAME, TEST_WS_HOST, TEST_WS_PORT, TEST_WS_HTTPS_PORT,
@@ -319,7 +319,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
             if (updateCommand instanceof UpdateGroupRequest) {
                 return (R) groupDao.updateGroup(eventObj);
             } else if (updateCommand instanceof UpdateWebServerRequest) {
-                return (R) webServerDao.updateWebServer(eventObj);
+                return (R) webServerCrudService.updateWebServer(eventObj);
             }
             return null;
         }
@@ -335,7 +335,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
             if (createCommand instanceof CreateGroupRequest) {
                 return (R) groupDao.createGroup(eventObj);
             } else if (createCommand instanceof CreateWebServerRequest) {
-                return (R) webServerDao.createWebServer(eventObj);
+                return (R) webServerCrudService.createWebServer(eventObj);
             }
             return null;
         }
@@ -441,7 +441,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         entityManager.flush();
 
         final List<Application> applications =
-                webServerDao.findApplications(jpaWebServer.getName());
+                webServerCrudService.findApplications(jpaWebServer.getName());
 
         assertEquals(4, applications.size());
 
@@ -472,7 +472,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         entityManager.persist(jpaWebServer);
         entityManager.flush();
 
-        final WebServer ws = webServerDao.findWebServerByName(WS_NAME);
+        final WebServer ws = webServerCrudService.findWebServerByName(WS_NAME);
         assertEquals(WS_NAME, ws.getName());
     }
 
@@ -635,7 +635,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         entityManager.flush();
 
         final List<Jvm> jvms =
-                webServerDao.findJvms(WEB_SERVER_NAME);
+                webServerCrudService.findJvms(WEB_SERVER_NAME);
 
         assertEquals(3, jvms.size());
 
@@ -655,13 +655,13 @@ public abstract class AbstractWebServerDaoIntegrationTest {
     // TODO: Fix this test! Double check if data us correct. Can't find any problem with the code (JPA).
     public void testFindWebServersBelongingToGroup() {
         final List<WebServer> webServers =
-                webServerDao.findWebServersBelongingTo(preCreatedGroup.getId());
+                webServerCrudService.findWebServersBelongingTo(preCreatedGroup.getId());
         assertTrue(webServers.size() > 0);
     }
 
     @Test
     public void testGetResourceTemplateNames() {
-        List<String> resultList = webServerDao.getResourceTemplateNames(TEST_WS_NAME);
+        List<String> resultList = webServerCrudService.getResourceTemplateNames(TEST_WS_NAME);
         assertTrue("Template was not added so should be empty", resultList.isEmpty());
     }
 
@@ -670,7 +670,7 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         String templateText = "";
         boolean exceptionThrown = false;
         try {
-            templateText = webServerDao.getResourceTemplate(TEST_WS_NAME, "httpd.conf");
+            templateText = webServerCrudService.getResourceTemplate(TEST_WS_NAME, "httpd.conf");
         }
         catch (NonRetrievableResourceTemplateContentException e) {
             exceptionThrown = true;
@@ -686,9 +686,9 @@ public abstract class AbstractWebServerDaoIntegrationTest {
         ArrayList<UploadWebServerTemplateRequest> uploadWSTemplateCommands = new ArrayList<>();
         uploadWSTemplateCommands.add(builder.buildHttpdConfCommand(preCreatedWebServer));
         final boolean overwriteExisting = false;
-        webServerDao.populateWebServerConfig(uploadWSTemplateCommands, new User(TEST_USER_NAME), overwriteExisting);
+        webServerCrudService.populateWebServerConfig(uploadWSTemplateCommands, new User(TEST_USER_NAME), overwriteExisting);
 
-        String templateText = webServerDao.getResourceTemplate(TEST_WS_NAME, "httpd.conf");
+        String templateText = webServerCrudService.getResourceTemplate(TEST_WS_NAME, "httpd.conf");
         assertTrue("Template text was returned after uploading the file to the database", !templateText.isEmpty());
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }

@@ -6,8 +6,8 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
-import com.siemens.cto.aem.persistence.dao.WebServerDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.FileManager;
@@ -38,8 +38,8 @@ public class WebServerServiceImplIntegrationTest {
 	static class CommonConfiguration {
 
 		@Bean
-		public WebServerDao getWebServerDao() {
-			return new JpaWebServerDaoImpl();
+		public WebServerCrudService getWebServerDao() {
+			return new WebServerCrudServiceImpl();
 		}
 
 		@Bean
@@ -49,7 +49,7 @@ public class WebServerServiceImplIntegrationTest {
 	}
 	
 	@Autowired
-	private WebServerDao           webServerDao;
+	private WebServerCrudService webServerCrudService;
 	
 	private WebServerService   cut;
 
@@ -58,7 +58,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() { 
-        cut = new WebServerServiceImpl(webServerDao, fileManager);
+        cut = new WebServerServiceImpl(webServerCrudService, fileManager);
     }
 
 	@Test(expected = NotFoundException.class)
