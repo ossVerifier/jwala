@@ -5,7 +5,7 @@ import com.siemens.cto.aem.common.dispatch.JvmDispatchCommandResult;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.request.group.ControlGroupJvmRequest;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.service.group.GroupControlPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;

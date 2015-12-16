@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.app;
+package com.siemens.cto.aem.persistence.service;
 
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.common.domain.model.app.*;

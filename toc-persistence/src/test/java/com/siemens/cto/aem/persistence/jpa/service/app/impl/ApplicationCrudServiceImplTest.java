@@ -21,10 +21,10 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServ
 import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.group.impl.JpaGroupPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.jvm.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;

@@ -1,12 +1,12 @@
-package com.siemens.cto.aem.persistence.service.webserver.impl;
+package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
-import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.persistence.service.state.impl.JpaStatePersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.persistence.service.builder.WebServerJpaCurrentStateBuilder;
 
 public class WebServerJpaStatePersistenceServiceImpl extends JpaStatePersistenceServiceImpl<WebServer, WebServerReachableState> implements StatePersistenceService<WebServer, WebServerReachableState> {
 

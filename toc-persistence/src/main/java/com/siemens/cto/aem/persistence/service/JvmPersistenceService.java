@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.jvm;
+package com.siemens.cto.aem.persistence.service;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;

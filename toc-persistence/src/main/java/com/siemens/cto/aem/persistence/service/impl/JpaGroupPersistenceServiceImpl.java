@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.group.impl;
+package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
@@ -17,7 +17,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.service.group.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

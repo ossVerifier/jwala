@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.state;
+package com.siemens.cto.aem.persistence.service;
 
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;

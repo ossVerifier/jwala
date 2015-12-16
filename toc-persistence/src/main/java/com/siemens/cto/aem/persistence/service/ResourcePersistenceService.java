@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.resource;
+package com.siemens.cto.aem.persistence.service;
 
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.domain.model.event.Event;

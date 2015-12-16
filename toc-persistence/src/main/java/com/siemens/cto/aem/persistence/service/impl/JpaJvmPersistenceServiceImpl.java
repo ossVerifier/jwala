@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.jvm.impl;
+package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.event.Event;
@@ -13,7 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
-import com.siemens.cto.aem.persistence.service.jvm.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 
 import java.util.ArrayList;
 import java.util.List;

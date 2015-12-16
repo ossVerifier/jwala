@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.app.impl;
+package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.common.domain.model.app.*;
@@ -10,7 +10,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
-import com.siemens.cto.aem.persistence.service.app.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 
 import java.util.List;
 

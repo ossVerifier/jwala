@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.service.state.impl;
+package com.siemens.cto.aem.persistence.service.builder;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;

@@ -1,12 +1,12 @@
-package com.siemens.cto.aem.persistence.service.jvm.impl;
+package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
-import com.siemens.cto.aem.persistence.service.state.StatePersistenceService;
-import com.siemens.cto.aem.persistence.service.state.impl.JpaStatePersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.builder.JvmJpaCurrentStateBuilder;
+import com.siemens.cto.aem.persistence.service.StatePersistenceService;
 
 public class JvmJpaStatePersistenceServiceImpl extends JpaStatePersistenceServiceImpl<Jvm, JvmState> implements StatePersistenceService<Jvm, JvmState> {
 

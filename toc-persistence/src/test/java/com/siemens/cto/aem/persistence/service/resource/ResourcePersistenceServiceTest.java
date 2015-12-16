@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
