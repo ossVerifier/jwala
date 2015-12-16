@@ -1,22 +1,21 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import com.siemens.cto.aem.common.exception.ApplicationException;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.common.request.app.*;
-import com.siemens.cto.aem.common.domain.model.app.*;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.ApplicationException;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
@@ -33,7 +32,6 @@ import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +48,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
@@ -85,7 +81,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private ClientFactoryHelper clientFactoryHelper;
 
     @Autowired
-    private ApplicationCommandService applicationCommandService;
+    private ApplicationCommandService applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
@@ -98,6 +94,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Autowired
     private final FileManager fileManager;
+
     public ApplicationServiceImpl(final ApplicationDao applicationDao,
                                   final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -113,11 +110,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.clientFactoryHelper = clientFactoryHelper;
-        this.applicationCommandService = applicationCommandService;
+        this.applicationCommandExecutor = applicationCommandService;
         this.jvmDao = jvmDao;
-	    this.aemSshConfig = aemSshConfig;
+        this.aemSshConfig = aemSshConfig;
         this.groupService = groupService;
-	    this.fileManager = fileManager;
+        this.fileManager = fileManager;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
     }
@@ -232,8 +229,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                     jvmDao.findJvm(jvmName, groupName)));
             try {
                 return GeneratorUtils.bindDataToTemplateText(bindings, template);
-            } catch(Exception x) {
-                throw new ApplicationException("Template token replacement failed.",x);
+            } catch (Exception x) {
+                throw new ApplicationException("Template token replacement failed.", x);
             }
         }
         return template;
@@ -248,6 +245,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     /**
      * Returns the extension of the filename.
      * e.g. roleMapping.properties will return "properties".
+     *
      * @param fileName
      * @return extension of the filename.
      */
@@ -259,7 +257,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(readOnly = true)
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
-                               final String resourceTemplateName, User user) {
+                                    final String resourceTemplateName, User user) {
 
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
@@ -300,10 +298,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             target.append(resourceTemplateName);
 
-            final CommandOutput execData = applicationCommandService.secureCopyConfFile(jvm.getHostName(),
-                    confFile.getAbsolutePath().replace("\\", "/"),
-                    target.toString(),
-                    new RuntimeCommandBuilder());
+            ControlApplicationRequest applicationRequest = new ControlApplicationRequest(app.getId(), ApplicationControlOperation.DEPLOY_CONFIG_FILE);
+            final CommandOutput execData = applicationCommandExecutor.controlApplication(applicationRequest, app, jvm.getHostName(), confFile.getAbsolutePath().replace("\\", "/"), target.toString());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceTemplateName, confFile.getAbsolutePath());
                 return execData;
@@ -337,10 +333,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void copyApplicationWarToGroupHosts(Application application, RuntimeCommandBuilder rtCommandBuilder) {
+    public void copyApplicationWarToGroupHosts(Application application) {
         File applicationWar = new File(application.getWarPath());
         final String sourcePath = applicationWar.getParent();
-        File tempWarFile = new File(sourcePath  + "/" + application.getWarName());
+        File tempWarFile = new File(sourcePath + "/" + application.getWarName());
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
             final String destPath = ApplicationProperties.get("stp.webapps.dir");
@@ -350,20 +346,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Set<String> hostNames = new HashSet<>();
                 for (Jvm jvm : theJvms) {
                     final String host = jvm.getHostName();
-                    if (hostNames.contains(host)){
+                    if (hostNames.contains(host)) {
                         continue;
                     } else {
                         hostNames.add(host);
                     }
-                    rtCommandBuilder.reset();
-                    rtCommandBuilder.setOperation(SCP_SCRIPT_NAME);
-                    rtCommandBuilder.addCygwinPathParameter(tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"));
-                    rtCommandBuilder.addParameter(aemSshConfig.getSshConfiguration().getUserName());
-                    rtCommandBuilder.addParameter(host);
-                    rtCommandBuilder.addCygwinPathParameter(destPath);
-                    RuntimeCommand rtCommand = rtCommandBuilder.build();
-
-                    CommandOutput execData = rtCommand.execute();
+                    ControlApplicationRequest applicationRequest = new ControlApplicationRequest(application.getId(), ApplicationControlOperation.DEPLOY_CONFIG_FILE);
+                    CommandOutput execData = applicationCommandExecutor.controlApplication(applicationRequest, application, jvm.getHostName(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
                     if (execData.getReturnCode().wasSuccessful()) {
                         LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), host);
                     } else {
@@ -376,6 +365,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         } catch (IOException e) {
             LOGGER.error("Creation of temporary war file for {} FAILED :: {}", application.getWarPath(), e);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to create temporary war file for copying to remote hosts");
+        } catch (CommandFailureException e) {
+            LOGGER.error("Secure copy FAILED :: {}", e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy war file to remote hosts");
         } finally {
             if (tempWarFile.exists()) {
                 tempWarFile.delete();
@@ -414,7 +406,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 + "/" + groupName.replace(" ", "-") + "/" + jvmName.replace(" ", "-"));
 
         fileNameBuilder.append(ApplicationProperties.get(GENERATED_RESOURCE_DIR))
-                       .append('/')
+                .append('/')
                 .append(groupName.replace(" ", "-"))
                 .append('/')
                 .append(jvmName.replace(" ", "-"))

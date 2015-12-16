@@ -1,33 +1,34 @@
 package com.siemens.cto.aem.service.app.impl;
 
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.WebServerDao;
+import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
+import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.impl.JpaWebServerDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import com.siemens.cto.toc.files.RepositoryService;
@@ -58,8 +59,8 @@ import static org.mockito.Mockito.when;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
-    ApplicationServiceImplIntegrationTest.CommonConfiguration.class,
-        TestJpaConfiguration.class })
+        ApplicationServiceImplIntegrationTest.CommonConfiguration.class,
+        TestJpaConfiguration.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
@@ -84,7 +85,7 @@ public class ApplicationServiceImplIntegrationTest {
         public ApplicationPersistenceService getApplicationPersistenceService() {
             return new JpaApplicationPersistenceServiceImpl(new ApplicationCrudServiceImpl(), new GroupCrudServiceImpl());
         }
-    
+
         @Bean
         public ApplicationDao getApplicationDao() {
             return new JpaApplicationDaoImpl();
@@ -109,7 +110,8 @@ public class ApplicationServiceImplIntegrationTest {
         @Bean
         public ApplicationCommandService getApplicationCommandService() {
             final SshConfiguration sshConfiguration = new SshConfiguration("z003bpej", 22, "", "", "MrI6SA43vbcIws0pJygEDA==");
-            return new ApplicationCommandServiceImpl(sshConfiguration);
+            JschBuilder jschBuilder = new JschBuilder();
+            return new ApplicationCommandServiceImpl(sshConfiguration, jschBuilder);
         }
 
         @Bean(name = "webServerHttpRequestFactory")
@@ -155,13 +157,13 @@ public class ApplicationServiceImplIntegrationTest {
         }
 
     }
-    
+
     @Autowired
     private ApplicationDao applicationDao;
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
-    
+
     private ApplicationService cut;
 
     // @Autowired
@@ -184,8 +186,8 @@ public class ApplicationServiceImplIntegrationTest {
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
         cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService,
-                                         clientFactoryHelper, applicationCommandService, null, aemSshConfig,
-                                         groupService, fileManager, null, null);
+                clientFactoryHelper, applicationCommandService, null, aemSshConfig,
+                groupService, fileManager, null, null);
     }
 
     /**
@@ -206,7 +208,7 @@ public class ApplicationServiceImplIntegrationTest {
         List<Application> all = cut.getApplications();
         assertEquals(0, all.size());
     }
-    
+
     /**
      * Test getting the partial list.
      */

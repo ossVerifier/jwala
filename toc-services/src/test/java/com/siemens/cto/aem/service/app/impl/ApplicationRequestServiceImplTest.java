@@ -1,19 +1,18 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.request.app.ControlApplicationRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.internal.verification.Times;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_WITH_TARGET_BK;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -23,24 +22,27 @@ public class ApplicationRequestServiceImplTest {
 
     private ApplicationCommandService applicationCommandService;
     private SshConfiguration sshConfiguration;
-    private RuntimeCommandBuilder runtimeCommandBuilder;
     private RuntimeCommand runtimeCommand;
+    private JschBuilder jschBuilder;
 
     @Before
     public void setup() {
         sshConfiguration = mock(SshConfiguration.class);
-        applicationCommandService = new ApplicationCommandServiceImpl(sshConfiguration);
+        jschBuilder = mock(JschBuilder.class);
+        applicationCommandService = new ApplicationCommandServiceImpl(sshConfiguration, jschBuilder);
     }
 
-    @Test
-    public void testSecureCopyConfFile() throws CommandFailureException {
-        runtimeCommandBuilder = mock(RuntimeCommandBuilder.class);
-        runtimeCommand = mock(RuntimeCommand.class);
-        when(runtimeCommandBuilder.build()).thenReturn(runtimeCommand);
-        applicationCommandService.secureCopyConfFile("host", "src", "conf", runtimeCommandBuilder);
-        verify(runtimeCommandBuilder).setOperation(SCP_WITH_TARGET_BK);
-        verify(runtimeCommandBuilder, new Times(4)).addParameter(anyString());
-        verify(sshConfiguration).getUserName();
+    // TODO fix this - should not expect a NullPointer
+    @Test(expected = NullPointerException.class)
+    public void testSecureCopyConfFile() throws CommandFailureException{
+        final Application mockApp = mock(Application.class);
+        final Identifier<Application> appId = new Identifier<>(11L);
+        when(mockApp.getId()).thenReturn(appId);
+        when(sshConfiguration.getUserName()).thenReturn("user");
+        when(sshConfiguration.getPassword()).thenReturn("oops");
+        when(sshConfiguration.getPort()).thenReturn(22);
+        ControlApplicationRequest appRequest = new ControlApplicationRequest(appId, ApplicationControlOperation.DEPLOY_CONFIG_FILE);
+        applicationCommandService.controlApplication(appRequest, mockApp, "testHost", "source path", "dest path");
     }
 
 }

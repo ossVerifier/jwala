@@ -1,17 +1,22 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
-import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -20,21 +25,13 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.service.app.ApplicationService;
-import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
@@ -128,13 +125,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
 
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
-                    service.copyApplicationWarToGroupHosts(application, new RuntimeCommandBuilder());
+                    service.copyApplicationWarToGroupHosts(application);
 
                     return ResponseBuilder.created(application); // early
-                                                                 // out
-                                                                 // on
-                                                                 // first
-                                                                 // attachment
+                    // out
+                    // on
+                    // first
+                    // attachment
                 } finally {
                     data.close();
                 }
@@ -162,14 +159,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
-            final String resourceTemplateName, final boolean tokensReplaced) {
+                                        final String resourceTemplateName, final boolean tokensReplaced) {
         return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName,
                 tokensReplaced));
     }
 
     @Override
     public Response updateResourceTemplate(final String appName, final String resourceTemplateName,
-            final String content) {
+                                           final String content) {
 
         try {
             return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content));
@@ -183,7 +180,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response deployConf(final String appName, final String groupName, final String jvmName,
-            final String resourceTemplateName, final AuthenticatedUser authUser) {
+                               final String resourceTemplateName, final AuthenticatedUser authUser) {
         try {
             final CommandOutput execData =
                     service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
@@ -240,10 +237,10 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                             new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, data);
 
                     return ResponseBuilder.created(service.uploadAppTemplate(command, aUser.getUser())); // early
-                                                                                                         // out
-                                                                                                         // on
-                                                                                                         // first
-                                                                                                         // attachment
+                    // out
+                    // on
+                    // first
+                    // attachment
                 } finally {
                     assert data != null;
                     data.close();
@@ -258,7 +255,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
-            final String template) {
+                                            final String template) {
         try {
             return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
         } catch (RuntimeException rte) {

@@ -10,12 +10,17 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperati
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
+import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
+import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
@@ -34,6 +39,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
@@ -144,7 +151,18 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             }
         }
 
-        return webServerCommandExecutor.secureCopyHttpdConf(aWebServer, sourcePath, destPath);
+        // back up the original file first
+        String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destPathBackup = destPath + currentDateSuffix;
+        ControlWebServerRequest webServerRequest = new ControlWebServerRequest(aWebServer.getId(), WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE);
+        final CommandOutput commandOutput = webServerCommandExecutor.controlWebServer(webServerRequest, aWebServer, destPath, destPathBackup);
+        if (!commandOutput.getReturnCode().wasSuccessful()) {
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up the httpd.conf for " + aWebServer);
+        }
+
+        // run the scp command
+        webServerRequest = new ControlWebServerRequest(aWebServer.getId(), WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE);
+        return webServerCommandExecutor.controlWebServer(webServerRequest, aWebServer, sourcePath, destPath);
     }
 
     /**

@@ -1,36 +1,46 @@
 package com.siemens.cto.aem.service.app.impl;
 
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.jcraft.jsch.JSchException;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.exec.*;
+import com.siemens.cto.aem.common.request.app.ControlApplicationRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_WITH_TARGET_BK;
 
 /**
  * An implementation of ApplicationCommandService.
- *
+ * <p/>
  * Created by z003bpej on 9/9/2015.
  */
 public class ApplicationCommandServiceImpl implements ApplicationCommandService {
 
     private final SshConfiguration sshConfig;
+    private JschBuilder jschBuilder;
 
-    public ApplicationCommandServiceImpl(final SshConfiguration sshConfig) {
+    public ApplicationCommandServiceImpl(final SshConfiguration sshConfig, JschBuilder jschBuilder) {
         this.sshConfig = sshConfig;
+        this.jschBuilder = jschBuilder;
     }
 
     @Override
-    public CommandOutput secureCopyConfFile(final String host, final String sourcePath, final String appConfPath,
-                                       final RuntimeCommandBuilder rtCommandBuilder) throws CommandFailureException {
-        rtCommandBuilder.setOperation(SCP_WITH_TARGET_BK);
-        rtCommandBuilder.addParameter(sourcePath);
-        rtCommandBuilder.addParameter(sshConfig.getUserName());
-        rtCommandBuilder.addParameter(host);
-        rtCommandBuilder.addParameter(appConfPath);
-        RuntimeCommand rtCommand = rtCommandBuilder.build();
-        return rtCommand.execute();
+    public CommandOutput controlApplication(ControlApplicationRequest applicationRequest, Application app, String... params) throws CommandFailureException {
+        RemoteSystemConnection remoteConnection = new RemoteSystemConnection(
+                sshConfig.getUserName(),
+                sshConfig.getPassword(),
+                params[0],
+                sshConfig.getPort());
+        ExecCommand execCommand = new ExecCommand("secure-copy", params[1], params[2]);
+        RemoteExecCommand remoteCommand = new RemoteExecCommand(remoteConnection, execCommand);
+        try {
+            final JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(jschBuilder.build(), remoteCommand);
+            jschScpCommandProcessor.processCommand();
+            // if processCommand fails it throws an exception before completing
+            return new CommandOutput(new ExecReturnCode(0), "", "");
+        } catch (JSchException e) {
+            throw new CommandFailureException(execCommand, new Throwable(e));
+        }
     }
-
 }
