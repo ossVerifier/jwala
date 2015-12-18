@@ -76,7 +76,6 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
     }
 
     @Override
-    @Deprecated
     public WebServer createWebServer(final Event<CreateWebServerRequest> aWebServer) {
 
         try {
@@ -121,7 +120,6 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
     }
 
     @Override
-    @Deprecated
     public WebServer updateWebServer(final Event<UpdateWebServerRequest> aWebServerToUpdate) {
 
         try {

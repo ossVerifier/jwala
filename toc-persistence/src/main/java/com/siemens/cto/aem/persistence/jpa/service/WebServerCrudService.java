@@ -22,12 +22,13 @@ public interface WebServerCrudService {
 	WebServer createWebServer(
 			final Event<CreateWebServerRequest> aWebServerToCreate);
 
+	@Deprecated
+	WebServer updateWebServer(
+			final Event<UpdateWebServerRequest> aWebServerToUpdate);
+
 	WebServer createWebServer(WebServer webServer, String createdBy);
 
 	WebServer updateWebServer(WebServer webServer, String createdBy);
-
-	WebServer updateWebServer(
-			final Event<UpdateWebServerRequest> aWebServerToUpdate);
 
 	WebServer getWebServer(final Identifier<WebServer> aWebServerId)
 			throws NotFoundException;
