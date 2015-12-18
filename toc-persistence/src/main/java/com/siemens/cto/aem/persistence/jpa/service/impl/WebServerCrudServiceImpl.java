@@ -38,11 +38,10 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
     }
 
     @Override
-    public WebServer createWebServer(final WebServer webServer) {
+    public WebServer createWebServer(final WebServer webServer, final String createdBy) {
         final JpaWebServer jpaWebServer = new JpaWebServer();
 
         jpaWebServer.setName(webServer.getName());
-        jpaWebServer.setGroups((List) webServer.getGroups());
         jpaWebServer.setHost(webServer.getHost());
         jpaWebServer.setPort(webServer.getPort());
         jpaWebServer.setHttpsPort(webServer.getHttpsPort());
@@ -50,6 +49,8 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
         jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
         jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
+        jpaWebServer.setCreateBy(createdBy);
+
         entityManager.persist(jpaWebServer);
         entityManager.flush();
 
@@ -57,11 +58,10 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
     }
 
     @Override
-    public WebServer updateWebServer(final WebServer webServer) {
+    public WebServer updateWebServer(final WebServer webServer, final String createdBy) {
         final JpaWebServer jpaWebServer = getJpaWebServer(webServer.getId());
 
         jpaWebServer.setName(webServer.getName());
-        jpaWebServer.setGroups((List) webServer.getGroups());
         jpaWebServer.setHost(webServer.getHost());
         jpaWebServer.setPort(webServer.getPort());
         jpaWebServer.setHttpsPort(webServer.getHttpsPort());
@@ -69,8 +69,9 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
         jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
         jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
-        entityManager.flush();
+        jpaWebServer.setCreateBy(createdBy);
 
+        entityManager.flush();
         return webServerFrom(jpaWebServer);
     }
 

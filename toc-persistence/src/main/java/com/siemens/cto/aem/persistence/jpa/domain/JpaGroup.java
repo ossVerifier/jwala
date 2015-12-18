@@ -12,7 +12,8 @@ import java.util.List;
 @Table(name = "grp", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedQueries({
         @NamedQuery(name = JpaGroup.QUERY_GET_GROUP_ID, query = "SELECT g.id FROM JpaGroup g WHERE g.name = :name"),
-        @NamedQuery(name = JpaGroup.QUERY_GET_GROUP, query = "SELECT g FROM JpaGroup g WHERE g.id = :groupId")
+        @NamedQuery(name = JpaGroup.QUERY_GET_GROUP, query = "SELECT g FROM JpaGroup g WHERE g.id = :groupId"),
+        @NamedQuery(name = JpaGroup.QUERY_GET_GROUPS_WITH_WEBSERVER, query = "SELECT g FROM JpaGroup g WHERE :webServer MEMBER OF g.webServers")
 })
 public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
@@ -20,6 +21,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
 
     static public final String QUERY_GET_GROUP_ID = "getGroupId";
     static public final String QUERY_GET_GROUP = "getGroup";
+    static public final String QUERY_GET_GROUPS_WITH_WEBSERVER = "getGroupWithWebServer";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

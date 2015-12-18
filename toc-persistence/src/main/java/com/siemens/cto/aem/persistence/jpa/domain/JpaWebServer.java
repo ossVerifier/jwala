@@ -126,4 +126,18 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
         this.docRoot = docRoot;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JpaWebServer that = (JpaWebServer) o;
+
+        return !(id != null ? !id.equals(that.id) : that.id != null);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

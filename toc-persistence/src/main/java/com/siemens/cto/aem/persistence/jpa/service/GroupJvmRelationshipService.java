@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.request.group.RemoveJvmFromGroupRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 
 import java.util.List;
 
@@ -22,4 +23,5 @@ public interface GroupJvmRelationshipService {
     void removeRelationshipsForJvm(final Identifier<Jvm> aJvmId);
 
     void populateJvmConfig(List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
+
 }

@@ -16,6 +16,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.*;
@@ -34,32 +36,42 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final WebServerCrudService dao;
 
+    private final WebServerPersistenceService webServerPersistenceService;
+
     private final FileManager fileManager;
 
     private final String HTTPD_CONF = "httpd.conf";
 
-    public WebServerServiceImpl(final WebServerCrudService theDao, final FileManager theFileManager) {
+    public WebServerServiceImpl(final WebServerCrudService theDao,
+                                final WebServerPersistenceService webServerPersistenceService,
+                                final FileManager theFileManager) {
         dao = theDao;
+        this.webServerPersistenceService = webServerPersistenceService;
         fileManager = theFileManager;
     }
 
     @Override
     @Transactional
-    public WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,
+    public WebServer createWebServer(final CreateWebServerRequest createWebServerRequest,
                                      final User aCreatingUser) {
+        createWebServerRequest.validate();
 
-        aCreateWebServerCommand.validate();
+        final List<Group> groups = new LinkedList<>();
+        for (Identifier<Group> id: createWebServerRequest.getGroups()) {
+            groups.add(new Group(id, null));
+        }
+        final WebServer webServer = new WebServer(null,
+                                                  groups,
+                                                  createWebServerRequest.getName(),
+                                                  createWebServerRequest.getHost(),
+                                                  createWebServerRequest.getPort(),
+                                                  createWebServerRequest.getHttpsPort(),
+                                                  createWebServerRequest.getStatusPath(),
+                                                  createWebServerRequest.getHttpConfigFile(),
+                                                  createWebServerRequest.getSvrRoot(),
+                                                  createWebServerRequest.getDocRoot());
 
-        final Event<CreateWebServerRequest> event = new Event<>(aCreateWebServerCommand,
-                AuditEvent.now(aCreatingUser));
-
-        WebServer webServer = dao.createWebServer(event);
-
-        UploadWebServerTemplateCommandBuilder builder = new UploadWebServerTemplateCommandBuilder();
-        UploadHttpdConfTemplateRequest uploadHttpdConfTemplateCommand = builder.buildHttpdConfCommand(webServer);
-        uploadWebServerConfig(uploadHttpdConfTemplateCommand, aCreatingUser);
-
-        return webServer;
+        return webServerPersistenceService.createWebServer(webServer, aCreatingUser.getId());
     }
 
     @Override
@@ -100,13 +112,24 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand,
                                      final User anUpdatingUser) {
-
         anUpdateWebServerCommand.validate();
 
-        final Event<UpdateWebServerRequest> event = new Event<>(anUpdateWebServerCommand,
-                AuditEvent.now(anUpdatingUser));
+        final List<Group> groups = new LinkedList<>();
+        for (Identifier<Group> id: anUpdateWebServerCommand.getNewGroupIds()) {
+            groups.add(new Group(id, null));
+        }
+        final WebServer webServer = new WebServer(anUpdateWebServerCommand.getId(),
+                                                  groups,
+                                                  anUpdateWebServerCommand.getNewName(),
+                                                  anUpdateWebServerCommand.getNewHost(),
+                                                  anUpdateWebServerCommand.getNewPort(),
+                                                  anUpdateWebServerCommand.getNewHttpsPort(),
+                                                  anUpdateWebServerCommand.getNewStatusPath(),
+                                                  anUpdateWebServerCommand.getNewHttpConfigFile(),
+                                                  anUpdateWebServerCommand.getNewSvrRoot(),
+                                                  anUpdateWebServerCommand.getNewDocRoot());
 
-        return dao.updateWebServer(event);
+        return webServerPersistenceService.updateWebServer(webServer, anUpdatingUser.getId());
     }
 
     @Override

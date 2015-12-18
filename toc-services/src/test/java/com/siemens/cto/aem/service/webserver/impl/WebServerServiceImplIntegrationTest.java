@@ -6,8 +6,12 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.WebServerPersistenceServiceImpl;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.FileManager;
@@ -38,18 +42,32 @@ public class WebServerServiceImplIntegrationTest {
 	static class CommonConfiguration {
 
 		@Bean
-		public WebServerCrudService getWebServerDao() {
+		public WebServerPersistenceService getWebServerPersistenceService() {
+			return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebServerCrudService());
+		}
+
+		@Bean
+		public WebServerCrudService getWebServerCrudService() {
 			return new WebServerCrudServiceImpl();
+		}
+
+		@Bean
+		public GroupCrudService getGroupCrudService() {
+			return new GroupCrudServiceImpl();
 		}
 
 		@Bean
 		public GroupDao getGroupDao() {
 			return new JpaGroupDaoImpl();
 		}
+
 	}
 	
 	@Autowired
 	private WebServerCrudService webServerCrudService;
+
+	@Autowired
+	private WebServerPersistenceService webServerPersistenceService;
 	
 	private WebServerService   cut;
 
@@ -58,7 +76,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() { 
-        cut = new WebServerServiceImpl(webServerCrudService, fileManager);
+        cut = new WebServerServiceImpl(webServerCrudService, webServerPersistenceService, fileManager);
     }
 
 	@Test(expected = NotFoundException.class)

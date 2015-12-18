@@ -183,7 +183,9 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerService")
     public WebServerService getWebServerService() {
-        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(), fileManager);
+        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(),
+                                        persistenceServiceConfiguration.getWebServerPersistenceService(),
+                                        fileManager);
     }
 
     @Bean

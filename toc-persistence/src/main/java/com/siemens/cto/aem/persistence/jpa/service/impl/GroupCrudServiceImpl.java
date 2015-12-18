@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
@@ -13,6 +14,7 @@ import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
 
@@ -170,6 +172,37 @@ public class GroupCrudServiceImpl implements GroupCrudService {
         final Query q = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUP_ID);
         q.setParameter("name", name);
         return (Long) q.getSingleResult();
+    }
+
+    @Override
+    public void linkWebServer(final WebServer webServer) {
+        linkWebServer(webServer.getId(), webServer);
+    }
+
+    @Override
+    public void linkWebServer(final Identifier<WebServer> id, final WebServer webServer) {
+        final JpaWebServer jpaWebServer = entityManager.find(JpaWebServer.class, id.getId());
+        final List<JpaGroup> jpaGroups = getGroupsWithWebServer(jpaWebServer);
+
+        // Unlink web server from all the groups.
+        for (JpaGroup jpaGroup: jpaGroups) {
+            jpaGroup.getWebServers().remove(jpaWebServer);
+        }
+
+        // Link web server's newly defined groups.
+        for (Group group: webServer.getGroups()) {
+            final JpaGroup jpaGroup = getGroup(group.getId());
+            jpaGroup.getWebServers().add(jpaWebServer);
+        }
+
+        entityManager.flush();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<JpaGroup> getGroupsWithWebServer(final JpaWebServer jpaWebServer) {
+        final Query q = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUPS_WITH_WEBSERVER);
+        q.setParameter("webServer", jpaWebServer);
+        return q.getResultList();
     }
 
 }

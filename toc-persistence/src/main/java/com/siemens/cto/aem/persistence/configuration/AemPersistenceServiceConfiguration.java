@@ -4,34 +4,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.GroupControlCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JpaGroupControlCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmStateCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.ResourceInstanceCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.ResourceInstanceCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerStateCrudServiceImpl;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.GroupControlPersistenceService;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaGroupControlPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.impl.JvmJpaStatePersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaResourcePersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.StatePersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.WebServerJpaStatePersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.*;
+import com.siemens.cto.aem.persistence.jpa.service.impl.*;
+import com.siemens.cto.aem.persistence.service.*;
+import com.siemens.cto.aem.persistence.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -114,6 +90,16 @@ public class AemPersistenceServiceConfiguration {
     @Bean(name = "jvmStatePersistenceService")
     public StatePersistenceService<Jvm, JvmState> getJvmStatePersistenceService() {
         return new JvmJpaStatePersistenceServiceImpl(getJvmStateCrudService());
+    }
+
+    @Bean
+    public WebServerPersistenceService getWebServerPersistenceService() {
+        return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebserverCrudService());
+    }
+
+    @Bean(name="webServerCrudService")
+    public WebServerCrudService getWebserverCrudService() {
+        return new WebServerCrudServiceImpl();
     }
 
     @Bean(name = "jvmStateCrudService")
