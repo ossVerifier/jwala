@@ -9,9 +9,9 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
-import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
-import com.siemens.cto.aem.control.webserver.impl.WebServerRemoteCommandProcessorBuilder;
+import com.siemens.cto.aem.control.command.DefaultExecCommandBuilderImpl;
+import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandProcessorBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -51,9 +51,9 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
 
     private CommandOutput executeCommand(WebServer aWebServer, ExecCommand execCommand) throws CommandFailureException {
         try {
-            final WebServerRemoteCommandProcessorBuilder processorBuilder = new WebServerRemoteCommandProcessorBuilder();
+            final RemoteCommandProcessorBuilder processorBuilder = new RemoteCommandProcessorBuilder();
             processorBuilder.setCommand(execCommand);
-            processorBuilder.setWebServer(aWebServer);
+            processorBuilder.setHost(aWebServer.getHost());
             processorBuilder.setJsch(jsch.build());
             processorBuilder.setSshConfig(sshConfig);
 
@@ -64,13 +64,14 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     }
 
     private ExecCommand createExecCommand(WebServer aWebServer, WebServerControlOperation wsControlOp, String... params) {
-        final WebServerExecCommandBuilder builder = new DefaultWebServerExecCommandBuilderImpl();
+
+        final DefaultExecCommandBuilderImpl<WebServerControlOperation> builder = new DefaultExecCommandBuilderImpl();
         builder.setOperation(wsControlOp);
-        builder.setWebServer(aWebServer);
+        builder.setEntityName(aWebServer.getName());
         for (String param : params) {
             builder.setParameter(param);
         }
-        return builder.build();
+        return builder.build(new WindowsWebServerPlatformCommandProvider());
     }
 
 }

@@ -10,17 +10,13 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperati
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
-import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
-import com.siemens.cto.aem.control.webserver.command.WebServerExecCommandBuilder;
-import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
@@ -46,7 +42,7 @@ import java.util.Map;
 public class WebServerControlServiceImpl implements WebServerControlService {
 
     private final WebServerService webServerService;
-    private final WebServerCommandExecutor webServerCommandExecutor;
+    private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
@@ -54,13 +50,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private ClientFactoryHelper clientFactoryHelper;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
-                                       final WebServerCommandExecutor theExecutor,
+                                       final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
                                        final StateService<WebServer, WebServerReachableState> theWebServerStateService,
                                        final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
                                        final HistoryService historyService,
                                        ClientFactoryHelper clientFactoryHelper) {
         webServerService = theWebServerService;
-        webServerCommandExecutor = theExecutor;
+        commandExecutor = theExecutor;
         webServerStateService = theWebServerStateService;
         webServerReachableStateMap = theWebServerReachableStateMap;
         this.historyService = historyService;
@@ -86,8 +82,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             webServerStateService.setCurrentState(setStateCommand, aUser);
 
-            final CommandOutput commandOutput = webServerCommandExecutor.controlWebServer(controlWebServerRequest,
-                    webServerService.getWebServer(controlWebServerRequest.getWebServerId()));
+            final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+                    webServer.getName(),
+                    webServer.getHost(),
+                    controlWebServerRequest.getControlOperation(),
+                    new WindowsWebServerPlatformCommandProvider());
 
             if (commandOutput != null &&
                     (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
@@ -154,23 +153,33 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         // back up the original file first
         String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destPathBackup = destPath + currentDateSuffix;
-        ControlWebServerRequest webServerRequest = new ControlWebServerRequest(aWebServer.getId(), WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE);
-        final CommandOutput commandOutput = webServerCommandExecutor.controlWebServer(webServerRequest, aWebServer, destPath, destPathBackup);
+        final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+                aWebServer.getName(),
+                aWebServer.getHost(),
+                WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                new WindowsWebServerPlatformCommandProvider(),
+                destPath,
+                destPathBackup);
         if (!commandOutput.getReturnCode().wasSuccessful()) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up the httpd.conf for " + aWebServer);
         }
 
         // run the scp command
-        webServerRequest = new ControlWebServerRequest(aWebServer.getId(), WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE);
-        return webServerCommandExecutor.controlWebServer(webServerRequest, aWebServer, sourcePath, destPath);
+        return commandExecutor.executeRemoteCommand(
+                aWebServer.getName(),
+                aWebServer.getHost(),
+                WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE,
+                new WindowsWebServerPlatformCommandProvider(),
+                destPath,
+                destPathBackup);
     }
 
     /**
      * Set web server state to failed.
      *
      * @param controlWebServerRequest {@link ControlWebServerRequest} which contains the id of the web server whose status is to be set to failed.
-     * @param aUser    the user who issued the control command.
-     * @param msg      the message that details the cause of the failed state.
+     * @param aUser                   the user who issued the control command.
+     * @param msg                     the message that details the cause of the failed state.
      */
     private void setFailedState(final ControlWebServerRequest controlWebServerRequest, final User aUser, String msg) {
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());

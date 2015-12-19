@@ -1,15 +1,16 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
-import com.siemens.cto.aem.persistence.jpa.type.EventType;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
-import com.siemens.cto.aem.control.webserver.WebServerCommandExecutor;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
@@ -41,7 +42,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private WebServerService webServerService;
 
     @Mock
-    private WebServerCommandExecutor commandExecutor;
+    private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
 
     @Mock
     private StateService<WebServer, WebServerReachableState> webServerStateService;
@@ -63,9 +64,9 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Before
     public void setup() {
         impl = new WebServerControlServiceImpl(webServerService,
-                                               commandExecutor,
-                                               webServerStateService,
-                                               webServerReachableStateMap,
+                commandExecutor,
+                webServerStateService,
+                webServerReachableStateMap,
                 mockHistoryService,
                 mockClientFactory);
 
@@ -76,34 +77,40 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Test
     @SuppressWarnings("unchecked")
     public void testVerificationOfBehaviorForSuccess() throws Exception {
+        String wsName = "mockWebServerName";
+        String wsHostName = "mockWebServerHost";
         final ControlWebServerRequest controlCommand = mock(ControlWebServerRequest.class);
-        final WebServer webServer = mock(WebServer.class);
+        final JpaWebServer webServer = mock(JpaWebServer.class);
+        when(webServer.getName()).thenReturn(wsName);
+        when(webServer.getHost()).thenReturn(wsHostName);
         final Identifier<WebServer> webServerId = mock(Identifier.class);
         final WebServerControlOperation controlOperation = WebServerControlOperation.START;
         final ClientHttpResponse mockClientHttpResponse = mock(ClientHttpResponse.class);
 
         when(controlCommand.getWebServerId()).thenReturn(webServerId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
-        when(webServerService.getWebServer(eq(webServerId))).thenReturn(webServer);
+        when(webServerService.getJpaWebServer(anyLong(), anyBoolean())).thenReturn(webServer);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
         when(mockClientFactory.requestGet(any(URI.class))).thenReturn(mockClientHttpResponse);
 
         impl.controlWebServer(controlCommand,
-                              user);
+                user);
 
         verify(controlCommand, times(1)).validate();
 
-        verify(webServerService, times(1)).getWebServer(eq(webServerId));
-        verify(commandExecutor, times(1)).controlWebServer(eq(controlCommand),
-                                                           eq(webServer));
+        verify(commandExecutor, times(1)).executeRemoteCommand(eq(wsName),
+                eq(wsHostName),
+                eq(WebServerControlOperation.START),
+                any(WindowsWebServerPlatformCommandProvider.class)
+        );
         verify(webServerStateService, times(1)).setCurrentState(setStateCommandCaptor.capture(),
-                                                                eq(user));
+                eq(user));
 
         final SetStateRequest<WebServer, WebServerReachableState> actualSetStateCommand = setStateCommandCaptor.getValue();
         assertEquals(webServerId,
-                     actualSetStateCommand.getNewState().getId());
+                actualSetStateCommand.getNewState().getId());
         assertEquals(controlOperation.getOperationState(),
-                     actualSetStateCommand.getNewState().getState());
+                actualSetStateCommand.getNewState().getState());
 
         verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }

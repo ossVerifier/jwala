@@ -13,7 +13,8 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.control.jvm.JvmCommandExecutor;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
@@ -32,16 +33,16 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private final JvmService jvmService;
-    private final JvmCommandExecutor jvmCommandExecutor;
+    private final RemoteCommandExecutor remoteCommandExecutor;
     private final JvmControlServiceLifecycle jvmControlServiceLifecycle;
     private final HistoryService historyService;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
-                                 final JvmCommandExecutor theExecutor,
+                                 final RemoteCommandExecutor theExecutor,
                                  final JvmControlServiceLifecycle theLifecycle,
                                  final HistoryService historyService) {
         jvmService = theJvmService;
-        jvmCommandExecutor = theExecutor;
+        remoteCommandExecutor = theExecutor;
         jvmControlServiceLifecycle = theLifecycle;
         this.historyService = historyService;
     }
@@ -69,7 +70,11 @@ public class JvmControlServiceImpl implements JvmControlService {
                 prevState = jvmControlServiceLifecycle.startState(controlJvmRequest, aUser);
             }
 
-            CommandOutput commandOutput = jvmCommandExecutor.controlJvm(controlJvmRequest, jvm);
+            CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    jvm.getName(),
+                    jvm.getHostName(),
+                    controlJvmRequest.getControlOperation(),
+                    new WindowsJvmPlatformCommandProvider());
             if (commandOutput != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
                 commandOutput.cleanStandardOutput();
                 logger.info("shell command output{}", commandOutput.getStandardOutput());
@@ -150,7 +155,13 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
         final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
 
-        return jvmCommandExecutor.controlJvm(secureCopyRequest, jvm, sourcePath, destPath);
+        return remoteCommandExecutor.executeRemoteCommand(
+                jvm.getName(),
+                jvm.getHostName(),
+                secureCopyRequest.getControlOperation(),
+                new WindowsJvmPlatformCommandProvider(),
+                sourcePath,
+                destPath);
     }
 
 

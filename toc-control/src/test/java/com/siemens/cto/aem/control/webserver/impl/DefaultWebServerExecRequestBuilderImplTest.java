@@ -1,11 +1,12 @@
 package com.siemens.cto.aem.control.webserver.impl;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.webserver.command.impl.DefaultWebServerExecCommandBuilderImpl;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.ShellCommand;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ShellCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.DefaultExecCommandBuilderImpl;
+import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,13 +20,13 @@ import static org.mockito.Mockito.when;
 public class DefaultWebServerExecRequestBuilderImplTest {
 
     private WebServer webServer;
-    private DefaultWebServerExecCommandBuilderImpl impl;
+    private DefaultExecCommandBuilderImpl impl;
     private String webServerName;
 
     @Before
     public void setup() throws IOException {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/toc-control/src/test/resources");
-        impl = new DefaultWebServerExecCommandBuilderImpl();
+        impl = new DefaultExecCommandBuilderImpl();
         webServer = mock(WebServer.class);
         webServerName = "theWebServerName";
 
@@ -37,13 +38,13 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final WebServerControlOperation operation = WebServerControlOperation.START;
 
-        impl.setWebServer(webServer);
+        impl.setEntityName(webServer.getName());
         impl.setOperation(operation);
 
-        final ExecCommand actualCommand = impl.build();
+        final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ExecCommand expectedCommand =
                 new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
-                                 "\"" + webServerName + "\"", "20");
+                        "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());
     }
@@ -53,13 +54,13 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final WebServerControlOperation operation = WebServerControlOperation.STOP;
 
-        impl.setWebServer(webServer);
+        impl.setEntityName(webServer.getName());
         impl.setOperation(operation);
 
-        final ExecCommand actualCommand = impl.build();
+        final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ShellCommand expectedCommand =
                 new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/stop-service.sh`",
-                                 "\"" + webServerName + "\"", "20");
+                        "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());
     }

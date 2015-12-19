@@ -15,10 +15,10 @@ import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -184,8 +184,8 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerService")
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(),
-                                        persistenceServiceConfiguration.getWebServerPersistenceService(),
-                                        fileManager);
+                persistenceServiceConfiguration.getWebServerPersistenceService(),
+                fileManager);
     }
 
     @Bean
@@ -226,7 +226,7 @@ public class AemServiceConfiguration {
     @Autowired
     public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryDao historyDao) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper),
-                aemCommandExecutorConfig.getJvmCommandExecutor(),
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getJvmControlServiceLifecycle(), getHistoryService(historyDao));
     }
 
@@ -263,7 +263,7 @@ public class AemServiceConfiguration {
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService, ClientFactoryHelper factoryHelper) {
         return new WebServerControlServiceImpl(getWebServerService(),
-                aemCommandExecutorConfig.getWebServerCommandExecutor(),
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getWebServerStateService(),
                 webServerReachableStateMap,
                 historyService,
