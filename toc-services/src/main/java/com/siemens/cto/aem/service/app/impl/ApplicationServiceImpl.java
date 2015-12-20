@@ -15,18 +15,17 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
-import com.siemens.cto.aem.control.configuration.AemSshConfig;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -77,18 +76,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
-    @Autowired
-    private ClientFactoryHelper clientFactoryHelper;
-
-    @Autowired
-    private ApplicationCommandService applicationCommandExecutor;
+    private RemoteCommandExecutor applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
     @Autowired
     private JvmDao jvmDao;
-
-    private AemSshConfig aemSshConfig;
 
     private GroupService groupService;
 
@@ -98,10 +91,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationServiceImpl(final ApplicationDao applicationDao,
                                   final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
-                                  final ClientFactoryHelper clientFactoryHelper,
-                                  final ApplicationCommandService applicationCommandService,
+                                  final RemoteCommandExecutor applicationCommandService,
                                   final JvmDao jvmDao,
-                                  final AemSshConfig aemSshConfig,
                                   final GroupService groupService,
                                   final FileManager fileManager,
                                   final WebArchiveManager webArchiveManager,
@@ -109,15 +100,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.applicationDao = applicationDao;
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.clientFactoryHelper = clientFactoryHelper;
         this.applicationCommandExecutor = applicationCommandService;
         this.jvmDao = jvmDao;
-        this.aemSshConfig = aemSshConfig;
         this.groupService = groupService;
         this.fileManager = fileManager;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
     }
+
 
     @Transactional(readOnly = true)
     @Override
@@ -298,8 +288,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             target.append(resourceTemplateName);
 
-            ControlApplicationRequest applicationRequest = new ControlApplicationRequest(app.getId(), ApplicationControlOperation.DEPLOY_CONFIG_FILE);
-            final CommandOutput execData = applicationCommandExecutor.controlApplication(applicationRequest, app, jvm.getHostName(), confFile.getAbsolutePath().replace("\\", "/"), target.toString());
+            final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_CONFIG_FILE, new WindowsApplicationPlatformCommandProvider(), confFile.getAbsolutePath().replace("\\", "/"), target.toString());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceTemplateName, confFile.getAbsolutePath());
                 return execData;
@@ -351,8 +340,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     } else {
                         hostNames.add(host);
                     }
-                    ControlApplicationRequest applicationRequest = new ControlApplicationRequest(application.getId(), ApplicationControlOperation.DEPLOY_CONFIG_FILE);
-                    CommandOutput execData = applicationCommandExecutor.controlApplication(applicationRequest, application, jvm.getHostName(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                    CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
                     if (execData.getReturnCode().wasSuccessful()) {
                         LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), host);
                     } else {

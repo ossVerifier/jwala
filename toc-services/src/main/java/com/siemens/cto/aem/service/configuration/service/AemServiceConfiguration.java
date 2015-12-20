@@ -204,15 +204,12 @@ public class AemServiceConfiguration {
 
     @Bean
     @Autowired
-    public ApplicationService getApplicationService(final ClientFactoryHelper clientFactoryHelper,
-                                                    final JvmPersistenceService jvmPersistenceService) {
+    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService) {
         return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(),
                 persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService,
-                clientFactoryHelper,
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 null,
-                null,
-                aemSshConfig,
                 getGroupService(),
                 fileManager, null, null);
     }

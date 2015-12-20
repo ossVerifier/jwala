@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -12,7 +13,12 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -20,10 +26,8 @@ import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
@@ -74,7 +78,7 @@ public class ApplicationServiceImplTest {
     private JvmPersistenceService jvmPersistenceService;
 
     @Mock
-    private ApplicationCommandService applicationCommandService;
+    private RemoteCommandExecutor<ApplicationControlOperation> remoteCommandExecutor;
 
     @Mock
     private AemSshConfig aemSshConfig;
@@ -338,10 +342,8 @@ public class ApplicationServiceImplTest {
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(applicationCommandService.controlApplication(
-                any(ControlApplicationRequest.class),
-                any(Application.class),
-                anyString(), anyString(), anyString())).thenReturn(execData);
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
 
 
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
@@ -362,10 +364,8 @@ public class ApplicationServiceImplTest {
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(applicationCommandService.controlApplication(
-                any(ControlApplicationRequest.class),
-                any(Application.class),
-                anyString(), anyString(), anyString())).thenReturn(execData);
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
 
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("roleMapping.properties"))).thenReturn("Test template properties");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
@@ -386,10 +386,8 @@ public class ApplicationServiceImplTest {
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
-        when(applicationCommandService.controlApplication(
-                any(ControlApplicationRequest.class),
-                any(Application.class),
-                anyString(), anyString(), anyString())).thenReturn(execData);
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
@@ -406,10 +404,8 @@ public class ApplicationServiceImplTest {
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
-        when(applicationCommandService.controlApplication(
-                any(ControlApplicationRequest.class),
-                any(Application.class),
-                anyString(), anyString(), anyString())).thenReturn(execData);
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
@@ -426,10 +422,8 @@ public class ApplicationServiceImplTest {
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
-        when(applicationCommandService.controlApplication(
-                any(ControlApplicationRequest.class),
-                any(Application.class),
-                anyString(), anyString(), anyString())).thenReturn(execData);
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
@@ -482,7 +476,7 @@ public class ApplicationServiceImplTest {
         when(mockRuntimeCommandBuilder.build()).thenReturn(mockCommand);
         when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService, mock(ClientFactoryHelper.class), applicationCommandService, jvmDao, aemSshConfig, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, jvmDao, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
         mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
         verify(mockCommand).execute();
         new File("./src/test/resources/webapps/test.war").delete();

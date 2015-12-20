@@ -3,19 +3,20 @@ package com.siemens.cto.aem.service.app.impl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.*;
-import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
@@ -163,14 +164,12 @@ public class ApplicationServiceImplIntegrationTest {
 
     private ApplicationService cut;
 
-    // @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
 
-    // @Autowired
-    private ApplicationCommandService applicationCommandService;
+    private RemoteCommandExecutor<ApplicationControlOperation> remoteCommandExecutor;
 
     @Autowired
     private FileManager fileManager;
@@ -183,7 +182,7 @@ public class ApplicationServiceImplIntegrationTest {
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
         cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService,
-                clientFactoryHelper, applicationCommandService, null, aemSshConfig,
+                remoteCommandExecutor, null,
                 groupService, fileManager, null, null);
     }
 
