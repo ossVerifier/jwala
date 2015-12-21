@@ -11,9 +11,7 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.GroupDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
-import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.*;
@@ -87,11 +85,6 @@ public class ApplicationServiceImplIntegrationTest {
         @Bean
         public ApplicationDao getApplicationDao() {
             return new JpaApplicationDaoImpl();
-        }
-
-        @Bean
-        public GroupDao getGroupDao() {
-            return new JpaGroupDaoImpl();
         }
 
         @Bean

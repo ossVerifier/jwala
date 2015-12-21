@@ -4,8 +4,6 @@ import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.dao.GroupDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
@@ -55,12 +53,7 @@ public class WebServerServiceImplIntegrationTest {
 		public GroupCrudService getGroupCrudService() {
 			return new GroupCrudServiceImpl();
 		}
-
-		@Bean
-		public GroupDao getGroupDao() {
-			return new JpaGroupDaoImpl();
-		}
-
+		
 	}
 
 	@Autowired

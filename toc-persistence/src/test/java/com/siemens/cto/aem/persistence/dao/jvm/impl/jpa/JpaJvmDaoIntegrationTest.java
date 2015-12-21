@@ -2,8 +2,6 @@ package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.dao.GroupDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaGroupDaoImpl;
 import com.siemens.cto.aem.persistence.dao.impl.JpaJvmDaoImpl;
 import com.siemens.cto.aem.persistence.dao.jvm.AbstractJvmDaoIntegrationTest;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
@@ -27,12 +25,6 @@ public class JpaJvmDaoIntegrationTest extends AbstractJvmDaoIntegrationTest {
 
     @Configuration
     static class CommonConfiguration {
-
-        @Bean
-        public GroupDao getGroupDao() {
-            return new JpaGroupDaoImpl();
-        }
-
         @Bean
         public JvmDao getJvmDao() {
             return new JpaJvmDaoImpl();
