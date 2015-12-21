@@ -62,9 +62,6 @@ public class WebServerServiceImplIntegrationTest {
 		}
 
 	}
-	
-	@Autowired
-	private WebServerCrudService webServerCrudService;
 
 	@Autowired
 	private WebServerPersistenceService webServerPersistenceService;
@@ -76,7 +73,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() { 
-        cut = new WebServerServiceImpl(webServerCrudService, webServerPersistenceService, fileManager);
+        cut = new WebServerServiceImpl(webServerPersistenceService, fileManager);
     }
 
 	@Test(expected = NotFoundException.class)

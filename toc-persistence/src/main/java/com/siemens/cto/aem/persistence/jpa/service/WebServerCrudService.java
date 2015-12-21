@@ -37,7 +37,7 @@ public interface WebServerCrudService {
 
 	List<WebServer> getWebServers();
 
-	List<WebServer> findWebServers(final String aName);
+	List<WebServer> findWebServers(final String aWebServerNameFragment);
 
 	void removeWebServer(final Identifier<WebServer> aWebServerId);
 

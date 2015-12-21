@@ -1,9 +1,21 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+
+import java.util.List;
 
 /**
  * {@link WebServerPersistenceService} implementation.
@@ -23,7 +35,7 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
 
     @Override
     public WebServer createWebServer(final WebServer webServer, final String createdBy) {
-        WebServer createdWebServer = webServerCrudService.createWebServer(webServer, createdBy);
+        final WebServer createdWebServer = webServerCrudService.createWebServer(webServer, createdBy);
         groupCrudService.linkWebServer(createdWebServer.getId(), webServer);
         return webServerCrudService.getWebServer(createdWebServer.getId());
     }
@@ -33,6 +45,82 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
         webServerCrudService.updateWebServer(webServer, updatedBy);
         groupCrudService.linkWebServer(webServer);
         return webServerCrudService.getWebServer(webServer.getId());
+    }
+
+    @Override
+    public WebServer getWebServer(final Identifier<WebServer> aWebServerId) throws NotFoundException {
+        return webServerCrudService.getWebServer(aWebServerId);
+    }
+
+    @Override
+    public JpaWebServer getJpaWebServer(final long webServerId, final boolean fetchGroups) {
+        return webServerCrudService.getJpaWebServer(webServerId, fetchGroups);
+    }
+
+    @Override
+    public List<WebServer> getWebServers() {
+        return webServerCrudService.getWebServers();
+    }
+
+    @Override
+    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
+        return webServerCrudService.findWebServers(aWebServerNameFragment);
+    }
+
+    @Override
+    public void removeWebServer(final Identifier<WebServer> aWebServerId) {
+        webServerCrudService.removeWebServer(aWebServerId);
+    }
+
+    @Override
+    public List<WebServer> findWebServersBelongingTo(final Identifier<Group> aGroupId) {
+        return webServerCrudService.findWebServersBelongingTo(aGroupId);
+    }
+
+    @Override
+    public List<Application> findApplications(final String aWebServerName) {
+        return webServerCrudService.findApplications(aWebServerName);
+    }
+
+    @Override
+    public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
+        webServerCrudService.removeWebServersBelongingTo(aGroupId);
+    }
+
+    @Override
+    public WebServer findWebServerByName(final String aWebServerName) {
+        return webServerCrudService.findWebServerByName(aWebServerName);
+    }
+
+    @Override
+    public List<Jvm> findJvms(final String aWebServerName) {
+        return webServerCrudService.findJvms(aWebServerName);
+    }
+
+    @Override
+    public List<String> getResourceTemplateNames(final String webServerName) {
+        return webServerCrudService.getResourceTemplateNames(webServerName);
+    }
+
+    @Override
+    public String getResourceTemplate(final String webServerName, final String resourceTemplateName) {
+        return webServerCrudService.getResourceTemplate(webServerName, resourceTemplateName);
+    }
+
+    @Override
+    public void populateWebServerConfig(final List<UploadWebServerTemplateRequest> uploadWSTemplateCommands,
+                                        final User user, boolean overwriteExisting) {
+        webServerCrudService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
+    }
+
+    @Override
+    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(final Event<UploadWebServerTemplateRequest> event) {
+        return webServerCrudService.uploadWebserverConfigTemplate(event);
+    }
+
+    @Override
+    public void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
+        webServerCrudService.updateResourceTemplate(wsName, resourceTemplateName, template);
     }
 
 }

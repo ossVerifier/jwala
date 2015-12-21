@@ -17,10 +17,13 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.WebServerPersistenceServiceImpl;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.state.StateService;
 import org.joda.time.DateTime;
@@ -70,12 +73,22 @@ public class MoreGroupStateMachineTest {
         }
 
         @Bean
+        public WebServerPersistenceService getWebServerPersistenceService() {
+            return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebServerCrudService());
+        }
+
+        @Bean
         public GroupPersistenceService getGroupPersistenceService() {
             return Mockito.mock(GroupPersistenceService.class);
         }
 
         @Bean
-        public WebServerCrudService getWebServerDao() {
+        public GroupCrudService getGroupCrudService() {
+            return Mockito.mock(GroupCrudService.class);
+        }
+
+        @Bean
+        public WebServerCrudService getWebServerCrudService() {
             return Mockito.mock(WebServerCrudService.class);
         }
 
@@ -104,7 +117,7 @@ public class MoreGroupStateMachineTest {
     JvmPersistenceService jvmPersistenceService;
 
     @Autowired
-    WebServerCrudService webServerCrudService;
+    WebServerPersistenceService webServerPersistenceService;
 
     @Autowired
     @Qualifier("jvmStatePersistenceService")
@@ -150,9 +163,9 @@ public class MoreGroupStateMachineTest {
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.GRP_INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER));
 
-        when(webServerCrudService.getWebServer(eq(ws.getId()))).thenReturn(ws);
+        when(webServerPersistenceService.getWebServer(eq(ws.getId()))).thenReturn(ws);
 
-        when(webServerCrudService.findWebServersBelongingTo(eq(mockGroup.getId()))).thenReturn(wsList);
+        when(webServerPersistenceService.findWebServersBelongingTo(eq(mockGroup.getId()))).thenReturn(wsList);
 
         when(jvmPersistenceService.getJvm(eq(jvm.getId()))).thenReturn(jvm);
 

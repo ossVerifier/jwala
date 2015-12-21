@@ -13,7 +13,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
@@ -34,18 +33,14 @@ public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
 
-    private final WebServerCrudService dao;
-
     private final WebServerPersistenceService webServerPersistenceService;
 
     private final FileManager fileManager;
 
     private final String HTTPD_CONF = "httpd.conf";
 
-    public WebServerServiceImpl(final WebServerCrudService theDao,
-                                final WebServerPersistenceService webServerPersistenceService,
+    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
                                 final FileManager theFileManager) {
-        dao = theDao;
         this.webServerPersistenceService = webServerPersistenceService;
         fileManager = theFileManager;
     }
@@ -77,35 +72,31 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public WebServer getWebServer(final Identifier<WebServer> aWebServerId) {
-        return dao.getWebServer(aWebServerId);
+        return webServerPersistenceService.getWebServer(aWebServerId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public WebServer getWebServer(final String aWebServerName) {
-        return dao.findWebServerByName(aWebServerName);
+        return webServerPersistenceService.findWebServerByName(aWebServerName);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WebServer> getWebServers() {
-
-        return dao.getWebServers();
+        return webServerPersistenceService.getWebServers();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final String aWebServerNameFragment) {
-
-        return dao.findWebServers(aWebServerNameFragment);
+        return webServerPersistenceService.findWebServers(aWebServerNameFragment);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final Identifier<Group> aGroupId) {
-
-        return dao.findWebServersBelongingTo(aGroupId);
-
+        return webServerPersistenceService.findWebServersBelongingTo(aGroupId);
     }
 
     @Override
@@ -136,21 +127,21 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
 
-        dao.removeWebServer(aWebServerId);
+        webServerPersistenceService.removeWebServer(aWebServerId);
     }
 
     @Override
     @Transactional
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
-        dao.removeWebServersBelongingTo(aGroupId);
+        webServerPersistenceService.removeWebServersBelongingTo(aGroupId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
-        final WebServer server = dao.findWebServerByName(aWebServerName);
-        final List<Application> apps = dao.findApplications(aWebServerName);
-        final List<Jvm> jvms = dao.findJvms(aWebServerName);
+        final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
+        final List<Application> apps = webServerPersistenceService.findApplications(aWebServerName);
+        final List<Jvm> jvms = webServerPersistenceService.findJvms(aWebServerName);
 
         try {
             if (withSsl != null && withSsl) {
@@ -178,8 +169,8 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public String generateWorkerProperties(final String aWebServerName) {
-        final List<Jvm> jvms = dao.findJvms(aWebServerName);
-        final List<Application> apps = dao.findApplications(aWebServerName);
+        final List<Jvm> jvms = webServerPersistenceService.findJvms(aWebServerName);
+        final List<Application> apps = webServerPersistenceService.findApplications(aWebServerName);
         try {
             return ApacheWebServerConfigFileGenerator
                     .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
@@ -191,7 +182,7 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     public List<String> getResourceTemplateNames(String webServerName) {
-        return dao.getResourceTemplateNames(webServerName);
+        return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }
 
     @Override
@@ -199,14 +190,13 @@ public class WebServerServiceImpl implements WebServerService {
     public String getResourceTemplate(final String webServerName,
                                       final String resourceTemplateName,
                                       final boolean tokensReplaced) {
-        final String template = dao.getResourceTemplate(webServerName, resourceTemplateName);
+        final String template = webServerPersistenceService.getResourceTemplate(webServerName, resourceTemplateName);
         if (tokensReplaced) {
             if (resourceTemplateName.equalsIgnoreCase(HTTPD_CONF)) {
                 return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName,
-                                                                               template,
-                                                                               dao.findWebServerByName(webServerName),
-                                                                               dao.findJvms(webServerName),
-                                                                               dao.findApplications(webServerName));
+                        template, webServerPersistenceService.findWebServerByName(webServerName),
+                        webServerPersistenceService.findJvms(webServerName),
+                        webServerPersistenceService.findApplications(webServerName));
             } else {
                 throw new UnsupportedOperationException("Data binding for \"" + resourceTemplateName +
                         "\" template is currently not supported");
@@ -216,8 +206,9 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
-        dao.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
+    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user,
+                                        boolean overwriteExisting) {
+        webServerPersistenceService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
     }
 
     @Override
@@ -225,31 +216,30 @@ public class WebServerServiceImpl implements WebServerService {
     public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user) {
         uploadWebServerTemplateCommand.validate();
         final Event<UploadWebServerTemplateRequest> event = new Event<>(uploadWebServerTemplateCommand, AuditEvent.now(user));
-        return dao.uploadWebserverConfigTemplate(event);
+        return webServerPersistenceService.uploadWebserverConfigTemplate(event);
     }
 
     @Override
     @Transactional
     public String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
-        dao.updateResourceTemplate(wsName, resourceTemplateName, template);
-        return dao.getResourceTemplate(wsName, resourceTemplateName);
+        webServerPersistenceService.updateResourceTemplate(wsName, resourceTemplateName, template);
+        return webServerPersistenceService.getResourceTemplate(wsName, resourceTemplateName);
     }
 
     @Override
     @Transactional(readOnly = true)
     public String previewResourceTemplate(final String webServerName, final String groupName, final String template) {
         // TODO: Web server name shouldn't be unique therefore we will have to use the groupName parameter in the future.
-        return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName,
-                                                                       template,
-                                                                       dao.findWebServerByName(webServerName),
-                                                                       dao.findJvms(webServerName),
-                                                                       dao.findApplications(webServerName));
+        return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName, template,
+                webServerPersistenceService.findWebServerByName(webServerName),
+                webServerPersistenceService.findJvms(webServerName),
+                webServerPersistenceService.findApplications(webServerName));
     }
 
     @Override
     @Transactional(readOnly = true)
     public JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups) {
-        return dao.getJpaWebServer(webServerId, fetchGroups);
+        return webServerPersistenceService.getJpaWebServer(webServerId, fetchGroups);
     }
 
 }

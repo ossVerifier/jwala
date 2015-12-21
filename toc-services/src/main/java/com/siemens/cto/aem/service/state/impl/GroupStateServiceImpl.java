@@ -16,10 +16,10 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.Initializer;
@@ -57,7 +57,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     private JvmPersistenceService jvmPersistenceService;
 
-    private WebServerCrudService webServerCrudService;
+    private WebServerPersistenceService webServerCrudService;
 
     private Map<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
 
@@ -71,14 +71,14 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                                  final StateNotificationWorker stateNotificationWorker,
                                  final GroupPersistenceService groupPersistenceService,
                                  final JvmPersistenceService jvmPersistenceService,
-                                 final WebServerCrudService webServerCrudService) {
+                                 final WebServerPersistenceService webServerPersistenceService) {
         super(thePersistenceService, theNotificationService, theStateType, groupStateService, stateNotificationWorker);
 
         systemUser = User.getSystemUser();
 
         this.groupPersistenceService = groupPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.webServerCrudService = webServerCrudService;
+        this.webServerCrudService = webServerPersistenceService;
     }
 
 

@@ -18,10 +18,10 @@ import com.siemens.cto.aem.persistence.dao.HistoryDao;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
@@ -124,7 +124,7 @@ public class AemServiceConfiguration {
     private HarmonyTemplateEngine harmonyTemplateEngine;
 
     @Autowired
-    private WebServerCrudService webServerCrudService;
+    private WebServerPersistenceService webServerPersistenceService;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -161,7 +161,7 @@ public class AemServiceConfiguration {
                 getStateNotificationService(),
                 StateType.GROUP,
                 groupStateService, stateNotificationWorker,
-                groupPersistenceService, jvmPersistenceService, webServerCrudService);
+                groupPersistenceService, jvmPersistenceService, webServerPersistenceService);
     }
 
     @Bean
@@ -183,9 +183,9 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerService")
     public WebServerService getWebServerService() {
-        return new WebServerServiceImpl(aemDaoConfiguration.getWebServerDao(),
+        return new WebServerServiceImpl(
                 persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager);
+                                        fileManager);
     }
 
     @Bean

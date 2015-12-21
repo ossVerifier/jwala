@@ -190,10 +190,10 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<WebServer> findWebServers(final String aName) {
+    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaWebServer g WHERE g.name LIKE :WebServerName");
-        query.setParameter("WebServerName", "?" + aName + "?");
+        query.setParameter("WebServerName", "?" + aWebServerNameFragment + "?");
 
         return webServersFrom(query.getResultList());
     }
