@@ -9,11 +9,11 @@ import javax.persistence.*;
 @Table(name = "APP_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"APP_ID", "TEMPLATE_NAME"})})
 @NamedQueries({
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_RESOURCE_TEMPLATE_NAMES,
-                query = "SELECT t.templateName FROM JpaApplicationConfigTemplate t WHERE t.app.name = :appName"),
+                query = "SELECT DISTINCT t.templateName FROM JpaApplicationConfigTemplate t WHERE t.app.name = :appName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_CONTENT,
-                query = "SELECT t.templateContent FROM JpaApplicationConfigTemplate t where t.app.name = :appName and t.templateName = :templateName"),
+                query = "SELECT t.templateContent FROM JpaApplicationConfigTemplate t where t.app.name = :appName and t.templateName = :templateName and t.jvm = :templateJvm"),
         @NamedQuery(name = JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT,
-                query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName")
+                query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm")
 })
 public class JpaApplicationConfigTemplate {
 
@@ -28,13 +28,17 @@ public class JpaApplicationConfigTemplate {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)
-    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction=org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
+    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction = org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaApplication app;
 
-    @Column(name="TEMPLATE_NAME", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @Column(nullable = true)
+    private JpaJvm jvm;
+
+    @Column(name = "TEMPLATE_NAME", nullable = false)
     private String templateName;
 
-    @Column(name="TEMPLATE_CONTENT", nullable = false, length=2147483647)
+    @Column(name = "TEMPLATE_CONTENT", nullable = false, length = 2147483647)
     private String templateContent;
 
     public JpaApplication getApplication() {
@@ -69,4 +73,11 @@ public class JpaApplicationConfigTemplate {
         this.id = id;
     }
 
+    public JpaJvm getJvm() {
+        return jvm;
+    }
+
+    public void setJvm(JpaJvm jvm) {
+        this.jvm = jvm;
+    }
 }

@@ -65,11 +65,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
     private final WebServerControlOperation operation;
 
-    private WindowsWebServerNetOperation() {
-        operation = null;
-    }
-
-    private WindowsWebServerNetOperation(final WebServerControlOperation theOperation) {
+    WindowsWebServerNetOperation(final WebServerControlOperation theOperation) {
         operation = theOperation;
     }
 

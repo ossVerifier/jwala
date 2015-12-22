@@ -130,6 +130,8 @@ public class ApplicationServiceRestImplTest {
     public void testUploadWebArchive() throws IOException {
 
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
+        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+
         // ISO8859-1
         String ls = System.lineSeparator();
         String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
@@ -170,6 +172,8 @@ public class ApplicationServiceRestImplTest {
     public void testUploadWebArchiveBinary() throws IOException {
 
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
+        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+
         // ISO8859-1
         String ls = System.lineSeparator();
         String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
@@ -411,19 +415,19 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testUpdateResourceTemplate() {
         final String updateContent = "<server>updatedContent</server>";
-        when(service.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(updateContent);
-        Response response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent);
+        when(service.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(updateContent);
+        Response response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent, "jvmName", "groupName");
         assertNotNull(response.getEntity());
 
-        when(service.updateResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("jvmName", "server"));
-        response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent);
+        when(service.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("jvmName", "server"));
+        response = cut.updateResourceTemplate(application.getName(), "ServerXMLTemplate.tpl", updateContent, "jvmName", "groupName");
         assertNotNull(response.getEntity());
     }
 
     @Test
     public void testDeployConf() {
         CommandOutput mockExecData = mock(CommandOutput.class);
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenReturn(mockExecData);
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenReturn(mockExecData);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         Response response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
@@ -432,7 +436,7 @@ public class ApplicationServiceRestImplTest {
         response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
 
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(User.class))).thenThrow(new RuntimeException("Test fail deploy conf"));
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenThrow(new RuntimeException("Test fail deploy conf"));
         response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
     }

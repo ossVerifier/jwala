@@ -312,25 +312,25 @@ public class ApplicationServiceImplTest {
     @Test
     public void testGetResourceTemplate() {
         final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn(theTemplate);
-        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", null, null, "hct.xml", false));
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
+        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", false));
     }
 
     @Test
     public void testGetResourceTemplateWithTokensReplaced() {
         final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn(theTemplate);
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
         final Application app = mock(Application.class);
         when(app.getWarPath()).thenReturn("theWarPath");
         when(applicationDao.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
         when(jvmDao.findJvm(anyString(), anyString())).thenReturn(null);
-        assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", null, null, "hct.xml", true));
+        assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", true));
     }
 
     @Test
     public void testUpdateResourceTemplate() {
-        applicationService.updateResourceTemplate("hct", "hct.xml", "content");
-        verify(applicationPersistenceService).updateResourceTemplate(eq("hct"), eq("hct.xml"), eq("content"));
+        applicationService.updateResourceTemplate("hct", "hct.xml", "content", "jvm1", "group1");
+        verify(applicationPersistenceService).updateResourceTemplate(eq("hct"), eq("hct.xml"), eq("content"), eq("jvm1"), eq("group1"));
     }
 
     @Test
@@ -346,12 +346,12 @@ public class ApplicationServiceImplTest {
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
 
 
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
 
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
     }
 
@@ -367,12 +367,12 @@ public class ApplicationServiceImplTest {
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
 
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("roleMapping.properties"))).thenReturn("Test template properties");
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("roleMapping.properties"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template properties");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
 
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "roleMapping.properties", testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "roleMapping.properties", false, testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
     }
 
@@ -388,10 +388,10 @@ public class ApplicationServiceImplTest {
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
@@ -406,10 +406,10 @@ public class ApplicationServiceImplTest {
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
@@ -424,10 +424,10 @@ public class ApplicationServiceImplTest {
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"))).thenReturn("Test template");
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
         when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
 
     @Test
@@ -453,6 +453,7 @@ public class ApplicationServiceImplTest {
         applicationService.findApplicationsByJvmId(id);
         verify(applicationDao).findApplicationsBelongingToJvm(eq(id));
     }
+
 
     // TODO fix this - should not expect a NullPointer
     @Test(expected = NullPointerException.class)

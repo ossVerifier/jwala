@@ -126,6 +126,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
                     service.copyApplicationWarToGroupHosts(application);
+                    service.copyApplicationConfigToGroupJvms(app.getGroup(), app.getName(), aUser.getUser());
 
                     return ResponseBuilder.created(application); // early
                     // out
@@ -165,11 +166,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response updateResourceTemplate(final String appName, final String resourceTemplateName,
+    public Response updateResourceTemplate(final String appName,
+                                           final String resourceTemplateName,
+                                           final String jvmName,
+                                           final String groupName,
                                            final String content) {
 
         try {
-            return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content));
+            return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content, jvmName, groupName));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             logger.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -182,9 +186,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
         try {
+            final boolean doBackUpBeforeCopy = true;
             final CommandOutput execData =
-                    service.deployConf(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
+                    service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, authUser.getUser());
             if (execData.getReturnCode().wasSuccessful()) {
+                if (resourceTemplateName.endsWith(".properties")) {
+                    // deploy the application.properties and roleMapping.properties to the other hosts in the group
+                    service.deployConfToOtherJvmHosts(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
+                }
                 return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
                         + jvmName);
             } else {

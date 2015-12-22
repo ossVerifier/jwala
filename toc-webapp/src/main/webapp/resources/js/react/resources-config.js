@@ -224,7 +224,7 @@ var XmlTabs = React.createClass({
                     this.state.resourceTemplateName, template);
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
-                    this.state.resourceTemplateName, template);
+                    this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
             }
         }
         return thePromise;
@@ -314,8 +314,8 @@ var XmlTabs = React.createClass({
                                                          this.reloadTemplateCallback.bind(this, data, resourceName));
             } else if (entityType === "webApps") {
                 this.props.webAppService.getResourceTemplate(data.name,
-                                                             null,
-                                                             null,
+                                                             this.state.entity.group.name,
+                                                             this.state.entityParent.jvmName,
                                                              false,
                                                              resourceName,
                                                              this.reloadTemplateCallback.bind(this, data, resourceName));

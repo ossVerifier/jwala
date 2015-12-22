@@ -39,7 +39,7 @@ public interface ApplicationService {
     String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
                                final boolean tokensReplaced);
 
-    String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template);
+    String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
     /**
      * Deploy a configuration file.
@@ -50,7 +50,7 @@ public interface ApplicationService {
      * @param resourceTemplateName - the resource template in which the configuration file is based on.
      * @param user                 - the user.    @return {@link CommandOutput}
      */
-    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
+    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, boolean backUp, User user);
 
     JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command, User user);
 
@@ -66,4 +66,8 @@ public interface ApplicationService {
     String previewResourceTemplate(String appName, String groupName, String jvmName, String template);
 
     void copyApplicationWarToGroupHosts(Application application);
+
+    void copyApplicationConfigToGroupJvms(Group group, String appName, User user);
+
+    void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
 }

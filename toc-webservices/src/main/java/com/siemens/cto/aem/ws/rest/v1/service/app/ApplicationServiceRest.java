@@ -59,9 +59,10 @@ public interface ApplicationServiceRest {
 
     /**
      * Get resource template content.
-     * @param appName web application name.
+     *
+     * @param appName              web application name.
      * @param resourceTemplateName the resource template name.
-     * @param tokensReplaced flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
+     * @param tokensReplaced       flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
      * @return the template contents
      */
     @GET
@@ -77,6 +78,8 @@ public interface ApplicationServiceRest {
     @Consumes(MediaType.TEXT_PLAIN)
     Response updateResourceTemplate(@PathParam("appName") final String appName,
                                     @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                    @MatrixParam("jvmName") final String jvmName,
+                                    @MatrixParam("groupName") final String groupName,
                                     final String content);
 
     @PUT

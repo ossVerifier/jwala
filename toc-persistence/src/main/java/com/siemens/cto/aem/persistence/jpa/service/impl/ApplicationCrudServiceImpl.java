@@ -1,15 +1,18 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.persistence.jpa.domain.*;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -55,14 +58,14 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             return jpaApp;
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
-                                          "App already exists: " + anAppToCreate.getRequest().getName(),
-                                          eee);
+                    "App already exists: " + anAppToCreate.getRequest().getName(),
+                    eee);
         }
     }
 
     public JpaApplication getExisting(final Identifier<Application> anAppId) {
         JpaApplication jpaApp = entityManager.find(JpaApplication.class, anAppId.getId());
-        if(jpaApp == null) {
+        if (jpaApp == null) {
             throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND, "Failed to locate application for update");
         }
         return jpaApp;
@@ -76,10 +79,11 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     @Override
-    public String getResourceTemplate(final String appName, final String resourceTemplateName) {
+    public String getResourceTemplate(final String appName, final String resourceTemplateName, JpaJvm appJvm) {
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_CONTENT);
         q.setParameter("appName", appName);
         q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateJvm", appJvm);
         try {
             return (String) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
@@ -94,7 +98,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
         final AuditEvent auditEvent = anApplicationToUpdate.getAuditEvent();
         final Identifier<Application> appId = updateApplicationCommand.getId();
 
-        if(jpaApp != null) {
+        if (jpaApp != null) {
             jpaApp.setName(updateApplicationCommand.getNewName());
             jpaApp.setUpdateBy(auditEvent.getUser().getUserId());
             jpaApp.setWebAppContext(updateApplicationCommand.getNewWebAppContext());
@@ -104,7 +108,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
             jpaApp.setLoadBalanceAcrossServers(updateApplicationCommand.isNewLoadBalanceAcrossServers());
 
             entityManager.flush();
-            
+
             return jpaApp;
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
@@ -116,7 +120,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     public void removeApplication(final Identifier<Application> appId) {
 
         final JpaApplication jpaApp = entityManager.find(JpaApplication.class, appId.getId());
-        if(jpaApp != null) {
+        if (jpaApp != null) {
             entityManager.remove(jpaApp);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
@@ -125,11 +129,12 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     @Override
-    public void updateResourceTemplate(final String appName, final String resourceTemplateName, final String template) {
+    public void updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, JpaJvm jvm) {
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT);
         q.setParameter("appName", appName);
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", template);
+        q.setParameter("templateJvm", jvm);
 
         try {
             if (q.executeUpdate() == 0) {
@@ -143,11 +148,13 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     @Override
     public void createConfigTemplate(final JpaApplication app,
                                      final String resourceTemplateName,
-                                     final String resourceTemplateContent) {
+                                     final String resourceTemplateContent,
+                                     final JpaJvm jvm) {
         final JpaApplicationConfigTemplate template = new JpaApplicationConfigTemplate();
         template.setApplication(app);
         template.setTemplateName(resourceTemplateName);
         template.setTemplateContent(resourceTemplateContent);
+        template.setJvm(jvm);
         entityManager.persist(template);
         entityManager.flush();
     }

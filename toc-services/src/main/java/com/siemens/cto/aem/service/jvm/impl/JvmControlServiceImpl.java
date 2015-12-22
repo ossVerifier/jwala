@@ -33,12 +33,12 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private final JvmService jvmService;
-    private final RemoteCommandExecutor remoteCommandExecutor;
+    private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final JvmControlServiceLifecycle jvmControlServiceLifecycle;
     private final HistoryService historyService;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
-                                 final RemoteCommandExecutor theExecutor,
+                                 final RemoteCommandExecutor<JvmControlOperation> theExecutor,
                                  final JvmControlServiceLifecycle theLifecycle,
                                  final HistoryService historyService) {
         jvmService = theJvmService;

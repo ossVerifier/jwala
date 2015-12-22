@@ -76,7 +76,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
-    private RemoteCommandExecutor applicationCommandExecutor;
+    private RemoteCommandExecutor<ApplicationControlOperation> applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
@@ -91,7 +91,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationServiceImpl(final ApplicationDao applicationDao,
                                   final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
-                                  final RemoteCommandExecutor applicationCommandService,
+                                  final RemoteCommandExecutor<ApplicationControlOperation> applicationCommandService,
                                   final JvmDao jvmDao,
                                   final GroupService groupService,
                                   final FileManager fileManager,
@@ -212,11 +212,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                                       final String jvmName,
                                       final String resourceTemplateName,
                                       final boolean tokensReplaced) {
-        final String template = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName);
+        final String template = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
         if (tokensReplaced) {
             final Map<String, Application> bindings = new HashMap<>();
-            bindings.put("webApp", new WebApp(applicationDao.findApplication(appName, groupName, jvmName),
-                    jvmDao.findJvm(jvmName, groupName)));
+            Jvm jvm = jvmDao.findJvm(jvmName, groupName);
+            bindings.put("webApp", new WebApp(applicationDao.findApplication(appName, groupName, jvmName), jvm));
             try {
                 return GeneratorUtils.bindDataToTemplateText(bindings, template);
             } catch (Exception x) {
@@ -228,8 +228,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template) {
-        return applicationPersistenceService.updateResourceTemplate(appName, resourceTemplateName, template);
+    public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName) {
+        return applicationPersistenceService.updateResourceTemplate(appName, resourceTemplateName, template, jvmName, groupName);
     }
 
     /**
@@ -247,7 +247,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(readOnly = true)
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
-                                    final String resourceTemplateName, User user) {
+                                    final String resourceTemplateName, boolean backUp, User user) {
 
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
@@ -288,7 +288,31 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             target.append(resourceTemplateName);
 
-            final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_CONFIG_FILE, new WindowsApplicationPlatformCommandProvider(), confFile.getAbsolutePath().replace("\\", "/"), target.toString());
+            final String destPath = target.toString();
+            final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            if (backUp) {
+                // back up the original file first
+                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                final String destPathBackup = destPath + currentDateSuffix;
+                final CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                        jvm.getJvmName(),
+                        jvm.getHostName(),
+                        ApplicationControlOperation.BACK_UP_CONFIG_FILE,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        destPath,
+                        destPathBackup);
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+                }
+
+            }
+            final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
+                    jvm.getJvmName(),
+                    jvm.getHostName(),
+                    ApplicationControlOperation.DEPLOY_CONFIG_FILE,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    srcPath,
+                    destPath);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceTemplateName, confFile.getAbsolutePath());
                 return execData;
@@ -359,6 +383,34 @@ public class ApplicationServiceImpl implements ApplicationService {
         } finally {
             if (tempWarFile.exists()) {
                 tempWarFile.delete();
+            }
+        }
+    }
+
+    @Override
+    public void copyApplicationConfigToGroupJvms(Group group, String appName, User user) {
+        final String groupName = group.getName();
+        for (Jvm jvm : group.getJvms()) {
+            for (String templateName : applicationPersistenceService.getResourceTemplateNames(appName)) {
+                final boolean doNotBackUpOriginals = false;
+                deployConf(appName, groupName, jvm.getJvmName(), templateName, doNotBackUpOriginals, user);
+            }
+        }
+    }
+
+    @Override
+    public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user) {
+        List<String> deployedHosts = new ArrayList<>();
+        deployedHosts.add(jvmDao.findJvm(jvmName, groupName).getHostName());
+        Set<Jvm> jvmSet = groupService.getGroup(groupName).getJvms();
+        if (jvmSet.size() > 0) {
+            for (Jvm jvm : jvmSet) {
+                final String hostName = jvm.getHostName();
+                if (!deployedHosts.contains(hostName)) {
+                    final boolean doBackUpOriginal = true;
+                    deployConf(appName, groupName, jvm.getJvmName(), resourceTemplateName, doBackUpOriginal, user);
+                    deployedHosts.add(jvm.getHostName());
+                }
             }
         }
     }

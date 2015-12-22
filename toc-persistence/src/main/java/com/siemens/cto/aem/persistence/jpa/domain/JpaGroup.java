@@ -31,12 +31,12 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     @Column(nullable = false, unique = true)
     public String name;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "GRP_JVM",
                joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
                inverseJoinColumns = {@JoinColumn(name = "JVM_ID", referencedColumnName = "ID")},
                uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "JVM_ID"}))
-    private List<JpaJvm> jvms;
+    private List<JpaJvm> jvms = new ArrayList<>();
 
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
@@ -46,7 +46,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar stateUpdated;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "WEBSERVER_GRP",
             joinColumns = {@JoinColumn(name = "GROUP_ID")},
             inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID")})
