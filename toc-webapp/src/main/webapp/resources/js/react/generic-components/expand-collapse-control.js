@@ -261,10 +261,13 @@ var ExpandCollapseControl = React.createClass({
 
                 var selectItemCallback = self.dataTableRenderParams.selectItemCallback[i];
                 if (selectItemCallback !== undefined) {
-                       // bind row selection callback.
-                       // select row callback binding does not work with sub tables due to sub tables are not rendered
-                       // using React. TODO: This should be refactored in the future.
                        $(subDataTable).find("tbody > tr").click(function(e) {
+
+                          // TODO: Attach the event specifically to TD element only.
+                          if(event.target.nodeName !== 'TD') {
+                            return;
+                          }
+
                            var isActive = false;
                            var cell;
 
