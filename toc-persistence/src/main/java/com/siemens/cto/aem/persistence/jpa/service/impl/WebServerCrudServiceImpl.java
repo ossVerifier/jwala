@@ -421,12 +421,15 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", template);
 
+        int numEntities = 0;
         try {
-            if (q.executeUpdate() == 0) {
-                throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
-            }
+            numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
             throw new ResourceTemplateUpdateException(wsName, resourceTemplateName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
         }
     }
 
