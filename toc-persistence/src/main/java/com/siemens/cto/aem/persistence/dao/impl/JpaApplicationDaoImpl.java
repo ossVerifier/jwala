@@ -57,12 +57,6 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         }
         return apps;
     }
-    @Override
-    public List<Application> findApplications(String aGroupName) {
-        Query q = em.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);
-        q.setParameter(JpaApplication.GROUP_NAME_PARAM, aGroupName);
-        return buildApplications(q.getResultList());
-    }
 
     @Override
     public List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId) {
@@ -76,26 +70,6 @@ public class JpaApplicationDaoImpl implements ApplicationDao {
         Query q = em.createNamedQuery(JpaApplication.QUERY_BY_JVM_ID);
         q.setParameter(JpaApplication.JVM_ID_PARAM, aJvmId.getId());
         return buildApplications(q.getResultList());
-    }
-
-    @Override
-    public List<Application> findApplicationsBelongingToWebServer(String aWebServerName) {
-        // TODO: Use named query
-        Query q = em.createQuery("SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName");
-        q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
-        final JpaWebServer webServer = (JpaWebServer) q.getSingleResult();
-        webServer.getGroups().size(); // Since it's lazy loaded we do this. TODO: Try to use JOIN FETCH.
-
-        q = em.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_NAME);
-        q.setParameter("groups", webServer.getGroups());
-        return buildApplications(q.getResultList());
-    }
-
-    @Override
-    public Application findApplicationByName(final String name) {
-        final Query q = em.createNamedQuery(JpaApplication.QUERY_BY_NAME);
-        q.setParameter("appName", name);
-        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
     }
 
     @Override

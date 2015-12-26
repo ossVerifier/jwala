@@ -5,6 +5,7 @@ import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.dao.app.AbstractApplicationDaoIntegrationTest;
 import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,11 +24,13 @@ classes = {JpaApplicationDaoIntegrationTest.CommonConfiguration.class,
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
 @Transactional
+// TODO: Use as a reference for the application CRUD integration test.
+@Ignore
 public class JpaApplicationDaoIntegrationTest extends AbstractApplicationDaoIntegrationTest {
 
     @Configuration
     static class CommonConfiguration {
-        
+
         @Bean
         public ApplicationDao getApplicationDao() {
             return new JpaApplicationDaoImpl();

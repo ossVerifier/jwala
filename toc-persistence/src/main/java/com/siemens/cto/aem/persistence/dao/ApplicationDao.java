@@ -15,14 +15,9 @@ public interface ApplicationDao {
 
     List<Application> getApplications();
 
-    List<Application> findApplications(final String aGroupName);
     List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId);
 
     List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId);
-
-    List<Application> findApplicationsBelongingToWebServer(String aWebServerName);
-
-    Application findApplicationByName(final String name);
 
     Application findApplication(String appName, String groupName, String jvmName);
 
