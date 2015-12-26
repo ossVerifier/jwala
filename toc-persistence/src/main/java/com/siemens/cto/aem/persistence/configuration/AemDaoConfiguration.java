@@ -1,8 +1,6 @@
 package com.siemens.cto.aem.persistence.configuration;
 
 import com.siemens.cto.aem.persistence.dao.HistoryDao;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
 import com.siemens.cto.aem.persistence.dao.impl.HistoryDaoImpl;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.dao.impl.JpaJvmDaoImpl;
@@ -27,11 +25,6 @@ public class AemDaoConfiguration {
     @Bean(name = "webServerDao")
     public WebServerCrudService getWebServerDao() {
         return new WebServerCrudServiceImpl();
-    }
-
-    @Bean
-    public ApplicationDao getApplicationDao() {
-        return new JpaApplicationDaoImpl();
     }
 
     @Bean

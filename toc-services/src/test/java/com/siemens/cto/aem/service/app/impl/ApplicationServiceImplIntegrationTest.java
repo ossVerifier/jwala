@@ -10,8 +10,8 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.*;
@@ -78,13 +78,18 @@ public class ApplicationServiceImplIntegrationTest {
         }
 
         @Bean
-        public ApplicationPersistenceService getApplicationPersistenceService() {
-            return new JpaApplicationPersistenceServiceImpl(new ApplicationCrudServiceImpl(), new GroupCrudServiceImpl());
+        public ApplicationCrudService getApplicationCrudService() {
+            return new ApplicationCrudServiceImpl();
         }
 
         @Bean
-        public ApplicationDao getApplicationDao() {
-            return new JpaApplicationDaoImpl();
+        public GroupCrudService getGroupCrudService() {
+            return new GroupCrudServiceImpl();
+        }
+
+        @Bean
+        public ApplicationPersistenceService getApplicationPersistenceService() {
+            return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
         }
 
         @Bean
@@ -150,12 +155,9 @@ public class ApplicationServiceImplIntegrationTest {
     }
 
     @Autowired
-    private ApplicationDao applicationDao;
-
-    @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
 
-    private ApplicationService cut;
+    private ApplicationService applicationService;
 
     private JvmPersistenceService jvmPersistenceService;
 
@@ -174,7 +176,7 @@ public class ApplicationServiceImplIntegrationTest {
         groupService = mock(GroupService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
-        cut = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService,
+        applicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService,
                 remoteCommandExecutor, null,
                 groupService, fileManager, null, null);
     }
@@ -186,7 +188,7 @@ public class ApplicationServiceImplIntegrationTest {
      */
     @Test(expected = NotFoundException.class)
     public void testGetApplication() {
-        cut.getApplication(new Identifier<Application>(0L));
+        applicationService.getApplication(new Identifier<Application>(0L));
     }
 
     /**
@@ -194,7 +196,7 @@ public class ApplicationServiceImplIntegrationTest {
      */
     @Test
     public void testGetAllApplications() {
-        List<Application> all = cut.getApplications();
+        List<Application> all = applicationService.getApplications();
         assertEquals(0, all.size());
     }
 
@@ -203,7 +205,7 @@ public class ApplicationServiceImplIntegrationTest {
      */
     @Test
     public void testGetApplicationsByGroup() {
-        List<Application> partial = cut.findApplications(new Identifier<Group>(0L));
+        List<Application> partial = applicationService.findApplications(new Identifier<Group>(0L));
         assertEquals(0, partial.size());
     }
 

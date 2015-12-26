@@ -2,7 +2,10 @@ package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -32,5 +35,16 @@ public interface ApplicationCrudService {
     void createConfigTemplate(JpaApplication app, String resourceTemplateName, String resourceTemplateContent, JpaJvm jvm);
 
     JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event);
+
+    Application getApplication(final Identifier<Application> aApplicationId)
+            throws NotFoundException;
+
+    List<Application> getApplications();
+
+    List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId);
+
+    List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId);
+
+    Application findApplication(String appName, String groupName, String jvmName);
 
 }

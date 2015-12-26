@@ -2,7 +2,9 @@ package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.event.Event;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
@@ -93,6 +95,31 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     @Override
     public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event) {
         return applicationCrudService.uploadAppTemplate(event);
+    }
+
+    @Override
+    public Application findApplication(String appName, String groupName, String jvmName) {
+        return applicationCrudService.findApplication(appName, groupName, jvmName);
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> jvmId) {
+        return applicationCrudService.findApplicationsBelongingToJvm(jvmId);
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingTo(Identifier<Group> groupId) {
+        return applicationCrudService.findApplicationsBelongingTo(groupId);
+    }
+
+    @Override
+    public Application getApplication(Identifier<Application> aApplicationId) {
+        return applicationCrudService.getApplication(aApplicationId);
+    }
+
+    @Override
+    public List<Application> getApplications() {
+        return applicationCrudService.getApplications();
     }
 
     private JpaJvm getJpaJvmForAppXml(String resourceTemplateName, String jvmName, String groupName) {

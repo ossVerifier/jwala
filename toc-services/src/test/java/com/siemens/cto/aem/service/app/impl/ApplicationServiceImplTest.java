@@ -22,7 +22,6 @@ import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -58,9 +57,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
-
-    @Mock
-    private ApplicationDao applicationDao;
 
     @Mock
     private ApplicationPersistenceService applicationPersistenceService;
@@ -159,7 +155,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testSingleGet() {
-        when(applicationDao.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
         final Application application = applicationService.getApplication(new Identifier<Application>(1L));
         assertEquals(new Identifier<Application>(1L), application.getId());
         assertEquals(groupId, application.getGroup().getId());
@@ -170,7 +166,7 @@ public class ApplicationServiceImplTest {
 
     @Test
     public void testAllGet() {
-        when(applicationDao.getApplications()).thenReturn(applications2);
+        when(applicationPersistenceService.getApplications()).thenReturn(applications2);
         final List<Application> apps = applicationService.getApplications();
         assertEquals(applications2.size(), apps.size());
 
@@ -192,7 +188,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testFindByGroupId() {
-        when(applicationDao.findApplicationsBelongingTo(any(Identifier.class))).thenReturn(applications2);
+        when(applicationPersistenceService.findApplicationsBelongingTo(any(Identifier.class))).thenReturn(applications2);
         final List<Application> apps = applicationService.findApplications(groupId);
         assertEquals(applications2.size(), apps.size());
 
@@ -322,7 +318,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
         final Application app = mock(Application.class);
         when(app.getWarPath()).thenReturn("theWarPath");
-        when(applicationDao.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
+        when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
         when(jvmDao.findJvm(anyString(), anyString())).thenReturn(null);
         assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", true));
     }
@@ -347,7 +343,7 @@ public class ApplicationServiceImplTest {
 
 
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
 
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
@@ -368,7 +364,7 @@ public class ApplicationServiceImplTest {
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
 
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("roleMapping.properties"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template properties");
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
 
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
@@ -389,7 +385,7 @@ public class ApplicationServiceImplTest {
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
@@ -407,7 +403,7 @@ public class ApplicationServiceImplTest {
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
@@ -425,7 +421,7 @@ public class ApplicationServiceImplTest {
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
     }
@@ -433,7 +429,7 @@ public class ApplicationServiceImplTest {
     @Test
     public void testPreviewResourceTemplate() {
         final Jvm jvm = mock(Jvm.class);
-        when(applicationDao.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
+        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmDao.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final String preview = applicationService.previewResourceTemplate("hct", "hct-group", "jvm-1", "Template contents");
         assertEquals("Template contents", preview);
@@ -451,7 +447,7 @@ public class ApplicationServiceImplTest {
     public void testFindApplicationsByJvmId() {
         final Identifier<Jvm> id = new Identifier<Jvm>(1l);
         applicationService.findApplicationsByJvmId(id);
-        verify(applicationDao).findApplicationsBelongingToJvm(eq(id));
+        verify(applicationPersistenceService).findApplicationsBelongingToJvm(eq(id));
     }
 
 
@@ -477,7 +473,7 @@ public class ApplicationServiceImplTest {
         when(mockRuntimeCommandBuilder.build()).thenReturn(mockCommand);
         when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationDao, applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, jvmDao, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, jvmDao, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
         mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
         verify(mockCommand).execute();
         new File("./src/test/resources/webapps/test.war").delete();

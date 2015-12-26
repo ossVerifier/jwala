@@ -205,7 +205,7 @@ public class AemServiceConfiguration {
     @Bean
     @Autowired
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService) {
-        return new ApplicationServiceImpl(aemDaoConfiguration.getApplicationDao(),
+        return new ApplicationServiceImpl(
                 persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService,
                 aemCommandExecutorConfig.getRemoteCommandExecutor(),

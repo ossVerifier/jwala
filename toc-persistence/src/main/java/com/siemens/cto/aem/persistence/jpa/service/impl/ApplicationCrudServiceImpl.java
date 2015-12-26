@@ -4,8 +4,11 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -13,12 +16,14 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 
 import javax.persistence.*;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
@@ -195,6 +200,54 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
         }
 
         return jpaConfigTemplate;
+    }
+
+    @Override
+    public Application getApplication(Identifier<Application> aApplicationId) throws NotFoundException {
+        JpaApplication jpaApp = entityManager.find(JpaApplication.class, aApplicationId.getId());
+        if(jpaApp == null) {
+            throw new NotFoundException(AemFaultType.APPLICATION_NOT_FOUND,
+                    "Application not found: " + aApplicationId);
+        }
+        return JpaAppBuilder.appFrom(jpaApp);
+    }
+
+    @Override
+    public List<Application> getApplications() {
+        Query q = entityManager.createQuery("select a from JpaApplication a");
+        return buildApplications(q.getResultList());
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Application> buildApplications(List<?> resultList) {
+        ArrayList<Application> apps = new ArrayList<>(resultList.size());
+        for(JpaApplication jpa : (List<JpaApplication>)resultList) {
+            apps.add(JpaAppBuilder.appFrom(jpa));
+        }
+        return apps;
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId) {
+        Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_GROUP_ID);
+        q.setParameter(JpaApplication.GROUP_ID_PARAM, aGroupId.getId());
+        return buildApplications(q.getResultList());
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId) {
+        Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_JVM_ID);
+        q.setParameter(JpaApplication.JVM_ID_PARAM, aJvmId.getId());
+        return buildApplications(q.getResultList());
+    }
+
+    @Override
+    public Application findApplication(final String appName, final String groupName, final String jvmName) {
+        final Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_GROUP_JVM_AND_APP_NAME);
+        q.setParameter("appName", appName);
+        q.setParameter("groupName", groupName);
+        q.setParameter("jvmName", jvmName);
+        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
     }
 
 }

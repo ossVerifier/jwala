@@ -7,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -30,10 +29,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PrivateApplicationServiceImplTest {
-
-
-    @Mock
-    private ApplicationDao applicationDao;
 
     @Mock
     private ApplicationPersistenceService applicationPersistenceService;

@@ -18,7 +18,6 @@ import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
 import com.siemens.cto.aem.persistence.dao.JvmDao;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
@@ -62,9 +61,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String STR_PROPERTIES = "properties";
 
     @Autowired
-    private ApplicationDao applicationDao;
-
-    @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
 
     @Autowired
@@ -88,8 +84,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private final FileManager fileManager;
 
-    public ApplicationServiceImpl(final ApplicationDao applicationDao,
-                                  final ApplicationPersistenceService applicationPersistenceService,
+    public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
                                   final RemoteCommandExecutor<ApplicationControlOperation> applicationCommandService,
                                   final JvmDao jvmDao,
@@ -97,7 +92,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final FileManager fileManager,
                                   final WebArchiveManager webArchiveManager,
                                   final PrivateApplicationService privateApplicationService) {
-        this.applicationDao = applicationDao;
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
@@ -112,25 +106,25 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(readOnly = true)
     @Override
     public Application getApplication(Identifier<Application> aApplicationId) {
-        return applicationDao.getApplication(aApplicationId);
+        return applicationPersistenceService.getApplication(aApplicationId);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Application> getApplications() {
-        return applicationDao.getApplications();
+        return applicationPersistenceService.getApplications();
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Application> findApplications(Identifier<Group> groupId) {
-        return applicationDao.findApplicationsBelongingTo(groupId);
+        return applicationPersistenceService.findApplicationsBelongingTo(groupId);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId) {
-        return applicationDao.findApplicationsBelongingToJvm(jvmId);
+        return applicationPersistenceService.findApplicationsBelongingToJvm(jvmId);
     }
 
     @Transactional
@@ -216,7 +210,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (tokensReplaced) {
             final Map<String, Application> bindings = new HashMap<>();
             Jvm jvm = jvmDao.findJvm(jvmName, groupName);
-            bindings.put("webApp", new WebApp(applicationDao.findApplication(appName, groupName, jvmName), jvm));
+            bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvmName), jvm));
             try {
                 return GeneratorUtils.bindDataToTemplateText(bindings, template);
             } catch (Exception x) {
@@ -261,7 +255,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName);
             final Jvm jvm = jvmPersistenceService.findJvms(jvmName).get(0);
-            final Application app = applicationDao.findApplication(appName, groupName, jvmName);
+            final Application app = applicationPersistenceService.findApplication(appName, groupName, jvmName);
 
             final StringBuilder target = new StringBuilder();
             if (getFileExtension(resourceTemplateName).equalsIgnoreCase(STR_PROPERTIES)) {
@@ -340,7 +334,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public String previewResourceTemplate(String appName, String groupName, String jvmName, String template) {
         final Map<String, Application> bindings = new HashMap<>();
-        bindings.put("webApp", new WebApp(applicationDao.findApplication(appName, groupName, jvmName),
+        bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvmName),
                 jvmDao.findJvm(jvmName, groupName)));
         return GeneratorUtils.bindDataToTemplateText(bindings, template);
     }

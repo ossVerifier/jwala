@@ -3,8 +3,8 @@ package com.siemens.cto.aem.persistence.dao.app.impl.jpa;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.dao.app.AbstractApplicationDaoIntegrationTest;
-import com.siemens.cto.aem.persistence.dao.ApplicationDao;
-import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
+//import com.siemens.cto.aem.persistence.dao.ApplicationDao;
+//import com.siemens.cto.aem.persistence.dao.impl.JpaApplicationDaoImpl;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
@@ -31,9 +31,9 @@ public class JpaApplicationDaoIntegrationTest extends AbstractApplicationDaoInte
     @Configuration
     static class CommonConfiguration {
 
-        @Bean
-        public ApplicationDao getApplicationDao() {
-            return new JpaApplicationDaoImpl();
-        }
+//        @Bean
+//        public ApplicationDao getApplicationDao() {
+//            return new JpaApplicationDaoImpl();
+//        }
     }
 }
