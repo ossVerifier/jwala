@@ -111,6 +111,11 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         return jvmCrudService.getResourceTemplate(jvmName, resourceTemplateName);
     }
 
+    @Override
+    public Jvm findJvm(final String jvmName, final String groupName) {
+        return jvmCrudService.findJvm(jvmName, groupName);
+    }
+
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
         return new JpaJvmBuilder(aJpaJvm).build();
     }

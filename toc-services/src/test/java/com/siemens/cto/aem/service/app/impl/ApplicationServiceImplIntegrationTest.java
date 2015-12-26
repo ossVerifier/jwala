@@ -177,7 +177,7 @@ public class ApplicationServiceImplIntegrationTest {
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
         applicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService,
-                remoteCommandExecutor, null,
+                remoteCommandExecutor,
                 groupService, fileManager, null, null);
     }
 

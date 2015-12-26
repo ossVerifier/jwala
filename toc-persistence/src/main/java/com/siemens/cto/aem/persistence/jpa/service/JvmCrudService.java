@@ -38,4 +38,6 @@ public interface JvmCrudService {
 
     void updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
 
+    Jvm findJvm(String jvmName, String groupName);
+
 }

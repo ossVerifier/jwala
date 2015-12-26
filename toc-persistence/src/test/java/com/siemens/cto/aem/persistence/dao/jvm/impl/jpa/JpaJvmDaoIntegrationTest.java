@@ -2,9 +2,8 @@ package com.siemens.cto.aem.persistence.dao.jvm.impl.jpa;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.dao.impl.JpaJvmDaoImpl;
 import com.siemens.cto.aem.persistence.dao.jvm.AbstractJvmDaoIntegrationTest;
-import com.siemens.cto.aem.persistence.dao.JvmDao;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +20,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
 @Transactional
+// TODO: Use as a reference for the jvm CRUD integration test.
+@Ignore
 public class JpaJvmDaoIntegrationTest extends AbstractJvmDaoIntegrationTest {
 
     @Configuration
     static class CommonConfiguration {
-        @Bean
-        public JvmDao getJvmDao() {
-            return new JpaJvmDaoImpl();
-        }
+
+//        @Bean
+//        public JvmDao getJvmDao() {
+//            return new JpaJvmDaoImpl();
+//        }
+
     }
+
 }

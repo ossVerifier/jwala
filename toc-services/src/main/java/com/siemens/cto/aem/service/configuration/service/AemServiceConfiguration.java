@@ -209,7 +209,6 @@ public class AemServiceConfiguration {
                 persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService,
                 aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                null,
                 getGroupService(),
                 fileManager, null, null);
     }

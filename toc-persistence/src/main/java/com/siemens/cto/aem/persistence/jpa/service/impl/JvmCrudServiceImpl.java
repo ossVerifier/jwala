@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -237,6 +238,15 @@ public class JvmCrudServiceImpl implements JvmCrudService {
         } catch (RuntimeException re) {
             throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName, re);
         }
+    }
+
+    @Override
+    public Jvm findJvm(final String jvmName, final String groupName) {
+        final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
+        q.setParameter("jvmName", jvmName);
+        q.setParameter("groupName", groupName);
+        JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
+        return (new JpaJvmBuilder(jpaJvm)).build();
     }
 
 }
