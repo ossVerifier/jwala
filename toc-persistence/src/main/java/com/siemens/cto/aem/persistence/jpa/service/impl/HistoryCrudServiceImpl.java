@@ -1,6 +1,6 @@
-package com.siemens.cto.aem.persistence.dao.impl;
+package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
@@ -12,11 +12,11 @@ import javax.persistence.Query;
 import java.util.List;
 
 /**
- * {@link HistoryDao} implementation.
+ * {@link HistoryCrudService} implementation.
  *
  * Created by JC043760 on 11/30/2015.
  */
-public class HistoryDaoImpl implements HistoryDao {
+public class HistoryCrudServiceImpl implements HistoryCrudService {
 
     private static final String PARAM_GROUP_NAME = "groupName";
     private static final String PARAM_SERVER_NAME = "serverName";

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.dao;
+package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
@@ -11,7 +11,7 @@ import java.util.List;
  *
  * Created by JC043760 on 11/30/2015.
  */
-public interface HistoryDao {
+public interface HistoryCrudService {
 
     /**
      * Create history data.

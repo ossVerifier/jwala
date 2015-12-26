@@ -14,7 +14,7 @@ import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -220,10 +220,10 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmControlService")
     @Autowired
-    public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryDao historyDao) {
+    public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper),
                 aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getJvmControlServiceLifecycle(), getHistoryService(historyDao));
+                getJvmControlServiceLifecycle(), getHistoryService(historyCrudService));
     }
 
     @Bean(name = "jvmControlServiceLifecycle")
@@ -389,7 +389,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public HistoryService getHistoryService(final HistoryDao historyDao) {
-        return new HistoryServiceImpl(historyDao);
+    public HistoryService getHistoryService(final HistoryCrudService historyCrudService) {
+        return new HistoryServiceImpl(historyCrudService);
     }
 }

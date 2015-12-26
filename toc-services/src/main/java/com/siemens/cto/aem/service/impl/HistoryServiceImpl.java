@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.impl;
 
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
@@ -17,11 +17,11 @@ import java.util.List;
  */
 public class HistoryServiceImpl implements HistoryService {
 
-    private final HistoryDao historyDao;
+    private final HistoryCrudService historyCrudService;
 
     @Autowired
-    public HistoryServiceImpl(final HistoryDao historyDao) {
-        this.historyDao = historyDao;
+    public HistoryServiceImpl(final HistoryCrudService historyCrudService) {
+        this.historyCrudService = historyCrudService;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class HistoryServiceImpl implements HistoryService {
                               final EventType eventType, final String user) {
         if (groups != null) {
             for (JpaGroup group : groups) {
-                historyDao.createHistory(serverName, group, event, eventType, user);
+                historyCrudService.createHistory(serverName, group, event, eventType, user);
             }
         }
     }
@@ -38,7 +38,7 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     @Transactional(readOnly = true)
     public List<JpaHistory> findHistory(final String groupName, final String serverName, final Integer numOfRec) {
-        return historyDao.findHistory(groupName, serverName, numOfRec);
+        return historyCrudService.findHistory(groupName, serverName, numOfRec);
     }
 
 }

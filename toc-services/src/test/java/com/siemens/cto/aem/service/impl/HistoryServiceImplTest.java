@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.service.impl;
 
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
@@ -25,14 +25,14 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class HistoryServiceImplTest {
 
     @Mock
-    private HistoryDao mockHistoryDao;
+    private HistoryCrudService mockHistoryCrudService;
 
     private HistoryService historyService;
 
     @Before
     public void setUp() {
         initMocks(this);
-        historyService = new HistoryServiceImpl(mockHistoryDao);
+        historyService = new HistoryServiceImpl(mockHistoryCrudService);
     }
 
     @Test
@@ -40,14 +40,14 @@ public class HistoryServiceImplTest {
         final List<JpaGroup> groups = new ArrayList<>();
         groups.add(new JpaGroup());
         historyService.createHistory("any", groups, "Testing...", EventType.USER_ACTION, "user");
-        verify(mockHistoryDao).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."),
+        verify(mockHistoryCrudService).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."),
                 eq(EventType.USER_ACTION), eq("user"));
     }
 
     @Test
     public void testRead() {
         historyService.findHistory("any", "any", null);
-        verify(mockHistoryDao).findHistory(eq("any"), eq("any"), anyInt());
+        verify(mockHistoryCrudService).findHistory(eq("any"), eq("any"), anyInt());
     }
 
 }

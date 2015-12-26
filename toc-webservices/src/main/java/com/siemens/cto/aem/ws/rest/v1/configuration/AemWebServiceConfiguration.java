@@ -4,7 +4,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -99,7 +99,7 @@ public class AemWebServiceConfiguration {
     private StateNotificationService stateNotificationService;
 
     @Autowired
-    private HistoryDao historyDao;
+    private HistoryCrudService historyCrudService;
 
     @Autowired
     private HistoryService historyService;

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import com.siemens.cto.aem.persistence.dao.HistoryDao;
-import com.siemens.cto.aem.persistence.dao.impl.HistoryDaoImpl;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.HistoryCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ public class AemDaoConfiguration {
     }
 
     @Bean
-    public HistoryDao getHistoryDao() {
-        return new HistoryDaoImpl();
+    public HistoryCrudService getHistoryDao() {
+        return new HistoryCrudServiceImpl();
     }
 
 }
