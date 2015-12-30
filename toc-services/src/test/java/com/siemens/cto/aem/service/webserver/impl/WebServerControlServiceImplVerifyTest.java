@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
-    private WebServerControlServiceImpl impl;
+    private WebServerControlServiceImpl webServerControlService;
 
     @Mock
     private WebServerService webServerService;
@@ -63,7 +63,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Before
     public void setup() {
-        impl = new WebServerControlServiceImpl(webServerService,
+        webServerControlService = new WebServerControlServiceImpl(webServerService,
                 commandExecutor,
                 webServerStateService,
                 webServerReachableStateMap,
@@ -71,7 +71,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
                 mockClientFactory);
 
         user = new User("unused");
-        when(webServerService.getJpaWebServer(anyLong(), eq(true))).thenReturn(new JpaWebServer());
     }
 
     @Test
@@ -79,24 +78,24 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     public void testVerificationOfBehaviorForSuccess() throws Exception {
         String wsName = "mockWebServerName";
         String wsHostName = "mockWebServerHost";
-        final ControlWebServerRequest controlCommand = mock(ControlWebServerRequest.class);
-        final JpaWebServer webServer = mock(JpaWebServer.class);
+        final ControlWebServerRequest controlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer webServer = mock(WebServer.class);
+
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(webServer.getName()).thenReturn(wsName);
         when(webServer.getHost()).thenReturn(wsHostName);
         final Identifier<WebServer> webServerId = mock(Identifier.class);
         final WebServerControlOperation controlOperation = WebServerControlOperation.START;
         final ClientHttpResponse mockClientHttpResponse = mock(ClientHttpResponse.class);
 
-        when(controlCommand.getWebServerId()).thenReturn(webServerId);
-        when(controlCommand.getControlOperation()).thenReturn(controlOperation);
-        when(webServerService.getJpaWebServer(anyLong(), anyBoolean())).thenReturn(webServer);
+        when(controlWebServerRequest.getWebServerId()).thenReturn(webServerId);
+        when(controlWebServerRequest.getControlOperation()).thenReturn(controlOperation);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
         when(mockClientFactory.requestGet(any(URI.class))).thenReturn(mockClientHttpResponse);
 
-        impl.controlWebServer(controlCommand,
-                user);
+        webServerControlService.controlWebServer(controlWebServerRequest, user);
 
-        verify(controlCommand, times(1)).validate();
+        verify(controlWebServerRequest, times(1)).validate();
 
         verify(commandExecutor, times(1)).executeRemoteCommand(eq(wsName),
                 eq(wsHostName),

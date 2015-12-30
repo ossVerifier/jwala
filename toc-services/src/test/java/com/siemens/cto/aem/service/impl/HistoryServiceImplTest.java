@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
@@ -37,10 +39,10 @@ public class HistoryServiceImplTest {
 
     @Test
     public void testWrite() {
-        final List<JpaGroup> groups = new ArrayList<>();
-        groups.add(new JpaGroup());
+        final List<Group> groups = new ArrayList<>();
+        groups.add(new Group(Identifier.<Group>id(1L), "testGroup"));
         historyService.createHistory("any", groups, "Testing...", EventType.USER_ACTION, "user");
-        verify(mockHistoryCrudService).createHistory(eq("any"), any(JpaGroup.class), eq("Testing..."),
+        verify(mockHistoryCrudService).createHistory(eq("any"), any(Group.class), eq("Testing..."),
                 eq(EventType.USER_ACTION), eq("user"));
     }
 

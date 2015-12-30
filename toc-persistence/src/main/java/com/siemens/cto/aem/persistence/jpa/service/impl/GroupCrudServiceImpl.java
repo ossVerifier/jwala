@@ -1,93 +1,66 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.util.Calendar;
 import java.util.List;
 
-public class GroupCrudServiceImpl implements GroupCrudService {
-
-    @PersistenceContext(unitName = "aem-unit")
-    private EntityManager entityManager;
+public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup, Group> implements GroupCrudService {
 
     public GroupCrudServiceImpl() {
     }
 
     @Override
     public JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate) {
+        final CreateGroupRequest createGroupRequest = aGroupToCreate.getRequest();
+
+        final JpaGroup jpaGroup = new JpaGroup();
+        jpaGroup.setName(createGroupRequest.getGroupName());
 
         try {
-            final CreateGroupRequest createGroupCommand = aGroupToCreate.getRequest();
-            final AuditEvent auditEvent = aGroupToCreate.getAuditEvent();
-            final String userId = auditEvent.getUser().getUserId();
-            final Calendar updateDate = auditEvent.getDateTime().getCalendar();
-
-            final JpaGroup jpaGroup = new JpaGroup();
-            jpaGroup.setName(createGroupCommand.getGroupName());
-            jpaGroup.setCreateBy(userId);
-            jpaGroup.setCreateDate(updateDate);
-            jpaGroup.setUpdateBy(userId);
-            jpaGroup.setLastUpdateDate(updateDate);
-            jpaGroup.setState(null);
-            jpaGroup.setStateUpdated(null);
-
-            entityManager.persist(jpaGroup);
-            entityManager.flush();
-
-            return jpaGroup;
+            return create(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToCreate.getRequest().getGroupName(),
-                                          eee);
+                    "Group Name already exists: " + aGroupToCreate.getRequest().getGroupName(),
+                    eee);
         }
     }
 
     @Override
     public void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate) {
 
+        final UpdateGroupRequest aGroupToUpdateRequest = aGroupToUpdate.getRequest();
+        final JpaGroup jpaGroup = getGroup(aGroupToUpdateRequest.getId());
+
+        jpaGroup.setName(aGroupToUpdateRequest.getNewName());
+
         try {
-            final UpdateGroupRequest updateGroupCommand = aGroupToUpdate.getRequest();
-            final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
-            final Identifier<Group> groupId = updateGroupCommand.getId();
-            final JpaGroup jpaGroup = getGroup(groupId);
-
-            jpaGroup.setName(updateGroupCommand.getNewName());
-            jpaGroup.setUpdateBy(auditEvent.getUser().getUserId());
-            jpaGroup.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
-
-            entityManager.flush();
+            update(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                                          "Group Name already exists: " + aGroupToUpdate.getRequest().getNewName(),
-                                          eee);
+                    "Group Name already exists: " + aGroupToUpdate.getRequest().getNewName(),
+                    eee);
         }
     }
 
     @Override
     public JpaGroup getGroup(final Identifier<Group> aGroupId) throws NotFoundException {
 
-        final JpaGroup jpaGroup = entityManager.find(JpaGroup.class,
-                                                     aGroupId.getId());
+        final JpaGroup jpaGroup = findById(aGroupId.getId());
 
         if (jpaGroup == null) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
@@ -96,7 +69,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
         return jpaGroup;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public JpaGroup getGroup(final String name) throws NotFoundException {
@@ -114,16 +87,7 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
     @Override
     public List<JpaGroup> getGroups() {
-
-        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        final CriteriaQuery<JpaGroup> criteria = builder.createQuery(JpaGroup.class);
-        final Root<JpaGroup> root = criteria.from(JpaGroup.class);
-
-        criteria.select(root);
-
-        final TypedQuery<JpaGroup> query = entityManager.createQuery(criteria);
-
-        return query.getResultList();
+        return findAll();
     }
 
     @Override
@@ -138,33 +102,19 @@ public class GroupCrudServiceImpl implements GroupCrudService {
 
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
-
         final JpaGroup group = getGroup(aGroupId);
-        entityManager.remove(group);
+        remove(group);
     }
 
     @Override
     public JpaGroup updateGroupStatus(Event<SetStateRequest<Group, GroupState>> aGroupToUpdate) {
+        final SetStateRequest<Group, GroupState> setStateRequest = aGroupToUpdate.getRequest();
+        final JpaGroup jpaGroup = getGroup(setStateRequest.getNewState().getId());
 
-        final SetStateRequest<Group, GroupState> updateGroupCommand = aGroupToUpdate.getRequest();
-        final AuditEvent auditEvent = aGroupToUpdate.getAuditEvent();
-        final CurrentState<Group, GroupState> newState = updateGroupCommand.getNewState();
-        final Identifier<Group> groupId = newState.getId();
-        final JpaGroup jpaGroup = getGroup(groupId);
-        
-        if (jpaGroup == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Group not found: " + groupId);
-        }
-
-        jpaGroup.setState(newState.getState());
+        jpaGroup.setState(setStateRequest.getNewState().getState());
         jpaGroup.setStateUpdated(DateTime.now().toCalendar(null));
-        jpaGroup.setUpdateBy(auditEvent.getUser().getUserId());
-        jpaGroup.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
 
-        entityManager.flush();
-        
-        return jpaGroup;
+        return update(jpaGroup);
     }
 
     @Override

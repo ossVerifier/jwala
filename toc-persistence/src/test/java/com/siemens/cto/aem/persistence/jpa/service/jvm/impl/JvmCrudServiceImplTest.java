@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.event.Event;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.domain.model.path.Path;
@@ -46,7 +46,7 @@ public class JvmCrudServiceImplTest {
 
     public static final String SERVER_XML = "server.xml";
     @Autowired
-    private JvmCrudServiceImpl impl;
+    private JvmCrudServiceImpl jvmCrudService;
 
     private User user;
     private Jvm jvm;
@@ -58,8 +58,8 @@ public class JvmCrudServiceImplTest {
         String testJvmName = "testJvmName";
         CreateJvmRequest createCommand = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
         Event<CreateJvmRequest> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
-        JpaJvm jpaJvm = impl.createJvm(createJvmEvent);
-        jvm = new Jvm(jpaJvm.id(), jpaJvm.getName(), new HashSet<LiteGroup>());
+        JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmEvent);
+        jvm = new Jvm(jpaJvm.id(), jpaJvm.getName(), new HashSet<Group>());
     }
 
     @Test
@@ -73,28 +73,28 @@ public class JvmCrudServiceImplTest {
             }
         };
         Event<UploadJvmTemplateRequest> uploadEvent = new Event<>(uploadCommand, AuditEvent.now(user));
-        JpaJvmConfigTemplate result = impl.uploadJvmTemplateXml(uploadEvent);
+        JpaJvmConfigTemplate result = jvmCrudService.uploadJvmTemplateXml(uploadEvent);
         assertEquals(expectedTemplateName, result.getTemplateName());
 
         // test get resource template names
-        List<String> resultList = impl.getResourceTemplateNames(jvm.getJvmName());
+        List<String> resultList = jvmCrudService.getResourceTemplateNames(jvm.getJvmName());
         assertFalse(resultList.isEmpty());
         assertEquals(1, resultList.size());
         assertEquals(SERVER_XML, resultList.get(0));
 
         // test get resource template
-        String resultText = impl.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
+        String resultText = jvmCrudService.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
         assertFalse(resultText.isEmpty());
 
         // test update template
-        impl.updateResourceTemplate(jvm.getJvmName(), SERVER_XML, "<server>updated content</server>");
-        String resultUpdate = impl.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
+        jvmCrudService.updateResourceTemplate(jvm.getJvmName(), SERVER_XML, "<server>updated content</server>");
+        String resultUpdate = jvmCrudService.getResourceTemplate(jvm.getJvmName(), SERVER_XML);
         assertTrue(resultUpdate.contains("updated content"));
     }
 
     @Test
     public void testGetJvmTemplate() {
-        String result = impl.getJvmTemplate(SERVER_XML, jvm.getId());
+        String result = jvmCrudService.getJvmTemplate(SERVER_XML, jvm.getId());
         assertNotNull(result);
     }
 

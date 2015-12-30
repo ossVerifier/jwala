@@ -37,11 +37,6 @@ public class AemPersistenceServiceConfiguration {
     }
 
     @Bean
-    public GroupControlPersistenceService getGroupControlPersistenceService() {
-        return new JpaGroupControlPersistenceServiceImpl(getGroupControlCrudService());
-    }
-
-    @Bean
     protected GroupJvmRelationshipService getGroupJvmRelationshipService() {
         return new GroupJvmRelationshipServiceImpl(getGroupCrudService(),
                                                    getJvmCrudService());
@@ -60,11 +55,6 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected ResourceInstanceCrudService getResourceInstanceCrudService() {
         return new ResourceInstanceCrudServiceImpl(getGroupCrudService());
-    }
-
-    @Bean
-    protected GroupControlCrudService getGroupControlCrudService() {
-        return new JpaGroupControlCrudServiceImpl();
     }
 
     @Bean

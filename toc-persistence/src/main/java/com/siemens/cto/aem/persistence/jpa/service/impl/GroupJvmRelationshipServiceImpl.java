@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.service.CrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -22,10 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class GroupJvmRelationshipServiceImpl implements GroupJvmRelationshipService {
-
-    @PersistenceContext(unitName = "aem-unit")
-    private EntityManager entityManager;
+public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<JpaGroup, Group> implements GroupJvmRelationshipService, CrudService<JpaGroup, Group> {
 
     private final GroupCrudService groupCrudService;
     private final JvmCrudService jvmCrudService;

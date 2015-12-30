@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+
 public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmControlServiceImpl.class);
@@ -55,12 +57,13 @@ public class JvmControlServiceImpl implements JvmControlService {
         CurrentState<Jvm, JvmState> prevState = null;
 
         final Identifier<Jvm> jvmId = controlJvmRequest.getJvmId();
-        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
+        final Jvm jvm = jvmService.getJvm(jvmId);
         try {
             final String event = controlJvmRequest.getControlOperation().getOperationState() == null ?
                     controlJvmRequest.getControlOperation().name() :
                     controlJvmRequest.getControlOperation().getOperationState().toStateString();
-            historyService.createHistory(jvm.getName(), jvm.getGroups(), event, EventType.USER_ACTION, aUser.getId());
+
+            historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
 
             controlJvmRequest.validate();
 
@@ -71,7 +74,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                    jvm.getName(),
+                    jvm.getJvmName(),
                     jvm.getHostName(),
                     controlJvmRequest.getControlOperation(),
                     new WindowsJvmPlatformCommandProvider());
@@ -115,9 +118,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                                     result,
                                     aUser);
                             throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                                    "Error controlling JVM " + jvm.getName() + ": " + result);
+                                    "Error controlling JVM " + jvm.getJvmName() + ": " + result);
                         default:
-                            processDefaultReturnCode(controlJvmRequest, aUser, prevState, ctrlOp, commandOutput, jvm.getName(), result);
+                            processDefaultReturnCode(controlJvmRequest, aUser, prevState, ctrlOp, commandOutput, jvm.getJvmName(), result);
                             break;
                     }
 
@@ -141,7 +144,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                     stackTrace,
                     aUser);
 
-            historyService.createHistory(jvm.getName(), jvm.getGroups(), stackTrace, EventType.APPLICATION_ERROR,
+            historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), stackTrace, EventType.APPLICATION_ERROR,
                     aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

@@ -164,9 +164,9 @@ public class GroupServiceImpl implements GroupService {
         final Set<Jvm> jvms = group.getJvms();
 
         for (Jvm jvm : jvms) {
-            final Set<LiteGroup> tmpGroup = new LinkedHashSet<>();
+            final Set<Group> tmpGroup = new LinkedHashSet<>();
             if (jvm.getGroups() != null && !jvm.getGroups().isEmpty()) {
-                for (LiteGroup liteGroup : jvm.getGroups()) {
+                for (Group liteGroup : jvm.getGroups()) {
                     if (!id.getId().equals(liteGroup.getId().getId())) {
                         tmpGroup.add(liteGroup);
                     }

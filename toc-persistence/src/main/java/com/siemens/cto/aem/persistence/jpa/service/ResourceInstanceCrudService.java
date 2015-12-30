@@ -11,14 +11,21 @@ import java.util.List;
 /**
  * Created by z003e5zv on 3/25/2015.
  */
-public interface ResourceInstanceCrudService {
+public interface ResourceInstanceCrudService extends CrudService<JpaResourceInstance, ResourceInstance> {
 
     JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> createResourceInstanceCommandEvent);
+
     JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceCommandEvent);
+
     JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceNameCommandEvent);
+
     JpaResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
+
     List<JpaResourceInstance> getResourceInstancesByGroupId(final Long groupId);
+
     JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, String name);
+
     List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);
+
     void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
 }

@@ -236,10 +236,4 @@ public class WebServerServiceImpl implements WebServerService {
                 webServerPersistenceService.findApplications(webServerName));
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups) {
-        return webServerPersistenceService.getJpaWebServer(webServerId, fetchGroups);
-    }
-
 }

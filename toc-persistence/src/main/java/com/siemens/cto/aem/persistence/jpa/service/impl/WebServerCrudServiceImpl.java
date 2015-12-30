@@ -29,10 +29,7 @@ import javax.persistence.criteria.Root;
 import java.io.InputStream;
 import java.util.*;
 
-public class WebServerCrudServiceImpl implements WebServerCrudService {
-
-    @PersistenceContext(unitName = "aem-unit")
-    private EntityManager entityManager;
+public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer, WebServer> implements WebServerCrudService {
 
     public WebServerCrudServiceImpl() {
     }
@@ -51,15 +48,12 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
         jpaWebServer.setCreateBy(createdBy);
 
-        entityManager.persist(jpaWebServer);
-        entityManager.flush();
-
-        return webServerFrom(jpaWebServer);
+        return webServerFrom(create(jpaWebServer));
     }
 
     @Override
     public WebServer updateWebServer(final WebServer webServer, final String createdBy) {
-        final JpaWebServer jpaWebServer = getJpaWebServer(webServer.getId());
+        final JpaWebServer jpaWebServer = findById(webServer.getId().getId());
 
         jpaWebServer.setName(webServer.getName());
         jpaWebServer.setHost(webServer.getHost());
@@ -71,121 +65,17 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
         jpaWebServer.setCreateBy(createdBy);
 
-        entityManager.flush();
-        return webServerFrom(jpaWebServer);
-    }
-
-    @Override
-    public WebServer createWebServer(final Event<CreateWebServerRequest> aWebServer) {
-
-        try {
-            final CreateWebServerRequest createWebServerCommand = aWebServer.getRequest();
-            final AuditEvent auditEvent = aWebServer.getAuditEvent();
-            final String userId = auditEvent.getUser().getUserId();
-            final Calendar updateDate = auditEvent.getDateTime().getCalendar();
-            final Collection<Identifier<Group>> groupIds = createWebServerCommand.getGroups();
-
-            final List<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
-
-            if (groupIds != null) {
-                for (final Identifier<Group> gid : groupIds) {
-                    final JpaGroup group = getGroup(gid);
-                    groups.add(group);
-                }
-            }
-
-            final JpaWebServer jpaWebServer = new JpaWebServer();
-            jpaWebServer.setName(createWebServerCommand.getName());
-            jpaWebServer.setHost(createWebServerCommand.getHost());
-            jpaWebServer.setPort(createWebServerCommand.getPort());
-            jpaWebServer.setHttpsPort(createWebServerCommand.getHttpsPort());
-            jpaWebServer.setGroups(groups);
-            jpaWebServer.setStatusPath(createWebServerCommand.getStatusPath().getPath());
-            jpaWebServer.setSvrRoot(createWebServerCommand.getSvrRoot().getPath());
-            jpaWebServer.setDocRoot(createWebServerCommand.getDocRoot().getPath());
-            jpaWebServer.setHttpConfigFile(createWebServerCommand.getHttpConfigFile().getPath());
-            jpaWebServer.setCreateBy(userId);
-            jpaWebServer.setCreateDate(updateDate);
-            jpaWebServer.setUpdateBy(userId);
-            jpaWebServer.setLastUpdateDate(updateDate);
-
-            entityManager.persist(jpaWebServer);
-            entityManager.flush();
-
-            return webServerFrom(jpaWebServer);
-        } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
-                    + aWebServer.getRequest().getName(), eee);
-        }
-    }
-
-    @Override
-    public WebServer updateWebServer(final Event<UpdateWebServerRequest> aWebServerToUpdate) {
-
-        try {
-            final UpdateWebServerRequest updateWebServerCommand = aWebServerToUpdate.getRequest();
-            final AuditEvent auditEvent = aWebServerToUpdate.getAuditEvent();
-            final Identifier<WebServer> webServerId = updateWebServerCommand.getId();
-            final JpaWebServer jpaWebServer = getJpaWebServer(webServerId);
-
-            final Collection<Identifier<Group>> groupIds = updateWebServerCommand.getNewGroupIds();
-
-            final List<JpaGroup> groups = new ArrayList<>(groupIds != null ? groupIds.size() : 0);
-
-            if (groupIds != null) {
-                for (final Identifier<Group> id : updateWebServerCommand.getNewGroupIds()) {
-                    groups.add(getGroup(id));
-                }
-            }
-
-            jpaWebServer.setName(updateWebServerCommand.getNewName());
-            jpaWebServer.setPort(updateWebServerCommand.getNewPort());
-            jpaWebServer.setHttpsPort(updateWebServerCommand.getNewHttpsPort());
-            jpaWebServer.setHost(updateWebServerCommand.getNewHost());
-            jpaWebServer.setGroups(groups);
-            jpaWebServer.setStatusPath(updateWebServerCommand.getNewStatusPath().getPath());
-            jpaWebServer.setHttpConfigFile(updateWebServerCommand.getNewHttpConfigFile().getPath());
-            jpaWebServer.setSvrRoot(updateWebServerCommand.getNewSvrRoot().getPath());
-            jpaWebServer.setDocRoot(updateWebServerCommand.getNewDocRoot().getPath());
-            jpaWebServer.setUpdateBy(auditEvent.getUser().getUserId());
-            jpaWebServer.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
-
-            entityManager.flush();
-
-            return webServerFrom(jpaWebServer);
-        } catch (final PersistenceException eee) {
-            // We have to catch the generalized exception because OpenJPA can throw a rollback instead.
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME, "WebServer Name already exists: "
-                    + aWebServerToUpdate.getRequest().getNewName(), eee);
-        }
+        return webServerFrom(update(jpaWebServer));
     }
 
     @Override
     public WebServer getWebServer(final Identifier<WebServer> aWebServerId) throws NotFoundException {
-        return webServerFrom(getJpaWebServer(aWebServerId));
-    }
-
-    @Override
-    public JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups) {
-        final JpaWebServer webServer = entityManager.find(JpaWebServer.class, webServerId);
-        if (fetchGroups) {
-            webServer.getGroups().size();
-        }
-        return webServer;
+        return webServerFrom(findById(aWebServerId.getId()));
     }
 
     @Override
     public List<WebServer> getWebServers() {
-
-        final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        final CriteriaQuery<JpaWebServer> criteria = builder.createQuery(JpaWebServer.class);
-        final Root<JpaWebServer> root = criteria.from(JpaWebServer.class);
-
-        criteria.select(root);
-
-        final TypedQuery<JpaWebServer> query = entityManager.createQuery(criteria);
-
-        return webServersFrom(query.getResultList());
+        return webServersFrom(findAll());
     }
 
     @Override
@@ -200,9 +90,7 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
 
     @Override
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
-
-        final JpaWebServer webServer = getJpaWebServer(aWebServerId);
-        entityManager.remove(webServer);
+        remove(aWebServerId);
     }
 
     protected List<WebServer> webServersFrom(final List<JpaWebServer> someJpaWebServers) {
@@ -214,17 +102,6 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         }
 
         return webservers;
-    }
-
-    protected JpaWebServer getJpaWebServer(final Identifier<WebServer> aWebServer) {
-
-        final JpaWebServer jpaWebServer = entityManager.find(JpaWebServer.class, aWebServer.getId());
-
-        if (jpaWebServer == null) {
-            throw new NotFoundException(AemFaultType.WEBSERVER_NOT_FOUND, "WebServer not found: " + aWebServer);
-        }
-
-        return jpaWebServer;
     }
 
     protected WebServer webServerFrom(final JpaWebServer aJpaWebServer) {
@@ -264,7 +141,7 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
 
         final List<JpaWebServer> webservers = query.getResultList();
         for (final JpaWebServer webserver : webservers) {
-            entityManager.remove(webserver);
+            remove(webserver);
         }
     }
 
@@ -381,7 +258,7 @@ public class WebServerCrudServiceImpl implements WebServerCrudService {
         final UploadWebServerTemplateRequest command = event.getRequest();
         final WebServer webServer = command.getWebServer();
         Identifier<WebServer> id = webServer.getId();
-        final JpaWebServer jpaWebServer = getJpaWebServer(id);
+        final JpaWebServer jpaWebServer = findById(id.getId());
 
         InputStream inStream = command.getData();
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");

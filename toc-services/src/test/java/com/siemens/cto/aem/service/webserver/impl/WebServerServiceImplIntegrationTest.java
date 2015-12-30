@@ -28,51 +28,49 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
-		WebServerServiceImplIntegrationTest.CommonConfiguration.class,
-		TestJpaConfiguration.class, TocFileManagerConfigReference.class})
+        WebServerServiceImplIntegrationTest.CommonConfiguration.class,
+        TestJpaConfiguration.class, TocFileManagerConfigReference.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
 @Transactional
 public class WebServerServiceImplIntegrationTest {
 
-	@Configuration
-	static class CommonConfiguration {
+    @Configuration
+    static class CommonConfiguration {
 
-		@Bean
-		public WebServerPersistenceService getWebServerPersistenceService() {
-			return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebServerCrudService());
-		}
+        @Bean
+        public WebServerPersistenceService getWebServerPersistenceService() {
+            return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebServerCrudService());
+        }
 
-		@Bean
-		public WebServerCrudService getWebServerCrudService() {
-			return new WebServerCrudServiceImpl();
-		}
+        @Bean
+        public WebServerCrudService getWebServerCrudService() {
+            return new WebServerCrudServiceImpl();
+        }
 
-		@Bean
-		public GroupCrudService getGroupCrudService() {
-			return new GroupCrudServiceImpl();
-		}
-		
-	}
+        @Bean
+        public GroupCrudService getGroupCrudService() {
+            return new GroupCrudServiceImpl();
+        }
 
-	@Autowired
-	private WebServerPersistenceService webServerPersistenceService;
-	
-	private WebServerService   cut;
+    }
+
+    @Autowired
+    private WebServerPersistenceService webServerPersistenceService;
+
+    private WebServerService webServerService;
 
     @Autowired
     private FileManager fileManager;
 
     @Before
-    public void setup() { 
-        cut = new WebServerServiceImpl(webServerPersistenceService, fileManager);
+    public void setup() {
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager);
     }
 
-	@Test(expected = NotFoundException.class)
-	public void testServiceLayer() {
-	    cut.getWebServer(new Identifier<WebServer>(0L));
-	}
-	
-	
+    @Test(expected = NotFoundException.class)
+    public void testServiceLayer() {
+        webServerService.getWebServer(new Identifier<WebServer>(0L));
+    }
 }

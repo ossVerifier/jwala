@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
-    private JvmControlServiceImpl impl;
+    private JvmControlServiceImpl jvmControlService;
     private JvmControlServiceImpl.LifecycleImpl lifecycleImpl;
     private JvmService jvmService;
     private RemoteCommandExecutor commandExecutor;
@@ -67,7 +67,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
         lifecycleImpl = new JvmControlServiceImpl.LifecycleImpl(jvmStateService);
-        impl = new JvmControlServiceImpl(jvmService, commandExecutor, lifecycleImpl, mockHistoryService);
+        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, lifecycleImpl, mockHistoryService);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }
@@ -76,27 +76,27 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @SuppressWarnings("unchecked")
     public void testVerificationOfBehaviorForSuccess() throws Exception {
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
-        final JpaJvm jvm = mock(JpaJvm.class);
+        final Jvm jvm = mock(Jvm.class);
         final String jvmName = "mockJvmName";
         String jvmHost = "mockJvmHost";
-        when(jvm.getName()).thenReturn(jvmName);
+        when(jvm.getJvmName()).thenReturn(jvmName);
         when(jvm.getHostName()).thenReturn(jvmHost);
         final Identifier<Jvm> jvmId = mock(Identifier.class);
         final JvmControlOperation controlOperation = JvmControlOperation.START;
         final CommandOutput mockExecData = mock(CommandOutput.class);
 
-        when(jvm.getId()).thenReturn(1l);
+        when(jvm.getId()).thenReturn(Identifier.<Jvm>id(1l));
         when(commandExecutor.executeRemoteCommand(jvmName, jvmHost, controlOperation, new WindowsJvmPlatformCommandProvider())).thenReturn(mockExecData);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
-        when(jvmService.getJpaJvm(jvmId, true)).thenReturn(jvm);
+        when(jvmService.getJvm(jvmId)).thenReturn(jvm);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
 
-        impl.controlJvm(controlCommand, user);
+        jvmControlService.controlJvm(controlCommand, user);
 
         verify(controlCommand, times(1)).validate();
         //TODO change to use @Captor instead, much easier
-        verify(jvmService, times(1)).getJpaJvm(eq(jvmId), eq(true));
+        verify(jvmService, times(1)).getJvm(eq(jvmId));
         verify(commandExecutor, times(1)).executeRemoteCommand(
                 eq(jvmName),
                 eq(jvmHost),
@@ -118,12 +118,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final CommandOutput mockExecData = mock(CommandOutput.class);
         final Identifier<Jvm> jvmId = new Identifier<>(1L);
-        final JpaJvm mockJvm = mock(JpaJvm.class);
+        final Jvm mockJvm = mock(Jvm.class);
 
-        when(mockJvm.getId()).thenReturn(jvmId.getId());
-        when(mockJvm.getName()).thenReturn("testJvmName");
+        when(mockJvm.getId()).thenReturn(Identifier.<Jvm>id(jvmId.getId()));
+        when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(mockJvm.getHostName()).thenReturn("testJvmHost");
-        when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(mockJvm);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("Test standard error");
         when(mockExecData.getStandardOutput()).thenReturn("Test standard out when START or STOP");
@@ -138,7 +138,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
         boolean exceptionThrown = false;
         try {
-            impl.controlJvm(controlCommand, user);
+            jvmControlService.controlJvm(controlCommand, user);
             verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         } catch (Exception e) {
             exceptionThrown = true;
@@ -148,7 +148,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE));
         exceptionThrown = false;
         try {
-            impl.controlJvm(controlCommand, user);
+            jvmControlService.controlJvm(controlCommand, user);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -160,7 +160,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         exceptionThrown = false;
         boolean isNPE = false;
         try {
-            impl.controlJvm(controlCommand, user);
+            jvmControlService.controlJvm(controlCommand, user);
         } catch (Exception e) {
             e.printStackTrace();
             exceptionThrown = true;
@@ -179,7 +179,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
         when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
-        impl.secureCopyFile(mockControlJvmRequest, "src path", "dest path");
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "src path", "dest path");
     }
 
 

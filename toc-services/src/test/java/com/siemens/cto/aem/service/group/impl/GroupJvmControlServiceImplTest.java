@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.service.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
 import org.junit.Before;
@@ -23,7 +22,6 @@ import static org.mockito.Mockito.*;
 
 public class GroupJvmControlServiceImplTest {
 
-    private GroupControlPersistenceService mockPersistenceService;
     private GroupService mockGroupService;
     private CommandDispatchGateway mockCommandDispatchGateway;
 
@@ -36,11 +34,10 @@ public class GroupJvmControlServiceImplTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setup() {
-        mockPersistenceService = mock(GroupControlPersistenceService.class);
         mockGroupService = mock(GroupService.class);
         mockCommandDispatchGateway = mock(CommandDispatchGateway.class);
 
-        cut = new GroupJvmControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
+        cut = new GroupJvmControlServiceImpl(mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
         controlGroupJvmRequest = new ControlGroupJvmRequest(groupId, JvmControlOperation.START);

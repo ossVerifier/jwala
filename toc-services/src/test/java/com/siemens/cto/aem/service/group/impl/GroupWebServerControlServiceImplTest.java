@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.persistence.service.GroupControlPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
 import org.junit.Before;
@@ -20,7 +19,6 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 public class GroupWebServerControlServiceImplTest {
-    private GroupControlPersistenceService mockPersistenceService;
     private GroupService mockGroupService;
     private CommandDispatchGateway mockCommandDispatchGateway;
 
@@ -33,11 +31,10 @@ public class GroupWebServerControlServiceImplTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setup() {
-        mockPersistenceService = mock(GroupControlPersistenceService.class);
         mockGroupService = mock(GroupService.class);
         mockCommandDispatchGateway = mock(CommandDispatchGateway.class);
 
-        cut = new GroupWebServerControlServiceImpl(mockPersistenceService, mockGroupService, mockCommandDispatchGateway);
+        cut = new GroupWebServerControlServiceImpl(mockGroupService, mockCommandDispatchGateway);
 
         mockGroup = mock(Group.class);
         controlGroupWebServerRequest = new ControlGroupWebServerRequest(groupId, WebServerControlOperation.START);

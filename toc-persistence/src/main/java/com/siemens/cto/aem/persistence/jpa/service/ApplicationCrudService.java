@@ -16,7 +16,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import java.util.List;
 
-public interface ApplicationCrudService {
+public interface ApplicationCrudService extends CrudService<JpaApplication, Application> {
 
     JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup);
 
@@ -36,8 +36,7 @@ public interface ApplicationCrudService {
 
     JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event);
 
-    Application getApplication(final Identifier<Application> aApplicationId)
-            throws NotFoundException;
+    Application getApplication(final Identifier<Application> aApplicationId) throws NotFoundException;
 
     List<Application> getApplications();
 

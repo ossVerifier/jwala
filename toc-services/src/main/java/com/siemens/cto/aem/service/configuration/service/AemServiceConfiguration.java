@@ -185,7 +185,7 @@ public class AemServiceConfiguration {
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(
                 persistenceServiceConfiguration.getWebServerPersistenceService(),
-                                        fileManager);
+                fileManager);
     }
 
     @Bean
@@ -243,16 +243,12 @@ public class AemServiceConfiguration {
 
     @Bean(name = "groupJvmControlService")
     public GroupJvmControlService getGroupJvmControlService() {
-        return new GroupJvmControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
-                getGroupService(),
-                commandDispatchGateway);
+        return new GroupJvmControlServiceImpl(getGroupService(), commandDispatchGateway);
     }
 
     @Bean(name = "groupWebServerControlService")
     public GroupWebServerControlService getGroupWebServerControlService() {
-        return new GroupWebServerControlServiceImpl(persistenceServiceConfiguration.getGroupControlPersistenceService(),
-                getGroupService(),
-                commandDispatchGateway);
+        return new GroupWebServerControlServiceImpl(getGroupService(), commandDispatchGateway);
     }
 
     @Bean(name = "webServerControlService")

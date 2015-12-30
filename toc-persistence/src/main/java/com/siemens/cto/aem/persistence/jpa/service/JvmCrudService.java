@@ -13,9 +13,10 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
-public interface JvmCrudService {
+public interface JvmCrudService extends CrudService<JpaJvm, Jvm> {
 
     JpaJvm createJvm(final Event<CreateJvmRequest> aJvmToCreate);
+
     JpaJvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate);
 
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;

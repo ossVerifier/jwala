@@ -16,24 +16,13 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
-public interface WebServerCrudService {
-
-	@Deprecated
-	WebServer createWebServer(
-			final Event<CreateWebServerRequest> aWebServerToCreate);
-
-	@Deprecated
-	WebServer updateWebServer(
-			final Event<UpdateWebServerRequest> aWebServerToUpdate);
+public interface WebServerCrudService extends CrudService<JpaWebServer, WebServer> {
 
 	WebServer createWebServer(WebServer webServer, String createdBy);
 
 	WebServer updateWebServer(WebServer webServer, String createdBy);
 
-	WebServer getWebServer(final Identifier<WebServer> aWebServerId)
-			throws NotFoundException;
-
-	JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups);
+	WebServer getWebServer(final Identifier<WebServer> aWebServerId) throws NotFoundException;
 
 	List<WebServer> getWebServers();
 

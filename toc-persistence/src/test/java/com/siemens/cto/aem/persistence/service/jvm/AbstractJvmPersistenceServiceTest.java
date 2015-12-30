@@ -356,7 +356,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
         final Jvm jvmWithGroups = jvmPersistenceService.getJvm(jvmId);
 
         assertFalse(jvmWithGroups.getGroups().isEmpty());
-        for (final LiteGroup group : jvmWithGroups.getGroups()) {
+        for (final Group group : jvmWithGroups.getGroups()) {
             assertTrue(assignedGroups.contains(group.getId()));
         }
 

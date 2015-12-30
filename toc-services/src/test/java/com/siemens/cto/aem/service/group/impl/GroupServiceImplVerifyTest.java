@@ -170,10 +170,10 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testGetOtherGroupingDetailsOfJvms() {
-        final Set<LiteGroup> groupSet = new HashSet<>();
-        groupSet.add(new LiteGroup(new Identifier<Group>("1"), "Group1"));
-        groupSet.add(new LiteGroup(new Identifier<Group>("2"), "Group2"));
-        groupSet.add(new LiteGroup(new Identifier<Group>("3"), "Group3"));
+        final Set<Group> groupSet = new HashSet<>();
+        groupSet.add(new Group(new Identifier<Group>("1"), "Group1"));
+        groupSet.add(new Group(new Identifier<Group>("2"), "Group2"));
+        groupSet.add(new Group(new Identifier<Group>("3"), "Group3"));
 
         final Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(new Jvm(new Identifier<Jvm>("1"), "Jvm1", groupSet));
@@ -188,7 +188,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(otherGroupingDetailsOfJvm.get(0).getGroups().size(), 2);
 
         String groupNames = "";
-        for (LiteGroup grp: otherGroupingDetailsOfJvm.get(0).getGroups()) {
+        for (Group grp: otherGroupingDetailsOfJvm.get(0).getGroups()) {
             groupNames += grp.getName();
         }
 

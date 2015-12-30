@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
@@ -21,7 +22,7 @@ public interface HistoryService {
      * @param eventType @{link EventType}
      * @param user the user name/id
      */
-    void createHistory(String serverName, List<JpaGroup> groups, String event, EventType eventType, String user);
+    void createHistory(String serverName, List<Group> groups, String event, EventType eventType, String user);
 
     /**
      * Retrieve history data.

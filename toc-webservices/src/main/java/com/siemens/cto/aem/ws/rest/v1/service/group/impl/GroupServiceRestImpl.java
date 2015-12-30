@@ -266,7 +266,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
             final List<String> groupNames = new LinkedList<>();
-            for (LiteGroup group : jvm.getGroups()) {
+            for (Group group : jvm.getGroups()) {
                 groupNames.add(group.getName());
             }
             membershipDetailsList.add(new MembershipDetails(jvm.getJvmName(),

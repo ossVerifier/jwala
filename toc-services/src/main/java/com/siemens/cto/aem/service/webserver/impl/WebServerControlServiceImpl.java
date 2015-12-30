@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
@@ -67,12 +69,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
                                           final User aUser) {
 
-        final JpaWebServer webServer = webServerService.getJpaWebServer(controlWebServerRequest.getWebServerId().getId(), true);
+//        final JpaWebServer webServer = webServerService.getJpaWebServer(controlWebServerRequest.getWebServerId().getId(), true);
+        final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() :
                     controlWebServerRequest.getControlOperation().getOperationState().toStateString();
-            historyService.createHistory(webServer.getName(), webServer.getGroups(), event, EventType.USER_ACTION,
+            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 
             controlWebServerRequest.validate();
@@ -110,7 +113,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             return commandOutput;
         } catch (final CommandFailureException cfe) {
             final String stackTrace = ExceptionUtils.getStackTrace(cfe);
-            historyService.createHistory(webServer.getName(), webServer.getGroups(), stackTrace,
+            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), stackTrace,
                     EventType.APPLICATION_ERROR, aUser.getId());
 
             setFailedState(controlWebServerRequest, aUser, stackTrace);

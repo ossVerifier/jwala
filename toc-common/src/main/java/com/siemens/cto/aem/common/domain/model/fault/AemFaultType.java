@@ -109,10 +109,16 @@ public enum AemFaultType implements MessageResponseStatus {
     RESOURCE_INSTANCE_MAP_NOT_INCLUDED("AEM51", "ResourceInstanceAttributesNotFound"),
 
     DATA_CONTROL_ERROR("AEM52", "MoreThanOneObjectFound"),
+
     FAST_FAIL("AEM53", "Remote JVM aborted in initial health checks."),
+
     JVM_TEMPLATE_NOT_FOUND("AEM54", "Could not return text for specified JVM configuration template"),
+
     INVALID_TEMPLATE_NAME("AEM55", "InvalidXMLName" ),
-    INVALID_TEMPLATE("AEM56", "InvalidTemplate" );
+
+    INVALID_TEMPLATE("AEM56", "InvalidTemplate" ),
+
+    ENTITY_NOT_FOUND("AEM57", "EntityNotfound");
 
 	private final String faultCode;
 	private final String faultMessage;

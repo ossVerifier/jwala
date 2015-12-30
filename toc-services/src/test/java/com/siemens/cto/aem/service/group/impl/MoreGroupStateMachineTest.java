@@ -129,8 +129,8 @@ public class MoreGroupStateMachineTest {
     User testUser = new User("test");
 
     Group mockGroup;
-    LiteGroup lgroup;
-    Set<LiteGroup> lgroups = new HashSet<>();
+    Group lgroup;
+    Set<Group> lgroups = new HashSet<>();
     Set<Group> groups = new HashSet<>();
     Jvm jvm;
     WebServer ws;
@@ -144,7 +144,7 @@ public class MoreGroupStateMachineTest {
     public void setupEntities() {
 
         mockGroup = new Group(id(1L, Group.class), "");
-        lgroup = new LiteGroup(id(1L, Group.class), "");
+        lgroup = new Group(id(1L, Group.class), "");
         lgroups.add(lgroup);
         groups.add(mockGroup);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"),

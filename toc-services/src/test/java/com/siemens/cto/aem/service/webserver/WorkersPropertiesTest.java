@@ -41,8 +41,8 @@ public class WorkersPropertiesTest {
         WorkersProperties.Builder wb = new WorkersProperties.Builder();
 
         Group group = new Group(id(0L, Group.class),"grp");
-        Set<LiteGroup> groups = new HashSet<LiteGroup>();
-        groups.add(new LiteGroup(group.getId(), group.getName()));
+        Set<Group> groups = new HashSet<>();
+        groups.add(new Group(group.getId(), group.getName()));
         Application app = new Application(Identifier.id(0L, Application.class), "", "", "/abc", group, true, true, "testWar.war");
         List<Application> apps = new ArrayList<>();
         apps.add(app);

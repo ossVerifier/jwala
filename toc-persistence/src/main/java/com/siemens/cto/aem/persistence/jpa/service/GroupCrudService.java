@@ -13,7 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
 import java.util.List;
 
-public interface GroupCrudService {
+public interface GroupCrudService extends CrudService<JpaGroup, Group> {
 
     JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate);
 

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.app;
 
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -25,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.junit.Assert.*;
 
 @Transactional
-public abstract class AbstractApplicationPersistenceServiceTest {
+public abstract class
+
+        AbstractApplicationPersistenceServiceTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractApplicationPersistenceServiceTest.class); 
 
@@ -133,7 +136,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         applicationPersistenceService.removeApplication(deleteAppId);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = NotFoundException.class)
     public void testRemoveAppAndFailUpdate() {
         testRemoveApp();
         testUpdateApp();

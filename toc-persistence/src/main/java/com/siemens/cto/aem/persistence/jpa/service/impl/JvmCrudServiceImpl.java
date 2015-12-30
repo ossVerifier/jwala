@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.group.History;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -11,9 +12,11 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -27,7 +30,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
-public class JvmCrudServiceImpl implements JvmCrudService {
+public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm, Jvm> implements JvmCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
@@ -37,30 +40,19 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
-            final AuditEvent auditEvent = aJvmToCreate.getAuditEvent();
-            final Calendar updateTime = auditEvent.getDateTime().getCalendar();
-            final String userId = auditEvent.getUser().getUserId();
-            final CreateJvmRequest command = aJvmToCreate.getRequest();
+            final CreateJvmRequest createJvmRequest = aJvmToCreate.getRequest();
 
-            jpaJvm.setName(command.getJvmName());
-            jpaJvm.setHostName(command.getHostName());
-            jpaJvm.setHttpPort(command.getHttpPort());
-            jpaJvm.setHttpsPort(command.getHttpsPort());
-            jpaJvm.setRedirectPort(command.getRedirectPort());
-            jpaJvm.setShutdownPort(command.getShutdownPort());
-            jpaJvm.setAjpPort(command.getAjpPort());
-            jpaJvm.setStatusPath(command.getStatusPath().getPath());
-            jpaJvm.setSystemProperties(command.getSystemProperties());
+            jpaJvm.setName(createJvmRequest.getJvmName());
+            jpaJvm.setHostName(createJvmRequest.getHostName());
+            jpaJvm.setHttpPort(createJvmRequest.getHttpPort());
+            jpaJvm.setHttpsPort(createJvmRequest.getHttpsPort());
+            jpaJvm.setRedirectPort(createJvmRequest.getRedirectPort());
+            jpaJvm.setShutdownPort(createJvmRequest.getShutdownPort());
+            jpaJvm.setAjpPort(createJvmRequest.getAjpPort());
+            jpaJvm.setStatusPath(createJvmRequest.getStatusPath().getPath());
+            jpaJvm.setSystemProperties(createJvmRequest.getSystemProperties());
 
-            jpaJvm.setCreateBy(userId);
-            jpaJvm.setCreateDate(updateTime);
-            jpaJvm.setUpdateBy(userId);
-            jpaJvm.setLastUpdateDate(updateTime);
-
-            entityManager.persist(jpaJvm);
-            entityManager.flush();
-
-            return jpaJvm;
+            return create(jpaJvm);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
                     "JVM with name already exists: " + aJvmToCreate.getRequest().getJvmName(),
@@ -72,23 +64,21 @@ public class JvmCrudServiceImpl implements JvmCrudService {
     public JpaJvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate) {
 
         try {
-            final UpdateJvmRequest command = aJvmToUpdate.getRequest();
-            final Identifier<Jvm> jvmId = command.getId();
-            final JpaJvm jvm = getJvm(jvmId);
+            final UpdateJvmRequest updateJvmRequest = aJvmToUpdate.getRequest();
+            final Identifier<Jvm> jvmId = updateJvmRequest.getId();
+            final JpaJvm jpaJvm = getJvm(jvmId);
 
-            jvm.setName(command.getNewJvmName());
-            jvm.setHostName(command.getNewHostName());
-            jvm.setHttpPort(command.getNewHttpPort());
-            jvm.setHttpsPort(command.getNewHttpsPort());
-            jvm.setRedirectPort(command.getNewRedirectPort());
-            jvm.setShutdownPort(command.getNewShutdownPort());
-            jvm.setAjpPort(command.getNewAjpPort());
-            jvm.setStatusPath(command.getNewStatusPath().getPath());
-            jvm.setSystemProperties(command.getNewSystemProperties());
+            jpaJvm.setName(updateJvmRequest.getNewJvmName());
+            jpaJvm.setHostName(updateJvmRequest.getNewHostName());
+            jpaJvm.setHttpPort(updateJvmRequest.getNewHttpPort());
+            jpaJvm.setHttpsPort(updateJvmRequest.getNewHttpsPort());
+            jpaJvm.setRedirectPort(updateJvmRequest.getNewRedirectPort());
+            jpaJvm.setShutdownPort(updateJvmRequest.getNewShutdownPort());
+            jpaJvm.setAjpPort(updateJvmRequest.getNewAjpPort());
+            jpaJvm.setStatusPath(updateJvmRequest.getNewStatusPath().getPath());
+            jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
 
-            entityManager.flush();
-
-            return jvm;
+            return update(jpaJvm);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
                     "JVM with name already exists: " + aJvmToUpdate.getRequest().getNewJvmName(),
@@ -98,8 +88,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
     @Override
     public JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException {
-        final JpaJvm jvm = entityManager.find(JpaJvm.class,
-                aJvmId.getId());
+        final JpaJvm jvm = findById(aJvmId.getId());
 
         if (jvm == null) {
             throw new NotFoundException(AemFaultType.JVM_NOT_FOUND,
@@ -112,10 +101,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
     @Override
     @SuppressWarnings("unchecked")
     public List<JpaJvm> getJvms() {
-
-        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j");
-
-        return query.getResultList();
+        return findAll();
     }
 
     @Override
@@ -132,10 +118,7 @@ public class JvmCrudServiceImpl implements JvmCrudService {
 
     @Override
     public void removeJvm(final Identifier<Jvm> aJvmId) {
-
-        final JpaJvm jvm = getJvm(aJvmId);
-
-        entityManager.remove(jvm);
+        remove(getJvm(aJvmId));
     }
 
     @Override
@@ -231,12 +214,16 @@ public class JvmCrudServiceImpl implements JvmCrudService {
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", template);
 
+        int numEntities = 0;
+
         try {
-            if (q.executeUpdate() == 0) {
-                throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName);
-            }
+            numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
             throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName);
         }
     }
 

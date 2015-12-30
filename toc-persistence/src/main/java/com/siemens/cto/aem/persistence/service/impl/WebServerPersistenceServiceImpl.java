@@ -53,11 +53,6 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
-    public JpaWebServer getJpaWebServer(final long webServerId, final boolean fetchGroups) {
-        return webServerCrudService.getJpaWebServer(webServerId, fetchGroups);
-    }
-
-    @Override
     public List<WebServer> getWebServers() {
         return webServerCrudService.getWebServers();
     }

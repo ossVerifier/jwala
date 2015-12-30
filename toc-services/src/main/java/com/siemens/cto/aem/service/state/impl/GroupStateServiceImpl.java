@@ -96,21 +96,21 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             return Collections.<SetGroupStateRequest>emptyList();
         }
 
-        Set<LiteGroup> groups = jvm.getGroups();
+        Set<Group> groups = jvm.getGroups();
 
         if (groups == null || groups.isEmpty()) {
             return Collections.<SetGroupStateRequest>emptyList();
         }
 
-        return refreshLiteGroups(groups);
+        return refreshGroups(groups);
     }
 
-    private List<SetGroupStateRequest> refreshLiteGroups(Set<LiteGroup> groups) throws InterruptedException {
+    private List<SetGroupStateRequest> refreshGroups(Set<Group> groups) throws InterruptedException {
         List<SetGroupStateRequest> result = new ArrayList<>(groups.size());
         List<ReadWriteLease> lockedGsms = new ArrayList<>(groups.size());
 
         try {
-            for (LiteGroup group : groups) {
+            for (Group group : groups) {
 
                 // Lite group unfortunately not good enough
                 final Identifier<Group> groupId = group.getId();

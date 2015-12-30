@@ -96,9 +96,9 @@ public class GroupServiceRestImplTest {
     private Set<Group> groups;
 
     @Mock
-    private LiteGroup mockLiteGroup;
+    private Group mockLiteGroup;
 
-    private Set<LiteGroup> liteGroups;
+    private Set<Group> liteGroups;
 
     @Mock
     private Group mockGroup;

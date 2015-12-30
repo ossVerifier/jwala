@@ -29,7 +29,7 @@ public class UserServiceRestImpl implements UserServiceRest {
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
 
     @Override
-
+    @SuppressWarnings("all")
     public Response login(HttpServletRequest request, String userName, String password) {
         final String domain = ApplicationProperties.get(ACTIVE_DIRECTORY_DOMAIN);
         final String host = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_NAME);

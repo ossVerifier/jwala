@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
@@ -21,7 +22,7 @@ public class Jvm implements Serializable {
     private final Identifier<Jvm> id;
     private final String jvmName;
     private final String hostName;
-    private final Set<LiteGroup> groups;
+    private final Set<Group> groups;
 
     // JVM ports
     private final Integer httpPort;
@@ -40,7 +41,7 @@ public class Jvm implements Serializable {
      * @param theName the jvm name
      * @param theGroups the groups in which the web server is assigned to.
      */
-    public Jvm(final Identifier<Jvm> theId, final String theName, final Set<LiteGroup> theGroups) {
+    public Jvm(final Identifier<Jvm> theId, final String theName, final Set<Group> theGroups) {
         id = theId;
         jvmName = theName;
         hostName = null;
@@ -57,7 +58,7 @@ public class Jvm implements Serializable {
     public Jvm(final Identifier<Jvm> theId,
                final String theName,
                final String theHostName,
-               final Set<LiteGroup> theGroups,
+               final Set<Group> theGroups,
                final Integer theHttpPort,
                final Integer theHttpsPort,
                final Integer theRedirectPort,
@@ -90,7 +91,7 @@ public class Jvm implements Serializable {
         return hostName;
     }
 
-    public Set<LiteGroup> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 

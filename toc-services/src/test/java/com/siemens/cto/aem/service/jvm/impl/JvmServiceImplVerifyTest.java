@@ -81,7 +81,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         final CreateJvmRequest command = mock(CreateJvmRequest.class);
-        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>());
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>());
         when(jvmPersistenceService.createJvm(any(Event.class))).thenReturn(jvm);
 
         impl.createJvm(command, user);
@@ -186,7 +186,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateConfig() throws IOException {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
-                "jvm-name", "host-name", new HashSet<LiteGroup>(), 80, 443, 443, 8005, 8009, new Path("/"),
+                "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
                 "EXAMPLE_OPTS=%someEnv%/someVal");
         final ArrayList<Jvm> jvms = new ArrayList<>(1);
         jvms.add(jvm);
@@ -219,7 +219,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateServerXmlConfig() {
         String testJvmName = "testjvm";
         List<Jvm> jvmList = new ArrayList<>();
-        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         String expectedValue = "<server>xml-content</server>";
         when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
@@ -229,7 +229,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(expectedValue, serverXml);
 
         // return too many jvms
-        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         boolean isBadRequest = false;
         try {
@@ -255,7 +255,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateContextXmlConfig() {
         String testJvmName = "testjvm";
         List<Jvm> jvmList = new ArrayList<>();
-        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         String expectedValue = "<server>xml-content</server>";
         when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
@@ -265,7 +265,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(expectedValue, serverXml);
 
         // return too many jvms
-        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         boolean isBadRequest = false;
         try {
@@ -291,7 +291,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateSetenvBatConfig() {
         String testJvmName = "testjvm";
         List<Jvm> jvmList = new ArrayList<>();
-        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         String expectedValue = "<server>xml-content</server>";
         when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
@@ -301,7 +301,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(expectedValue, serverXml);
 
         // return too many jvms
-        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<LiteGroup>()));
+        jvmList.add(new Jvm(new Identifier<Jvm>(999L), "testJvm2", new HashSet<Group>()));
         when(jvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
         boolean isBadRequest = false;
         try {
@@ -325,7 +325,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPerformDiagnosis() {
         Identifier<Jvm> aJvmId = new Identifier<>(11L);
-        Jvm jvm = new Jvm(aJvmId, "testJvm", new HashSet<LiteGroup>());
+        Jvm jvm = new Jvm(aJvmId, "testJvm", new HashSet<Group>());
         when(jvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
         impl.performDiagnosis(aJvmId);
         String diagnosis = impl.performDiagnosis(aJvmId);

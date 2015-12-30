@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -32,7 +33,7 @@ public class JpaJvmBuilder {
                                                    .setName(jvm.getName())
                                                    .setHostName(jvm.getHostName())
                                                    .setStatusPath(new Path(jvm.getStatusPath()))
-                                                   .setGroups(createLiteGroups())
+                                                   .setGroups(createGroups())
                                                    .setHttpPort(jvm.getHttpPort())
                                                    .setHttpsPort(jvm.getHttpsPort())
                                                    .setRedirectPort(jvm.getRedirectPort())
@@ -42,17 +43,16 @@ public class JpaJvmBuilder {
         return builder.build();
     }
 
-    protected Set<LiteGroup> createLiteGroups() {
-        final Set<LiteGroup> groups = new HashSet<>();
-        final JpaLiteGroupBuilder builder = new JpaLiteGroupBuilder();
+    protected Set<Group> createGroups() {
+        final Set<Group> groups = new HashSet<>();
 
         if (jvm.getGroups() != null) {
-            for (final JpaGroup group : jvm.getGroups()) {
-                builder.setGroup(group);
-                groups.add(builder.build());
+            for (final JpaGroup jpaGroup : jvm.getGroups()) {
+                groups.add(new Group(jpaGroup.id(), jpaGroup.getName()));
             }
 
         }
         return groups;
     }
+
 }

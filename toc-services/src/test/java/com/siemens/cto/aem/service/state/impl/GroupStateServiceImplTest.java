@@ -113,8 +113,8 @@ public class GroupStateServiceImplTest {
         CurrentState<Jvm, JvmState> cjs = mock(CurrentState.class);
         when(cjs.getId()).thenReturn(id);
         final Jvm jvm = mock(Jvm.class);
-        final LiteGroup liteGroup = new LiteGroup(new Identifier<Group>(1l), "theGroup");
-        final Set<LiteGroup> liteGroups = new HashSet<>();
+        final Group liteGroup = new Group(new Identifier<Group>(1l), "theGroup");
+        final Set<Group> liteGroups = new HashSet<>();
         liteGroups.add(liteGroup);
         when(jvm.getGroups()).thenReturn(liteGroups);
         when(jvmPersistenceService.getJvm(eq(id))).thenReturn(jvm);
@@ -131,8 +131,8 @@ public class GroupStateServiceImplTest {
         CurrentState<Jvm, JvmState> cjs = mock(CurrentState.class);
         when(cjs.getId()).thenReturn(id);
         final Jvm jvm = mock(Jvm.class);
-        final LiteGroup liteGroup = new LiteGroup(new Identifier<Group>(1l), "theGroup");
-        final Set<LiteGroup> liteGroups = new HashSet<>();
+        final Group liteGroup = new Group(new Identifier<Group>(1l), "theGroup");
+        final Set<Group> liteGroups = new HashSet<>();
         liteGroups.add(liteGroup);
         when(jvm.getGroups()).thenReturn(liteGroups);
         when(jvmPersistenceService.getJvm(eq(id))).thenReturn(jvm);

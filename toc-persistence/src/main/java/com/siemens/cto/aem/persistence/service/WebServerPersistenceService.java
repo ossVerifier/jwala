@@ -27,10 +27,6 @@ public interface WebServerPersistenceService {
 
     WebServer getWebServer(final Identifier<WebServer> aWebServerId) throws NotFoundException;
 
-    @Deprecated
-    // TODO: Replace with method that returns a {@link WebServer}
-    JpaWebServer getJpaWebServer(long webServerId, boolean fetchGroups);
-
     List<WebServer> getWebServers();
 
     List<WebServer> findWebServers(final String aWebServerNameFragment);

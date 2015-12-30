@@ -28,10 +28,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
-public class ApplicationCrudServiceImpl implements ApplicationCrudService {
-
-    @PersistenceContext(unitName = "aem-unit")
-    private EntityManager entityManager;
+public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaApplication, Application> implements ApplicationCrudService {
 
     public ApplicationCrudServiceImpl() {
     }
@@ -39,28 +36,17 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     @Override
     public JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup) {
 
+        final CreateApplicationRequest createAppCommand = anAppToCreate.getRequest();
+
+        final JpaApplication jpaApp = new JpaApplication();
+        jpaApp.setName(createAppCommand.getName());
+        jpaApp.setGroup(jpaGroup);
+        jpaApp.setWebAppContext(createAppCommand.getWebAppContext());
+        jpaApp.setSecure(createAppCommand.isSecure());
+        jpaApp.setLoadBalanceAcrossServers(createAppCommand.isLoadBalanceAcrossServers());
+
         try {
-            final CreateApplicationRequest createAppCommand = anAppToCreate.getRequest();
-            final AuditEvent auditEvent = anAppToCreate.getAuditEvent();
-            final String userId = auditEvent.getUser().getUserId();
-            final Calendar updateDate = auditEvent.getDateTime().getCalendar();
-
-            final JpaApplication jpaApp = new JpaApplication();
-            jpaApp.setName(createAppCommand.getName());
-            jpaApp.setGroup(jpaGroup);
-            jpaApp.setWebAppContext(createAppCommand.getWebAppContext());
-            jpaApp.setSecure(createAppCommand.isSecure());
-            jpaApp.setLoadBalanceAcrossServers(createAppCommand.isLoadBalanceAcrossServers());
-
-            jpaApp.setCreateBy(userId);
-            jpaApp.setCreateDate(updateDate);
-            jpaApp.setUpdateBy(userId);
-            jpaApp.setLastUpdateDate(updateDate);
-
-            entityManager.persist(jpaApp);
-            entityManager.flush();
-
-            return jpaApp;
+            return create(jpaApp);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
                     "App already exists: " + anAppToCreate.getRequest().getName(),
@@ -69,11 +55,7 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     }
 
     public JpaApplication getExisting(final Identifier<Application> anAppId) {
-        JpaApplication jpaApp = entityManager.find(JpaApplication.class, anAppId.getId());
-        if (jpaApp == null) {
-            throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND, "Failed to locate application for update");
-        }
-        return jpaApp;
+        return findById(anAppId.getId());
     }
 
     @Override
@@ -100,21 +82,16 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     public JpaApplication updateApplication(final Event<UpdateApplicationRequest> anApplicationToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup) {
 
         final UpdateApplicationRequest updateApplicationCommand = anApplicationToUpdate.getRequest();
-        final AuditEvent auditEvent = anApplicationToUpdate.getAuditEvent();
         final Identifier<Application> appId = updateApplicationCommand.getId();
 
         if (jpaApp != null) {
             jpaApp.setName(updateApplicationCommand.getNewName());
-            jpaApp.setUpdateBy(auditEvent.getUser().getUserId());
             jpaApp.setWebAppContext(updateApplicationCommand.getNewWebAppContext());
-            jpaApp.setLastUpdateDate(auditEvent.getDateTime().getCalendar());
             jpaApp.setGroup(jpaGroup);
             jpaApp.setSecure(updateApplicationCommand.isNewSecure());
             jpaApp.setLoadBalanceAcrossServers(updateApplicationCommand.isNewLoadBalanceAcrossServers());
 
-            entityManager.flush();
-
-            return jpaApp;
+            return update(jpaApp);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
                     "Application cannot be found: " + appId.getId());
@@ -124,9 +101,9 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
     @Override
     public void removeApplication(final Identifier<Application> appId) {
 
-        final JpaApplication jpaApp = entityManager.find(JpaApplication.class, appId.getId());
+        final JpaApplication jpaApp = findById(appId.getId());
         if (jpaApp != null) {
-            entityManager.remove(jpaApp);
+            remove(jpaApp);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
                     "Application cannot be found: " + appId.getId());
@@ -141,13 +118,18 @@ public class ApplicationCrudServiceImpl implements ApplicationCrudService {
         q.setParameter("templateContent", template);
         q.setParameter("templateJvm", jvm);
 
+        int numEntities;
+
         try {
-            if (q.executeUpdate() == 0) {
-                throw new ResourceTemplateUpdateException(appName, resourceTemplateName);
-            }
+            numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
             throw new ResourceTemplateUpdateException(appName, resourceTemplateName, re);
         }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(appName, resourceTemplateName);
+        }
+
     }
 
     @Override
