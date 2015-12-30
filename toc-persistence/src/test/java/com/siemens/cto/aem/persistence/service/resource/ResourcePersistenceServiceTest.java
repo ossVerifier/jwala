@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.resource;
 
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.event.Event;
@@ -33,7 +34,7 @@ public abstract class ResourcePersistenceServiceTest {
     @Test
     public void testCreateResourceInstance() throws Exception {
         String testGroupName = "testCreateResourceInstance_Group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        final JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
@@ -54,7 +55,7 @@ public abstract class ResourcePersistenceServiceTest {
     @Test
     public void testUpdateResourceInstanceAttributes() throws Exception {
         String testGroupName = "testUpdateResourceInstanceAttributes_Group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
@@ -81,7 +82,7 @@ public abstract class ResourcePersistenceServiceTest {
         String testGroupName = "testUpdateResourceInstanceName_Group";
         String oldName = "oldName";
         String newName = "new_name";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         ResourceInstance preCreateResourceInstance = getResourcePersistenceService().createResourceInstance(ResourceInstanceEventsTestHelper.createEventWithResourceInstanceCommand("ResourceTypeName", oldName, jpaGroup.getName(), null, userName));
 
@@ -93,7 +94,7 @@ public abstract class ResourcePersistenceServiceTest {
     @Test
     public void testGetResourceInstance() {
         String testGroupName = "testGetResourceInstance_group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
@@ -108,7 +109,7 @@ public abstract class ResourcePersistenceServiceTest {
     @Test(expected = NotFoundException.class)
     public void testRemoveResourceInstance() throws Exception {
         String testGroupName = "testRemoveResourceInstance_Group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
@@ -129,7 +130,7 @@ public abstract class ResourcePersistenceServiceTest {
         final String RESOURCE2 = "resource2";
 
         final String testGroupName = "testRemoveResources_Group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
 
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
@@ -155,7 +156,7 @@ public abstract class ResourcePersistenceServiceTest {
     public void TestGetByGroupName() throws Exception {
 
         String testGroupName = "TestGetByGroupName_group";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
         map.put("Attribute_key1", "attribute_value1");
@@ -169,7 +170,7 @@ public abstract class ResourcePersistenceServiceTest {
     public void TestGetByGroupNameAndName() throws Exception {
         String testGroupName = "TestGetByGroupNameAndName_group";
         String testName = "NameToTestWithGroup";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
         map.put("Attribute_key1", "attribute_value1");
@@ -182,7 +183,7 @@ public abstract class ResourcePersistenceServiceTest {
     public void TestGetByGroupNameAndResourceTypeName() throws Exception {
         String testGroupName = "TestGetByGroupNameAndResourceTypeName_group";
         String testResourceName = "ResourceTypeNameTest";
-        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(GroupEventsTestHelper.createCreateGroupEvent(testGroupName, userName));
+        JpaGroup jpaGroup = this.getGroupCrudService().createGroup(new CreateGroupRequest(testGroupName));
         Map<String, String> map = new HashMap<>();
         map.put("Attribute_key", "attribute_value");
         map.put("Attribute_key1", "attribute_value1");

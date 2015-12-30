@@ -25,9 +25,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate) {
-        final CreateGroupRequest createGroupRequest = aGroupToCreate.getRequest();
-
+    public JpaGroup createGroup(CreateGroupRequest createGroupRequest) {
         final JpaGroup jpaGroup = new JpaGroup();
         jpaGroup.setName(createGroupRequest.getGroupName());
 
@@ -35,7 +33,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             return create(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                    "Group Name already exists: " + aGroupToCreate.getRequest().getGroupName(),
+                    "Group Name already exists: " + createGroupRequest.getGroupName(),
                     eee);
         }
     }

@@ -66,8 +66,8 @@ public abstract class
     public void setup() {
         aUser = "TestUserId";
         userObj = new User(aUser);
-        Group group = groupPersistenceService.createGroup(new Event<CreateGroupRequest>(new CreateGroupRequest(textGroup), AuditEvent.now(userObj)));
-        Group updGroup = groupPersistenceService.createGroup(new Event<CreateGroupRequest>(new CreateGroupRequest(textUpdatedGroup), AuditEvent.now(userObj)));
+        Group group = groupPersistenceService.createGroup(new CreateGroupRequest(textGroup));
+        Group updGroup = groupPersistenceService.createGroup(new CreateGroupRequest(textUpdatedGroup));
         expGroupId = group.getId();
         expUpdatedGroupId = updGroup.getId();
         

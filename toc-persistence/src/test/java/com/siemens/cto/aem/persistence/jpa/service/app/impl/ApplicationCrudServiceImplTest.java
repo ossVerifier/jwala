@@ -121,9 +121,9 @@ public class ApplicationCrudServiceImplTest {
     @Before
     public void setup() {
         aUser = "TestUserId";
-        userObj             = new User(aUser);
-        jpaGroup            = groupCrudService.createGroup(new Event<CreateGroupRequest>(new CreateGroupRequest(textGroup), AuditEvent.now(userObj)));
-        expGroupId          = Identifier.id(jpaGroup.getId());
+        userObj = new User(aUser);
+        jpaGroup = groupCrudService.createGroup(new CreateGroupRequest(textGroup));
+        expGroupId = Identifier.id(jpaGroup.getId());
     }
     
     @After
@@ -147,7 +147,8 @@ public class ApplicationCrudServiceImplTest {
             assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally { 
-            try { applicationCrudService.removeApplication(Identifier.<Application>id(created.getId())); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+            try { applicationCrudService.removeApplication(Identifier.<Application>id(created.getId())
+            ); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         }
         
     }

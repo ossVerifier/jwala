@@ -39,13 +39,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group createGroup(final CreateGroupRequest aCreateGroupCommand,
+    public Group createGroup(final CreateGroupRequest createGroupRequest,
                              final User aCreatingUser) {
 
-        aCreateGroupCommand.validate();
+        createGroupRequest.validate();
 
-        return groupPersistenceService.createGroup(createEvent(aCreateGroupCommand,
-                                                               aCreatingUser));
+        return groupPersistenceService.createGroup(createGroupRequest);
     }
 
     @Override

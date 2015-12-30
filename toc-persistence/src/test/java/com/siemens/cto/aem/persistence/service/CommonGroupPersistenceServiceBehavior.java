@@ -19,13 +19,8 @@ public class CommonGroupPersistenceServiceBehavior {
         groupPersistenceService = theGroupService;
     }
 
-    public Group createGroup(final String aGroupName,
-                                final String aUserId) {
-
-        final Event<CreateGroupRequest> event = createCreateGroupEvent(aGroupName,
-                                                                       aUserId);
-
-        return groupPersistenceService.createGroup(event);
+    public Group createGroup(final String aGroupName, final String aUserId) {
+        return groupPersistenceService.createGroup(new CreateGroupRequest(aGroupName));
     }
 
     public Group updateGroup(final Identifier<Group> aGroupId,
