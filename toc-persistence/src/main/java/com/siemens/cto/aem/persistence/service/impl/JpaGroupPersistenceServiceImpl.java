@@ -119,11 +119,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     protected Group groupFrom(final CurrentState<Group, GroupState> originalStatus, final JpaGroup aJpaGroup) {
-        if(originalStatus instanceof CurrentGroupState) {
-            return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentGroupState)originalStatus).build();
-        } else {
-            return new JpaGroupBuilder(aJpaGroup).build();
-        }
+        return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentGroupState) originalStatus).build();
     }
     protected CurrentState<Group, GroupState> groupStateFrom(final JpaGroup aJpaGroup) {
         return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
