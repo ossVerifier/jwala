@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.app.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
@@ -122,7 +123,7 @@ public class ApplicationCrudServiceImplTest {
         aUser = "TestUserId";
         userObj             = new User(aUser);
         jpaGroup            = groupCrudService.createGroup(new Event<CreateGroupRequest>(new CreateGroupRequest(textGroup), AuditEvent.now(userObj)));
-        expGroupId          = jpaGroup.id();
+        expGroupId          = Identifier.id(jpaGroup.getId());
     }
     
     @After
@@ -146,7 +147,7 @@ public class ApplicationCrudServiceImplTest {
             assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally { 
-            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+            try { applicationCrudService.removeApplication(Identifier.<Application>id(created.getId())); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         }
         
     }
@@ -169,8 +170,8 @@ public class ApplicationCrudServiceImplTest {
     
             assertNotNull(created2);
         } finally { 
-            try { applicationCrudService.removeApplication(created.id()); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
-            try { if(created2 != null) { applicationCrudService.removeApplication(created2.id()); } } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+            try { applicationCrudService.removeApplication(Identifier.<Application>id(created.getId())); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+            try { if(created2 != null) { applicationCrudService.removeApplication(Identifier.<Application>id(created2.getId())); } } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         }
     }
 }

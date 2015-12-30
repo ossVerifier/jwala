@@ -30,7 +30,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
-public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm, Jvm> implements JvmCrudService {
+public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implements JvmCrudService {
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;

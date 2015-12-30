@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by z003e5zv on 3/25/2015.
  */
-public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<JpaResourceInstance, ResourceInstance> implements ResourceInstanceCrudService {
+public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<JpaResourceInstance> implements ResourceInstanceCrudService {
 
     private final GroupCrudService groupCrudService;
 

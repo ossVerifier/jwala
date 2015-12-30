@@ -13,7 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 
 import java.util.List;
 
-public interface GroupJvmRelationshipService extends CrudService<JpaGroup, Group> {
+public interface GroupJvmRelationshipService extends CrudService<JpaGroup> {
 
     void addJvmToGroup(final Event<AddJvmToGroupRequest> anEvent);
 

@@ -15,7 +15,7 @@ import java.util.List;
         @NamedQuery(name = JpaGroup.QUERY_GET_GROUP, query = "SELECT g FROM JpaGroup g WHERE g.id = :groupId"),
         @NamedQuery(name = JpaGroup.QUERY_GET_GROUPS_WITH_WEBSERVER, query = "SELECT g FROM JpaGroup g WHERE :webServer MEMBER OF g.webServers")
 })
-public class JpaGroup extends AbstractEntity<JpaGroup, Group> {
+public class JpaGroup extends AbstractEntity<JpaGroup> {
 
     private static final long serialVersionUID = -2125399708516728584L;
 

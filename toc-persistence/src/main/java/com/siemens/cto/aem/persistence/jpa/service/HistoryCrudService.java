@@ -14,7 +14,7 @@ import java.util.List;
  *
  * Created by JC043760 on 11/30/2015.
  */
-public interface HistoryCrudService extends CrudService<JpaHistory, History> {
+public interface HistoryCrudService extends CrudService<JpaHistory> {
 
     /**
      * Create history data.

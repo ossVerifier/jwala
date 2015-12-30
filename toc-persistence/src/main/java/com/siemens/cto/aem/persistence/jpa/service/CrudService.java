@@ -6,7 +6,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity;
 import java.util.Collection;
 import java.util.List;
 
-public interface CrudService<T extends AbstractEntity<T, POJO>, POJO> {
+public interface CrudService<T extends AbstractEntity<T>> {
 
     T findById(final Long id);
 

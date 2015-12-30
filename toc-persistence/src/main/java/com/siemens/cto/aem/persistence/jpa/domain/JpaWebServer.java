@@ -16,7 +16,7 @@ import java.util.List;
                         "WHERE g.id IN (SELECT a.group FROM JpaApplication a " +
                         "WHERE a.group IN (:groups))")
 })
-public class JpaWebServer extends AbstractEntity<JpaWebServer, WebServer> {
+public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
     private static final long serialVersionUID = 1L;
     public static final String WEB_SERVER_PARAM_NAME = "wsName";

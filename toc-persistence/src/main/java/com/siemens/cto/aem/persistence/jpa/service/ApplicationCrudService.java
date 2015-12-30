@@ -16,7 +16,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import java.util.List;
 
-public interface ApplicationCrudService extends CrudService<JpaApplication, Application> {
+public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup);
 

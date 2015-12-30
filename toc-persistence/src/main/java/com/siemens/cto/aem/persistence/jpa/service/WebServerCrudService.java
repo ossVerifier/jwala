@@ -16,7 +16,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
-public interface WebServerCrudService extends CrudService<JpaWebServer, WebServer> {
+public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	WebServer createWebServer(WebServer webServer, String createdBy);
 

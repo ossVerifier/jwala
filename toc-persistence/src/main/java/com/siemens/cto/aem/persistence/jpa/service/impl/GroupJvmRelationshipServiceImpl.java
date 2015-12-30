@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<JpaGroup, Group> implements GroupJvmRelationshipService, CrudService<JpaGroup, Group> {
+public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupJvmRelationshipService, CrudService<JpaGroup> {
 
     private final GroupCrudService groupCrudService;
     private final JvmCrudService jvmCrudService;

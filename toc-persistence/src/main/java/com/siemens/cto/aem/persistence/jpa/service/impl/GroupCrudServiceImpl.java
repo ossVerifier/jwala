@@ -19,7 +19,7 @@ import org.joda.time.DateTime;
 import javax.persistence.*;
 import java.util.List;
 
-public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup, Group> implements GroupCrudService {
+public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupCrudService {
 
     public GroupCrudServiceImpl() {
     }

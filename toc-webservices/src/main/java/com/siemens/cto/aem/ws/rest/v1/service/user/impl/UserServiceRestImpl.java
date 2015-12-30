@@ -15,9 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import java.util.Hashtable;
 
-/**
- * Created by z002xuvs on 5/29/2014.
- */
 public class UserServiceRestImpl implements UserServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceRestImpl.class);

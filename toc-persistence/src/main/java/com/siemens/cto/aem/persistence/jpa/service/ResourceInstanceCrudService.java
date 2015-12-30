@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by z003e5zv on 3/25/2015.
  */
-public interface ResourceInstanceCrudService extends CrudService<JpaResourceInstance, ResourceInstance> {
+public interface ResourceInstanceCrudService extends CrudService<JpaResourceInstance> {
 
     JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> createResourceInstanceCommandEvent);
 

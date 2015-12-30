@@ -24,7 +24,7 @@ import java.util.List;
  *
  * Created by JC043760 on 11/30/2015.
  */
-public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory, History> implements HistoryCrudService {
+public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory> implements HistoryCrudService {
 
     private static final String PARAM_GROUP_NAME = "groupName";
     private static final String PARAM_SERVER_NAME = "serverName";

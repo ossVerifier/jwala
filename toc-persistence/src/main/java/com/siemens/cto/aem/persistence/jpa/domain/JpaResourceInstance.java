@@ -13,7 +13,7 @@ import java.util.Map;
 @Entity
 @Table(name = "RESOURCE_INSTANCE", uniqueConstraints = {@UniqueConstraint(columnNames = {"RESOURCE_INSTANCE_ID", "NAME", "GROUP_ID"})})
 @NamedQueries({@NamedQuery(name=JpaResourceInstance.DELETE_RESOURCES_QUERY, query="DELETE FROM JpaResourceInstance resource WHERE resource.group.name = :groupName and resource.resourceInstanceName IN :resourceNames")})
-public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance, ResourceInstance> {
+public class JpaResourceInstance extends AbstractEntity<JpaResourceInstance> {
 
     public final static String DELETE_RESOURCES_QUERY = "deleteResourcesQuery";
 

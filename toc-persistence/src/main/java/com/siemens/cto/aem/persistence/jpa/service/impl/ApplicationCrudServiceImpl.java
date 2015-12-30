@@ -28,7 +28,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
-public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaApplication, Application> implements ApplicationCrudService {
+public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaApplication> implements ApplicationCrudService {
 
     public ApplicationCrudServiceImpl() {
     }

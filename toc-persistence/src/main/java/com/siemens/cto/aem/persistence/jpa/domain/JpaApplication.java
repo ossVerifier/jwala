@@ -55,7 +55,7 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
                   "(SELECT g FROM JpaGroup g WHERE g.name = :groupName AND g.jvms.name = :jvmName)")
 
     })
-public class JpaApplication extends AbstractEntity<JpaApplication, Application> {
+public class JpaApplication extends AbstractEntity<JpaApplication> {
 
     /**
      *

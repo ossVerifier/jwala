@@ -48,7 +48,7 @@ public class JpaJvmBuilder {
 
         if (jvm.getGroups() != null) {
             for (final JpaGroup jpaGroup : jvm.getGroups()) {
-                groups.add(new Group(jpaGroup.id(), jpaGroup.getName()));
+                groups.add(new Group(Identifier.<Group>id(jpaGroup.getId()), jpaGroup.getName()));
             }
 
         }

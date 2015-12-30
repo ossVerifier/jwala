@@ -15,7 +15,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T, POJO>, POJO> implements CrudService<T, POJO> {
+public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> implements CrudService<T> {
 
     @PersistenceContext(unitName = "aem-unit")
     protected EntityManager entityManager;

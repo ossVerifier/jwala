@@ -11,7 +11,7 @@ import java.util.List;
     @NamedQuery(name = JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME,
                 query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName")
 })
-public class JpaJvm extends AbstractEntity<JpaJvm, Jvm> {
+public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
 

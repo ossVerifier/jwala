@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
@@ -59,7 +60,7 @@ public class JvmCrudServiceImplTest {
         CreateJvmRequest createCommand = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
         Event<CreateJvmRequest> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmEvent);
-        jvm = new Jvm(jpaJvm.id(), jpaJvm.getName(), new HashSet<Group>());
+        jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
     }
 
     @Test

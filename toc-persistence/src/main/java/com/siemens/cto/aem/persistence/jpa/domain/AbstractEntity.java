@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 @MappedSuperclass
-public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> implements Serializable, Audited {
+public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Serializable, Audited {
 
     private static final long serialVersionUID = 5211000020477780062L;
 
@@ -67,10 +67,6 @@ public abstract class AbstractEntity<T extends AbstractEntity<T, POJO>, POJO> im
     }
 
     public abstract Long getId();
-
-    public Identifier<POJO> id() {
-        return Identifier.id(this.getId());
-    }
 
     @PrePersist
     private void createdOn() {

@@ -13,7 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
 
-public interface JvmCrudService extends CrudService<JpaJvm, Jvm> {
+public interface JvmCrudService extends CrudService<JpaJvm> {
 
     JpaJvm createJvm(final Event<CreateJvmRequest> aJvmToCreate);
 

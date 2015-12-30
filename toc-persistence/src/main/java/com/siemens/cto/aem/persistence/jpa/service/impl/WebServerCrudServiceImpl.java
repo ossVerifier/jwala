@@ -29,7 +29,7 @@ import javax.persistence.criteria.Root;
 import java.io.InputStream;
 import java.util.*;
 
-public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer, WebServer> implements WebServerCrudService {
+public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer> implements WebServerCrudService {
 
     public WebServerCrudServiceImpl() {
     }
