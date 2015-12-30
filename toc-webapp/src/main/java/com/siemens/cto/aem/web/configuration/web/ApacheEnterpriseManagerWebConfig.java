@@ -3,6 +3,7 @@ package com.siemens.cto.aem.web.configuration.web;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.web.controller.IndexController;
 import com.siemens.cto.aem.web.controller.SamlController;
+import com.siemens.cto.aem.web.interceptor.UserIdHandlerInterceptor;
 import com.siemens.cto.aem.web.javascript.variable.CompositeJavaScriptVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.dynamic.ContextPathSource;
@@ -17,10 +18,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -105,4 +103,8 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
         return new LoginStatusSource(request);
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new UserIdHandlerInterceptor()).addPathPatterns("/v1.0/*");
+    }
 }
