@@ -31,7 +31,6 @@ public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory, 
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HistoryCrudServiceImpl.class);
 
-
     @Override
     public void createHistory(final String serverName, final Group group, final String event, EventType eventType, final String user) {
         if (group == null) {
@@ -40,7 +39,7 @@ public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory, 
         }
 
         //TODO: Inject GroupCrudService to find the group
-        JpaGroup jpaGroup = entityManager.find(JpaGroup.class, group.getId());
+        JpaGroup jpaGroup = entityManager.find(JpaGroup.class, group.getId().getId());
         create(new JpaHistory(serverName, jpaGroup, event, eventType, user));
     }
 

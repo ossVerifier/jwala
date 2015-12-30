@@ -60,7 +60,7 @@ public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T, POJO>,
 
     @Override
     @Transactional
-    public void remove(Identifier<POJO> id) {
+    public void remove(Long id) {
         entityManager.remove(entityManager.find(entityClass, id));
         entityManager.flush();
     }

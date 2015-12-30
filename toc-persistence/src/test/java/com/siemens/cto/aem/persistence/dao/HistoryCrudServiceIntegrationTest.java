@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.dao;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.service.impl.HistoryCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;

@@ -90,7 +90,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
-        remove(aWebServerId);
+        remove(aWebServerId.getId());
     }
 
     protected List<WebServer> webServersFrom(final List<JpaWebServer> someJpaWebServers) {

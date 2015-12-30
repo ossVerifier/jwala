@@ -59,15 +59,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup, Grou
 
     @Override
     public JpaGroup getGroup(final Identifier<Group> aGroupId) throws NotFoundException {
-
-        final JpaGroup jpaGroup = findById(aGroupId.getId());
-
-        if (jpaGroup == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND,
-                                        "Group not found: " + aGroupId);
-        }
-
-        return jpaGroup;
+        return findById(aGroupId.getId());
     }
 
     @SuppressWarnings("unchecked")
