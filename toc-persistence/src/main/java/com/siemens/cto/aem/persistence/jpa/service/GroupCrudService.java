@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface GroupCrudService extends CrudService<JpaGroup, Group> {
 
-    JpaGroup createGroup(final Event<CreateGroupRequest> aGroupToCreate);
+    JpaGroup createGroup(CreateGroupRequest createGroupRequest);
 
     void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate);
 

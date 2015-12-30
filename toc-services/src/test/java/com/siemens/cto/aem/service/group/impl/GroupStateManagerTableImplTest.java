@@ -97,7 +97,7 @@ public class GroupStateManagerTableImplTest {
 
     @Test
     public void testStateInitialized() {
-        Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupRequest("testGroup"), AuditEvent.now(testUser)));
+        Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(testUser)));
 
         classUnderTest.synchronizedInitializeGroup(group, testUser);
@@ -112,7 +112,7 @@ public class GroupStateManagerTableImplTest {
 
     @Test
     public void testOneStoppedJvmNewGroup() {
-        Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupRequest("testGroup"), AuditEvent.now(testUser)));
+        Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(testUser)));
         Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
                 8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(testUser)));
@@ -134,7 +134,7 @@ public class GroupStateManagerTableImplTest {
     @Test
     public void testResetFromError() {
 
-        Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupRequest("testGroup"), AuditEvent.now(testUser)));
+        Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(testUser)));
         Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
                 8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(testUser)));
@@ -202,7 +202,7 @@ public class GroupStateManagerTableImplTest {
 
     @Test
     public void testThreeJvmFullLifecycle() {
-        Group group = groupPersistenceService.createGroup(Event.create(new CreateGroupRequest("testGroup"), AuditEvent.now(testUser)));
+        Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
         group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(testUser)));
         Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
                 8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(testUser)));

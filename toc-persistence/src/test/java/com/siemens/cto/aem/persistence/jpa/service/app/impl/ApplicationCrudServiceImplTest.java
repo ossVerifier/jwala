@@ -120,9 +120,9 @@ public class ApplicationCrudServiceImplTest {
     @Before
     public void setup() {
         aUser = "TestUserId";
-        userObj             = new User(aUser);
-        jpaGroup            = groupCrudService.createGroup(new Event<CreateGroupRequest>(new CreateGroupRequest(textGroup), AuditEvent.now(userObj)));
-        expGroupId          = jpaGroup.id();
+        userObj = new User(aUser);
+        jpaGroup = groupCrudService.createGroup(new CreateGroupRequest(textGroup));
+        expGroupId = jpaGroup.id();
     }
     
     @After

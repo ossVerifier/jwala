@@ -38,8 +38,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group createGroup(final Event<CreateGroupRequest> anEvent) {
-        final JpaGroup group = groupCrudService.createGroup(anEvent);
+    public Group createGroup(final CreateGroupRequest createGroupRequest) {
+        final JpaGroup group = groupCrudService.createGroup(createGroupRequest);
         return groupFrom(group, false);
     }
 

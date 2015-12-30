@@ -59,7 +59,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
                          user);
 
         verify(command, times(1)).validate();
-        verify(groupPersistenceService, times(1)).createGroup(matchCommandInEvent(command));
+        verify(groupPersistenceService, times(1)).createGroup(command);
     }
 
     @Test

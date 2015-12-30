@@ -14,9 +14,9 @@ import java.util.Set;
 
 public interface GroupPersistenceService extends StatePersistenceService<Group, GroupState> {
 
-    Group createGroup(final Event<CreateGroupRequest> anEvent);
-
     Group updateGroup(final Event<UpdateGroupRequest> anEvent) throws NotFoundException;
+
+    Group createGroup(CreateGroupRequest createGroupRequest);
 
     Group getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
