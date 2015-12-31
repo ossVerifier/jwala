@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.persistence.jpa.service.builder;
+package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
