@@ -70,17 +70,16 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application updateWARPath(final Event<UploadWebArchiveRequest> anAppToUpdate, String warPath) {
-        final UploadWebArchiveRequest command = anAppToUpdate.getRequest();
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(command.getApplication().getId());
+    public Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(uploadWebArchiveRequest.getApplication().getId());
         jpaOriginal.setWarPath(warPath);
-        jpaOriginal.setWarName(command.getFilename());
+        jpaOriginal.setWarName(uploadWebArchiveRequest.getFilename());
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
 
     @Override
-    public Application removeWARPath(final Event<RemoveWebArchiveRequest> anAppToUpdate) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getRequest().getApplication().getId());
+    public Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(removeWebArchiveRequest.getApplication().getId());
         jpaOriginal.setWarPath(null);
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
@@ -93,8 +92,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event) {
-        return applicationCrudService.uploadAppTemplate(event);
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
+        return applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest);
     }
 
     @Override

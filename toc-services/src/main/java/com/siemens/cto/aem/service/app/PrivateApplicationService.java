@@ -11,7 +11,7 @@ import com.siemens.cto.toc.files.RepositoryFileInformation;
  */
 public interface PrivateApplicationService {
 
-    RepositoryFileInformation uploadWebArchiveData(Event<UploadWebArchiveRequest> event);
+    RepositoryFileInformation uploadWebArchiveData(UploadWebArchiveRequest uploadWebArchiveRequest);
 
-    Application uploadWebArchiveUpdateDB(Event<UploadWebArchiveRequest> event, RepositoryFileInformation result);
+    Application uploadWebArchiveUpdateDB(UploadWebArchiveRequest uploadWebArchiveRequest, RepositoryFileInformation result);
 }

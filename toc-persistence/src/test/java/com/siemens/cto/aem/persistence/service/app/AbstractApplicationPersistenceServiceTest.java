@@ -3,7 +3,6 @@ package com.siemens.cto.aem.persistence.service.app;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.domain.model.app.*;
@@ -148,10 +147,9 @@ public abstract class
         Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
         
-        UploadWebArchiveRequest uploadCmd = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
-        Event<UploadWebArchiveRequest> uploadEvent = new Event<>(uploadCmd, AuditEvent.now(new User(aUser)));
+        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
-        Application uploaded = applicationPersistenceService.updateWARPath(uploadEvent, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
+        Application uploaded = applicationPersistenceService.updateWARPath(uploadWebArchiveRequest, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
         assertEquals(uploaded.getWarPath(), "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");                
     }
     
@@ -161,16 +159,14 @@ public abstract class
         Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
         Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
         
-        UploadWebArchiveRequest uploadCmd = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
-        Event<UploadWebArchiveRequest> uploadEvent = new Event<>(uploadCmd, AuditEvent.now(new User(aUser)));
+        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
-        Application uploaded = applicationPersistenceService.updateWARPath(uploadEvent, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
+        Application uploaded = applicationPersistenceService.updateWARPath(uploadWebArchiveRequest, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
         assertEquals(uploaded.getWarPath(), "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");                        
 
-        RemoveWebArchiveRequest removeCmd = new RemoveWebArchiveRequest(created);
-        Event<RemoveWebArchiveRequest> removeEvent = new Event<>(removeCmd, AuditEvent.now(new User(aUser)));
-        
-        Application noWarApp = applicationPersistenceService.removeWARPath(removeEvent);
+        RemoveWebArchiveRequest removeWebArchiveRequest = new RemoveWebArchiveRequest(created);
+
+        Application noWarApp = applicationPersistenceService.removeWarPath(removeWebArchiveRequest);
         assertNull(noWarApp.getWarPath());
     }
 

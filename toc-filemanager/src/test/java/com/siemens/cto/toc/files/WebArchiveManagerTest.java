@@ -179,29 +179,29 @@ public class WebArchiveManagerTest {
     @Test
     public void testWriteArchive() throws IOException { 
                 
-        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validate();
+        UploadWebArchiveRequest request = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        request.validate();
         
         testResults(
                 1*1024*1024L,
-                webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER))));
+                webArchiveManager.store(request));
     }
 
     @Test
     public void testWriteArchiveTwice() throws IOException { 
                 
-        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validate();
-        RepositoryFileInformation result1 = webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER)));
+        UploadWebArchiveRequest request = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        request.validate();
+        RepositoryFileInformation result1 = webArchiveManager.store(request);
 
         app.setWarPath(result1.getPath().toAbsolutePath().toString());
         
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
         
-        UploadWebArchiveRequest cmd2 = new UploadWebArchiveRequest(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
-        cmd2.validate();
-        RepositoryFileInformation result2 = webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd2, AuditEvent.now(TEST_USER)));
+        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
+        uploadWebArchiveRequest.validate();
+        RepositoryFileInformation result2 = webArchiveManager.store(uploadWebArchiveRequest);
 
         assertNotNull(result2.getCauses());
         assertEquals(1, result2.getCauses().length);
@@ -220,13 +220,13 @@ public class WebArchiveManagerTest {
     @Test
     public void testDeleteArchive() throws IOException {
         
-        UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
-        cmd.validate();
+        UploadWebArchiveRequest request = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
+        request.validate();
         
         Path expectedPath = 
                 testResults(
                     1*1024*1024L,
-                    webArchiveManager.store(Event.<UploadWebArchiveRequest>create(cmd, AuditEvent.now(TEST_USER))),
+                    webArchiveManager.store(request),
                     true);  
 
         app.setWarPath(expectedPath.toString());
@@ -234,7 +234,7 @@ public class WebArchiveManagerTest {
         RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
         rwac.validate();
         
-        RepositoryFileInformation result = webArchiveManager.remove(Event.create(rwac, AuditEvent.now(TEST_USER)));
+        RepositoryFileInformation result = webArchiveManager.remove(rwac);
         
         assertEquals(RepositoryFileInformation.deleted(expectedPath, RepositoryFileInformation.found(expectedPath, RepositoryFileInformation.none())), result);
     }

@@ -30,13 +30,12 @@ public class PrivateApplicationServiceImpl implements PrivateApplicationService 
      * Helper method - non-transactional upload.
      */
     @Override
-    public RepositoryFileInformation uploadWebArchiveData(final Event<UploadWebArchiveRequest> event) {
-        UploadWebArchiveRequest command = event.getRequest();
+    public RepositoryFileInformation uploadWebArchiveData(final UploadWebArchiveRequest uploadWebArchiveRequest) {
         RepositoryFileInformation result = null;
 
         try {
-            result = webArchiveManager.store(event);
-            LOGGER.info("Archive Upload: " + result.toString());
+            result = webArchiveManager.store(uploadWebArchiveRequest);
+            LOGGER.info("Archive Upload: " + result);
         } catch (IOException e) {
             //This is logged here instead of included in the BadRequestException because it's a potential CSRF vector
             LOGGER.warn("IOException occurred while trying to upload Web Archive Data", e);
@@ -46,7 +45,7 @@ public class PrivateApplicationServiceImpl implements PrivateApplicationService 
 
         Long bytes = result.getLength();
 
-        if(command.getLength() != -1 && bytes != null && !bytes.equals(command.getLength())) {
+        if(uploadWebArchiveRequest == null || uploadWebArchiveRequest.getLength() != -1 && bytes != null && !bytes.equals(uploadWebArchiveRequest.getLength())) {
             throw new BadRequestException(AemFaultType.BAD_STREAM, "Post-condition file length check failed");
         }
 
@@ -58,9 +57,9 @@ public class PrivateApplicationServiceImpl implements PrivateApplicationService 
      */
     @Override
     @Transactional
-    public Application uploadWebArchiveUpdateDB(final Event<UploadWebArchiveRequest> event, final RepositoryFileInformation result) {
+    public Application uploadWebArchiveUpdateDB(final UploadWebArchiveRequest uploadWebArchiveRequest, final RepositoryFileInformation result) {
 
-        return applicationPersistenceService.updateWARPath(event, result.getPath().toAbsolutePath().toString());
+        return applicationPersistenceService.updateWARPath(uploadWebArchiveRequest, result.getPath().toAbsolutePath().toString());
 
     }
 

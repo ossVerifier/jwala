@@ -13,10 +13,7 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
+import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -258,39 +255,39 @@ public class ApplicationServiceImplTest {
     public void testUploadWebArchive() throws IOException {
         UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
 
-        when(webArchiveManager.store(any(Event.class))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        when(webArchiveManager.store(uwac)).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
 
         applicationService.uploadWebArchive(uwac, testUser);
 
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(argThat(new IsValidUploadEvent()));
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(argThat(new IsValidUploadEvent()), any(RepositoryFileInformation.class));
+        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(uwac);
+        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(any(UploadWebArchiveRequest.class), any(RepositoryFileInformation.class));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testDeleteWebArchive() throws IOException {
-        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
+        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
 
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 
-        verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));
-        verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));
+        verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
+        verify(applicationPersistenceService, Mockito.times(1)).removeWarPath((any(RemoveWebArchiveRequest.class)));
     }
 
     @Test(expected = BadRequestException.class)
     public void testDeleteWebArchiveWithIoException() throws IOException {
-        when(webArchiveManager.remove(any(Event.class))).thenThrow(IOException.class);
+        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
     }
 
     @Test(expected = BadRequestException.class)
     public void testDeleteWebArchiveDeleteFailed() throws IOException {
-        when(webArchiveManager.remove(any(Event.class))).thenReturn(RepositoryFileInformation.none());
+        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.none());
 
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 
-        verify(webArchiveManager, Mockito.times(1)).remove(any(Event.class));
-        verify(applicationPersistenceService, Mockito.times(1)).removeWARPath((any(Event.class)));
+        verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
+        verify(applicationPersistenceService, Mockito.times(1)).removeWarPath((any(RemoveWebArchiveRequest.class)));
     }
 
     @Test
@@ -436,7 +433,7 @@ public class ApplicationServiceImplTest {
         final UploadAppTemplateRequest cmd = mock(UploadAppTemplateRequest.class);
         applicationService.uploadAppTemplate(cmd, testUser);
         verify(cmd).validate();
-        verify(applicationPersistenceService).uploadAppTemplate(any(Event.class));
+        verify(applicationPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
     }
 
     @Test

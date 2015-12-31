@@ -24,15 +24,14 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     private RepositoryService fileSystemStorage;
     
     @Override
-    public RepositoryFileInformation store(Event<UploadWebArchiveRequest> event) throws IOException {
+    public RepositoryFileInformation store(UploadWebArchiveRequest uploadWebArchiveRequest) throws IOException {
  
-        UploadWebArchiveRequest cmd = event.getRequest();
-        Application app = event.getRequest().getApplication();
+        Application app = uploadWebArchiveRequest.getApplication();
         String existing = app.getWarPath();
         
-        Path place = synth.unique(platformFileSystem.getPath(cmd.getFilename()));
+        Path place = synth.unique(platformFileSystem.getPath(uploadWebArchiveRequest.getFilename()));
         
-        RepositoryFileInformation writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, cmd.getTransientData());
+        RepositoryFileInformation writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, uploadWebArchiveRequest.getTransientData());
 
         if( RepositoryFileInformation.Type.STORED.equals(writeResult.getType())
             && existing != null 
@@ -49,11 +48,10 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     }
 
     @Override
-    public RepositoryFileInformation remove(Event<RemoveWebArchiveRequest> event) throws IOException {
+    public RepositoryFileInformation remove(RemoveWebArchiveRequest removeWebArchiveRequest) throws IOException {
         RepositoryFileInformation action = RepositoryFileInformation.none();
         
-        RemoveWebArchiveRequest cmd = event.getRequest();
-        Application app = cmd.getApplication();
+        Application app = removeWebArchiveRequest.getApplication();
                 
         String existing = app.getWarPath();
         

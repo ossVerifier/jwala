@@ -86,43 +86,28 @@ public class PrivateApplicationServiceImplTest {
 
         uploadedFile = new ByteArrayInputStream(buf.array());
     }
-
-    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveRequest>> {
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean matches(Object arg) {
-            Event<UploadWebArchiveRequest> event = (Event<UploadWebArchiveRequest>)arg;
-            UploadWebArchiveRequest uwac = event.getRequest();
-            uwac.validate();
-            return true;
-        } 
-        
-    }    
     
     @Test
-    public void testUploadWebArchiveData() throws IOException { 
+    public void testUploadWebArchiveData() throws IOException {
         UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
-        Event<UploadWebArchiveRequest> event = Event.create(uwac, AuditEvent.now(testUser));
 
-        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        when(webArchiveManager.store(uwac)).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
 
-        privateApplicationService.uploadWebArchiveData(event);
+        privateApplicationService.uploadWebArchiveData(uwac);
 
-        Mockito.verify(webArchiveManager, Mockito.times(1)).store(argThat(new IsValidUploadEvent()));        
+        Mockito.verify(webArchiveManager, Mockito.times(1)).store(uwac);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testUploadWebArchiveUpdateDB() throws IOException { 
         UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
-        Event<UploadWebArchiveRequest> event = Event.create(uwac, AuditEvent.now(testUser));
-        
-        when(webArchiveManager.store(argThat(new IsValidUploadEvent()))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
-        
-        privateApplicationService.uploadWebArchiveUpdateDB(event, RepositoryFileInformation.stored(FileSystems.getDefault().getPath("test.txt"), 0L));
 
-        Mockito.verify(applicationPersistenceService, Mockito.times(1)).updateWARPath(any(Event.class), any(String.class));        
+        when(webArchiveManager.store(any(UploadWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
+        
+        privateApplicationService.uploadWebArchiveUpdateDB(uwac, RepositoryFileInformation.stored(FileSystems.getDefault().getPath("test.txt"), 0L));
+
+        Mockito.verify(applicationPersistenceService, Mockito.times(1)).updateWARPath(any(UploadWebArchiveRequest.class), any(String.class));
     }
 
 }

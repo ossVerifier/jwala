@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public interface WebArchiveManager {
 
-    RepositoryFileInformation store(Event<UploadWebArchiveRequest> event) throws IOException;
+    RepositoryFileInformation store(UploadWebArchiveRequest uploadWebArchiveRequest) throws IOException;
 
-    RepositoryFileInformation remove(Event<RemoveWebArchiveRequest> event) throws IOException;
+    RepositoryFileInformation remove(RemoveWebArchiveRequest removeWebArchiveRequest) throws IOException;
 
 }

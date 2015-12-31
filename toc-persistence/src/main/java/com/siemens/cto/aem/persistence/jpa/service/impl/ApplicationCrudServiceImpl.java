@@ -147,20 +147,19 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event) {
-        UploadAppTemplateRequest command = event.getRequest();
-        Application application = command.getApp();
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
+        Application application = uploadAppTemplateRequest.getApp();
         Identifier<Application> id = application.getId();
         JpaApplication jpaApp = getExisting(id);
 
-        InputStream inStream = command.getData();
+        InputStream inStream = uploadAppTemplateRequest.getData();
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
         Query query = entityManager.createQuery("SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName");
         query.setParameter("appName", application.getName());
-        query.setParameter("tempName", command.getConfFileName());
+        query.setParameter("tempName", uploadAppTemplateRequest.getConfFileName());
         List<JpaApplicationConfigTemplate> templates = query.getResultList();
         JpaApplicationConfigTemplate jpaConfigTemplate;
         if (templates.size() == 1) {
@@ -172,7 +171,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             //create
             jpaConfigTemplate = new JpaApplicationConfigTemplate();
             jpaConfigTemplate.setApplication(jpaApp);
-            jpaConfigTemplate.setTemplateName(command.getConfFileName());
+            jpaConfigTemplate.setTemplateName(uploadAppTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();

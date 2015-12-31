@@ -17,9 +17,9 @@ public interface ApplicationPersistenceService {
 
     Application updateApplication(final Event<UpdateApplicationRequest> anAppToUpdate);
 
-    Application updateWARPath(final Event<UploadWebArchiveRequest> anAppToUpdate, String warPath);
+    Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
 
-    Application removeWARPath(final Event<RemoveWebArchiveRequest> anAppToUpdate);
+    Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest);
 
     void removeApplication(final Identifier<Application> anAppToRemove);
 
@@ -29,7 +29,7 @@ public interface ApplicationPersistenceService {
 
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(Event<UploadAppTemplateRequest> event);
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest);
 
     List<Application> getApplications();
 

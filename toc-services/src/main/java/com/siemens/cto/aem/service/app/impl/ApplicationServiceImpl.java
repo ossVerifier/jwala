@@ -134,11 +134,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Transactional
     @Override
-    public Application createApplication(final CreateApplicationRequest aCreateAppCommand,
+    public Application createApplication(final CreateApplicationRequest createApplicationRequest,
                                          final User aCreatingUser) {
 
-        aCreateAppCommand.validate();
-        final Event<CreateApplicationRequest> event = new Event<>(aCreateAppCommand,
+        createApplicationRequest.validate();
+        final Event<CreateApplicationRequest> event = new Event<>(createApplicationRequest,
                 AuditEvent.now(aCreatingUser));
 
         final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
@@ -157,12 +157,9 @@ public class ApplicationServiceImpl implements ApplicationService {
      * Non-transactional entry point, utilizes {@link PrivateApplicationServiceImpl}
      */
     @Override
-    public Application uploadWebArchive(UploadWebArchiveRequest command, User user) {
-        command.validate();
-
-        Event<UploadWebArchiveRequest> event = Event.create(command, AuditEvent.now(user));
-
-        return privateApplicationService.uploadWebArchiveUpdateDB(event, privateApplicationService.uploadWebArchiveData(event));
+    public Application uploadWebArchive(UploadWebArchiveRequest uploadWebArchiveRequest, User user) {
+        uploadWebArchiveRequest.validate();
+        return privateApplicationService.uploadWebArchiveUpdateDB(uploadWebArchiveRequest, privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest));
     }
 
     @Transactional
@@ -171,19 +168,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application app = this.getApplication(appId);
         RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
-        Event<RemoveWebArchiveRequest> event = Event.create(rwac, AuditEvent.now(user));
 
         RepositoryFileInformation result = RepositoryFileInformation.none();
 
         try {
-            result = webArchiveManager.remove(event);
+            result = webArchiveManager.remove(rwac);
             LOGGER.info("Archive Delete: " + result.toString());
         } catch (IOException e) {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
         }
 
         if (result.getType() == Type.DELETED) {
-            return applicationPersistenceService.removeWARPath(event);
+            return applicationPersistenceService.removeWarPath(rwac);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Archive not found to delete.");
         }
@@ -319,10 +315,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command, User user) {
-        command.validate();
-        final Event<UploadAppTemplateRequest> event = new Event<>(command, AuditEvent.now(user));
-        return applicationPersistenceService.uploadAppTemplate(event);
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, User user) {
+        uploadAppTemplateRequest.validate();
+        return applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest);
     }
 
     @Override
