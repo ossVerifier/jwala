@@ -117,9 +117,13 @@ public class ApplicationCrudServiceImplTest {
     private JpaGroup jpaGroup;
 
     private User userObj;
-    
+
+
     @Before
     public void setup() {
+        User user = new User("testUser");
+        user.addToThread();
+
         aUser = "TestUserId";
         userObj = new User(aUser);
         jpaGroup = groupCrudService.createGroup(new CreateGroupRequest(textGroup));
@@ -129,6 +133,7 @@ public class ApplicationCrudServiceImplTest {
     @After
     public void tearDown() {
         try { groupCrudService.removeGroup(expGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+        User.getThreadLocalUser().invalidate();
     }
     
     @Test(expected = BadRequestException.class)

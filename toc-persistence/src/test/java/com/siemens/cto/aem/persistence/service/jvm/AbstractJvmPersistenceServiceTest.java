@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.jvm;
 
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -10,6 +11,7 @@ import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBeha
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +38,17 @@ public abstract class AbstractJvmPersistenceServiceTest {
 
     @Before
     public void setup() {
+        User user = new User("testUser");
+        user.addToThread();
+
         jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);
         userId = "TestUserId";
+    }
+
+    @After
+    public void tearDown() {
+        User.getThreadLocalUser().invalidate();
     }
 
     @Test

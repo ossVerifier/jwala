@@ -59,12 +59,11 @@ public abstract class
     private Identifier<Application> updateAppId;
     private Identifier<Application> deleteAppId;
 
-    private User userObj;
-    
     @Before
     public void setup() {
-        aUser = "TestUserId";
-        userObj = new User(aUser);
+        User user = new User("testUser");
+        user.addToThread();
+
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest(textGroup));
         Group updGroup = groupPersistenceService.createGroup(new CreateGroupRequest(textUpdatedGroup));
         expGroupId = group.getId();
@@ -81,6 +80,7 @@ public abstract class
         }
         try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
+        User.getThreadLocalUser().invalidate();
     }
     
     @Test

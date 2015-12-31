@@ -2,6 +2,7 @@ package com.siemens.cto.aem.persistence.jpa.domain;
 
 import com.siemens.cto.aem.common.domain.model.audit.AuditDateTime;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -69,10 +70,18 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     public abstract Long getId();
 
     @PrePersist
-    private void createdOn() {
-        if (this.getCreateDate() == null) {
-            this.setCreateDate(AuditDateTime.now().getCalendar());
-        }
+    private void prePersist() {
+        final Calendar now = Calendar.getInstance();
+        setCreateDate(now);
+        setCreateBy(User.getThreadLocalUser().getId());
+        setLastUpdateDate(now);
+        setUpdateBy(User.getThreadLocalUser().getId());
     }
 
+    @PreUpdate
+    private void preUpdate() {
+        final Calendar now = Calendar.getInstance();
+        setLastUpdateDate(now);
+        setUpdateBy(User.getThreadLocalUser().getId());
+    }
 }

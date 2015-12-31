@@ -25,7 +25,7 @@ public class GroupWebServerControlServiceImplTest {
     private GroupWebServerControlServiceImpl cut;
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private Group mockGroup;
-    private User testUser = new User("testUser");
+    private User testUser = new User("user");
     private ControlGroupWebServerRequest controlGroupWebServerRequest;
 
     @SuppressWarnings("unchecked")

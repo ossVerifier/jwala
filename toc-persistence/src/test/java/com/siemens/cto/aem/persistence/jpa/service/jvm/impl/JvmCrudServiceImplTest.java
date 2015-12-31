@@ -14,6 +14,7 @@ import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,13 +55,19 @@ public class JvmCrudServiceImplTest {
 
     @Before
     public void setup() throws Exception {
-        user = new User("unused");
+        user = new User("testUser");
+        user.addToThread();
 
         String testJvmName = "testJvmName";
         CreateJvmRequest createCommand = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
         Event<CreateJvmRequest> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmEvent);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
+    }
+
+    @After
+    public void tearDown() {
+        User.getThreadLocalUser().invalidate();
     }
 
     @Test

@@ -112,7 +112,7 @@ public class DispatchRequestIntegrationTest {
 
         ControlGroupJvmRequest startGroupCommand = new ControlGroupJvmRequest(GROUP1_IDENTIFIER, JvmControlOperation.START);
         @SuppressWarnings("deprecation")
-        GroupJvmDispatchCommand groupDispatchCommand = new GroupJvmDispatchCommand(theGroup, startGroupCommand, User.getHardCodedUser());
+        GroupJvmDispatchCommand groupDispatchCommand = new GroupJvmDispatchCommand(theGroup, startGroupCommand, new User("hardCodedUser"));
 
         jvmCommandCompletionChannel.subscribe(new TestMessageHandler());
 
@@ -143,7 +143,7 @@ public class DispatchRequestIntegrationTest {
 
         ControlGroupWebServerRequest startGroupCommand = new ControlGroupWebServerRequest(GROUP1_IDENTIFIER, WebServerControlOperation.START);
         @SuppressWarnings("deprecation")
-        GroupWebServerDispatchCommand groupDispatchCommand = new GroupWebServerDispatchCommand(theGroup, startGroupCommand, User.getHardCodedUser());
+        GroupWebServerDispatchCommand groupDispatchCommand = new GroupWebServerDispatchCommand(theGroup, startGroupCommand, new User("hardCodedUser"));
 
         wsCommandCompletionChannel.subscribe(new TestMessageHandler());
 

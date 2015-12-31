@@ -4,9 +4,12 @@ import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 
 import static org.junit.Assert.assertEquals;
@@ -41,6 +45,18 @@ public class WebServerCrudServiceImplTest {
 
     @Autowired
     private WebServerCrudServiceImpl impl;
+
+
+    @Before
+    public void setup() {
+        User user = new User("testUser");
+        user.addToThread();
+    }
+
+    @After
+    public void tearDown() {
+        User.getThreadLocalUser().invalidate();
+    }
 
     @Test
     public void testCreateAndUpdateWebServer() {

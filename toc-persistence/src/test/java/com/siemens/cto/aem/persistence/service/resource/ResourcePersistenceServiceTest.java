@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
@@ -10,7 +11,9 @@ import com.siemens.cto.aem.persistence.dao.group.GroupEventsTestHelper;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,17 @@ public abstract class ResourcePersistenceServiceTest {
 
     protected abstract ResourcePersistenceService getResourcePersistenceService();
     protected abstract GroupCrudService getGroupCrudService();
+
+    @Before
+    public void setUp() throws Exception {
+        User user = new User("testUser");
+        user.addToThread();
+    }
+
+    @After
+    public void tearDown() {
+        User.getThreadLocalUser().invalidate();
+    }
 
     @Test
     public void testCreateResourceInstance() throws Exception {
