@@ -1,12 +1,9 @@
 package com.siemens.cto.aem.service.state.impl;
 
 import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -267,10 +264,10 @@ public class GroupStateServiceImplTest {
 
     @Test
     public void testGroupStatePersist() {
-        final SetGroupStateRequest setGroupStateCommand = new SetGroupStateRequest(new Identifier<Group>(1l),
+        final SetGroupStateRequest setGroupStateRequest = new SetGroupStateRequest(new Identifier<Group>(1l),
                                                                                    GroupState.GRP_STOPPED);
-        groupStateServiceImpl.groupStatePersist(setGroupStateCommand);
-        verify(groupPersistenceService).updateGroupStatus(Event.create(setGroupStateCommand, any(AuditEvent.class)));
+        groupStateServiceImpl.groupStatePersist(setGroupStateRequest);
+        verify(groupPersistenceService).updateGroupStatus(setGroupStateRequest);
     }
 
     @Test

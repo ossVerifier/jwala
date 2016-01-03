@@ -94,7 +94,7 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("svrRoot", SVR_ROOT),
                                    keyTextValue("docRoot", DOC_ROOT)));
         final JsonCreateWebServer create = readValue(json);
-        create.toCreateWebServerCommand();
+        create.toCreateWebServerRequest();
     }
 
     @Test(expected = BadRequestException.class)
@@ -108,7 +108,7 @@ public class JsonCreateWebServerDeserializerTest {
                                    keyTextValue("svrRoot", SVR_ROOT),
                                    keyTextValue("docRoot", DOC_ROOT)));
         final JsonCreateWebServer create = readValue(json);
-        create.toCreateWebServerCommand();
+        create.toCreateWebServerRequest();
     }
 
     @Test(expected = IOException.class)
@@ -121,7 +121,7 @@ public class JsonCreateWebServerDeserializerTest {
 
     protected void verifyAssertions(final JsonCreateWebServer aCreate, final String aWebServerName,
             final String aHostName, final String... groupIds) {
-        CreateWebServerRequest createCommand = aCreate.toCreateWebServerCommand();
+        CreateWebServerRequest createCommand = aCreate.toCreateWebServerRequest();
 
         assertEquals(aWebServerName, createCommand.getName());
         assertEquals(aHostName, createCommand.getHost());

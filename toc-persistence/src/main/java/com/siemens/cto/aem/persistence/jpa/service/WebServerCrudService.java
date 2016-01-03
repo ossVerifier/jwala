@@ -2,7 +2,6 @@ package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -46,7 +45,7 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
-	JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateRequest> event);
+	JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest);
 
     void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 }

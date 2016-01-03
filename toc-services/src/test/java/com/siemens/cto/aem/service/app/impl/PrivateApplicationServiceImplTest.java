@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;

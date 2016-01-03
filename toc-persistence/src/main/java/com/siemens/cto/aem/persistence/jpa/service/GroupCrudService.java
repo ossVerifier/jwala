@@ -3,7 +3,6 @@ package com.siemens.cto.aem.persistence.jpa.service;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
@@ -17,7 +16,7 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
 
     JpaGroup createGroup(CreateGroupRequest createGroupRequest);
 
-    void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate);
+    void updateGroup(UpdateGroupRequest updateGroupRequest);
 
     JpaGroup getGroup(final Identifier<Group> aGroupId) throws NotFoundException;
 
@@ -29,7 +28,7 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
 
     void removeGroup(final Identifier<Group> aGroupId);
     
-    JpaGroup updateGroupStatus(Event<SetStateRequest<Group, GroupState>> aGroupToUpdate);
+    JpaGroup updateGroupStatus(SetStateRequest<Group, GroupState> setStateRequest);
 
     Long getGroupId(String name);
 

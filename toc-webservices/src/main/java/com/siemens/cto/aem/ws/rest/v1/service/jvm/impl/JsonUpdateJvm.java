@@ -59,7 +59,7 @@ public class JsonUpdateJvm {
         systemProperties = theSystemProperties;
     }
 
-    public UpdateJvmRequest toUpdateJvmCommand() throws BadRequestException {
+    public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
 
         final Identifier<Jvm> id = convertJvmId();
         final Set<Identifier<Group>> groupIds = convertGroupIds();

@@ -178,10 +178,10 @@ public class JsonCreateJvmDeserializerTest {
                                     final String aHostName,
                                     final String... groupIds) {
 
-        final CreateJvmAndAddToGroupsRequest createAndAddCommand = aCreate.toCreateAndAddCommand();
+        final CreateJvmAndAddToGroupsRequest createAndAddCommand = aCreate.toCreateAndAddRequest();
         final CreateJvmRequest createCommand = createAndAddCommand.getCreateCommand();
 
-        assertEquals(aCreate.toCreateJvmCommand(),
+        assertEquals(aCreate.toCreateJvmRequest(),
                      createCommand);
         assertEquals(aJvmName,
                      createCommand.getJvmName());

@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.service.state.impl;
 
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
@@ -46,8 +44,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         setStateRequest.validate();
 
         final CurrentState<S, T> currentState = persistenceService.getState(setStateRequest.getNewState().getId());
-        final CurrentState<S, T> latestState = persistenceService.updateState(new Event<>(setStateRequest, AuditEvent
-                .now(aUser)));
+        final CurrentState<S, T> latestState = persistenceService.updateState(setStateRequest);
 
         if (currentState == null || !currentState.getState().equals(latestState.getState()) ||
             !currentState.getMessage().equalsIgnoreCase(latestState.getMessage())) {

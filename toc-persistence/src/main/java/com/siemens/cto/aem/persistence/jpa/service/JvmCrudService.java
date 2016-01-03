@@ -2,7 +2,6 @@ package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -15,9 +14,9 @@ import java.util.List;
 
 public interface JvmCrudService extends CrudService<JpaJvm> {
 
-    JpaJvm createJvm(final Event<CreateJvmRequest> aJvmToCreate);
+    JpaJvm createJvm(CreateJvmRequest createJvmRequest);
 
-    JpaJvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate);
+    JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest);
 
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 
@@ -29,7 +28,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     void removeJvm(final Identifier<Jvm> aGroupId);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateRequest> event);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest);
 
     String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 

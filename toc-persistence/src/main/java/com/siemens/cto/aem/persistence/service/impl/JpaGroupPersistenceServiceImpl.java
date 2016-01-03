@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.*;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
@@ -44,9 +43,9 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group updateGroup(final Event<UpdateGroupRequest> anEvent) throws NotFoundException {
-        groupCrudService.updateGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getRequest().getId()), false);
+    public Group updateGroup(UpdateGroupRequest updateGroupRequest) throws NotFoundException {
+        groupCrudService.updateGroup(updateGroupRequest);
+        return groupFrom(groupCrudService.getGroup(updateGroupRequest.getId()), false);
     }
 
     @Override
@@ -103,15 +102,15 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group addJvmToGroup(final Event<AddJvmToGroupRequest> anEvent) throws NotFoundException {
-        groupJvmRelationshipService.addJvmToGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getRequest().getGroupId()), false);
+    public Group addJvmToGroup(AddJvmToGroupRequest addJvmToGroupRequest) throws NotFoundException {
+        groupJvmRelationshipService.addJvmToGroup(addJvmToGroupRequest);
+        return groupFrom(groupCrudService.getGroup(addJvmToGroupRequest.getGroupId()), false);
     }
 
     @Override
-    public Group removeJvmFromGroup(final Event<RemoveJvmFromGroupRequest> anEvent) throws NotFoundException {
-        groupJvmRelationshipService.removeJvmFromGroup(anEvent);
-        return groupFrom(groupCrudService.getGroup(anEvent.getRequest().getGroupId()), false);
+    public Group removeJvmFromGroup(RemoveJvmFromGroupRequest removeJvmFromGroupRequest) throws NotFoundException {
+        groupJvmRelationshipService.removeJvmFromGroup(removeJvmFromGroupRequest);
+        return groupFrom(groupCrudService.getGroup(removeJvmFromGroupRequest.getGroupId()), false);
     }
 
     protected Group groupFrom(final JpaGroup aJpaGroup, final boolean fetchWebServers) {
@@ -142,8 +141,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public CurrentState<Group, GroupState> updateState(Event<SetStateRequest<Group, GroupState>> aNewState) {
-        return groupStateFrom(groupCrudService.updateGroupStatus(aNewState));
+    public CurrentState<Group, GroupState> updateState(SetStateRequest<Group, GroupState> setStateRequest) {
+        return groupStateFrom(groupCrudService.updateGroupStatus(setStateRequest));
     }
 
     @Override
@@ -164,9 +163,9 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group updateGroupStatus(Event<SetGroupStateRequest> aGroupToUpdate) {
-        LOGGER.debug("Persisting new state " + aGroupToUpdate.getRequest());
-        return groupFrom(aGroupToUpdate.getRequest().getNewState(), groupCrudService.updateGroupStatus(Event.<SetStateRequest<Group, GroupState>>create(aGroupToUpdate.getRequest(), aGroupToUpdate.getAuditEvent())));
+    public Group updateGroupStatus(SetGroupStateRequest setGroupStateRequest) {
+        LOGGER.debug("Persisting new state " + setGroupStateRequest);
+        return groupFrom(setGroupStateRequest.getNewState(), groupCrudService.updateGroupStatus(setGroupStateRequest));
     }
 
     @Override

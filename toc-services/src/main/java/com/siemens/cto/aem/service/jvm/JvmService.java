@@ -15,11 +15,9 @@ import java.util.List;
 
 public interface JvmService {
 
-    Jvm createJvm(final CreateJvmRequest aCreateJvmCommand,
-                  final User aCreatingUser);
+    Jvm createJvm(final CreateJvmRequest aCreateJvmRequest, final User aCreatingUser);
 
-    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignCommand,
-                           final User aCreatingUser);
+    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, final User aCreatingUser);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
@@ -33,8 +31,7 @@ public interface JvmService {
 
     List<Jvm> findJvms(final Identifier<Group> aJvmId);
 
-    Jvm updateJvm(final UpdateJvmRequest anUpdateJvmCommand,
-                  final User anUpdatingUser);
+    Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, final User anUpdatingUser);
 
     void removeJvm(final Identifier<Jvm> aJvmId);
 
@@ -42,7 +39,7 @@ public interface JvmService {
 
     String performDiagnosis(Identifier<Jvm> aJvmId);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest command, User user);
+    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest, User user);
 
     List<String> getResourceTemplateNames(final String jvmName);
 
@@ -54,7 +51,5 @@ public interface JvmService {
 
     boolean isJvmStarted(Jvm jvm);
 
-    String previewResourceTemplate(String jvmName,
-                                   String groupName,
-                                   String template);
+    String previewResourceTemplate(String jvmName, String groupName, String template);
 }

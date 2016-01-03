@@ -2,7 +2,6 @@ package com.siemens.cto.aem.service.app;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 
 /**

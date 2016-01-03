@@ -275,7 +275,7 @@ public class JsonUpdateJvmDeserializerTest {
                                     final String aSystemProperties,
                                     final String ... someGroupIds) {
 
-        final UpdateJvmRequest update = anUpdate.toUpdateJvmCommand();
+        final UpdateJvmRequest update = anUpdate.toUpdateJvmRequest();
 
         assertEquals(new Identifier<Jvm>(aJvmId),
                      update.getId());

@@ -5,12 +5,10 @@ import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -80,14 +78,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testCreateValidate() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
-        final CreateJvmRequest command = mock(CreateJvmRequest.class);
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
         final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>());
-        when(jvmPersistenceService.createJvm(any(Event.class))).thenReturn(jvm);
+        when(jvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
 
-        impl.createJvm(command, user);
+        impl.createJvm(createJvmRequest, user);
 
-        verify(command, times(1)).validate();
-        verify(jvmPersistenceService, times(1)).createJvm(matchCommandInEvent(command));
+        verify(createJvmRequest, times(1)).validate();
+        verify(jvmPersistenceService, times(1)).createJvm(createJvmRequest);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
@@ -95,20 +93,20 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testCreateValidateAdd() {
 
-        final CreateJvmRequest createCommand = mock(CreateJvmRequest.class);
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
         final CreateJvmAndAddToGroupsRequest command = mock(CreateJvmAndAddToGroupsRequest.class);
         final Jvm jvm = mockJvmWithId(new Identifier<Jvm>(-123456L));
-        final Set<AddJvmToGroupRequest> addCommands = createMockedAddCommands(3);
+        final Set<AddJvmToGroupRequest> addCommands = createMockedAddRequests(3);
 
-        when(command.toAddCommandsFor(eq(jvm.getId()))).thenReturn(addCommands);
-        when(command.getCreateCommand()).thenReturn(createCommand);
-        when(jvmPersistenceService.createJvm(matchCommandInEvent(createCommand))).thenReturn(jvm);
+        when(command.toAddRequestsFor(eq(jvm.getId()))).thenReturn(addCommands);
+        when(command.getCreateCommand()).thenReturn(createJvmRequest);
+        when(jvmPersistenceService.createJvm(createJvmRequest)).thenReturn(jvm);
 
         impl.createAndAssignJvm(command,
                 user);
 
-        verify(createCommand, times(1)).validate();
-        verify(jvmPersistenceService, times(1)).createJvm(matchCommandInEvent(createCommand));
+        verify(createJvmRequest, times(1)).validate();
+        verify(jvmPersistenceService, times(1)).createJvm(createJvmRequest);
         for (final AddJvmToGroupRequest addCommand : addCommands) {
             verify(groupService, times(1)).addJvmToGroup(matchCommand(addCommand),
                     eq(user));
@@ -118,16 +116,16 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testUpdateJvmShouldValidateCommand() {
 
-        final UpdateJvmRequest command = mock(UpdateJvmRequest.class);
-        final Set<AddJvmToGroupRequest> addCommands = createMockedAddCommands(5);
+        final UpdateJvmRequest updateJvmRequest = mock(UpdateJvmRequest.class);
+        final Set<AddJvmToGroupRequest> addCommands = createMockedAddRequests(5);
 
-        when(command.getAssignmentCommands()).thenReturn(addCommands);
+        when(updateJvmRequest.getAssignmentCommands()).thenReturn(addCommands);
 
-        impl.updateJvm(command,
+        impl.updateJvm(updateJvmRequest,
                 user);
 
-        verify(command, times(1)).validate();
-        verify(jvmPersistenceService, times(1)).updateJvm(matchCommandInEvent(command));
+        verify(updateJvmRequest, times(1)).validate();
+        verify(jvmPersistenceService, times(1)).updateJvm(updateJvmRequest);
         verify(jvmPersistenceService, times(1)).removeJvmFromGroups(Matchers.<Identifier<Jvm>>anyObject());
         for (final AddJvmToGroupRequest addCommand : addCommands) {
             verify(groupService, times(1)).addJvmToGroup(matchCommand(addCommand),

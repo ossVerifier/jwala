@@ -6,7 +6,6 @@ import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -138,15 +137,14 @@ public class ApplicationCrudServiceImplTest {
     
     @Test(expected = BadRequestException.class)
     public void testApplicationCrudServiceEEE() {
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
 
-        JpaApplication created = applicationCrudService.createApplication(anAppToCreate, jpaGroup);  
+        JpaApplication created = applicationCrudService.createApplication(request, jpaGroup);
         
         assertNotNull(created);
         
         try {
-            JpaApplication duplicate = applicationCrudService.createApplication(anAppToCreate, jpaGroup);
+            JpaApplication duplicate = applicationCrudService.createApplication(request, jpaGroup);
             fail(duplicate.toString());
         } catch(BadRequestException e) {
             assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
@@ -160,19 +158,17 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testDuplicateContextsOk() {
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
 
         JpaApplication created2 = null;
-        JpaApplication created = applicationCrudService.createApplication(anAppToCreate, jpaGroup);  
+        JpaApplication created = applicationCrudService.createApplication(request, jpaGroup);
         
         assertNotNull(created);
 
         try {
-            CreateApplicationRequest cmd2 = new CreateApplicationRequest(expGroupId,  textName + "-another", textContext, true, true);
-            Event<CreateApplicationRequest> anAppToCreate2 = new Event<>(cmd2, AuditEvent.now(new User(aUser)));
-    
-            created2 = applicationCrudService.createApplication(anAppToCreate2, jpaGroup);  
+            CreateApplicationRequest request2 = new CreateApplicationRequest(expGroupId,  textName + "-another", textContext, true, true);
+
+            created2 = applicationCrudService.createApplication(request2, jpaGroup);
     
             assertNotNull(created2);
         } finally { 

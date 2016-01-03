@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
@@ -30,8 +29,8 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> resourceInstanceCreateEvent) {
-        return parseFromJpa(this.resourceInstanceCrudService.createResourceInstance(resourceInstanceCreateEvent));
+    public ResourceInstance createResourceInstance(ResourceInstanceRequest resourceInstanceRequest) {
+        return parseFromJpa(this.resourceInstanceCrudService.createResourceInstance(resourceInstanceRequest));
     }
 
     @Override
@@ -50,12 +49,12 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final Event<ResourceInstanceRequest> resourceInstanceUpdateEvent) {
-        if (resourceInstanceUpdateEvent.getRequest().getAttributes() != null) {
-            this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
+    public ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final ResourceInstanceRequest resourceInstanceRequest) {
+        if (resourceInstanceRequest.getAttributes() != null) {
+            this.resourceInstanceCrudService.updateResourceInstanceAttributes(resourceInstance.getResourceInstanceId(), resourceInstanceRequest);
         }
-        if (!resourceInstanceUpdateEvent.getRequest().getName().equals(resourceInstance.getName())){
-            this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceUpdateEvent);
+        if (!resourceInstanceRequest.getName().equals(resourceInstance.getName())) {
+            this.resourceInstanceCrudService.updateResourceInstanceName(resourceInstance.getResourceInstanceId(), resourceInstanceRequest);
         }
         return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstance.getResourceInstanceId()));
     }

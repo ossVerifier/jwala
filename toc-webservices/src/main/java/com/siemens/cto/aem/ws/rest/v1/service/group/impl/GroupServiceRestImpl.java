@@ -71,24 +71,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         resourceService = theResourceService;
     }
 
-
-    public Response getGroupHistory(String groupName) {
-        logger.debug("Get Groups History requested for group : {}", groupName);
-        Group group = groupService.getGroup(groupName);
-
-        // SMG: 11/15/15
-        // TODO: Is this needed or is the proper response sent back to the client using the error from the persistence layer
-        if (group == null) {
-            logger.warn("Group with name {} not found.", groupName);
-            return ResponseBuilder.notOk(
-                    Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(
-                    AemFaultType.GROUP_NOT_FOUND, "Group " + groupName + " not found."));
-        }
-
-        return ResponseBuilder.ok(group.getHistory());
-    }
-
     @Override
     public Response getGroups(final NameSearchParameterProvider aGroupNameSearch, final boolean fetchWebServers) {
         logger.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());

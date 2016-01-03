@@ -4,8 +4,6 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -111,7 +109,7 @@ public class GroupStateManagerTableImplTest {
     @Test
     public void testStateInitialized() {
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
-        group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(user)));
+        group = groupPersistenceService.updateGroupStatus(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED));
 
         classUnderTest.synchronizedInitializeGroup(group, user);
 
@@ -126,11 +124,11 @@ public class GroupStateManagerTableImplTest {
     @Test
     public void testOneStoppedJvmNewGroup() {
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
-        group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(user)));
-        Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
-                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(user)));
-        group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(group.getId(), jvm.getId()),  AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(user)));
+        group = groupPersistenceService.updateGroupStatus(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED));
+        Jvm jvm = jvmPersistenceService.createJvm(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
+                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"));
+        group = groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(group.getId(), jvm.getId()));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.SVC_STOPPED));
 
         classUnderTest.synchronizedInitializeGroup(group, user);
 
@@ -148,17 +146,17 @@ public class GroupStateManagerTableImplTest {
     public void testResetFromError() {
 
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
-        group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(user)));
-        Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
-                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(user)));
-        group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(group.getId(), jvm.getId()),  AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_FAILED), AuditEvent.now(user)));
+        group = groupPersistenceService.updateGroupStatus(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED));
+        Jvm jvm = jvmPersistenceService.createJvm(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
+                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"));
+        group = groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(group.getId(), jvm.getId()));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.JVM_FAILED));
 
         classUnderTest.synchronizedInitializeGroup(group, user);
 
         assertEquals(GroupState.GRP_FAILURE, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STARTED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.JVM_STARTED));
 
         classUnderTest.signalReset(user); // really doesn't do anything except refresh state now.
 
@@ -173,7 +171,7 @@ public class GroupStateManagerTableImplTest {
         testOneStoppedJvmNewGroup();
 
         Jvm jvm = jvmUsedInTest;
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STARTED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.JVM_STARTED));
 
         assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 
@@ -195,7 +193,7 @@ public class GroupStateManagerTableImplTest {
         testIncomingJvmStartMessage();
 
         Jvm jvm = jvmUsedInTest;
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.SVC_STOPPED));
 
         assertFalse(classUnderTest.canStart());
         assertTrue(classUnderTest.canStop());
@@ -216,19 +214,19 @@ public class GroupStateManagerTableImplTest {
     @Test
     public void testThreeJvmFullLifecycle() {
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest("testGroup"));
-        group = groupPersistenceService.updateGroupStatus(Event.create(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED), AuditEvent.now(user)));
-        Jvm jvm = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
-                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(user)));
-        Jvm jvm2 = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test2", "test", 80, 443, 443, 8005,
-                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(user)));
-        Jvm jvm3 = jvmPersistenceService.createJvm(Event.create(new CreateJvmRequest("test3", "test", 80, 443, 443, 8005,
-                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"), AuditEvent.now(user)));
-        group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(group.getId(), jvm.getId()),  AuditEvent.now(user)));
-        group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(group.getId(), jvm2.getId()),  AuditEvent.now(user)));
-        group = groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(group.getId(), jvm3.getId()),  AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.SVC_STOPPED), AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STARTED), AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.SVC_STOPPED), AuditEvent.now(user)));
+        group = groupPersistenceService.updateGroupStatus(new SetGroupStateRequest(group.getId(), GroupState.GRP_INITIALIZED));
+        Jvm jvm = jvmPersistenceService.createJvm(new CreateJvmRequest("test", "test", 80, 443, 443, 8005,
+                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"));
+        Jvm jvm2 = jvmPersistenceService.createJvm(new CreateJvmRequest("test2", "test", 80, 443, 443, 8005,
+                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"));
+        Jvm jvm3 = jvmPersistenceService.createJvm(new CreateJvmRequest("test3", "test", 80, 443, 443, 8005,
+                8009, new Path("/hct"), "EXAMPLE_OPTS=%someEnv%/someVal"));
+        group = groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(group.getId(), jvm.getId()));
+        group = groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(group.getId(), jvm2.getId()));
+        group = groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(group.getId(), jvm3.getId()));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.SVC_STOPPED));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm2, JvmState.JVM_STARTED));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm3, JvmState.SVC_STOPPED));
 
         classUnderTest.synchronizedInitializeGroup(group, user);
 
@@ -240,14 +238,14 @@ public class GroupStateManagerTableImplTest {
         // received a request to Stop the group
         assertEquals(GroupState.GRP_STOPPING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STOPPING), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm2, JvmState.JVM_STOPPING));
 
         classUnderTest.jvmStopped(jvm.getId());
         classUnderTest.refreshState();
         // receive a stop event for an already stopped jvm, we transit to JVM_STOPPING anyway (per re-design to node/edge 8/19, and update 8/20)
         assertEquals(GroupState.GRP_STOPPING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.SVC_STOPPED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm2, JvmState.SVC_STOPPED));
         classUnderTest.jvmStopped(jvm2.getId());
         classUnderTest.refreshState();
         // received the final stop, go to JVM_STOPPED
@@ -259,9 +257,9 @@ public class GroupStateManagerTableImplTest {
         classUnderTest.refreshState();
         assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STARTING), AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.JVM_STARTING), AuditEvent.now(user)));
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STARTING), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.JVM_STARTING));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm3, JvmState.JVM_STARTING));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm2, JvmState.JVM_STARTING));
         // this call should never happen, but should be ok
         classUnderTest.jvmStarted(jvm.getId());
         classUnderTest.jvmStarted(jvm2.getId());
@@ -270,13 +268,13 @@ public class GroupStateManagerTableImplTest {
         // received a start request for a jvm as a set of triggers
         assertEquals(GroupState.GRP_STARTING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm, JvmState.JVM_STARTED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm, JvmState.JVM_STARTED));
         classUnderTest.jvmStarted(jvm2.getId());
         classUnderTest.refreshState();
         // received a start 1/3 (per re-design to node/edge 8/19 and update 8/20)
         assertEquals(GroupState.GRP_STARTING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm2, JvmState.JVM_STARTED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm2, JvmState.JVM_STARTED));
         classUnderTest.jvmStarted(jvm2.getId());
         classUnderTest.refreshState();
         // received a start 2/3 (per re-design to node/edge 8/19, and update 8/20)
@@ -287,7 +285,7 @@ public class GroupStateManagerTableImplTest {
         // received a start 2/3 - duplicate stay in JVM_STARTED (per re-design to node/edge 8/19, and update 8/20)
         assertEquals(GroupState.GRP_STARTING, classUnderTest.getCurrentState());
 
-        jvmStatePersistenceService.updateState(Event.create(createJvmSetStateCommand(jvm3, JvmState.JVM_STARTED), AuditEvent.now(user)));
+        jvmStatePersistenceService.updateState(createJvmSetStateRequest(jvm3, JvmState.JVM_STARTED));
         classUnderTest.jvmStarted(jvm3.getId());
         classUnderTest.refreshState();
         // received the final Start, go to JVM_STARTED
@@ -297,7 +295,7 @@ public class GroupStateManagerTableImplTest {
         jvmUsedInTest = jvm;
     }
 
-    private SetStateRequest<Jvm, JvmState> createJvmSetStateCommand(final Jvm jvm,
+    private SetStateRequest<Jvm, JvmState> createJvmSetStateRequest(final Jvm jvm,
                                                                     final JvmState aState) {
         return new JvmSetStateRequest(new CurrentState<>(jvm.getId(), aState, DateTime.now(), StateType.JVM));
     }

@@ -11,7 +11,6 @@ import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -205,10 +204,10 @@ public class JvmServiceRestImplTest {
         when(jvmService.updateJvm(any(UpdateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         // Check rules for the JVM
-        UpdateJvmRequest updateJvmCommand = jsonUpdateJvm.toUpdateJvmCommand();
+        UpdateJvmRequest updateJvmCommand = jsonUpdateJvm.toUpdateJvmRequest();
         updateJvmCommand.validate();
         updateJvmCommand.hashCode();
-        updateJvmCommand.equals(jsonUpdateJvm.toUpdateJvmCommand());
+        updateJvmCommand.equals(jsonUpdateJvm.toUpdateJvmRequest());
         String check = updateJvmCommand.toString();
 
         final Response response = jvmServiceRest.updateJvm(jsonUpdateJvm, authenticatedUser);

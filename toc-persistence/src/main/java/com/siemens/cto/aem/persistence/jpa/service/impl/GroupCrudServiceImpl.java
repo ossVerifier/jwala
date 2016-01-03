@@ -6,7 +6,6 @@ import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
@@ -39,18 +38,17 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public void updateGroup(final Event<UpdateGroupRequest> aGroupToUpdate) {
+    public void updateGroup(UpdateGroupRequest updateGroupRequest) {
 
-        final UpdateGroupRequest aGroupToUpdateRequest = aGroupToUpdate.getRequest();
-        final JpaGroup jpaGroup = getGroup(aGroupToUpdateRequest.getId());
+        final JpaGroup jpaGroup = getGroup(updateGroupRequest.getId());
 
-        jpaGroup.setName(aGroupToUpdateRequest.getNewName());
+        jpaGroup.setName(updateGroupRequest.getNewName());
 
         try {
             update(jpaGroup);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                    "Group Name already exists: " + aGroupToUpdate.getRequest().getNewName(),
+                    "Group Name already exists: " + updateGroupRequest.getNewName(),
                     eee);
         }
     }
@@ -97,8 +95,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public JpaGroup updateGroupStatus(Event<SetStateRequest<Group, GroupState>> aGroupToUpdate) {
-        final SetStateRequest<Group, GroupState> setStateRequest = aGroupToUpdate.getRequest();
+    public JpaGroup updateGroupStatus(SetStateRequest<Group, GroupState> setStateRequest) {
         final JpaGroup jpaGroup = getGroup(setStateRequest.getNewState().getId());
 
         jpaGroup.setState(setStateRequest.getNewState().getState());

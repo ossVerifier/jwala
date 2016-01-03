@@ -31,7 +31,7 @@ public class AddJvmsToGroupRequest implements Request {
         return groupId;
     }
 
-    public Set<AddJvmToGroupRequest> toCommands() {
+    public Set<AddJvmToGroupRequest> toRequests() {
         final Set<AddJvmToGroupRequest> addCommands = new HashSet<>();
         for (final Identifier<Jvm> jvmId : jvmIds) {
             addCommands.add(new AddJvmToGroupRequest(groupId,

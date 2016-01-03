@@ -2,8 +2,6 @@ package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.request.group.RemoveJvmFromGroupRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -11,14 +9,11 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.service.CrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,10 +30,10 @@ public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<Jpa
     }
 
     @Override
-    public void addJvmToGroup(final Event<AddJvmToGroupRequest> anEvent) {
+    public void addJvmToGroup(AddJvmToGroupRequest addJvmToGroupRequest) {
 
-        final JpaGroup group = groupCrudService.getGroup(anEvent.getRequest().getGroupId());
-        final JpaJvm jvm = jvmCrudService.getJvm(anEvent.getRequest().getJvmId());
+        final JpaGroup group = groupCrudService.getGroup(addJvmToGroupRequest.getGroupId());
+        final JpaJvm jvm = jvmCrudService.getJvm(addJvmToGroupRequest.getJvmId());
 
         final List<JpaJvm> jvms;
         if (group.getJvms() != null) {
@@ -62,10 +57,10 @@ public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<Jpa
     }
 
     @Override
-    public void removeJvmFromGroup(final Event<RemoveJvmFromGroupRequest> anEvent) {
+    public void removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest) {
 
-        final JpaGroup group = groupCrudService.getGroup(anEvent.getRequest().getGroupId());
-        final JpaJvm jvm = jvmCrudService.getJvm(anEvent.getRequest().getJvmId());
+        final JpaGroup group = groupCrudService.getGroup(removeJvmFromGroupRequest.getGroupId());
+        final JpaJvm jvm = jvmCrudService.getJvm(removeJvmFromGroupRequest.getJvmId());
 
         if (group.getJvms() != null) {
             final List<JpaJvm> jvms = group.getJvms();
@@ -118,9 +113,9 @@ public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<Jpa
 
     @Override
     public void populateJvmConfig(List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
-        for (UploadJvmTemplateRequest command: uploadJvmTemplateCommands) {
-            if (overwriteExisting || jvmCrudService.getJvmTemplate(command.getConfFileName(), command.getJvm().getId()).isEmpty()){
-                jvmCrudService.uploadJvmTemplateXml(new Event<>(command, AuditEvent.now(user)));
+        for (UploadJvmTemplateRequest uploadJvmTemplateRequest: uploadJvmTemplateCommands) {
+            if (overwriteExisting || jvmCrudService.getJvmTemplate(uploadJvmTemplateRequest.getConfFileName(), uploadJvmTemplateRequest.getJvm().getId()).isEmpty()){
+                jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
             }
         }
     }

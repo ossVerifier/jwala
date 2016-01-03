@@ -2,12 +2,9 @@ package com.siemens.cto.aem.service.state.impl;
 
 import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
 import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -373,7 +370,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         try {
             if (sgsc != null && sgsc.getNewState() != null) {
                 LOGGER.trace("GSS Persist: {}", sgsc.getNewState());
-                groupPersistenceService.updateGroupStatus(Event.create(sgsc, AuditEvent.now(systemUser)));
+                groupPersistenceService.updateGroupStatus(sgsc);
             }
         } catch (final RuntimeException re) {
             LOGGER.warn("GSS Unlocking group due to database exception.", re);

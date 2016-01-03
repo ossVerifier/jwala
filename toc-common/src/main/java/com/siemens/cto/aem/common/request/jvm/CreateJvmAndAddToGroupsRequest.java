@@ -50,7 +50,7 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
         return createCommand;
     }
 
-    public Set<AddJvmToGroupRequest> toAddCommandsFor(final Identifier<Jvm> aJvmId) {
+    public Set<AddJvmToGroupRequest> toAddRequestsFor(final Identifier<Jvm> aJvmId) {
         return new AddJvmToGroupCommandSetBuilder(aJvmId,
                                                   groups).build();
     }

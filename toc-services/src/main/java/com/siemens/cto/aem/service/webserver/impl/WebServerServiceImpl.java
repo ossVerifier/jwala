@@ -1,11 +1,8 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.common.request.webserver.*;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -213,10 +210,9 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional
-    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user) {
-        uploadWebServerTemplateCommand.validate();
-        final Event<UploadWebServerTemplateRequest> event = new Event<>(uploadWebServerTemplateCommand, AuditEvent.now(user));
-        return webServerPersistenceService.uploadWebserverConfigTemplate(event);
+    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
+        uploadWebServerTemplateRequest.validate();
+        return webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
     }
 
     @Override

@@ -83,14 +83,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         logger.debug("Create WS requested: {}", aWebServerToCreate);
-        return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerCommand(),
+        return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(),
                 aUser.getUser()));
     }
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         logger.debug("Update WS requested: {}", aWebServerToCreate);
-        return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerCommand(),
+        return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                 aUser.getUser()));
     }
 
@@ -264,10 +264,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadWebServerTemplateRequest command =
+                    UploadWebServerTemplateRequest request =
                             new UploadHttpdConfTemplateRequest(webServer, file1.getName(), data);
 
-                    return ResponseBuilder.created(webServerService.uploadWebServerConfig(command, aUser.getUser())); // early
+                    return ResponseBuilder.created(webServerService.uploadWebServerConfig(request, aUser.getUser())); // early
                     // out
                     // on
                     // first

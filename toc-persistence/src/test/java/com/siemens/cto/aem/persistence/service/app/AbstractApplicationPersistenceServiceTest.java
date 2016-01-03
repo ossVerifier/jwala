@@ -6,8 +6,6 @@ import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.domain.model.app.*;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -85,9 +83,8 @@ public abstract class
     
     @Test
     public void testCreateApp() {
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -99,9 +96,8 @@ public abstract class
 
     @Test
     public void testCreateNonSecureApp() {
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true);
+        Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -117,9 +113,8 @@ public abstract class
             testCreateApp();
         }
         
-        UpdateApplicationRequest cmd = new UpdateApplicationRequest(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName, true, true);
-        Event<UpdateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.updateApplication(anAppToCreate);
+        UpdateApplicationRequest updateApplicationRequest = new UpdateApplicationRequest(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName, true, true);
+        Application created = applicationPersistenceService.updateApplication(updateApplicationRequest);
         assertEquals(updateAppId, created.getId());
         assertNotNull(created.getGroup());
         assertEquals(expUpdatedGroupId, created.getGroup().getId());
@@ -143,9 +138,8 @@ public abstract class
     
     @Test
     public void testUpdateWARPath() { 
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        Application created = applicationPersistenceService.createApplication(request, "", "", "");
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
@@ -155,9 +149,8 @@ public abstract class
     
     @Test
     public void testRemoveWARPath() {        
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        Application created = applicationPersistenceService.createApplication(request, "", "", "");
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
@@ -172,17 +165,16 @@ public abstract class
 
     @Test
     public void testUpdateSecureFlag() {
-        CreateApplicationRequest cmd = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
-        Event<CreateApplicationRequest> anAppToCreate = new Event<>(cmd, AuditEvent.now(new User(aUser)));
-        Application created = applicationPersistenceService.createApplication(anAppToCreate, "", "", "");
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertTrue(created.isSecure());
 
-        final Event<UpdateApplicationRequest> updateEvent =
-                new Event<>(new UpdateApplicationRequest(created.getId(),
-                                                         created.getGroup().getId(),
-                                                         created.getWebAppContext(),
-                                                         created.getName(), false, true), AuditEvent.now(new User(aUser)));
-        Application updatedApplication = applicationPersistenceService.updateApplication(updateEvent);
+        final UpdateApplicationRequest updateApplicationRequest =
+                new UpdateApplicationRequest(created.getId(),
+                                             created.getGroup().getId(),
+                                             created.getWebAppContext(),
+                                             created.getName(), false, true);
+        Application updatedApplication = applicationPersistenceService.updateApplication(updateApplicationRequest);
         assertTrue(!updatedApplication.isSecure());
     }
 }

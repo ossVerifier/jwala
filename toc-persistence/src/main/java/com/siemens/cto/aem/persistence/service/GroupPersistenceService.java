@@ -3,7 +3,6 @@ package com.siemens.cto.aem.persistence.service;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.*;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
@@ -14,7 +13,7 @@ import java.util.Set;
 
 public interface GroupPersistenceService extends StatePersistenceService<Group, GroupState> {
 
-    Group updateGroup(final Event<UpdateGroupRequest> anEvent) throws NotFoundException;
+    Group updateGroup(UpdateGroupRequest updateGroupRequest) throws NotFoundException;
 
     Group createGroup(CreateGroupRequest createGroupRequest);
 
@@ -34,11 +33,11 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     void removeGroup(String name) throws NotFoundException;
 
-    Group addJvmToGroup(final Event<AddJvmToGroupRequest> anEvent) throws NotFoundException;
+    Group addJvmToGroup(AddJvmToGroupRequest addJvmToGroupRequest) throws NotFoundException;
 
-    Group removeJvmFromGroup(final Event<RemoveJvmFromGroupRequest> anEvent) throws NotFoundException;
+    Group removeJvmFromGroup(RemoveJvmFromGroupRequest removeJvmFromGroupRequest) throws NotFoundException;
 
-    Group updateGroupStatus(Event<SetGroupStateRequest> aGroupToUpdate);
+    Group updateGroupStatus(SetGroupStateRequest setGroupStateRequest);
 
     Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
 

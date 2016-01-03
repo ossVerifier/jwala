@@ -94,7 +94,7 @@ public class JsonJvmsDeserializerTest {
 
         final Identifier<Group> groupId = new Identifier<>(123456L);
         final AddJvmsToGroupRequest addCommand = someJvms.toCommand(groupId);
-        final Set<AddJvmToGroupRequest> jvmCommands = addCommand.toCommands();
+        final Set<AddJvmToGroupRequest> jvmCommands = addCommand.toRequests();
         final Set<Identifier<Jvm>> expectedJvmIds = new IdentifierSetBuilder(Arrays.asList(expectedIds)).build();
 
         assertEquals(expectedJvmIds.size(),

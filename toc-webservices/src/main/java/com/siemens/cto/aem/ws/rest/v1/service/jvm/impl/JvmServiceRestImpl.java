@@ -106,9 +106,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // create the JVM in the database
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
-            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddCommand(), user);
+            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddRequest(), user);
         } else {
-            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmCommand(), user);
+            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
         }
 
         // upload the default resource templates for the newly created
@@ -118,8 +118,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // set the state to NEW for the newly created JVM
         final CurrentState<Jvm, JvmState> theNewState =
                 new CurrentState<>(jvm.getId(), JvmState.JVM_NEW, DateTime.now(), StateType.JVM);
-        SetStateRequest<Jvm, JvmState> setStateNewCommand = new JvmSetStateRequest(theNewState);
-        jvmStateService.setCurrentState(setStateNewCommand, aUser.getUser());
+        SetStateRequest<Jvm, JvmState> jvmSetStateRequest = new JvmSetStateRequest(theNewState);
+        jvmStateService.setCurrentState(jvmSetStateRequest, aUser.getUser());
 
         return ResponseBuilder.created(jvm);
     }
@@ -132,14 +132,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     dataInputStream =
                             new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
                                     + resourceType.getTemplateName()));
-                    UploadJvmTemplateRequest uploadJvmTemplateCommand =
+                    UploadJvmTemplateRequest uploadJvmTemplateRequest =
                             new UploadJvmTemplateRequest(jvm, resourceType.getTemplateName(), dataInputStream) {
                                 @Override
                                 public String getConfFileName() {
                                     return resourceType.getConfigFileName();
                                 }
                             };
-                    jvmService.uploadJvmTemplateXml(uploadJvmTemplateCommand, aUser.getUser());
+                    jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, aUser.getUser());
                 } catch (FileNotFoundException e) {
                     logger.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(),
                             jvm.getJvmName(), e);
@@ -153,7 +153,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final AuthenticatedUser aUser) {
         logger.debug("Update JVM requested: {}", aJvmToUpdate);
-        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmCommand(), aUser.getUser()));
+        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
     }
 
     @Override
@@ -219,14 +219,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    UploadJvmTemplateRequest command = new UploadJvmTemplateRequest(jvm, file1.getName(), data) {
+                    UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, file1.getName(), data) {
                         @Override
                         public String getConfFileName() {
                             return templateName;
                         }
                     };
 
-                    return ResponseBuilder.created(jvmService.uploadJvmTemplateXml(command, aUser.getUser())); // early
+                    return ResponseBuilder.created(jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, aUser.getUser())); // early
                     // out
                     // on
                     // first
@@ -343,8 +343,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // set the state to stopped
             CurrentState<Jvm, JvmState> stoppedState =
                     new CurrentState<>(jvm.getId(), JvmState.SVC_STOPPED, DateTime.now(), StateType.JVM);
-            SetStateRequest<Jvm, JvmState> setStateStoppedCommand = new JvmSetStateRequest(stoppedState);
-            jvmStateService.setCurrentState(setStateStoppedCommand, user.getUser());
+            SetStateRequest<Jvm, JvmState> setStateRequest = new JvmSetStateRequest(stoppedState);
+            jvmStateService.setCurrentState(setStateRequest, user.getUser());
 
         } catch (CommandFailureException e) {
             logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());

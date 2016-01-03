@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
@@ -32,12 +31,11 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     }
 
     @Override
-    public JpaCurrentState updateState(final Event<SetStateRequest<S, T>> anEvent) {
+    public JpaCurrentState updateState(final SetStateRequest<S, T> setStateRequest) {
 
         final JpaCurrentState currentState = new JpaCurrentState();
-        final CurrentState<S,T> newState = anEvent.getRequest().getNewState();
-        final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(),
-                                                           stateType);
+        final CurrentState<S,T> newState = setStateRequest.getNewState();
+        final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(), stateType);
         currentState.setId(id);
         currentState.setState(newState.getState().toPersistentString());
         currentState.setAsOf(newState.getAsOf().toCalendar(Locale.US));

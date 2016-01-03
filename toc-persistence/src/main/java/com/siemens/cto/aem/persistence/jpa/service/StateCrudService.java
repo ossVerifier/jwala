@@ -2,7 +2,6 @@ package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -14,7 +13,7 @@ import java.util.List;
 
 public interface StateCrudService<S, T extends OperationalState> {
 
-    JpaCurrentState updateState(final Event<SetStateRequest<S, T>> anEvent);
+    JpaCurrentState updateState(SetStateRequest<S, T> setStateRequest);
 
     JpaCurrentState getState(final Identifier<S> anId);
 

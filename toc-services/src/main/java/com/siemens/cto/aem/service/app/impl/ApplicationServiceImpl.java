@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -123,13 +121,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Transactional
     @Override
-    public Application updateApplication(UpdateApplicationRequest anUpdateCommand, User anUpdatingUser) {
-        anUpdateCommand.validate();
+    public Application updateApplication(UpdateApplicationRequest updateApplicationRequest, User anUpdatingUser) {
+        updateApplicationRequest.validate();
 
-        final Event<UpdateApplicationRequest> event = new Event<>(anUpdateCommand,
-                AuditEvent.now(anUpdatingUser));
-
-        return applicationPersistenceService.updateApplication(event);
+        return applicationPersistenceService.updateApplication(updateApplicationRequest);
     }
 
     @Transactional
@@ -138,13 +133,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                                          final User aCreatingUser) {
 
         createApplicationRequest.validate();
-        final Event<CreateApplicationRequest> event = new Event<>(createApplicationRequest,
-                AuditEvent.now(aCreatingUser));
 
         final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
         final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
         final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
-        return applicationPersistenceService.createApplication(event, appContext, roleMappingProperties, appProperties);
+        return applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
     }
 
     @Transactional

@@ -1,22 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.group.History;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -36,11 +31,10 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     private EntityManager entityManager;
 
     @Override
-    public JpaJvm createJvm(final Event<CreateJvmRequest> aJvmToCreate) {
+    public JpaJvm createJvm(CreateJvmRequest createJvmRequest) {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
-            final CreateJvmRequest createJvmRequest = aJvmToCreate.getRequest();
 
             jpaJvm.setName(createJvmRequest.getJvmName());
             jpaJvm.setHostName(createJvmRequest.getHostName());
@@ -55,16 +49,15 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + aJvmToCreate.getRequest().getJvmName(),
+                    "JVM with name already exists: " + createJvmRequest.getJvmName(),
                     eee);
         }
     }
 
     @Override
-    public JpaJvm updateJvm(final Event<UpdateJvmRequest> aJvmToUpdate) {
+    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest) {
 
         try {
-            final UpdateJvmRequest updateJvmRequest = aJvmToUpdate.getRequest();
             final Identifier<Jvm> jvmId = updateJvmRequest.getId();
             final JpaJvm jpaJvm = getJvm(jvmId);
 
@@ -81,7 +74,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + aJvmToUpdate.getRequest().getNewJvmName(),
+                    "JVM with name already exists: " + updateJvmRequest.getNewJvmName(),
                     eee);
         }
     }
@@ -122,21 +115,20 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(Event<UploadJvmTemplateRequest> event) {
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
 
-        final UploadJvmTemplateRequest command = event.getRequest();
-        final Jvm jvm = command.getJvm();
+        final Jvm jvm = uploadJvmTemplateRequest.getJvm();
         Identifier<Jvm> id = jvm.getId();
         final JpaJvm jpaJvm = getJvm(id);
 
-        InputStream inStream = command.getData();
+        InputStream inStream = uploadJvmTemplateRequest.getData();
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
         Query query = entityManager.createQuery("SELECT t FROM JpaJvmConfigTemplate t where t.templateName = :tempName and t.jvm = :jpaJvm");
         query.setParameter("jpaJvm", jpaJvm);
-        query.setParameter("tempName", command.getConfFileName());
+        query.setParameter("tempName", uploadJvmTemplateRequest.getConfFileName());
         List<JpaJvmConfigTemplate> templates = query.getResultList();
         JpaJvmConfigTemplate jpaConfigTemplate;
         if (templates.size() == 1) {
@@ -148,7 +140,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             //create
             jpaConfigTemplate = new JpaJvmConfigTemplate();
             jpaConfigTemplate.setJvm(jpaJvm);
-            jpaConfigTemplate.setTemplateName(command.getConfFileName());
+            jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();

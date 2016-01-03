@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.service;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -12,10 +11,10 @@ import java.util.List;
 
 public interface ApplicationPersistenceService {
 
-    Application createApplication(Event<CreateApplicationRequest> anAppToCreate, String appContextTemplate,
+    Application createApplication(CreateApplicationRequest createApplicationRequest, String appContextTemplate,
                                   String roleMappingPropertiesTemplate, String appPropertiesTemplate);
 
-    Application updateApplication(final Event<UpdateApplicationRequest> anAppToUpdate);
+    Application updateApplication(final UpdateApplicationRequest updateApplicationRequest);
 
     Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
 

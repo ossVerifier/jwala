@@ -3,7 +3,6 @@ package com.siemens.cto.toc.files.impl;
 import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.toc.files.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;

@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
@@ -177,7 +176,7 @@ public class ResourceServiceImplTest {
         ResourceInstanceRequest mockResourceInstanceCommand = mock(ResourceInstanceRequest.class);
         when(mockUser.getId()).thenReturn("userId");
         when(groupPesistenceService.getGroup(anyString())).thenReturn(mock(Group.class));
-        when(resourcePersistenceService.createResourceInstance(any(Event.class))).thenReturn(mockResourceInstance);
+        when(resourcePersistenceService.createResourceInstance(any(ResourceInstanceRequest.class))).thenReturn(mockResourceInstance);
         ResourceInstance value = cut.createResourceInstance(mockResourceInstanceCommand, mockUser);
         assertNotNull(value);
     }
@@ -185,7 +184,7 @@ public class ResourceServiceImplTest {
     @Test
     public void testUpdateResourceInstance(){
         User mockUser = mock(User.class);
-        ResourceInstanceRequest mockResourceInstanceCommand = mock(ResourceInstanceRequest.class);
+        ResourceInstanceRequest resourceInstanceRequest = mock(ResourceInstanceRequest.class);
         when(mockUser.getId()).thenReturn("userId");
         final String groupName = "groupName";
         String name = "name";
@@ -194,8 +193,8 @@ public class ResourceServiceImplTest {
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(resourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
         when(groupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
-        when(resourcePersistenceService.updateResourceInstance(any(ResourceInstance.class), any(Event.class))).thenReturn(mockResourceInstance);
-        ResourceInstance value = cut.updateResourceInstance("groupName", "name", mockResourceInstanceCommand, mockUser);
+        when(resourcePersistenceService.updateResourceInstance(any(ResourceInstance.class), any(ResourceInstanceRequest.class))).thenReturn(mockResourceInstance);
+        ResourceInstance value = cut.updateResourceInstance("groupName", "name", resourceInstanceRequest, mockUser);
         assertNotNull(value);
     }
 }

@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
@@ -25,10 +24,9 @@ public abstract class JpaStatePersistenceServiceImpl<S, T extends OperationalSta
         stateCrudService = theService;
     }
 
-    public CurrentState<S, T> updateState(final Event<SetStateRequest<S, T>> aNewState) {
-        final SetStateRequest<S, T> command = aNewState.getRequest();
-        LOGGER.debug("Persisting new state {}", command);
-        final JpaCurrentState currentState = stateCrudService.updateState(aNewState);
+    public CurrentState<S, T> updateState(SetStateRequest<S, T> setStateRequest) {
+        LOGGER.debug("Persisting new state {}", setStateRequest);
+        final JpaCurrentState currentState = stateCrudService.updateState(setStateRequest);
         return build(currentState);
     }
 

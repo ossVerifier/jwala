@@ -1,8 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -34,22 +32,21 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup) {
+    public JpaApplication createApplication(CreateApplicationRequest createApplicationRequest, JpaGroup jpaGroup) {
 
-        final CreateApplicationRequest createAppCommand = anAppToCreate.getRequest();
 
         final JpaApplication jpaApp = new JpaApplication();
-        jpaApp.setName(createAppCommand.getName());
+        jpaApp.setName(createApplicationRequest.getName());
         jpaApp.setGroup(jpaGroup);
-        jpaApp.setWebAppContext(createAppCommand.getWebAppContext());
-        jpaApp.setSecure(createAppCommand.isSecure());
-        jpaApp.setLoadBalanceAcrossServers(createAppCommand.isLoadBalanceAcrossServers());
+        jpaApp.setWebAppContext(createApplicationRequest.getWebAppContext());
+        jpaApp.setSecure(createApplicationRequest.isSecure());
+        jpaApp.setLoadBalanceAcrossServers(createApplicationRequest.isLoadBalanceAcrossServers());
 
         try {
             return create(jpaApp);
         } catch (final EntityExistsException eee) {
             throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
-                    "App already exists: " + anAppToCreate.getRequest().getName(),
+                    "App already exists: " + createApplicationRequest.getName(),
                     eee);
         }
     }
@@ -79,17 +76,16 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public JpaApplication updateApplication(final Event<UpdateApplicationRequest> anApplicationToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup) {
+    public JpaApplication updateApplication(UpdateApplicationRequest updateApplicationRequest, JpaApplication jpaApp, JpaGroup jpaGroup) {
 
-        final UpdateApplicationRequest updateApplicationCommand = anApplicationToUpdate.getRequest();
-        final Identifier<Application> appId = updateApplicationCommand.getId();
+        final Identifier<Application> appId = updateApplicationRequest.getId();
 
         if (jpaApp != null) {
-            jpaApp.setName(updateApplicationCommand.getNewName());
-            jpaApp.setWebAppContext(updateApplicationCommand.getNewWebAppContext());
+            jpaApp.setName(updateApplicationRequest.getNewName());
+            jpaApp.setWebAppContext(updateApplicationRequest.getNewWebAppContext());
             jpaApp.setGroup(jpaGroup);
-            jpaApp.setSecure(updateApplicationCommand.isNewSecure());
-            jpaApp.setLoadBalanceAcrossServers(updateApplicationCommand.isNewLoadBalanceAcrossServers());
+            jpaApp.setSecure(updateApplicationRequest.isNewSecure());
+            jpaApp.setLoadBalanceAcrossServers(updateApplicationRequest.isNewLoadBalanceAcrossServers());
 
             return update(jpaApp);
         } else {

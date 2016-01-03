@@ -181,7 +181,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerRequest();
     }
 
     @Test(expected = BadRequestException.class)
@@ -210,7 +210,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerRequest();
     }
 
     @Test(expected = BadRequestException.class)
@@ -239,7 +239,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerRequest();
     }
 
     @Test(expected = BadRequestException.class)
@@ -268,7 +268,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                          keyTextValue("groupId", firstGroupId)));
 
         final JsonUpdateWebServer update = readValue(json);
-        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = update.toUpdateWebServerRequest();
     }
 
     protected void verifyAssertions(final JsonUpdateWebServer anUpdate,
@@ -281,7 +281,7 @@ public class JsonUpdateWebServerDeserializerTest {
                                     final String aHttpConfigFile,
                                     final String... groupIds) {
 
-        final UpdateWebServerRequest updateCommand = anUpdate.toUpdateWebServerCommand();
+        final UpdateWebServerRequest updateCommand = anUpdate.toUpdateWebServerRequest();
 
         assertEquals(new Identifier<WebServer>(aWebServerId),
                      updateCommand.getId());

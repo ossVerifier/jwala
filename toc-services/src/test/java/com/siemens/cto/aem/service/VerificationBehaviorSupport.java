@@ -2,7 +2,6 @@ package com.siemens.cto.aem.service;
 
 import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +11,7 @@ import static org.mockito.Mockito.mock;
 
 public class VerificationBehaviorSupport {
 
-    protected Set<AddJvmToGroupRequest> createMockedAddCommands(final int aNumberToCreate) {
+    protected Set<AddJvmToGroupRequest> createMockedAddRequests(final int aNumberToCreate) {
 
         final Set<AddJvmToGroupRequest> commands = new HashSet<>(aNumberToCreate);
 
@@ -21,10 +20,6 @@ public class VerificationBehaviorSupport {
         }
 
         return commands;
-    }
-
-    protected <T> Event<T> matchCommandInEvent(final T aCommand) {
-        return argThat(new EventMatcher<>(aCommand));
     }
 
     protected <T extends Request> T matchCommand(final T aCommand) {

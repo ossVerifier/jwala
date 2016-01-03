@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -29,10 +28,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application createApplication(final Event<CreateApplicationRequest> anAppToCreate, final String appContextTemplate,
+    public Application createApplication(CreateApplicationRequest createApplicationRequest, final String appContextTemplate,
                                          final String roleMappingPropertiesTemplate, String appPropertiesTemplate) {
-        JpaGroup jpaGroup = groupCrudService.getGroup(anAppToCreate.getRequest().getGroupId());
-        final JpaApplication jpaApp = applicationCrudService.createApplication(anAppToCreate, jpaGroup);
+        JpaGroup jpaGroup = groupCrudService.getGroup(createApplicationRequest.getGroupId());
+        final JpaApplication jpaApp = applicationCrudService.createApplication(createApplicationRequest, jpaGroup);
         final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
         final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
         applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties", roleMappingPropertiesTemplate, null);
@@ -46,10 +45,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application updateApplication(Event<UpdateApplicationRequest> anAppToUpdate) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(anAppToUpdate.getRequest().getId());
-        final JpaGroup jpaGroup = groupCrudService.getGroup(anAppToUpdate.getRequest().getNewGroupId());
-        final JpaApplication jpaApp = applicationCrudService.updateApplication(anAppToUpdate, jpaOriginal, jpaGroup);
+    public Application updateApplication(UpdateApplicationRequest updateApplicationRequest) {
+        final JpaApplication jpaOriginal = applicationCrudService.getExisting(updateApplicationRequest.getId());
+        final JpaGroup jpaGroup = groupCrudService.getGroup(updateApplicationRequest.getNewGroupId());
+        final JpaApplication jpaApp = applicationCrudService.updateApplication(updateApplicationRequest, jpaOriginal, jpaGroup);
         return JpaAppBuilder.appFrom(jpaApp);
     }
 

@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.*;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -87,12 +85,11 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group updateGroup(final UpdateGroupRequest anUpdateGroupCommand,
+    public Group updateGroup(final UpdateGroupRequest anUpdateGroupRequest,
                              final User anUpdatingUser) {
 
-        anUpdateGroupCommand.validate();
-        Group group = groupPersistenceService.updateGroup(
-                createEvent(anUpdateGroupCommand, anUpdatingUser));
+        anUpdateGroupRequest.validate();
+        Group group = groupPersistenceService.updateGroup(anUpdateGroupRequest);
 
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);
@@ -117,8 +114,7 @@ public class GroupServiceImpl implements GroupService {
                                final User anAddingUser) {
 
         addJvmToGroupRequest.validate();
-        Group group = groupPersistenceService.addJvmToGroup(createEvent(addJvmToGroupRequest,
-                                                                 anAddingUser));
+        Group group = groupPersistenceService.addJvmToGroup(addJvmToGroupRequest);
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
@@ -130,7 +126,7 @@ public class GroupServiceImpl implements GroupService {
                                 final User anAddingUser) {
 
         addJvmsToGroupRequest.validate();
-        for (final AddJvmToGroupRequest command : addJvmsToGroupRequest.toCommands()) {
+        for (final AddJvmToGroupRequest command : addJvmsToGroupRequest.toRequests()) {
             addJvmToGroup(command,
                           anAddingUser);
         }
@@ -148,8 +144,7 @@ public class GroupServiceImpl implements GroupService {
                                     final User aRemovingUser) {
 
         removeJvmFromGroupRequest.validate();
-        Group group = groupPersistenceService.removeJvmFromGroup(createEvent(removeJvmFromGroupRequest,
-                                                                      aRemovingUser));
+        Group group = groupPersistenceService.removeJvmFromGroup(removeJvmFromGroupRequest);
         // TODO: Remove if this is no londer needed.
         // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
@@ -206,8 +201,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
-        return groupPersistenceService.populateJvmConfig(aGroupId, uploadJvmTemplateCommands, user, overwriteExisting);
+    public Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests, User user, boolean overwriteExisting) {
+        return groupPersistenceService.populateJvmConfig(aGroupId, uploadJvmTemplateRequests, user, overwriteExisting);
     }
 
     @Override
@@ -215,11 +210,5 @@ public class GroupServiceImpl implements GroupService {
     public Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
         webServerService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
         return groupPersistenceService.getGroup(aGroupId);
-    }
-
-    protected <T> Event<T> createEvent(final T aCommand,
-                                       final User aUser) {
-        return new Event<T>(aCommand,
-                            AuditEvent.now(aUser));
     }
 }

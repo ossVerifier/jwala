@@ -3,8 +3,6 @@ package com.siemens.cto.aem.persistence.jpa.service.impl;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -233,36 +231,35 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
-        for (UploadWebServerTemplateRequest command : uploadWSTemplateCommands) {
+        for (UploadWebServerTemplateRequest request : uploadWSTemplateCommands) {
             final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);
-            q.setParameter("webServerName", command.getWebServer().getName());
-            q.setParameter("templateName", command.getConfFileName());
+            q.setParameter("webServerName", request.getWebServer().getName());
+            q.setParameter("templateName", request.getConfFileName());
             List results = q.getResultList();
             if (overwriteExisting || results.isEmpty()) {
-                uploadWebServerTemplate(new Event<>(command, AuditEvent.now(user)));
+                uploadWebServerTemplate(request);
             }
         }
     }
 
     @Override
-    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(Event<UploadWebServerTemplateRequest> event) {
-        return uploadWebServerTemplate(event);
+    public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest) {
+        return uploadWebServerTemplate(uploadWebServerTemplateRequest);
     }
 
-    private JpaWebServerConfigTemplate uploadWebServerTemplate(Event<UploadWebServerTemplateRequest> event) {
-        final UploadWebServerTemplateRequest command = event.getRequest();
-        final WebServer webServer = command.getWebServer();
+    private JpaWebServerConfigTemplate uploadWebServerTemplate(UploadWebServerTemplateRequest request) {
+        final WebServer webServer = request.getWebServer();
         Identifier<WebServer> id = webServer.getId();
         final JpaWebServer jpaWebServer = findById(id.getId());
 
-        InputStream inStream = command.getData();
+        InputStream inStream = request.getData();
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
         Query query = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE);
         query.setParameter("webServerName", webServer.getName());
-        query.setParameter("templateName", command.getConfFileName());
+        query.setParameter("templateName", request.getConfFileName());
         List<JpaWebServerConfigTemplate> templates = query.getResultList();
         JpaWebServerConfigTemplate jpaConfigTemplate;
         if (templates.size() == 1) {
@@ -274,7 +271,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             //create
             jpaConfigTemplate = new JpaWebServerConfigTemplate();
             jpaConfigTemplate.setWebServer(jpaWebServer);
-            jpaConfigTemplate.setTemplateName(command.getConfFileName());
+            jpaConfigTemplate.setTemplateName(request.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();

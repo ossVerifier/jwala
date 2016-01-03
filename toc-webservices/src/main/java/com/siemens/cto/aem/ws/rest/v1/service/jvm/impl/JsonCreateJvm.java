@@ -81,7 +81,7 @@ public class JsonCreateJvm {
         return !groupIds.isEmpty();
     }
 
-    public CreateJvmRequest toCreateJvmCommand() throws BadRequestException {
+    public CreateJvmRequest toCreateJvmRequest() throws BadRequestException {
 
         return new CreateJvmRequest(jvmName,
                                     hostName,
@@ -94,7 +94,7 @@ public class JsonCreateJvm {
                                     systemProperties);
     }
 
-    public CreateJvmAndAddToGroupsRequest toCreateAndAddCommand() throws BadRequestException {
+    public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() throws BadRequestException {
         final Set<Identifier<Group>> groups = convertGroupIds();
 
         return new CreateJvmAndAddToGroupsRequest(jvmName,

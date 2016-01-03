@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -77,13 +75,12 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm createJvm(final CreateJvmRequest aCreateJvmCommand,
+    public Jvm createJvm(final CreateJvmRequest aCreateJvmRequest,
                          final User aCreatingUser) {
 
-        aCreateJvmCommand.validate();
-        final Event<CreateJvmRequest> event = new Event<>(aCreateJvmCommand,
-                AuditEvent.now(aCreatingUser));
-        Jvm jvm = jvmPersistenceService.createJvm(event);
+        aCreateJvmRequest.validate();
+
+        Jvm jvm = jvmPersistenceService.createJvm(aCreateJvmRequest);
         // TODO add JVM_NEW state to JVM state table (already done? Appears as NEW on UI)
 
         return jvm;
@@ -91,17 +88,15 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignCommand,
+    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
                                   final User aCreatingUser) {
 
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
 
-        final Jvm newJvm = createJvm(aCreateAndAssignCommand.getCreateCommand(),
-                aCreatingUser);
+        final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
 
-        final Set<AddJvmToGroupRequest> addCommands = aCreateAndAssignCommand.toAddCommandsFor(newJvm.getId());
-        addJvmToGroups(addCommands,
-                aCreatingUser);
+        final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
+        addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
 
         return getJvm(newJvm.getId());
     }
@@ -148,20 +143,16 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public Jvm updateJvm(final UpdateJvmRequest anUpdateJvmCommand,
+    public Jvm updateJvm(final UpdateJvmRequest updateJvmRequest,
                          final User anUpdatingUser) {
 
-        anUpdateJvmCommand.validate();
+        updateJvmRequest.validate();
 
-        final Event<UpdateJvmRequest> event = new Event<>(anUpdateJvmCommand,
-                AuditEvent.now(anUpdatingUser));
+        jvmPersistenceService.removeJvmFromGroups(updateJvmRequest.getId());
 
-        jvmPersistenceService.removeJvmFromGroups(anUpdateJvmCommand.getId());
+        addJvmToGroups(updateJvmRequest.getAssignmentCommands(), anUpdatingUser);
 
-        addJvmToGroups(anUpdateJvmCommand.getAssignmentCommands(),
-                anUpdatingUser);
-
-        return jvmPersistenceService.updateJvm(event);
+        return jvmPersistenceService.updateJvm(updateJvmRequest);
     }
 
     @Override
@@ -316,10 +307,9 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest command, User user) {
-        command.validate();
-        final Event<UploadJvmTemplateRequest> event = new Event<>(command, AuditEvent.now(user));
-        return jvmPersistenceService.uploadJvmTemplateXml(event);
+    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest, User user) {
+        uploadJvmTemplateRequest.validate();
+        return jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
     }
 
     @Override

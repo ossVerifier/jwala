@@ -1,9 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.webserver.impl;
 
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -41,8 +38,8 @@ import static org.junit.Assert.assertTrue;
 @EnableTransactionManagement
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
-                      classes = {WebServerStateCrudServiceImplTest.Config.class
-                      })
+        classes = {WebServerStateCrudServiceImplTest.Config.class
+        })
 public class WebServerStateCrudServiceImplTest {
 
     @Autowired
@@ -62,15 +59,15 @@ public class WebServerStateCrudServiceImplTest {
         final DateTime expectedAsOf = DateTime.now();
 
         final JpaCurrentState state = updateState(expectedId,
-                                                  expectedState,
-                                                  expectedAsOf);
+                expectedState,
+                expectedAsOf);
 
         assertEquals(expectedId.getId(),
-                     state.getId().getId());
+                state.getId().getId());
         assertEquals(StateType.WEB_SERVER,
-                     state.getId().getStateType());
+                state.getId().getStateType());
         assertEquals(expectedState.toPersistentString(),
-                     state.getState());
+                state.getState());
     }
 
     @Test
@@ -80,17 +77,17 @@ public class WebServerStateCrudServiceImplTest {
         final DateTime expectedAsOf = DateTime.now();
 
         updateState(expectedId,
-                    expectedState,
-                    expectedAsOf);
+                expectedState,
+                expectedAsOf);
 
         final JpaCurrentState actualState = impl.getState(expectedId);
 
         assertEquals(expectedId.getId(),
-                     actualState.getId().getId());
+                actualState.getId().getId());
         assertEquals(StateType.WEB_SERVER,
-                     actualState.getId().getStateType());
+                actualState.getId().getStateType());
         assertEquals(expectedState.toPersistentString(),
-                     actualState.getState());
+                actualState.getState());
     }
 
     @Test
@@ -98,11 +95,11 @@ public class WebServerStateCrudServiceImplTest {
 
         final int numberToCreate = 5;
         final Map<Identifier<WebServer>, WebServerReachableState> expectedData = createData(numberToCreate,
-                                                                                        WebServerReachableState.WS_REACHABLE);
+                WebServerReachableState.WS_REACHABLE);
         for (final Map.Entry<Identifier<WebServer>, WebServerReachableState> data : expectedData.entrySet()) {
             updateState(data.getKey(),
-                        data.getValue(),
-                        DateTime.now());
+                    data.getValue(),
+                    DateTime.now());
         }
 
         final List<JpaCurrentState> states = impl.getStates();
@@ -110,7 +107,7 @@ public class WebServerStateCrudServiceImplTest {
             final Identifier<WebServer> actualId = new Identifier<>(state.getId().getId());
             assertTrue(expectedData.containsKey(actualId));
             assertEquals(expectedData.get(actualId).toPersistentString(),
-                         state.getState());
+                    state.getState());
         }
     }
 
@@ -127,11 +124,11 @@ public class WebServerStateCrudServiceImplTest {
     private JpaCurrentState updateState(final Identifier<WebServer> anId,
                                         final WebServerReachableState aState,
                                         final DateTime anAsOf) {
-        return impl.updateState(new Event<SetStateRequest<WebServer, WebServerReachableState>>(new WebServerSetStateRequest(new CurrentState<>(anId,
-                                                                                                                                               aState,
-                                                                                                                                               anAsOf,
-                                                                                                                                               StateType.WEB_SERVER)),
-                                                                                               AuditEvent.now(user)));
+        return impl.updateState(new WebServerSetStateRequest(new CurrentState<>(anId,
+                aState,
+                anAsOf,
+                StateType.WEB_SERVER))
+        );
     }
 
     @Configuration

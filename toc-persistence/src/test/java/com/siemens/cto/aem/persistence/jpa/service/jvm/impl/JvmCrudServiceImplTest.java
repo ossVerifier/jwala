@@ -4,8 +4,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.domain.model.path.Path;
@@ -59,9 +57,8 @@ public class JvmCrudServiceImplTest {
         user.addToThread();
 
         String testJvmName = "testJvmName";
-        CreateJvmRequest createCommand = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
-        Event<CreateJvmRequest> createJvmEvent = new Event<>(createCommand, AuditEvent.now(user));
-        JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmEvent);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
+        JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
     }
 
@@ -74,14 +71,13 @@ public class JvmCrudServiceImplTest {
     public void testUploadJvmTemplateXml() throws FileNotFoundException {
         final String expectedTemplateName = SERVER_XML;
         File testTemplate = new File("./src/test/resources/HttpdSslConfTemplate.tpl");
-        UploadJvmTemplateRequest uploadCommand = new UploadJvmTemplateRequest(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
             @Override
             public String getConfFileName() {
                 return SERVER_XML;
             }
         };
-        Event<UploadJvmTemplateRequest> uploadEvent = new Event<>(uploadCommand, AuditEvent.now(user));
-        JpaJvmConfigTemplate result = jvmCrudService.uploadJvmTemplateXml(uploadEvent);
+        JpaJvmConfigTemplate result = jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
         assertEquals(expectedTemplateName, result.getTemplateName());
 
         // test get resource template names

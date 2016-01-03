@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.resource.impl;
 
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -121,16 +119,16 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceCommand, final User creatingUser) {
-        this.groupPersistenceService.getGroup(createResourceInstanceCommand.getGroupName());
-        return this.resourcePersistenceService.createResourceInstance(new Event<ResourceInstanceRequest>(createResourceInstanceCommand, AuditEvent.now(creatingUser)));
+    public ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceRequest, final User creatingUser) {
+        this.groupPersistenceService.getGroup(createResourceInstanceRequest.getGroupName());
+        return this.resourcePersistenceService.createResourceInstance(createResourceInstanceRequest);
     }
 
     @Override
     @Transactional
-    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceCommand, final User updatingUser) {
+    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceRequest, final User updatingUser) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, new Event<ResourceInstanceRequest>(updateResourceInstanceCommand, AuditEvent.now(updatingUser)));
+        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, updateResourceInstanceRequest);
     }
 
     @Override

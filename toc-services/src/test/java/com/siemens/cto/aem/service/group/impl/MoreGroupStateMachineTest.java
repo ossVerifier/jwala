@@ -2,11 +2,8 @@ package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -17,6 +14,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
@@ -178,7 +176,7 @@ public class MoreGroupStateMachineTest {
 
         });
 
-        groupPersistenceService.addJvmToGroup(Event.create(new AddJvmToGroupRequest(mockGroup.getId(), jvm.getId()),  AuditEvent.now(testUser)));
+        groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(mockGroup.getId(), jvm.getId()));
 
         when(jvmStatePersistenceService.getState(eq(jvm.getId()))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
 
@@ -198,24 +196,24 @@ public class MoreGroupStateMachineTest {
             }
         });
 
-        when(jvmStatePersistenceService.updateState(Mockito.any(Event.class))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
+        when(jvmStatePersistenceService.updateState(Mockito.any(SetStateRequest.class))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
 
             @Override
             public CurrentState<Jvm, JvmState> answer(InvocationOnMock invocation) throws Throwable {
-                Event<JvmSetStateRequest> event = (Event<JvmSetStateRequest>) invocation.getArguments()[0];
-                currentJvmState = new CurrentState<>(jvm.getId(), event.getRequest().getNewState().getState(), DateTime.now(), StateType.JVM);
+                JvmSetStateRequest request = (JvmSetStateRequest) invocation.getArguments()[0];
+                currentJvmState = new CurrentState<>(jvm.getId(), request.getNewState().getState(), DateTime.now(), StateType.JVM);
                 return currentJvmState;
            }
 
         });
 
-        when(groupPersistenceService.updateGroupStatus(Mockito.any(Event.class))).thenAnswer(new Answer<Group>() {
+        when(groupPersistenceService.updateGroupStatus(Mockito.any(SetGroupStateRequest.class))).thenAnswer(new Answer<Group>() {
 
             @Override
             public Group answer(InvocationOnMock invocation) throws Throwable {
 
-                Event<SetGroupStateRequest> event = (Event<SetGroupStateRequest>) invocation.getArguments()[0];
-                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), event.getRequest().getNewState().getState(), DateTime.now());
+                SetGroupStateRequest setGroupStateRequest = (SetGroupStateRequest) invocation.getArguments()[0];
+                mockGroup = new Group(mockGroup.getId(), mockGroup.getName(), mockGroup.getJvms(), setGroupStateRequest.getNewState().getState(), DateTime.now());
                 return mockGroup;
             }
 

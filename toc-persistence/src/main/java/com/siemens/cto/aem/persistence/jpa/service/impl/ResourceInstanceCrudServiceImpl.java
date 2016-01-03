@@ -3,7 +3,6 @@ package com.siemens.cto.aem.persistence.jpa.service.impl;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.exception.NotUniqueException;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
@@ -27,10 +26,9 @@ public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<Jpa
     }
 
     @Override
-    public JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> aResourceInstanceToCreate) throws NotUniqueException {
+    public JpaResourceInstance createResourceInstance(final ResourceInstanceRequest resourceInstanceRequest) throws NotUniqueException {
 
         JpaResourceInstance jpaResourceInstance = new JpaResourceInstance();
-        ResourceInstanceRequest resourceInstanceRequest = aResourceInstanceToCreate.getRequest();
 
         final JpaGroup group = groupCrudService.getGroup(resourceInstanceRequest.getGroupName());
 
@@ -43,9 +41,7 @@ public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<Jpa
     }
 
     @Override
-    public JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> aResourceInstanceToUpdate) {
-        ResourceInstanceRequest resourceInstanceRequest = aResourceInstanceToUpdate.getRequest();
-
+    public JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final ResourceInstanceRequest resourceInstanceRequest) {
         JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setAttributes(resourceInstanceRequest.getAttributes());
         return update(jpaResourceInstance);
@@ -53,9 +49,7 @@ public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<Jpa
     }
 
     @Override
-    public JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceNameEvent) {
-        ResourceInstanceRequest resourceInstanceRequest = updateResourceInstanceNameEvent.getRequest();
-
+    public JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, ResourceInstanceRequest resourceInstanceRequest) {
         JpaResourceInstance jpaResourceInstance = getJpaResourceInstance(resourceInstanceId);
         jpaResourceInstance.setName(resourceInstanceRequest.getName());
 

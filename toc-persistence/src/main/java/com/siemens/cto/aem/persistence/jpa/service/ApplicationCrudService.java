@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -18,9 +17,9 @@ import java.util.List;
 
 public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
-    JpaApplication createApplication(final Event<CreateApplicationRequest> anAppToCreate, JpaGroup jpaGroup);
+    JpaApplication createApplication(CreateApplicationRequest createApplicationRequest, JpaGroup jpaGroup);
 
-    JpaApplication updateApplication(final Event<UpdateApplicationRequest> anAppToUpdate, JpaApplication jpaApp, JpaGroup jpaGroup);
+    JpaApplication updateApplication(UpdateApplicationRequest updateApplicationRequest, JpaApplication jpaApp, JpaGroup jpaGroup);
 
     void removeApplication(final Identifier<Application> anAppId);
 

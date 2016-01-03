@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
@@ -13,11 +12,11 @@ import java.util.List;
  */
 public interface ResourceInstanceCrudService extends CrudService<JpaResourceInstance> {
 
-    JpaResourceInstance createResourceInstance(final Event<ResourceInstanceRequest> createResourceInstanceCommandEvent);
+    JpaResourceInstance createResourceInstance(final ResourceInstanceRequest resourceInstanceRequest);
 
-    JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceCommandEvent);
+    JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final ResourceInstanceRequest resourceInstanceRequest);
 
-    JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final Event<ResourceInstanceRequest> updateResourceInstanceNameCommandEvent);
+    JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final ResourceInstanceRequest resourceInstanceRequest);
 
     JpaResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
 

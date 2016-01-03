@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
-    private GroupServiceImpl impl;
+    private GroupServiceImpl groupService;
     private GroupPersistenceService groupPersistenceService;
     private GroupStateService.API groupStateService;
     private StateNotificationWorker stateNotificationWorker;
@@ -43,7 +43,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         stateNotificationWorker = mock(StateNotificationWorker.class);
         webServerService = mock(WebServerService.class);
 
-        impl = new GroupServiceImpl(groupPersistenceService,
+        groupService = new GroupServiceImpl(groupPersistenceService,
                                     webServerService,
                                     groupStateService,
                                     stateNotificationWorker);
@@ -55,8 +55,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final CreateGroupRequest command = mock(CreateGroupRequest.class);
 
-        impl.createGroup(command,
-                         user);
+        groupService.createGroup(command,
+                user);
 
         verify(command, times(1)).validate();
         verify(groupPersistenceService, times(1)).createGroup(command);
@@ -67,7 +67,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Identifier<Group> id = new Identifier<>(-123456L);
 
-        impl.getGroup(id);
+        groupService.getGroup(id);
 
         verify(groupPersistenceService, times(1)).getGroup(eq(id));
     }
@@ -75,7 +75,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testGetGroups() {
 
-        impl.getGroups();
+        groupService.getGroups();
 
         verify(groupPersistenceService, times(1)).getGroups();
     }
@@ -85,7 +85,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String fragment = "unused";
 
-        impl.findGroups(fragment);
+        groupService.findGroups(fragment);
 
         verify(groupPersistenceService, times(1)).findGroups(eq(fragment));
     }
@@ -95,16 +95,16 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final String badFragment = "";
 
-        impl.findGroups(badFragment);
+        groupService.findGroups(badFragment);
     }
 
     @Test
     public void testUpdateGroup() throws InterruptedException {
-        final UpdateGroupRequest command = mock(UpdateGroupRequest.class);
-        impl.updateGroup(command, user);
+        final UpdateGroupRequest updateGroupRequest = mock(UpdateGroupRequest.class);
+        groupService.updateGroup(updateGroupRequest, user);
 
-        verify(command).validate();
-        verify(groupPersistenceService).updateGroup(matchCommandInEvent(command));
+        verify(updateGroupRequest).validate();
+        verify(groupPersistenceService).updateGroup(updateGroupRequest);
 
         // TODO: Remove if this is no londer needed.
         // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
@@ -115,7 +115,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Identifier<Group> id = new Identifier<>(-123456L);
 
-        impl.removeGroup(id);
+        groupService.removeGroup(id);
 
         verify(groupPersistenceService, times(1)).removeGroup(eq(id));
     }
@@ -123,13 +123,12 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testAddJvmToGroup() {
 
-        final AddJvmToGroupRequest command = mock(AddJvmToGroupRequest.class);
+        final AddJvmToGroupRequest addJvmToGroupRequest = mock(AddJvmToGroupRequest.class);
 
-        impl.addJvmToGroup(command,
-                user);
+        groupService.addJvmToGroup(addJvmToGroupRequest, user);
 
-        verify(command, times(1)).validate();
-        verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(command));
+        verify(addJvmToGroupRequest, times(1)).validate();
+        verify(groupPersistenceService, times(1)).addJvmToGroup(addJvmToGroupRequest);
 
         // TODO: Remove if this is no londer needed.
         // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
@@ -138,31 +137,29 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testAddJvmsToGroup() {
 
-        final AddJvmsToGroupRequest command = mock(AddJvmsToGroupRequest.class);
+        final AddJvmsToGroupRequest addJvmsToGroupRequest = mock(AddJvmsToGroupRequest.class);
 
-        final Set<AddJvmToGroupRequest> addCommands = createMockedAddCommands(5);
-        when(command.toCommands()).thenReturn(addCommands);
+        final Set<AddJvmToGroupRequest> addJvmToGroupRequests = createMockedAddRequests(5);
+        when(addJvmsToGroupRequest.toRequests()).thenReturn(addJvmToGroupRequests);
 
-        impl.addJvmsToGroup(command,
-                            user);
+        groupService.addJvmsToGroup(addJvmsToGroupRequest, user);
 
-        verify(command, times(1)).validate();
-        for (final AddJvmToGroupRequest addCommand : addCommands) {
-            verify(addCommand, times(1)).validate();
-            verify(groupPersistenceService, times(1)).addJvmToGroup(matchCommandInEvent(addCommand));
+        verify(addJvmsToGroupRequest, times(1)).validate();
+        for (final AddJvmToGroupRequest addJvmToGroupRequest: addJvmToGroupRequests) {
+            verify(addJvmToGroupRequest, times(1)).validate();
+            verify(groupPersistenceService, times(1)).addJvmToGroup(addJvmToGroupRequest);
         }
     }
 
     @Test
     public void testRemoveJvmFromGroup() {
 
-        final RemoveJvmFromGroupRequest command = mock(RemoveJvmFromGroupRequest.class);
+        final RemoveJvmFromGroupRequest removeJvmFromGroupRequest = mock(RemoveJvmFromGroupRequest.class);
 
-        impl.removeJvmFromGroup(command,
-                user);
+        groupService.removeJvmFromGroup(removeJvmFromGroupRequest, user);
 
-        verify(command, times(1)).validate();
-        verify(groupPersistenceService, times(1)).removeJvmFromGroup(matchCommandInEvent(command));
+        verify(removeJvmFromGroupRequest, times(1)).validate();
+        verify(groupPersistenceService, times(1)).removeJvmFromGroup(removeJvmFromGroupRequest);
 
         // TODO: Remove if this is no londer needed.
         // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
@@ -182,7 +179,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(false))).thenReturn(group);
 
-        final List<Jvm> otherGroupingDetailsOfJvm = impl.getOtherGroupingDetailsOfJvms(new Identifier<Group>("1"));
+        final List<Jvm> otherGroupingDetailsOfJvm = groupService.getOtherGroupingDetailsOfJvms(new Identifier<Group>("1"));
 
         assertTrue(otherGroupingDetailsOfJvm.size() == 1);
         assertEquals(otherGroupingDetailsOfJvm.get(0).getGroups().size(), 2);
@@ -218,7 +215,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(true))).thenReturn(groupSet.get(2));
 
         final List<WebServer> otherGroupingDetailsOfWebServer =
-                impl.getOtherGroupingDetailsOfWebServers(new Identifier<Group>("1"));
+                groupService.getOtherGroupingDetailsOfWebServers(new Identifier<Group>("1"));
         assertTrue(otherGroupingDetailsOfWebServer.size() == 1);
 
         String groupNames = "";

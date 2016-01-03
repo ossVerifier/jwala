@@ -2,7 +2,6 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
-import com.siemens.cto.aem.common.domain.model.event.Event;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -197,7 +196,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test(expected = BadRequestException.class)
     public void testCreateBadRequest() {
-        when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
         CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "", "", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -208,7 +207,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreate() {
-        when(applicationPersistenceService.createApplication(any(Event.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
         CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -220,7 +219,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUpdate() {
-        when(applicationPersistenceService.updateApplication(any(Event.class))).thenReturn(mockApplication2);
+        when(applicationPersistenceService.updateApplication(any(UpdateApplicationRequest.class))).thenReturn(mockApplication2);
 
         UpdateApplicationRequest cac = new UpdateApplicationRequest(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true, true);
         Application created = applicationService.updateApplication(cac, new User("user"));
@@ -235,19 +234,6 @@ public class ApplicationServiceImplTest {
         applicationService.removeApplication(mockApplication.getId(), testUser);
 
         verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));
-    }
-
-    private class IsValidUploadEvent extends ArgumentMatcher<Event<UploadWebArchiveRequest>> {
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean matches(Object arg) {
-            Event<UploadWebArchiveRequest> event = (Event<UploadWebArchiveRequest>) arg;
-            UploadWebArchiveRequest uwac = event.getRequest();
-            uwac.validate();
-            return true;
-        }
-
     }
 
     @SuppressWarnings("unchecked")

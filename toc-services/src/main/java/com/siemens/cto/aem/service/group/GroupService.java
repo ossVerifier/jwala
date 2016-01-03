@@ -13,8 +13,7 @@ import java.util.List;
 
 public interface GroupService {
 
-    Group createGroup(final CreateGroupRequest aCreateGroupCommand,
-                      final User aCreatingUser);
+    Group createGroup(final CreateGroupRequest aCreateGroupCommand, final User aCreatingUser);
 
     Group getGroup(final Identifier<Group> aGroupId);
 
@@ -28,21 +27,17 @@ public interface GroupService {
 
     List<Group> findGroups(final String aGroupNameFragment);
 
-    Group updateGroup(final UpdateGroupRequest anUpdateGroupCommand,
-                      final User anUpdatingUser);
+    Group updateGroup(final UpdateGroupRequest anUpdateGroupCommand, final User anUpdatingUser);
 
     void removeGroup(final Identifier<Group> aGroupId);
 
     void removeGroup(String name);
 
-    Group addJvmToGroup(final AddJvmToGroupRequest addJvmToGroupRequest,
-                        final User anAddingUser);
+    Group addJvmToGroup(final AddJvmToGroupRequest addJvmToGroupRequest,final User anAddingUser);
 
-    Group addJvmsToGroup(final AddJvmsToGroupRequest addJvmsToGroupRequest,
-                         final User anAddingUser);
+    Group addJvmsToGroup(final AddJvmsToGroupRequest addJvmsToGroupRequest, final User anAddingUser);
 
-    Group removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest,
-                             final User aRemovingUser);
+    Group removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest,final User aRemovingUser);
 
     /**
      * Gets the connection details of JVMs under a group specified by id.
