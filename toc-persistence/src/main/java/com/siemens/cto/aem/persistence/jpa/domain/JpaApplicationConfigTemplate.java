@@ -15,7 +15,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm")
 })
-public class JpaApplicationConfigTemplate extends AbstractEntity<JpaApplicationConfigTemplate> {
+public class JpaApplicationConfigTemplate {
 
     public static final String GET_APP_RESOURCE_TEMPLATE_NAMES = "getAppResourceTemplateNames";
     public static final String GET_APP_TEMPLATE_CONTENT = "getAppTemplateContent";
