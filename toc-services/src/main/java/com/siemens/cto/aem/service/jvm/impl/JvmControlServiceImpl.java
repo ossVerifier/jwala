@@ -34,6 +34,7 @@ import java.util.ArrayList;
 public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmControlServiceImpl.class);
+    public static final String FORCED_STOPPED = "FORCED STOPPED";
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final JvmControlServiceLifecycle jvmControlServiceLifecycle;
@@ -85,7 +86,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             if (commandOutput != null && commandOutput.getReturnCode().wasSuccessful()) {
                 logger.info("exiting controlJvm for command {}", controlJvmRequest);
-                jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser);
+                jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser, "");
             } else {
                 if (commandOutput != null) {
                     final String result;
@@ -101,7 +102,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                             commandOutput = new CommandOutput(new ExecReturnCode(0),
                                     commandOutput.getStandardOutput(),
                                     commandOutput.getStandardError());
-                            jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser);
+                            jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser, "");
                             break;
                         case ExecReturnCode.STP_EXIT_CODE_NO_OP:
                             logger.debug("exiting controlJvm with result NOOP for command {}: '{}'", controlJvmRequest, result);
@@ -119,6 +120,11 @@ public class JvmControlServiceImpl implements JvmControlService {
                                     aUser);
                             throw new ExternalSystemErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                                     "Error controlling JVM " + jvm.getJvmName() + ": " + result);
+                        case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                            commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED,
+                                    commandOutput.getStandardError());
+                            jvmControlServiceLifecycle.completeState(controlJvmRequest, aUser, FORCED_STOPPED);
+                            break;
                         default:
                             processDefaultReturnCode(controlJvmRequest, aUser, prevState, ctrlOp, commandOutput, jvm.getJvmName(), result);
                             break;
@@ -259,13 +265,13 @@ public class JvmControlServiceImpl implements JvmControlService {
          */
         @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
-        public void completeState(ControlJvmRequest controlJvmRequest, User aUser) {
+        public void completeState(final ControlJvmRequest controlJvmRequest, final User aUser, final String msg) {
             JvmState jcs = controlJvmRequest.getControlOperation().getConfirmedState();
             if (jcs != null) {
-                JvmSetStateRequest jssc = new JvmSetStateCommandBuilder()
-                        .setJvmId(controlJvmRequest.getJvmId())
-                        .setJvmState(jcs)
-                        .build();
+                JvmSetStateRequest jssc = new JvmSetStateCommandBuilder().setJvmId(controlJvmRequest.getJvmId())
+                                                                         .setJvmState(jcs)
+                                                                         .setMessage(msg)
+                                                                         .build();
                 jvmStateService.setCurrentState(jssc, aUser);
             }
         }

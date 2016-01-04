@@ -363,6 +363,25 @@ var groupOperationsHelper = function(){
             var result = {};
             keyById(result, jvms, "id");
             return result;
+        },
+
+        /**
+         * Processes raw state that comes from the "control" Rest service(s).
+         * Basically what this does as of Jan 4, 2015 is that it checks if the msg property of data is equal to "FORCE STOPPED".
+         * If it is, the "extracted status" will have a state of "FORCE STOPPED" and the msg would be set to blank.
+         * This was done to have the "FORCE KILL" message be displayed in the state column and preventing the error
+         * icon from appearing.
+         */
+        extractStateDetails: function(data) {
+            var msg = data.message;
+            var state = data.stateString;
+            var asOf = data.asOf;
+            if (msg === "FORCED STOPPED") {
+                state = msg;
+                msg = "";
+            }
+            return {state, asOf, msg};
         }
+
     }
 }();

@@ -198,9 +198,8 @@ var GroupOperations = React.createClass({
 
 
                                 } else {
-                                    webServerStatusWidget.setStatus(newWebServerStates[i].stateString,
-                                                                    newWebServerStates[i].asOf,
-                                                                    newWebServerStates[i].message);
+                                    var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerStates[i]);
+                                    webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                                 }
                             }
                         }
@@ -236,9 +235,8 @@ var GroupOperations = React.createClass({
                                     }
 
                                 } else {
-                                    jvmStatusWidget.setStatus(newJvmStates[i].stateString,
-                                                              newJvmStates[i].asOf,
-                                                              newJvmStates[i].message);
+                                    var stateDetails = groupOperationsHelper.extractStateDetails(newJvmStates[i]);
+                                    jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                                 }
                             }
                         }

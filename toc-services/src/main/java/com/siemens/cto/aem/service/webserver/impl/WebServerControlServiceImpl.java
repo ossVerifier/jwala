@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -18,7 +17,6 @@ import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.state.StateService;
@@ -43,6 +41,7 @@ import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
+    private static final String FORCED_STOPPED = "FORCED STOPPED";
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
@@ -85,7 +84,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             webServerStateService.setCurrentState(setStateCommand, aUser);
 
-            final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
                     webServer.getName(),
                     webServer.getHost(),
                     controlWebServerRequest.getControlOperation(),
@@ -104,6 +103,10 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                                     WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
                     webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
                             finalWebServerState), aUser);
+                } else if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
+                    webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
+                            WebServerReachableState.WS_UNREACHABLE, FORCED_STOPPED), aUser);
+                    commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, "");
                 } else {
                     setFailedState(controlWebServerRequest, aUser, commandOutput.extractMessageFromStandardOutput());
                 }

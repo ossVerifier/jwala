@@ -288,9 +288,10 @@ var GroupOperationsDataTable = React.createClass({
                                                         if (self.props.parent.pollError) {
                                                             statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
                                                         } else {
-                                                            statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                                   data.applicationResponseContent[0].asOf,
-                                                                                   data.applicationResponseContent[0].message);
+                                                            var stateDetails = groupOperationsHelper.extractStateDetails(data.applicationResponseContent[0]);
+                                                            statusWidget.setStatus(stateDetails.state,
+                                                                                   stateDetails.asOf,
+                                                                                   stateDetails.msg);
                                                         }
                                                     });
 
@@ -315,10 +316,10 @@ var GroupOperationsDataTable = React.createClass({
                                                             if (data.applicationResponseContent[0].stateString !== GroupOperations.FAILED &&
                                                                 data.applicationResponseContent[0].stateString !== GroupOperations.START_SENT &&
                                                                 data.applicationResponseContent[0].stateString !== GroupOperations.STOP_SENT) {
-                                                                    statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                                           data.applicationResponseContent[0].asOf,
-                                                                                           data.applicationResponseContent[0].message);
-
+                                                                    var stateDetails = groupOperationsHelper.extractStateDetails(data.applicationResponseContent[0]);
+                                                                    statusWidget.setStatus(stateDetails.state,
+                                                                                           stateDetails.asOf,
+                                                                                           stateDetails.msg);
                                                             }
                                                         }
                                                     });
