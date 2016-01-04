@@ -73,15 +73,20 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     private void prePersist() {
         final Calendar now = Calendar.getInstance();
         setCreateDate(now);
-        setCreateBy(User.getThreadLocalUser().getId());
+        // TODO: Determine why User.getThreadLocalUser is sometimes null. One confirmed case is when Spring Integration spuns the thread.
+        // Note: We need the code below to prevent nullpointer exception.
+        final String userId = User.getThreadLocalUser() == null ? createBy : User.getThreadLocalUser().getId();
+        setCreateBy(userId);
         setLastUpdateDate(now);
-        setUpdateBy(User.getThreadLocalUser().getId());
+        setUpdateBy(userId);
     }
 
     @PreUpdate
     private void preUpdate() {
         final Calendar now = Calendar.getInstance();
         setLastUpdateDate(now);
-        setUpdateBy(User.getThreadLocalUser().getId());
+        // TODO: Determine why User.getThreadLocalUser is sometimes null. One confirmed case is when Spring Integration spuns the thread.
+        // Note: We need the tertiary operation to prevent nullpointer exception.
+        setUpdateBy(User.getThreadLocalUser() == null ? createBy : User.getThreadLocalUser().getId());
     }
 }
