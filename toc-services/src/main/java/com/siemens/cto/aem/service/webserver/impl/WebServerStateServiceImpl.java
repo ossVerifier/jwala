@@ -39,8 +39,4 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
         throw new UnsupportedOperationException("Deprecated!");
     }
 
-    @Override
-    public void checkForStoppedStates() {
-        throw new UnsupportedOperationException("WebServer terminated state checking not required for reverse polling.");
-    }
 }

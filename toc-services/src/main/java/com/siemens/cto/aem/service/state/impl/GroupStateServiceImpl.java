@@ -416,10 +416,4 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         this.applicationContext = applicationContext;
     }
 
-    @Override
-    // TODO: Deprecate
-    public void checkForStoppedStates() {
-        throw new UnsupportedOperationException("Group terminated state checking not implemented, supported, or required.");
-    }
-
 }

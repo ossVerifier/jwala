@@ -65,25 +65,4 @@ public class JvmStateServiceImpl extends StateServiceImpl<Jvm, JvmState> impleme
         throw new UnsupportedOperationException("Deprecated!");
     }
 
-    /** 
-     * Periodically invoked by spring to mark services that 
-     * are stuck in SHUTTING DOWN (due to manual termination) 
-
-     * Parameterized in toc-defaults:
-     * states.stopped-check.initial-delay.millis=120000
-     * states.stopped-check.period.millis=60000
-     * states.stopped-check.jvm.max-stop-time.millis=120000
-     */
-    @Scheduled(initialDelayString="${states.stopped-check.initial-delay.millis}", fixedRateString="${states.stopped-check.period.millis}")
-    @Transactional
-    @Override
-    public void checkForStoppedStates() {
-        Calendar cutoff = GregorianCalendar.getInstance();
-        cutoff.add(Calendar.MILLISECOND, 0-serviceStoppedMillis);
-        List<CurrentState<Jvm, JvmState>> states = getPersistenceService().markStaleStates(StateType.JVM, JvmState.SVC_STOPPED, jvmStoppingStatesToCheck, cutoff.getTime(), AuditEvent.now(User.getSystemUser()));
-        for(CurrentState<Jvm, JvmState> anUpdatedState : states) {
-            getStateNotificationWorker().sendStateChangeNotification(groupStateService, anUpdatedState);
-            getNotificationService().notifyStateUpdated(anUpdatedState);
-        }
-    }
 }
