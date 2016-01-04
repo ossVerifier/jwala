@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -9,18 +7,25 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 
-import javax.persistence.*;
+import javax.persistence.EntityExistsException;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.Query;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer> implements WebServerCrudService {
 
@@ -29,19 +34,26 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public WebServer createWebServer(final WebServer webServer, final String createdBy) {
-        final JpaWebServer jpaWebServer = new JpaWebServer();
+        try {
+            final JpaWebServer jpaWebServer = new JpaWebServer();
 
-        jpaWebServer.setName(webServer.getName());
-        jpaWebServer.setHost(webServer.getHost());
-        jpaWebServer.setPort(webServer.getPort());
-        jpaWebServer.setHttpsPort(webServer.getHttpsPort());
-        jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
-        jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
-        jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
-        jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
-        jpaWebServer.setCreateBy(createdBy);
+            jpaWebServer.setName(webServer.getName());
+            jpaWebServer.setHost(webServer.getHost());
+            jpaWebServer.setPort(webServer.getPort());
+            jpaWebServer.setHttpsPort(webServer.getHttpsPort());
+            jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
+            jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
+            jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
+            jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
+            jpaWebServer.setCreateBy(createdBy);
 
-        return webServerFrom(create(jpaWebServer));
+            return webServerFrom(create(jpaWebServer));
+        } catch (final EntityExistsException eee) {
+            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
+                    "Web server with name already exists: " + webServer.getName(),
+                    eee);
+        }
+
     }
 
     @Override
