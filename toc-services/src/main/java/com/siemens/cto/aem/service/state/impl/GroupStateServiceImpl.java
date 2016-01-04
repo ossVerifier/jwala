@@ -46,21 +46,21 @@ import java.util.concurrent.TimeUnit;
 public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API, ApplicationContextAware {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateServiceImpl.class);
-    public static final String GSS_UNLOCK = "GSS Unlock: {}";
-    public static final String GSS_UNLOCKED_AFFECTED_GROUPS_DUE_TO_EXCEPTION = "GSS Unlocked affected groups due to exception.";
-    public static final String GROUP_STATE_MACHINE = "groupStateMachine";
+    private static final String GSS_UNLOCK = "GSS Unlock: {}";
+    private static final String GSS_UNLOCKED_AFFECTED_GROUPS_DUE_TO_EXCEPTION = "GSS Unlocked affected groups due to exception.";
+    private static final String GROUP_STATE_MACHINE = "groupStateMachine";
 
-    private GroupPersistenceService groupPersistenceService;
+    private final GroupPersistenceService groupPersistenceService;
 
-    private JvmPersistenceService jvmPersistenceService;
+    private final JvmPersistenceService jvmPersistenceService;
 
-    private WebServerPersistenceService webServerCrudService;
+    private final WebServerPersistenceService webServerCrudService;
 
-    private Map<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
+    private final Map<Identifier<Group>, LockableGroupStateMachine> allGSMs = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
 
-    private User systemUser;
+    private final User systemUser;
 
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
                                  StateNotificationService theNotificationService, StateType theStateType,
@@ -90,13 +90,13 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         Jvm jvm = jvmPersistenceService.getJvm(jvmId);
 
         if (jvm == null) {
-            return Collections.<SetGroupStateRequest>emptyList();
+            return Collections.emptyList();
         }
 
         Set<Group> groups = jvm.getGroups();
 
         if (groups == null || groups.isEmpty()) {
-            return Collections.<SetGroupStateRequest>emptyList();
+            return Collections.emptyList();
         }
 
         return refreshGroups(groups);
@@ -164,13 +164,13 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         WebServer ws = webServerCrudService.getWebServer(wsId);
 
         if (ws == null) {
-            return Collections.<SetGroupStateRequest>emptyList();
+            return Collections.emptyList();
         }
 
         Collection<Group> groups = ws.getGroups();
 
         if (groups == null || groups.isEmpty()) {
-            return Collections.<SetGroupStateRequest>emptyList();
+            return Collections.emptyList();
         }
 
         return refreshCollectionGroups(groups);
@@ -204,9 +204,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
      * @param lockedGsms a collection of active leases
      * @return null for a null message
      */
-    private SetGroupStateRequest refreshGroupState(
-            List<ReadWriteLease> lockedGsms,
-            Group group)
+    private SetGroupStateRequest refreshGroupState(List<ReadWriteLease> lockedGsms, Group group)
             throws InterruptedException {
         // Serialize access
         LockableGroupStateMachine lockableGsm = this.getLockableGsm(group.getId());
@@ -246,6 +244,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
      * @param groupId group to get a state machine for.
      * @return the state machine
      */
+    @SuppressWarnings("unchecked")
     private LockableGroupStateMachine getLockableGsm(final Identifier<Group> groupId) {
         LockableGroupStateMachine tempGsm = new LockableGroupStateMachine();
         LockableGroupStateMachine actualGsm = (LockableGroupStateMachine) ((ConcurrentHashMap) allGSMs).putIfAbsent(groupId, tempGsm);
@@ -264,7 +263,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     private ReadWriteLease leaseWritableGsm(final Identifier<Group> groupId, final User user) {
         LockableGroupStateMachine gsm = getLockableGsm(groupId);
 
-        ReadWriteLease lockedGsmLease = gsm.lockForWriteWithResources(new Initializer() {
+        return gsm.lockForWriteWithResources(new Initializer() {
             @Override
             public GroupStateMachine initializeGroupStateMachine() {
                 GroupStateMachine newGsm = applicationContext.getBean(GROUP_STATE_MACHINE, GroupStateMachine.class);
@@ -273,8 +272,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 return newGsm;
             }
         });
-
-        return lockedGsmLease;
     }
 
     /**
@@ -284,7 +281,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     private Lease getGsmWithResources(final Identifier<Group> groupId, final User user) {
         LockableGroupStateMachine gsm = getLockableGsm(groupId);
 
-        Lease lockedGsmLease = gsm.lockForReadWithResources(new Initializer() {
+        return gsm.lockForReadWithResources(new Initializer() {
             @Override
             public GroupStateMachine initializeGroupStateMachine() {
                 GroupStateMachine newGsm = applicationContext.getBean(GROUP_STATE_MACHINE, GroupStateMachine.class);
@@ -293,8 +290,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                 return newGsm;
             }
         });
-
-        return lockedGsmLease;
     }
 
     private RuntimeException convert(Exception e) {
