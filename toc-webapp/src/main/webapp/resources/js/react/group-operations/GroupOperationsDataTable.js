@@ -570,7 +570,7 @@ var GroupOperationsDataTable = React.createClass({
     },
 
    jvmHeapDump: function(id, selector, host) {
-       var requestHeapDump = function() {return jvmControlService.heapDump(id);};
+       var requestHeapDump = function() {return jvmControlService.heapDump(id.id);};
        var heapDumpRequestCallback = function(response){
                                         var msg;
                                         if (response.applicationResponseContent.execData.standardError === "") {
