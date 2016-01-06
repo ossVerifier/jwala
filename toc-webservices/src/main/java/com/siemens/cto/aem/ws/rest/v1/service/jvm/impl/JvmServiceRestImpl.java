@@ -387,8 +387,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
         ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         CommandOutput execData;
+        String configTarName = jvm.getJvmName() + "_config.tar";
         execData =
-                jvmControlService.secureCopyFile(secureCopyRequest, stpJvmResourcesDir + "/" + jvm.getJvmName() + "_config.tar", ApplicationProperties.get("paths.instances"));
+                jvmControlService.secureCopyFile(secureCopyRequest, stpJvmResourcesDir + "/" + configTarName, ApplicationProperties.get("paths.instances") + "/" + configTarName);
         if (execData.getReturnCode().wasSuccessful()) {
             logger.info("Copy of config tar successful: {}", jvmConfigTar);
         } else {
