@@ -56,7 +56,6 @@ public class JvmServiceImpl implements JvmService {
     private final GroupService groupService;
     private final FileManager fileManager;
     private final StateService<Jvm, JvmState> stateService;
-    private SshConfiguration sshConfig;
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
@@ -70,7 +69,6 @@ public class JvmServiceImpl implements JvmService {
         groupService = theGroupService;
         fileManager = theFileManager;
         stateService = theJvmStateService;
-        sshConfig = theSshConfig;
     }
 
     @Override

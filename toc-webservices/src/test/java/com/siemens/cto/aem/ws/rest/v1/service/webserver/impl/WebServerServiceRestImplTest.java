@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -20,6 +21,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.*;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -81,6 +83,9 @@ public class WebServerServiceRestImplTest {
     private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     @Mock
+    private ResourceService resourceService;
+
+    @Mock
     private AuthenticatedUser authenticatedUser;
 
     @Mock
@@ -109,8 +114,14 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, webServerStateService, writeLockMap);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, webServerStateService, writeLockMap, resourceService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
+        final ArrayList<ResourceType> resourceTypes = new ArrayList<>();
+        ResourceType mockWsResourceType = mock(ResourceType.class);
+        when(mockWsResourceType.getConfigFileName()).thenReturn("httpd.conf");
+        when(mockWsResourceType.getEntityType()).thenReturn("webServer");
+        when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
+        when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
     }
 
     @Test

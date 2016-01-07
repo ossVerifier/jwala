@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -10,12 +11,14 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -50,17 +53,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerCommandService webServerCommandService;
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
+    private ResourceService resourceService;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
                                     final StateService<WebServer, WebServerReachableState> theWebServerStateService,
-                                    final Map<String, ReentrantReadWriteLock> theWriteLocks) {
+                                    final Map<String, ReentrantReadWriteLock> theWriteLocks,
+                                    final ResourceService theResourceService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
         webServerStateService = theWebServerStateService;
         wsWriteLocks = theWriteLocks;
+        resourceService = theResourceService;
     }
 
     @Override
@@ -83,8 +89,40 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         logger.debug("Create WS requested: {}", aWebServerToCreate);
-        return ResponseBuilder.created(webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(),
-                aUser.getUser()));
+
+        final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(),
+                aUser.getUser());
+
+        // upload the default resource template for the newly created web server
+        uploadWebServerResourceTemplates(aUser, webServer);
+
+        return ResponseBuilder.created(webServer);
+    }
+
+    private void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
+        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
+            if ("webServer".equals(resourceType.getEntityType())) {
+                FileInputStream dataInputStream = null;
+                try {
+                    dataInputStream =
+                            new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
+                                    + resourceType.getTemplateName()));
+                    UploadWebServerTemplateRequest uploadWebServerTemplateRequest =
+                            new UploadWebServerTemplateRequest(webServer, resourceType.getTemplateName(), dataInputStream) {
+                                @Override
+                                public String getConfFileName() {
+                                    return resourceType.getConfigFileName();
+                                }
+                            };
+                    webServerService.uploadWebServerConfig(uploadWebServerTemplateRequest, aUser.getUser());
+                } catch (FileNotFoundException e) {
+                    logger.error("Could not find template {} for new webserver {}", resourceType.getConfigFileName(),
+                            webServer.getName(), e);
+                    throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "Could not find template "
+                            + resourceType.getTemplateName());
+                }
+            }
+        }
     }
 
     @Override
