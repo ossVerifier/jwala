@@ -197,10 +197,6 @@ public class StateServiceImplTest {
             return mock(GroupStateService.API.class);
         }
 
-        @Bean
-        public StateNotificationWorker getStateNotificationWorker() {
-            return mock(StateNotificationWorker.class);
-        }
     }
 
 }

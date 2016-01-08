@@ -39,9 +39,6 @@ public class WebServerStateServiceImplTest {
     private GroupStateService.API groupStateService;
 
     @Mock
-    private StateNotificationWorker stateNotificationWorker;
-
-    @Mock
     private StateService<WebServer, WebServerReachableState> stateService;
 
     @Mock
@@ -58,8 +55,8 @@ public class WebServerStateServiceImplTest {
                 new InMemoryStateNotificationConsumerBuilderImpl(new TimeDuration(5L, TimeUnit.MINUTES),
                 new TimeDuration(30L, TimeUnit.SECONDS));
         notificationService = new InMemoryStateNotificationServiceImpl(notificationConsumerBuilder);
-        stateService = new WebServerStateServiceImpl(persistenceService, notificationService, groupStateService,
-                                                     stateNotificationWorker, grpStateComputationAndNotificationSvc);
+        stateService = new WebServerStateServiceImpl(persistenceService, notificationService,
+                grpStateComputationAndNotificationSvc);
     }
 
     @Test

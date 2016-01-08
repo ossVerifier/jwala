@@ -19,8 +19,6 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
 
     public WebServerStateServiceImpl(final StatePersistenceService<WebServer, WebServerReachableState> thePersistenceService,
                                      final StateNotificationService theNotificationService,
-                                     final GroupStateService.API groupStateService,
-                                     final StateNotificationWorker stateNotificationWorker,
                                      final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         super(thePersistenceService, theNotificationService, StateType.WEB_SERVER,
                 grpStateComputationAndNotificationSvc);

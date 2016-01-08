@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.state.StateNotificationWorker;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,22 +30,19 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupServiceImpl groupService;
     private GroupPersistenceService groupPersistenceService;
     private GroupStateService.API groupStateService;
-    private StateNotificationWorker stateNotificationWorker;
     private WebServerService webServerService;
     private User user;
 
     @Before
     public void setUp() {
         groupPersistenceService = mock(GroupPersistenceService.class);
-        stateNotificationWorker = mock(StateNotificationWorker.class);
         groupStateService = mock(GroupStateService.API.class);
-        stateNotificationWorker = mock(StateNotificationWorker.class);
         webServerService = mock(WebServerService.class);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                                     webServerService,
-                                    groupStateService,
-                                    stateNotificationWorker);
+                                    groupStateService
+        );
         user = new User("unused");
     }
 
@@ -105,33 +101,21 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         verify(updateGroupRequest).validate();
         verify(groupPersistenceService).updateGroup(updateGroupRequest);
-
-        // TODO: Remove if this is no londer needed.
-        // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test
     public void testRemoveGroup() {
-
         final Identifier<Group> id = new Identifier<>(-123456L);
-
         groupService.removeGroup(id);
-
         verify(groupPersistenceService, times(1)).removeGroup(eq(id));
     }
 
     @Test
     public void testAddJvmToGroup() {
-
         final AddJvmToGroupRequest addJvmToGroupRequest = mock(AddJvmToGroupRequest.class);
-
         groupService.addJvmToGroup(addJvmToGroupRequest, user);
-
         verify(addJvmToGroupRequest, times(1)).validate();
         verify(groupPersistenceService, times(1)).addJvmToGroup(addJvmToGroupRequest);
-
-        // TODO: Remove if this is no londer needed.
-        // verify(stateNotificationWorker).refreshState(eq(groupStateService), any(Group.class));
     }
 
     @Test

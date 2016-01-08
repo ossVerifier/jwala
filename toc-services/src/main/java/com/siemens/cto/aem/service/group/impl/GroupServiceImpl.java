@@ -12,7 +12,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.GroupStateService;
-import com.siemens.cto.aem.service.state.StateNotificationWorker;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +22,13 @@ public class GroupServiceImpl implements GroupService {
     private final GroupPersistenceService groupPersistenceService;
     private final WebServerService webServerService;
     private final GroupStateService.API groupStateService;
-    private final StateNotificationWorker stateNotificationWorker;
 
     public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
                             final WebServerService wSService,
-                            final GroupStateService.API groupStateService,
-                            final StateNotificationWorker stateNotificationWorker) {
+                            final GroupStateService.API groupStateService) {
         groupPersistenceService = theGroupPersistenceService;
         webServerService = wSService;
         this.groupStateService = groupStateService;
-        this.stateNotificationWorker = stateNotificationWorker;
     }
 
     @Override

@@ -114,9 +114,6 @@ public class AemServiceConfiguration {
     private GroupStateService.API groupStateService;
 
     @Autowired
-    private StateNotificationWorker stateNotificationWorker;
-
-    @Autowired
     private CommandExecutor commandExecutor;
 
     @Autowired
@@ -171,7 +168,7 @@ public class AemServiceConfiguration {
     public GroupService getGroupService() {
         return new GroupServiceImpl(
                 persistenceServiceConfiguration.getGroupPersistenceService(),
-                getWebServerService(), groupStateService, stateNotificationWorker);
+                getWebServerService(), groupStateService);
     }
 
     @Bean(name = "jvmService")
@@ -301,7 +298,7 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerStateService")
     public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
         return new WebServerStateServiceImpl(persistenceServiceConfiguration.getWebServerStatePersistenceService(),
-                getStateNotificationService(), groupStateService, stateNotificationWorker,
+                getStateNotificationService(),
                 grpStateComputationAndNotificationSvc);
     }
 

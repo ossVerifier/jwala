@@ -21,7 +21,6 @@ import com.siemens.cto.aem.service.group.GroupStateMachine;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateNotificationWorker;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -50,9 +49,6 @@ public class GroupStateServiceImplTest {
 
     @Mock
     private GroupStateService.API groupStateServiceApi;
-
-    @Mock
-    private StateNotificationWorker stateNotificationWorker;
 
     @Mock
     private GroupPersistenceService groupPersistenceService;
