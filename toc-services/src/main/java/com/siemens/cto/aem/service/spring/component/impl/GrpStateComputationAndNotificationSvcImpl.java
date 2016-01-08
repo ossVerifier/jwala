@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -55,6 +56,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
     public GrpStateComputationAndNotificationSvcImpl() {}
 
     @Override
+    @SuppressWarnings("unchecked")
     public synchronized void computeAndNotify(final Identifier id, final OperationalState state) {
         if (state instanceof JvmState) {
             computeGroupStateAndSendNotification(jvmCrudService.getJvm(id), (JvmState) state);
@@ -78,7 +80,8 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                 if (jvm.getId().equals(currentJvm.getId())) {
                     jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
                 } else {
-                    jvmState = JvmState.valueOf(jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId())).getState());
+                    final JpaCurrentState jpaCurrentState = jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId()));
+                    jvmState = jpaCurrentState == null ? JvmState.JVM_UNKNOWN : JvmState.valueOf(jpaCurrentState.getState());
                 }
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvmState);
             }
@@ -112,7 +115,9 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                     webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNKNOWN :
                             currentWebServerState);
                 } else {
-                    webServerState = WebServerReachableState.valueOf(webServerStateCrudService.getState(webServer.getId()).getState());
+                    final JpaCurrentState jpaCurrentState = webServerStateCrudService.getState(webServer.getId());
+                    webServerState = jpaCurrentState == null ? WebServerReachableState.WS_UNKNOWN :
+                            WebServerReachableState.valueOf(jpaCurrentState.getState());
                 }
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServerState);
             }
