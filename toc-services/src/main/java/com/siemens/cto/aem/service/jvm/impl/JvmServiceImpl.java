@@ -77,11 +77,8 @@ public class JvmServiceImpl implements JvmService {
                          final User aCreatingUser) {
 
         aCreateJvmRequest.validate();
-
-        Jvm jvm = jvmPersistenceService.createJvm(aCreateJvmRequest);
         // TODO add JVM_NEW state to JVM state table (already done? Appears as NEW on UI)
-
-        return jvm;
+        return jvmPersistenceService.createJvm(aCreateJvmRequest);
     }
 
     @Override
@@ -133,10 +130,8 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final Identifier<Group> aGroupId) {
-
-        return jvmPersistenceService.findJvmsBelongingTo(aGroupId);
-
+    public List<Jvm> findJvms(final Identifier<Group> groupId) {
+        return jvmPersistenceService.findJvmsBelongingTo(groupId);
     }
 
     @Override
@@ -199,7 +194,7 @@ public class JvmServiceImpl implements JvmService {
         pingJvm(jvm);
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
-        Map<String, Object> binding = new HashMap<String, Object>();
+        Map<String, Object> binding = new HashMap<>();
         binding.put("jvm", jvm);
 
         try {
@@ -238,10 +233,6 @@ public class JvmServiceImpl implements JvmService {
             setState(jvm, JvmState.SVC_STOPPED, StringUtils.EMPTY);
         } catch (RuntimeException rte) {
             LOGGER.error(rte.getMessage(), rte);
-            String msg = ExceptionUtils.getStackTrace(rte);
-            if (msg == null) {
-                msg = rte.getMessage();
-            }
         } finally {
             if (response != null) {
                 response.close();
