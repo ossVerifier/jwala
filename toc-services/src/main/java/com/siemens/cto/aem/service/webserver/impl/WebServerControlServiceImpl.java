@@ -176,8 +176,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 aWebServer.getHost(),
                 WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE,
                 new WindowsWebServerPlatformCommandProvider(),
-                destPath,
-                destPathBackup);
+                sourcePath,
+                destPath);
     }
 
     /**
