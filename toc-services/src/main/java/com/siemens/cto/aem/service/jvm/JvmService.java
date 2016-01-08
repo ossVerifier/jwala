@@ -29,7 +29,7 @@ public interface JvmService {
 
     List<Jvm> findJvms(final String aJvmNameFragment);
 
-    List<Jvm> findJvms(final Identifier<Group> aJvmId);
+    List<Jvm> findJvms(final Identifier<Group> groupId);
 
     Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, final User anUpdatingUser);
 
