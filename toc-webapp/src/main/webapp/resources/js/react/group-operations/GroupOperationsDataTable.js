@@ -411,7 +411,6 @@ var GroupOperationsDataTable = React.createClass({
     },
    enableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
-            $(buttonSelector).prop('disabled', false);
             $(buttonSelector).attr("class",
                                    "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
             $(buttonSelector).find("span").attr("class", "ui-icon ui-icon-heap-dump");
@@ -419,9 +418,8 @@ var GroupOperationsDataTable = React.createClass({
    },
    disableHeapDumpButtonThunk: function(buttonSelector) {
        return function() {
-           $(buttonSelector).prop('disabled', true);
+           $(buttonSelector).find("span").attr("class", "busy-button");
            $(buttonSelector).attr("class", "busy-button");
-           $(buttonSelector).find("span").removeClass();
        };
    },
    disableEnable: function(buttonSelector, func, iconClass) {
