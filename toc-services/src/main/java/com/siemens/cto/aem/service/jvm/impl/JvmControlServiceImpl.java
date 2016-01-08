@@ -259,8 +259,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                     .setAsOf(aJvmState.getAsOf())
                     .build();
 
-            jvmStateService.setCurrentState(command,
-                    aUser);
+            jvmStateService.setCurrentState(command, aUser);
         }
 
         @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -291,4 +290,5 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
         }
     }
+
 }
