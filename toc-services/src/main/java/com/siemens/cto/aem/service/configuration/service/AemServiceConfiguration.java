@@ -360,23 +360,6 @@ public class AemServiceConfiguration {
         return threadPoolTaskExecutor;
     }
 
-    @Bean(name = "stateNotificationWorkerTaskExecutor")
-    @Autowired
-    public TaskExecutor getStateNotificationWorkerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
-                                                               @Value("${state-notification-worker.thread-task-executor.pool.size}") final int corePoolSize,
-                                                               @Value("${state-notification-worker.thread-task-executor.pool.max-size}") final int maxPoolSize,
-                                                               @Value("${state-notification-worker.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
-                                                               @Value("${state-notification-worker.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
-        final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
-        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
-        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
-        threadPoolTaskExecutor.setKeepAliveSeconds(keepAliveSeconds);
-        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        threadPoolTaskExecutor.setThreadFactory(threadFactory);
-        return threadPoolTaskExecutor;
-    }
-
     @Bean
     public HistoryService getHistoryService(final HistoryCrudService historyCrudService) {
         return new HistoryServiceImpl(historyCrudService);
