@@ -22,6 +22,7 @@ import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.Initializer;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.Lease;
 import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.ReadWriteLease;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
 import org.springframework.context.ApplicationContext;
@@ -34,13 +35,12 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Primary Group State Service
- * Reacts to incoming state changes on the state bus
- * <p>
- * Recalculates group state for all affected groups
- * <p>
- * Handles jvm or web server
- * <p>
+ * Primary Group State Service.
+ *
+ * 1. Reacts to incoming state changes on the state bus.
+ * 2. Recalculates group state for all affected groups.
+ * 3. Handles jvm or web server.
+ *
  * Recent changes: Now utilizing group configuration
  */
 public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API, ApplicationContextAware {
@@ -64,12 +64,12 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
                                  StateNotificationService theNotificationService, StateType theStateType,
-                                 final GroupStateService.API groupStateService,
-                                 final StateNotificationWorker stateNotificationWorker,
                                  final GroupPersistenceService groupPersistenceService,
                                  final JvmPersistenceService jvmPersistenceService,
-                                 final WebServerPersistenceService webServerPersistenceService) {
-        super(thePersistenceService, theNotificationService, theStateType, groupStateService, stateNotificationWorker);
+                                 final WebServerPersistenceService webServerPersistenceService,
+                                 final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+        super(thePersistenceService, theNotificationService, theStateType,
+                grpStateComputationAndNotificationSvc);
 
         systemUser = User.getSystemUser();
 
@@ -398,12 +398,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
             getLockableGsm(sgsc.getNewState().getId()).unlockPersistent();
         }
         return sgsc;
-    }
-
-    @Override
-    // TODO: Deprecate
-    protected void sendNotification(CurrentState<Group, GroupState> anUpdatedState) {
-        // Do NOT forward the notification on, since we are the ones who created it, it would come right back in.
     }
 
     @Override

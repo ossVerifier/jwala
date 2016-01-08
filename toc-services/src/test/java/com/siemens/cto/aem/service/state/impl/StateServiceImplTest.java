@@ -15,6 +15,7 @@ import com.siemens.cto.aem.persistence.service.impl.JvmJpaStatePersistenceServic
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -47,7 +48,6 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
                       classes = {StateServiceImplTest.Config.class
                       })
-@Ignore // TODO: Fix this test later! In a hurry right now to worry about this!
 public class StateServiceImplTest {
 
     @Autowired
@@ -57,7 +57,7 @@ public class StateServiceImplTest {
 
     @Before
     public void setUp() throws Exception {
-        user = new User("IntegrationTestUser");
+        user = new User(null); // TODO: Update this once threadlocal user setting is finalized.
     }
 
     @Test
@@ -134,10 +134,8 @@ public class StateServiceImplTest {
 
     private void verifySetCurrentState(final CurrentState<Jvm, JvmState> aStateToPersist) {
         final SetStateRequest<Jvm, JvmState> command = new JvmSetStateRequest(aStateToPersist);
-        final CurrentState<Jvm, JvmState> persistedState = stateService.setCurrentState(command,
-                                                                                        user);
-        assertEquals(aStateToPersist,
-                     persistedState);
+        final CurrentState<Jvm, JvmState> persistedState = stateService.setCurrentState(command, user);
+        assertEquals(aStateToPersist, persistedState);
     }
 
     private List<SetStateRequest<Jvm, JvmState>> createCommandsToPersist(final Identifier<Jvm> aJvmId,
@@ -169,10 +167,8 @@ public class StateServiceImplTest {
         
         @Bean
         public StateService<Jvm, JvmState> getStateService() {
-            return new JvmStateServiceImpl(getPersistenceService(),
-                                           getStateNotificationService(),
-                                           getGroupStateService(),
-                                           getStateNotificationWorker());
+            return new JvmStateServiceImpl(getPersistenceService(), getStateNotificationService(), getGroupStateService(),
+                                           getGroupStateComputationAndNotificationService());
         }
 
         @Bean
@@ -192,6 +188,11 @@ public class StateServiceImplTest {
         }
 
         @Bean
+        public GrpStateComputationAndNotificationSvc getGroupStateComputationAndNotificationService() {
+            return mock(GrpStateComputationAndNotificationSvc.class);
+        }
+
+        @Bean
         public GroupStateService.API getGroupStateService() {
             return mock(GroupStateService.API.class);
         }
@@ -201,4 +202,5 @@ public class StateServiceImplTest {
             return mock(StateNotificationWorker.class);
         }
     }
+
 }

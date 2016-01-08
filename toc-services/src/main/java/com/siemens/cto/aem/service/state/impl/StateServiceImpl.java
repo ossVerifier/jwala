@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,23 +19,20 @@ import java.util.Set;
 
 public abstract class StateServiceImpl<S, T extends OperationalState> implements StateService<S, T> {
 
-    private static final Logger                 LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
 
     private final StatePersistenceService<S, T> persistenceService;
-    private final StateNotificationService      notificationService;
-    private final StateType                     stateType;
-    private StateNotificationWorker stateNotificationWorker;
-    private GroupStateService.API groupStateService;
+    private final StateNotificationService notificationService;
+    private final StateType stateType;
+    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
                             final StateNotificationService theNotificationService, final StateType theStateType,
-                            final GroupStateService.API groupStateService,
-                            final StateNotificationWorker stateNotificationWorker) {
+                            final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         persistenceService = thePersistenceService;
         notificationService = theNotificationService;
         stateType = theStateType;
-        this.groupStateService = groupStateService;
-        this.stateNotificationWorker = stateNotificationWorker;
+        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     @Override
@@ -50,9 +48,8 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
             !currentState.getMessage().equalsIgnoreCase(latestState.getMessage())) {
             latestState.setUserId(aUser.getId());
             notificationService.notifyStateUpdated(latestState);
+            grpStateComputationAndNotificationSvc.computeAndNotify(latestState.getId(), latestState.getState());
         }
-
-        stateNotificationWorker.sendStateChangeNotification(groupStateService, latestState);
 
         return latestState;
     }
@@ -94,18 +91,6 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         return notificationService;
     }
 
-    /**
-     * Accessor for derived class.
-     */
-    protected StatePersistenceService<S,T> getPersistenceService() {
-        return persistenceService;
-    }
-
     protected abstract CurrentState<S, T> createUnknown(final Identifier<S> anId);
 
-    protected abstract void sendNotification(CurrentState<S, T> anUpdatedState);
-
-    protected StateNotificationWorker getStateNotificationWorker() {
-        return stateNotificationWorker;
-    }
 }

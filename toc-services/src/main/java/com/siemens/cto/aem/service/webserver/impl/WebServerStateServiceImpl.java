@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.StateServiceImpl;
 import org.joda.time.DateTime;
@@ -19,8 +20,10 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
     public WebServerStateServiceImpl(final StatePersistenceService<WebServer, WebServerReachableState> thePersistenceService,
                                      final StateNotificationService theNotificationService,
                                      final GroupStateService.API groupStateService,
-                                     final StateNotificationWorker stateNotificationWorker) {
-        super(thePersistenceService, theNotificationService, StateType.WEB_SERVER, groupStateService, stateNotificationWorker);
+                                     final StateNotificationWorker stateNotificationWorker,
+                                     final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+        super(thePersistenceService, theNotificationService, StateType.WEB_SERVER,
+                grpStateComputationAndNotificationSvc);
 
         wsStatesToCheck.add(WebServerReachableState.WS_START_SENT);
         wsStatesToCheck.add(WebServerReachableState.WS_STOP_SENT);
@@ -32,11 +35,6 @@ public class WebServerStateServiceImpl extends StateServiceImpl<WebServer, WebSe
                                   WebServerReachableState.WS_UNKNOWN,
                                   DateTime.now(),
                                   StateType.WEB_SERVER);
-    }
-
-    @Override
-    protected void sendNotification(final CurrentState<WebServer, WebServerReachableState> anUpdatedState) {
-        throw new UnsupportedOperationException("Deprecated!");
     }
 
 }

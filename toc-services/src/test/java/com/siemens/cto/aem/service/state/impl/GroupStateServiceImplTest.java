@@ -18,6 +18,7 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateNotificationWorker;
@@ -31,7 +32,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -69,19 +69,17 @@ public class GroupStateServiceImplTest {
     @Mock
     private GroupStateMachine groupStateMachine;
 
+    @Mock
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+
     private GroupStateServiceImpl groupStateServiceImpl;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        groupStateServiceImpl = new GroupStateServiceImpl(persistenceService,
-                                                          stateNotificationService,
-                                                          StateType.GROUP,
-                                                          groupStateServiceApi,
-                                                          stateNotificationWorker,
-                                                          groupPersistenceService,
-                                                          jvmPersistenceService,
-                                                          webServerPersistenceService);
+        groupStateServiceImpl = new GroupStateServiceImpl(persistenceService, stateNotificationService, StateType.GROUP,
+                                                          groupPersistenceService, jvmPersistenceService,
+                                                          webServerPersistenceService, grpStateComputationAndNotificationSvc);
     }
 
     @Test

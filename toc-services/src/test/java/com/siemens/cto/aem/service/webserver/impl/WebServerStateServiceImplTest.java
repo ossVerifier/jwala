@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.service.StatePersistenceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateNotificationServiceImpl;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerStateServiceImplTest {
+
     @Mock
     private StatePersistenceService<WebServer, WebServerReachableState> persistenceService;
 
@@ -42,6 +44,9 @@ public class WebServerStateServiceImplTest {
     @Mock
     private StateService<WebServer, WebServerReachableState> stateService;
 
+    @Mock
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+
     private StateNotificationService notificationService;
 
     private Identifier<WebServer> wsTestId = new Identifier<WebServer>(99L);
@@ -49,13 +54,12 @@ public class WebServerStateServiceImplTest {
     @Before
     public void setUp() throws Exception {
         setupStateServiceMock();
-        final StateNotificationConsumerBuilder notificationConsumerBuilder = new InMemoryStateNotificationConsumerBuilderImpl(new TimeDuration(5L, TimeUnit.MINUTES),
+        final StateNotificationConsumerBuilder notificationConsumerBuilder =
+                new InMemoryStateNotificationConsumerBuilderImpl(new TimeDuration(5L, TimeUnit.MINUTES),
                 new TimeDuration(30L, TimeUnit.SECONDS));
         notificationService = new InMemoryStateNotificationServiceImpl(notificationConsumerBuilder);
-        stateService = new WebServerStateServiceImpl(persistenceService,
-                                                     notificationService,
-                                                     groupStateService,
-                                                     stateNotificationWorker);
+        stateService = new WebServerStateServiceImpl(persistenceService, notificationService, groupStateService,
+                                                     stateNotificationWorker, grpStateComputationAndNotificationSvc);
     }
 
     @Test
@@ -77,4 +81,5 @@ public class WebServerStateServiceImplTest {
             }
         });
     }
+
 }
