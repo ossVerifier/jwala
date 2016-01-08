@@ -380,7 +380,8 @@ var groupOperationsHelper = function(){
                 state = msg;
                 msg = "";
             }
-            return {state, asOf, msg};
+
+            return {"state": state, "asOf": asOf, "msg": msg};
         }
 
     }
