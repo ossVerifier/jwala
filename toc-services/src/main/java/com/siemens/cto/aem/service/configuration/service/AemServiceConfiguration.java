@@ -64,7 +64,6 @@ import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
@@ -146,12 +145,6 @@ public class AemServiceConfiguration {
         ppc.setLocalOverride(true);
         ppc.setProperties(ApplicationProperties.getProperties());
         return ppc;
-    }
-
-    @Bean(name = "groupStateMachine")
-    @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
-    public GroupStateMachine getGroupStateMachine() {
-        return new GroupStateManagerTableImpl();
     }
 
     @Bean(name = "groupStateService")
