@@ -89,8 +89,9 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
             final List<WebServer> webServerList = webServerCrudService.
                     findWebServersBelongingTo(new Identifier<Group>(group.getId()));
             for (final WebServer webServer: webServerList) {
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState,
-                        WebServerReachableState.valueOf(webServerStateCrudService.getState(webServer.getId()).getState()));
+                final JpaCurrentState jpaCurrentState = webServerStateCrudService.getState(webServer.getId());
+                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jpaCurrentState == null ?
+                        WebServerReachableState.WS_UNKNOWN : WebServerReachableState.valueOf(jpaCurrentState.getState()));
             }
 
             stateNotificationService.notifyStateUpdated(new CurrentState<>(new Identifier<>(group.getId()), groupState,
@@ -124,8 +125,9 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
             final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(group.getId());
             for (final JpaJvm jvm: jvmList) {
+                final JpaCurrentState jpaCurrentState = jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId()));
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState,
-                        JvmState.valueOf(jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId())).getState()));
+                        jpaCurrentState == null ? JvmState.JVM_UNKNOWN : JvmState.valueOf(jpaCurrentState.getState()));
             }
 
             stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,
