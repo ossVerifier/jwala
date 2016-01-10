@@ -49,11 +49,13 @@ public class FileManagerImpl implements FileManager {
     }
 
     @Override
-    public String getResourceTypeTemplate(String resourceTypeName) {
-        try {
-            return read(this.getResourceTypeTemplateByStream(resourceTypeName));
-        } catch (IOException ioe) {
-            logger.error("Failed to read {}", resourceTypeName, ioe);
+    public String getResourceTypeTemplate(final String resourceTypeName) {
+        if (resourceTypeName != null) {
+            try {
+                return read(this.getResourceTypeTemplateByStream(resourceTypeName));
+            } catch (IOException ioe) {
+                logger.error("Failed to read {}", resourceTypeName, ioe);
+            }
         }
         return null;
     }

@@ -13,10 +13,14 @@ import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class JpaApplicationPersistenceServiceImpl implements ApplicationPersistenceService {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationPersistenceService.class);
 
     private final ApplicationCrudService applicationCrudService;
     private final GroupCrudService groupCrudService;
@@ -34,13 +38,30 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         final JpaApplication jpaApp = applicationCrudService.createApplication(createApplicationRequest, jpaGroup);
         final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
         final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
-        applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties", roleMappingPropertiesTemplate, null);
-        applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".properties", appPropertiesTemplate, null);
-        if (jpaGroup.getJvms() != null) {
-            for (JpaJvm jvm : jpaGroup.getJvms()) {
-                applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate, jvm);
-            }
+
+        if (roleMappingPropertiesTemplate != null) {
+            applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties",
+                    roleMappingPropertiesTemplate, null);
+        } else {
+            LOGGER.warn("Role mapping properties template is null!");
         }
+
+        if (appPropertiesTemplate != null) {
+            applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".properties", appPropertiesTemplate, null);
+        } else {
+            LOGGER.warn("Application properties template is null!");
+        }
+
+        if (appContextTemplate != null) {
+            if (jpaGroup.getJvms() != null) {
+                for (JpaJvm jvm : jpaGroup.getJvms()) {
+                    applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate, jvm);
+                }
+            }
+        } else {
+            LOGGER.warn("Application context template is null!");
+        }
+
         return JpaAppBuilder.appFrom(jpaApp);
     }
 
