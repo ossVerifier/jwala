@@ -168,16 +168,4 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return groupFrom(setGroupStateRequest.getNewState(), groupCrudService.updateGroupStatus(setGroupStateRequest));
     }
 
-    @Override
-    public List<CurrentState<Group, GroupState>> markStaleStates(StateType stateType, GroupState staleState,
-            Date cutoff, AuditEvent auditData) {
-        throw new UnsupportedOperationException("Group stale state not implemented, supported or necessary.");
-    }
-    @Override
-    public List<CurrentState<Group, GroupState>> markStaleStates(StateType stateType, GroupState staleState,
-            Collection<GroupState> statesToCheck,
-            Date cutoff, AuditEvent auditData) {
-        throw new UnsupportedOperationException("Group stale state not implemented, supported or necessary.");
-    }
-
 }

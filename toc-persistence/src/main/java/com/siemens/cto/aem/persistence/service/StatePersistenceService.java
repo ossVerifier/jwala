@@ -20,21 +20,4 @@ public interface StatePersistenceService<S, T  extends OperationalState> {
 
     Set<CurrentState<S, T>> getAllKnownStates();
 
-    /**
-     * Identify states that have not been updated since the cutoff
-     * @param cutoff only states before this time will be changed
-     * @param jvmStale the state that stale states should be converted to
-     * @return modified states
-     */
-    List<CurrentState<S, T>> markStaleStates(StateType stateType, T staleState, Date cutoff, AuditEvent auditData);
-
-
-    /**
-     * Identify states that have not been updated since the cutoff
-     * @param cutoff only states before this time will be changed
-     * @param jvmStale the state that stale states should be converted to
-     * @param checkStates a list of states that should be checked
-     * @return modified states
-     */
-    List<CurrentState<S, T>> markStaleStates(StateType stateType, T staleState, Collection<T> checkStates, Date cutoff, AuditEvent auditData);
 }
