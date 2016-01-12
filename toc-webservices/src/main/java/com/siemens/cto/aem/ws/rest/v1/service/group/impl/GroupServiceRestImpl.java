@@ -100,8 +100,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
         logger.debug("Create Group requested: {}", aNewGroupName);
-        return ResponseBuilder.created(groupService.createGroup(new CreateGroupRequest(aNewGroupName),
-                aUser.getUser()));
+        final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName),
+                aUser.getUser());
+        populateGroupJvmTemplates(group.getId(), aUser);
+        populateGroupWebServerTemplates(group.getId(), aUser);
+        return ResponseBuilder.created(group);
     }
 
     @Override
