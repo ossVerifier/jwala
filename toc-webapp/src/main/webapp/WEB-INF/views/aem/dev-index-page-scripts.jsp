@@ -78,7 +78,7 @@
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webapp-config.js"></script>
-<script type="text/jsx" src="public-resources/js/react/resources-config.js"></script>
+<script type="text/jsx" src="public-resources/js/react/ResourcesConfig.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourceEditor.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourcePane.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourceAttrPane.js"></script>
