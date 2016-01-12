@@ -73,6 +73,10 @@ public interface GroupServiceRest {
     Response populateGroupJvmTemplates(@PathParam("groupId") final Identifier<Group> aGroupId,
                                @BeanParam final AuthenticatedUser aUser);
 
+    @GET
+    @Path("/{groupId}/groupWebServersConfig")
+    Response populateGroupWebServerTemplates(@PathParam("groupId") final Identifier<Group> aGroupId,
+                                       @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{groupId}/webservers/defaultConfig")

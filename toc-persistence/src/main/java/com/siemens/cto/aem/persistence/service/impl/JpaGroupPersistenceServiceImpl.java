@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -173,6 +174,15 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         final JpaGroup group = groupCrudService.getGroup(aGroupId);
         for (UploadJvmTemplateRequest uploadRequest : uploadJvmTemplateRequests) {
             groupCrudService.uploadGroupJvmTemplate(uploadRequest, group);
+        }
+        return groupFrom(group, false);
+    }
+
+    @Override
+    public Group populateGroupWebServerTemplates(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateRequests, User user) {
+        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+        for (UploadWebServerTemplateRequest uploadRequest : uploadWSTemplateRequests) {
+            groupCrudService.uploadGroupWebServerTemplate(uploadRequest, group);
         }
         return groupFrom(group, false);
     }

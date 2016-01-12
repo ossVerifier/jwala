@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.group.*;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
 import java.util.Set;
@@ -46,4 +47,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 
     Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
+
+    Group populateGroupWebServerTemplates(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user);
 }

@@ -225,6 +225,32 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response populateGroupWebServerTemplates(Identifier<Group> aGroupId, AuthenticatedUser aUser) {
+        List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests = new ArrayList<>();
+        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
+            final String configFileName = resourceType.getConfigFileName();
+            if ("webServer".equals(resourceType.getEntityType())) {
+                FileInputStream dataInputStream;
+                try {
+                    final String templateName = resourceType.getTemplateName();
+                    dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + templateName));
+                    final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
+                    UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, templateName, dataInputStream) {
+                        @Override
+                        public String getConfFileName() {
+                            return configFileName;
+                        }
+                    };
+                    uploadWebServerTemplateRequests.add(uploadWSTemplateRequest);
+                } catch (FileNotFoundException e) {
+                    throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
+                }
+            }
+        }
+        return ResponseBuilder.ok(groupService.populateGroupWebServerTemplates(aGroupId, uploadWebServerTemplateRequests, aUser.getUser()));
+    }
+
+    @Override
     public Response controlGroupWebservers(final Identifier<Group> aGroupId,
                                            final JsonControlWebServer jsonControlWebServer,
                                            final AuthenticatedUser aUser) {

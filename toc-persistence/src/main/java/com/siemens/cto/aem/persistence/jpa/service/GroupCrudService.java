@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 
 import java.util.List;
@@ -47,4 +48,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     void linkWebServer(Identifier<WebServer> id, WebServer webServer);
 
     void uploadGroupJvmTemplate(UploadJvmTemplateRequest uploadRequest, JpaGroup group);
+
+    void uploadGroupWebServerTemplate(UploadWebServerTemplateRequest uploadRequest, JpaGroup group);
 }

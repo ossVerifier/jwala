@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
@@ -163,5 +164,20 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         entityManager.persist(jpaConfigTemplate);
         entityManager.flush();
     }
+
+    @Override
+    public void uploadGroupWebServerTemplate(UploadWebServerTemplateRequest uploadWSTemplateRequest, JpaGroup group) {
+        InputStream inStream = uploadWSTemplateRequest.getData();
+        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        JpaGroupWebServerTemplateConfig jpaConfigTemplate = new JpaGroupWebServerTemplateConfig();
+        jpaConfigTemplate.setJpaGroup(group);
+        jpaConfigTemplate.setTemplateName(uploadWSTemplateRequest.getConfFileName());
+        jpaConfigTemplate.setTemplateContent(templateContent);
+        entityManager.persist(jpaConfigTemplate);
+        entityManager.flush();
+    }
+
 }
 
