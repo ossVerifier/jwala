@@ -16,6 +16,7 @@ import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupCrudService {
@@ -127,10 +128,14 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         }
 
         // Link web server's newly defined groups.
+        List<JpaGroup> linkedGroups = new ArrayList<>();
         for (Group group: webServer.getGroups()) {
             final JpaGroup jpaGroup = getGroup(group.getId());
             jpaGroup.getWebServers().add(jpaWebServer);
+            linkedGroups.add(jpaGroup);
         }
+        jpaWebServer.setGroups(linkedGroups);
+        entityManager.persist(jpaWebServer);
 
         entityManager.flush();
     }

@@ -48,20 +48,17 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private final HistoryService historyService;
-    private ClientFactoryHelper clientFactoryHelper;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
                                        final StateService<WebServer, WebServerReachableState> theWebServerStateService,
                                        final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
-                                       final HistoryService historyService,
-                                       ClientFactoryHelper clientFactoryHelper) {
+                                       final HistoryService historyService) {
         webServerService = theWebServerService;
         commandExecutor = theExecutor;
         webServerStateService = theWebServerStateService;
         webServerReachableStateMap = theWebServerReachableStateMap;
         this.historyService = historyService;
-        this.clientFactoryHelper = clientFactoryHelper;
     }
 
     @Override
@@ -133,27 +130,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
 
-        // ping the web server and return if not stopped
-        ClientHttpResponse response = null;
-        try {
-            response = clientFactoryHelper.requestGet(aWebServer.getStatusUri());
-            if (response.getStatusCode() == HttpStatus.OK) {
-                return new CommandOutput(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
-            }
-        } catch (ConnectException e) {
-            LOGGER.info("Ignore connect exception when attempting to replace resource files for the web server", e);
-        } catch (ConnectTimeoutException e) {
-            LOGGER.info("Ignore connect timeout exception when attempting to replace resource files for the web server", e);
-        } catch (SocketTimeoutException e) {
-            LOGGER.info("Ignore socket timeout exception when attempting to replace resource files for the web server", e);
-        } catch (IOException e) {
-            LOGGER.error("Failed to ping {} while attempting to copy httpd.config :: ERROR: {}", aWebServerName, e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION,
-                    "Failed to ping " + aWebServerName + " while attempting to copy httpd.config", e);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
+        CurrentState<WebServer, WebServerReachableState> currentWSState = webServerStateService.getCurrentState(aWebServer.getId());
+        if (!currentWSState.getState().equals(WebServerReachableState.WS_UNREACHABLE)){
+            return new CommandOutput(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
         }
 
         // back up the original file first

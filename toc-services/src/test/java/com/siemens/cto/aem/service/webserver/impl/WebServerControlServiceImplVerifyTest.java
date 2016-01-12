@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -16,6 +18,7 @@ import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,17 +61,13 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     private User user;
 
-    @Mock
-    private ClientFactoryHelper mockClientFactory;
-
     @Before
     public void setup() {
         webServerControlService = new WebServerControlServiceImpl(webServerService,
                 commandExecutor,
                 webServerStateService,
                 webServerReachableStateMap,
-                mockHistoryService,
-                mockClientFactory);
+                mockHistoryService);
 
         user = new User("unused");
     }
@@ -91,7 +90,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(controlWebServerRequest.getWebServerId()).thenReturn(webServerId);
         when(controlWebServerRequest.getControlOperation()).thenReturn(controlOperation);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
-        when(mockClientFactory.requestGet(any(URI.class))).thenReturn(mockClientHttpResponse);
+        when(webServerStateService.getCurrentState(webServerId)).thenReturn(new CurrentState<WebServer, WebServerReachableState>(webServerId, WebServerReachableState.WS_UNREACHABLE, DateTime.now(), StateType.WEB_SERVER));
 
         webServerControlService.controlWebServer(controlWebServerRequest, user);
 
