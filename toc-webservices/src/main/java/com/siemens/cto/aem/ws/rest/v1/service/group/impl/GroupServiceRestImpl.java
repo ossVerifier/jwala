@@ -1,13 +1,9 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.webserver.*;
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -15,8 +11,14 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateCommandBuilder;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -37,14 +39,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
@@ -88,7 +89,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getGroup(final String groupIdOrName, final boolean byName) {
         if (byName) {
-            return  ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
+            return ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
         }
         final Identifier<Group> groupId = new Identifier<Group>(groupIdOrName);
         logger.debug("Get Group requested: {}", groupId);
@@ -112,7 +113,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         // TODO: Refactor adhoc conversion to process group name instead of Id.
         final Group group = groupService.getGroup(anUpdatedGroup.getId());
         final JsonUpdateGroup updatedGroup = new JsonUpdateGroup(group.getId().getId().toString(),
-                                                                 anUpdatedGroup.getName());
+                anUpdatedGroup.getName());
 
         return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                 aUser.getUser()));
@@ -195,6 +196,32 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             uploadWSTemplateCommands.add(httpdConfTemplateCommand);
         }
         return ResponseBuilder.ok(groupService.populateWebServerConfig(aGroupId, uploadWSTemplateCommands, aUser.getUser(), overwriteExisting));
+    }
+
+    @Override
+    public Response populateGroupJvmTemplates(Identifier<Group> aGroupId, AuthenticatedUser aUser) {
+        List<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
+        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
+            final String configFileName = resourceType.getConfigFileName();
+            if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(configFileName)) {
+                FileInputStream dataInputStream;
+                try {
+                    final String templateName = resourceType.getTemplateName();
+                    dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + templateName));
+                    final Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), configFileName, new HashSet<Group>());
+                    UploadJvmTemplateRequest uploadJvmTemplateCommand = new UploadJvmTemplateRequest(dummyJvm, templateName, dataInputStream) {
+                        @Override
+                        public String getConfFileName() {
+                            return configFileName;
+                        }
+                    };
+                    uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
+                } catch (FileNotFoundException e) {
+                    throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
+                }
+            }
+        }
+        return ResponseBuilder.ok(groupService.populateGroupJvmTemplates(aGroupId, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
     @Override

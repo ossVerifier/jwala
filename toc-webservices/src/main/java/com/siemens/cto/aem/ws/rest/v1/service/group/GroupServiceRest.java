@@ -69,6 +69,12 @@ public interface GroupServiceRest {
                                @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
 
     @GET
+    @Path("/{groupId}/groupJvmsConfig")
+    Response populateGroupJvmTemplates(@PathParam("groupId") final Identifier<Group> aGroupId,
+                               @BeanParam final AuthenticatedUser aUser);
+
+
+    @GET
     @Path("/{groupId}/webservers/defaultConfig")
     Response populateWebServerConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
                                      @BeanParam final AuthenticatedUser aUser,

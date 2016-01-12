@@ -44,4 +44,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     Set<CurrentState<Group, GroupState>> getAllKnownStates();
 
     Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
+
+    Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
 }

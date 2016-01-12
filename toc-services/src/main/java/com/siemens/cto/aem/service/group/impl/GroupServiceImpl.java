@@ -207,4 +207,10 @@ public class GroupServiceImpl implements GroupService {
         webServerService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
         return groupPersistenceService.getGroup(aGroupId);
     }
+
+    @Override
+    @Transactional
+    public Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user) {
+        return groupPersistenceService.populateGroupJvmTemplates(aGroupId, uploadJvmTemplateCommands, user);
+    }
 }

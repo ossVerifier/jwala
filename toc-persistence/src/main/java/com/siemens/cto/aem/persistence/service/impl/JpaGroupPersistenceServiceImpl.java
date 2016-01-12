@@ -168,4 +168,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return groupFrom(setGroupStateRequest.getNewState(), groupCrudService.updateGroupStatus(setGroupStateRequest));
     }
 
+    @Override
+    public Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests, User user) {
+        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+        for (UploadJvmTemplateRequest uploadRequest : uploadJvmTemplateRequests) {
+            groupCrudService.uploadGroupJvmTemplate(uploadRequest, group);
+        }
+        return groupFrom(group, false);
+    }
 }

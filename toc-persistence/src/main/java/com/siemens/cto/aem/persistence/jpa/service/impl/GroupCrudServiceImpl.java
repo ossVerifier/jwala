@@ -1,23 +1,26 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupCrudService {
 
@@ -147,5 +150,18 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         return q.getResultList();
     }
 
+    @Override
+    public void uploadGroupJvmTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest, JpaGroup group) {
+        InputStream inStream = uploadJvmTemplateRequest.getData();
+        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        JpaGroupJvmTemplateConfig jpaConfigTemplate = new JpaGroupJvmTemplateConfig();
+        jpaConfigTemplate.setJpaGroup(group);
+        jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
+        jpaConfigTemplate.setTemplateContent(templateContent);
+        entityManager.persist(jpaConfigTemplate);
+        entityManager.flush();
+    }
 }
 
