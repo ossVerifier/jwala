@@ -19,17 +19,13 @@ var ResourceEditor = React.createClass({
         var treeMetaData = {entity: "groups",
                             propKey: "name",
                             icon: "public-resources/img/icons/group.png",
-                            children:[{entity: "webServers",
-                                       propKey: "name", selectable: true,
-                                       icon: "public-resources/img/icons/webserver.png"},
-                                      {entity: "jvms",
-                                       propKey: "jvmName",
-                                       selectable: true,
-                                       icon: "public-resources/img/icons/appserver.png",
-                                       children:[{entity: "webApps",
-                                                  propKey: "name",
-                                                  selectable: true,
-                                                  icon: "public-resources/img/icons/webapp.png"}]}]};
+                            children:[{entity: "webServerSection", propKey: "key" , label: "name", icon: "public-resources/img/icons/webserver.png",
+                                       children:[{entity: "webServers", propKey: "name", selectable: true}]},
+                                      {entity: "jvmSection", propKey: "key", label: "name", icon: "public-resources/img/icons/appserver.png",
+                                       children:[{entity: "jvms", propKey: "jvmName", selectable: true,
+                                                  children:[{entity: "webApps", propKey: "name", selectable: true,
+                                                             icon: "public-resources/img/icons/webapp.png"}]}]}],
+                            };
 
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
                                               title="Topology"
@@ -93,15 +89,26 @@ var ResourceEditor = React.createClass({
         }
 
         if (this.dataRetrievalCount === 0) {
-            this.setState({groupData:this.groupData});
+            this.setGroupData(this.groupData);
         }
     },
     getJvmDataCallback: function(jvm, applicationResponseContent) {
         this.dataRetrievalCount--;
         jvm["webApps"] = applicationResponseContent;
         if (this.dataRetrievalCount === 0) {
-            this.setState({groupData:this.groupData});
+            this.setGroupData(this.groupData);
         }
+    },
+    setGroupData: function(groupData) {
+        // Transform group data to contain a jvm and a web server section so that jvms and web server data will show up
+        // under the said sections.
+        groupData.forEach(function(theGroupData) {
+            theGroupData["jvmSection"] = [{key: theGroupData.name + "JVMs", name: "JVMs", jvms: theGroupData.jvms}];
+            theGroupData["webServerSection"] = [{key: theGroupData.name + "WebServers", name: "Web Servers",
+                webServers: theGroupData.webServers}];
+        });
+
+        this.setState({groupData:groupData});
     },
     getResourceTypesCallback: function(response) {
         this.setState({resourceTypes:response.applicationResponseContent});
