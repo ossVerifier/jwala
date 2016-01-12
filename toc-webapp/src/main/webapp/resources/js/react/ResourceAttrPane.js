@@ -29,14 +29,17 @@ var ResourceAttrPane = React.createClass({
                 if ( entityType === "webServers" || entityType === "jvms") {
                     var jvmArray = [];
                     var webApps = {};
-                    for (var jvmIdx = 0; jvmIdx < this.state.attributes[attr].parent.jvms.length; jvmIdx++) {
-                        var jvm = this.state.attributes[attr].parent.jvms[jvmIdx];
 
-                        jvmArray.push(jvm);
-                        if (jvm.webApps !== undefined && jvm.webApps.length > 0) {
-                            jvm.webApps.forEach(function(webApp) {
-                                webApps[webApp.name] = webApp;
-                            });
+                    if (this.state.attributes[attr].parent.jvms !== undefined) {
+                        for (var jvmIdx = 0; jvmIdx < this.state.attributes[attr].parent.jvms.length; jvmIdx++) {
+                            var jvm = this.state.attributes[attr].parent.jvms[jvmIdx];
+
+                            jvmArray.push(jvm);
+                            if (jvm.webApps !== undefined && jvm.webApps.length > 0) {
+                                jvm.webApps.forEach(function(webApp) {
+                                    webApps[webApp.name] = webApp;
+                                });
+                            }
                         }
                     }
 
