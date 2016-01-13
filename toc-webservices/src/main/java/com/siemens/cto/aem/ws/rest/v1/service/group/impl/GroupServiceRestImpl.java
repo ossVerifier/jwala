@@ -37,6 +37,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
+import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -268,6 +269,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         }
         return ResponseBuilder.ok(groupService.populateGroupWebServerTemplates(groupName, uploadWebServerTemplateRequests, aUser.getUser()));
+    }
+
+    @Override
+    public Response generateAndDeployGroupWebServersFile(String groupName, AuthenticatedUser aUser) {
+        Group group = groupService.getGroup(groupName);
+        group = groupService.getGroupWithWebServers(group.getId());
+        WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
+        for (WebServer webserver : group.getWebServers()){
+            webServerServiceRest.generateAndDeployConfig(webserver.getName());
+        }
+        return ResponseBuilder.ok(group);
     }
 
     @Override

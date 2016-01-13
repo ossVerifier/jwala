@@ -54,6 +54,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
+    private static WebServerServiceRestImpl instance;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
@@ -352,4 +353,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        instance = this;
+    }
+
+    public static WebServerServiceRestImpl get(){
+        return instance;
+    }
 }

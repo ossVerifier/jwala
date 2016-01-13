@@ -8,6 +8,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonCreateWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonUpdateWebServer;
+import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,7 +16,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/webservers")
 @Produces(MediaType.APPLICATION_JSON)
-public interface WebServerServiceRest {
+public interface WebServerServiceRest extends InitializingBean{
 
     @GET
     Response getWebServers(@QueryParam("groupId") final Identifier<Group> aGroupId);

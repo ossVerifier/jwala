@@ -84,6 +84,12 @@ public interface GroupServiceRest {
     Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,
                                        @BeanParam final AuthenticatedUser aUser);
 
+    @PUT
+    @Path("/{groupName}/webservers/conf")
+    Response generateAndDeployGroupWebServersFile(@PathParam("groupName") final String groupName,
+                                           @BeanParam final AuthenticatedUser aUser);
+
+
     @GET
     @Path("/{groupId}/webservers/defaultConfig")
     Response populateWebServerConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
