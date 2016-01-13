@@ -27,12 +27,17 @@ public enum JvmState implements OperationalState {
     JVM_STARTED     ("STARTED",_IS_A_STARTED_STATE),
     JVM_STOP        ("STOP SENT",_IS_A_STARTED_STATE),
     JVM_STOPPING    ("STOPPING",_IS_A_STARTED_STATE),
-    JVM_STOPPED     ("SHUTTING DOWN",_IS_A_STARTED_STATE),
+    JVM_STOPPED     ("STOPPED",_IS_A_STARTED_STATE) /* Reported by ReportingLifeCycleListener.
+                                                       This states that the application server has STOPPED which is
+                                                       different from saying that the application itself has exited or
+                                                       has been terminated. */,
     JVM_DESTROYING  ("DESTROYING",_IS_A_STARTED_STATE),
     JVM_DESTROYED   ("DESTROYED",_IS_A_STARTED_STATE),
     JVM_UNKNOWN     ("UNKNOWN",_NOT_A_STARTED_STATE),
     JVM_FAILED      ("FAILED",_NOT_A_STARTED_STATE),
-    SVC_STOPPED     ("STOPPED",_NOT_A_STARTED_STATE),
+    SVC_STOPPED     ("STOPPED",_NOT_A_STARTED_STATE) /* Reported by something other than the ReportingLifeCycleListener
+                                                        e.g. sc query. This means that Window's service states that the
+                                                        application is no longer running. */,
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
