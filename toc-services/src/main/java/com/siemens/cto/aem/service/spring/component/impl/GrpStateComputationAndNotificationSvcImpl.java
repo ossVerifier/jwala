@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -18,6 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.GroupFiniteStateMachine;
+import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,9 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
     @Autowired
     private StateNotificationService stateNotificationService;
+
+    @Autowired
+    private GroupStateService.API groupStateServiceApi;
 
     public GrpStateComputationAndNotificationSvcImpl() {}
 
@@ -94,8 +99,20 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                         WebServerReachableState.WS_UNKNOWN : WebServerReachableState.valueOf(jpaCurrentState.getState()));
             }
 
-            stateNotificationService.notifyStateUpdated(new CurrentState<>(new Identifier<>(group.getId()), groupState,
+            final Identifier<Group> groupId = new Identifier<>(group.getId());
+            stateNotificationService.notifyStateUpdated(new CurrentState<>(groupId, groupState,
                     DateTime.now(), StateType.GROUP));
+
+            // Since the SOAP UI goes to the db to check group state, let's save the group state for now
+            // since this was how it was done in the old group state update implementation.
+            // I don't think we need to persist it though to avoid extra overhead that might impact performance when
+            // the going gets though.
+            // For the soap UI to get the group state, the soap UI should be provided with a rest service the gets the current
+            // group UI.
+            // This also fixes the group unknown state on initial install and startup of TOC.
+            // Supposedly, the group unknown state should be resolved by calling the proposed web service that gets
+            // the current state.
+            groupStateServiceApi.groupStatePersist(new SetGroupStateRequest(groupId, groupState));
         }
     }
 
@@ -132,6 +149,17 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
             stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,
                     DateTime.now(), StateType.GROUP));
+
+            // Since the SOAP UI goes to the db to check group state, let's save the group state for now
+            // since this was how it was done in the old group state update implementation.
+            // I don't think we need to persist it though to avoid extra overhead that might impact performance when
+            // the going gets though.
+            // For the soap UI to get the group state, the soap UI should be provided with a rest service the gets the current
+            // group UI.
+            // This also fixes the group unknown state on initial install and startup of TOC.
+            // Supposedly, the group unknown state should be resolved by calling the proposed web service that gets
+            // the current state.
+            groupStateServiceApi.groupStatePersist(new SetGroupStateRequest(group.getId(), groupState));
         }
     }
 
