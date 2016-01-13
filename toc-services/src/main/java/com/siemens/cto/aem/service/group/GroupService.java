@@ -60,4 +60,8 @@ public interface GroupService {
     Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
 
     Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
+
+    List<String> getGroupJvmsResourceTemplateNames(String groupName);
+
+    List<String> getGroupWebServersResourceTemplateNames(String groupName);
 }

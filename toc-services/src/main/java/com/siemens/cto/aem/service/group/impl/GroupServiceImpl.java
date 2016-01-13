@@ -219,4 +219,15 @@ public class GroupServiceImpl implements GroupService {
     public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user) {
         return groupPersistenceService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, user);
     }
+
+    @Override
+    public List<String> getGroupJvmsResourceTemplateNames(String groupName) {
+        return groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
+    }
+
+    @Override
+    public List<String> getGroupWebServersResourceTemplateNames(String groupName) {
+        return groupPersistenceService.getGroupWebServersResourceTemplateNames(groupName);
+    }
+
 }

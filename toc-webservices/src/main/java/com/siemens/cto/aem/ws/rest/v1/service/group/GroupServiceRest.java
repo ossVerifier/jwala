@@ -80,6 +80,10 @@ public interface GroupServiceRest {
                                    @BeanParam final AuthenticatedUser aUser);
 
     @GET
+    @Path("/{groupName}/jvms/resources/name")
+    Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName);
+
+    @GET
     @Path("/{groupName}/groupWebServersConfig")
     Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,
                                        @BeanParam final AuthenticatedUser aUser);
@@ -89,6 +93,9 @@ public interface GroupServiceRest {
     Response generateAndDeployGroupWebServersFile(@PathParam("groupName") final String groupName,
                                            @BeanParam final AuthenticatedUser aUser);
 
+    @GET
+    @Path("/{groupName}/webservers/resources/name")
+    Response getGroupWebServersResourceNames(@PathParam("groupName") final String groupName);
 
     @GET
     @Path("/{groupId}/webservers/defaultConfig")

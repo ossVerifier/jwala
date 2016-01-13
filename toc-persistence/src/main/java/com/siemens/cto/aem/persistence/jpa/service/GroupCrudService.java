@@ -1,12 +1,12 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -50,4 +50,8 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     void uploadGroupJvmTemplate(UploadJvmTemplateRequest uploadRequest, JpaGroup group);
 
     void uploadGroupWebServerTemplate(UploadWebServerTemplateRequest uploadRequest, JpaGroup group);
+
+    List getGroupJvmsResourceTemplateNames(String groupName);
+
+    List getGroupWebServersResourceTemplateNames(String groupName);
 }

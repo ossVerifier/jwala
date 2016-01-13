@@ -4,7 +4,12 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "GRP_WEBSERVER_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"GRP_ID", "TEMPLATE_NAME"})})
+@NamedQueries({
+        @NamedQuery(name = JpaGroupWebServerTemplateConfig.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES,
+                query = "SELECT t.templateName FROM JpaGroupWebServerTemplateConfig t WHERE t.grp.name = :grpName")
+})
 public class JpaGroupWebServerTemplateConfig {
+    public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")

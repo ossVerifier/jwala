@@ -19,7 +19,6 @@ import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -43,15 +42,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
@@ -379,6 +373,16 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         membershipDetailsList.addAll(createMembershipDetailsFromWebServers(webServerGroupingDetails));
 
         return ResponseBuilder.ok(membershipDetailsList);
+    }
+
+    @Override
+    public Response getGroupJvmsResourceNames(String groupName) {
+        return ResponseBuilder.ok(groupService.getGroupJvmsResourceTemplateNames(groupName));
+    }
+
+    @Override
+    public Response getGroupWebServersResourceNames(String groupName) {
+        return ResponseBuilder.ok(groupService.getGroupWebServersResourceTemplateNames(groupName));
     }
 
 }

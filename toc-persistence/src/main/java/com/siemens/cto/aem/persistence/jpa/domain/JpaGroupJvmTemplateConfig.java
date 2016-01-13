@@ -4,7 +4,15 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "GRP_JVM_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"GRP_ID", "TEMPLATE_NAME"})})
+@NamedQueries({
+        @NamedQuery(name = JpaGroupJvmTemplateConfig.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES,
+                query = "SELECT t.templateName FROM JpaGroupJvmTemplateConfig t WHERE t.grp.name = :grpName")
+})
+
 public class JpaGroupJvmTemplateConfig{
+
+    public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES = "getGroupJvmTemplateResourceNames";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")

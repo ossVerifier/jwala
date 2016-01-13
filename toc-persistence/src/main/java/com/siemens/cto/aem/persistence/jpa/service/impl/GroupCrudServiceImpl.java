@@ -1,23 +1,26 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.*;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupJvmTemplateConfig;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupWebServerTemplateConfig;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import org.joda.time.DateTime;
 
-import javax.persistence.*;
+import javax.persistence.EntityExistsException;
+import javax.persistence.Query;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +180,20 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         jpaConfigTemplate.setTemplateContent(templateContent);
         entityManager.persist(jpaConfigTemplate);
         entityManager.flush();
+    }
+
+    @Override
+    public List<String> getGroupJvmsResourceTemplateNames(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaGroupJvmTemplateConfig.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES);
+        query.setParameter("grpName", groupName);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<String> getGroupWebServersResourceTemplateNames(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaGroupWebServerTemplateConfig.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES);
+        query.setParameter("grpName", groupName);
+        return query.getResultList();
     }
 
 }
