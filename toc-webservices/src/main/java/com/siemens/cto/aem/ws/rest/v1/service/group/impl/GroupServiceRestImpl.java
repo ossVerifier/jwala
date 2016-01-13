@@ -19,6 +19,7 @@ import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -32,17 +33,24 @@ import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
@@ -223,6 +231,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         }
         return ResponseBuilder.ok(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
+    }
+
+    @Override
+    public Response generateAndDeployGroupJvmFile(String groupName, String fileName, AuthenticatedUser aUser) {
+        Group group = groupService.getGroup(groupName);
+        JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
+        for (Jvm jvm : group.getJvms()) {
+            String jvmName = jvm.getJvmName();
+            jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+        }
+        return ResponseBuilder.ok(group);
     }
 
     @Override

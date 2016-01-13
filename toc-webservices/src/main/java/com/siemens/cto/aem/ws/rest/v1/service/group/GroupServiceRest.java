@@ -73,6 +73,12 @@ public interface GroupServiceRest {
     Response populateGroupJvmTemplates(@PathParam("groupName") final String groupName,
                                @BeanParam final AuthenticatedUser aUser);
 
+    @PUT
+    @Path("/{groupName}/jvms/conf/{fileName}")
+    Response generateAndDeployGroupJvmFile(@PathParam("groupName") final String groupName,
+                                   @PathParam("fileName") final String fileName,
+                                   @BeanParam final AuthenticatedUser aUser);
+
     @GET
     @Path("/{groupName}/groupWebServersConfig")
     Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,

@@ -73,6 +73,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+    private static JvmServiceRestImpl instance;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
@@ -415,6 +416,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception {
+        instance = this;
+    }
+
+    @Override
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         Jvm jvm = jvmService.getJvm(jvmName);
 
@@ -595,4 +601,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
+    public static JvmServiceRest get(){
+        return instance;
+    }
 }

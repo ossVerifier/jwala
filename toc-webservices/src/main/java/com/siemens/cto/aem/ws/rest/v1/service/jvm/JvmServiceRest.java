@@ -7,6 +7,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonCreateJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonUpdateJvm;
+import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/jvms")
 @Produces(MediaType.APPLICATION_JSON)
-public interface JvmServiceRest {
+public interface JvmServiceRest extends InitializingBean{
 
     @GET
     Response getJvms();
