@@ -57,7 +57,7 @@ public interface GroupService {
 
     Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
-    Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
+    Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
 
-    Group populateGroupWebServerTemplates(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
+    Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
 }

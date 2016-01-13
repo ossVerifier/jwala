@@ -4,11 +4,9 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.group.*;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
@@ -170,8 +168,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group populateGroupJvmTemplates(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests, User user) {
-        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+    public Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests, User user) {
+        final JpaGroup group = groupCrudService.getGroup(groupName);
         for (UploadJvmTemplateRequest uploadRequest : uploadJvmTemplateRequests) {
             groupCrudService.uploadGroupJvmTemplate(uploadRequest, group);
         }
@@ -179,8 +177,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group populateGroupWebServerTemplates(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateRequests, User user) {
-        final JpaGroup group = groupCrudService.getGroup(aGroupId);
+    public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateRequests, User user) {
+        final JpaGroup group = groupCrudService.getGroup(groupName);
         for (UploadWebServerTemplateRequest uploadRequest : uploadWSTemplateRequests) {
             groupCrudService.uploadGroupWebServerTemplate(uploadRequest, group);
         }

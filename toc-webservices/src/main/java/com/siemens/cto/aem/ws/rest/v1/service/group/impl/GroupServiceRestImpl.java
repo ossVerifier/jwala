@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,8 +100,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         logger.debug("Create Group requested: {}", aNewGroupName);
         final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName),
                 aUser.getUser());
-        populateGroupJvmTemplates(group.getId(), aUser);
-        populateGroupWebServerTemplates(group.getId(), aUser);
+        populateGroupJvmTemplates(aNewGroupName, aUser);
+        populateGroupWebServerTemplates(aNewGroupName, aUser);
         return ResponseBuilder.created(group);
     }
 
@@ -202,7 +200,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response populateGroupJvmTemplates(Identifier<Group> aGroupId, AuthenticatedUser aUser) {
+    public Response populateGroupJvmTemplates(String groupName, AuthenticatedUser aUser) {
         List<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
             final String configFileName = resourceType.getConfigFileName();
@@ -224,11 +222,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
         }
-        return ResponseBuilder.ok(groupService.populateGroupJvmTemplates(aGroupId, uploadJvmTemplateCommands, aUser.getUser()));
+        return ResponseBuilder.ok(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
     @Override
-    public Response populateGroupWebServerTemplates(Identifier<Group> aGroupId, AuthenticatedUser aUser) {
+    public Response populateGroupWebServerTemplates(String groupName, AuthenticatedUser aUser) {
         List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests = new ArrayList<>();
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
             final String configFileName = resourceType.getConfigFileName();
@@ -250,7 +248,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
         }
-        return ResponseBuilder.ok(groupService.populateGroupWebServerTemplates(aGroupId, uploadWebServerTemplateRequests, aUser.getUser()));
+        return ResponseBuilder.ok(groupService.populateGroupWebServerTemplates(groupName, uploadWebServerTemplateRequests, aUser.getUser()));
     }
 
     @Override
