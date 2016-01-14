@@ -240,6 +240,17 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public String previewGroupWebServerResourceTemplate(String groupName, String template) {
+        final Group group = groupPersistenceService.getGroup(groupName);
+        Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
+        if (webservers != null && webservers.size() > 0) {
+            final WebServer webServer = webservers.iterator().next();
+            return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
+        }
+        return template;
+    }
+
+    @Override
     public String previewGroupJvmResourceTemplate(String groupName, String template) {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
         if (jvms != null && jvms.size() > 0) {

@@ -70,4 +70,6 @@ public interface GroupService {
     String getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
 
     String previewGroupJvmResourceTemplate(String groupName, String template);
+
+    String previewGroupWebServerResourceTemplate(String groupName, String template);
 }
