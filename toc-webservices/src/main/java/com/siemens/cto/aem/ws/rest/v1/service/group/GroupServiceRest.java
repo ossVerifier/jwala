@@ -154,6 +154,13 @@ public interface GroupServiceRest {
     Response updateGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                             final String content);
+
+    @POST
+    @Path("/{groupName}/webservers/resources/uploadTemplate")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadGroupWebServerConfigTemplate(@PathParam("groupName") final String groupName,
+                                          @BeanParam final AuthenticatedUser aUser,
+                                          @QueryParam("templateName") final String templateName);
     /************************
      *** Control Commands ***
      ************************/

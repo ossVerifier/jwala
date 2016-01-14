@@ -190,12 +190,27 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
-        JpaGroupWebServerConfigTemplate jpaConfigTemplate = new JpaGroupWebServerConfigTemplate();
-        jpaConfigTemplate.setJpaGroup(group);
-        jpaConfigTemplate.setTemplateName(uploadWSTemplateRequest.getConfFileName());
-        jpaConfigTemplate.setTemplateContent(templateContent);
-        entityManager.persist(jpaConfigTemplate);
-        entityManager.flush();
+        Query query = entityManager.createQuery("SELECT t FROM JpaGroupWebServerConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
+        query.setParameter("grpName", group.getName());
+        query.setParameter("tempName", uploadWSTemplateRequest.getConfFileName());
+        List<JpaGroupWebServerConfigTemplate> templates = query.getResultList();
+        JpaGroupWebServerConfigTemplate jpaConfigTemplate;
+        if (templates.size() == 1) {
+            //update
+            jpaConfigTemplate = templates.get(0);
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.flush();
+        } else if (templates.isEmpty()) {
+            jpaConfigTemplate = new JpaGroupWebServerConfigTemplate();
+            jpaConfigTemplate.setJpaGroup(group);
+            jpaConfigTemplate.setTemplateName(uploadWSTemplateRequest.getConfFileName());
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.persist(jpaConfigTemplate);
+            entityManager.flush();
+        } else {
+            throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
+                    "Only expecting one template to be returned for GROUP Web Server Template [" + group.getName() + "] but returned " + templates.size() + " templates");
+        }
     }
 
     @Override

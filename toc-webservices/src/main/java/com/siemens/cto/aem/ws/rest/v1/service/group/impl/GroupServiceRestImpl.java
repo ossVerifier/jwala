@@ -216,6 +216,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
+        final boolean doGroupWebServerUpload = false;
+        return uploadConfigTemplate(groupName, aUser, templateName, doGroupWebServerUpload);
+    }
+
+    @Override
     public Response updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content) {
         try {
             return ResponseBuilder.ok(groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content));
@@ -479,24 +485,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 try {
                     data = file1.openStream();
                     if (isGroupJvmUpload) {
-                        Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
-                        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), data) {
-                            @Override
-                            public String getConfFileName() {
-                                return templateName;
-                            }
-                        };
-
-                        final ArrayList<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
-                        uploadJvmTemplateCommands.add(uploadJvmTemplateRequest);
-                        return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser())); // early
+                        return doGroupJvmTemplateUpload(groupName, aUser, templateName, data, file1);
                     } else {
-                        return ResponseBuilder.notOk(Response.Status.BAD_REQUEST, new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "method not implemented yet"));
+                        return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
                     }
-                    // out
-                    // on
-                    // first
-                    // attachment
                 } finally {
                     assert data != null;
                     data.close();
@@ -507,6 +499,33 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (IOException | FileUploadException e) {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
+    }
+
+    private Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
+        final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
+        UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, file1.getName(), data) {
+            @Override
+            public String getConfFileName() {
+                return templateName;
+            }
+        };
+        List<UploadWebServerTemplateRequest> uploadWSTemplateCommands = new ArrayList<>();
+        uploadWSTemplateCommands.add(uploadWSTemplateRequest);
+        return ResponseBuilder.created(groupService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, aUser.getUser()));
+    }
+
+    private Response doGroupJvmTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, final FileItemStream file1) {
+        Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), data) {
+            @Override
+            public String getConfFileName() {
+                return templateName;
+            }
+        };
+
+        final ArrayList<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
+        uploadJvmTemplateCommands.add(uploadJvmTemplateRequest);
+        return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
 }
