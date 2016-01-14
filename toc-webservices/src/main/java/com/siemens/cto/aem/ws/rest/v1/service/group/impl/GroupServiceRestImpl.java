@@ -253,6 +253,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
     }
 
+    @Override
+    public Response previewGroupJvmResourceTemplate(String groupName, String template){
+        return ResponseBuilder.ok(groupService.previewGroupJvmResourceTemplate(groupName, template));
+    }
+
+
 
     @Override
     public Response populateGroupWebServerTemplates(String groupName, AuthenticatedUser aUser) {

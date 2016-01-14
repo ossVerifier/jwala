@@ -240,6 +240,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public String previewGroupJvmResourceTemplate(String groupName, String template) {
+        final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
+        if (jvms != null && jvms.size() > 0) {
+            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvms.iterator().next(), new ArrayList<Jvm>(jvms));
+        }
+        return template;
+    }
+
+    @Override
     public String getGroupWebServerResourceTemplate(final String groupName,
                                                     final String resourceTemplateName,
                                                     final boolean tokensReplaced) {
