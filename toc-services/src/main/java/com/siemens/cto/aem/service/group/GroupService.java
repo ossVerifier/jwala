@@ -74,4 +74,6 @@ public interface GroupService {
     String previewGroupWebServerResourceTemplate(String groupName, String template);
 
     String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
+
+    String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
 }

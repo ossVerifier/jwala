@@ -8,11 +8,15 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES,
                 query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_CONTENT,
-                query = "SELECT t.templateContent FROM JpaGroupWebServerConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName")
+                query = "SELECT t.templateContent FROM JpaGroupWebServerConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT,
+                query = "UPDATE JpaGroupWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName")
+
 })
 public class JpaGroupWebServerConfigTemplate {
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
     public static final java.lang.String GET_GROUP_WEBSERVER_TEMPLATE_CONTENT = "getGroupWebServerTemplateContent";
+    public static final java.lang.String UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT = "updateGroupWebServerTemplateContent";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
@@ -20,13 +24,13 @@ public class JpaGroupWebServerConfigTemplate {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)
-    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction=org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
+    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction = org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaGroup grp;
 
-    @Column(name="TEMPLATE_NAME", nullable = false)
+    @Column(name = "TEMPLATE_NAME", nullable = false)
     private String templateName;
 
-    @Column(name="TEMPLATE_CONTENT", nullable = false, length=2147483647)
+    @Column(name = "TEMPLATE_CONTENT", nullable = false, length = 2147483647)
     private String templateContent;
 
     public Long getId() {
@@ -42,7 +46,7 @@ public class JpaGroupWebServerConfigTemplate {
     }
 
     public void setJpaGroup(JpaGroup jpaGroup) {
-        this.grp= jpaGroup;
+        this.grp = jpaGroup;
     }
 
     public String getTemplateName() {

@@ -142,6 +142,12 @@ public interface GroupServiceRest {
                                              String template);
 
 
+    @PUT
+    @Path("/{groupName}/webservers/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
+                                            @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                            final String content);
     /************************
      *** Control Commands ***
      ************************/

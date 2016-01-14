@@ -46,7 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
@@ -208,6 +207,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        try {
+            return ResponseBuilder.ok(groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content));
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        }
+
+    }
+
+    @Override
     public Response previewGroupWebServerResourceTemplate(String groupName, String template) {
         return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template));
     }
@@ -274,10 +285,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupJvmResourceTemplate(String groupName, String template){
+    public Response previewGroupJvmResourceTemplate(String groupName, String template) {
         return ResponseBuilder.ok(groupService.previewGroupJvmResourceTemplate(groupName, template));
     }
-
 
 
     @Override
