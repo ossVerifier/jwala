@@ -8,13 +8,16 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES,
                 query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :grpName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_CONTENT,
-                query = "SELECT t.templateContent FROM JpaGroupJvmConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName")
+                query = "SELECT t.templateContent FROM JpaGroupJvmConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_CONTENT,
+                query = "UPDATE JpaGroupJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName")
 })
 
 public class JpaGroupJvmConfigTemplate {
 
     public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES = "getGroupJvmTemplateResourceNames";
     public static final String GET_GROUP_JVM_TEMPLATE_CONTENT = "getGroupJvmTemplateContent";
+    public static final java.lang.String UPDATE_GROUP_JVM_TEMPLATE_CONTENT = "updateGroupJvmTemplateContent";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

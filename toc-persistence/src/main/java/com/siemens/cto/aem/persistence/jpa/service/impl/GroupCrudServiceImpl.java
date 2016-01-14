@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityExistsException;
@@ -191,6 +192,26 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         final Query query = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES);
         query.setParameter("grpName", groupName);
         return query.getResultList();
+    }
+
+    @Override
+    public void updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_CONTENT);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateContent", content);
+
+        int numEntities = 0;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(groupName, resourceTemplateName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
+        }
     }
 
     @Override

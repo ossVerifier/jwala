@@ -98,6 +98,14 @@ public interface GroupServiceRest {
     Response previewGroupJvmResourceTemplate(@PathParam("groupName") String groupName,
                                      String template);
 
+    @PUT
+    @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateGroupJvmResourceTemplate(@PathParam("groupName") final String groupName,
+                                    @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                    final String content);
+
+
     /****************************
      *** Web Server Templates ***
      ****************************/

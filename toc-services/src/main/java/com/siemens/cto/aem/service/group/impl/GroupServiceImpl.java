@@ -240,6 +240,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
+    public String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        return groupPersistenceService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content);
+    }
+
+    @Override
     public String previewGroupWebServerResourceTemplate(String groupName, String template) {
         final Group group = groupPersistenceService.getGroup(groupName);
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();

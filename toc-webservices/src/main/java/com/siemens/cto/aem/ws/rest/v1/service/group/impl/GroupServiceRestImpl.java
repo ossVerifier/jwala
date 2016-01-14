@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
@@ -19,6 +20,8 @@ import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -256,6 +259,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                                 final String resourceTemplateName,
                                                 final boolean tokensReplaced) {
         return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
+    }
+
+    @Override
+    public Response updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        try {
+            return ResponseBuilder.ok(groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content));
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        }
+
     }
 
     @Override
