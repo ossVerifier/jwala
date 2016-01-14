@@ -54,4 +54,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     List getGroupJvmsResourceTemplateNames(String groupName);
 
     List getGroupWebServersResourceTemplateNames(String groupName);
+
+    String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName);
 }

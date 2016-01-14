@@ -62,6 +62,9 @@ public interface GroupServiceRest {
                               final JsonControlJvm jvmControlOperation,
                               @BeanParam final AuthenticatedUser aUser);
 
+    /*********************
+     *** JVM Templates ***
+     *********************/
     @GET
     @Path("/{groupId}/jvms/defaultConfig")
     Response populateJvmConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
@@ -84,6 +87,15 @@ public interface GroupServiceRest {
     Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName);
 
     @GET
+    @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
+    Response getGroupJvmResourceTemplate(@PathParam("groupName") final String groupName,
+                                 @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                 @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
+    /****************************
+     *** Web Server Templates ***
+     ****************************/
+    @GET
     @Path("/{groupName}/groupWebServersConfig")
     Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,
                                        @BeanParam final AuthenticatedUser aUser);
@@ -102,6 +114,16 @@ public interface GroupServiceRest {
     Response populateWebServerConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
                                      @BeanParam final AuthenticatedUser aUser,
                                      @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
+
+    @GET
+    @Path("/{groupName}/webservers/resources/template/{resourceTemplateName}")
+    Response getGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
+                                         @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                         @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
+    /************************
+     *** Control Commands ***
+     ************************/
 
     @POST
     @Path("/{groupId}/commands")

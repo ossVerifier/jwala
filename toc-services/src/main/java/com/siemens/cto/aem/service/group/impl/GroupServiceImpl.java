@@ -13,6 +13,7 @@ import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -228,6 +229,21 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<String> getGroupWebServersResourceTemplateNames(String groupName) {
         return groupPersistenceService.getGroupWebServersResourceTemplateNames(groupName);
+    }
+
+    @Override
+    public String getGroupJvmResourceTemplate(final String groupName,
+                                      final String resourceTemplateName,
+                                      final boolean tokensReplaced) {
+        final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
+        if (tokensReplaced) {
+            // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
+            final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
+            if (jvms != null && jvms.size() > 0) {
+                return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvms.iterator().next(), new ArrayList<Jvm>(jvms));
+            }
+        }
+        return template;
     }
 
 }

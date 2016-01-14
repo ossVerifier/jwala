@@ -53,4 +53,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     List<String> getGroupJvmsResourceTemplateNames(String groupName);
 
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
+
+    String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName);
 }

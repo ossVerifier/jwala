@@ -12,11 +12,9 @@ import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupJvmTemplateConfig;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupWebServerTemplateConfig;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityExistsException;
@@ -74,8 +72,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         List<JpaGroup> jpaGroups = query.getResultList();
         if (jpaGroups == null || jpaGroups.size() < 1) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + name);
-        }
-        else if (jpaGroups.size() > 1) {
+        } else if (jpaGroups.size() > 1) {
             throw new NotFoundException(AemFaultType.DATA_CONTROL_ERROR, "Too many groups found for " + name + " code is set to only use one");
         }
         return jpaGroups.get(0);
@@ -130,13 +127,13 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         final List<JpaGroup> jpaGroups = getGroupsWithWebServer(jpaWebServer);
 
         // Unlink web server from all the groups.
-        for (JpaGroup jpaGroup: jpaGroups) {
+        for (JpaGroup jpaGroup : jpaGroups) {
             jpaGroup.getWebServers().remove(jpaWebServer);
         }
 
         // Link web server's newly defined groups.
         List<JpaGroup> linkedGroups = new ArrayList<>();
-        for (Group group: webServer.getGroups()) {
+        for (Group group : webServer.getGroups()) {
             final JpaGroup jpaGroup = getGroup(group.getId());
             jpaGroup.getWebServers().add(jpaWebServer);
             linkedGroups.add(jpaGroup);
@@ -160,7 +157,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
-        JpaGroupJvmTemplateConfig jpaConfigTemplate = new JpaGroupJvmTemplateConfig();
+        JpaGroupJvmConfigTemplate jpaConfigTemplate = new JpaGroupJvmConfigTemplate();
         jpaConfigTemplate.setJpaGroup(group);
         jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
         jpaConfigTemplate.setTemplateContent(templateContent);
@@ -174,7 +171,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
-        JpaGroupWebServerTemplateConfig jpaConfigTemplate = new JpaGroupWebServerTemplateConfig();
+        JpaGroupWebServerConfigTemplate jpaConfigTemplate = new JpaGroupWebServerConfigTemplate();
         jpaConfigTemplate.setJpaGroup(group);
         jpaConfigTemplate.setTemplateName(uploadWSTemplateRequest.getConfFileName());
         jpaConfigTemplate.setTemplateContent(templateContent);
@@ -184,16 +181,28 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
 
     @Override
     public List<String> getGroupJvmsResourceTemplateNames(final String groupName) {
-        final Query query = entityManager.createNamedQuery(JpaGroupJvmTemplateConfig.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES);
+        final Query query = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES);
         query.setParameter("grpName", groupName);
         return query.getResultList();
     }
 
     @Override
     public List<String> getGroupWebServersResourceTemplateNames(final String groupName) {
-        final Query query = entityManager.createNamedQuery(JpaGroupWebServerTemplateConfig.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES);
+        final Query query = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES);
         query.setParameter("grpName", groupName);
         return query.getResultList();
+    }
+
+    @Override
+    public String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_CONTENT);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (RuntimeException re) {
+            throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
+        }
     }
 
 }

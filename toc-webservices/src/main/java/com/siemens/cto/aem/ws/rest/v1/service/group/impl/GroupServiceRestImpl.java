@@ -240,6 +240,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response getGroupJvmResourceTemplate(final String groupName,
+                                                final String resourceTemplateName,
+                                                final boolean tokensReplaced) {
+        return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
+    }
+
+
+    @Override
     public Response populateGroupWebServerTemplates(String groupName, AuthenticatedUser aUser) {
         List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests = new ArrayList<>();
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
@@ -270,7 +278,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
-        for (WebServer webserver : group.getWebServers()){
+        for (WebServer webserver : group.getWebServers()) {
             webServerServiceRest.generateAndDeployConfig(webserver.getName());
         }
         return ResponseBuilder.ok(group);
