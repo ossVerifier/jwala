@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -13,6 +14,7 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -29,7 +31,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
@@ -188,6 +192,26 @@ public class JvmControlServiceImpl implements JvmControlService {
                 destPath);
     }
 
+    @Override
+    public CommandOutput secureCopyFileWithBackup(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException {
+        // back up the original file first
+        final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
+        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
+
+        String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destPathBackup = destPath + currentDateSuffix;
+        final CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                jvm.getName(),
+                jvm.getHostName(),
+                secureCopyRequest.getControlOperation(),
+                new WindowsJvmPlatformCommandProvider(),
+                destPath,
+                destPathBackup);
+        if (!commandOutput.getReturnCode().wasSuccessful()) {
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+        }
+        return secureCopyFile(secureCopyRequest, sourcePath, destPath);
+    }
 
     private void processDefaultReturnCode(ControlJvmRequest controlJvmRequest, User aUser, CurrentState<Jvm, JvmState> prevState, JvmControlOperation ctrlOp, CommandOutput execData, String jvmName, String result) {
         if (ctrlOp.checkForSuccess(result)) {

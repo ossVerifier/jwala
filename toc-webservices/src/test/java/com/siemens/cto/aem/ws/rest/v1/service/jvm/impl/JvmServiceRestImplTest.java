@@ -525,11 +525,12 @@ public class JvmServiceRestImplTest {
         when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResourceType.getEntityType()).thenReturn("jvm");
         when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
+        when(mockResourceType.getRelativeDir()).thenReturn("/");
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.isJvmStarted(jvm)).thenReturn(false);
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         when(jvmService.generateConfigFile(anyString(),anyString())).thenReturn("<server>xml</server>");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
+        when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
 

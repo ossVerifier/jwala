@@ -257,9 +257,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateAndDeployGroupJvmFile(String groupName, String fileName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
+        String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, false);
         JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
+            jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
             jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
         }
         return ResponseBuilder.ok(group);
@@ -320,8 +322,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response generateAndDeployGroupWebServersFile(String groupName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
+        String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
         WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         for (WebServer webserver : group.getWebServers()) {
+            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
             webServerServiceRest.generateAndDeployConfig(webserver.getName());
         }
         return ResponseBuilder.ok(group);

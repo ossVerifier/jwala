@@ -105,6 +105,12 @@ public interface GroupServiceRest {
                                     @PathParam("resourceTemplateName") final String resourceTemplateName,
                                     final String content);
 
+//    @POST
+//    @Path("/{groupName}/jvms/resources/uploadTemplate")
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    Response uploadGroupJvmConfigTemplate(@PathParam("groupName") final String groupName,
+//                                  @BeanParam final AuthenticatedUser aUser,
+//                                  @QueryParam("templateName") final String templateName);
 
     /****************************
      *** Web Server Templates ***

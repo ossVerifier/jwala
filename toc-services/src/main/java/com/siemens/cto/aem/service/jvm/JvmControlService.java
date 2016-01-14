@@ -10,4 +10,6 @@ public interface JvmControlService {
     CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser);
 
     CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
+
+    CommandOutput secureCopyFileWithBackup(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
 }

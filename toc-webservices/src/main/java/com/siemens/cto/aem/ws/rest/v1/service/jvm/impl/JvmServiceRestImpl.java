@@ -424,7 +424,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         Jvm jvm = jvmService.getJvm(jvmName);
 
-        // only one at a time per web server
+        // only one at a time per jvm
         if (!jvmWriteLocks.containsKey(jvm.getId().getId().toString())) {
             jvmWriteLocks.put(jvm.getId().getId().toString(), new ReentrantReadWriteLock());
         }
@@ -459,7 +459,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final String destPath =
                 stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
         CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
+                jvmControlService.secureCopyFileWithBackup(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
         if (result.getReturnCode().wasSuccessful()) {
             logger.info("Successful generation and deploy of {}", fileName);
         } else {
