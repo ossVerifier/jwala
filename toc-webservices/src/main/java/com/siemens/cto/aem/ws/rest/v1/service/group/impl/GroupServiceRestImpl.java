@@ -11,8 +11,10 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -40,16 +42,23 @@ import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
@@ -275,6 +284,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
+        final boolean doGroupJvmUpload = true;
+        return uploadConfigTemplate(groupName, aUser, templateName, doGroupJvmUpload);
+    }
+
+    @Override
     public Response updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {
         try {
             return ResponseBuilder.ok(groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content));
@@ -438,6 +453,60 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getGroupWebServersResourceNames(String groupName) {
         return ResponseBuilder.ok(groupService.getGroupWebServersResourceTemplateNames(groupName));
+    }
+
+    @Context
+    private MessageContext context;
+
+    private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final boolean isGroupJvmUpload) {
+        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
+
+        // iframe uploads from IE do not understand application/json
+        // as a response and will prompt for download. Fix: return
+        // text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
+
+        ServletFileUpload sfu = new ServletFileUpload();
+        InputStream data = null;
+        try {
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemStream file1;
+
+            while (iter.hasNext()) {
+                file1 = iter.next();
+                try {
+                    data = file1.openStream();
+                    if (isGroupJvmUpload) {
+                        Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
+                        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), data) {
+                            @Override
+                            public String getConfFileName() {
+                                return templateName;
+                            }
+                        };
+
+                        final ArrayList<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
+                        uploadJvmTemplateCommands.add(uploadJvmTemplateRequest);
+                        return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser())); // early
+                    } else {
+                        return ResponseBuilder.notOk(Response.Status.BAD_REQUEST, new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "method not implemented yet"));
+                    }
+                    // out
+                    // on
+                    // first
+                    // attachment
+                } finally {
+                    assert data != null;
+                    data.close();
+                }
+            }
+            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
+                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
+        } catch (IOException | FileUploadException e) {
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
+        }
     }
 
 }
