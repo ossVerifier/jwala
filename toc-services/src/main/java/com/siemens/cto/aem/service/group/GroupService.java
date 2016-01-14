@@ -66,4 +66,6 @@ public interface GroupService {
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
 
     String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
+
+    String getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
 }

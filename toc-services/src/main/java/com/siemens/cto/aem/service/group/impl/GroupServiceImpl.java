@@ -1,19 +1,20 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.rule.group.GroupNameRule;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.common.rule.group.GroupNameRule;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
+import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -22,14 +23,14 @@ public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
     private final WebServerService webServerService;
-    private final GroupStateService.API groupStateService;
+    private ApplicationPersistenceService applicationPersistenceService;
 
     public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
                             final WebServerService wSService,
-                            final GroupStateService.API groupStateService) {
+                            final ApplicationPersistenceService applicationPersistenceService) {
         groupPersistenceService = theGroupPersistenceService;
         webServerService = wSService;
-        this.groupStateService = groupStateService;
+        this.applicationPersistenceService = applicationPersistenceService;
     }
 
     @Override
@@ -88,8 +89,6 @@ public class GroupServiceImpl implements GroupService {
         anUpdateGroupRequest.validate();
         Group group = groupPersistenceService.updateGroup(anUpdateGroupRequest);
 
-        // TODO: Remove if this is no londer needed.
-        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -112,8 +111,6 @@ public class GroupServiceImpl implements GroupService {
 
         addJvmToGroupRequest.validate();
         Group group = groupPersistenceService.addJvmToGroup(addJvmToGroupRequest);
-        // TODO: Remove if this is no londer needed.
-        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -125,13 +122,11 @@ public class GroupServiceImpl implements GroupService {
         addJvmsToGroupRequest.validate();
         for (final AddJvmToGroupRequest command : addJvmsToGroupRequest.toRequests()) {
             addJvmToGroup(command,
-                          anAddingUser);
+                    anAddingUser);
         }
 
         Group group = getGroup(addJvmsToGroupRequest.getGroupId());
 
-        // TODO: Remove if this is no londer needed.
-        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -142,8 +137,6 @@ public class GroupServiceImpl implements GroupService {
 
         removeJvmFromGroupRequest.validate();
         Group group = groupPersistenceService.removeJvmFromGroup(removeJvmFromGroupRequest);
-        // TODO: Remove if this is no londer needed.
-        // stateNotificationWorker.refreshState(groupStateService, group);
         return group;
     }
 
@@ -177,7 +170,7 @@ public class GroupServiceImpl implements GroupService {
         final Group group = groupPersistenceService.getGroup(id, true);
         final Set<WebServer> webServers = group.getWebServers();
 
-        for (WebServer webServer: webServers) {
+        for (WebServer webServer : webServers) {
             final Set<Group> tmpGroup = new LinkedHashSet<>();
             if (webServer.getGroups() != null && !webServer.getGroups().isEmpty()) {
                 for (Group webServerGroup : webServer.getGroups()) {
@@ -187,8 +180,8 @@ public class GroupServiceImpl implements GroupService {
                 }
                 if (!tmpGroup.isEmpty()) {
                     otherGroupConnectionDetails.add(new WebServer(webServer.getId(),
-                                                        webServer.getGroups(),
-                                                        webServer.getName()));
+                            webServer.getGroups(),
+                            webServer.getName()));
                 }
             }
         }
@@ -233,8 +226,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public String getGroupJvmResourceTemplate(final String groupName,
-                                      final String resourceTemplateName,
-                                      final boolean tokensReplaced) {
+                                              final String resourceTemplateName,
+                                              final boolean tokensReplaced) {
         final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
@@ -246,4 +239,20 @@ public class GroupServiceImpl implements GroupService {
         return template;
     }
 
+    @Override
+    public String getGroupWebServerResourceTemplate(final String groupName,
+                                                    final String resourceTemplateName,
+                                                    final boolean tokensReplaced) {
+        final String template = groupPersistenceService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName);
+        if (tokensReplaced) {
+            // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
+            final Group group = groupPersistenceService.getGroup(groupName);
+            Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
+            if (webservers != null && webservers.size() > 0) {
+                final WebServer webServer = webservers.iterator().next();
+                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
+            }
+        }
+        return template;
+    }
 }

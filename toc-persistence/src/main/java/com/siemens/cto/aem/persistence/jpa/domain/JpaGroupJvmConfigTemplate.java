@@ -23,13 +23,13 @@ public class JpaGroupJvmConfigTemplate {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)
-    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction=org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
+    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction = org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaGroup grp;
 
-    @Column(name="TEMPLATE_NAME", nullable = false)
+    @Column(name = "TEMPLATE_NAME", nullable = false)
     private String templateName;
 
-    @Column(name="TEMPLATE_CONTENT", nullable = false, length=2147483647)
+    @Column(name = "TEMPLATE_CONTENT", nullable = false, length = 2147483647)
     private String templateContent;
 
     public Long getId() {
@@ -45,7 +45,7 @@ public class JpaGroupJvmConfigTemplate {
     }
 
     public void setJpaGroup(JpaGroup jpaGroup) {
-        this.grp= jpaGroup;
+        this.grp = jpaGroup;
     }
 
     public String getTemplateName() {

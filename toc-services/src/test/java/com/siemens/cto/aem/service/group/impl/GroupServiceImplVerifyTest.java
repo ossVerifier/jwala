@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.GroupStateService;
@@ -29,19 +30,19 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private GroupServiceImpl groupService;
     private GroupPersistenceService groupPersistenceService;
-    private GroupStateService.API groupStateService;
+    private ApplicationPersistenceService applicationPersistenceService;
     private WebServerService webServerService;
     private User user;
 
     @Before
     public void setUp() {
         groupPersistenceService = mock(GroupPersistenceService.class);
-        groupStateService = mock(GroupStateService.API.class);
+        applicationPersistenceService = mock(ApplicationPersistenceService.class);
         webServerService = mock(WebServerService.class);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                                     webServerService,
-                                    groupStateService
+                                    applicationPersistenceService
         );
         user = new User("unused");
     }

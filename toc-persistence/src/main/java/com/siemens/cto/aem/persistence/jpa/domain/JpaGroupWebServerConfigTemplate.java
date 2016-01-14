@@ -6,10 +6,13 @@ import javax.persistence.*;
 @Table(name = "GRP_WEBSERVER_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"GRP_ID", "TEMPLATE_NAME"})})
 @NamedQueries({
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES,
-                query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName")
+                query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_CONTENT,
+                query = "SELECT t.templateContent FROM JpaGroupWebServerConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName")
 })
 public class JpaGroupWebServerConfigTemplate {
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
+    public static final java.lang.String GET_GROUP_WEBSERVER_TEMPLATE_CONTENT = "getGroupWebServerTemplateContent";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")

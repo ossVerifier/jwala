@@ -42,6 +42,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
@@ -200,6 +202,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             uploadWSTemplateCommands.add(httpdConfTemplateCommand);
         }
         return ResponseBuilder.ok(groupService.populateWebServerConfig(aGroupId, uploadWSTemplateCommands, aUser.getUser(), overwriteExisting));
+    }
+
+    @Override
+    public Response getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
+        return ResponseBuilder.ok(groupService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
     }
 
     @Override
