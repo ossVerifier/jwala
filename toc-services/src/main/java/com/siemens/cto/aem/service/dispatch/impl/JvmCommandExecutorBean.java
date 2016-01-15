@@ -23,7 +23,7 @@ public class JvmCommandExecutorBean {
 
         LOGGER.debug("Execute command : " + jvmDispatchCommand.toString());
 
-        Boolean wasSuccessful = false;
+        Boolean wasSuccessful;
 
         try {
             ControlJvmRequest controlJvmCommand = new ControlJvmRequest(jvmDispatchCommand.getJvm().getId(),
@@ -33,9 +33,9 @@ public class JvmCommandExecutorBean {
             wasSuccessful = commandOutput.getReturnCode().getWasSuccessful();
             LOGGER.debug("ControlJvmRequest complete.  Success = {}", wasSuccessful);
             
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             wasSuccessful = false;
-            LOGGER.warn("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmRequest (" + jvmDispatchCommand.toString() + ") failed: ", e);
+            LOGGER.error("Group dispatch ("+ groupDispatchCommand.toString() +"): ControlJvmRequest (" + jvmDispatchCommand.toString() + ") failed: ", e);
         }
 
         return new JvmDispatchCommandResult(wasSuccessful, groupDispatchCommand);
