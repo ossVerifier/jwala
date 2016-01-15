@@ -1,18 +1,15 @@
 package com.siemens.cto.aem.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaHistory;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * {@link HistoryService} implementation.
@@ -29,7 +26,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // Write history independent of any transaction.
     public void createHistory(final String serverName, final List<Group> groups, final String event,
                               final EventType eventType, final String user) {
         if (groups != null) {
