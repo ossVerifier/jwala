@@ -15,6 +15,7 @@ var ResourcesConfig = React.createClass({
         splitterComponents.push(<XmlTabs jvmService={this.props.jvmService}
                                          wsService={this.props.wsService}
                                          webAppService={this.props.webAppService}
+                                         groupService={this.props.groupService}
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload} />);
 
@@ -60,6 +61,7 @@ var ResourcesConfig = React.createClass({
 
         this.refs.xmlTabs.setState({entityType: data.rtreeListMetaData.entity,
                                     entity: data,
+                                    entityGroupName: data.rtreeListMetaData.parent.name,
                                     resourceTemplateName: null,
                                     entityParent: data.rtreeListMetaData.parent,
                                     template: ""});
@@ -82,7 +84,8 @@ var ResourcesConfig = React.createClass({
         template.setState({
             fileName: fileName,
             entityName: ResourcesConfig.getEntityName(this.refs.xmlTabs.state.entity, this.refs.xmlTabs.state.entityType),
-            entityType: entityType
+            entityType: entityType,
+            entityGroupName: this.refs.xmlTabs.state.entityParent.name
         })
     },
      okCallback: function() {
@@ -119,9 +122,35 @@ var ResourcesConfig = React.createClass({
                                                            $.errorAlert(errMsg, "Error");
                                                        }
                           );
-                     } else {
+                     } else if ("webServers" === entityType) {
                            this.props.wsService.uploadTemplateForm(
                                                     entityName,
+                                                  fileName,
+                                                  formData,
+                                                  function(){
+                                                      self.refs.templateUploadModal.close();
+                                                      self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
+                                                  },
+                                                  function(errMsg) {
+                                                      $.errorAlert(errMsg, "Error");
+                                                  }
+                                               );
+                     } else if ("jvmSection" === entityType) {
+                           this.props.groupService.uploadGroupJvmTemplateForm(
+                                                    this.refs.xmlTabs.state.entityGroupName,
+                                                  fileName,
+                                                  formData,
+                                                  function(){
+                                                      self.refs.templateUploadModal.close();
+                                                      self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
+                                                  },
+                                                  function(errMsg) {
+                                                      $.errorAlert(errMsg, "Error");
+                                                  }
+                                               );
+                     } else if ("webServerSection" === entityType) {
+                           this.props.groupService.uploadGroupWebServerTemplateForm(
+                                                    this.refs.xmlTabs.state.entityGroupName,
                                                   fileName,
                                                   formData,
                                                   function(){
@@ -142,7 +171,8 @@ var ResourcesConfig = React.createClass({
      },
      launchUpload: function() {
          this.refs.templateUploadModal.setState({
-            title: "Upload template for " + this.refs.xmlTabs.state.resourceTemplateName
+            title: "Upload template for " + this.refs.xmlTabs.state.resourceTemplateName,
+            entityGroupName: this.refs.xmlTabs.state.entityParent.name
          })
          this.refs.templateUploadModal.show();
      },
@@ -171,7 +201,7 @@ var ResourcesConfig = React.createClass({
 
 var XmlTabs = React.createClass({
     getInitialState: function() {
-        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: ""}
+        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "", entityGroupName: ""}
     },
     render: function() {
         var xmlEditor;
@@ -198,7 +228,8 @@ var XmlTabs = React.createClass({
                       contentClassName="xml-editor-preview-tab-component content" />
     },
     componentWillUpdate: function(nextProps, nextState) {
-        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/"});
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/",
+            entityGroupName: nextState.entityParent.name});
     },
     onChangeCallback: function() {
         if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
@@ -225,6 +256,12 @@ var XmlTabs = React.createClass({
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
                     this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
+            } else if (this.state.entityType === "webServerSection") {
+                thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName,
+                    this.state.resourceTemplateName, template);
+            } else if (this.state.entityType === "jvmSection") {
+                thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName,
+                    this.state.resourceTemplateName, template);
             }
         }
         return thePromise;
@@ -253,6 +290,11 @@ var XmlTabs = React.createClass({
                                                                         this.state.entity.group.name,
                                                                         this.state.entityParent.jvmName,
                                                                         this.state.resourceTemplateName);
+            } else if (this.state.entityType === "webServerSection") {
+                thePromise = this.props.groupService.deployGroupWebServerConf(this.state.entityGroupName);
+            } else if (this.state.entityType === "jvmSection") {
+                thePromise = this.props.groupService.deployGroupJvmConf(this.state.entityGroupName,
+                                                                 this.state.resourceTemplateName);
             }
         }
         return thePromise;
@@ -306,19 +348,29 @@ var XmlTabs = React.createClass({
                 this.props.jvmService.getResourceTemplate(data.jvmName,
                                                           false,
                                                           resourceName,
-                                                          this.reloadTemplateCallback.bind(this, data, resourceName));
+                                                          this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
             } else if (entityType === "webServers") {
                 this.props.wsService.getResourceTemplate(data.name,
                                                          false,
                                                          resourceName,
-                                                         this.reloadTemplateCallback.bind(this, data, resourceName));
+                                                         this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
             } else if (entityType === "webApps") {
                 this.props.webAppService.getResourceTemplate(data.name,
                                                              this.state.entity.group.name,
                                                              this.state.entityParent.jvmName,
                                                              false,
                                                              resourceName,
-                                                             this.reloadTemplateCallback.bind(this, data, resourceName));
+                                                             this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+            } else if (entityType === "webServerSection") {
+                             this.props.groupService.getGroupWebServerResourceTemplate(this.state.entityGroupName,
+                                                                      false,
+                                                                      resourceName,
+                                                                      this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+            } else if (entityType === "jvmSection") {
+                              this.props.groupService.getGroupJvmResourceTemplate(this.state.entityGroupName,
+                                                                       false,
+                                                                       resourceName,
+                                                                       this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
             }
         } else {
             this.setState({entityType: entityType,
@@ -328,10 +380,11 @@ var XmlTabs = React.createClass({
                            template: ""});
         }
     },
-    reloadTemplateCallback: function(entity, resourceTemplateName, response) {
+    reloadTemplateCallback: function(entity, resourceTemplateName, entityGroupName, response) {
         this.setState({entity: entity,
                        resourceTemplateName: resourceTemplateName,
-                       template: response.applicationResponseContent});
+                       template: response.applicationResponseContent,
+                       entityGroupName: entityGroupName});
     },
     onSelectTab: function(index) {
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
@@ -352,6 +405,16 @@ var XmlTabs = React.createClass({
                     this.props.webAppService.previewResourceFile(this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName,
+                                                                 this.refs.xmlEditor.getText(),
+                                                                 this.previewSuccessCallback,
+                                                                 this.previewErrorCallback);
+                } else if (this.state.entityType === "webServerSection") {
+                    this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
+                                                                 this.refs.xmlEditor.getText(),
+                                                                 this.previewSuccessCallback,
+                                                                 this.previewErrorCallback);
+                } else if (this.state.entityType === "jvmSection") {
+                    this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
                                                                  this.refs.xmlEditor.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
@@ -391,7 +454,8 @@ var TemplateUploadForm = React.createClass({
     getInitialState: function(){
         return {
             fileName: "",
-            entityName: ""
+            entityName: "",
+            entityGroupName: ""
         };
     },
     render: function() {
@@ -399,7 +463,11 @@ var TemplateUploadForm = React.createClass({
         if ("webApps" === this.state.entityType){
             entityLabel = "App";
         } else if ("webServers" === this.state.entityType) {
-            entityLabel = "Web Server"
+            entityLabel = "Web Server";
+        } else if ("jvmSection" === this.state.entityType) {
+            entityLabel = this.state.entityGroupName;
+        } else if ("webServerSection" === this.state.entityType){
+            entityLabel = this.state.entityGroupName;
         }
         return <div className={this.props.className}>
                  <form ref="templateForm" className="template-upload-form">

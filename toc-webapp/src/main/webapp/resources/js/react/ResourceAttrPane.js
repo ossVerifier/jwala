@@ -26,7 +26,7 @@ var ResourceAttrPane = React.createClass({
             var children;
             if (attr === "rtreeListMetaData") {
                 var entityType = this.state.attributes[attr].entity;
-                if ( entityType === "webServers" || entityType === "jvms") {
+                if ( entityType === "webServers" || entityType === "jvms" || entityType === "webServerSection" || entityType === "jvmSection") {
                     var jvmArray = [];
                     var webApps = {};
 
@@ -43,8 +43,10 @@ var ResourceAttrPane = React.createClass({
                         }
                     }
 
-                    reactAttributeElements.push(<tr><td colSpan="2"><JvmTable attributes={jvmArray}/></td></tr>);
-                    if (entityType === "webServers") {
+                    if (jvmArray.length > 0) {
+                        reactAttributeElements.push(<tr><td colSpan="2"><JvmTable attributes={jvmArray}/></td></tr>);
+                    }
+                    if ((entityType === "webServers" || entityType === "webServerSection") && Object.keys(webApps).length > 0) {
                         reactAttributeElements.push(<tr><td colSpan="2"><WebAppTable attributes={webApps} /></td></tr>);
                     }
                 } else if (entityType === "webApps") {
@@ -64,7 +66,7 @@ var ResourceAttrPane = React.createClass({
                 }
             }
 
-            if (typeof(this.state.attributes[attr]) !== "object") {
+            if (typeof(this.state.attributes[attr]) !== "object" && entity !== "webServerSectio" && entity !== "jvmSectio") {
                 reactAttributeElements.push(React.createElement(Attribute,
                                                     {entity: entity, key: attr, property: attr, value: this.state.attributes[attr]}));
             }
