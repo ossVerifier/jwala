@@ -42,16 +42,15 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         setStateRequest.validate();
 
         final CurrentState<S, T> currentState = persistenceService.getState(setStateRequest.getNewState().getId());
-        final CurrentState<S, T> latestState = persistenceService.updateState(setStateRequest);
-
-        if (currentState == null || !currentState.getState().equals(latestState.getState()) ||
-            !currentState.getMessage().equalsIgnoreCase(latestState.getMessage())) {
-            latestState.setUserId(aUser.getId());
-            notificationService.notifyStateUpdated(latestState);
-            grpStateComputationAndNotificationSvc.computeAndNotify(latestState.getId(), latestState.getState());
+        if (currentState == null || !currentState.getState().equals(setStateRequest.getNewState().getState()) ||
+            !currentState.getMessage().equalsIgnoreCase(setStateRequest.getNewState().getMessage())) {
+            final CurrentState<S, T> updatedState = persistenceService.updateState(setStateRequest);
+            updatedState.setUserId(aUser.getId());
+            notificationService.notifyStateUpdated(updatedState);
+            grpStateComputationAndNotificationSvc.computeAndNotify(updatedState.getId(), updatedState.getState());
+            return updatedState;
         }
-
-        return latestState;
+        return currentState;
     }
 
     @Override
