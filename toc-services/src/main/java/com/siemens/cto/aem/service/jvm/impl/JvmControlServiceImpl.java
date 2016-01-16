@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -14,7 +13,6 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -236,18 +234,18 @@ public class JvmControlServiceImpl implements JvmControlService {
             jvmStateService = theJvmStateService;
         }
 
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public CurrentState<Jvm, JvmState> startState(final ControlJvmRequest controlJvmRequest, final User aUser) {
             final Identifier<Jvm> jvmId = controlJvmRequest.getJvmId();
             CurrentState<Jvm, JvmState> jvmState = jvmStateService.getCurrentState(jvmId);
-            jvmStateService.setCurrentState(createNewSetJvmStateCommand(controlJvmRequest), //TODO send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
-                    aUser);
+            // TODO: send in jvmState to setCurrentState, setCurrentState calls getState - unnecessary hit to the db
+            jvmStateService.setCurrentState(createNewSetJvmStateCommand(controlJvmRequest), aUser);
             return jvmState;
         }
 
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public void startStateWithMessage(final Identifier<Jvm> aJvmId,
                                           final JvmState aJvmState,
                                           final String aMessage,
@@ -274,8 +272,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                     .build();
         }
 
-        @Transactional(propagation = Propagation.REQUIRES_NEW)
         @Override
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public void revertState(CurrentState<Jvm, JvmState> aJvmState, User aUser) {
             JvmSetStateRequest command = new JvmSetStateCommandBuilder()
                     .setJvmId(aJvmState.getId())
