@@ -22,18 +22,12 @@ import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,6 +56,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
+    @Transactional
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
                                           final User aUser) {
 

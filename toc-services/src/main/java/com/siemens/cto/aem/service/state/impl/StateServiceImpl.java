@@ -11,7 +11,6 @@ import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotifi
 import com.siemens.cto.aem.service.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
@@ -36,7 +35,6 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest, final User aUser) {
         LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
         setStateRequest.validate();

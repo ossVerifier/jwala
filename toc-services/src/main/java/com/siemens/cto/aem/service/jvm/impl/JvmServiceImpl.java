@@ -30,7 +30,6 @@ import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -215,6 +214,7 @@ public class JvmServiceImpl implements JvmService {
      *
      * @param jvm the web server to ping.
      */
+    @Transactional
     public void pingJvm(final Jvm jvm) {
         ClientHttpResponse response = null;
 
