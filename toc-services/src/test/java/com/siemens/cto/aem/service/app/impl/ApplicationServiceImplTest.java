@@ -9,11 +9,13 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.PlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
@@ -29,7 +31,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
@@ -37,17 +42,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -430,8 +430,7 @@ public class ApplicationServiceImplTest {
     }
 
 
-    // TODO fix this - should not expect a NullPointer
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testCopyApplicationToGroupHosts() throws IOException {
         RuntimeCommandBuilder mockRuntimeCommandBuilder = mock(RuntimeCommandBuilder.class);
         RuntimeCommand mockCommand = mock(RuntimeCommand.class);
@@ -453,13 +452,19 @@ public class ApplicationServiceImplTest {
         when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
-        mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
-        verify(mockCommand).execute();
+
+        try {
+            CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successCommandOutput);
+            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
+        } catch (CommandFailureException e) {
+            assertTrue("should not fail " + e.getMessage(), false);
+        }
         new File("./src/test/resources/webapps/test.war").delete();
 
-        when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Test copy failed"));
         boolean exceptionThrown = false;
         try {
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("FAILED"), new Throwable("Expected to fail test")));
             mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
         } catch (Exception e) {
             exceptionThrown = true;
@@ -475,6 +480,41 @@ public class ApplicationServiceImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+
+    }
+
+    @Test
+    public void testCopyToGroupJvms() {
+        GroupService mockGroupService = mock(GroupService.class);
+        Group mockGroup = mock(Group.class);
+        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        Set<Jvm> jvms = new HashSet<>();
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        jvms.add(new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", testUser);
+    }
+
+    @Test
+    public void testDeployConfToOtherJvmHosts() {
+        GroupService mockGroupService = mock(GroupService.class);
+        Group mockGroup = mock(Group.class);
+        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroup.getName()).thenReturn("mockGroup");
+        Set<Jvm> jvms = new HashSet<>();
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        final Jvm testjvm = new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet);
+        jvms.add(testjvm);
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testjvm);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        mockApplicationService.deployConfToOtherJvmHosts(mockApplication.getName(), "mockGroup", "testjvm", "server.xml", testUser);
 
     }
 }
