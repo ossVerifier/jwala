@@ -11,10 +11,8 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -52,9 +50,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -463,6 +458,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Context
     private MessageContext context;
+
+    // FOR UNIT TEST ONLY
+    public void setMessageContext(MessageContext testContext){
+        context = testContext;
+    }
 
     private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final boolean isGroupJvmUpload) {
         logger.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
