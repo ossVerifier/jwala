@@ -228,7 +228,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
         CurrentState<Group, GroupState> priorState = group.getCurrentState();
 
         // reset GSM and refresh state with new group information.
-        gsm.synchronizedInitializeGroup(group, systemUser);
+        // gsm.synchronizedInitializeGroup(group, systemUser);
 
         // mark state machine as dirty if it has changed
         if (priorState != null &&
@@ -263,6 +263,7 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
     private ReadWriteLease leaseWritableGsm(final Identifier<Group> groupId, final User user) {
         LockableGroupStateMachine gsm = getLockableGsm(groupId);
 
+        // TODO: Remove if not used!
         return gsm.lockForWriteWithResources(new Initializer() {
             @Override
             public GroupStateMachine initializeGroupStateMachine() {
@@ -298,11 +299,12 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     @Override
     public CurrentGroupState signalReset(Identifier<Group> groupId, User user) {
-        try (Lease lease = leaseWritableGsm(groupId, user)) {
-            return lease.signalReset(user);
-        } catch (Exception e) {
-            throw convert(e);
-        }
+//        try (Lease lease = leaseWritableGsm(groupId, user)) {
+//            return lease.signalReset(user);
+//        } catch (Exception e) {
+//            throw convert(e);
+//        }
+        return null;
     }
 
     @Override

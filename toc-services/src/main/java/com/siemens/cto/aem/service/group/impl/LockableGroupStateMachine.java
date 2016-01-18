@@ -3,10 +3,7 @@ package com.siemens.cto.aem.service.group.impl;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.service.group.GroupStateMachine;
 
 import java.util.concurrent.Semaphore;
@@ -168,17 +165,12 @@ public class LockableGroupStateMachine {
             throw new UnsupportedOperationException("GSM Lease is read-only");
         }
 
-        @Override
-        public void synchronizedInitializeGroup(Group group, User user) {
-            throwReadOnly();
-        }
-
-
-        @Override
-        public CurrentGroupState signalReset(User user) {
-            throwReadOnly();
-            return null; // not reachable
-        }
+// TODO: Re-evaluate if we really need this.
+//        @Override
+//        public CurrentGroupState signalReset(User user) {
+//            throwReadOnly();
+//            return null; // not reachable
+//        }
 
         @Override
         public CurrentGroupState signalStopRequested(User user) {
@@ -190,48 +182,6 @@ public class LockableGroupStateMachine {
         public CurrentGroupState signalStartRequested(User user) {
             throwReadOnly();
             return null; // not reachable
-        }
-
-        @Override
-        public boolean refreshState() {
-            throwReadOnly();
-            return false;
-        }
-
-        @Override
-        public void jvmError(Identifier<Jvm> jvmId) {
-            throwReadOnly();
-
-        }
-
-        @Override
-        public void jvmStopped(Identifier<Jvm> jvmId) {
-            throwReadOnly();
-
-        }
-
-        @Override
-        public void jvmStarted(Identifier<Jvm> jvmId) {
-            throwReadOnly();
-
-        }
-
-        @Override
-        public void wsError(Identifier<WebServer> wsId) {
-            throwReadOnly();
-
-        }
-
-        @Override
-        public void wsReachable(Identifier<WebServer> wsId) {
-            throwReadOnly();
-
-        }
-
-        @Override
-        public void wsUnreachable(Identifier<WebServer> wsId) {
-            throwReadOnly();
-
         }
 
         @Override
@@ -274,13 +224,14 @@ public class LockableGroupStateMachine {
 
         @Override
         public void synchronizedInitializeGroup(Group group, User user) {
-            delegate.synchronizedInitializeGroup(group, user);
+            delegate.synchronizedInitializeGroup(group, user); // TODO: Remove if not used!
         }
 
-        @Override
-        public CurrentGroupState signalReset(User user) {
-            return delegate.signalReset(user);
-        }
+// TODO: Re-evaluate if we really need this.
+//        @Override
+//        public CurrentGroupState signalReset(User user) {
+//            return delegate.signalReset(user);
+//        }
 
         @Override
         public CurrentGroupState signalStopRequested(User user) {
@@ -291,45 +242,6 @@ public class LockableGroupStateMachine {
         @Override
         public CurrentGroupState signalStartRequested(User user) {
             return delegate.signalStartRequested(user);
-
-        }
-
-        @Override
-        public boolean refreshState() {
-            return delegate.refreshState();
-        }
-
-        @Override
-        public void jvmError(Identifier<Jvm> jvmId) {
-            delegate.jvmError(jvmId);
-
-        }
-
-        @Override
-        public void jvmStopped(Identifier<Jvm> jvmId) {
-            delegate.jvmStopped(jvmId);
-
-        }
-
-        @Override
-        public void jvmStarted(Identifier<Jvm> jvmId) {
-            delegate.jvmStarted(jvmId);
-        }
-
-        @Override
-        public void wsError(Identifier<WebServer> wsId) {
-            delegate.wsError(wsId);
-
-        }
-
-        @Override
-        public void wsReachable(Identifier<WebServer> wsId) {
-            delegate.wsReachable(wsId);
-        }
-
-        @Override
-        public void wsUnreachable(Identifier<WebServer> wsId) {
-            delegate.wsUnreachable(wsId);
 
         }
 

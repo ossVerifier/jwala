@@ -155,16 +155,16 @@ public class GroupStateServiceImplTest {
         when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
         groupStateServiceImpl.setApplicationContext(applicationContext);
         assertNotNull(groupStateServiceImpl.stateUpdateRequest(group));
-        verify(groupStateMachine).synchronizedInitializeGroup(group, User.getSystemUser());
     }
 
-    @Test
-    public void testSignalReset() {
-        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
-        groupStateServiceImpl.setApplicationContext(applicationContext);
-        groupStateServiceImpl.signalReset(new Identifier<Group>(1l), User.getSystemUser());
-        verify(groupStateMachine).signalReset(User.getSystemUser());
-    }
+// TODO: Re-evaluate if we really need signalReset.
+//    @Test
+//    public void testSignalReset() {
+//        when(applicationContext.getBean(eq("groupStateMachine"), eq(GroupStateMachine.class))).thenReturn(groupStateMachine);
+//        groupStateServiceImpl.setApplicationContext(applicationContext);
+//        groupStateServiceImpl.signalReset(new Identifier<Group>(1l), User.getSystemUser());
+//        verify(groupStateMachine).signalReset(User.getSystemUser());
+//    }
 
     @Test
     public void testSignalStopRequested() {
