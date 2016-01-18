@@ -1,11 +1,8 @@
 package com.siemens.cto.aem.service.state;
 
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,7 +19,6 @@ import static com.siemens.cto.aem.common.domain.model.webserver.WebServerReachab
  */
 public class GroupFiniteStateMachine {
 
-    private static final Map<Identifier<Group>, GroupState> groupStateMap = new HashMap<>();
     private static final Map<GroupState, Node> FSM = new ConcurrentHashMap<>();
 
     static {
@@ -85,45 +81,35 @@ public class GroupFiniteStateMachine {
      */
     private static void configureFsm() {
         // Starting states
-        Set<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for (OperationalState state : new OperationalState[]{JVM_NEW,
-                                                             JVM_INITIALIZING,
-                                                             JVM_INITIALIZED,
-                                                             JVM_START,
-                                                             JVM_STARTING,
-                                                             JVM_STARTED,
-                                                             WS_REACHABLE,
-                                                             WS_START_SENT}) {
-            startingStates.add(state);
-        }
+        final Set<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
+        startingStates.add(JVM_NEW);
+        startingStates.add(JVM_INITIALIZING);
+        startingStates.add(JVM_INITIALIZED);
+        startingStates.add(JVM_START);
+        startingStates.add(JVM_STARTING);
+        startingStates.add(JVM_STARTED);
+        startingStates.add(WS_REACHABLE);
+        startingStates.add(WS_START_SENT);
 
-        // Stopping states
-        Set<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for (OperationalState state : new OperationalState[]{JVM_STOP,
-                                                             JVM_STOPPING,
-                                                             JVM_STOPPED,
-                                                             JVM_DESTROYING,
-                                                             JVM_DESTROYED,
-                                                             SVC_STOPPED,
-                                                             WS_UNREACHABLE,
-                                                             WS_STOP_SENT}) {
-            stoppingStates.add(state);
-        }
+        final Set<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
+        stoppingStates.add(JVM_STOP);
+        stoppingStates.add(JVM_STOPPING);
+        stoppingStates.add(JVM_STOPPED);
+        stoppingStates.add(JVM_DESTROYING);
+        stoppingStates.add(JVM_DESTROYED);
+        stoppingStates.add(SVC_STOPPED);
+        stoppingStates.add(WS_UNREACHABLE);
+        stoppingStates.add(WS_STOP_SENT);
 
         // Failing states
-        Set<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
-        for (OperationalState state : new OperationalState[]{JVM_FAILED,
-                                                             WS_FAILED}) {
-            failingStates.add(state);
-        }
+        final Set<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
+        failingStates.add(JVM_FAILED);
+        failingStates.add(WS_FAILED);
 
         // Unknown states
-        Set<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
-        for (OperationalState state : new OperationalState[]{JVM_UNKNOWN, /* was reused for group state ? */
-                                                             JVM_UNKNOWN,
-                                                             WS_UNKNOWN}) {
-            unknownStates.add(state);
-        }
+        final Set<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
+        unknownStates.add(JVM_UNKNOWN);
+        unknownStates.add(WS_UNKNOWN);
 
         // Begin state machine initialization
         FSM.put(GRP_UNKNOWN, new NodeBuilder().edges(startingStates, GRP_STARTING)
