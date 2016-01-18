@@ -118,6 +118,7 @@ public class GroupFiniteStateMachine {
                                               .edges(unknownStates, GRP_UNKNOWN)
                                               .edge(JVM_STARTED, GRP_STARTED)
                                               .edge(WS_REACHABLE, GRP_STARTED)
+                                              .edge(JVM_STOPPED, GRP_STOPPED)
                                               .edge(SVC_STOPPED, GRP_STOPPED)
                                               .edge(WS_UNREACHABLE, GRP_STOPPED)
                                               .build());
@@ -148,6 +149,7 @@ public class GroupFiniteStateMachine {
                                               .edges(stoppingStates, GRP_STOPPING)
                                               .edges(failingStates, GRP_FAILURE)
                                               .edges(unknownStates, GRP_PARTIAL)
+                                              .edge(JVM_STOPPED, GRP_STOPPED)
                                               .edge(SVC_STOPPED, GRP_STOPPED)
                                               .edge(WS_UNREACHABLE, GRP_STOPPED)
                                               .build());
