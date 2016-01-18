@@ -1,16 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.jcraft.jsch.JSchException;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -20,6 +12,14 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -114,6 +114,11 @@ public class JvmServiceRestImplTest {
         writeLockMap = new HashMap<>();
         jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
+        try {
+            jvmServiceRest.afterPropertiesSet();
+        } catch (Exception e) {
+            assertTrue("This should not fail, but ... " + e.getMessage(), false);
+        }
     }
 
     @After
@@ -493,6 +498,15 @@ public class JvmServiceRestImplTest {
         when(resourceService.getResourceTypes()).thenReturn(resourceList);
         jvmServiceRest.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
         verify(jvmService, times(1)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class), any(User.class));
+
+        when(mockResourceType.getTemplateName()).thenReturn("ThrowFileNotFoundException.tpl");
+        boolean internalErrExceptionThrown = false;
+        try {
+            jvmServiceRest.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
+        } catch (InternalErrorException ie) {
+            internalErrExceptionThrown = true;
+        }
+        assertTrue(internalErrExceptionThrown);
     }
 
     @Test
@@ -529,7 +543,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.isJvmStarted(jvm)).thenReturn(false);
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
-        when(jvmService.generateConfigFile(anyString(),anyString())).thenReturn("<server>xml</server>");
+        when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
@@ -544,6 +558,35 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+
+        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(true);
+        exceptionThrown = false;
+        try {
+            jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
+        } catch (InternalErrorException e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+
+        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(false);
+        when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
+        exceptionThrown = false;
+        try {
+            jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
+        } catch (InternalErrorException e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+
+        when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
+        exceptionThrown = false;
+        try {
+            jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
+        } catch (InternalErrorException e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+
         FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
     }
 

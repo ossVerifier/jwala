@@ -1,24 +1,25 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.domain.model.webserver.*;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -122,6 +123,11 @@ public class WebServerServiceRestImplTest {
         when(mockWsResourceType.getEntityType()).thenReturn("webServer");
         when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
+        try {
+            webServerServiceRest.afterPropertiesSet();
+        } catch (Exception e) {
+            assertTrue("This should not fail, but ... " + e.getMessage(), false);
+        }
     }
 
     @Test
@@ -302,7 +308,7 @@ public class WebServerServiceRestImplTest {
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
-        try{
+        try {
             response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         } finally {
             FileUtils.deleteDirectory(new File(httpdConfDirPath));
@@ -387,7 +393,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testUploadConfigTemplate(){
+    public void testUploadConfigTemplate() {
         MessageContext mockMessageContext = mock(MessageContext.class);
         HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
         HttpServletRequest mockHttpServletReq = mock(HttpServletRequest.class);
@@ -403,5 +409,15 @@ public class WebServerServiceRestImplTest {
         } catch (Exception e) {
             assertEquals("Error receiving data", e.getMessage());
         }
+    }
+
+    @Test
+    public void testPreviewResourceTemplate() {
+        Response response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
+        assertNotNull(response);
+
+        when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("test runtime exception"));
+        response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
+        assertNotNull(response);
     }
 }
