@@ -2,11 +2,15 @@ package com.siemens.cto.aem.persistence.jpa.service;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +28,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 
@@ -46,6 +51,9 @@ public class WebServerCrudServiceImplTest {
     @Autowired
     private WebServerCrudServiceImpl impl;
 
+    @Autowired
+    private GroupCrudService groupCrudService;
+
 
     @Before
     public void setup() {
@@ -59,7 +67,7 @@ public class WebServerCrudServiceImplTest {
     }
 
     @Test
-    public void testCreateAndUpdateWebServer() {
+    public void testCrud() {
         final WebServer newWebServer = new WebServer(null,
                                                      new ArrayList<Group>(),
                                                      "zWebServer",
@@ -87,11 +95,49 @@ public class WebServerCrudServiceImplTest {
                                                         new Path("anyx"));
         final WebServer updatedWebServer = impl.updateWebServer(editedWebServer, "me");
         assertEquals(editedWebServer.getId().getId(), updatedWebServer.getId().getId());
+
+        // Test getWebServer
+        WebServer gottenWebServer = impl.getWebServer(editedWebServer.getId());
+        assertEquals(editedWebServer.getName(), gottenWebServer.getName());
+
+        // Test findWebServerByName
+        gottenWebServer = impl.findWebServerByName(editedWebServer.getName());
+        assertEquals(editedWebServer.getName(), gottenWebServer.getName());
+
+        // Test getWebServers
+        assertEquals(1, impl.getWebServers().size());
+
+        // Test removeWebServer
+        impl.removeWebServer(editedWebServer.getId());
+        assertEquals(0, impl.getWebServers().size());
+    }
+
+    @Test
+    public void removeWebServersBelongingToTest() {
+        JpaGroup group = new JpaGroup();
+        group.setName("zGroup");
+        group = groupCrudService.create(group);
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("zWebServer");
+        webServer.setDocRoot("zRoot");
+        webServer.setHttpConfigFile("zConfigFile");
+        webServer.setStatusPath("zStatusPath");
+        webServer.setSvrRoot("zSvrRoot");
+        group.getWebServers().add(impl.create(webServer));
+        groupCrudService.update(group);
+        assertEquals(1, impl.getWebServers().size());
+        impl.removeWebServersBelongingTo(new Identifier<Group>(group.getId()));
+        assertEquals(0, impl.getWebServers().size());
     }
 
     @Configuration
     @Import(TestJpaConfiguration.class)
     static class Config {
+        @Bean
+        public GroupCrudService getGroupCrudService() {
+            return new GroupCrudServiceImpl();
+        }
+
         @Bean
         public WebServerCrudServiceImpl getWebServerStateCrudServiceImpl() {
             return new WebServerCrudServiceImpl();

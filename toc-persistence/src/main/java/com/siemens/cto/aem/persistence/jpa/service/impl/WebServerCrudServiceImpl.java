@@ -141,7 +141,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @SuppressWarnings("unchecked")
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
 
-        final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE j.group.id = :groupId");
+        final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE :groupId MEMBER OF j.groups.id");
         query.setParameter("groupId", aGroupId.getId());
 
         final List<JpaWebServer> webservers = query.getResultList();
