@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -70,6 +71,14 @@ public class WebServerStateCrudServiceImplTest {
                 state.getState());
     }
 
+    @Test(expected = BadRequestException.class)
+    public void testUpdateBadState() throws Exception {
+        final Identifier<WebServer> expectedId = new Identifier<>(123456L);
+        final DateTime expectedAsOf = DateTime.now();
+
+        updateState(expectedId, null, expectedAsOf);
+    }
+
     @Test
     public void testGetState() throws Exception {
         final Identifier<WebServer> expectedId = new Identifier<>(123456L);
@@ -124,11 +133,12 @@ public class WebServerStateCrudServiceImplTest {
     private JpaCurrentState updateState(final Identifier<WebServer> anId,
                                         final WebServerReachableState aState,
                                         final DateTime anAsOf) {
-        return impl.updateState(new WebServerSetStateRequest(new CurrentState<>(anId,
+        WebServerSetStateRequest request = new WebServerSetStateRequest(new CurrentState<>(anId,
                 aState,
                 anAsOf,
-                StateType.WEB_SERVER))
-        );
+                StateType.WEB_SERVER));
+        request.validate();
+        return impl.updateState(request);
     }
 
     @Configuration

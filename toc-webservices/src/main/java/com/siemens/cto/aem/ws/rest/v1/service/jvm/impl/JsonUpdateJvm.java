@@ -61,13 +61,10 @@ public class JsonUpdateJvm {
 
     public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
 
-        final Identifier<Jvm> id = convertJvmId();
-        final Set<Identifier<Group>> groupIds = convertGroupIds();
-
-        return new UpdateJvmRequest(id,
+        return new UpdateJvmRequest(convertJvmId(),
                                     jvmName,
                                     hostName,
-                                    groupIds,
+                                    convertGroupIds(),
                                     JsonUtilJvm.stringToInteger(httpPort),
                                     JsonUtilJvm.stringToInteger(httpsPort),
                                     JsonUtilJvm.stringToInteger(redirectPort),
