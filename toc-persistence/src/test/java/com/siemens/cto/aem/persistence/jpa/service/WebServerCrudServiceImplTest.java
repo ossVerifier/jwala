@@ -8,8 +8,10 @@ import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import org.junit.After;
@@ -54,6 +56,8 @@ public class WebServerCrudServiceImplTest {
     @Autowired
     private GroupCrudService groupCrudService;
 
+    @Autowired
+    private ApplicationCrudService applicationCrudService;
 
     @Before
     public void setup() {
@@ -123,11 +127,38 @@ public class WebServerCrudServiceImplTest {
         webServer.setHttpConfigFile("zConfigFile");
         webServer.setStatusPath("zStatusPath");
         webServer.setSvrRoot("zSvrRoot");
+        webServer.getGroups().add(group);
         group.getWebServers().add(impl.create(webServer));
         groupCrudService.update(group);
-        assertEquals(1, impl.getWebServers().size());
+        assertEquals(1, impl.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
         impl.removeWebServersBelongingTo(new Identifier<Group>(group.getId()));
         assertEquals(0, impl.getWebServers().size());
+    }
+
+    @Test
+    public void findApplicationsTest() {
+        JpaGroup group = new JpaGroup();
+        group.setName("aGroup");
+        group = groupCrudService.create(group);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group);
+        group.getWebServers().add(impl.create(webServer));
+        groupCrudService.update(group);
+
+        final JpaApplication application = new JpaApplication();
+        application.setName("anApplication");
+        application.setWebAppContext("aWebAppContext");
+        application.setGroup(group);
+        applicationCrudService.create(application);
+
+        assertEquals(1, impl.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
+        assertEquals(1, impl.findApplications(webServer.getName()).size());
     }
 
     @Configuration
@@ -136,6 +167,11 @@ public class WebServerCrudServiceImplTest {
         @Bean
         public GroupCrudService getGroupCrudService() {
             return new GroupCrudServiceImpl();
+        }
+
+        @Bean
+        public ApplicationCrudService getApplicationCrudService() {
+            return new ApplicationCrudServiceImpl();
         }
 
         @Bean
