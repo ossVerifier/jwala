@@ -113,30 +113,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         return new JpaWebServerBuilder(aJpaWebServer).build();
     }
 
-    /**
-     * TODO: DUPLICATED FROM JpaGroupDaoImpl - need some wiring internal to the Dao to reuse.
-     *
-     * @param aGroupId
-     * @return
-     */
-    protected JpaGroup getGroup(final Identifier<Group> aGroupId) {
-
-        if (aGroupId == null) {
-            return null;
-        }
-        if (aGroupId.getId() == null) {
-            return null;
-        }
-
-        final JpaGroup group = entityManager.find(JpaGroup.class, aGroupId.getId());
-
-        if (group == null) {
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + aGroupId);
-        }
-
-        return group;
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
