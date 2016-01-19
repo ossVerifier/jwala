@@ -53,7 +53,7 @@ public class CreateApplicationRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(new GroupIdRule(groupId),
                                 new ApplicationNameRule(name),
                                 new ApplicationContextRule(webAppContext)).validate();

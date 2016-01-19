@@ -56,7 +56,7 @@ public class JsonUpdateWebServer {
         docRoot = aDocRoot;
     }
 
-    public UpdateWebServerRequest toUpdateWebServerRequest() throws BadRequestException {
+    public UpdateWebServerRequest toUpdateWebServerRequest() {
 
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
         return new UpdateWebServerRequest(convertWebServerId(),

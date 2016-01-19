@@ -43,7 +43,7 @@ public class ControlGroupRequest implements Serializable, GroupRequest {
 
     public void validateCommand(
             final boolean canStart,
-            final boolean canStop) throws BadRequestException {
+            final boolean canStop) {
         new MultipleRuleRequest(
                 new GroupIdRule(groupId),
                 new GroupControlOperationRule(controlOperation, canStart, canStop)

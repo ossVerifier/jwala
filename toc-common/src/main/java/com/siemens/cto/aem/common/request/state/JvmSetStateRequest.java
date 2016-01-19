@@ -17,7 +17,7 @@ public class JvmSetStateRequest extends SetStateRequest<Jvm, JvmState> {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         final CurrentState<Jvm, JvmState> newState = getNewState();
         new MultipleRules(new JvmIdRule(newState.getId()),
                           new JvmStateRule(newState.getState())).validate();

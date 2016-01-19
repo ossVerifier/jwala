@@ -34,7 +34,7 @@ public class ControlWebServerRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new WebServerIdRule(webServerId).validate();
     }
 

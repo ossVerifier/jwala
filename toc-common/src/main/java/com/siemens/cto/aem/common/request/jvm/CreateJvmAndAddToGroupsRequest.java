@@ -60,7 +60,7 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         createCommand.validate();
         new GroupIdsRule(groups).validate();
     }

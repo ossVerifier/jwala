@@ -19,7 +19,7 @@ public class MultipleRuleRequest implements Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         for (final Rule rule : rules) {
             rule.validate();
         }

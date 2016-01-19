@@ -34,7 +34,7 @@ public class ControlApplicationRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new ApplicationIdRule(appId).validate();
     }
 

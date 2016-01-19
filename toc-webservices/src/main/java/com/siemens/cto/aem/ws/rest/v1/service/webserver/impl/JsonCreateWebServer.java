@@ -53,7 +53,7 @@ public class JsonCreateWebServer {
         docRoot = theDocRoot;
     }
 
-    public CreateWebServerRequest toCreateWebServerRequest() throws BadRequestException {
+    public CreateWebServerRequest toCreateWebServerRequest() {
         final Set<Identifier<Group>> ids = new IdentifierSetBuilder(groupIds).build();
 
         final Integer port = convertFrom(portNumber,

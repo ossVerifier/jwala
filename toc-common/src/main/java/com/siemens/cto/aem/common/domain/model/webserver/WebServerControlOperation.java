@@ -31,7 +31,7 @@ public enum WebServerControlOperation {
         operationState = theOperationState;
     }
 
-    public static WebServerControlOperation convertFrom(final String aValue) throws BadRequestException {
+    public static WebServerControlOperation convertFrom(final String aValue) {
         final String value = aValue.toLowerCase();
         if (LOOKUP_MAP.containsKey(value)) {
             return LOOKUP_MAP.get(value);

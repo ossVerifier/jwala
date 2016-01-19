@@ -15,7 +15,7 @@ public class WebServerSetStateRequest extends SetStateRequest<WebServer, WebServ
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         final CurrentState<WebServer, WebServerReachableState> newState = getNewState();
         new MultipleRules(new WebServerIdRule(newState.getId()),
                           new WebServerReachableStateRule(newState.getState())).validate();

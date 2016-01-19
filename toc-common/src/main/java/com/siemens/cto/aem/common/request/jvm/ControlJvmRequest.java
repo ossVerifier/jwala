@@ -34,7 +34,7 @@ public class ControlJvmRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new JvmIdRule(jvmId).validate();
     }
 

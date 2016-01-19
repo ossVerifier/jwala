@@ -158,10 +158,10 @@ public class LockableGroupStateMachine {
     private class ReadOnlyLease extends ReadWriteLease {
 
         private ReadOnlyLease(GroupStateMachine delegate) {
-            super(delegate, true /*autocloseable*/);
+            super(delegate, true);
         }
 
-        private void throwReadOnly() throws UnsupportedOperationException {
+        private void throwReadOnly()  {
             throw new UnsupportedOperationException("GSM Lease is read-only");
         }
 

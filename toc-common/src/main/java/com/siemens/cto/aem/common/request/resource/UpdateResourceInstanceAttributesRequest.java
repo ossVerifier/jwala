@@ -20,7 +20,7 @@ public class UpdateResourceInstanceAttributesRequest implements Serializable, Re
     private final Map<String, String> attributes;
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(
         );
     }

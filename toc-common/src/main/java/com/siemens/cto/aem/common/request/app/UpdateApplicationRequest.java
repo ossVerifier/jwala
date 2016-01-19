@@ -62,7 +62,7 @@ public class UpdateApplicationRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(new ApplicationIdRule(id),
                                 new GroupIdRule(newGroupId),
                                 new ApplicationNameRule(newName),

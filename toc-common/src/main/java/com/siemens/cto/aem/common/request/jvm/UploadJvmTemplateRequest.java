@@ -26,7 +26,7 @@ public abstract class UploadJvmTemplateRequest implements Serializable, Request 
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(
                 new ValidTemplateNameRule(this.fileName),
                 new GoodStreamRule(this.data),

@@ -106,7 +106,7 @@ public class UpdateJvmRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(new JvmNameRule(newJvmName),
                           new HostNameRule(newHostName),
                           new StatusPathRule(newStatusPath),

@@ -94,7 +94,7 @@ public class JsonCreateJvm {
                                     systemProperties);
     }
 
-    public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() throws BadRequestException {
+    public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
         final Set<Identifier<Group>> groups = convertGroupIds();
 
         return new CreateJvmAndAddToGroupsRequest(jvmName,

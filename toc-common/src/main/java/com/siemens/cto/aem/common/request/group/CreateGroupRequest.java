@@ -24,7 +24,7 @@ public class CreateGroupRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new GroupNameRule(groupName).validate();
     }
 

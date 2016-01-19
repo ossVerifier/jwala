@@ -42,7 +42,7 @@ public class AddJvmsToGroupRequest implements Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(new GroupIdRule(groupId),
                                 new JvmIdsRule(jvmIds)).validate();
     }
