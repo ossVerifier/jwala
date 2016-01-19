@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -52,5 +53,30 @@ public class JschScpCommandProcessorImplTest {
         } catch (RemoteCommandFailureException e) {
             assertTrue("This should not fail ... " + e.getMessage(), false);
         }
+
+        // test the error output
+        when(mockRemoteOutput.read()).thenReturn(1,10); //1 is error, 10 is newline character
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (RemoteCommandFailureException e) {
+            assertTrue("This will fail because of return code 1" + e.getMessage(), true);
+        }
+
+        // test the fatal error output
+        when(mockRemoteOutput.read()).thenReturn(2,10); //2 is fatal error, 10 is newline character
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (RemoteCommandFailureException e) {
+            assertTrue("This will fail because of return code 2" + e.getMessage(), true);
+        }
+
+        // test the other non 0, 1, or 2 return codes for more complete branch coverage
+        when(mockRemoteOutput.read()).thenReturn(3); //not 0, 1, or 2
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (RemoteCommandFailureException e) {
+            assertTrue("This will fail because of return code 3" + e.getMessage(), true);
+        }
+
     }
 }
