@@ -94,20 +94,13 @@ public class GrpStateComputationAndNotificationSvcImplTest {
             final JpaGroup [] jpaGroupArray = {group};
             final JpaJvm jpaJvm = new JpaJvm();
             jpaJvm.setId(1L);
-            final JpaJvm otherJpaJvm = new JpaJvm();
-            otherJpaJvm.setId(2L);
-            final JpaJvm [] jpaJvmArray = {jpaJvm, otherJpaJvm};
+            final JpaJvm anotherJpaJvm = new JpaJvm();
+            anotherJpaJvm.setId(2L);
+            final JpaJvm [] jpaJvmArray = {jpaJvm, anotherJpaJvm};
             jpaJvm.setGroups(Arrays.asList(jpaGroupArray));
 
             when(jvmCrudServiceMock.getJvm(eq(new Identifier<Jvm>(1L)))).thenReturn(jpaJvm);
             when(jvmCrudServiceMock.findJvmsBelongingTo(eq(new Identifier<Group>(1L)))).thenReturn(Arrays.asList(jpaJvmArray));
-
-            // For testComputeAndNotifyUsingWebServerState
-            final JpaJvm jpaJvm1 = new JpaJvm();
-            jpaJvm1.setId(1L);
-            final JpaJvm [] anotherJpaJvmArray = {jpaJvm1};
-            when(jvmCrudServiceMock.findJvmsBelongingTo(new Identifier<Group>(1L)))
-                    .thenReturn(Arrays.asList(anotherJpaJvmArray));
 
             return jvmCrudServiceMock;
         }
@@ -118,18 +111,11 @@ public class GrpStateComputationAndNotificationSvcImplTest {
             final List<Group> groupList = new ArrayList<>();
             groupList.add(new Group(new Identifier<Group>(1L), "zGroup"));
             final WebServer webServer = new WebServer(new Identifier<WebServer>(1L), groupList, "zWebServer");
-            final WebServer [] webServerArray = {webServer};
+            final WebServer anotherWebServer = new WebServer(new Identifier<WebServer>(2L), groupList, "zAnotherWebServer");
+            final WebServer [] webServerArray = {webServer, anotherWebServer};
+            when(webServerCrudServiceMock.getWebServer(eq(new Identifier<WebServer>(1L)))).thenReturn(webServer);
             when(webServerCrudServiceMock.findWebServersBelongingTo(new Identifier<Group>(1L))).
                     thenReturn(Arrays.asList(webServerArray));
-
-            // For testComputeAndNotifyUsingWebServerState
-            final WebServer webServer1 = new WebServer(new Identifier<WebServer>(1L), groupList, "webServer1");
-            final WebServer webServer2 = new WebServer(new Identifier<WebServer>(2L), groupList, "webServer2");
-            final WebServer [] anotherWebServerArray = {webServer1, webServer2};
-
-            when(webServerCrudServiceMock.getWebServer(eq(new Identifier<WebServer>(1L)))).thenReturn(webServer1);
-            when(webServerCrudServiceMock.findWebServersBelongingTo(eq(new Identifier<Group>(1L)))).
-                    thenReturn(Arrays.asList(anotherWebServerArray));
 
             return webServerCrudServiceMock;
         }
