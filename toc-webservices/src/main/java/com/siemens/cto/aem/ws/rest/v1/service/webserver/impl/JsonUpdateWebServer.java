@@ -56,18 +56,15 @@ public class JsonUpdateWebServer {
         docRoot = aDocRoot;
     }
 
-    public UpdateWebServerRequest toUpdateWebServerRequest() throws BadRequestException {
+    public UpdateWebServerRequest toUpdateWebServerRequest() {
 
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
-        final Identifier<WebServer> webServerId = convertWebServerId();
-        final Integer port = convertPortNumber();
-        final Integer httpsPort = convertHttpsPortNumber();
-        return new UpdateWebServerRequest(webServerId,
+        return new UpdateWebServerRequest(convertWebServerId(),
                                           groups,
                                           webServerName,
                                           hostName,
-                                          port,
-                                          httpsPort,
+                                          convertPortNumber(),
+                                          convertHttpsPortNumber(),
                                           new Path(statusPath),
                                           new FileSystemPath(httpConfigFile),
                                           new Path(svrRoot),

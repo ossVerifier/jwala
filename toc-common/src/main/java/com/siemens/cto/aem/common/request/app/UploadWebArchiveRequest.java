@@ -31,7 +31,7 @@ public class UploadWebArchiveRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new MultipleRules(
                 new ValidWebArchiveNameRule(this.filename),
                 new GoodStreamRule(this.data)).validate();

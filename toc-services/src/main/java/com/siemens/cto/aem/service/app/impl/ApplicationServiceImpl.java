@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
     private static final String APP_CONF_PATH = "paths.app.conf";
     private static final String APP_CONF_PATH_INSECURE = "paths.app.conf.insecure";
@@ -379,7 +379,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<String> deployedHosts = new ArrayList<>();
         deployedHosts.add(jvmPersistenceService.findJvm(jvmName, groupName).getHostName());
         Set<Jvm> jvmSet = groupService.getGroup(groupName).getJvms();
-        if (jvmSet.size() > 0) {
+        if (!jvmSet.isEmpty()) {
             for (Jvm jvm : jvmSet) {
                 final String hostName = jvm.getHostName();
                 if (!deployedHosts.contains(hostName)) {

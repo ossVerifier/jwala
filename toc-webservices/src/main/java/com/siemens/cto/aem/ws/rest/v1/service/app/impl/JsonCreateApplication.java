@@ -26,7 +26,7 @@ public class JsonCreateApplication {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
-    public CreateApplicationRequest toCreateCommand() throws BadRequestException {
+    public CreateApplicationRequest toCreateCommand() {
         return new CreateApplicationRequest(
                 Identifier.id(groupId, Group.class), name, webappContext, secure, loadBalanceAcrossServers);
     }

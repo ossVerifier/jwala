@@ -49,12 +49,13 @@ public class ResourceTypeDeserializer {
         }
         
         Map<String, String> exceptionProp = r.addException(exception);
-        
+
+        final String key = "content";
         try(BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset())) {
-            exceptionProp.put("content", exception.toString());
+            exceptionProp.put(key, exception.toString());
             LOGGER.debug("exception property set to exception caught.", exception);
         } catch (IOException e) {
-            exceptionProp.put("content", "Could not read file.");
+            exceptionProp.put(key, "Could not read file.");
             LOGGER.debug("exception property set to file not found.", e);
         }
         
@@ -68,7 +69,6 @@ public class ResourceTypeDeserializer {
         // The problem with the above convention is that the creator of the file
         // should be "aware" of the naming convention or else an exception will occur in case
         // the prefix is shorter than the word "Properties".
-        String name = prefix.substring(0, prefix.length()-"Properties".length());
-        return name;
+        return prefix.substring(0, prefix.length()-"Properties".length());
     }
 }

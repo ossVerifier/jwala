@@ -18,8 +18,6 @@ import java.util.NoSuchElementException;
  */
 public class RepositoryFileInformation implements Iterable<Path> {
 
-    private Logger logger = Logger.getLogger(RepositoryFileInformation.class);
-
     public enum Type {
         /** No action, for example; deleteIfExisting but not existing */
         NONE,
@@ -32,8 +30,8 @@ public class RepositoryFileInformation implements Iterable<Path> {
     }
 
     private class Entry {
-        public Path path;
-        public Long length;
+        private Path path;
+        private Long length;
         
         public Entry(Path path, Long length) {
             this.path = path;
@@ -68,7 +66,7 @@ public class RepositoryFileInformation implements Iterable<Path> {
     }
 
     protected class EntryIterator implements Iterator<Path> {
-        public int index = 0;
+        private int index = 0;
 
         @Override
         public boolean hasNext() {

@@ -40,7 +40,7 @@ public class TimeoutParameterProvider {
         return DEFAULT_TIMEOUT_VALUE;
     }
 
-    TimeDuration parseValue() throws BadRequestException {
+    TimeDuration parseValue() {
         try {
             final Long timeoutValue = Long.valueOf(timeout);
             validate(timeoutValue);
@@ -58,7 +58,7 @@ public class TimeoutParameterProvider {
         return (timeout != null);
     }
 
-    void validate(final Long aValue) throws BadRequestException {
+    void validate(final Long aValue) {
         if ((aValue <= 0) || (aValue > 60)) {
             throw new BadRequestException(RestFaultType.INVALID_TIMEOUT_PARAMETER,
                                           "Timeout value was outside the allowable range : " + aValue);

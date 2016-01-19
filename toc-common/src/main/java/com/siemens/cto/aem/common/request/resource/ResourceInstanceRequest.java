@@ -18,7 +18,7 @@ public class ResourceInstanceRequest implements Serializable, Request {
     private final Map<String, String> attributes;
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
 
     }
 

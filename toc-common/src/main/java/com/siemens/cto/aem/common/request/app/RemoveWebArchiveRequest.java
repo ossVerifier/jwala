@@ -20,7 +20,7 @@ public class RemoveWebArchiveRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         // intentionally empty
     }
 

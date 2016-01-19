@@ -24,7 +24,7 @@ public class CompleteControlWebServerRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         //Intentionally empty
     }
 

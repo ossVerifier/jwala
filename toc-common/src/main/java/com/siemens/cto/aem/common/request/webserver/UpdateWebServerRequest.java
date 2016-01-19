@@ -101,7 +101,7 @@ public class UpdateWebServerRequest implements Serializable, Request {
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         final MultipleRules mr =
                 new MultipleRules(new WebServerNameRule(newName),
                                   new HostNameRule(newHost),

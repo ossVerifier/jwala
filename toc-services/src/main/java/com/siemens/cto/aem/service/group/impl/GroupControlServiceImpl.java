@@ -65,8 +65,8 @@ public class GroupControlServiceImpl implements GroupControlService {
     private void controlJvms(ControlGroupRequest controlGroupRequest, User aUser) {
   
         JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(controlGroupRequest.getControlOperation()
-                .getExternalValue()); // TODO address this mapping between
-                                      // operations
+                .getExternalValue());
+        // TODO address this mapping between operations
 
         ControlGroupJvmRequest controlGroupJvmCommand = new ControlGroupJvmRequest(controlGroupRequest.getGroupId(),
                 jvmControlOperation);

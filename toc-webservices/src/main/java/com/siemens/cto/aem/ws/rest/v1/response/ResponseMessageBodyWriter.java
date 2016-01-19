@@ -25,21 +25,20 @@ public class ResponseMessageBodyWriter implements MessageBodyWriter<ApplicationR
     }
     
     @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-            javax.ws.rs.core.MediaType mediaType) {        
+    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return ApplicationResponse.class.isAssignableFrom(type);
     }
 
     @Override
     public long getSize(ApplicationResponse t, Class<?> type, Type genericType, Annotation[] annotations,
-            javax.ws.rs.core.MediaType mediaType) {        
+            MediaType mediaType) {
         return -1;
     }
 
     @Override
     public void writeTo(ApplicationResponse t, Class<?> type, Type genericType, Annotation[] annotations,
-            javax.ws.rs.core.MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
-            throws IOException, WebApplicationException {
+            MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+            throws IOException {
         
         ByteArrayOutputStream boss = new ByteArrayOutputStream();
         ObjectMapper om = jsonProvider.locateMapper(type, MediaType.APPLICATION_JSON_TYPE);

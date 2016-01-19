@@ -61,6 +61,17 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     @Qualifier("webServerStateService")
     StateService<WebServer, WebServerReachableState> webServerStateService;
 
+    // =============== Constructor =====================
+
+    public GroupStateManagerTableImpl() {
+        for (JvmState eachJvmState : JvmState.values()) {
+            counters.put(eachJvmState, new AtomicInteger(0));
+        }
+        for (WebServerReachableState eachWsState : WebServerReachableState.values()) {
+            counters.put(eachWsState, new AtomicInteger(0));
+        }
+    }
+
     /**
      * State transition and counting of jvms and ws active
      * Note that null states coming back from the database
@@ -136,16 +147,6 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
     private void logCurrentState() {
         LOGGER.debug("GSM State: {}", this);
-    }
-    // =============== Constructor =====================
-
-    public GroupStateManagerTableImpl() {
-        for (JvmState eachJvmState : JvmState.values()) {
-            counters.put(eachJvmState, new AtomicInteger(0));
-        }
-        for (WebServerReachableState eachWsState : WebServerReachableState.values()) {
-            counters.put(eachWsState, new AtomicInteger(0));
-        }
     }
 
     // =============== API METHODS =====================

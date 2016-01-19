@@ -31,7 +31,7 @@ public class ControlGroupWebServerRequest implements Serializable, GroupRequest 
     }
 
     @Override
-    public void validate() throws BadRequestException {
+    public void validate() {
         new GroupIdRule(groupId).validate();
     }
 

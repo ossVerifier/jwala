@@ -110,8 +110,7 @@ public class GroupServiceImpl implements GroupService {
                                final User anAddingUser) {
 
         addJvmToGroupRequest.validate();
-        Group group = groupPersistenceService.addJvmToGroup(addJvmToGroupRequest);
-        return group;
+        return groupPersistenceService.addJvmToGroup(addJvmToGroupRequest);
     }
 
     @Override
@@ -125,9 +124,7 @@ public class GroupServiceImpl implements GroupService {
                     anAddingUser);
         }
 
-        Group group = getGroup(addJvmsToGroupRequest.getGroupId());
-
-        return group;
+        return getGroup(addJvmsToGroupRequest.getGroupId());
     }
 
     @Override
@@ -136,8 +133,7 @@ public class GroupServiceImpl implements GroupService {
                                     final User aRemovingUser) {
 
         removeJvmFromGroupRequest.validate();
-        Group group = groupPersistenceService.removeJvmFromGroup(removeJvmFromGroupRequest);
-        return group;
+        return groupPersistenceService.removeJvmFromGroup(removeJvmFromGroupRequest);
     }
 
     @Override
@@ -232,7 +228,7 @@ public class GroupServiceImpl implements GroupService {
         if (tokensReplaced) {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
-            if (jvms != null && jvms.size() > 0) {
+            if (jvms != null && !jvms.isEmpty()) {
                 return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvms.iterator().next(), new ArrayList<Jvm>(jvms));
             }
         }
@@ -255,7 +251,7 @@ public class GroupServiceImpl implements GroupService {
     public String previewGroupWebServerResourceTemplate(String groupName, String template) {
         final Group group = groupPersistenceService.getGroup(groupName);
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
-        if (webservers != null && webservers.size() > 0) {
+        if (webservers != null && !webservers.isEmpty()) {
             final WebServer webServer = webservers.iterator().next();
             return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
         }
@@ -280,7 +276,7 @@ public class GroupServiceImpl implements GroupService {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Group group = groupPersistenceService.getGroup(groupName);
             Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
-            if (webservers != null && webservers.size() > 0) {
+            if (webservers != null && !webservers.isEmpty()) {
                 final WebServer webServer = webservers.iterator().next();
                 return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
             }

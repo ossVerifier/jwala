@@ -26,7 +26,7 @@ public enum ApplicationControlOperation {
         operationValue = theValue;
     }
 
-    public static ApplicationControlOperation convertFrom(final String aValue) throws BadRequestException {
+    public static ApplicationControlOperation convertFrom(final String aValue) {
         final String value = aValue.toLowerCase();
         if (LOOKUP_MAP.containsKey(value)) {
             return LOOKUP_MAP.get(value);

@@ -5,9 +5,9 @@ package com.siemens.cto.aem.service.exception;
  */
 public class RecordNotAddedException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public RecordNotAddedException(Class<?> theClass, String name, Throwable cause) {
+    public RecordNotAddedException(Class<?> theClass, String name, Throwable cause) {
         super("Failed to add " + theClass.getSimpleName() + " " + name + "!", cause);
     }
 

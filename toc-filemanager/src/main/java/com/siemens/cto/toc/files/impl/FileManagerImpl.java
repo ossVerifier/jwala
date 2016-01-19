@@ -17,7 +17,9 @@ import java.util.Collections;
 
 public class FileManagerImpl implements FileManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileManagerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileManagerImpl.class);
+    public static final String JSON = "*.json";
+    public static final String TEMPLATE_TPL = "Template.tpl";
 
     @Autowired
     private RepositoryService fileSystemStorage;
@@ -34,7 +36,7 @@ public class FileManagerImpl implements FileManager {
     @Override
     public Collection<ResourceType> getResourceTypes() throws IOException {
 
-        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
+        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, JSON);
         if (action.getType() == Type.FOUND) {
             Collection<ResourceType> results = new ArrayList<ResourceType>();
             for (Path path : action) {
@@ -54,7 +56,7 @@ public class FileManagerImpl implements FileManager {
             try {
                 return read(this.getResourceTypeTemplateByStream(resourceTypeName));
             } catch (IOException ioe) {
-                logger.error("Failed to read {}", resourceTypeName, ioe);
+                LOGGER.error("Failed to read {}", resourceTypeName, ioe);
             }
         }
         return null;
@@ -65,12 +67,12 @@ public class FileManagerImpl implements FileManager {
         try {
             // TODO: Figure out if this the best way to derive at the template name (by getting the resource type name and removing the spaces and assuming that the they would be the same as that of the file name).
             String resourceTypeNameNoWS = StringUtils.replace(resourceTypeName, " ", "");
-            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeNameNoWS + "Template.tpl"));
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeNameNoWS + TEMPLATE_TPL));
             if (fileInformation.getType().equals(Type.FOUND)) {
                 return this.readFile(fileInformation.getPath());
             }
         } catch (IOException ioe) {
-            logger.error("Failed to read {}", resourceTypeName, ioe);
+            LOGGER.error("Failed to read {}", resourceTypeName, ioe);
         }
         return null;
     }
@@ -95,7 +97,7 @@ public class FileManagerImpl implements FileManager {
         try {
             return read(this.getMasterTemplateByStream(masterTemplateName));
         } catch (IOException ioe) {
-            logger.error("Failed to read {} " + masterTemplateName, ioe);
+            LOGGER.error("Failed to read {} " + masterTemplateName, ioe);
         }
         return null;
     }
@@ -108,7 +110,7 @@ public class FileManagerImpl implements FileManager {
                 return readFile(fileInformation.getPath());
             }
         } catch (IOException ioe) {
-            logger.error("Failed to read {}", masterTemplateName, ioe);
+            LOGGER.error("Failed to read {}", masterTemplateName, ioe);
         }
         return null;
     }

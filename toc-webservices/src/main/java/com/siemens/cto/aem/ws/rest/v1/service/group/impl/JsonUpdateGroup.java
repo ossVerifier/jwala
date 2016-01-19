@@ -25,11 +25,10 @@ public class JsonUpdateGroup {
         name = theName;
     }
 
-    public UpdateGroupRequest toUpdateGroupCommand() throws BadRequestException {
+    public UpdateGroupRequest toUpdateGroupCommand() {
         try {
             final Identifier<Group> groupId = new Identifier<>(id);
-            return new UpdateGroupRequest(groupId,
-                                          name);
+            return new UpdateGroupRequest(groupId, name);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
                                           nfe.getMessage(),

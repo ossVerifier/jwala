@@ -70,7 +70,8 @@ public class ThreadedCommandExecutorImpl implements CommandExecutor {
         try {
             return aFuture.get();
         } catch (final InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e); // by agreement
+            // by agreement
+            throw new RuntimeException(e);
         }
     }
 }

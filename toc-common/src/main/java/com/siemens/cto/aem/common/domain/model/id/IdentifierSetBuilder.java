@@ -23,7 +23,7 @@ public class IdentifierSetBuilder {
         return this;
     }
 
-    public <T> Set<Identifier<T>> build() throws BadRequestException {
+    public <T> Set<Identifier<T>> build() {
 
         try {
             final Set<Identifier<T>> newIds = new HashSet<>();

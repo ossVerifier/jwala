@@ -14,25 +14,23 @@ import java.util.List;
 
 public interface WebServerService {
 
-    WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,
-            final User aCreatingUser);
+    WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,  final User aCreatingUser);
 
-	WebServer getWebServer(final Identifier<WebServer> aWebServerId);
+    WebServer getWebServer(final Identifier<WebServer> aWebServerId);
 
-	WebServer getWebServer(final String aWebServerName);
-	
-	List<WebServer> getWebServers();
-	
-	List<WebServer> findWebServers(final String aWebServerNameFragment);
-	
-	List<WebServer> findWebServers(final Identifier<Group> aGroupId);
-	
-	WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand,
-	            final User anUpdatingUser);
-	
-	void removeWebServer(final Identifier<WebServer> aWebServerId);
-	
-	void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
+    WebServer getWebServer(final String aWebServerName);
+
+    List<WebServer> getWebServers();
+
+    List<WebServer> findWebServers(final String aWebServerNameFragment);
+
+    List<WebServer> findWebServers(final Identifier<Group> aGroupId);
+
+    WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand, final User anUpdatingUser);
+
+    void removeWebServer(final Identifier<WebServer> aWebServerId);
+
+    void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
 
     String generateHttpdConfig(final String aWebServerName, final Boolean withSsl);
 
@@ -42,9 +40,9 @@ public interface WebServerService {
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced);
 
-	void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
+    void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
-	JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
+    JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
 
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 

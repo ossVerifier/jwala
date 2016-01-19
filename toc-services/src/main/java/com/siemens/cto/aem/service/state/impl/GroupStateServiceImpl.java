@@ -25,6 +25,8 @@ import com.siemens.cto.aem.service.group.impl.LockableGroupStateMachine.ReadWrit
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.*;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +47,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> implements StateService<Group, GroupState>, GroupStateService.API, ApplicationContextAware {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupStateServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupStateServiceImpl.class);
     private static final String GSS_UNLOCK = "GSS Unlock: {}";
     private static final String GSS_UNLOCKED_AFFECTED_GROUPS_DUE_TO_EXCEPTION = "GSS Unlocked affected groups due to exception.";
     private static final String GROUP_STATE_MACHINE = "groupStateMachine";
@@ -60,8 +62,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
 
     private ApplicationContext applicationContext;
 
-    private final User systemUser;
-
     public GroupStateServiceImpl(StatePersistenceService<Group, GroupState> thePersistenceService,
                                  StateNotificationService theNotificationService, StateType theStateType,
                                  final GroupPersistenceService groupPersistenceService,
@@ -70,8 +70,6 @@ public class GroupStateServiceImpl extends StateServiceImpl<Group, GroupState> i
                                  final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         super(thePersistenceService, theNotificationService, theStateType,
                 grpStateComputationAndNotificationSvc);
-
-        systemUser = User.getSystemUser();
 
         this.groupPersistenceService = groupPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
