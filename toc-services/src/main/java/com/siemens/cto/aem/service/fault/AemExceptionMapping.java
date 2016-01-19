@@ -16,13 +16,17 @@ import java.net.SocketTimeoutException;
  */
 public class AemExceptionMapping {
 
+    private AemExceptionMapping() {
+
+    }
+
     /**
      * Map exceptions to AemFaultTypes.
      * 
      * @param penultimateRootCause source exception
      * @return null if not known, otherwise an AemFaultType
      */
-    public static AemFaultType MapGenericFaultTypesForRemoteConnections(Throwable penultimateRootCause) {
+    public static AemFaultType mapGenericFaultTypesForRemoteConnections(Throwable penultimateRootCause) {
         if(penultimateRootCause instanceof JSchException) {
             JSchException x = (JSchException)penultimateRootCause;
             if(x.getCause() instanceof ConnectException) {
@@ -51,7 +55,6 @@ public class AemExceptionMapping {
         } else if(penultimateRootCause instanceof MessageHandlingException) {
             MessageHandlingException x = (MessageHandlingException) penultimateRootCause;
             if(x.getCause() instanceof HttpClientErrorException) {
-                // HttpClientErrorException httpx = (HttpClientErrorException)x.getCause();
                 // Could test for specific errors: if("404 Not Found".equals(httpx.getMessage())) {
                return AemFaultType.INVALID_STATUS_PATH;
                 // Could get the requested URI from the headers: httpx.getResponseHeaders().getLocation();

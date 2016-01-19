@@ -55,16 +55,16 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
                 throw new RemoteCommandFailureException(theCommand, new Throwable("Failed to connect to the remote host during secure copy"));
             }
 
-            final String lfile = commandFragments.get(1);
-            File _lfile = new File(lfile);
+            final String lfilePath = commandFragments.get(1);
+            File lfile = new File(lfilePath);
 
             // send "C0644 filesize filename", where filename should not include '/'
-            long filesize = _lfile.length();
+            long filesize = lfile.length();
             command = "C0644 " + filesize + " ";
-            if (lfile.lastIndexOf('/') > 0) {
-                command += lfile.substring(lfile.lastIndexOf('/') + 1);
+            if (lfilePath.lastIndexOf('/') > 0) {
+                command += lfilePath.substring(lfilePath.lastIndexOf('/') + 1);
             } else {
-                command += lfile;
+                command += lfilePath;
             }
             command += "\n";
             localInput.write(command.getBytes());
@@ -74,11 +74,13 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             }
 
             // send content of lfile
-            fis = new FileInputStream(lfile);
+            fis = new FileInputStream(lfilePath);
             byte[] buf = new byte[1024];
             while (true) {
                 int len = fis.read(buf, 0, buf.length);
-                if (len <= 0) break;
+                if (len <= 0) {
+                    break;
+                }
                 localInput.write(buf, 0, len); //out.flush();
             }
             fis.close();
@@ -97,18 +99,26 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
         } catch (Exception e) {
             throw new RemoteCommandFailureException(theCommand, e);
         } finally {
-            if (fis != null) try {
-                fis.close();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
             }
-            if (localInput != null) try {
-                localInput.close();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
+            if (localInput != null) {
+                try {
+                    localInput.close();
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
             }
-            if (channel.isConnected()) channel.disconnect();
-            if (session.isConnected()) session.disconnect();
+            if (channel.isConnected()) {
+                channel.disconnect();
+            }
+            if (session.isConnected()) {
+                session.disconnect();
+            }
         }
     }
 
@@ -127,8 +137,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             do {
                 c = in.read();
                 sb.append((char) c);
-            }
-            while (c != '\n');
+            }  while (c != '\n');
             if (b == 1) { // error
                 throw new IOException("ERROR in secure copy: " + sb.toString());
             }

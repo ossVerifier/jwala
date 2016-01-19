@@ -27,7 +27,7 @@ public class AemExceptionMappingTest {
         when(penultimateRootCause.getCause()).thenReturn(connectionException);
         when(connectionException.getMessage()).thenReturn("Connection timed out: connect");
         assertEquals(AemFaultType.CANNOT_CONNECT,
-                     AemExceptionMapping.MapGenericFaultTypesForRemoteConnections(penultimateRootCause));
+                     AemExceptionMapping.mapGenericFaultTypesForRemoteConnections(penultimateRootCause));
     }
 
     @Test
@@ -37,7 +37,7 @@ public class AemExceptionMappingTest {
         when(penultimateRootCause.getCause()).thenReturn(connectionException);
         when(connectionException.getMessage()).thenReturn("Connection refused: connect");
         assertEquals(AemFaultType.CANNOT_CONNECT,
-                     AemExceptionMapping.MapGenericFaultTypesForRemoteConnections(penultimateRootCause));
+                     AemExceptionMapping.mapGenericFaultTypesForRemoteConnections(penultimateRootCause));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class AemExceptionMappingTest {
         when(penultimateRootCause.getCause()).thenReturn(connectionException);
         when(connectionException.getMessage()).thenReturn("Connection timed out: connect");
         assertEquals(AemFaultType.CANNOT_CONNECT,
-                     AemExceptionMapping.MapGenericFaultTypesForRemoteConnections(penultimateRootCause));
+                     AemExceptionMapping.mapGenericFaultTypesForRemoteConnections(penultimateRootCause));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class AemExceptionMappingTest {
         when(penultimateRootCause.getCause()).thenReturn(connectionException);
         when(connectionException.getMessage()).thenReturn("Connection refused: connect");
         assertEquals(AemFaultType.CANNOT_CONNECT,
-                     AemExceptionMapping.MapGenericFaultTypesForRemoteConnections(penultimateRootCause));
+                     AemExceptionMapping.mapGenericFaultTypesForRemoteConnections(penultimateRootCause));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class AemExceptionMappingTest {
         final Throwable httpClientErrorException = mock(HttpClientErrorException.class);
         when(penultimateRootCause.getCause()).thenReturn(httpClientErrorException);
         assertEquals(AemFaultType.INVALID_STATUS_PATH,
-                     AemExceptionMapping.MapGenericFaultTypesForRemoteConnections(penultimateRootCause));
+                     AemExceptionMapping.mapGenericFaultTypesForRemoteConnections(penultimateRootCause));
     }
 
 }

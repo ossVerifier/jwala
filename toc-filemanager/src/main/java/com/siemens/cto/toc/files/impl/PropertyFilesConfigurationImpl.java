@@ -19,7 +19,7 @@ import java.util.Properties;
  */
 public class PropertyFilesConfigurationImpl implements FilesConfiguration {
 
-    private final HashMap<TocPath, Path> paths = new HashMap<>();
+    private final Map<TocPath, Path> paths = new HashMap<>();
     private final FileSystem defaultFs = FileSystems.getDefault();
     
     @Override
