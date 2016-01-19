@@ -100,12 +100,12 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             if (fis != null) try {
                 fis.close();
             } catch (IOException e) {
-                LOGGER.info("Could not close stream to file after completion of secure copy " + e);
+                LOGGER.error(e.getMessage(), e);
             }
             if (localInput != null) try {
                 localInput.close();
             } catch (IOException e) {
-                LOGGER.info("Could not close local input stream after completion of secure copy " + e);
+                LOGGER.error(e.getMessage(), e);
             }
             if (channel.isConnected()) channel.disconnect();
             if (session.isConnected()) session.disconnect();
