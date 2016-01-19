@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
 
     Session session;
     Channel channel;
@@ -36,10 +36,10 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     public void processCommand() throws RemoteCommandFailureException {
         try {
-            logger.debug("before executing command {}", theCommand);
+            LOGGER.debug("before executing command {}", theCommand);
 
             String commandString = theCommand.getCommand().toCommandString();
-            logger.debug("remote Jsch command string is {}", commandString);
+            LOGGER.debug("remote Jsch command string is {}", commandString);
 
             final RemoteSystemConnection remoteSystemConnection = theCommand.getRemoteSystemConnection();
 
@@ -70,7 +70,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 localInput = channelExec.getOutputStream();
                 channelExec.connect();
             }
-            logger.debug("after execution of command {}", commandString);
+            LOGGER.debug("after execution of command {}", commandString);
 
         } catch (final JSchException | IOException e) {
             throw new RemoteCommandFailureException(theCommand, e);

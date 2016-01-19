@@ -21,14 +21,14 @@ public class PropertyFilesConfigurationImpl implements FilesConfiguration {
 
     private final Map<TocPath, Path> paths = new HashMap<>();
     private final FileSystem defaultFs = FileSystems.getDefault();
-    
+
+    public PropertyFilesConfigurationImpl(Properties fmProperties) {
+        load(fmProperties);
+    }
+
     @Override
     public Path getConfiguredPath(TocPath which) {
         return paths.get(which);
-    }
-
-    public PropertyFilesConfigurationImpl(Properties fmProperties) {
-        load(fmProperties); 
     }
     
     public void reload() {

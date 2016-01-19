@@ -17,11 +17,11 @@ import java.util.List;
 })
 public class JpaGroup extends AbstractEntity<JpaGroup> {
 
-    private static final long serialVersionUID = -2125399708516728584L;
+    public static final String QUERY_GET_GROUP_ID = "getGroupId";
+    public static final String QUERY_GET_GROUP = "getGroup";
+    public static final String QUERY_GET_GROUPS_WITH_WEBSERVER = "getGroupWithWebServer";
 
-    static public final String QUERY_GET_GROUP_ID = "getGroupId";
-    static public final String QUERY_GET_GROUP = "getGroup";
-    static public final String QUERY_GET_GROUPS_WITH_WEBSERVER = "getGroupWithWebServer";
+    private static final long serialVersionUID = -2125399708516728584L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

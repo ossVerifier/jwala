@@ -50,41 +50,41 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     @ManyToMany(mappedBy = "webServers")
     private List<JpaGroup> groups = new ArrayList<>();
 
-	public Long getId() {
-		return id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public void setHost(String host) {
-		this.host = host;
-	}
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Integer getPort() {
-		return port;
-	}
+    public Integer getPort() {
+        return port;
+    }
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
-	public List<JpaGroup> getGroups() {
-		return groups;
-	}
+    public List<JpaGroup> getGroups() {
+        return groups;
+    }
 
-	public void setGroups(List<JpaGroup> newGroups) {
+    public void setGroups(List<JpaGroup> newGroups) {
         groups = newGroups;
-	}
+    }
 
     public Integer getHttpsPort() {
         return httpsPort;

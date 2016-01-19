@@ -92,7 +92,7 @@ public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
                 results.add(p); 
             }
                 
-            if(results.size() > 0) {
+            if(!results.isEmpty()) {
                 return RepositoryFileInformation.found(results, relatedHistory);
             }
         }

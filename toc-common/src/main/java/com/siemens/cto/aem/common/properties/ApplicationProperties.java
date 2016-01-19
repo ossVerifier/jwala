@@ -20,6 +20,11 @@ public class ApplicationProperties {
 
     public static final String PROPERTIES_FILE_NAME = "toc.properties";
 
+    private ApplicationProperties() {
+        properties = new Properties();
+        init();
+    }
+
     public static ApplicationProperties getInstance() {
         if (SELF == null) {
             synchronized (ApplicationProperties.class) {
@@ -56,11 +61,6 @@ public class ApplicationProperties {
 
     public static int size() {
         return getProperties().size();
-    }
-
-    private ApplicationProperties() {
-        properties = new Properties();
-        init();
     }
 
     private void init() {
