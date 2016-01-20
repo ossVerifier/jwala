@@ -71,13 +71,6 @@ public class CommandOutputTest {
     }
 
     @Test
-    public void testCommandOutputToString(){
-        CommandOutput testObject1 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
-        CommandOutput testObject2 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
-        assertEquals(testObject1.toString(), testObject2.toString());
-    }
-
-    @Test
     public void testExtractMessageFromStandardOutput(){
         CommandOutput testObject = new CommandOutput(new ExecReturnCode(36), STANDARD_OUTPUT_WITH_SHELL_INFO,"");
         testObject.cleanStandardOutput();
