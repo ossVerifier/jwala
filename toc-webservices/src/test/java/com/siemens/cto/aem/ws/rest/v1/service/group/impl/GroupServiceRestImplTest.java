@@ -47,10 +47,14 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.io.*;
 import java.util.*;
 
 import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
@@ -75,7 +79,7 @@ public class GroupServiceRestImplTest {
     private static final List<Group> groupList = createGroupList();
     private static final Group group = groupList.get(0);
 
-    private GroupServiceImpl impl;
+    private GroupServiceImpl groupService;
     private ResourceService resourceService;
 
     @Mock
@@ -118,7 +122,7 @@ public class GroupServiceRestImplTest {
 
     @InjectMocks
     @Spy
-    private GroupServiceRestImpl groupServiceRest = new GroupServiceRestImpl(impl = Mockito.mock(GroupServiceImpl.class), resourceService = Mockito.mock(ResourceServiceImpl.class));
+    private GroupServiceRestImpl groupServiceRest = new GroupServiceRestImpl(groupService = Mockito.mock(GroupServiceImpl.class), resourceService = Mockito.mock(ResourceServiceImpl.class));
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
@@ -155,7 +159,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroupList() {
-        when(impl.getGroups(eq(false))).thenReturn(groupList);
+        when(groupService.getGroups(eq(false))).thenReturn(groupList);
 
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider();
         final Response response = groupServiceRest.getGroups(nameSearchParameterProvider, false);
@@ -172,7 +176,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroupListName() {
-        when(impl.findGroups(any(String.class))).thenReturn(groupList);
+        when(groupService.findGroups(any(String.class))).thenReturn(groupList);
 
         final NameSearchParameterProvider nameSearchParameterProvider = new NameSearchParameterProvider(name);
 
@@ -190,7 +194,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetGroup() {
-        when(impl.getGroup(any(Identifier.class))).thenReturn(group);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
 
         final Response response = groupServiceRest.getGroup("1", false);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -205,7 +209,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testCreateGroup() {
-        when(impl.createGroup(any(CreateGroupRequest.class), any(User.class))).thenReturn(group);
+        when(groupService.createGroup(any(CreateGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Response response = groupServiceRest.createGroup(name, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -221,8 +225,8 @@ public class GroupServiceRestImplTest {
     @Test
     public void testUpdateGroup() {
         final JsonUpdateGroup jsonUpdateGroup = new JsonUpdateGroup("currentName", name);
-        when(impl.updateGroup(any(UpdateGroupRequest.class), any(User.class))).thenReturn(group);
-        when(impl.getGroup(eq("currentName"))).thenReturn(group);
+        when(groupService.updateGroup(any(UpdateGroupRequest.class), any(User.class))).thenReturn(group);
+        when(groupService.getGroup(eq("currentName"))).thenReturn(group);
 
         final Response response = groupServiceRest.updateGroup(jsonUpdateGroup, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
@@ -239,7 +243,7 @@ public class GroupServiceRestImplTest {
     @Test
     public void testRemoveGroup() {
         Response response = groupServiceRest.removeGroup("groupName", true);
-        verify(impl, atLeastOnce()).removeGroup(eq("groupName"));
+        verify(groupService, atLeastOnce()).removeGroup(eq("groupName"));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -247,13 +251,13 @@ public class GroupServiceRestImplTest {
 
         response = groupServiceRest.removeGroup("1", false);
         Identifier<Group> groupIdentifier = new Identifier<Group>("1");
-        verify(impl, atLeastOnce()).removeGroup(eq(groupIdentifier));
+        verify(groupService, atLeastOnce()).removeGroup(eq(groupIdentifier));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
     @Test
     public void testAddJvmsToGroup() {
-        when(impl.addJvmsToGroup(any(AddJvmsToGroupRequest.class), any(User.class))).thenReturn(group);
+        when(groupService.addJvmsToGroup(any(AddJvmsToGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Set<String> jvmIds = new HashSet<String>();
         jvmIds.add("1");
@@ -271,7 +275,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testRemoveJvmsFromGroup() {
-        when(impl.removeJvmFromGroup(any(RemoveJvmFromGroupRequest.class), any(User.class))).thenReturn(group);
+        when(groupService.removeJvmFromGroup(any(RemoveJvmFromGroupRequest.class), any(User.class))).thenReturn(group);
 
         final Response response =
                 groupServiceRest.removeJvmFromGroup(Identifier.id(1l, Group.class),
@@ -303,9 +307,9 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeNull() {
-        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
+        when(groupService.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
 
-        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
+        when(groupService.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
         final Response response = groupServiceRest.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), null);
         assertEquals(response.getStatus(), 200);
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -319,7 +323,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeJvm() {
-        when(impl.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
+        when(groupService.getOtherGroupingDetailsOfJvms(any(Identifier.class))).thenReturn(jvms);
         final Response response =
                 groupServiceRest.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.JVM);
         assertEquals(response.getStatus(), 200);
@@ -332,7 +336,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void getOtherGroupMembershipDetailsOfTheChildrenChildTypeWebServer() {
-        when(impl.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
+        when(groupService.getOtherGroupingDetailsOfWebServers(any(Identifier.class))).thenReturn(webServers);
         final Response response
                 = groupServiceRest.getOtherGroupMembershipDetailsOfTheChildren(new Identifier<Group>("1"), GroupChildType.WEB_SERVER);
         assertEquals(response.getStatus(), 200);
@@ -354,8 +358,8 @@ public class GroupServiceRestImplTest {
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
-        when(impl.getGroup(group.getId())).thenReturn(mockGroup);
-        when(impl.populateJvmConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
+        when(groupService.getGroup(group.getId())).thenReturn(mockGroup);
+        when(groupService.populateJvmConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         Response response = groupServiceRest.populateJvmConfig(group.getId(), authenticatedUser, false);
         assertNotNull(response.getEntity());
@@ -375,9 +379,9 @@ public class GroupServiceRestImplTest {
         Set<WebServer> wsSet = new HashSet<>();
         wsSet.add(mockWebServer);
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
-        when(impl.getGroupWithWebServers(group.getId())).thenReturn(mockGroup);
+        when(groupService.getGroupWithWebServers(group.getId())).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsSet);
-        when(impl.populateWebServerConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
+        when(groupService.populateWebServerConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
         Response response = groupServiceRest.populateWebServerConfig(group.getId(), authenticatedUser, false);
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
     }
@@ -440,7 +444,7 @@ public class GroupServiceRestImplTest {
         Response response = groupServiceRest.updateGroupWebServerResourceTemplate(group.getName(), "httpd.conf", "httpd.conf content for testing");
         assertNotNull(response);
 
-        when(impl.updateGroupWebServerResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test webServer", "httpd.conf"));
+        when(groupService.updateGroupWebServerResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test webServer", "httpd.conf"));
         response = groupServiceRest.updateGroupWebServerResourceTemplate(group.getName(), "httpd.conf", "httpd.conf content for testing");
         assertNotNull(response);
     }
@@ -460,8 +464,8 @@ public class GroupServiceRestImplTest {
     @Test
     public void testGenerateAndDeployWebServerFiles() {
         Set<WebServer> emptyWsSet = new HashSet<>();
-        when(impl.getGroup(anyString())).thenReturn(mockGroup);
-        when(impl.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(groupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(emptyWsSet);
         Response response = groupServiceRest.generateAndDeployGroupWebServersFile(group.getName(), authenticatedUser);
         assertNotNull(response);
@@ -490,7 +494,7 @@ public class GroupServiceRestImplTest {
         Response response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "test server.xml content");
         assertNotNull(response);
 
-        when(impl.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test jvm", "server.xml"));
+        when(groupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test jvm", "server.xml"));
         response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "server.xml content for testing");
         assertNotNull(response);
 
@@ -521,8 +525,8 @@ public class GroupServiceRestImplTest {
     @Test
     public void testGenerateAndDeployJvmTemplate() {
         Set<WebServer> emptyWsSet = new HashSet<>();
-        when(impl.getGroup(anyString())).thenReturn(mockGroup);
-        when(impl.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(groupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(emptyWsSet);
         Response response = groupServiceRest.generateAndDeployGroupJvmFile(group.getName(), "server.xml", authenticatedUser);
         assertNotNull(response);
@@ -553,4 +557,82 @@ public class GroupServiceRestImplTest {
         Response response = groupServiceRest.populateGroupWebServerTemplates(group.getName(), authenticatedUser);
         assertNotNull(response);
     }
+
+    @Test
+    public void testUploadGroupWebServerConfigTemplate() throws Exception {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        groupServiceRest.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        groupServiceRest.uploadGroupWebServerConfigTemplate("any", authenticatedUser, "any");
+        verify(groupService).populateGroupWebServerTemplates(anyString(), anyList(), any(User.class));
+    }
+
+    @Test
+    public void testUploadGroupJvmConfigTemplate() throws Exception {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        groupServiceRest.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        groupServiceRest.uploadGroupJvmConfigTemplate("any", authenticatedUser, "any");
+        verify(groupService).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
+    }
+
+    /**
+     * Instead of mocking the ServletInputStream, let's extend it instead.
+     *
+     * @see  "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
+     */
+    static class DelegatingServletInputStream extends ServletInputStream {
+
+        private FileInputStream fileInputStream;
+
+        public DelegatingServletInputStream() throws FileNotFoundException {
+            fileInputStream =
+                new FileInputStream(this.getClass().getClassLoader().getResource("request-payload.txt").getFile());
+        }
+
+        /**
+         * Return the underlying source stream (never <code>null</code>).
+         */
+        public final InputStream getSourceStream() {
+            return fileInputStream;
+        }
+
+
+        public int read() throws IOException {
+            return fileInputStream.read();
+        }
+
+        public void close() throws IOException {
+            super.close();
+            fileInputStream.close();
+        }
+
+    }
+
 }
