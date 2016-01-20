@@ -1,20 +1,25 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
-import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,8 +46,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         webServerService = mock(WebServerService.class);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
-                                    webServerService,
-                                    applicationPersistenceService
+                webServerService,
+                applicationPersistenceService
         );
         user = new User("unused");
     }
@@ -130,7 +135,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService.addJvmsToGroup(addJvmsToGroupRequest, user);
 
         verify(addJvmsToGroupRequest, times(1)).validate();
-        for (final AddJvmToGroupRequest addJvmToGroupRequest: addJvmToGroupRequests) {
+        for (final AddJvmToGroupRequest addJvmToGroupRequest : addJvmToGroupRequests) {
             verify(addJvmToGroupRequest, times(1)).validate();
             verify(groupPersistenceService, times(1)).addJvmToGroup(addJvmToGroupRequest);
         }
@@ -160,7 +165,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         final Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(new Jvm(new Identifier<Jvm>("1"), "Jvm1", groupSet));
 
-        final Group group = new Group(new Identifier<Group>("1"), "Group1" , jvmSet);
+        final Group group = new Group(new Identifier<Group>("1"), "Group1", jvmSet);
 
         when(groupPersistenceService.getGroup(any(Identifier.class), eq(false))).thenReturn(group);
 
@@ -170,7 +175,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(otherGroupingDetailsOfJvm.get(0).getGroups().size(), 2);
 
         String groupNames = "";
-        for (Group grp: otherGroupingDetailsOfJvm.get(0).getGroups()) {
+        for (Group grp : otherGroupingDetailsOfJvm.get(0).getGroups()) {
             groupNames += grp.getName();
         }
 
@@ -185,15 +190,15 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Set<WebServer> webServerSet = new HashSet<>();
         webServerSet.add(new WebServer(new Identifier<WebServer>("1"),
-                                       groupSet,
-                                       "WebServer1",
-                                       null,
-                                       null,
-                                       null,
-                                       null,
-                                       null,
-                                       null,
-                                       null));
+                groupSet,
+                "WebServer1",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null));
 
         groupSet.add(new Group(new Identifier<Group>("1"), "Group1", new HashSet<Jvm>(), webServerSet, null, null));
 
@@ -204,11 +209,192 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertTrue(otherGroupingDetailsOfWebServer.size() == 1);
 
         String groupNames = "";
-        for (Group grp: otherGroupingDetailsOfWebServer.get(0).getGroups()) {
+        for (Group grp : otherGroupingDetailsOfWebServer.get(0).getGroups()) {
             groupNames += grp.getName();
         }
 
         assertTrue("Group3Group2".equalsIgnoreCase(groupNames) || "Group2Group3".equalsIgnoreCase(groupNames));
     }
 
+    @Test
+    public void testPopulateJvmConfig() throws FileNotFoundException {
+        List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm", new HashSet<Group>()), "ServerXMLTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "server.xml";
+            }
+        };
+        uploadRequests.add(uploadJvmRequest);
+        final Identifier<Group> aGroupId = new Identifier<>(11L);
+        groupService.populateJvmConfig(aGroupId, uploadRequests, user, false);
+        verify(groupPersistenceService, times(1)).populateJvmConfig(aGroupId, uploadRequests, user, false);
+    }
+
+    @Test
+    public void testPopulateWebServerConfig() throws FileNotFoundException {
+        List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L), new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "httpd.conf";
+            }
+        };
+        uploadRequests.add(uploadWSRequest);
+        final Identifier<Group> aGroupId = new Identifier<>(11L);
+        groupService.populateWebServerConfig(aGroupId, uploadRequests, user, false);
+        verify(webServerService, times(1)).populateWebServerConfig(uploadRequests, user, false);
+    }
+
+    @Test
+    public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
+        List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm", new HashSet<Group>()), "ServerXMLTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "server.xml";
+            }
+        };
+        uploadRequests.add(uploadJvmRequest);
+        groupService.populateGroupJvmTemplates("testGroupName", uploadRequests, user);
+        verify(groupPersistenceService, times(1)).populateGroupJvmTemplates("testGroupName", uploadRequests, user);
+    }
+
+    @Test
+    public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
+        List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L), new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "httpd.conf";
+            }
+        };
+        uploadRequests.add(uploadWSRequest);
+        groupService.populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
+        verify(groupPersistenceService, times(1)).populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
+    }
+
+    @Test
+    public void testGroupJvmsResourceTemplateNames() {
+        groupService.getGroupJvmsResourceTemplateNames("testGroupName");
+        verify(groupPersistenceService, times(1)).getGroupJvmsResourceTemplateNames("testGroupName");
+    }
+
+    @Test
+    public void testGroupWebServersResourceTemplateNames() {
+        groupService.getGroupWebServersResourceTemplateNames("testGroupName");
+        verify(groupPersistenceService, times(1)).getGroupWebServersResourceTemplateNames("testGroupName");
+    }
+
+    @Test
+    public void testGetGroupJvmResourceTemplate() {
+        groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", false);
+        verify(groupPersistenceService, times(1)).getGroupJvmResourceTemplate("testGroupName", "server.xml");
+        verify(groupPersistenceService, times(0)).getGroup("testGroupName");
+
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvms = new HashSet<>();
+        Set<Group> groups = new HashSet<>();
+        groups.add(mockGroup);
+        jvms.add(new Jvm(new Identifier<Jvm>(111L), "testJvmName", groups));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupJvmResourceTemplate(anyString(), anyString())).thenReturn("${jvm.jvmName}");
+        String tokenizedTemplate = groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", true);
+        assertEquals("testJvmName", tokenizedTemplate);
+    }
+
+    @Test
+    public void testGetGroupWebServerResourceTemplate() {
+        groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", false);
+        verify(groupPersistenceService, times(1)).getGroupWebServerResourceTemplate("testGroupName", "httpd.conf");
+        verify(groupPersistenceService, times(0)).getGroup("testGroupName");
+
+        Group mockGroup = mock(Group.class);
+        Set<WebServer> webServers = new HashSet<>();
+        Set<Group> groups = new HashSet<>();
+        final WebServer testWebServer = new WebServer(new Identifier<WebServer>(111L), groups, "testWebServerName");
+        webServers.add(testWebServer);
+        when(mockGroup.getWebServers()).thenReturn(webServers);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupWebServerResourceTemplate(anyString(), anyString())).thenReturn("${webServer.name}");
+        String tokenizedTemplate = groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", true);
+        assertEquals("testWebServerName", tokenizedTemplate);
+    }
+
+    @Test
+    public void testUpdateGroupJvmTemplate() {
+        groupService.updateGroupJvmResourceTemplate("testGroupName", "server.xml", "${jvm.jvmName}");
+        verify(groupPersistenceService).updateGroupJvmResourceTemplate("testGroupName", "server.xml", "${jvm.jvmName}");
+    }
+
+    @Test
+    public void testUpdateGroupWebServerTemplate() {
+        groupService.updateGroupWebServerResourceTemplate("testGroupName", "httpd.conf", "${webServer.name}");
+        verify(groupPersistenceService).updateGroupWebServerResourceTemplate("testGroupName", "httpd.conf", "${webServer.name}");
+    }
+
+    @Test
+    public void testPreviewJvmTemplate() {
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmList = new HashSet<>();
+        Jvm jvm = new Jvm(new Identifier<Jvm>(111L), "testJvmName", new HashSet<Group>());
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroup.getJvms()).thenReturn(jvmList);
+        String template = groupService.previewGroupJvmResourceTemplate("testGroupName", "${jvm.jvmName}");
+        assertEquals("${jvm.jvmName}", template);
+
+        jvmList.add(jvm);
+        template = groupService.previewGroupJvmResourceTemplate("testGroupName", "${jvm.jvmName}");
+        assertEquals("testJvmName", template);
+    }
+
+    @Test
+    public void testPreviewWebServerTemplate() {
+        Group mockGroup = mock(Group.class);
+        Set<WebServer> wsList = new HashSet<>();
+        WebServer webServer = new WebServer(new Identifier<WebServer>(111L), new HashSet<Group>(), "testWebServerName");
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroup.getWebServers()).thenReturn(wsList);
+        String template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}");
+        assertEquals("${webServer.name}", template);
+
+        wsList.add(webServer);
+        template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}");
+        assertEquals("testWebServerName", template);
+    }
+
+    @Test
+    public void testGetGroupWithWebServer() {
+        final Identifier<Group> aGroupId = new Identifier<>(1212L);
+        groupService.getGroupWithWebServers(aGroupId);
+        verify(groupPersistenceService).getGroupWithWebServers(aGroupId);
+    }
+
+    @Test
+    public void testGetGroupName() {
+        final String testGroupName = "testGroupName";
+        groupService.getGroup(testGroupName);
+        verify(groupPersistenceService).getGroup(testGroupName);
+    }
+
+    @Test
+    public void testGetGroupsFetchWebServers() {
+        groupService.getGroups(true);
+        verify(groupPersistenceService).getGroups(true);
+    }
+
+    @Test
+    public void testRemoveGroupName() {
+        final String testGroupName = "testGroupName";
+        groupService.removeGroup(testGroupName);
+        verify(groupPersistenceService).removeGroup(testGroupName);
+    }
 }
