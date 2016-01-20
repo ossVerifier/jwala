@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -7,7 +8,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
@@ -33,9 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -87,7 +89,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final CommandOutput mockExecData = mock(CommandOutput.class);
 
         when(jvm.getId()).thenReturn(Identifier.<Jvm>id(1l));
-        when(commandExecutor.executeRemoteCommand(jvmName, jvmHost, controlOperation, new WindowsJvmPlatformCommandProvider())).thenReturn(mockExecData);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(mockExecData);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(jvmService.getJvm(jvmId)).thenReturn(jvm);
@@ -112,6 +114,60 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
                 setJvmStateCommand.getValue().getNewState().getState());
 
         verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+
+
+        // test other command codes
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS), "Abnormal success", ""));
+        CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
+
+        when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<Jvm, JvmState>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP), "No op", ""));
+        returnOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertNull(returnOutput);
+
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL), "", "Fast Fail"));
+        try {
+            jvmControlService.controlJvm(controlCommand, user);
+        } catch (ExternalSystemErrorException ee) {
+            assertEquals(ee.getMessageResponseStatus(), AemFaultType.FAST_FAIL);
+        }
+
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE), "", "No such service"));
+        try {
+            jvmControlService.controlJvm(controlCommand, user);
+        } catch (ExternalSystemErrorException ee) {
+            assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+        }
+
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_PROCESS_KILLED), "", "Process killed"));
+        returnOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertEquals("FORCED STOPPED", returnOutput.getStandardOutput());
+
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "", "process default error"));
+        try {
+            jvmControlService.controlJvm(controlCommand, user);
+        }catch (ExternalSystemErrorException ee){
+            assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+        }
+
+        when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.HEAP_DUMP);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS), "Abnormal success", ""));
+        returnOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
+
+        when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", ""));
+        returnOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertNull(returnOutput);
+
+        // test command failure
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable("Test command failure")));
+        try {
+            jvmControlService.controlJvm(controlCommand, user);
+        } catch (InternalErrorException ie) {
+            assertEquals(ie.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+        }
     }
 
     @Test
