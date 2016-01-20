@@ -3,11 +3,12 @@ package com.siemens.cto.aem.common.exec;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Created by z0033r5b on 6/19/2015.
  */
-public class ExecDataTest {
+public class CommandOutputTest {
     private static final String STANDARD_OUTPUT_WITH_SPECIAL_CHARS =
             "Last login: Fri Jun 19 13:29:03 2015 from usmlvv1cto3773.usmlvv1d0a.smshsc.net\n" +
             "\u001B]0;~\u0007\n" +
@@ -46,6 +47,34 @@ public class ExecDataTest {
         CommandOutput testObject = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
         testObject.cleanStandardOutput();
         assertEquals(STANDARD_OUTPUT_WITH_SPECIAL_CHARS_REMOVED, testObject.getStandardOutput());
+    }
+
+    @Test
+    public void testCommandOutputEquals(){
+        CommandOutput testObject1 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        CommandOutput testObject2 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        assertEquals(testObject1, testObject2);
+    }
+
+    @Test
+    public void testCommandOutputNotEquals(){
+        CommandOutput testObject1 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        CommandOutput testObject2 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SHELL_INFO_REMOVED,"");
+        assertNotEquals(testObject1, testObject2);
+    }
+
+    @Test
+    public void testCommandOutputHashcode(){
+        CommandOutput testObject1 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        CommandOutput testObject2 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        assertEquals(testObject1.hashCode(), testObject2.hashCode());
+    }
+
+    @Test
+    public void testCommandOutputToString(){
+        CommandOutput testObject1 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        CommandOutput testObject2 = new CommandOutput(new ExecReturnCode(0), STANDARD_OUTPUT_WITH_SPECIAL_CHARS,"");
+        assertEquals(testObject1.toString(), testObject2.toString());
     }
 
     @Test
