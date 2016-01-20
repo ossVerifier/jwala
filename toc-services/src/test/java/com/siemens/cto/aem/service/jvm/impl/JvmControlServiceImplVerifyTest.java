@@ -35,6 +35,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -114,7 +115,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     }
 
     @Test
-    public void testVerificationOfBehaviorForFailures() throws CommandFailureException {
+    public void testVerificationOfBehaviorForOtherReturnCodes() throws CommandFailureException {
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final CommandOutput mockExecData = mock(CommandOutput.class);
         final Identifier<Jvm> jvmId = new Identifier<>(1L);
@@ -129,13 +130,14 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockExecData.getStandardOutput()).thenReturn("Test standard out when START or STOP");
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS));
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(commandExecutor.executeRemoteCommand("testJvmName", "testJvmHost", JvmControlOperation.START, new WindowsJvmPlatformCommandProvider())).thenReturn(mockExecData);
+        when(commandExecutor.executeRemoteCommand(eq("testJvmName"), eq("testJvmHost"), eq(JvmControlOperation.START), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(mockExecData);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
 
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
+
         boolean exceptionThrown = false;
         try {
             jvmControlService.controlJvm(controlCommand, user);
@@ -143,7 +145,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         } catch (Exception e) {
             exceptionThrown = true;
         }
-        assertFalse(exceptionThrown);
+        assertTrue(exceptionThrown);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE));
         exceptionThrown = false;
@@ -152,7 +154,11 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         } catch (Exception e) {
             exceptionThrown = true;
         }
-        assertFalse(exceptionThrown);
+        assertTrue(exceptionThrown);
+
+        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_PROCESS_KILLED));
+        final CommandOutput commandOutput = jvmControlService.controlJvm(controlCommand, user);
+        assertTrue(commandOutput.getReturnCode().wasSuccessful());
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(88 /*non-existent return code*/));
         when(mockExecData.standardErrorOrStandardOut()).thenReturn("Test standard error or out");
