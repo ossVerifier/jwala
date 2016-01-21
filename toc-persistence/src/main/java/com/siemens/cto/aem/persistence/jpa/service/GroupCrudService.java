@@ -62,4 +62,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     void updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
 
     void updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
+
+    void populateGroupAppTemplate(JpaGroup group, String templateFileName, String templateContent);
 }

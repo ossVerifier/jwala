@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -282,5 +283,19 @@ public class GroupServiceImpl implements GroupService {
             }
         }
         return template;
+    }
+
+    @Override
+    public void populateGroupAppTemplates(Application application, String appContext, String roleMappingProperties, String appProperties) {
+        final Group group = application.getGroup();
+        final int idx = application.getWebAppContext().lastIndexOf('/');
+        final String resourceName = idx == -1 ? application.getWebAppContext() : application.getWebAppContext().substring(idx + 1);
+
+        final String appRoleMappingPropertiesFileName = resourceName + "RoleMapping.properties";
+        groupPersistenceService.populateGroupAppTemplate(group, appRoleMappingPropertiesFileName, roleMappingProperties);
+        final String appPropertiesFileName = resourceName + ".properties";
+        groupPersistenceService.populateGroupAppTemplate(group, appPropertiesFileName, appProperties);
+        final String appContextFileName = resourceName + ".xml";
+        groupPersistenceService.populateGroupAppTemplate(group, appContextFileName, appContext);
     }
 }

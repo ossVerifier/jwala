@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.group;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.domain.model.group.*;
@@ -76,4 +77,6 @@ public interface GroupService {
     String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
+
+    void populateGroupAppTemplates(Application application, String appContext, String roleMappingProperties, String appProperties);
 }

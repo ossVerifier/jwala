@@ -216,4 +216,11 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public String getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName) {
         return groupCrudService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName);
     }
+
+    @Override
+    public Group populateGroupAppTemplate(Group group, String templateFileName, String templateContent) {
+        JpaGroup jpaGroup = groupCrudService.getGroup(group.getName());
+        groupCrudService.populateGroupAppTemplate(jpaGroup,templateFileName, templateContent);
+        return groupFrom(jpaGroup, false);
+    }
 }

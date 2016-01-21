@@ -12,10 +12,7 @@ import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroupWebServerConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -288,6 +285,31 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
+        }
+    }
+
+    @Override
+    public void populateGroupAppTemplate(JpaGroup group, String templateFileName, String templateContent) {
+        Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
+        query.setParameter("grpName", group.getName());
+        query.setParameter("tempName", templateFileName);
+        List<JpaGroupAppConfigTemplate> templates = query.getResultList();
+        JpaGroupAppConfigTemplate jpaConfigTemplate;
+        if (templates.size() == 1) {
+            //update
+            jpaConfigTemplate = templates.get(0);
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.flush();
+        } else if (templates.isEmpty()) {
+            jpaConfigTemplate = new JpaGroupAppConfigTemplate();
+            jpaConfigTemplate.setJpaGroup(group);
+            jpaConfigTemplate.setTemplateName(templateFileName);
+            jpaConfigTemplate.setTemplateContent(templateContent);
+            entityManager.persist(jpaConfigTemplate);
+            entityManager.flush();
+        } else {
+            throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND,
+                    "Only expecting one template to be returned for GROUP APP Template [" + group.getName() + "] but returned " + templates.size() + " templates");
         }
     }
 }

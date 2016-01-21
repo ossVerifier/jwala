@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -137,7 +138,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
         final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
         final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
-        return applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
+        final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
+        groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
+        return application;
     }
 
     @Transactional
@@ -366,8 +369,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void copyApplicationConfigToGroupJvms(Group group, String appName, User user) {
         final String groupName = group.getName();
+        final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
         for (Jvm jvm : group.getJvms()) {
-            for (String templateName : applicationPersistenceService.getResourceTemplateNames(appName)) {
+            for (String templateName : resourceTemplateNames) {
                 final boolean doNotBackUpOriginals = false;
                 deployConf(appName, groupName, jvm.getJvmName(), templateName, doNotBackUpOriginals, user);
             }

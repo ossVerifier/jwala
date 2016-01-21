@@ -118,7 +118,9 @@ public enum AemFaultType implements MessageResponseStatus {
 
     INVALID_TEMPLATE("AEM56", "InvalidTemplate" ),
 
-    ENTITY_NOT_FOUND("AEM57", "EntityNotfound");
+    ENTITY_NOT_FOUND("AEM57", "EntityNotfound"),
+
+    APP_TEMPLATE_NOT_FOUND("AEM58","AppTemplateNotFound");
 
 	private final String faultCode;
 	private final String faultMessage;

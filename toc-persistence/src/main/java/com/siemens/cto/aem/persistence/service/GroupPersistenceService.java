@@ -61,4 +61,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
+
+    Group populateGroupAppTemplate(Group group, String appRoleMappingPropertiesFileName, String roleMappingProperties);
 }
