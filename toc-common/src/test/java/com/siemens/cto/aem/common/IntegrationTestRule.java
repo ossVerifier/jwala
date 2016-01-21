@@ -11,10 +11,13 @@ public class IntegrationTestRule implements TestRule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationTestRule.class);
 
-    private final boolean shouldRunIntegrationTests;
+    private boolean shouldRunIntegrationTests = false;
 
     public IntegrationTestRule() {
-        shouldRunIntegrationTests = System.getProperty(TestExecutionProfile.RUN_TEST_TYPES).contains(TestExecutionProfile.INTEGRATION);
+        final String runTestTypes = System.getProperty(TestExecutionProfile.RUN_TEST_TYPES);
+        if (runTestTypes != null) {
+            shouldRunIntegrationTests = TestExecutionProfile.INTEGRATION.contains(runTestTypes);
+        }
     }
 
     public Statement apply(final Statement base,

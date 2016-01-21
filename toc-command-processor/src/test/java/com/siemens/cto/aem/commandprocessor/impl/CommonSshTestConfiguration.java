@@ -3,10 +3,12 @@ package com.siemens.cto.aem.commandprocessor.impl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 
+import java.io.File;
+
 public class CommonSshTestConfiguration {
 
-    private static final String KNOWN_HOSTS_FILE = "toc-command-processor\\src\\test\\resources\\known_hosts";
-    private static final String PRIVATE_KEY = "toc-command-processor\\src\\test\\resources\\test_private_key";
+    private static final String KNOWN_HOSTS_FILE = "known_hosts";
+    private static final String PRIVATE_KEY = "test_private_key";
 
     private final JschBuilder builder;
     private final RemoteSystemConnection remoteSystemConnection;
@@ -15,11 +17,11 @@ public class CommonSshTestConfiguration {
     public CommonSshTestConfiguration() {
         //TODO (Corey) generalize this so that %HOME% works
         //TODO create duplicate set of keys without a passphrase for testing
-        builder = new JschBuilder(KNOWN_HOSTS_FILE,
-                                  PRIVATE_KEY);
-        remoteSystemConnection = new RemoteSystemConnection("z002xuvs",
-                "ppp123",
-                                                            "usmlvv1cto989",
+        builder = new JschBuilder(getKnownHostsFile(),
+                                  getPrivateKey());
+        remoteSystemConnection = new RemoteSystemConnection("N9SFGLabTomcatAdmin",
+                                                            "Passw0rd1",
+                                                            "usmlvv1cds0005",
                                                             22);
     }
 
@@ -32,11 +34,13 @@ public class CommonSshTestConfiguration {
     }
 
     public String getKnownHostsFile() {
-        return KNOWN_HOSTS_FILE;
+        final File file = new File(this.getClass().getClassLoader().getResource(KNOWN_HOSTS_FILE).getFile());
+        return file.getAbsolutePath();
     }
 
     public String getPrivateKey() {
-        return PRIVATE_KEY;
+        final File file = new File(this.getClass().getClassLoader().getResource(PRIVATE_KEY).getFile());
+        return file.getAbsolutePath();
     }
 
     public String getPassword() {

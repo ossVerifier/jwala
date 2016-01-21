@@ -79,7 +79,7 @@ public class WebServerServiceImplTest {
     private User testUser = new User("testUser");
 
     @Before
-    public void setUp() throws IOException{
+    public void setUp() throws IOException {
 
         groupId = new Identifier<>(1L);
         groupId2 = new Identifier<>(2L);
@@ -98,6 +98,7 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getName()).thenReturn("the-ws-name");
         when(mockWebServer.getHost()).thenReturn("the-ws-hostname");
         when(mockWebServer.getGroups()).thenReturn(groups);
+        when(mockWebServer.getGroupIds()).thenReturn(groupIds);
         when(mockWebServer.getPort()).thenReturn(51000);
         when(mockWebServer.getHttpsPort()).thenReturn(52000);
         when(mockWebServer.getStatusPath()).thenReturn(new Path("/statusPath"));
@@ -130,7 +131,7 @@ public class WebServerServiceImplTest {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                TocFile file = (TocFile)invocation.getArguments()[0];
+                TocFile file = (TocFile) invocation.getArguments()[0];
                 if (file != null) {
                     return "/" + file.getFileName();
                 }
@@ -143,7 +144,7 @@ public class WebServerServiceImplTest {
     @Test
     public void test() {
         when(webServerPersistenceService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
-        final WebServer webServer= wsService.getWebServer(new Identifier<WebServer>(1L));
+        final WebServer webServer = wsService.getWebServer(new Identifier<WebServer>(1L));
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
         assertEquals(group.getId(), webServer.getGroups().iterator().next().getId());
         assertEquals("the-ws-name", webServer.getName());
@@ -154,7 +155,7 @@ public class WebServerServiceImplTest {
     @Test
     public void testGetWebServers() {
         when(webServerPersistenceService.getWebServers()).thenReturn(mockWebServersAll);
-        final List<WebServer> webServers= wsService.getWebServers();
+        final List<WebServer> webServers = wsService.getWebServers();
         assertEquals(2, webServers.size());
     }
 
@@ -163,7 +164,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findWebServersBelongingTo(eq(new Identifier<Group>(1L)))).thenReturn(mockWebServers11);
         when(webServerPersistenceService.findWebServersBelongingTo(eq(new Identifier<Group>(2L)))).thenReturn(mockWebServers12);
 
-        final List<WebServer> webServers= wsService.findWebServers(group.getId());
+        final List<WebServer> webServers = wsService.findWebServers(group.getId());
         final List<WebServer> webServers2 = wsService.findWebServers(group2.getId());
 
         assertEquals(1, webServers.size());
@@ -175,21 +176,19 @@ public class WebServerServiceImplTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    @Ignore
-    // TODO: Fix this test!
     public void testCreateWebServers() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         when(webServerPersistenceService.createWebServer(any(WebServer.class), anyString())).thenReturn(mockWebServer);
         CreateWebServerRequest cmd = new CreateWebServerRequest(mockWebServer.getGroupIds(),
-                                                                mockWebServer.getName(),
-                                                                mockWebServer.getHost(),
-                                                                mockWebServer.getPort(),
-                                                                mockWebServer.getHttpsPort(),
-                                                                mockWebServer.getStatusPath(),
-                                                                mockWebServer.getHttpConfigFile(),
-                                                                mockWebServer.getSvrRoot(),
-                                                                mockWebServer.getDocRoot());
+                mockWebServer.getName(),
+                mockWebServer.getHost(),
+                mockWebServer.getPort(),
+                mockWebServer.getHttpsPort(),
+                mockWebServer.getStatusPath(),
+                mockWebServer.getHttpConfigFile(),
+                mockWebServer.getSvrRoot(),
+                mockWebServer.getDocRoot());
         final WebServer webServer = wsService.createWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(1L), webServer.getId());
@@ -211,20 +210,18 @@ public class WebServerServiceImplTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    @Ignore
-    // TODO: Fix this test!
     public void testUpdateWebServers() {
         when(webServerPersistenceService.updateWebServer(any(WebServer.class), anyString())).thenReturn(mockWebServer2);
 
         UpdateWebServerRequest cmd = new UpdateWebServerRequest(mockWebServer2.getId(), groupIds2,
-                                                                mockWebServer2.getName(),
-                                                                mockWebServer2.getHost(),
-                                                                mockWebServer2.getPort(),
-                                                                mockWebServer2.getHttpsPort(),
-                                                                mockWebServer2.getStatusPath(),
-                                                                mockWebServer2.getHttpConfigFile(),
-                                                                mockWebServer2.getSvrRoot(),
-                                                                mockWebServer2.getDocRoot());
+                mockWebServer2.getName(),
+                mockWebServer2.getHost(),
+                mockWebServer2.getPort(),
+                mockWebServer2.getHttpsPort(),
+                mockWebServer2.getStatusPath(),
+                mockWebServer2.getHttpConfigFile(),
+                mockWebServer2.getSvrRoot(),
+                mockWebServer2.getDocRoot());
         final WebServer webServer = wsService.updateWebServer(cmd, testUser);
 
         assertEquals(new Identifier<WebServer>(2L), webServer.getId());
@@ -240,7 +237,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findWebServers(eq("the-ws-name-2"))).thenReturn(mockWebServers12);
         when(webServerPersistenceService.findWebServers(eq("the-ws-name"))).thenReturn(mockWebServersAll);
 
-        final List<WebServer> webServers= wsService.findWebServers("the-ws-name-2");
+        final List<WebServer> webServers = wsService.findWebServers("the-ws-name-2");
         final List<WebServer> webServers2 = wsService.findWebServers("the-ws-name");
 
         assertEquals(1, webServers.size());
@@ -276,7 +273,7 @@ public class WebServerServiceImplTest {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
-        Application [] appArray = {app1, app2};
+        Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
@@ -284,7 +281,7 @@ public class WebServerServiceImplTest {
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", null);
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd.conf")),
-                     removeCarriageReturnsAndNewLines(generatedHttpdConf));
+                removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test
@@ -292,7 +289,7 @@ public class WebServerServiceImplTest {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
-        Application [] appArray = {app1, app2};
+        Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
@@ -301,7 +298,7 @@ public class WebServerServiceImplTest {
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
-                     removeCarriageReturnsAndNewLines(generatedHttpdConf));
+                removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test(expected = InternalErrorException.class)
@@ -309,7 +306,7 @@ public class WebServerServiceImplTest {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
-        Application [] appArray = {app1, app2};
+        Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
@@ -324,7 +321,7 @@ public class WebServerServiceImplTest {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
-        Application [] appArray = {app1, app2};
+        Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
@@ -342,7 +339,7 @@ public class WebServerServiceImplTest {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
-        Application [] appArray = {app1, app2};
+        Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
@@ -375,7 +372,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findJvms(anyString())).thenReturn(jvms);
 
         final Application app1 = mock(Application.class);
-            when(app1.getName()).thenReturn("hello-world-1");
+        when(app1.getName()).thenReturn("hello-world-1");
 
         final Application app2 = mock(Application.class);
         when(app2.getName()).thenReturn("hello-world-2");
@@ -393,7 +390,7 @@ public class WebServerServiceImplTest {
         String workerPropertiesStr = wsService.generateWorkerProperties("Apache2.4");
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/workers.properties")),
-                     removeCarriageReturnsAndNewLines(workerPropertiesStr));
+                removeCarriageReturnsAndNewLines(workerPropertiesStr));
     }
 
     @Test(expected = InternalErrorException.class)
@@ -444,7 +441,7 @@ public class WebServerServiceImplTest {
 
     @Test
     public void testGetResourceTemplateNames() {
-        final String [] nameArray = {"httpd.conf"};
+        final String[] nameArray = {"httpd.conf"};
         when(webServerPersistenceService.getResourceTemplateNames(eq("Apache2.4"))).thenReturn(Arrays.asList(nameArray));
         final List names = wsService.getResourceTemplateNames("Apache2.4");
         assertEquals("httpd.conf", names.get(0));
@@ -488,6 +485,24 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.getResourceTemplate("wsName", "resourceTemplateName")).thenReturn("template");
         assertEquals("template", wsService.updateResourceTemplate("wsName", "resourceTemplateName", "template"));
         verify(webServerPersistenceService).updateResourceTemplate(eq("wsName"), eq("resourceTemplateName"), eq("template"));
+    }
+
+    @Test
+    public void testUploadWebServerConfig() {
+        UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
+        wsService.uploadWebServerConfig(request, testUser);
+        verify(webServerPersistenceService).uploadWebserverConfigTemplate(request);
+    }
+
+    @Test
+    public void testPreviewResourceTemplate() {
+        List<Application> appList = new ArrayList<>();
+        List<Jvm> jvmList = new ArrayList<>();
+        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
+        when(webServerPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        when(webServerPersistenceService.findApplications(anyString())).thenReturn(appList);
+        String template = wsService.previewResourceTemplate("wsName", "groupName", "my template");
+        assertEquals("my template", template);
     }
 
     private String removeCarriageReturnsAndNewLines(String s) {

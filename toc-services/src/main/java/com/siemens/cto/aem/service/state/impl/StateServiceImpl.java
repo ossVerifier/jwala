@@ -35,6 +35,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     }
 
     @Override
+    @Transactional
     public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest, final User aUser) {
         LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
         setStateRequest.validate();

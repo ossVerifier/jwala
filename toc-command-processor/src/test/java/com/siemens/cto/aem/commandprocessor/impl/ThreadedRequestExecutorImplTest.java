@@ -6,7 +6,10 @@ import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,8 +19,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore
-// TODO: Make this work locally
 public class ThreadedRequestExecutorImplTest {
 
     @ClassRule
@@ -50,7 +51,7 @@ public class ThreadedRequestExecutorImplTest {
         assertTrue(results.getStandardOutput().contains(config.getRemoteSystemConnection()
                                                               .getHost()
                                                               .toUpperCase()));
-        assertTrue(results.getStandardOutput().contains("CYGWIN_NT-6.1"));
+        assertTrue(results.getStandardOutput().contains("CYGWIN_NT"));
         assertEquals("",
                      results.getStandardError());
     }
@@ -77,4 +78,5 @@ public class ThreadedRequestExecutorImplTest {
         final ThreadedCommandExecutorImpl impl = new ThreadedCommandExecutorImpl(null);
         impl.get(future);
     }
+
 }

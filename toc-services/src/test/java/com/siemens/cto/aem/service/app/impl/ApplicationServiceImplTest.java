@@ -2,12 +2,15 @@ package com.siemens.cto.aem.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
@@ -300,6 +303,13 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
         when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
         assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", true));
+
+        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn("${webApp.NOPROPERTY}");
+        try {
+            applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", true);
+        } catch (ApplicationException ae) {
+            assertTrue(ae.getMessage().contains("replacement failed"));
+        }
     }
 
     @Test
@@ -326,8 +336,35 @@ public class ApplicationServiceImplTest {
 
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
+        CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
+
+        when(mockApplication.isSecure()).thenReturn(false);
+        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
+        assertTrue(retExecData.getReturnCode().wasSuccessful());
+
+        when(mockApplication.isSecure()).thenReturn(true);
+        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, testUser);
+        assertTrue(retExecData.getReturnCode().wasSuccessful());
+
+        // test errors
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
+        try{
+            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, testUser);
+        } catch (InternalErrorException ee){
+            assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+        }
+
+        when(remoteCommandExecutor.executeRemoteCommand(
+                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
+        try{
+            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, testUser);
+        } catch (DeployApplicationConfException ee){
+            assertTrue(ee.getCause() instanceof CommandFailureException);
+        }
+
     }
 
     @Test
@@ -436,7 +473,9 @@ public class ApplicationServiceImplTest {
         RuntimeCommand mockCommand = mock(RuntimeCommand.class);
         final HashSet<Jvm> jvmSet = new HashSet<>();
         Jvm mockJvm = mock(Jvm.class);
+        Jvm mockJvm2 = mock(Jvm.class);
         jvmSet.add(mockJvm);
+        jvmSet.add(mockJvm2);
         Group mockGroup = mock(Group.class);
         GroupService mockGroupService = mock(GroupService.class);
         final Identifier<Group> mockGroupId = new Identifier<>(999L);
@@ -448,6 +487,7 @@ public class ApplicationServiceImplTest {
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockJvm.getHostName()).thenReturn("localhost");
+        when(mockJvm2.getHostName()).thenReturn("localhost");
         when(mockRuntimeCommandBuilder.build()).thenReturn(mockCommand);
         when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
@@ -459,6 +499,17 @@ public class ApplicationServiceImplTest {
             mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
         } catch (CommandFailureException e) {
             assertTrue("should not fail " + e.getMessage(), false);
+        }
+        new File("./src/test/resources/webapps/test.war").delete();
+
+        try {
+            CommandOutput failedCommandOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedCommandOutput);
+            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
+        } catch (CommandFailureException e) {
+            assertTrue("should not fail " + e.getMessage(), false);
+        } catch(InternalErrorException ie){
+            assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
         new File("./src/test/resources/webapps/test.war").delete();
 
@@ -484,35 +535,69 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
-    public void testCopyToGroupJvms() {
+    public void testCopyToGroupJvms() throws CommandFailureException {
         GroupService mockGroupService = mock(GroupService.class);
         Group mockGroup = mock(Group.class);
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        Set<Jvm> jvms = new HashSet<>();
         Set<Group> groupSet = new HashSet<>();
         groupSet.add(mockGroup);
-        jvms.add(new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet));
+
+        Set<Jvm> jvms = new HashSet<>();
+        List<Jvm> jvmsList = new ArrayList<>();
+        final Jvm testjvm = new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet);
+        jvms.add(testjvm);
+        jvmsList.add(testjvm);
+
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmsList);
         when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockGroup.getName()).thenReturn("testGroupName");
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("app.xml");
+        when(applicationPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, "app.war"));
+        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
+        when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", testUser);
     }
 
     @Test
-    public void testDeployConfToOtherJvmHosts() {
+    public void testDeployConfToOtherJvmHosts() throws CommandFailureException {
         GroupService mockGroupService = mock(GroupService.class);
         Group mockGroup = mock(Group.class);
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroup.getName()).thenReturn("mockGroup");
-        Set<Jvm> jvms = new HashSet<>();
         Set<Group> groupSet = new HashSet<>();
         groupSet.add(mockGroup);
-        final Jvm testjvm = new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet);
-        jvms.add(testjvm);
+
+        Set<Jvm> jvms = new HashSet<>();
+        List<Jvm> jvmList = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getHostName()).thenReturn("host1");
+        when(mockJvm.getJvmName()).thenReturn("jvm1");
+        Jvm mockJvm2 = mock(Jvm.class);
+        when(mockJvm2.getHostName()).thenReturn("host2");
+        when(mockJvm2.getJvmName()).thenReturn("jvm2");
+        jvms.add(mockJvm);
+        jvms.add(mockJvm2);
+        jvmList.add(mockJvm);
+        jvmList.add(mockJvm2);
+
         when(mockGroup.getJvms()).thenReturn(jvms);
-        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testjvm);
+        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(mockJvm);
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockGroup.getName()).thenReturn("testGroupName");
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("app.xml");
+        when(applicationPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, "app.war"));
+        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
+        when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
+
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
         mockApplicationService.deployConfToOtherJvmHosts(mockApplication.getName(), "mockGroup", "testjvm", "server.xml", testUser);
 
