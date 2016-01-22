@@ -16,6 +16,7 @@
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroup</class>
+        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroupAppConfigTemplate</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroupJvmConfigTemplate</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroupWebServerConfigTemplate</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaHistory</class>
