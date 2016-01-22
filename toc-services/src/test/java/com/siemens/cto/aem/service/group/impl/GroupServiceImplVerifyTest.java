@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.group.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -396,5 +397,20 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         final String testGroupName = "testGroupName";
         groupService.removeGroup(testGroupName);
         verify(groupPersistenceService).removeGroup(testGroupName);
+    }
+
+    @Test
+    public void testPopulateGroupAppTemplates() {
+        Application mockApplication = mock(Application.class);
+        Group mockGroup = mock(Group.class);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockApplication.getWebAppContext()).thenReturn("/testApp");
+        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString())).thenReturn(mockGroup);
+
+        groupService.populateGroupAppTemplates(mockApplication, "app content", "role mapping content", "properties content");
+
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.xml", "app content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testAppRoleMapping.properties", "role mapping content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.properties", "properties content");
     }
 }

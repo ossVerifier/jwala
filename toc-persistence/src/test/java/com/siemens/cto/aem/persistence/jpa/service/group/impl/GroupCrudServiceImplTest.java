@@ -230,4 +230,11 @@ public class GroupCrudServiceImplTest {
     public void testGetGroupWebServerTemplateThrowsException() {
         groupCrudService.getGroupWebServerResourceTemplate(groupName, "UHUHUH-youdidntsaythemagicword");
     }
+
+    @Test
+    public void testPopulateGroupAppTemplate() {
+        final JpaGroup group = groupCrudService.getGroup(groupName);
+        groupCrudService.populateGroupAppTemplate(group, "app.xml", "content!");
+        groupCrudService.populateGroupAppTemplate(group, "app.xml", "content new!");
+    }
 }

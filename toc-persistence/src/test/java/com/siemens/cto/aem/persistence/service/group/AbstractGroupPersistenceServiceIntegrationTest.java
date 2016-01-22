@@ -1,23 +1,39 @@
 package com.siemens.cto.aem.persistence.service.group;
 
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -285,5 +301,145 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                              userId);
 
         groupPersistenceService.removeGroup(groupId);
+    }
+
+    @Test
+    public void testGetGroupWithWebServers() {
+        Group group = groupPersistenceService.getGroupWithWebServers(preCreatedGroup.getId());
+        assertTrue(group.getWebServers().size() == 0);
+    }
+
+    @Test
+    public void testGetGroupByName() {
+        Group group = groupPersistenceService.getGroup(preCreatedGroup.getName());
+        assertEquals(preCreatedGroup, group);
+    }
+
+    @Test
+    public void testGetGroupById() {
+        Group group = groupPersistenceService.getGroup(preCreatedGroup.getId(), true);
+        assertEquals(preCreatedGroup.getName(), group.getName());
+    }
+
+    @Test
+    public void testGetGroupsFetchWebServers() {
+        List<Group> group = groupPersistenceService.getGroups(true);
+        assertTrue(group.size() > 0);
+    }
+
+    @Test
+    public void testRemoveGroupId() {
+        List<Group> groups = groupPersistenceService.getGroups(true);
+        assertEquals(1, groups.size());
+        CreateGroupRequest createReq = new CreateGroupRequest("removeME");
+        Group removeME = groupPersistenceService.createGroup(createReq);
+        groups = groupPersistenceService.getGroups(true);
+        assertEquals(2, groups.size());
+        groupPersistenceService.removeGroup(removeME.getId());
+        groups = groupPersistenceService.getGroups(true);
+        assertEquals(1, groups.size());
+    }
+
+    @Test
+    public void testRemoveGroupByName() {
+        List<Group> groups = groupPersistenceService.getGroups(true);
+        assertEquals(1, groups.size());
+        CreateGroupRequest createReq = new CreateGroupRequest("removeME");
+        Group removeME = groupPersistenceService.createGroup(createReq);
+        groups = groupPersistenceService.getGroups(true);
+        assertEquals(2, groups.size());
+        groupPersistenceService.removeGroup(removeME.getName());
+        groups = groupPersistenceService.getGroups(true);
+        assertEquals(1, groups.size());
+    }
+
+    @Test
+    public void testUpdateGroupState() {
+        SetStateRequest<Group, GroupState> updateRequest = new SetStateRequest<Group, GroupState>(new CurrentState<Group, GroupState>(preCreatedGroup.getId(), GroupState.GRP_STARTED, DateTime.now(), StateType.GROUP)) {
+            @Override
+            public void validate() {
+
+            }
+        };
+        CurrentState<Group, GroupState> state = groupPersistenceService.updateState(updateRequest);
+        assertEquals(GroupState.GRP_STARTED, state.getState());
+
+        state = groupPersistenceService.getState(preCreatedGroup.getId());
+        assertEquals(GroupState.GRP_STARTED, state.getState());
+
+        Set<CurrentState<Group, GroupState>> states = groupPersistenceService.getAllKnownStates();
+        assertEquals(1, states.size());
+    }
+
+    @Test
+    public void testPopuplateJvmConfig() {
+        List<UploadJvmTemplateRequest> uploadCommands = new ArrayList<>();
+        groupPersistenceService.populateJvmConfig(preCreatedGroup.getId(), uploadCommands, User.getThreadLocalUser(), true);
+    }
+
+    @Test
+    public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
+        List<UploadJvmTemplateRequest> uploadCommands = new ArrayList<UploadJvmTemplateRequest>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        UploadJvmTemplateRequest request = new UploadJvmTemplateRequest(preCreatedJvm, "ServerXMLTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "server.xml";
+            }
+        };
+        uploadCommands.add(request);
+        groupPersistenceService.populateGroupJvmTemplates(preCreatedGroup.getName(), uploadCommands, User.getThreadLocalUser());
+    }
+
+    @Test
+    public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
+        List<UploadWebServerTemplateRequest> uploadCommands = new ArrayList<>();
+        InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1L), new HashSet<Group>(),"testWebServer");
+        UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", data) {
+            @Override
+            public String getConfFileName() {
+                return "httpd.conf";
+            }
+        };
+        uploadCommands.add(request);
+        groupPersistenceService.populateGroupWebServerTemplates(preCreatedGroup.getName(), uploadCommands, User.getThreadLocalUser());
+    }
+
+    @Test
+    public void testGetGroupJvmTemplateResourceNames() {
+        List<String> list = groupPersistenceService.getGroupJvmsResourceTemplateNames(preCreatedGroup.getName());
+        assertEquals(0, list.size());
+    }
+
+    @Test
+    public void testGetGroupWebServerTemplateResourceNames() {
+        List<String> list = groupPersistenceService.getGroupWebServersResourceTemplateNames(preCreatedGroup.getName());
+        assertEquals(0, list.size());
+    }
+
+    @Test
+    public void testUpdateGroupJvmResourceTemplate() throws FileNotFoundException {
+        testPopulateGroupJvmTemplates();
+        String content = groupPersistenceService.updateGroupJvmResourceTemplate(preCreatedGroup.getName(), "server.xml", "new server.xml content");
+        assertEquals("new server.xml content", content);
+        content = groupPersistenceService.getGroupJvmResourceTemplate(preCreatedGroup.getName(), "server.xml");
+        assertEquals("new server.xml content", content);
+
+    }
+
+    @Test
+    public void testUpdateGroupWebServerResourceTemplate() throws FileNotFoundException {
+        testPopulateGroupWebServerTemplates();
+        String content = groupPersistenceService.updateGroupWebServerResourceTemplate(preCreatedGroup.getName(), "httpd.conf", "now this is the httpd.conf");
+        assertEquals("now this is the httpd.conf", content);
+        content = groupPersistenceService.getGroupWebServerResourceTemplate(preCreatedGroup.getName(), "httpd.conf");
+        assertEquals("now this is the httpd.conf", content);
+    }
+
+    @Test
+    public void testPopulateGroupAppTemplate() {
+        Group group = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup, "app.xml", "app content");
+        assertNotNull(group);
     }
 }
