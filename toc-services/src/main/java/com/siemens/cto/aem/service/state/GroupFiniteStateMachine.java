@@ -81,7 +81,7 @@ public class GroupFiniteStateMachine {
      */
     private static void configureFsm() {
         // Starting states
-        final Set<OperationalState> startingStates = new TreeSet<>(new OperationalState.OSComparator());
+        final Set<OperationalState> startingStates = new TreeSet<>(new OperationalStateComparator());
         startingStates.add(JVM_NEW);
         startingStates.add(JVM_INITIALIZING);
         startingStates.add(JVM_INITIALIZED);
@@ -91,7 +91,7 @@ public class GroupFiniteStateMachine {
         startingStates.add(WS_REACHABLE);
         startingStates.add(WS_START_SENT);
 
-        final Set<OperationalState> stoppingStates = new TreeSet<>(new OperationalState.OSComparator());
+        final Set<OperationalState> stoppingStates = new TreeSet<>(new OperationalStateComparator());
         stoppingStates.add(JVM_STOP);
         stoppingStates.add(JVM_STOPPING);
         stoppingStates.add(JVM_STOPPED);
@@ -102,12 +102,12 @@ public class GroupFiniteStateMachine {
         stoppingStates.add(WS_STOP_SENT);
 
         // Failing states
-        final Set<OperationalState> failingStates = new TreeSet<>(new OperationalState.OSComparator());
+        final Set<OperationalState> failingStates = new TreeSet<>(new OperationalStateComparator());
         failingStates.add(JVM_FAILED);
         failingStates.add(WS_FAILED);
 
         // Unknown states
-        final Set<OperationalState> unknownStates = new TreeSet<>(new OperationalState.OSComparator());
+        final Set<OperationalState> unknownStates = new TreeSet<>(new OperationalStateComparator());
         unknownStates.add(JVM_UNKNOWN);
         unknownStates.add(WS_UNKNOWN);
 

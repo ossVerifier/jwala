@@ -7,35 +7,30 @@ import java.util.Map;
 
 /**
  * JvmState defines the known states for JVMs.
- * 
- * JVMs utilize infrastructure-provided code to send 
- * JVM state to TOC. 
- * 
- * The translation is done using the enum names
- * defined for JvmState here. 
+ * JVMs utilize infrastructure-provided code to send JVM state to TOC.
+ * The translation is done using the enum names defined for JvmState here.
  * 
  * @author horspe00
- *
  */
 public enum JvmState implements OperationalState {
 
-    JVM_NEW         ("NEW",_NOT_A_STARTED_STATE),
-    JVM_INITIALIZING("INITIALIZING",_IS_A_STARTED_STATE),
-    JVM_INITIALIZED ("INITIALIZED",_IS_A_STARTED_STATE),
-    JVM_START       ("START SENT",_IS_A_STARTED_STATE),
-    JVM_STARTING    ("STARTING",_IS_A_STARTED_STATE),
-    JVM_STARTED     ("STARTED",_IS_A_STARTED_STATE),
-    JVM_STOP        ("STOP SENT",_IS_A_STARTED_STATE),
-    JVM_STOPPING    ("STOPPING",_IS_A_STARTED_STATE),
-    JVM_STOPPED     ("STOPPED",_IS_A_STARTED_STATE) /* Reported by ReportingLifeCycleListener.
-                                                       This states that the application server has STOPPED which is
-                                                       different from saying that the application itself has exited or
-                                                       has been terminated. */,
-    JVM_DESTROYING  ("DESTROYING",_IS_A_STARTED_STATE),
-    JVM_DESTROYED   ("DESTROYED",_IS_A_STARTED_STATE),
-    JVM_UNKNOWN     ("UNKNOWN",_NOT_A_STARTED_STATE),
-    JVM_FAILED      ("FAILED",_NOT_A_STARTED_STATE),
-    SVC_STOPPED     ("STOPPED",_NOT_A_STARTED_STATE) /* Reported by something other than the ReportingLifeCycleListener
+    JVM_NEW          (StateName.NEW, Started.NO),
+    JVM_INITIALIZING (StateName.INITIALIZING, Started.YES),
+    JVM_INITIALIZED  (StateName.INITIALIZING, Started.YES),
+    JVM_START        (StateName.START_SENT, Started.YES),
+    JVM_STARTING     (StateName.STARTING, Started.YES),
+    JVM_STARTED      (StateName.STARTED, Started.YES),
+    JVM_STOP         (StateName.STOP_SENT, Started.YES),
+    JVM_STOPPING     (StateName.STOPPING, Started.YES),
+    JVM_STOPPED      (StateName.STOPPED, Started.YES) /* Reported by ReportingLifeCycleListener.
+                                                         This states that the application server has STOPPED which is
+                                                         different from saying that the application itself has exited or
+                                                         has been terminated. */,
+    JVM_DESTROYING  (StateName.DESTROYING, Started.YES),
+    JVM_DESTROYED   (StateName.DESTROYED, Started.YES),
+    JVM_UNKNOWN     (StateName.UNKNOWN, Started.NO),
+    JVM_FAILED      (StateName.FAILED, Started.NO),
+    SVC_STOPPED     (StateName.STOPPED, Started.NO) /* Reported by something other than the ReportingLifeCycleListener
                                                         e.g. sc query. This means that Window's service states that the
                                                         application is no longer running. */,
     ;
@@ -58,12 +53,9 @@ public enum JvmState implements OperationalState {
 
     private final String stateName;
 
-    private JvmState(final String theStateName) {
-        stateName = theStateName;
-    }
-    private JvmState(final String theStateName, boolean theIsStartedFlag) {
-        stateName = theStateName;
-        this.isStartedState = theIsStartedFlag;
+    JvmState(final String stateName, final boolean startedFlag) {
+        this.stateName = stateName;
+        this.isStartedState = startedFlag;
     }
 
     @Override
@@ -78,6 +70,26 @@ public enum JvmState implements OperationalState {
 
     public boolean isStartedState() {
         return isStartedState;
+    }
+
+    private static class StateName {
+        public static final String INITIALIZING = "INITIALIZING";
+        public static final String NEW = "NEW";
+        public static final String START_SENT = "START SENT";
+        public static final String STARTING = "STARTING";
+        public static final String STARTED = "STARTED";
+        public static final String STOP_SENT = "STOP SENT";
+        public static final String STOPPING = "STOPPING";
+        public static final String STOPPED = "STOPPED";
+        public static final String DESTROYING = "DESTROYING";
+        public static final String DESTROYED = "DESTROYED";
+        public static final String UNKNOWN = "UNKNOWN";
+        public static final String FAILED = "FAILED";
+    }
+
+    private static class Started {
+        public static final boolean YES = true;
+        public static final boolean NO = false;
     }
 
 }

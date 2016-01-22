@@ -2,21 +2,22 @@ package com.siemens.cto.aem.common.domain.model.state;
 
 import java.util.Comparator;
 
+/**
+ * Describes a state that can be described as "operational".
+ */
 public interface OperationalState {
 
-    public class OSComparator implements Comparator<OperationalState> {
+    class OperationalStateComparator implements Comparator<OperationalState> {
 
         @Override
-        public int compare(OperationalState arg0, OperationalState arg1) {
-            return arg0.toPersistentString().compareTo(arg1.toPersistentString());
+        public int compare(final OperationalState state1, final OperationalState state2) {
+            return state1.toPersistentString().compareTo(state2.toPersistentString());
         }
         
     }
-    
-    static final boolean _IS_A_STARTED_STATE = true;
-    static final boolean _NOT_A_STARTED_STATE = false;
 
     String toStateString();
 
     String toPersistentString();
+
 }
