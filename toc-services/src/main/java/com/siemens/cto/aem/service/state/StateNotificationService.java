@@ -11,8 +11,6 @@ public interface StateNotificationService {
 
     StateNotificationConsumerId register();
 
-    void deregister(final StateNotificationConsumerId aConsumerId);
-
     boolean isValid(final StateNotificationConsumerId aConsumerId);
 
     void notifyStateUpdated(final CurrentState<?, ?> aNotification);

@@ -47,14 +47,6 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     }
 
     @Override
-    public void deregister(final StateNotificationConsumerId aConsumerId) {
-        final StateNotificationConsumer consumer = registeredConsumers.remove(aConsumerId);
-        if (consumer != null) {
-            consumer.close();
-        }
-    }
-
-    @Override
     public boolean isValid(final StateNotificationConsumerId aConsumerId) {
         final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
         return (consumer != null) && (!consumer.isStale());
