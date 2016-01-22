@@ -531,6 +531,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        try {
+            return ResponseBuilder.ok(groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content));
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        }
+    }
+
+    @Override
     public Response getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
         return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName, tokensReplaced));
     }

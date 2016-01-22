@@ -307,6 +307,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
+    public String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        return groupPersistenceService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
+    }
+
+    @Override
     public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {

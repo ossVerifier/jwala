@@ -63,7 +63,7 @@ public interface GroupServiceRest {
                               @BeanParam final AuthenticatedUser aUser);
 
     /*********************
-     *** JVM Templates ***
+     * ** JVM Templates ***
      *********************/
     @GET
     @Path("/{groupId}/jvms/defaultConfig")
@@ -74,13 +74,13 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/groupJvmsConfig")
     Response populateGroupJvmTemplates(@PathParam("groupName") final String groupName,
-                               @BeanParam final AuthenticatedUser aUser);
+                                       @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Path("/{groupName}/jvms/conf/{fileName}")
     Response generateAndDeployGroupJvmFile(@PathParam("groupName") final String groupName,
-                                   @PathParam("fileName") final String fileName,
-                                   @BeanParam final AuthenticatedUser aUser);
+                                           @PathParam("fileName") final String fileName,
+                                           @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{groupName}/jvms/resources/name")
@@ -89,41 +89,41 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
     Response getGroupJvmResourceTemplate(@PathParam("groupName") final String groupName,
-                                 @PathParam("resourceTemplateName") final String resourceTemplateName,
-                                 @QueryParam("tokensReplaced") final boolean tokensReplaced);
+                                         @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                         @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
     @Path("/{groupName}/jvms/resources/preview")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewGroupJvmResourceTemplate(@PathParam("groupName") String groupName,
-                                     String template);
+                                             String template);
 
     @PUT
     @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response updateGroupJvmResourceTemplate(@PathParam("groupName") final String groupName,
-                                    @PathParam("resourceTemplateName") final String resourceTemplateName,
-                                    final String content);
+                                            @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                            final String content);
 
     @POST
     @Path("/{groupName}/jvms/resources/uploadTemplate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadGroupJvmConfigTemplate(@PathParam("groupName") final String groupName,
-                                  @BeanParam final AuthenticatedUser aUser,
-                                  @QueryParam("templateName") final String templateName);
+                                          @BeanParam final AuthenticatedUser aUser,
+                                          @QueryParam("templateName") final String templateName);
 
     /****************************
-     *** Web Server Templates ***
+     * ** Web Server Templates ***
      ****************************/
     @GET
     @Path("/{groupName}/groupWebServersConfig")
     Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,
-                                       @BeanParam final AuthenticatedUser aUser);
+                                             @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Path("/{groupName}/webservers/conf")
     Response generateAndDeployGroupWebServersFile(@PathParam("groupName") final String groupName,
-                                           @BeanParam final AuthenticatedUser aUser);
+                                                  @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{groupName}/webservers/resources/name")
@@ -138,32 +138,32 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/webservers/resources/template/{resourceTemplateName}")
     Response getGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
-                                         @PathParam("resourceTemplateName") final String resourceTemplateName,
-                                         @QueryParam("tokensReplaced") final boolean tokensReplaced);
+                                               @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                               @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
     @Path("/{groupName}/webservers/resources/preview")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewGroupWebServerResourceTemplate(@PathParam("groupName") String groupName,
-                                             String template);
+                                                   String template);
 
 
     @PUT
     @Path("/{groupName}/webservers/resources/template/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response updateGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
-                                            @PathParam("resourceTemplateName") final String resourceTemplateName,
-                                            final String content);
+                                                  @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                                  final String content);
 
     @POST
     @Path("/{groupName}/webservers/resources/uploadTemplate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadGroupWebServerConfigTemplate(@PathParam("groupName") final String groupName,
-                                          @BeanParam final AuthenticatedUser aUser,
-                                          @QueryParam("templateName") final String templateName);
+                                                @BeanParam final AuthenticatedUser aUser,
+                                                @QueryParam("templateName") final String templateName);
 
     /********************
-     *** App Template ***
+     * ** App Template ***
      ********************/
 
     @GET
@@ -174,11 +174,18 @@ public interface GroupServiceRest {
     @Path("/{groupName}/apps/resources/template/{appName}/{resourceTemplateName}")
     Response getGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
                                          @PathParam("appName") final String appName,
-                                               @PathParam("resourceTemplateName") final String resourceTemplateName,
-                                               @QueryParam("tokensReplaced") final boolean tokensReplaced);
+                                         @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                         @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
+    @PUT
+    @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
+                                            @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                            final String content);
 
     /************************
-     *** Control Commands ***
+     * ** Control Commands ***
      ************************/
 
     @POST

@@ -225,6 +225,26 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
+    public void updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
+        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateContent", content);
+
+        int numEntities = 0;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(groupName, resourceTemplateName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
+        }
+    }
+
+    @Override
     public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName) {
         final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_CONTENT);
         q.setParameter("grpName", groupName);
