@@ -55,6 +55,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
@@ -609,28 +610,27 @@ public class GroupServiceRestImplTest {
      */
     static class DelegatingServletInputStream extends ServletInputStream {
 
-        private FileInputStream fileInputStream;
+        private InputStream inputStream;
 
-        public DelegatingServletInputStream() throws FileNotFoundException {
-            fileInputStream =
-                new FileInputStream(this.getClass().getClassLoader().getResource("request-payload.txt").getFile());
+        public DelegatingServletInputStream() {
+            inputStream = new ByteArrayInputStream("------WebKitFormBoundaryXRxegBGqTe4gApI2\r\nContent-Disposition: form-data; name=\"hct.properties\"; filename=\"hotel-booking.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n------WebKitFormBoundaryXRxegBGqTe4gApI2--".getBytes(Charset.defaultCharset()));
         }
 
         /**
          * Return the underlying source stream (never <code>null</code>).
          */
         public final InputStream getSourceStream() {
-            return fileInputStream;
+            return inputStream;
         }
 
 
         public int read() throws IOException {
-            return fileInputStream.read();
+            return inputStream.read();
         }
 
         public void close() throws IOException {
             super.close();
-            fileInputStream.close();
+            inputStream.close();
         }
 
     }
