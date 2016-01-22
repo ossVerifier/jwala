@@ -186,6 +186,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public String performDiagnosis(Identifier<Jvm> aJvmId) {
         // if the Jvm does not exist, we'll get a 404 NotFoundException
         Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
@@ -210,14 +211,11 @@ public class JvmServiceImpl implements JvmService {
     /**
      * Ping the JVM via http get.
      * Used by diagnose button.
-     * TODO: Run asynchronously if the dianose button will be a main stay.
      *
-     * @param jvm the web server to ping.
+     * @param jvm the JVM to ping.
      */
-    @Transactional
-    public void pingJvm(final Jvm jvm) {
+    private void pingJvm(final Jvm jvm) {
         ClientHttpResponse response = null;
-
         try {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
@@ -238,7 +236,6 @@ public class JvmServiceImpl implements JvmService {
                 response.close();
             }
         }
-
     }
 
     /**
