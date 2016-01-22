@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -528,4 +529,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
+    @Override
+    public Response getGroupAppResourceNames(String groupName) {
+        return ResponseBuilder.ok(groupService.getGroupAppsResourceTemplateNames(groupName));
+    }
 }

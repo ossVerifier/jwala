@@ -161,6 +161,15 @@ public interface GroupServiceRest {
     Response uploadGroupWebServerConfigTemplate(@PathParam("groupName") final String groupName,
                                           @BeanParam final AuthenticatedUser aUser,
                                           @QueryParam("templateName") final String templateName);
+
+    /********************
+     *** App Template ***
+     ********************/
+
+    @GET
+    @Path("/{groupName}/apps/resources/name")
+    Response getGroupAppResourceNames(@PathParam("groupName") final String groupName);
+
     /************************
      *** Control Commands ***
      ************************/

@@ -298,4 +298,10 @@ public class GroupServiceImpl implements GroupService {
         final String appContextFileName = resourceName + ".xml";
         groupPersistenceService.populateGroupAppTemplate(group, appContextFileName, appContext);
     }
+
+    @Override
+    public List<String> getGroupAppsResourceTemplateNames(String groupName) {
+        return groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
+    }
+
 }
