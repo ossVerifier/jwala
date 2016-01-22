@@ -81,4 +81,6 @@ public interface GroupService {
     void populateGroupAppTemplates(Application application, String appContext, String roleMappingProperties, String appProperties);
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
+
+    String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced);
 }

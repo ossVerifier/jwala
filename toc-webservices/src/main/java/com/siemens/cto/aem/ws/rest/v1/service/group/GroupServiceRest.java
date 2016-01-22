@@ -170,6 +170,13 @@ public interface GroupServiceRest {
     @Path("/{groupName}/apps/resources/name")
     Response getGroupAppResourceNames(@PathParam("groupName") final String groupName);
 
+    @GET
+    @Path("/{groupName}/apps/resources/template/{appName}/{resourceTemplateName}")
+    Response getGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
+                                         @PathParam("appName") final String appName,
+                                               @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                               @QueryParam("tokensReplaced") final boolean tokensReplaced);
+
     /************************
      *** Control Commands ***
      ************************/

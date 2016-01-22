@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -14,6 +15,7 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import org.springframework.transaction.annotation.Transactional;
@@ -304,4 +306,38 @@ public class GroupServiceImpl implements GroupService {
         return groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
     }
 
+    @Override
+    public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
+        final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
+        if (tokensReplaced) {
+            final Map<String, Application> bindings = new HashMap<>();
+            Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
+            bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
+            try {
+                return GeneratorUtils.bindDataToTemplateText(bindings, template);
+            } catch (Exception x) {
+                throw new ApplicationException("Template token replacement failed.", x);
+            }
+        }
+        return template;
+    }
+
+    /**
+     * Inner class application wrapper to include a web application's parent JVM.
+     */
+    private class WebApp extends Application {
+        final Jvm jvm;
+
+        public WebApp(final Application app, final Jvm parentJvm) {
+            super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
+                    app.isLoadBalanceAcrossServers(), app.getWarName());
+            jvm = parentJvm;
+        }
+
+        @SuppressWarnings("unused")
+            // used by template bindings
+        Jvm getJvm() {
+            return jvm;
+        }
+    }
 }
