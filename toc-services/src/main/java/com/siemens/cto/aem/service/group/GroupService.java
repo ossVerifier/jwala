@@ -87,4 +87,6 @@ public interface GroupService {
     String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 
     String previewGroupAppResourceTemplate(String groupName, String appName, String template);
+
+    String populateGroupAppTemplate(String groupName, String templateName, String content);
 }

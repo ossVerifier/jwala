@@ -288,6 +288,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void populateGroupAppTemplates(Application application, String appContext, String roleMappingProperties, String appProperties) {
         final Group group = application.getGroup();
         final int idx = application.getWebAppContext().lastIndexOf('/');
@@ -299,6 +300,14 @@ public class GroupServiceImpl implements GroupService {
         groupPersistenceService.populateGroupAppTemplate(group, appPropertiesFileName, appProperties);
         final String appContextFileName = resourceName + ".xml";
         groupPersistenceService.populateGroupAppTemplate(group, appContextFileName, appContext);
+    }
+
+    @Override
+    @Transactional
+    public String populateGroupAppTemplate(String groupName, String templateName, String content) {
+        Group group = groupPersistenceService.getGroup(groupName);
+        groupPersistenceService.populateGroupAppTemplate(group, templateName, content);
+        return groupPersistenceService.getGroupAppResourceTemplate(groupName, templateName);
     }
 
     @Override

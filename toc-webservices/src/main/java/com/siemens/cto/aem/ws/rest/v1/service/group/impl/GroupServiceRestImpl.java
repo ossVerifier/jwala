@@ -212,8 +212,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        final boolean doGroupWebServerUpload = false;
-        return uploadConfigTemplate(groupName, aUser, templateName, doGroupWebServerUpload);
+        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.WEBSERVER);
     }
 
     @Override
@@ -286,8 +285,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        final boolean doGroupJvmUpload = true;
-        return uploadConfigTemplate(groupName, aUser, templateName, doGroupJvmUpload);
+        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.JVM);
     }
 
     @Override
@@ -464,7 +462,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         context = testContext;
     }
 
-    private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final boolean isGroupJvmUpload) {
+    private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final GroupResourceType uploadType) {
         logger.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
 
         // iframe uploads from IE do not understand application/json
@@ -484,10 +482,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 file1 = iter.next();
                 try {
                     data = file1.openStream();
-                    if (isGroupJvmUpload) {
+                    if (uploadType.equals(GroupResourceType.JVM)) {
                         return doGroupJvmTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else {
+                    } else if (uploadType.equals(GroupResourceType.WEBSERVER)){
                         return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
+                    } else if (uploadType.equals(GroupResourceType.WEBAPP)){
+                        return doGroupAppTemplateUpload(groupName, aUser, templateName, data, file1);
                     }
                 } finally {
                     assert data != null;
@@ -528,6 +528,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
+    private Response doGroupAppTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String content = scanner.hasNext() ? scanner.next() : "";
+
+        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, templateName, content));
+    }
+
     @Override
     public Response updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
         try {
@@ -537,6 +544,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
+    }
+
+    @Override
+    public Response uploadGroupAppConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
+        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.WEBAPP);
     }
 
     @Override
@@ -552,5 +564,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getGroupAppResourceNames(String groupName) {
         return ResponseBuilder.ok(groupService.getGroupAppsResourceTemplateNames(groupName));
+    }
+
+    public static enum GroupResourceType {
+        WEBSERVER,
+        JVM,
+        WEBAPP
     }
 }
