@@ -178,11 +178,18 @@ public interface GroupServiceRest {
                                          @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
-    @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
+    @Path("/{groupName}/apps/resources/template/{appName}/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response updateGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                             final String content);
+
+    @PUT
+    @Path("/{groupName}/apps/resources/preview/{appName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response previewGroupAppResourceTemplate(@PathParam("groupName") String groupName,
+                                             @PathParam("appName") final String appName,
+                                             String template);
 
     /************************
      * ** Control Commands ***

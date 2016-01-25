@@ -50,8 +50,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -462,7 +460,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private MessageContext context;
 
     // FOR UNIT TEST ONLY
-    public void setMessageContext(MessageContext testContext){
+    public void setMessageContext(MessageContext testContext) {
         context = testContext;
     }
 
@@ -539,6 +537,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
+    }
+
+    @Override
+    public Response previewGroupAppResourceTemplate(String groupName, String appName, String template) {
+        return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, appName, template));
     }
 
     @Override
