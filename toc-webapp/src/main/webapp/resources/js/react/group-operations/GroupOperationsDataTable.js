@@ -694,17 +694,7 @@ var GroupOperationsDataTable = React.createClass({
                                      message: "",
                                      from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
                                      "action-status-font");
-           }
-
-           this.verifyAndConfirmJvmWebServerControlOperation(data.id.id,
-                                                             data.parentItemId,
-                                                             buttonSelector,
-                                                             data.jvmName,
-                                                             data.groups,
-                                                             "diganose",
-                                                             ServiceFactory.getJvmService().diagnoseJvm,
-                                                             cancelCallback,
-                                                             "JVM");
+       }
    },
     onClickHealthCheck: function(unused1, unused2, data) {
         var url = window.location.protocol + "//" +
