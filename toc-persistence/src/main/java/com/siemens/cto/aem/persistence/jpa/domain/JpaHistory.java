@@ -9,9 +9,9 @@ import javax.persistence.*;
 @Table(name = "history", uniqueConstraints = {@UniqueConstraint(columnNames = {"id"})})
 @NamedQueries({
     @NamedQuery(name = JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME,
-                query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName"),
+                query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName ORDER BY h.id DESC"),
     @NamedQuery(name = JpaHistory.QRY_GET_HISTORY_BY_GROUP_NAME_AND_SERVER_NAME,
-                query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName AND h.serverName = :serverName")
+                query = "SELECT h FROM JpaHistory h WHERE h.group.name = :groupName AND h.serverName = :serverName ORDER BY h.id DESC")
 })
 public class JpaHistory extends AbstractEntity<JpaHistory> {
 

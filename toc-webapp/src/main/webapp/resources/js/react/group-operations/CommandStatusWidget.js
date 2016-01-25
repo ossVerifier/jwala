@@ -32,14 +32,14 @@ var CommandStatusWidget = React.createClass({
         var self = this;
         historyService.read(this.props.groupName, this.props.serverName).then(
             function(data) {
-                 for (var i = 0; i < data.length; i++) {
+                 for (var i = data.length - 1; i >= 0; i--) {
                     var status = {};
                     status["from"] = data[i].serverName;
                     status["userId"] = data[i].createBy;
                     status["asOf"] = data[i].createDate;
                     status["message"] = data[i].event;
                     self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
-                        (i === data.length - 1));
+                        (i === 0));
                 }
             }).caught(function(response) {console.log(response)});
     },
