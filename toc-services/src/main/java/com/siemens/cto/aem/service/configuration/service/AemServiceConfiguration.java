@@ -222,13 +222,8 @@ public class AemServiceConfiguration {
     @Autowired
     public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getJvmControlServiceLifecycle(), getHistoryService(historyCrudService)
+                getHistoryService(historyCrudService), getJvmStateService()
         );
-    }
-
-    @Bean(name = "jvmControlServiceLifecycle")
-    public JvmControlServiceLifecycle getJvmControlServiceLifecycle() {
-        return new JvmControlServiceImpl.LifecycleImpl(getJvmStateService());
     }
 
     @Bean(name = "groupControlService")

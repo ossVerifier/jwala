@@ -17,10 +17,10 @@ public enum JvmState implements OperationalState {
     JVM_NEW          (StateName.NEW, Started.NO),
     JVM_INITIALIZING (StateName.INITIALIZING, Started.YES),
     JVM_INITIALIZED  (StateName.INITIALIZING, Started.YES),
-    JVM_START        (StateName.START_SENT, Started.YES),
+    JVM_START        (StateName.START_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */ ,
     JVM_STARTING     (StateName.STARTING, Started.YES),
     JVM_STARTED      (StateName.STARTED, Started.YES),
-    JVM_STOP         (StateName.STOP_SENT, Started.YES),
+    JVM_STOP         (StateName.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
     JVM_STOPPING     (StateName.STOPPING, Started.YES),
     JVM_STOPPED      (StateName.STOPPED, Started.YES) /* Reported by ReportingLifeCycleListener.
                                                          This states that the application server has STOPPED which is

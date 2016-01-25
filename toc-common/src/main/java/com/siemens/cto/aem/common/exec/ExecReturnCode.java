@@ -6,6 +6,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 
+/**
+ * Wrapper for return codes returned by unix or dos scripts.
+ */
 public class ExecReturnCode implements Serializable {
 
     private static final long serialVersionUID = 1L;
