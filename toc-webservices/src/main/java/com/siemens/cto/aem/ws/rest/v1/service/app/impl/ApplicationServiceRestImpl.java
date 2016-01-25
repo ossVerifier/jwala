@@ -38,6 +38,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private final static Logger logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
 
     private ApplicationService service;
+    private static ApplicationServiceRestImpl instance;
 
     public ApplicationServiceRestImpl(ApplicationService applicationService) {
         service = applicationService;
@@ -272,5 +273,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        instance = this;
+    }
+
+    public static ApplicationServiceRest get() {
+        return instance;
     }
 }

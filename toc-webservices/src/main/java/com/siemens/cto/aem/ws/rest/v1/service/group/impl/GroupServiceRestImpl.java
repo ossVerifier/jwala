@@ -32,6 +32,8 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
@@ -50,6 +52,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -544,6 +548,19 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
+    }
+
+    @Override
+    public Response generateAndDeployGroupAppFile(String groupName, String appName, String fileName, AuthenticatedUser aUser) {
+        Group group = groupService.getGroup(groupName);
+        String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false);
+        ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+        for (Jvm jvm : group.getJvms()) {
+            String jvmName = jvm.getJvmName();
+            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
+            appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+        }
+        return ResponseBuilder.ok(group);
     }
 
     @Override

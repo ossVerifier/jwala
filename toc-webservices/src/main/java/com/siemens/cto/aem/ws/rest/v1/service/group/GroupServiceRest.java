@@ -200,8 +200,9 @@ public interface GroupServiceRest {
                                           @QueryParam("templateName") final String templateName);
 
     @PUT
-    @Path("/{groupName}/app/conf/{fileName}")
+    @Path("/{groupName}/app/conf/{appName}/{fileName}")
     Response generateAndDeployGroupAppFile(@PathParam("groupName") final String groupName,
+                                           @PathParam("appName") final String appName,
                                            @PathParam("fileName") final String fileName,
                                            @BeanParam final AuthenticatedUser aUser);
 
