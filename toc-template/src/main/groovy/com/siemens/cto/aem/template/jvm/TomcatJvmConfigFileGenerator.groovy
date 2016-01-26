@@ -17,7 +17,7 @@ public class TomcatJvmConfigFileGenerator {
     /**
      * Generate server.xml content
      * @param templateFileName the template file name
-     * @param jvm the jvm for which server.xml to generate
+     * @param jvm the jvm for which to generate the server.xml
      * @return generated server.xml content
      */
     public static String getServerXmlFromFile(final String templateFileName,
