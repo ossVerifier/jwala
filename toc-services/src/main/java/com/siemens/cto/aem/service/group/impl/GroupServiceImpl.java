@@ -395,10 +395,10 @@ public class GroupServiceImpl implements GroupService {
         String context;
         if (resourceTemplateName.endsWith(".xml")){
             context = resourceTemplateName.replace(".xml", "");
-        } else if (resourceTemplateName.endsWith(".properties")) {
-            context = resourceTemplateName.replace(".properties", "");
-        } else {
+        } else if (resourceTemplateName.endsWith("RoleMapping.properties")) {
             context = resourceTemplateName.replace("RoleMapping.properties", "");
+        } else {
+            context = resourceTemplateName.replace(".properties", "");
         }
         for (Application app : applicationPersistenceService.getApplications()){
             if (app.getWebAppContext().equals("/"+context)){

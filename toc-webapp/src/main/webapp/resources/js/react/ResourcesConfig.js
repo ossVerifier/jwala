@@ -144,7 +144,7 @@ var ResourcesConfig = React.createClass({
                                                 formData,
                                                      function(){
                                                          self.refs.templateUploadModal.close();
-                                                         self.refs.xmlTabs.reloadTemplate({name:entityName, groupJvmEntityType: this.refs.xmlTabs.state.groupJvmEntityType}, fileName);
+                                                         self.refs.xmlTabs.reloadTemplate({name:entityName, groupJvmEntityType: self.refs.xmlTabs.state.groupJvmEntityType}, fileName);
                                                      },
                                                      function(errMsg) {
                                                          $.errorAlert(errMsg, "Error");

@@ -46,7 +46,7 @@ var ResourceAttrPane = React.createClass({
                     if (jvmArray.length > 0) {
                         reactAttributeElements.push(<tr><td colSpan="2"><JvmTable attributes={jvmArray}/></td></tr>);
                     }
-                    if ((entityType === "webServers" || entityType === "webServerSection") && Object.keys(webApps).length > 0) {
+                    if ((entityType === "webServers" || entityType === "webServerSection" || entityType === "jvmSection") && Object.keys(webApps).length > 0) {
                         reactAttributeElements.push(<tr><td colSpan="2"><WebAppTable attributes={webApps} /></td></tr>);
                     }
                 } else if (entityType === "webApps") {
