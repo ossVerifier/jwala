@@ -214,8 +214,28 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<String> getGroupJvmsResourceTemplateNames(String groupName) {
-        return groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
+    public List<Map<String, String>> getGroupJvmsResourceTemplateNames(String groupName, boolean includeGroupAppResources) {
+        List<Map<String, String>> retVal = new ArrayList<>();
+        final List<String> groupJvmsResourceTemplateNames = groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
+        for (String jvmResourceName : groupJvmsResourceTemplateNames) {
+            Map<String, String> jvmResource = new HashMap<>();
+            jvmResource.put("entityType", "jvm");
+            jvmResource.put("resourceName", jvmResourceName);
+            retVal.add(jvmResource);
+        }
+        if (includeGroupAppResources) {
+            // result lists are returned as read-only so make a copy to add the app resource templates to the list
+            List<String> groupAppResourceTemplateNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
+            List<Map<String, String>> groupAppList = new ArrayList<>();
+            for (String appResourceName : groupAppResourceTemplateNames) {
+                Map<String, String> appResource = new HashMap<>();
+                appResource.put("entityType", "webApp");
+                appResource.put("resourceName", appResourceName);
+                groupAppList.add(appResource);
+            }
+            retVal.addAll(groupAppList);
+        }
+        return retVal;
     }
 
     @Override
@@ -227,6 +247,7 @@ public class GroupServiceImpl implements GroupService {
     public String getGroupJvmResourceTemplate(final String groupName,
                                               final String resourceTemplateName,
                                               final boolean tokensReplaced) {
+
         final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
@@ -236,6 +257,23 @@ public class GroupServiceImpl implements GroupService {
             }
         }
         return template;
+    }
+
+    private String findAppName(String groupName, String resourceTemplateName, boolean checkAppResourceTemplate) {
+        if (checkAppResourceTemplate) {
+            List<String> appResourceTemplateNames = getGroupAppsResourceTemplateNames(groupName);
+            if (appResourceTemplateNames.contains(resourceTemplateName)) {
+                // do this the hard way
+                for (Application app : applicationPersistenceService.getApplications()) {
+                    for (String appTemplateName : applicationPersistenceService.getResourceTemplateNames(app.getName())) {
+                        if (appTemplateName.equals(resourceTemplateName)) {
+                            return app.getName();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -322,9 +360,10 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public String previewGroupAppResourceTemplate(String groupName, String appName, String template) {
+    public String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
         final Map<String, Application> bindings = new HashMap<>();
         Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
+        String appName = getAppNameFromResourceTemplate(resourceTemplateName);
         bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
         try {
             return GeneratorUtils.bindDataToTemplateText(bindings, template);
@@ -334,11 +373,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
+    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
             final Map<String, Application> bindings = new HashMap<>();
             Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
+            String appName = getAppNameFromResourceTemplate(resourceTemplateName);
             bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
             try {
                 return GeneratorUtils.bindDataToTemplateText(bindings, template);
@@ -347,6 +387,26 @@ public class GroupServiceImpl implements GroupService {
             }
         }
         return template;
+    }
+
+    @Override
+    public String getAppNameFromResourceTemplate(String resourceTemplateName) {
+        String retVal = "";
+        String context;
+        if (resourceTemplateName.endsWith(".xml")){
+            context = resourceTemplateName.replace(".xml", "");
+        } else if (resourceTemplateName.endsWith(".properties")) {
+            context = resourceTemplateName.replace(".properties", "");
+        } else {
+            context = resourceTemplateName.replace("RoleMapping.properties", "");
+        }
+        for (Application app : applicationPersistenceService.getApplications()){
+            if (app.getWebAppContext().equals("/"+context)){
+                retVal = app.getName();
+                break;
+            }
+        }
+        return retVal;
     }
 
     /**

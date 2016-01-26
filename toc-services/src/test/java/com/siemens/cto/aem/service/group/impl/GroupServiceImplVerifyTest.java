@@ -281,7 +281,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testGroupJvmsResourceTemplateNames() {
-        groupService.getGroupJvmsResourceTemplateNames("testGroupName");
+        groupService.getGroupJvmsResourceTemplateNames("testGroupName", false);
         verify(groupPersistenceService, times(1)).getGroupJvmsResourceTemplateNames("testGroupName");
     }
 

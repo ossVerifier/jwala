@@ -1,16 +1,17 @@
 package com.siemens.cto.aem.service.group;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface GroupService {
 
@@ -34,14 +35,15 @@ public interface GroupService {
 
     void removeGroup(String name);
 
-    Group addJvmToGroup(final AddJvmToGroupRequest addJvmToGroupRequest,final User anAddingUser);
+    Group addJvmToGroup(final AddJvmToGroupRequest addJvmToGroupRequest, final User anAddingUser);
 
     Group addJvmsToGroup(final AddJvmsToGroupRequest addJvmsToGroupRequest, final User anAddingUser);
 
-    Group removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest,final User aRemovingUser);
+    Group removeJvmFromGroup(final RemoveJvmFromGroupRequest removeJvmFromGroupRequest, final User aRemovingUser);
 
     /**
      * Gets the connection details of JVMs under a group specified by id.
+     *
      * @param id the group id
      * @return JVMs that are members of more than one group.
      */
@@ -49,6 +51,7 @@ public interface GroupService {
 
     /**
      * Gets the connection details of Web Servers under a group specified by id.
+     *
      * @param id the group id
      * @return Web Servers that are members of more than one group.
      */
@@ -62,7 +65,7 @@ public interface GroupService {
 
     Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
 
-    List<String> getGroupJvmsResourceTemplateNames(String groupName);
+    List<Map<String, String>> getGroupJvmsResourceTemplateNames(String groupName, boolean includeGroupAppResources);
 
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
 
@@ -82,11 +85,13 @@ public interface GroupService {
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
-    String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced);
+    String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
 
     String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    String previewGroupAppResourceTemplate(String groupName, String appName, String template);
+    String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template);
 
     String populateGroupAppTemplate(String groupName, String templateName, String content);
+
+    String getAppNameFromResourceTemplate(String resourceTemplateName);
 }

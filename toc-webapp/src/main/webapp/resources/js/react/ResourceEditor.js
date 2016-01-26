@@ -122,7 +122,7 @@ var ResourceEditor = React.createClass({
         }
         return false;
     },
-    selectResourceCallback: function(value) {
-        return this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value);
+    selectResourceCallback: function(value, groupJvmEntityType) {
+        return this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
     }
 });

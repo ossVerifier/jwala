@@ -84,7 +84,8 @@ public interface GroupServiceRest {
 
     @GET
     @Path("/{groupName}/jvms/resources/name")
-    Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName);
+    Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName,
+                                       @QueryParam("includeGroupAppResources") @DefaultValue("false") final boolean includeGroupAppResources);
 
     @GET
     @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
@@ -171,24 +172,23 @@ public interface GroupServiceRest {
     Response getGroupAppResourceNames(@PathParam("groupName") final String groupName);
 
     @GET
-    @Path("/{groupName}/apps/resources/template/{appName}/{resourceTemplateName}")
+    @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
     Response getGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
-                                         @PathParam("appName") final String appName,
                                          @PathParam("resourceTemplateName") final String resourceTemplateName,
                                          @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
-    @Path("/{groupName}/apps/resources/template/{appName}/{resourceTemplateName}")
+    @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response updateGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                             final String content);
 
     @PUT
-    @Path("/{groupName}/apps/resources/preview/{appName}")
+    @Path("/{groupName}/apps/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewGroupAppResourceTemplate(@PathParam("groupName") String groupName,
-                                             @PathParam("appName") final String appName,
+                                             @PathParam("resourceTemplateName") String resourceTemplateName,
                                              String template);
 
 
@@ -200,9 +200,8 @@ public interface GroupServiceRest {
                                           @QueryParam("templateName") final String templateName);
 
     @PUT
-    @Path("/{groupName}/app/conf/{appName}/{fileName}")
+    @Path("/{groupName}/apps/conf/{fileName}")
     Response generateAndDeployGroupAppFile(@PathParam("groupName") final String groupName,
-                                           @PathParam("appName") final String appName,
                                            @PathParam("fileName") final String fileName,
                                            @BeanParam final AuthenticatedUser aUser);
 

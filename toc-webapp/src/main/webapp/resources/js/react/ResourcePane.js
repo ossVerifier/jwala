@@ -28,19 +28,30 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
                 this.props.groupService.getGroupWebServerResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
-                this.props.groupService.getGroupJvmResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
+                this.props.groupService.getGroupJvmResourcesWithAppResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
             }
         }
     },
     getDataCallback: function(response) {
         var options = [];
         response.applicationResponseContent.forEach(function(resourceName){
-            options.push({value: resourceName, label: resourceName});
+            if (resourceName.entityType && resourceName.resourceName) {
+                options.push({value:resourceName.resourceName, label:resourceName.resourceName, entityType: resourceName.entityType})
+            } else {
+                options.push({value: resourceName, label: resourceName});
+            }
         });
         this.setState({resourceOptions: options});
     },
     selectCallback: function(value) {
-         return this.props.selectCallback(value);
+         var groupJvmEntityType;
+         this.state.resourceOptions.some(function(resource){
+            if(resource.value && resource.value === value) {
+                groupJvmEntityType = resource.entityType;
+                return true;
+            }
+         });
+         return this.props.selectCallback(value, groupJvmEntityType);
     },
     getSelectedValue: function() {
         if (this.refs.listBox !== undefined) {

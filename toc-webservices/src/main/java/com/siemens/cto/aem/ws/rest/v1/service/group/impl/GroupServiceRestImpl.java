@@ -52,8 +52,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -270,7 +268,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateAndDeployGroupJvmFile(String groupName, String fileName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
-        String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, false);
+        final boolean doNotReplaceTokens = false;
+        final boolean doNotCheckAppResources = false;
+        String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
         JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
@@ -449,8 +449,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroupJvmsResourceNames(String groupName) {
-        return ResponseBuilder.ok(groupService.getGroupJvmsResourceTemplateNames(groupName));
+    public Response getGroupJvmsResourceNames(String groupName, boolean includeGroupAppResources) {
+        return ResponseBuilder.ok(groupService.getGroupJvmsResourceTemplateNames(groupName, includeGroupAppResources));
     }
 
     @Override
@@ -551,10 +551,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupAppFile(String groupName, String appName, String fileName, AuthenticatedUser aUser) {
+    public Response generateAndDeployGroupAppFile(String groupName, String fileName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
-        String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false);
+        String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false);
         ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+        String appName = groupService.getAppNameFromResourceTemplate(fileName);
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
             appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
@@ -569,13 +570,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupAppResourceTemplate(String groupName, String appName, String template) {
-        return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, appName, template));
+    public Response previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
+        return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, resourceTemplateName, template));
     }
 
     @Override
-    public Response getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
-        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName, tokensReplaced));
+    public Response getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
+        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
     }
 
     @Override

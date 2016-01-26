@@ -67,7 +67,7 @@ var ResourcesConfig = React.createClass({
                                     template: ""});
         return true;
     },
-    selectResourceTemplateCallback: function(entity, resourceName) {
+    selectResourceTemplateCallback: function(entity, resourceName, groupJvmEntityType) {
         if (this.refs.xmlTabs.refs.xmlEditor !== undefined && this.refs.xmlTabs.refs.xmlEditor.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
@@ -75,7 +75,8 @@ var ResourcesConfig = React.createClass({
             }
         }
 
-        this.refs.xmlTabs.reloadTemplate(entity, resourceName);
+        this.refs.xmlTabs.setState({groupJvmEntityType: groupJvmEntityType});
+        this.refs.xmlTabs.reloadTemplate(entity, resourceName, groupJvmEntityType);
         return true;
     },
     templateComponentDidMount: function(template) {
@@ -136,7 +137,21 @@ var ResourcesConfig = React.createClass({
                                                   }
                                                );
                      } else if ("jvmSection" === entityType) {
-                           this.props.groupService.uploadGroupJvmTemplateForm(
+                           if (this.refs.xmlTabs.state.groupJvmEntityType && this.refs.xmlTabs.state.groupJvmEntityType === "webApp"){
+                                    this.props.groupService.uploadGroupAppTemplateForm(
+                                                this.refs.xmlTabs.state.entityGroupName,
+                                                fileName,
+                                                formData,
+                                                     function(){
+                                                         self.refs.templateUploadModal.close();
+                                                         self.refs.xmlTabs.reloadTemplate({name:entityName, groupJvmEntityType: this.refs.xmlTabs.state.groupJvmEntityType}, fileName);
+                                                     },
+                                                     function(errMsg) {
+                                                         $.errorAlert(errMsg, "Error");
+                                                     }
+                                                  );
+                           } else {
+                                this.props.groupService.uploadGroupJvmTemplateForm(
                                                     this.refs.xmlTabs.state.entityGroupName,
                                                   fileName,
                                                   formData,
@@ -148,6 +163,7 @@ var ResourcesConfig = React.createClass({
                                                       $.errorAlert(errMsg, "Error");
                                                   }
                                                );
+                           }
                      } else if ("webServerSection" === entityType) {
                            this.props.groupService.uploadGroupWebServerTemplateForm(
                                                     this.refs.xmlTabs.state.entityGroupName,
@@ -201,7 +217,7 @@ var ResourcesConfig = React.createClass({
 
 var XmlTabs = React.createClass({
     getInitialState: function() {
-        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "", entityGroupName: ""}
+        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "", entityGroupName: "", groupJvmEntityType: null}
     },
     render: function() {
         var xmlEditor;
@@ -260,8 +276,13 @@ var XmlTabs = React.createClass({
                 thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName,
                     this.state.resourceTemplateName, template);
             } else if (this.state.entityType === "jvmSection") {
-                thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName,
-                    this.state.resourceTemplateName, template);
+                if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                    thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName,
+                        this.state.resourceTemplateName, template);
+                } else {
+                    thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName,
+                        this.state.resourceTemplateName, template);
+                }
             }
         }
         return thePromise;
@@ -293,8 +314,13 @@ var XmlTabs = React.createClass({
             } else if (this.state.entityType === "webServerSection") {
                 thePromise = this.props.groupService.deployGroupWebServerConf(this.state.entityGroupName);
             } else if (this.state.entityType === "jvmSection") {
-                thePromise = this.props.groupService.deployGroupJvmConf(this.state.entityGroupName,
+                if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                    thePromise = this.props.groupService.deployGroupAppConf(this.state.entityGroupName,
+                                                                this.state.resourceTemplateName);
+                } else {
+                    thePromise = this.props.groupService.deployGroupJvmConf(this.state.entityGroupName,
                                                                  this.state.resourceTemplateName);
+                }
             }
         }
         return thePromise;
@@ -341,7 +367,7 @@ var XmlTabs = React.createClass({
     },
     /*** Save and Deploy methods: End ***/
 
-    reloadTemplate: function(data, resourceName) {
+    reloadTemplate: function(data, resourceName, groupJvmEntityType) {
         var entityType = this.state.entityType;
         if (entityType !== null && resourceName !== null) {
             if (entityType === "jvms") {
@@ -367,10 +393,17 @@ var XmlTabs = React.createClass({
                                                                       resourceName,
                                                                       this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
             } else if (entityType === "jvmSection") {
-                              this.props.groupService.getGroupJvmResourceTemplate(this.state.entityGroupName,
+                              if ((groupJvmEntityType && groupJvmEntityType === "webApp") || (data.groupJvmEntityType && data.groupJvmEntityType === "webApp")) {
+                                  this.props.groupService.getGroupAppResourceTemplate(this.state.entityGroupName,
                                                                        false,
                                                                        resourceName,
                                                                        this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                              } else {
+                                  this.props.groupService.getGroupJvmResourceTemplate(this.state.entityGroupName,
+                                                                                                     false,
+                                                                                                     resourceName,
+                                                                                                     this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                              }
             }
         } else {
             this.setState({entityType: entityType,
@@ -414,10 +447,18 @@ var XmlTabs = React.createClass({
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                 } else if (this.state.entityType === "jvmSection") {
-                    this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
+                    if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                        this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
+                                                                                     this.state.resourceTemplateName,
+                                                                                     this.refs.xmlEditor.getText(),
+                                                                                     this.previewSuccessCallback,
+                                                                                     this.previewErrorCallback);
+                    } else {
+                        this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
                                                                  this.refs.xmlEditor.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
+                    }
                 }
             }
         }
