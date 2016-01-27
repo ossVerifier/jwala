@@ -36,7 +36,7 @@ public enum WebServerReachableState implements OperationalState {
     }
 
     @Override
-    public String toStateString() {
+    public String toStateLabel() {
         return externalName;
     }
 

@@ -7,13 +7,21 @@ import java.util.List;
 @Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
 @NamedQueries({
     @NamedQuery(name = JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME,
-                query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName")
+                query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName"),
+    @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaJvm j SET j.state = :state WHERE j.id = :id"),
+    @NamedQuery(name = JpaJvm.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaJvm j SET j.errorStatus = :errorStatus WHERE j.id = :id")
 })
 public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     private static final long serialVersionUID = 2491659292018543404L;
 
     public static final String QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME = "findJvmByGroupAndJvmName";
+    public static final String QUERY_UPDATE_STATE_BY_ID = "updateStateById";
+    public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateErrorStatusById";
+
+    public static final String QUERY_PARAM_ID = "id";
+    public static final String QUERY_PARAM_STATE = "state";
+    public static final String QUERY_PARAM_ERROR_STATUS = "errorStatus";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -43,7 +43,7 @@ public enum GroupState implements OperationalState {
     }
 
     @Override
-    public String toStateString() {
+    public String toStateLabel() {
         return stateName;
     }
 

@@ -121,6 +121,7 @@ public class WebServerStateSetterWorker {
                           final WebServerReachableState webServerReachableState,
                           final String msg) {
         if (!isWebServerBusy(webServer)) {
+            // TODO: Refactor. Please see JVM set state implementation at {@link JvmStateMessageListener}.
             webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
                                                   User.getSystemUser());
         }

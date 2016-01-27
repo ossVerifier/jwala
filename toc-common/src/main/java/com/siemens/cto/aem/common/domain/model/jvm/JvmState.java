@@ -78,7 +78,7 @@ public enum JvmState implements OperationalState {
     }
 
     @Override
-    public String toStateString() {
+    public String toStateLabel() {
         return stateLabel;
     }
 

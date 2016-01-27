@@ -45,7 +45,7 @@ public class GroupCurrentStateMessageExtractorTest extends AbstractCurrentStateM
     @Test
     public void testExtractUnknownState() throws JMSException {
         final OperationalState fakeState = mock(OperationalState.class);
-        when(fakeState.toStateString()).thenReturn("This isn't a real Group State");
+        when(fakeState.toStateLabel()).thenReturn("This isn't a real Group State");
 
         final CurrentState expectedState = new CurrentState<>(new Identifier<Group>(123456L),
                                                               fakeState,

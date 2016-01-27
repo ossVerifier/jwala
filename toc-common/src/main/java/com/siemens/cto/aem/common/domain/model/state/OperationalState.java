@@ -16,7 +16,7 @@ public interface OperationalState {
         
     }
 
-    String toStateString();
+    String toStateLabel();
 
     // TODO: Refactor method name when the state is saved to web server already since web server will be using state label e.g. STOPPED instead of the state name itself e.g. WEBSERVER_UNREACHABLE.
     String toPersistentString();

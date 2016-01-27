@@ -76,7 +76,7 @@ public class CurrentStateProcessorTest {
         WRONG;
 
         @Override
-        public String toStateString() {
+        public String toStateLabel() {
             return this.toString();
         }
 

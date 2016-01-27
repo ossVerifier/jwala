@@ -51,7 +51,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
         try {
             final String event = controlJvmRequest.getControlOperation().getOperationState() == null ?
-                    controlJvmRequest.getControlOperation().name() : controlJvmRequest.getControlOperation().getOperationState().toStateString();
+                    controlJvmRequest.getControlOperation().name() : controlJvmRequest.getControlOperation().getOperationState().toStateLabel();
             historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),

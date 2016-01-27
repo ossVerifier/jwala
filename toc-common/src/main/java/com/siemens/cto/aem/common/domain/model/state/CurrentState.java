@@ -54,7 +54,7 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
     }
 
     public String getStateString() {
-        return state.toStateString();
+        return state.toStateLabel();
     }
 
     public boolean hasMessage() {

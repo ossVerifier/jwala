@@ -44,17 +44,10 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     }
 
     @Override
+    @Deprecated
     public JpaCurrentState updateState(final SetStateRequest<S, T> setStateRequest) {
         if (setStateRequest.getNewState().getState() instanceof JvmState) {
-            final JpaJvm jpaJvm = updateState(setStateRequest.getNewState().getId().getId(),
-                                              setStateRequest.getNewState().getStateString(),
-                                              setStateRequest.getNewState().getMessage());
-
-            // This might have to go once JpaCurrentState is not persisted anymore.
-            final JpaCurrentState jpaCurrentState = new JpaCurrentState();
-            jpaCurrentState.setId(new JpaCurrentStateId(setStateRequest.getNewState().getId().getId(), StateType.JVM));
-            jpaCurrentState.setState(JvmState.convertFromStateLabel(jpaJvm.getState()).toPersistentString());
-            return jpaCurrentState;
+            throw new UnsupportedOperationException("JVM state update via stateCrudServiceImpl not supported anymore!");
         }
 
         // TODO: When JpaWebServer has the state property, this will be replaced with code similar to the above code.

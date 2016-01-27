@@ -65,7 +65,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() :
-                    controlWebServerRequest.getControlOperation().getOperationState().toStateString();
+                    controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
             historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 

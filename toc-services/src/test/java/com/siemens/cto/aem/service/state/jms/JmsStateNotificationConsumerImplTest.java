@@ -127,7 +127,7 @@ public class JmsStateNotificationConsumerImplTest {
         when(message.getString(eq(CommonStateKey.ID.getKey()))).thenReturn(String.valueOf(anId));
         when(message.getString(eq(CommonStateKey.TYPE.getKey()))).thenReturn(String.valueOf(StateType.JVM));
         when(message.getString(eq(CommonStateKey.AS_OF.getKey()))).thenReturn(ISODateTimeFormat.dateTime().print(DateTime.now()));
-        when(message.getString(eq(CommonStateKey.STATE.getKey()))).thenReturn(JvmState.JVM_STARTED.toStateString());
+        when(message.getString(eq(CommonStateKey.STATE.getKey()))).thenReturn(JvmState.JVM_STARTED.toStateLabel());
         return message;
     }
 
