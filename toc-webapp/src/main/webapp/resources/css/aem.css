@@ -170,3 +170,7 @@ div .state {
 div.preload {
     display: none;
 }
+
+.zero-padding {
+    padding: 0;
+}

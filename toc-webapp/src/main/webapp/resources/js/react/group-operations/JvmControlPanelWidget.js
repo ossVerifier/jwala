@@ -6,43 +6,43 @@ var JvmControlPanelWidget = React.createClass({
     render: function() {
         return <div className="jvm-control-panel-widget">
                     <RButton ref="stopBtn"
-                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-stop"
                              onClick={this.stop}
                              title="Stop"/>
 
                     <RButton ref="startBtn"
-                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-play"
                              onClick={this.start}
                              title="Start"/>
 
                     <RButton ref="generateConfigBtn"
-                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateConfig}
                              title="Generate JVM resources files"/>
 
                    <RButton ref="heapDumpBtn"
-                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                             spanClassName="ui-icon ui-icon-heap-dump"
                             onClick={this.doHeapDump}
                             title="Heap Dump"/>
 
                    <RButton ref="threadDumpBtn"
-                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                             spanClassName="ui-icon ui-icon-thread-dump"
                             onClick={this.doThreadDump}
                             title="Thread Dump"/>
 
                    <RButton ref="diagnoseBtn"
-                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                             spanClassName="ui-icon ui-icon-wrench"
                             onClick={this.diagnose}
                             title="Diagnose and resolve state"/>
 
                    <RButton ref="managerBtn"
-                            className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                             spanClassName="ui-icon ui-icon-mgr"
                             onClick={this.showMgr}
                             title="Manager"/>
