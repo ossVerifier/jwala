@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
@@ -145,7 +146,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public CurrentState<Group, GroupState> getState(Identifier<Group> anId) {
+    public CurrentState<Group, GroupState> getState(Identifier<Group> anId, StateType stateType) {
         return groupStateFrom(groupCrudService.getGroup(anId));
     }
 

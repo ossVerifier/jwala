@@ -14,23 +14,23 @@ import java.util.Map;
  */
 public enum JvmState implements OperationalState {
 
-    JVM_NEW          (StateName.NEW, Started.NO),
-    JVM_INITIALIZING (StateName.INITIALIZING, Started.YES),
-    JVM_INITIALIZED  (StateName.INITIALIZING, Started.YES),
-    JVM_START        (StateName.START_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */ ,
-    JVM_STARTING     (StateName.STARTING, Started.YES),
-    JVM_STARTED      (StateName.STARTED, Started.YES),
-    JVM_STOP         (StateName.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
-    JVM_STOPPING     (StateName.STOPPING, Started.YES),
-    JVM_STOPPED      (StateName.STOPPED, Started.YES) /* Reported by ReportingLifeCycleListener.
+    JVM_NEW          (StateLabel.NEW, Started.NO),
+    JVM_INITIALIZING (StateLabel.INITIALIZING, Started.YES),
+    JVM_INITIALIZED  (StateLabel.INITIALIZING, Started.YES),
+    JVM_START        (StateLabel.START_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */ ,
+    JVM_STARTING     (StateLabel.STARTING, Started.YES),
+    JVM_STARTED      (StateLabel.STARTED, Started.YES),
+    JVM_STOP         (StateLabel.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
+    JVM_STOPPING     (StateLabel.STOPPING, Started.YES),
+    JVM_STOPPED      (StateLabel.STOPPED, Started.YES) /* Reported by ReportingLifeCycleListener.
                                                          This states that the application server has STOPPED which is
                                                          different from saying that the application itself has exited or
                                                          has been terminated. */,
-    JVM_DESTROYING  (StateName.DESTROYING, Started.YES),
-    JVM_DESTROYED   (StateName.DESTROYED, Started.YES),
-    JVM_UNKNOWN     (StateName.UNKNOWN, Started.NO),
-    JVM_FAILED      (StateName.FAILED, Started.NO),
-    SVC_STOPPED     (StateName.STOPPED, Started.NO) /* Reported by something other than the ReportingLifeCycleListener
+    JVM_DESTROYING  (StateLabel.DESTROYING, Started.YES),
+    JVM_DESTROYED   (StateLabel.DESTROYED, Started.YES),
+    JVM_UNKNOWN     (StateLabel.UNKNOWN, Started.NO),
+    JVM_FAILED      (StateLabel.FAILED, Started.NO),
+    SVC_STOPPED     (StateLabel.STOPPED, Started.NO) /* Reported by something other than the ReportingLifeCycleListener
                                                         e.g. sc query. This means that Window's service states that the
                                                         application is no longer running. */,
     ;
@@ -40,27 +40,46 @@ public enum JvmState implements OperationalState {
     
     static {
         for (final JvmState state : values()) {
-            LOOKUP_MAP.put(state.toPersistentString(), state);
+            LOOKUP_MAP.put(state.name(), state);
         }
     }
 
-    public static JvmState convertFrom(final String aStateName) {
-        if (LOOKUP_MAP.containsKey(aStateName)) {
-            return LOOKUP_MAP.get(aStateName);
+    /**
+     * Converts a state from String to {@link JvmState}.
+     * @param state e.g. JVM_STOPPED
+     * @return {@link JvmState}
+     */
+    public static JvmState convertFrom(final String state) {
+        if (LOOKUP_MAP.containsKey(state)) {
+            return LOOKUP_MAP.get(state);
         }
         return JVM_UNKNOWN;
     }
 
-    private final String stateName;
+    /**
+     * Converts a state label from String to {@link JvmState}.
+     * @param stateLabel e.g. STOPPED
+     * @return {@link JvmState}
+     */
+    public static JvmState convertFromStateLabel(final String stateLabel) {
+        for (final JvmState state : values()) {
+            if (state.stateLabel == stateLabel) {
+                return state;
+            }
+        }
+        return JVM_UNKNOWN;
+    }
 
-    JvmState(final String stateName, final boolean startedFlag) {
-        this.stateName = stateName;
+    private final String stateLabel;
+
+    JvmState(final String stateLabel, final boolean startedFlag) {
+        this.stateLabel = stateLabel;
         this.isStartedState = startedFlag;
     }
 
     @Override
     public String toStateString() {
-        return stateName;
+        return stateLabel;
     }
 
     @Override
@@ -72,7 +91,7 @@ public enum JvmState implements OperationalState {
         return isStartedState;
     }
 
-    private static class StateName {
+    private static class StateLabel {
         public static final String INITIALIZING = "INITIALIZING";
         public static final String NEW = "NEW";
         public static final String START_SENT = "START SENT";

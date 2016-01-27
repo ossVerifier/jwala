@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -104,7 +105,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
         }
 
         for (Jvm jvm : group.getJvms()) {
-            CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId());
+            CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId(), StateType.JVM);
             JvmState value = jvmState != null ? jvmState.getState() : JvmState.JVM_UNKNOWN;
 
             counters.get(value).incrementAndGet();

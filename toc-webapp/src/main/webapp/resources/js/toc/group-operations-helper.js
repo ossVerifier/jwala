@@ -190,6 +190,7 @@ var groupOperationsHelper = function(){
             };
         },
 
+        // TODO: Delete this along with its supporting methods since we are getting the states directly from the JVM table.
         processJvmData: function(existingJvms, newJvms, existingJvmStates, newJvmStates) {
 
             var combinedJvmStatesById = combineJvmStatesById(existingJvmStates,
@@ -206,6 +207,7 @@ var groupOperationsHelper = function(){
                 jvmStates: processedJvmStates
             };
         },
+
         extractJvmDataFromGroups: function(jvmDataInGroups) {
             var result = jvmDataInGroups.map(function(group) { return group.jvms;});
             return flatten(result);
@@ -295,11 +297,9 @@ var groupOperationsHelper = function(){
         getJvmStatesByGroupIdAndJvmId: function(jvms) {
             var result = [];
             jvms.forEach(function(jvm) {
-                jvm.groups.forEach(function(group) { result.push( { groupId: group.id,
-                                                                    jvmId: jvm.id,
-                                                                    state: jvm.state,
-                                                                    name: jvm.jvmName
-                                                                  })});
+                jvm.groups.forEach(function(group) {
+                                       result.push({groupId: group.id, jvmId: jvm.id, state: jvm.state, name: jvm.jvmName})
+                                   });
             });
             return result;
         },

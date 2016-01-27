@@ -3,6 +3,7 @@ package com.siemens.cto.aem.template.webserver
 import com.siemens.cto.aem.common.domain.model.app.Application
 import com.siemens.cto.aem.common.domain.model.group.LiteGroup
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath
 import com.siemens.cto.aem.common.domain.model.path.Path
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
@@ -25,8 +26,10 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
                                   new Path("./"), new Path("htdocs"))
         
         jvms = new ArrayList<>()
-        jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009, new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal"))
-        jvms.add(new Jvm(null, "t c 2", "165.22 6.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8109, new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal"))
+        jvms.add(new Jvm(null, "tc1", "165.226.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8009,
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null))
+        jvms.add(new Jvm(null, "t c 2", "165.22 6.8.129", new HashSet<LiteGroup>(), null, null, null, null, 8109,
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null))
 
         apps = new ArrayList<>()
         apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war"))

@@ -2,9 +2,9 @@ package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import org.junit.Test;
 
@@ -47,7 +47,7 @@ public class WorkersPropertiesTest {
         List<Application> apps = new ArrayList<>();
         apps.add(app);
         Jvm jvm = new Jvm(id(0L, Jvm.class), "jvm", "localhost", groups, 8080, 8081, 8082, 8083, 8084, new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal");
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null);
         List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm);
         wb.setApps(apps);

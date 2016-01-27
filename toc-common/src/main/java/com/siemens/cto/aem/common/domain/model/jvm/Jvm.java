@@ -1,13 +1,9 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -19,64 +15,61 @@ public class Jvm implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Identifier<Jvm> id;
-    private final String jvmName;
-    private final String hostName;
-    private final Set<Group> groups;
+    private Identifier<Jvm> id;
+    private String jvmName;
+    private String hostName;
+    private Set<Group> groups;
 
     // JVM ports
-    private final Integer httpPort;
-    private final Integer httpsPort;
-    private final Integer redirectPort;
-    private final Integer shutdownPort;
-    private final Integer ajpPort;
+    private Integer httpPort;
+    private Integer httpsPort;
+    private Integer redirectPort;
+    private Integer shutdownPort;
+    private Integer ajpPort;
 
-    private final Path statusPath;
-
-    private final String systemProperties;
+    private Path statusPath;
+    private String systemProperties;
+    private String state;
+    private String errorStatus;
 
     /**
      * Constructor for a bare minimum Jvm with group details.
-     * @param theId the id
-     * @param theName the jvm name
-     * @param theGroups the groups in which the web server is assigned to.
+     * @param id the id
+     * @param name the jvm name
+     * @param groups the groups in which the web server is assigned to.
      */
-    public Jvm(final Identifier<Jvm> theId, final String theName, final Set<Group> theGroups) {
-        id = theId;
-        jvmName = theName;
-        hostName = null;
-        groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
-        httpPort = null;
-        httpsPort = null;
-        redirectPort = null;
-        shutdownPort = null;
-        ajpPort = null;
-        statusPath = null;
-        systemProperties = null;
+    public Jvm(final Identifier<Jvm> id, final String name, final Set<Group> groups) {
+        this.id = id;
+        this.jvmName = name;
+        this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
     }
 
-    public Jvm(final Identifier<Jvm> theId,
-               final String theName,
-               final String theHostName,
-               final Set<Group> theGroups,
-               final Integer theHttpPort,
-               final Integer theHttpsPort,
-               final Integer theRedirectPort,
-               final Integer theShutdownPort,
-               final Integer theAjpPort,
-               final Path theStatusPath,
-               final String theSystemProperties) {
-        id = theId;
-        jvmName = theName;
-        hostName = theHostName;
-        groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
-        httpPort = theHttpPort;
-        httpsPort = theHttpsPort;
-        redirectPort = theRedirectPort;
-        shutdownPort = theShutdownPort;
-        ajpPort = theAjpPort;
-        statusPath = theStatusPath;
-        systemProperties = theSystemProperties;
+    public Jvm(final Identifier<Jvm> id,
+               final String name,
+               final String hostName,
+               final Set<Group> groups,
+               final Integer httpPort,
+               final Integer httpsPort,
+               final Integer redirectPort,
+               final Integer shutdownPort,
+               final Integer ajpPort,
+               final Path statusPath,
+               final String systemsProperties,
+               final String state,
+               final String errorStatus) {
+        this.id = id;
+        this.jvmName = name;
+        this.hostName = hostName;
+        this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
+        this.httpPort = httpPort;
+        this.httpsPort = httpsPort;
+        this.redirectPort = redirectPort;
+        this.shutdownPort = shutdownPort;
+        this.ajpPort = ajpPort;
+        this.statusPath = statusPath;
+        this.systemProperties = systemsProperties;
+        this.state = state;
+        this.errorStatus = errorStatus;
     }
 
     public Identifier<Jvm> getId() {
@@ -123,6 +116,14 @@ public class Jvm implements Serializable {
         return systemProperties;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
                                                    .setHttpsPort(getHttpsPort())
@@ -132,63 +133,63 @@ public class Jvm implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Jvm jvm = (Jvm) o;
+
+        if (!id.equals(jvm.id)) return false;
+        if (!jvmName.equals(jvm.jvmName)) return false;
+        if (hostName != null ? !hostName.equals(jvm.hostName) : jvm.hostName != null) return false;
+        if (groups != null ? !groups.equals(jvm.groups) : jvm.groups != null) return false;
+        if (httpPort != null ? !httpPort.equals(jvm.httpPort) : jvm.httpPort != null) return false;
+        if (httpsPort != null ? !httpsPort.equals(jvm.httpsPort) : jvm.httpsPort != null) return false;
+        if (redirectPort != null ? !redirectPort.equals(jvm.redirectPort) : jvm.redirectPort != null) return false;
+        if (shutdownPort != null ? !shutdownPort.equals(jvm.shutdownPort) : jvm.shutdownPort != null) return false;
+        if (ajpPort != null ? !ajpPort.equals(jvm.ajpPort) : jvm.ajpPort != null) return false;
+        if (statusPath != null ? !statusPath.equals(jvm.statusPath) : jvm.statusPath != null) return false;
+        if (systemProperties != null ? !systemProperties.equals(jvm.systemProperties) : jvm.systemProperties != null)
             return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        Jvm rhs = (Jvm) obj;
-        return new EqualsBuilder()
-                .append(this.id, rhs.id)
-                .append(this.jvmName, rhs.jvmName)
-                .append(this.hostName, rhs.hostName)
-                .append(this.statusPath, rhs.statusPath)
-                .append(this.groups, rhs.groups)
-                .append(this.httpPort, rhs.httpPort)
-                .append(this.httpsPort, rhs.httpsPort)
-                .append(this.redirectPort, rhs.redirectPort)
-                .append(this.shutdownPort, rhs.shutdownPort)
-                .append(this.ajpPort, rhs.ajpPort)
-                .append(this.systemProperties, rhs.systemProperties)
-                .isEquals();
+        if (state != null ? !state.equals(jvm.state) : jvm.state != null) return false;
+        return !(errorStatus != null ? !errorStatus.equals(jvm.errorStatus) : jvm.errorStatus != null);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(jvmName)
-                .append(hostName)
-                .append(statusPath)
-                .append(groups)
-                .append(httpPort)
-                .append(httpsPort)
-                .append(redirectPort)
-                .append(shutdownPort)
-                .append(ajpPort)
-                .append(systemProperties)
-                .toHashCode();
+        int result = id.hashCode();
+        result = 31 * result + jvmName.hashCode();
+        result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
+        result = 31 * result + (groups != null ? groups.hashCode() : 0);
+        result = 31 * result + (httpPort != null ? httpPort.hashCode() : 0);
+        result = 31 * result + (httpsPort != null ? httpsPort.hashCode() : 0);
+        result = 31 * result + (redirectPort != null ? redirectPort.hashCode() : 0);
+        result = 31 * result + (shutdownPort != null ? shutdownPort.hashCode() : 0);
+        result = 31 * result + (ajpPort != null ? ajpPort.hashCode() : 0);
+        result = 31 * result + (statusPath != null ? statusPath.hashCode() : 0);
+        result = 31 * result + (systemProperties != null ? systemProperties.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        result = 31 * result + (errorStatus != null ? errorStatus.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("jvmName", jvmName)
-                .append("hostName", hostName)
-                .append("statusPath", statusPath)
-                .append("groups", groups)
-                .append("httpPort", httpPort)
-                .append("httpsPort", httpsPort)
-                .append("redirectPort", redirectPort)
-                .append("shutdownPort", shutdownPort)
-                .append("ajpPort", ajpPort)
-                .append("systemProperties", systemProperties)
-                .toString();
+        return "Jvm{" +
+                "id=" + id +
+                ", jvmName='" + jvmName + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", groups=" + groups +
+                ", httpPort=" + httpPort +
+                ", httpsPort=" + httpsPort +
+                ", redirectPort=" + redirectPort +
+                ", shutdownPort=" + shutdownPort +
+                ", ajpPort=" + ajpPort +
+                ", statusPath=" + statusPath +
+                ", systemProperties='" + systemProperties + '\'' +
+                ", state='" + state + '\'' +
+                ", errorStatus='" + errorStatus + '\'' +
+                '}';
     }
+
 }

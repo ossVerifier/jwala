@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -47,6 +45,11 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     private String statusPath;
 
     private String systemProperties;
+
+    private String state;
+
+    @Column(name = "ERR_STS", length = 2147483647)
+    private String errorStatus = "";
 
     public Long getId() {
         return id;
@@ -136,22 +139,64 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
         this.systemProperties = systemProperties;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
+    public void setErrorStatus(String errorStatus) {
+        this.errorStatus = errorStatus;
+    }
+
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JpaJvm jpaJvm = (JpaJvm) o;
+
+        if (!id.equals(jpaJvm.id)) return false;
+        if (!name.equals(jpaJvm.name)) return false;
+        if (hostName != null ? !hostName.equals(jpaJvm.hostName) : jpaJvm.hostName != null) return false;
+        if (groups != null ? !groups.equals(jpaJvm.groups) : jpaJvm.groups != null) return false;
+        if (httpPort != null ? !httpPort.equals(jpaJvm.httpPort) : jpaJvm.httpPort != null) return false;
+        if (httpsPort != null ? !httpsPort.equals(jpaJvm.httpsPort) : jpaJvm.httpsPort != null) return false;
+        if (redirectPort != null ? !redirectPort.equals(jpaJvm.redirectPort) : jpaJvm.redirectPort != null)
             return false;
-        }
+        if (shutdownPort != null ? !shutdownPort.equals(jpaJvm.shutdownPort) : jpaJvm.shutdownPort != null)
+            return false;
+        if (ajpPort != null ? !ajpPort.equals(jpaJvm.ajpPort) : jpaJvm.ajpPort != null) return false;
+        if (statusPath != null ? !statusPath.equals(jpaJvm.statusPath) : jpaJvm.statusPath != null) return false;
+        if (systemProperties != null ? !systemProperties.equals(jpaJvm.systemProperties) : jpaJvm.systemProperties != null)
+            return false;
+        if (state != null ? !state.equals(jpaJvm.state) : jpaJvm.state != null) return false;
+        return !(errorStatus != null ? !errorStatus.equals(jpaJvm.errorStatus) : jpaJvm.errorStatus != null);
 
-        final JpaJvm jpaJvm = (JpaJvm) o;
-
-        return id != null ? id.equals(jpaJvm.id) : jpaJvm.id == null;
     }
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
+        result = 31 * result + (groups != null ? groups.hashCode() : 0);
+        result = 31 * result + (httpPort != null ? httpPort.hashCode() : 0);
+        result = 31 * result + (httpsPort != null ? httpsPort.hashCode() : 0);
+        result = 31 * result + (redirectPort != null ? redirectPort.hashCode() : 0);
+        result = 31 * result + (shutdownPort != null ? shutdownPort.hashCode() : 0);
+        result = 31 * result + (ajpPort != null ? ajpPort.hashCode() : 0);
+        result = 31 * result + (statusPath != null ? statusPath.hashCode() : 0);
+        result = 31 * result + (systemProperties != null ? systemProperties.hashCode() : 0);
+        result = 31 * result + (state != null ? state.hashCode() : 0);
+        result = 31 * result + (errorStatus != null ? errorStatus.hashCode() : 0);
+        return result;
     }
+
 }

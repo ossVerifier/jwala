@@ -102,7 +102,9 @@ public class JvmServiceRestImplTest {
                 Integer.valueOf(shutdownPort),
                 Integer.valueOf(ajpPort),
                 statusPath,
-                systemProperties);
+                systemProperties,
+                JvmState.JVM_STOPPED.toPersistentString(),
+                null);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;

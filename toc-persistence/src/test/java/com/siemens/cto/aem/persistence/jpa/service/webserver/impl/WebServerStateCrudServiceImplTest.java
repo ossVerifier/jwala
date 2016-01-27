@@ -89,7 +89,7 @@ public class WebServerStateCrudServiceImplTest {
                 expectedState,
                 expectedAsOf);
 
-        final JpaCurrentState actualState = impl.getState(expectedId);
+        final JpaCurrentState actualState = impl.getState(expectedId, StateType.WEB_SERVER);
 
         assertEquals(expectedId.getId(),
                 actualState.getId().getId());

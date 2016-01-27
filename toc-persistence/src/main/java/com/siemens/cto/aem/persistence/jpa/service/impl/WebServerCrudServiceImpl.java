@@ -12,7 +12,7 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -193,7 +193,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
         final List<Jvm> jvms = new ArrayList<>(q.getResultList().size());
         for (final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {
-            jvms.add((new JpaJvmBuilder(jpaJvm)).build());
+            jvms.add((new JvmBuilder(jpaJvm)).build());
         }
         return jvms;
     }

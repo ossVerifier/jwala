@@ -9,7 +9,7 @@ import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -116,7 +116,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
-        return new JpaJvmBuilder(aJpaJvm).build();
+        return new JvmBuilder(aJpaJvm).build();
     }
 
     protected List<Jvm> jvmsFrom(final List<JpaJvm> someJpaJvms) {

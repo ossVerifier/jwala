@@ -20,7 +20,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StateServiceImpl.class);
 
-    private final StatePersistenceService<S, T> persistenceService;
+    private final StatePersistenceService<S, T> statePersistenceService;
     private final StateNotificationService notificationService;
     private final StateType stateType;
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
@@ -28,7 +28,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     public StateServiceImpl(final StatePersistenceService<S, T> thePersistenceService,
                             final StateNotificationService theNotificationService, final StateType theStateType,
                             final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
-        persistenceService = thePersistenceService;
+        statePersistenceService = thePersistenceService;
         notificationService = theNotificationService;
         stateType = theStateType;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
@@ -40,10 +40,10 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
         setStateRequest.validate();
 
-        final CurrentState<S, T> currentState = persistenceService.getState(setStateRequest.getNewState().getId());
+        final CurrentState<S, T> currentState = statePersistenceService.getState(setStateRequest.getNewState().getId(), setStateRequest.getNewState().getType());
         if (currentState == null || !currentState.getState().equals(setStateRequest.getNewState().getState()) ||
             !currentState.getMessage().equalsIgnoreCase(setStateRequest.getNewState().getMessage())) {
-            final CurrentState<S, T> updatedState = persistenceService.updateState(setStateRequest);
+            final CurrentState<S, T> updatedState = statePersistenceService.updateState(setStateRequest);
             updatedState.setUserId(aUser.getId());
             notificationService.notifyStateUpdated(updatedState);
             grpStateComputationAndNotificationSvc.computeAndNotify(updatedState.getId(), updatedState.getState());
@@ -56,7 +56,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     @Transactional(readOnly = true)
     public CurrentState<S, T> getCurrentState(final Identifier<S> anId) {
         LOGGER.trace("Getting state for {} {}", stateType, anId);
-        CurrentState<S, T> state = persistenceService.getState(anId);
+        CurrentState<S, T> state = statePersistenceService.getState(anId, stateType);
         if (state == null) {
             state = createUnknown(anId);
         }
@@ -79,7 +79,7 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
     @Transactional(readOnly = true)
     public Set<CurrentState<S, T>> getCurrentStates() {
         LOGGER.trace("Getting all states for {}", stateType);
-        return persistenceService.getAllKnownStates();
+        return statePersistenceService.getAllKnownStates();
     }
 
     /**

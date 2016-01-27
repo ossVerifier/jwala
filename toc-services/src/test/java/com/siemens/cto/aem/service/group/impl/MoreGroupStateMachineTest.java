@@ -27,17 +27,14 @@ import com.siemens.cto.aem.service.state.StateService;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
@@ -143,7 +140,7 @@ public class MoreGroupStateMachineTest {
         lgroups.add(lgroup);
         groups.add(mockGroup);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal");
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null);
         jvms.add(jvm);
         ws = new WebServer(id(1L, WebServer.class),
                            groups, "ws-1",
@@ -175,7 +172,7 @@ public class MoreGroupStateMachineTest {
 
         groupPersistenceService.addJvmToGroup(new AddJvmToGroupRequest(mockGroup.getId(), jvm.getId()));
 
-        when(jvmStatePersistenceService.getState(eq(jvm.getId()))).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
+        when(jvmStatePersistenceService.getState(eq(jvm.getId()), StateType.JVM)).thenAnswer(new Answer<CurrentState<Jvm, JvmState>>() {
 
             @Override
             public CurrentState<Jvm, JvmState> answer(InvocationOnMock invocation) throws Throwable {

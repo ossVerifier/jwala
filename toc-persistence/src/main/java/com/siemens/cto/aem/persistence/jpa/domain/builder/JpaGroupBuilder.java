@@ -80,9 +80,9 @@ public class JpaGroupBuilder {
     protected Set<Jvm> getJvms() {
         final Set<Jvm> jvms = new HashSet<>();
         if (group.getJvms() != null) {
-            final JpaJvmBuilder builder = new JpaJvmBuilder();
+            final JvmBuilder builder = new JvmBuilder();
             for (final JpaJvm jpaJvm : group.getJvms()) {
-                jvms.add(builder.setJvm(jpaJvm).build());
+                jvms.add(builder.setJpaJvm(jpaJvm).build());
             }
         }
 

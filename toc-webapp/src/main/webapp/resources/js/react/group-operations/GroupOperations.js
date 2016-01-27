@@ -28,7 +28,8 @@ var GroupOperations = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <GroupOperationsDataTable data={this.state.groupTableData}
+                                    <GroupOperationsDataTable ref="groupOperationsDataTable"
+                                                              data={this.state.groupTableData}
                                                               selectItemCallback={this.selectItemCallback}
                                                               groups={this.state.groups}
                                                               groupsById={groupOperationsHelper.keyGroupsById(this.state.groups)}
@@ -48,7 +49,23 @@ var GroupOperations = React.createClass({
         var self = this;
         this.props.service.getGroups(function(response){
                                         var theGroups = response.applicationResponseContent;
-                                        var state = self.getUpdatedJvmData(theGroups);
+                                        var state = {};
+                                        var jvms = [];
+                                        var jvmArrayIdxMap = {}; // We need a map to see if the jvm is already in jvms then use it later to update jvm states.
+
+                                        // Put all the jvms of all the groups in an array.
+                                        // If the jvm is already in the said array, do not put it in anymore.
+                                        theGroups.forEach(function(group){
+                                            for (var i = 0; i < group.jvms.length; i++) {
+                                                if (jvmArrayIdxMap[group.jvms[i].id.id] == undefined) {
+                                                    jvms.push(group.jvms[i]);
+                                                    jvmArrayIdxMap[group.jvms[i].id.id] = i;
+                                                }
+                                            }
+                                        });
+
+                                        state["jvms"] = jvms;
+                                        state["jvmArrayIdxMap"] = jvmArrayIdxMap;
                                         state["groupTableData"] = theGroups;
                                         state["groups"] = theGroups;
                                         self.setState(state);
@@ -237,6 +254,12 @@ var GroupOperations = React.createClass({
                                 } else {
                                     var stateDetails = groupOperationsHelper.extractStateDetails(newJvmStates[i]);
                                     jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+
+                                    // Update the state of the jvm that is in a "react state" so that when the
+                                    // state component is re rendered it is updated. JVMs are loaded together with the
+                                    // group and not when the group is opened that is why we need this.
+                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {state: newJvmStates[i].stateString,
+                                                                                              errorStatus: ""};
                                 }
                             }
                         }

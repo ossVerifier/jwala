@@ -11,7 +11,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaJvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.io.InputStream;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
@@ -225,7 +224,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         q.setParameter("jvmName", jvmName);
         q.setParameter("groupName", groupName);
         JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
-        return (new JpaJvmBuilder(jpaJvm)).build();
+        return (new JvmBuilder(jpaJvm)).build();
     }
 
 }

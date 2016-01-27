@@ -1,4 +1,7 @@
 var GroupOperationsDataTable = React.createClass({
+    getInitialState: function() {
+        return {currentJvmState: {}};
+    },
    shouldComponentUpdate: function(nextProps, nextState) {
 
        // TODO: Set status here
@@ -299,30 +302,25 @@ var GroupOperationsDataTable = React.createClass({
        }.bind(this);
    },
    renderJvmStateRowData: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
-        var self= this;
+        var self = this;
         aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
              var key = parentPrefix + parentId + type + oData.id.id;
              return React.render(<StatusWidget key={key} defaultStatus=""
                                       errorMsgDlgTitle={oData.jvmName + " State Error Messages"} />, nTd, function() {
                         GroupOperations.jvmStatusWidgetMap[key] = this;
 
-                        // Fetch and set initial state
-                        var statusWidget = this;
-                        self.props.stateService.getCurrentJvmStates(oData.id.id)
-                                               .then(function(data) {
-                                                        if (self.props.parent.pollError) {
-                                                            statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
-                                                        } else {
-                                                            if (data.applicationResponseContent[0].stateString !== GroupOperations.FAILED &&
-                                                                data.applicationResponseContent[0].stateString !== GroupOperations.START_SENT &&
-                                                                data.applicationResponseContent[0].stateString !== GroupOperations.STOP_SENT) {
-                                                                    var stateDetails = groupOperationsHelper.extractStateDetails(data.applicationResponseContent[0]);
-                                                                    statusWidget.setStatus(stateDetails.state,
-                                                                                           stateDetails.asOf,
-                                                                                           stateDetails.msg);
-                                                            }
-                                                        }
-                                                    });
+                        if (oData.state !== GroupOperations.FAILED &&
+                            oData.state !== GroupOperations.START_SENT &&
+                            oData.state !== GroupOperations.STOP_SENT) {
+                                // Check if there is new state, if there is use it since the jvm state only
+                                // gets updated when GroupOperations is initialized.
+                                if (self.state.currentJvmState[oData.id.id] === undefined) {
+                                    this.setStatus(oData.state, null, oData.errorStatus);
+                                } else {
+                                    this.setStatus(self.state.currentJvmState[oData.id.id].state, null,
+                                                   self.state.currentJvmState[oData.id.id].errorStatus);
+                                }
+                        }
                     });
         }.bind(this);
    },

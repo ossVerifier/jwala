@@ -364,7 +364,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         CurrentState<Group, GroupState> state = groupPersistenceService.updateState(updateRequest);
         assertEquals(GroupState.GRP_STARTED, state.getState());
 
-        state = groupPersistenceService.getState(preCreatedGroup.getId());
+        state = groupPersistenceService.getState(preCreatedGroup.getId(), StateType.GROUP);
         assertEquals(GroupState.GRP_STARTED, state.getState());
 
         Set<CurrentState<Group, GroupState>> states = groupPersistenceService.getAllKnownStates();

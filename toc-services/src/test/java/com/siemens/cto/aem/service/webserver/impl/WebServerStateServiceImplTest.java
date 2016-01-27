@@ -61,7 +61,7 @@ public class WebServerStateServiceImplTest {
 
     @Test
     public void testCreateUnknown() {
-        when(persistenceService.getState(wsTestId)).thenReturn(null);
+        when(persistenceService.getState(wsTestId, StateType.WEB_SERVER)).thenReturn(null);
         CurrentState<WebServer, WebServerReachableState> result = stateService.getCurrentState(wsTestId);
         assertEquals(WebServerReachableState.WS_UNKNOWN, result.getState());
     }

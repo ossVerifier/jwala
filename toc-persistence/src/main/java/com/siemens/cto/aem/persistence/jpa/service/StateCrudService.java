@@ -15,7 +15,7 @@ public interface StateCrudService<S, T extends OperationalState> {
 
     JpaCurrentState updateState(SetStateRequest<S, T> setStateRequest);
 
-    JpaCurrentState getState(final Identifier<S> anId);
+    JpaCurrentState getState(final Identifier<S> anId, StateType stateType);
 
     List<JpaCurrentState> getStates();
 

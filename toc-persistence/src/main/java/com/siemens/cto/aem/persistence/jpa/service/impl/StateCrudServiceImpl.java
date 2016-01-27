@@ -2,13 +2,17 @@ package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.audit.AuditEvent;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentStateId;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,9 +34,30 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
         stateType = theStateType;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private JpaJvm updateState(final long id, final String state, final String errorStatus) {
+        final JpaJvm jpaJvm = entityManager.find(JpaJvm.class, id);
+        jpaJvm.setState(state);
+        jpaJvm.setErrorStatus(errorStatus);
+        entityManager.flush();
+        return jpaJvm;
+    }
+
     @Override
     public JpaCurrentState updateState(final SetStateRequest<S, T> setStateRequest) {
+        if (setStateRequest.getNewState().getState() instanceof JvmState) {
+            final JpaJvm jpaJvm = updateState(setStateRequest.getNewState().getId().getId(),
+                                              setStateRequest.getNewState().getStateString(),
+                                              setStateRequest.getNewState().getMessage());
 
+            // This might have to go once JpaCurrentState is not persisted anymore.
+            final JpaCurrentState jpaCurrentState = new JpaCurrentState();
+            jpaCurrentState.setId(new JpaCurrentStateId(setStateRequest.getNewState().getId().getId(), StateType.JVM));
+            jpaCurrentState.setState(JvmState.convertFromStateLabel(jpaJvm.getState()).toPersistentString());
+            return jpaCurrentState;
+        }
+
+        // TODO: When JpaWebServer has the state property, this will be replaced with code similar to the above code.
         final JpaCurrentState currentState = new JpaCurrentState();
         final CurrentState<S,T> newState = setStateRequest.getNewState();
         final JpaCurrentStateId id = new JpaCurrentStateId(newState.getId().getId(), stateType);
@@ -43,15 +68,23 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
 
         final JpaCurrentState mergedCurrentState = entityManager.merge(currentState);
         entityManager.flush();
+
         return mergedCurrentState;
     }
 
     @Override
-    public JpaCurrentState getState(final Identifier<S> anId) {
+    public JpaCurrentState getState(final Identifier<S> anId, StateType stateType) {
+        if (stateType.equals(StateType.JVM)) {
+            final JpaJvm jpaJvm = entityManager.find(JpaJvm.class, anId.getId());
+            final JpaCurrentState jpaCurrentState = new JpaCurrentState();
+            jpaCurrentState.setId(new JpaCurrentStateId(jpaJvm.getId(), stateType));
+            jpaCurrentState.setState(jpaJvm.getState());
+            return jpaCurrentState;
+        }
 
         final JpaCurrentState currentState = entityManager.find(JpaCurrentState.class,
                                                                 new JpaCurrentStateId(anId.getId(),
-                                                                                      stateType));
+                                                                        this.stateType));
 
         return currentState;
     }

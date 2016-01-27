@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 
@@ -21,6 +20,8 @@ public class JvmBuilder {
     private Integer shutdownPort;
     private Integer ajpPort;
     private String systemProperties;
+    private String state;
+    private String errorStatus;
 
     public JvmBuilder setId(final Identifier<Jvm> anId) {
         id = anId;
@@ -77,6 +78,24 @@ public class JvmBuilder {
         return this;
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public JvmBuilder setState(String state) {
+        this.state = state;
+        return this;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
+    public JvmBuilder setErrorStatus(String errorStatus) {
+        this.errorStatus = errorStatus;
+        return this;
+    }
+
     public Jvm build() {
         return new Jvm(id,
                        name,
@@ -88,6 +107,9 @@ public class JvmBuilder {
                        shutdownPort,
                        ajpPort,
                        statusPath,
-                       systemProperties);
+                       systemProperties,
+                       state,
+                       errorStatus);
     }
+
 }

@@ -185,7 +185,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal");
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null);
         final ArrayList<Jvm> jvms = new ArrayList<>(1);
         jvms.add(jvm);
 
