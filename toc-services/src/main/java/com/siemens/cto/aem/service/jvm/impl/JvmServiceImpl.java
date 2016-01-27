@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -62,8 +61,7 @@ public class JvmServiceImpl implements JvmService {
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
                           final FileManager theFileManager,
-                          ClientFactoryHelper factoryHelper,
-                          final StateService<Jvm, JvmState> theJvmStateService, final SshConfiguration theSshConfig) {
+                          final StateService<Jvm, JvmState> theJvmStateService) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         fileManager = theFileManager;

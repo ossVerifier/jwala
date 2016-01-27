@@ -198,6 +198,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
                         + jvmName);
             } else {
+                logger.error("Failed to deploy application configuration ["+resourceTemplateName+"] for " + appName + " to " + jvmName + " :: " + execData.toString());
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                         AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
             }

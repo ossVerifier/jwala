@@ -54,7 +54,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -582,6 +584,39 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
+    public void testUploadGroupAppConfigTemplate() throws Exception {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        groupServiceRest.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        groupServiceRest.uploadGroupAppConfigTemplate("any", authenticatedUser, "any");
+        verify(groupService).populateGroupAppTemplate(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testUpdateGroupAppTemplate() {
+        when(groupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
+        groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "new hct.xml context");
+        verify(groupService).updateGroupAppResourceTemplate(anyString(), anyString(), anyString());
+
+        when(groupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
+        Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
+        assertEquals(500, response.getStatus());
+    }
+
+    @Test
     public void testUploadGroupJvmConfigTemplate() throws Exception {
         final MessageContext msgContextMock = mock(MessageContext.class);
         final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
@@ -603,10 +638,28 @@ public class GroupServiceRestImplTest {
         verify(groupService).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
     }
 
+    @Test
+    public void testPreviewGroupAppResourceTemplate() {
+        groupServiceRest.previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
+        verify(groupService).previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
+    }
+
+    @Test
+    public void testGetGroupAppResourceTemplate() {
+        groupServiceRest.getGroupAppResourceTemplate("testGroup", "hct.xml", false);
+        verify(groupService).getGroupAppResourceTemplate("testGroup", "hct.xml", false);
+    }
+
+    @Test
+    public void testGetGroupAppResourceNames() {
+        groupServiceRest.getGroupAppResourceNames("testGroup");
+        verify(groupService).getGroupAppsResourceTemplateNames("testGroup");
+    }
+
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
-     * @see  "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
+     * @see "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
      */
     static class DelegatingServletInputStream extends ServletInputStream {
 

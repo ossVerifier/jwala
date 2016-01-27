@@ -111,8 +111,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
         logger.debug("Create Group requested: {}", aNewGroupName);
-        final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName),
-                aUser.getUser());
+        final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
         populateGroupJvmTemplates(aNewGroupName, aUser);
         populateGroupWebServerTemplates(aNewGroupName, aUser);
         return ResponseBuilder.created(group);
@@ -269,7 +268,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response generateAndDeployGroupJvmFile(String groupName, String fileName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
-        final boolean doNotCheckAppResources = false;
         String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
         JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         for (Jvm jvm : group.getJvms()) {
@@ -344,7 +342,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         for (WebServer webserver : group.getWebServers()) {
             webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
-            webServerServiceRest.generateAndDeployConfig(webserver.getName());
+            Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
+            if (response.getStatus() > 399) {
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, response.getStatusInfo().getReasonPhrase());
+            }
         }
         return ResponseBuilder.ok(group);
     }
@@ -488,9 +489,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     data = file1.openStream();
                     if (uploadType.equals(GroupResourceType.JVM)) {
                         return doGroupJvmTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBSERVER)){
+                    } else if (uploadType.equals(GroupResourceType.WEBSERVER)) {
                         return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBAPP)){
+                    } else if (uploadType.equals(GroupResourceType.WEBAPP)) {
                         return doGroupAppTemplateUpload(groupName, aUser, templateName, data, file1);
                     }
                 } finally {
@@ -544,7 +545,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             return ResponseBuilder.ok(groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            logger.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -559,7 +560,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
             appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-            appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+            Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+            if (response.getStatus() > 399) {
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, response.getStatusInfo().getReasonPhrase());
+            }
         }
         return ResponseBuilder.ok(group);
     }

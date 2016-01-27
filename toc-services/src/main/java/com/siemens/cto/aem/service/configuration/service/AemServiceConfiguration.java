@@ -14,9 +14,9 @@ import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
-import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
@@ -36,7 +36,6 @@ import com.siemens.cto.aem.service.group.*;
 import com.siemens.cto.aem.service.group.impl.*;
 import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
-import com.siemens.cto.aem.service.jvm.JvmControlServiceLifecycle;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
@@ -45,7 +44,10 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
-import com.siemens.cto.aem.service.state.*;
+import com.siemens.cto.aem.service.state.GroupStateService;
+import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
@@ -89,7 +91,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
-                "com.siemens.cto.aem.service.spring.component"})
+        "com.siemens.cto.aem.service.spring.component"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -159,9 +161,9 @@ public class AemServiceConfiguration {
     public GroupStateService.API getGroupStateService(final GroupPersistenceService groupPersistenceService,
                                                       final JvmPersistenceService jvmPersistenceService) {
         return new GroupStateServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
-                                         getStateNotificationService(), StateType.GROUP,
+                getStateNotificationService(), StateType.GROUP,
                 groupPersistenceService, jvmPersistenceService,
-                                         webServerPersistenceService, grpStateComputationAndNotificationSvc);
+                webServerPersistenceService, grpStateComputationAndNotificationSvc);
     }
 
     @Bean
@@ -176,9 +178,7 @@ public class AemServiceConfiguration {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                 getGroupService(),
                 fileManager,
-                factoryHelper,
-                getJvmStateService(),
-                aemSshConfig.getSshConfiguration());
+                getJvmStateService());
     }
 
     @Bean(name = "webServerService")

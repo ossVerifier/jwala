@@ -1,38 +1,29 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.http.client.MockClientHttpResponse;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,8 +43,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupService groupService;
     private User user;
     private FileManager fileManager;
-    private ClientFactoryHelper factoryHelper;
-    private SshConfiguration sshConfig;
     private RuntimeCommandBuilder rtCommandBuilder;
     private RuntimeCommand command;
     private StateService<Jvm, JvmState> stateService;
@@ -65,10 +54,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService = mock(GroupService.class);
         user = new User("unused");
         fileManager = mock(FileManager.class);
-        factoryHelper = mock(ClientFactoryHelper.class);
-        sshConfig = mock(SshConfiguration.class);
-        stateService = (StateService<Jvm, JvmState>)mock(StateService.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, factoryHelper, stateService, sshConfig);
+        stateService = (StateService<Jvm, JvmState>) mock(StateService.class);
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateService);
         rtCommandBuilder = mock(RuntimeCommandBuilder.class);
         command = mock(RuntimeCommand.class);
     }
@@ -331,29 +318,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this, please see commented out codes.
-    public void testSecureCopy() throws IOException, URISyntaxException {
-        Jvm jvm = mock(Jvm.class);//new Jvm(new Identifier<Jvm>(99L), "testJvm", "testHostName", new HashSet<LiteGroup>(), 12, 13, 14, 15, 16,new Path("./stp-test.png"),"");
-        when(jvm.getStatusUri()).thenReturn(new URI("http://server/testUri.png"));
-        when(jvm.getJvmName()).thenReturn("testJvm");
-        CommandOutput successReturnData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(command.execute()).thenReturn(successReturnData);
-        when(rtCommandBuilder.build()).thenReturn(command);
-        when(factoryHelper.requestGet(any(URI.class))).thenReturn(new MockClientHttpResponse(new byte[]{}, HttpStatus.REQUEST_TIMEOUT));
-//        boolean commandFailed = false;
-//        CommandOutput result = null;
-//        try {
-//            result = impl.secureCopyFile(jvm, rtCommandBuilder);
-//        } catch (CommandFailureException e) {
-//            commandFailed = true;
-//        }
-//        assertNotNull(result);
-//        assertEquals(new ExecReturnCode(0), result.getReturnCode());
-    }
-
-    @Test
-    public void testGetResourceTemplateNames(){
+    public void testGetResourceTemplateNames() {
         String testJvmName = "testJvmName";
         ArrayList<String> value = new ArrayList<>();
         when(jvmPersistenceService.getResourceTemplateNames(testJvmName)).thenReturn(value);
@@ -363,7 +328,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testGetResourceTemplate(){
+    public void testGetResourceTemplate() {
         String testJvmName = "testJvmName";
         String resourceTemplateName = "test-resource.tpl";
         Jvm jvm = mock(Jvm.class);

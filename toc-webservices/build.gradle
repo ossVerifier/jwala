@@ -3,6 +3,7 @@ dependencies {
     compile project(":toc-services")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "$project.versions.cxf"
     compile group: "org.apache.cxf", name: "cxf-rt-transports-http", version: "$project.versions.cxf"
     compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxrs", version: "$project.versions.cxf"

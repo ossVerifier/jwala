@@ -270,8 +270,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final String destPath = target.toString();
             final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
-            if (backUp) {
-                // back up the original file first
+            // back up the original file first only if the war was uploaded
+            // if the war wasn't uploaded yet then there is no file to backup
+            if (app.getWarPath() != null && backUp) {
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
                 final CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
