@@ -259,23 +259,6 @@ public class GroupServiceImpl implements GroupService {
         return template;
     }
 
-    private String findAppName(String groupName, String resourceTemplateName, boolean checkAppResourceTemplate) {
-        if (checkAppResourceTemplate) {
-            List<String> appResourceTemplateNames = getGroupAppsResourceTemplateNames(groupName);
-            if (appResourceTemplateNames.contains(resourceTemplateName)) {
-                // do this the hard way
-                for (Application app : applicationPersistenceService.getApplications()) {
-                    for (String appTemplateName : applicationPersistenceService.getResourceTemplateNames(app.getName())) {
-                        if (appTemplateName.equals(resourceTemplateName)) {
-                            return app.getName();
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     @Transactional
     public String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {

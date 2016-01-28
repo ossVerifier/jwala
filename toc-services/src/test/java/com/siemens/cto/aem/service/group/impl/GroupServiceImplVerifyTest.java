@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -21,11 +22,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -283,6 +283,16 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGroupJvmsResourceTemplateNames() {
         groupService.getGroupJvmsResourceTemplateNames("testGroupName", false);
         verify(groupPersistenceService, times(1)).getGroupJvmsResourceTemplateNames("testGroupName");
+
+
+        List<String> jvmTemplates = new ArrayList<>();
+        jvmTemplates.add("server.xml");
+        when(groupPersistenceService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(jvmTemplates);
+        List<String> appTemplates = new ArrayList<>();
+        appTemplates.add("hct.xml");
+        when(groupPersistenceService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplates);
+        List<Map<String, String>> templateNames = groupService.getGroupJvmsResourceTemplateNames("testGroupName", true);
+        assertEquals(2, templateNames.size());
     }
 
     @Test
@@ -412,5 +422,119 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.xml", "app content");
         verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testAppRoleMapping.properties", "role mapping content");
         verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.properties", "properties content");
+    }
+
+    @Test
+    public void testPopulateGroupAppTemplate() {
+        Group mockGroup = mock(Group.class);
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("template content");
+        groupService.populateGroupAppTemplate("testGroup", "hct.xml", "template content");
+
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "hct.xml", "template content");
+    }
+
+    @Test
+    public void testGetGroupAppTemplateNames() {
+        when(groupPersistenceService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(new ArrayList<String>());
+        groupService.getGroupAppsResourceTemplateNames("testGroup");
+        verify(groupPersistenceService).getGroupAppsResourceTemplateNames("testGroup");
+    }
+
+    @Test
+    public void testUpdateGroupAppResourceTemplate() {
+        when(groupPersistenceService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("template content");
+        groupService.updateGroupAppResourceTemplate("testGroup", "hct.xml", "template content");
+        verify(groupPersistenceService).updateGroupAppResourceTemplate("testGroup", "hct.xml", "template content");
+    }
+
+    @Test
+    public void testPreviewGroupAppTemplate() {
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmsList = new HashSet<>();
+        List<Application> appList = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmsList.add(mockJvm);
+        Application mockApp = mock(Application.class);
+        appList.add(mockApp);
+        when(mockJvm.getJvmName()).thenReturn("testJvm");
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.getId()).thenReturn(new Identifier<Application>(99L));
+        when(mockApp.getName()).thenReturn("testApp");
+        when(mockApp.getWarPath()).thenReturn("./");
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.isSecure()).thenReturn(true);
+        when(mockApp.getWarName()).thenReturn("testApp.war");
+        when(mockApp.isLoadBalanceAcrossServers()).thenReturn(true);
+        when(mockGroup.getJvms()).thenReturn(jvmsList);
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(applicationPersistenceService.getApplications()).thenReturn(appList);
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApp);
+
+        String content = groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content");
+        assertEquals("hct content", content);
+
+        try {
+            groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content ${webApp.fail.token}");
+        } catch (ApplicationException ae){
+            assertEquals("Template token replacement failed.", ae.getMessage());
+        } catch (Exception e) {
+            assertFalse("Expecting ApplicationException but got " + e, true);
+        }
+
+    }
+
+    @Test
+    public void testGetGroupAppResourceTemplate() {
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmsList = new HashSet<>();
+        List<Application> appList = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmsList.add(mockJvm);
+        Application mockApp = mock(Application.class);
+        appList.add(mockApp);
+        when(mockJvm.getJvmName()).thenReturn("testJvm");
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.getId()).thenReturn(new Identifier<Application>(99L));
+        when(mockApp.getName()).thenReturn("testApp");
+        when(mockApp.getWarPath()).thenReturn("./");
+        when(mockApp.getGroup()).thenReturn(mockGroup);
+        when(mockApp.isSecure()).thenReturn(true);
+        when(mockApp.getWarName()).thenReturn("testApp.war");
+        when(mockApp.isLoadBalanceAcrossServers()).thenReturn(true);
+        when(mockGroup.getJvms()).thenReturn(jvmsList);
+        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("hct content ${webApp.name}");
+        when(applicationPersistenceService.getApplications()).thenReturn(appList);
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApp);
+
+        String content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", false);
+        assertEquals("hct content ${webApp.name}", content);
+
+        content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true);
+        assertEquals("hct content testApp", content);
+
+        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("hct content ${webApp.fail.name}");
+        try {
+            content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true);
+        } catch (ApplicationException ae){
+            assertEquals("Template token replacement failed.", ae.getMessage());
+        } catch (Exception e) {
+            assertFalse("Expecting ApplicationException but got " + e, true);
+        }
+    }
+
+    @Test
+    public void testGetAppFromTemplateName() {
+        List<Application> appList = new ArrayList<>();
+        Application mockApp = mock(Application.class);
+        appList.add(mockApp);
+        when(mockApp.getWebAppContext()).thenReturn("/hct");
+        when(mockApp.getName()).thenReturn("testApp");
+        when(applicationPersistenceService.getApplications()).thenReturn(appList);
+        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hct.properties"));
+        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hctRoleMapping.properties"));
+        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hct.xml"));
     }
 }

@@ -656,6 +656,8 @@ public class GroupServiceRestImplTest {
         verify(groupService).getGroupAppsResourceTemplateNames("testGroup");
     }
 
+
+
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
