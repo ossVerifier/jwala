@@ -63,7 +63,7 @@ public enum JvmState implements OperationalState {
      */
     public static JvmState convertFromStateLabel(final String stateLabel) {
         for (final JvmState state : values()) {
-            if (state.stateLabel == stateLabel) {
+            if (state.stateLabel.equalsIgnoreCase(stateLabel)) {
                 return state;
             }
         }

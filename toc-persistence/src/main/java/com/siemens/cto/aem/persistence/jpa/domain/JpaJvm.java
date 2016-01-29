@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -161,6 +163,14 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     public void setErrorStatus(String errorStatus) {
         this.errorStatus = errorStatus;
+    }
+
+    @Override
+    protected void prePersist() {
+        super.prePersist();
+        if (state == null) {
+            state = JvmState.JVM_NEW.toStateLabel();
+        }
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpd
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -86,6 +87,9 @@ public class JvmServiceRestImplTest {
     @Mock
     private ResourceService resourceService;
 
+    @Mock
+    private GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
+
     private Map<String, ReentrantReadWriteLock> writeLockMap;
 
     private JvmServiceRestImpl jvmServiceRest;
@@ -114,7 +118,7 @@ public class JvmServiceRestImplTest {
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
-        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
+        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, jvmStateService, resourceService, Executors.newFixedThreadPool(12), writeLockMap, mockGrpStateComputationAndNotificationSvc);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         try {
             jvmServiceRest.afterPropertiesSet();

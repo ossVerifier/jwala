@@ -25,6 +25,7 @@ import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -92,6 +93,7 @@ public class GroupServiceImplDeployTest {
     static final WebServerService mockWebServerService = mock(WebServerService.class);
     static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
+    static final GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -245,7 +247,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mock(StateService.class), mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mock(StateService.class), mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>(), mockGrpStateComputationAndNotificationSvc);
         }
 
         @Bean

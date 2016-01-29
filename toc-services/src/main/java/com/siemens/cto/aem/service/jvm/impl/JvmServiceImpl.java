@@ -275,10 +275,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     public boolean isJvmStarted(Jvm jvm) {
-
-        CurrentState<Jvm, JvmState> jvmCurrentState = stateService.getCurrentState(jvm.getId());
-        JvmState jvmState = jvmCurrentState.getState();
-        return jvmState.isStartedState();
+        return JvmState.JVM_STARTED.toStateLabel().equalsIgnoreCase(jvm.getState());
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +27,14 @@ public class JvmStateMessageListener implements MessageListener {
     private final JvmPersistenceService jvmPersistenceService;
     private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> jvmLastPersistedStateMap = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Identifier<Jvm>, String> jvmLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
+    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
-                                   final JvmPersistenceService jvmPersistenceService) {
+                                   final JvmPersistenceService jvmPersistenceService,
+                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         converter = theConverter;
         this.jvmPersistenceService = jvmPersistenceService;
+        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     @Override
@@ -57,16 +61,19 @@ public class JvmStateMessageListener implements MessageListener {
 
         final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
+        boolean computeGroupState = false;
 
         // This is for the state
         if (jvmLastPersistedStateMap.containsKey(newState.getId())) {
             if (!jvmLastPersistedStateMap.get(newState.getId()).equals(newState.getState())) {
                 jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
                 jvmPersistenceService.updateState(newState.getId(), newState.getState().toStateLabel());
+                computeGroupState = true;
             }
         } else {
             jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
             jvmPersistenceService.updateState(newState.getId(), newState.getState().toStateLabel());
+            computeGroupState = true;
         }
 
         // This is for the error status
@@ -75,11 +82,17 @@ public class JvmStateMessageListener implements MessageListener {
                 if (!jvmLastPersistedErrorStatusMap.get(newState.getId()).equals(newState.getMessage())) {
                     jvmLastPersistedErrorStatusMap.put(newState.getId(), newState.getMessage());
                     jvmPersistenceService.updateErrorStatus(newState.getId(), newState.getMessage());
+                    computeGroupState = true;
                 }
             } else {
                 jvmLastPersistedErrorStatusMap.put(newState.getId(), newState.getMessage());
                 jvmPersistenceService.updateErrorStatus(newState.getId(), newState.getMessage());
+                computeGroupState = true;
             }
+        }
+
+        if (computeGroupState) {
+            grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
         }
 
     }

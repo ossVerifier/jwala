@@ -11,6 +11,7 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -104,6 +105,9 @@ public class AemWebServiceConfiguration {
     @Autowired
     private HistoryService historyService;
 
+    @Autowired
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -155,11 +159,12 @@ public class AemWebServiceConfiguration {
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
         return new JvmServiceRestImpl(jvmService,
-                jvmControlService,
-                jvmStateService,
-                resourceService,
-                getExecutorService(),
-                jvmWriteLockMap);
+                                      jvmControlService,
+                                      jvmStateService,
+                                      resourceService,
+                                      getExecutorService(),
+                                      jvmWriteLockMap,
+                                      grpStateComputationAndNotificationSvc);
     }
 
     @Bean

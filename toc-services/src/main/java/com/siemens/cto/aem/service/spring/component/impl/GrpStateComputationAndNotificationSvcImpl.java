@@ -45,10 +45,6 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
     private WebServerCrudService webServerCrudService;
 
     @Autowired
-    @Qualifier("jvmStateCrudService")
-    private StateCrudService<Jvm, JvmState> jvmStateCrudService;
-
-    @Autowired
     @Qualifier("webServerStateCrudService")
     private StateCrudService<WebServer, WebServerReachableState> webServerStateCrudService;
 
@@ -61,6 +57,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
     public GrpStateComputationAndNotificationSvcImpl() {}
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @SuppressWarnings("unchecked")
     public synchronized void computeAndNotify(final Identifier id, final OperationalState state) {
         if (state instanceof JvmState) {
@@ -75,7 +72,6 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
      * @param currentJvm the current {@link Jvm}
      * @param currentJvmState the current {@link JvmState}
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void computeGroupStateAndSendNotification(final JpaJvm currentJvm, final JvmState currentJvmState) {
         for (final JpaGroup group: currentJvm.getGroups()) {
             final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(new Identifier<Group>(group.getId()));
@@ -85,8 +81,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                 if (jvm.getId().equals(currentJvm.getId())) {
                     jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
                 } else {
-                    final JpaCurrentState jpaCurrentState = jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId()), StateType.JVM);
-                    jvmState = JvmState.convertFrom(jpaCurrentState.getState());
+                    jvmState = JvmState.convertFromStateLabel(jvm.getState());
                 }
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvmState);
             }
@@ -121,7 +116,6 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
      * @param currentWebServer the current {@link WebServer}
      * @param currentWebServerState the current {@link WebServerReachableState}
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void computeGroupStateAndSendNotification(final WebServer currentWebServer,
                                                       final WebServerReachableState currentWebServerState) {
         for (final Group group: currentWebServer.getGroups()) {
@@ -142,8 +136,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
             final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(group.getId());
             for (final JpaJvm jvm: jvmList) {
-                final JpaCurrentState jpaCurrentState = jvmStateCrudService.getState(new Identifier<Jvm>(jvm.getId()), StateType.JVM);
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, JvmState.convertFrom(jpaCurrentState.getState()));
+                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, JvmState.convertFromStateLabel(jvm.getState()));
             }
 
             stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,

@@ -26,6 +26,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpd
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -74,16 +75,19 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private static JvmServiceRestImpl instance;
+    private static GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
-                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap,
+                              final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         jvmStateService = theJvmStateService;
         resourceService = theResourceService;
         executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
+        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     @Override
@@ -108,6 +112,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
             jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddRequest(), user);
+            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_NEW);
         } else {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
         }
@@ -115,12 +120,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // upload the default resource templates for the newly created
         // JVM
         uploadAllJvmResourceTemplates(aUser, jvm);
-
-        // set the state to NEW for the newly created JVM
-        final CurrentState<Jvm, JvmState> theNewState =
-                new CurrentState<>(jvm.getId(), JvmState.JVM_NEW, DateTime.now(), StateType.JVM);
-        SetStateRequest<Jvm, JvmState> jvmSetStateRequest = new JvmSetStateRequest(theNewState);
-        jvmStateService.setCurrentState(jvmSetStateRequest, aUser.getUser());
 
         return ResponseBuilder.created(jvm);
     }

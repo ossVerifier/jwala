@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.common.domain.model.audit.AuditDateTime;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 
 import javax.persistence.*;
@@ -70,7 +68,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Ser
     public abstract Long getId();
 
     @PrePersist
-    private void prePersist() {
+    protected void prePersist() {
         final Calendar now = Calendar.getInstance();
         setCreateDate(now);
         // TODO: Determine why User.getThreadLocalUser is sometimes null. One confirmed case is when Spring Integration spuns the thread.
