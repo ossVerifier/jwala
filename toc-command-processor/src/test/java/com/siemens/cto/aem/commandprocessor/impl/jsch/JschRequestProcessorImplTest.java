@@ -12,6 +12,7 @@ import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.OutputStream;
@@ -19,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.*;
 
+@Ignore
+// TODO: Make ssh server should be self contained or permanent. The server that this test connects to changes from time to time thus it fails on occasions.
 public class JschRequestProcessorImplTest {
 
     @ClassRule
