@@ -341,11 +341,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             installJvmWindowsService(jvm, user);
 
             // set the state to stopped
-            CurrentState<Jvm, JvmState> stoppedState =
-                    new CurrentState<>(jvm.getId(), JvmState.SVC_STOPPED, DateTime.now(), StateType.JVM);
-            SetStateRequest<Jvm, JvmState> setStateRequest = new JvmSetStateRequest(stoppedState);
-            jvmStateService.setCurrentState(setStateRequest, user.getUser());
-
+            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_NEW);
         } catch (CommandFailureException e) {
             logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config",
@@ -431,8 +427,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                        "The target JVM must be stopped before attempting to update the resource files");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target JVM must be stopped before attempting to update the resource files");
             }
 
             ResourceType deployResource = getResourceTypeTemplate(jvmName, fileName);
