@@ -47,4 +47,6 @@ public interface WebServerService {
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 
     String previewResourceTemplate(String webServerName, String groupName, String template);
+
+    boolean isStarted(WebServer webServer);
 }

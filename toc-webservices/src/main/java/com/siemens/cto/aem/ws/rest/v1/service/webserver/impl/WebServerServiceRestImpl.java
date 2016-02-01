@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
@@ -150,7 +151,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.getStandardError());
+            final String standardError = commandOutput.getStandardError();
+            logger.error("Control Operation Unsuccessful: " + standardError);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, standardError);
         }
     }
 
@@ -178,6 +181,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // copy the file
             final CommandOutput execData;
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
+
+            if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))){
+                logger.error("The target Web Server must be stopped before attempting to update the resource file");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+            }
 
             execData = webServerControlService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
             if (execData.getReturnCode().wasSuccessful()) {
@@ -289,8 +297,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         WebServer webServer = webServerService.getWebServer(webServerName);
         if (null == webServer) {
-            throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name "
-                    + webServerName);
+            logger.error("JVM Not Found: Could not find web server with name " + webServerName);
+            throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name " + webServerName);
         }
 
         ServletFileUpload sfu = new ServletFileUpload();
@@ -319,6 +327,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
+            logger.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }

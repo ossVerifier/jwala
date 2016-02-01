@@ -112,6 +112,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     EventType.APPLICATION_ERROR, aUser.getId());
 
             setFailedState(controlWebServerRequest, aUser, stackTrace);
+            LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest, cfe);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest,
                     cfe);
@@ -125,11 +126,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
 
-        CurrentState<WebServer, WebServerReachableState> currentWSState = webServerStateService.getCurrentState(aWebServer.getId());
-        if (!currentWSState.getState().equals(WebServerReachableState.WS_UNREACHABLE)){
-            return new CommandOutput(new ExecReturnCode(1), "", "The target web server must be stopped before attempting to copy the httpd.conf file to the server");
-        }
-
         // back up the original file first
         String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destPathBackup = destPath + currentDateSuffix;
@@ -141,6 +137,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 destPath,
                 destPathBackup);
         if (!commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to back up the httpd.conf for " + aWebServer);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up the httpd.conf for " + aWebServer);
         }
 

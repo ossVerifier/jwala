@@ -164,7 +164,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                         jvm.getJvmName());
             }
         } else {
-            logger.info("JVM was not in stopped state: NO-OP");
+            logger.error("The target JVM must be stopped before attempting to delete it");
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "The target JVM must be stopped before attempting to delete it");
         }
@@ -178,7 +178,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput);
         } else {
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.getStandardError());
+            final String standardError = commandOutput.getStandardError();
+            logger.error("Control JVM unsuccessful: " + standardError);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, standardError);
         }
     }
 
@@ -235,6 +237,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
+            logger.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
@@ -260,6 +263,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String serverXmlStr = jvmService.generateConfigFile(aJvmName, "server.xml");
             return Response.ok(serverXmlStr).build();
         } catch (TemplateNotFoundException e) {
+            logger.error("Template Not Found: ", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage(), e);
         }
     }
@@ -315,6 +319,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
+                logger.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
@@ -337,7 +342,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             installJvmWindowsService(jvm, user);
 
             // set the state to stopped
-            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_NEW);
+            jvmService.updateState(jvm.getId(), JvmState.JVM_STOPPED);
+            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_STOPPED);
         } catch (CommandFailureException e) {
             logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config",
@@ -423,6 +429,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
+                logger.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
@@ -436,8 +443,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             deployJvmConfigFile(jvmName, fileName, jvm, deployResource, jvmResourcesDirDest);
         } catch (IOException e) {
+            logger.error("Bad Stream: Failed to write file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
         } catch (CommandFailureException ce) {
+            logger.error("Bad Stream: Failed to copy file", ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to copy the file", ce);
         } finally {
             jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().unlock();
@@ -512,8 +521,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
             createDirectory(jvmResourcesNameDir + "/logs");
         } catch (FileNotFoundException e) {
+            logger.error("Bad Stream: Failed to create file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create file", e);
         } catch (IOException e) {
+            logger.error("Bad Stream: Failed to write file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
         }
 
@@ -544,6 +555,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private void createDirectory(String absoluteDirPath) {
         File targetDir = new File(absoluteDirPath);
         if (!targetDir.exists() && !targetDir.mkdirs()) {
+            logger.error("Bad Stream: Failed to create directory " + absoluteDirPath);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + absoluteDirPath);
         }
     }

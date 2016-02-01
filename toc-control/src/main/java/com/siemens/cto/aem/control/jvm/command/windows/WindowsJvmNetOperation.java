@@ -103,6 +103,12 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
+    },
+    BACK_UP_FILE(JvmControlOperation.BACK_UP_FILE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand( cygpathWrapper(BACK_UP_FILE_SCRIPT_NAME), aParams[0], aParams[1]);
+        }
     };
 
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(

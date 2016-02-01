@@ -141,6 +141,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_APPLICATION_WAR, "No data"));
         } catch (IOException | FileUploadException e) {
+            logger.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
@@ -186,6 +187,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
+
         try {
             final boolean doBackUpBeforeCopy = true;
             final CommandOutput execData =
@@ -230,6 +232,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             }
         }
         if (null == app) {
+            logger.error("Application Not Found: Could not find Application with name " + appName);
             throw new InternalErrorException(AemFaultType.APPLICATION_NOT_FOUND,
                     "Could not find Application with name " + appName);
         }
@@ -260,6 +263,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
+            logger.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }

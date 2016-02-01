@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.webserver.*;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
@@ -13,6 +15,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -33,13 +36,15 @@ public class WebServerServiceImpl implements WebServerService {
     private final WebServerPersistenceService webServerPersistenceService;
 
     private final FileManager fileManager;
+    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     private final String HTTPD_CONF = "httpd.conf";
 
     public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
-                                final FileManager theFileManager) {
+                                final FileManager theFileManager, StateService<WebServer, WebServerReachableState> webServerStateService) {
         this.webServerPersistenceService = webServerPersistenceService;
         fileManager = theFileManager;
+        this.webServerStateService = webServerStateService;
     }
 
     @Override
@@ -128,6 +133,12 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    public boolean isStarted(WebServer webServer) {
+        CurrentState<WebServer, WebServerReachableState> currentWSState = webServerStateService.getCurrentState(webServer.getId());
+        return currentWSState.getState().equals(WebServerReachableState.WS_REACHABLE);
+    }
+
+    @Override
     @Transactional
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
         webServerPersistenceService.removeWebServersBelongingTo(aGroupId);
@@ -148,7 +159,7 @@ public class WebServerServiceImpl implements WebServerService {
             return ApacheWebServerConfigFileGenerator
                     .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
         } catch (IOException e) {
-            LOGGER.warn("Template not found", e);
+            LOGGER.error("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             // TODO WHAAAAA ???? catchtrycatch - try .... ?
@@ -157,7 +168,7 @@ public class WebServerServiceImpl implements WebServerService {
                 return ApacheWebServerConfigFileGenerator
                         .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
             } catch (IOException e) {
-                LOGGER.warn("Template not found", e);
+                LOGGER.error("Template not found", e);
                 throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
             }
         }
@@ -172,7 +183,7 @@ public class WebServerServiceImpl implements WebServerService {
             return ApacheWebServerConfigFileGenerator
                     .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
         } catch (IOException e) {
-            LOGGER.warn("Template not found", e);
+            LOGGER.error("Template not found", e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
         }
     }

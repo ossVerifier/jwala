@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -15,11 +16,11 @@ import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.TocFile;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -63,6 +64,9 @@ public class WebServerServiceImplTest {
     @Mock
     private RepositoryFileInformation repositoryFileInformation;
 
+    @Mock
+    private StateService<WebServer, WebServerReachableState> webServerStateService;
+
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers12 = new ArrayList<>();
@@ -77,6 +81,7 @@ public class WebServerServiceImplTest {
     private Collection<Group> groups2;
 
     private User testUser = new User("testUser");
+
 
     @Before
     public void setUp() throws IOException {
@@ -124,7 +129,7 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager);
+        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, webServerStateService);
 
         when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
         when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {

@@ -100,11 +100,12 @@ public class JvmControlServiceImpl implements JvmControlService {
         final CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 jvm.getName(),
                 jvm.getHostName(),
-                secureCopyRequest.getControlOperation(),
+                JvmControlOperation.BACK_UP_FILE,
                 new WindowsJvmPlatformCommandProvider(),
                 destPath,
                 destPathBackup);
         if (!commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.error("Remote Command Failure: Failed to back up " + destPath + " for " + jvm + "::" + commandOutput.getStandardError());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
         }
         return secureCopyFile(secureCopyRequest, sourcePath, destPath);

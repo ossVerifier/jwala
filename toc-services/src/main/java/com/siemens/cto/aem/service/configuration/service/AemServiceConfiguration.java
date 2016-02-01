@@ -185,7 +185,8 @@ public class AemServiceConfiguration {
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(
                 persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager);
+                fileManager,
+                getWebServerStateService());
     }
 
     @Bean

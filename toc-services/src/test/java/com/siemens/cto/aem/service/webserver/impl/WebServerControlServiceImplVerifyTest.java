@@ -156,14 +156,10 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
         WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
         when(webServerService.getWebServer(anyString())).thenReturn(webserver);
-        when(webServerStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState(webServerIdentifier, WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER));
-        CommandOutput returnOutput = webServerControlService.secureCopyHttpdConf("testWebServer", "./source", "./dest");
-        assertEquals(new ExecReturnCode(1), returnOutput.getReturnCode());
 
-        when(webServerStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState(webServerIdentifier, WebServerReachableState.WS_UNREACHABLE, DateTime.now(), StateType.WEB_SERVER));
         CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESSS", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
-        returnOutput = webServerControlService.secureCopyHttpdConf("testWebServer", "./source", "./dest");
+        CommandOutput returnOutput = webServerControlService.secureCopyHttpdConf("testWebServer", "./source", "./dest");
         assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
 
         CommandOutput failedReturnOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
