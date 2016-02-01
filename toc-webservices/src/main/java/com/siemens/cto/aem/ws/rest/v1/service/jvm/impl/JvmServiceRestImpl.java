@@ -7,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -16,8 +15,6 @@ import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
@@ -39,7 +36,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -427,7 +423,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target JVM must be stopped before attempting to update the resource files");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
             }
 
             ResourceType deployResource = getResourceTypeTemplate(jvmName, fileName);
