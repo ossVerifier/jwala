@@ -40,7 +40,6 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             session.connect();
 
             String target = commandFragments.get(2);
-            createTargetDir(target.substring(0, target.lastIndexOf("/")));
 
             // exec 'scp -t rfile' remotely
             String command = "scp -t " + target;
@@ -122,28 +121,6 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             }
             if (session.isConnected()) {
                 session.disconnect();
-            }
-        }
-    }
-
-    /**
-     * Creates the target directory for scp. If the directory does not exists then it does nothing. In addition it also
-     * creates parent directories if they do not exist.
-     *
-     * @param targetDir the directory where scp will copy the file.
-     * @throws RemoteCommandFailureException
-     */
-    private void createTargetDir(final String targetDir) throws RemoteCommandFailureException {
-        ChannelExec channelExec = null;
-        try {
-            channelExec = (ChannelExec) session.openChannel("exec");
-            channelExec.setCommand("mkdir -p " + targetDir);
-            channelExec.connect();
-        } catch (final JSchException e) {
-            throw new RemoteCommandFailureException(theCommand, e);
-        } finally {
-            if (channelExec != null) {
-                channelExec.disconnect();
             }
         }
     }
