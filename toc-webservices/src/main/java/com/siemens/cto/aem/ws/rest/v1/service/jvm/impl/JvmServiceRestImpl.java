@@ -159,7 +159,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         if (!jvmService.isJvmStarted(jvm)) {
             logger.info("Removing JVM from the database and deleting the service");
             jvmService.removeJvm(aJvmId);
-            if (!jvmStateService.getCurrentState(aJvmId).getState().equals(JvmState.JVM_NEW)) {
+            if (!jvm.getState().equalsIgnoreCase(JvmState.JVM_NEW.toStateLabel())) {
                 deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),
                         jvm.getJvmName());
             }
