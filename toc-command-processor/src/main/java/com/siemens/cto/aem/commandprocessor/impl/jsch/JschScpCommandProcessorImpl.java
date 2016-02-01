@@ -2,6 +2,7 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
@@ -38,8 +39,11 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             session = prepareSession(theJsch, remoteSystemConnection);
             session.connect();
 
+            String target = commandFragments.get(2);
+            createTargetDir(target.substring(0, target.lastIndexOf("/")));
+
             // exec 'scp -t rfile' remotely
-            String command = "scp -t " + commandFragments.get(2);
+            String command = "scp -t " + target;
             channel = session.openChannel("exec");
             final ChannelExec channelExec = (ChannelExec) channel;
             channelExec.setCommand(command);
@@ -122,6 +126,28 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
         }
     }
 
+    /**
+     * Creates the target directory for scp. If the directory does not exists then it does nothing. In addition it also
+     * creates parent directories if they do not exist.
+     *
+     * @param targetDir the directory where scp will copy the file.
+     * @throws RemoteCommandFailureException
+     */
+    private void createTargetDir(final String targetDir) throws RemoteCommandFailureException {
+        ChannelExec channelExec = null;
+        try {
+            channelExec = (ChannelExec) session.openChannel("exec");
+            channelExec.setCommand("mkdir -p " + targetDir);
+            channelExec.connect();
+        } catch (final JSchException e) {
+            throw new RemoteCommandFailureException(theCommand, e);
+        } finally {
+            if (channelExec != null) {
+                channelExec.disconnect();
+            }
+        }
+    }
+
     private static int checkAck(InputStream in) throws IOException {
         int b = in.read();
         // b may be 0 for success,
@@ -132,7 +158,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
         if (b == -1) return b;
 
         if (b == 1 || b == 2) {
-            StringBuffer sb = new StringBuffer();
+            StringBuffer sb = new StringBuffer(); // TODO: Find out if we can use StringBuilder instead.
             int c;
             do {
                 c = in.read();
@@ -141,9 +167,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             if (b == 1) { // error
                 throw new IOException("ERROR in secure copy: " + sb.toString());
             }
-            if (b == 2) { // fatal error
-                throw new IOException("FATAL ERROR in secure copy: " + sb.toString());
-            }
+            throw new IOException("FATAL ERROR in secure copy: " + sb.toString());
         }
         return b;
     }
@@ -154,4 +178,5 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
         int returnCode = checkAckOk ? 0 : 1;
         return new ExecReturnCode(returnCode);
     }
+
 }
