@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.jvm;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -52,4 +53,7 @@ public interface JvmService {
     boolean isJvmStarted(Jvm jvm);
 
     String previewResourceTemplate(String jvmName, String groupName, String template);
+
+    void updateState(Identifier<Jvm> id, JvmState state);
+
 }

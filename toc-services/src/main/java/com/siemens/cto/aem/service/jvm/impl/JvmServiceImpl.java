@@ -330,4 +330,10 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
+    @Override
+    @Transactional
+    public void updateState(final Identifier<Jvm> id, final JvmState state) {
+        jvmPersistenceService.updateState(id, state.toStateLabel());
+    }
+
 }
