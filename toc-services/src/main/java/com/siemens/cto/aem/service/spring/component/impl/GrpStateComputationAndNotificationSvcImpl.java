@@ -81,7 +81,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                 if (jvm.getId().equals(currentJvm.getId())) {
                     jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
                 } else {
-                    jvmState = JvmState.convertFromStateLabel(jvm.getState());
+                    jvmState = jvm.getState();
                 }
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvmState);
             }
@@ -136,7 +136,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
             final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(group.getId());
             for (final JpaJvm jvm: jvmList) {
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, JvmState.convertFromStateLabel(jvm.getState()));
+                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvm.getState());
             }
 
             stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,

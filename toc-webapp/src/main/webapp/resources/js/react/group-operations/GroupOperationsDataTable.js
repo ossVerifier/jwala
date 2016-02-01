@@ -315,9 +315,9 @@ var GroupOperationsDataTable = React.createClass({
                                 // Check if there is new state, if there is use it since the jvm state only
                                 // gets updated when GroupOperations is initialized.
                                 if (self.state.currentJvmState[oData.id.id] === undefined) {
-                                    this.setStatus(oData.state, null, oData.errorStatus);
+                                    this.setStatus(oData.stateLabel, null, oData.errorStatus);
                                 } else {
-                                    this.setStatus(self.state.currentJvmState[oData.id.id].state, null,
+                                    this.setStatus(self.state.currentJvmState[oData.id.id].stateLabel, null,
                                                    self.state.currentJvmState[oData.id.id].errorStatus);
                                 }
                         }

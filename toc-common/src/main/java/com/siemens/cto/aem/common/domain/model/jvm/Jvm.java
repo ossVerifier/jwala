@@ -29,7 +29,7 @@ public class Jvm implements Serializable {
 
     private Path statusPath;
     private String systemProperties;
-    private String state;
+    private JvmState state;
     private String errorStatus;
 
     /**
@@ -55,7 +55,7 @@ public class Jvm implements Serializable {
                final Integer ajpPort,
                final Path statusPath,
                final String systemsProperties,
-               final String state,
+               final JvmState state,
                final String errorStatus) {
         this.id = id;
         this.jvmName = name;
@@ -116,8 +116,16 @@ public class Jvm implements Serializable {
         return systemProperties;
     }
 
-    public String getState() {
+    public JvmState getState() {
         return state;
+    }
+
+    /**
+     * The user friendly state wording.
+     * @return the state e.g. STOPPED instead of the state name which is JVM_STOPPED.
+     */
+    public String getStateLabel() {
+        return state.toStateLabel();
     }
 
     public String getErrorStatus() {

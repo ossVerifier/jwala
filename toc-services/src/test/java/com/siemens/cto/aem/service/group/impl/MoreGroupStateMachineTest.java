@@ -140,7 +140,7 @@ public class MoreGroupStateMachineTest {
         lgroups.add(lgroup);
         groups.add(mockGroup);
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED.toPersistentString(), null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null);
         jvms.add(jvm);
         ws = new WebServer(id(1L, WebServer.class),
                            groups, "ws-1",

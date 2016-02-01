@@ -258,7 +258,7 @@ var GroupOperations = React.createClass({
                                     // Update the state of the jvm that is in a "react state" so that when the
                                     // state component is re rendered it is updated. JVMs are loaded together with the
                                     // group and not when the group is opened that is why we need this.
-                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {state: newJvmStates[i].stateString,
+                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmStates[i].stateString,
                                                                                               errorStatus: ""};
                                 }
                             }

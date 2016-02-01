@@ -35,7 +35,7 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private JpaJvm updateState(final long id, final String state, final String errorStatus) {
+    private JpaJvm updateState(final long id, final JvmState state, final String errorStatus) {
         final JpaJvm jpaJvm = entityManager.find(JpaJvm.class, id);
         jpaJvm.setState(state);
         jpaJvm.setErrorStatus(errorStatus);
@@ -67,18 +67,9 @@ public class StateCrudServiceImpl<S, T extends OperationalState> implements Stat
 
     @Override
     public JpaCurrentState getState(final Identifier<S> anId, StateType stateType) {
-        if (stateType.equals(StateType.JVM)) {
-            final JpaJvm jpaJvm = entityManager.find(JpaJvm.class, anId.getId());
-            final JpaCurrentState jpaCurrentState = new JpaCurrentState();
-            jpaCurrentState.setId(new JpaCurrentStateId(jpaJvm.getId(), stateType));
-            jpaCurrentState.setState(jpaJvm.getState());
-            return jpaCurrentState;
-        }
-
         final JpaCurrentState currentState = entityManager.find(JpaCurrentState.class,
                                                                 new JpaCurrentStateId(anId.getId(),
                                                                         this.stateType));
-
         return currentState;
     }
 

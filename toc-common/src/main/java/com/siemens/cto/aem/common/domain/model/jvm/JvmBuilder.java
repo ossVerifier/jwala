@@ -20,7 +20,7 @@ public class JvmBuilder {
     private Integer shutdownPort;
     private Integer ajpPort;
     private String systemProperties;
-    private String state;
+    private JvmState state;
     private String errorStatus;
 
     public JvmBuilder setId(final Identifier<Jvm> anId) {
@@ -78,11 +78,11 @@ public class JvmBuilder {
         return this;
     }
 
-    public String getState() {
+    public JvmState getState() {
         return state;
     }
 
-    public JvmBuilder setState(String state) {
+    public JvmBuilder setState(JvmState state) {
         this.state = state;
         return this;
     }
