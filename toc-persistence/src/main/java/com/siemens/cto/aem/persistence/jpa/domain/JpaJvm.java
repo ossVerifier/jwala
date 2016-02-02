@@ -21,7 +21,7 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     public static final String QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME = "findJvmByGroupAndJvmName";
     public static final String QUERY_UPDATE_STATE_BY_ID = "updateStateById";
     public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateErrorStatusById";
-    public static final java.lang.String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateStateAndErrStsById";
+    public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateStateAndErrStsById";
 
     public static final String QUERY_PARAM_ID = "id";
     public static final String QUERY_PARAM_STATE = "state";
