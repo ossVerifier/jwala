@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
@@ -322,6 +323,7 @@ public class ApplicationServiceImplTest {
     public void testDeployConf() throws CommandFailureException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
+        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         final List<Jvm> jvmList = new ArrayList();
         jvmList.add(jvm);
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
@@ -371,6 +373,7 @@ public class ApplicationServiceImplTest {
     public void testDeployConfWithPropertiesExtension() throws CommandFailureException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
+        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         final List<Jvm> jvmList = new ArrayList();
         jvmList.add(jvm);
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
@@ -393,6 +396,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         final List<Jvm> jvmList = new ArrayList();
+        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         jvmList.add(jvm);
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
         final CommandOutput execData = mock(CommandOutput.class);
@@ -410,6 +414,7 @@ public class ApplicationServiceImplTest {
     public void testDeployConfExecDataCommandFailureException() throws CommandFailureException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
+        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         final List<Jvm> jvmList = new ArrayList();
         jvmList.add(jvm);
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
@@ -428,6 +433,7 @@ public class ApplicationServiceImplTest {
     public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
+        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         final List<Jvm> jvmList = new ArrayList();
         jvmList.add(jvm);
         when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
@@ -545,7 +551,10 @@ public class ApplicationServiceImplTest {
 
         Set<Jvm> jvms = new HashSet<>();
         List<Jvm> jvmsList = new ArrayList<>();
-        final Jvm testjvm = new Jvm(new Identifier<Jvm>(11111L), "testjvm", groupSet);
+        final Jvm testjvm = mock(Jvm.class);
+        when(testjvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
+        when(testjvm.getJvmName()).thenReturn("testjvm");
+        when(testjvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         jvms.add(testjvm);
         jvmsList.add(testjvm);
 
@@ -578,9 +587,11 @@ public class ApplicationServiceImplTest {
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getHostName()).thenReturn("host1");
         when(mockJvm.getJvmName()).thenReturn("jvm1");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         Jvm mockJvm2 = mock(Jvm.class);
         when(mockJvm2.getHostName()).thenReturn("host2");
         when(mockJvm2.getJvmName()).thenReturn("jvm2");
+        when(mockJvm2.getState()).thenReturn(JvmState.JVM_STOPPED);
         jvms.add(mockJvm);
         jvms.add(mockJvm2);
         jvmList.add(mockJvm);

@@ -24,7 +24,7 @@ var StatusWidget = React.createClass({
     setStatus: function(newStatus, dateTime, errorMsg) {
         var newState = {status:newStatus};
 
-        if (errorMsg !== "") {
+        if (errorMsg !== "" && errorMsg !== null) {
             newState["newErrorMsg"] = true;
             newState["showErrorBtn"] = true;
             var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(errorMsg);

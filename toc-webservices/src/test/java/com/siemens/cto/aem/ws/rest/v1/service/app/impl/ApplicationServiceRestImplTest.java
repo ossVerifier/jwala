@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -436,13 +437,16 @@ public class ApplicationServiceRestImplTest {
         response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
 
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenThrow(new RuntimeException("Test fail deploy conf"));
-        response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
-        assertNotNull(response.getEntity());
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
+        try {
+            cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
+        } catch (InternalErrorException ie) {
+            assertEquals("Target JVM must be stopped", ie.getMessage());
+        }
     }
 
     @Test
-    public void testPreviewResourceTemplate(){
+    public void testPreviewResourceTemplate() {
         when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("preview content");
         Response response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());

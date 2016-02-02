@@ -192,6 +192,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                         };
                         uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
                     } catch (FileNotFoundException e) {
+                        logger.error("Invalid Path: Could not find resource template", e);
                         throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                     }
                 }
@@ -257,6 +258,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     };
                     uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
                 } catch (FileNotFoundException e) {
+                    logger.error("Invalid Path: Could not find resource template", e);
                     throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                 }
             }
@@ -272,8 +274,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
-            jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
             jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+            // only update the template in the DB if the deploy succeeded
+            jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
         }
         return ResponseBuilder.ok(group);
     }
@@ -327,6 +330,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     };
                     uploadWebServerTemplateRequests.add(uploadWSTemplateRequest);
                 } catch (FileNotFoundException e) {
+                    logger.error("Invalid Path: Could not find resource template", e);
                     throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                 }
             }
@@ -341,11 +345,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
         WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         for (WebServer webserver : group.getWebServers()) {
-            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
             Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
             if (response.getStatus() > 399) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, response.getStatusInfo().getReasonPhrase());
+                final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                logger.error("Remote Command Failure: " + reasonPhrase);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
+            // only update the template in the DB if the deploy succeeded
+            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
         }
         return ResponseBuilder.ok(group);
     }
@@ -502,6 +509,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
+            logger.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
@@ -559,11 +567,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         String appName = groupService.getAppNameFromResourceTemplate(fileName);
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
-            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
             Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             if (response.getStatus() > 399) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, response.getStatusInfo().getReasonPhrase());
+                final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                logger.error("Remote Command Failure: " + reasonPhrase);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
+            // only update the template in the DB if the deploy succeeded
+            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
         }
         return ResponseBuilder.ok(group);
     }

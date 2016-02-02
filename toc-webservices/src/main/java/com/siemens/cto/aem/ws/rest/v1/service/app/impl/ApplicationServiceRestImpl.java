@@ -188,28 +188,21 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
 
-        try {
-            final boolean doBackUpBeforeCopy = true;
-            final CommandOutput execData =
-                    service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, authUser.getUser());
-            if (execData.getReturnCode().wasSuccessful()) {
-                if (resourceTemplateName.endsWith(".properties")) {
-                    // deploy the application.properties and roleMapping.properties to the other hosts in the group
-                    service.deployConfToOtherJvmHosts(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
-                }
-                return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
-                        + jvmName);
-            } else {
-                logger.error("Failed to deploy application configuration ["+resourceTemplateName+"] for " + appName + " to " + jvmName + " :: " + execData.toString());
-                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
+        final boolean doBackUpBeforeCopy = true;
+        final CommandOutput execData =
+                service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, authUser.getUser());
+        if (execData.getReturnCode().wasSuccessful()) {
+            if (resourceTemplateName.endsWith(".properties")) {
+                // deploy the application.properties and roleMapping.properties to the other hosts in the group
+                service.deployConfToOtherJvmHosts(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
             }
-        } catch (RuntimeException re) {
-            logger.error("Exception deploying application configuration", re);
+            return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
+                    + jvmName);
+        } else {
+            logger.error("Failed to deploy application configuration [" + resourceTemplateName + "] for " + appName + " to " + jvmName + " :: " + execData.toString());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage()));
+                    AemFaultType.REMOTE_COMMAND_FAILURE, execData.toString()));
         }
-
     }
 
     @Override

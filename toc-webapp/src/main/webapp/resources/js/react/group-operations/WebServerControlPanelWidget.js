@@ -75,8 +75,8 @@ var WebServerControlPanelWidget = React.createClass({
     },
 
     generateHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
-        this.doneCallback[applicationResponseContent.webServerName]();
-        $.errorAlert(applicationResponseContent.message, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+        this.doneCallback[this.props.data.name]();
+        $.errorAlert(applicationResponseContent, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
     onClickStatusLink: function(e) {

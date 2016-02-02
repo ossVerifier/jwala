@@ -57,7 +57,12 @@ public class ResponseBuilder {
     }
 
     public static Response notOkWithDetails(Response.Status aStatus, FaultCodeException aFaultCode, Map<String, String> errorDetails) {
-        errorDetails.put("message", aFaultCode.getMessage());
+        String message = aFaultCode.getMessage();
+        if (message.contains("InternalErrorException: ")) {
+            int colonIndex = message.indexOf(": ");
+            message = message.substring(colonIndex + 2, message.length());
+        }
+        errorDetails.put("message", message);
         return new ResponseBuilder(aStatus).applicationResponse(new ApplicationResponse(aFaultCode.getMessageResponseStatus(),
                 errorDetails)).build();
     }

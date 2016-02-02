@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -13,7 +14,6 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -241,6 +241,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName);
             final Jvm jvm = jvmPersistenceService.findJvms(jvmName).get(0);
+            if (!jvm.getState().equals(JvmState.JVM_STOPPED)) {
+                LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
+            }
             final Application app = applicationPersistenceService.findApplication(appName, groupName, jvmName);
 
             final StringBuilder target = new StringBuilder();

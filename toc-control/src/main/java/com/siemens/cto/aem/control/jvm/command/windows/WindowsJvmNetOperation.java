@@ -107,7 +107,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     BACK_UP_FILE(JvmControlOperation.BACK_UP_FILE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand( cygpathWrapper(BACK_UP_FILE_SCRIPT_NAME), aParams[0], aParams[1]);
+            return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
         }
     };
 

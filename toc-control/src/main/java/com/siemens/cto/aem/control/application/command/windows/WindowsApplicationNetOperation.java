@@ -2,16 +2,21 @@ package com.siemens.cto.aem.control.application.command.windows;
 
 import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.*;
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
+    DEPLOY_WAR(ApplicationControlOperation.DEPLOY_WAR) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
+        }
+    },
     DEPLOY_CONFIG_FILE(ApplicationControlOperation.DEPLOY_CONFIG_FILE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {

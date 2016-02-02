@@ -434,7 +434,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
 
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: FAIL CONTROL SERVICE", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals("FAIL CONTROL SERVICE", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
@@ -449,7 +449,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals("Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
@@ -466,7 +466,7 @@ public class JvmServiceRestImplTest {
 
         when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals("Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test

@@ -26,7 +26,6 @@ public class AemControl {
         DEPLOY_CONFIG_TAR_SCRIPT_NAME("commands.cygwin.deploy-config-tar", "deploy-config-tar.sh"),
         DELETE_SERVICE_SCRIPT_NAME("commands.cygwin.delete-service", "delete-service.sh"),
         INVOKE_SERVICE_SCRIPT_NAME("commands.cygwin.invoke-service", "invoke-service.sh"),
-        BACK_UP_FILE_SCRIPT_NAME("commands.cygwin.back_up_file", "backup-file.sh"),
         SLEEP_TIME("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
 
         private final String propertyName;
