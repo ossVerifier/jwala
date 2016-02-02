@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -85,8 +86,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     @Override
     public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
-        final JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
-        return jpaJvmConfigTemplate;
+        return jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
     }
 
     @Override
@@ -116,13 +116,18 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public void updateState(final Identifier<Jvm> id, final String state) {
+    public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmCrudService.updateState(id, state);
     }
 
     @Override
     public void updateErrorStatus(final Identifier<Jvm> id, final String errorStatus) {
         jvmCrudService.updateErrorStatus(id, errorStatus);
+    }
+
+    @Override
+    public void updateState(final Identifier<Jvm> id, final JvmState state, final String errorStatus) {
+        jvmCrudService.updateState(id, state, errorStatus);
     }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {

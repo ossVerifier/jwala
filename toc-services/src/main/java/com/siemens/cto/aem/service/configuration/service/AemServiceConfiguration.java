@@ -176,9 +176,11 @@ public class AemServiceConfiguration {
     @Bean(name = "jvmService")
     public JvmService getJvmService(ClientFactoryHelper factoryHelper) {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
-                getGroupService(),
-                fileManager,
-                getJvmStateService());
+                                  getGroupService(),
+                                  fileManager,
+                                  getJvmStateService(),
+                                  getStateNotificationService(),
+                                  grpStateComputationAndNotificationSvc);
     }
 
     @Bean(name = "webServerService")

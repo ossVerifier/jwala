@@ -67,12 +67,12 @@ public class JvmStateMessageListener implements MessageListener {
         if (jvmLastPersistedStateMap.containsKey(newState.getId())) {
             if (!jvmLastPersistedStateMap.get(newState.getId()).equals(newState.getState())) {
                 jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
-                jvmPersistenceService.updateState(newState.getId(), newState.getState().toStateLabel());
+                jvmPersistenceService.updateState(newState.getId(), newState.getState());
                 computeGroupState = true;
             }
         } else {
             jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
-            jvmPersistenceService.updateState(newState.getId(), newState.getState().toStateLabel());
+            jvmPersistenceService.updateState(newState.getId(), newState.getState());
             computeGroupState = true;
         }
 

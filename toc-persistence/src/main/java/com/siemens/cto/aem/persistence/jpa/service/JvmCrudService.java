@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -40,8 +41,9 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     Jvm findJvm(String jvmName, String groupName);
 
-    void updateState(Identifier<Jvm> id, String state);
+    void updateState(Identifier<Jvm> id, JvmState state);
 
     void updateErrorStatus(Identifier<Jvm> id, String errorStatus);
 
+    void updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
 }

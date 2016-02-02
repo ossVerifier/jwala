@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.exception.NotFoundException;
@@ -47,8 +48,10 @@ public interface JvmPersistenceService {
 
     Jvm findJvm(String jvmName, String groupName);
 
-    void updateState(Identifier<Jvm> id, String state);
+    void updateState(Identifier<Jvm> id, JvmState state);
 
     void updateErrorStatus(Identifier<Jvm> id, String errorSatus);
+
+    void updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
 
 }

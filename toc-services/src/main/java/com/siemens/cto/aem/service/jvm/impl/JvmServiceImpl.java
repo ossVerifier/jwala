@@ -23,6 +23,8 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
@@ -53,7 +55,8 @@ public class JvmServiceImpl implements JvmService {
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final FileManager fileManager;
-    private final StateService<Jvm, JvmState> stateService;
+    private final StateNotificationService stateNotificationService;
+    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
@@ -61,11 +64,14 @@ public class JvmServiceImpl implements JvmService {
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
                           final FileManager theFileManager,
-                          final StateService<Jvm, JvmState> theJvmStateService) {
+                          final StateService<Jvm, JvmState> theJvmStateService,
+                          final StateNotificationService stateNotificationService,
+                          final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         fileManager = theFileManager;
-        stateService = theJvmStateService;
+        this.stateNotificationService = stateNotificationService;
+        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     @Override
@@ -246,8 +252,9 @@ public class JvmServiceImpl implements JvmService {
     private void setState(final Jvm jvm,
                           final JvmState state,
                           final String msg) {
-        stateService.setCurrentState(createStateCommand(jvm.getId(), state, msg),
-                User.getSystemUser());
+        jvmPersistenceService.updateState(jvm.getId(), state, msg);
+        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
+        grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
     }
 
     /**
@@ -333,7 +340,7 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
-        jvmPersistenceService.updateState(id, state.toStateLabel());
+        jvmPersistenceService.updateState(id, state);
     }
 
 }

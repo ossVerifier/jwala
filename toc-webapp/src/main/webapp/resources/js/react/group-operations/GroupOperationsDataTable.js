@@ -780,6 +780,7 @@ var GroupOperationsDataTable = React.createClass({
                                      from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
                                      "action-status-font");
        }
+       ServiceFactory.getJvmService().diagnoseJvm(data.id.id);
    },
     onClickHealthCheck: function(unused1, unused2, data) {
         var url = window.location.protocol + "//" +

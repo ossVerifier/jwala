@@ -17,6 +17,8 @@ import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Before;
@@ -46,6 +48,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private RuntimeCommandBuilder rtCommandBuilder;
     private RuntimeCommand command;
     private StateService<Jvm, JvmState> stateService;
+    private StateNotificationService stateNotificationService;
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -55,7 +59,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         user = new User("unused");
         fileManager = mock(FileManager.class);
         stateService = (StateService<Jvm, JvmState>) mock(StateService.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateService);
+        stateNotificationService = mock(StateNotificationService.class);
+        grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateService, stateNotificationService,
+                grpStateComputationAndNotificationSvc);
         rtCommandBuilder = mock(RuntimeCommandBuilder.class);
         command = mock(RuntimeCommand.class);
     }
