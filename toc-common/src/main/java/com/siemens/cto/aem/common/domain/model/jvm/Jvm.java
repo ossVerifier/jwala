@@ -147,38 +147,12 @@ public class Jvm implements Serializable {
 
         Jvm jvm = (Jvm) o;
 
-        if (!id.equals(jvm.id)) return false;
-        if (!jvmName.equals(jvm.jvmName)) return false;
-        if (hostName != null ? !hostName.equals(jvm.hostName) : jvm.hostName != null) return false;
-        if (groups != null ? !groups.equals(jvm.groups) : jvm.groups != null) return false;
-        if (httpPort != null ? !httpPort.equals(jvm.httpPort) : jvm.httpPort != null) return false;
-        if (httpsPort != null ? !httpsPort.equals(jvm.httpsPort) : jvm.httpsPort != null) return false;
-        if (redirectPort != null ? !redirectPort.equals(jvm.redirectPort) : jvm.redirectPort != null) return false;
-        if (shutdownPort != null ? !shutdownPort.equals(jvm.shutdownPort) : jvm.shutdownPort != null) return false;
-        if (ajpPort != null ? !ajpPort.equals(jvm.ajpPort) : jvm.ajpPort != null) return false;
-        if (statusPath != null ? !statusPath.equals(jvm.statusPath) : jvm.statusPath != null) return false;
-        if (systemProperties != null ? !systemProperties.equals(jvm.systemProperties) : jvm.systemProperties != null)
-            return false;
-        if (state != null ? !state.equals(jvm.state) : jvm.state != null) return false;
-        return !(errorStatus != null ? !errorStatus.equals(jvm.errorStatus) : jvm.errorStatus != null);
+        return id.equals(jvm.id);
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + jvmName.hashCode();
-        result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
-        result = 31 * result + (groups != null ? groups.hashCode() : 0);
-        result = 31 * result + (httpPort != null ? httpPort.hashCode() : 0);
-        result = 31 * result + (httpsPort != null ? httpsPort.hashCode() : 0);
-        result = 31 * result + (redirectPort != null ? redirectPort.hashCode() : 0);
-        result = 31 * result + (shutdownPort != null ? shutdownPort.hashCode() : 0);
-        result = 31 * result + (ajpPort != null ? ajpPort.hashCode() : 0);
-        result = 31 * result + (statusPath != null ? statusPath.hashCode() : 0);
-        result = 31 * result + (systemProperties != null ? systemProperties.hashCode() : 0);
-        result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (errorStatus != null ? errorStatus.hashCode() : 0);
-        return result;
+        return id.hashCode();
     }
 
     @Override
@@ -195,7 +169,7 @@ public class Jvm implements Serializable {
                 ", ajpPort=" + ajpPort +
                 ", statusPath=" + statusPath +
                 ", systemProperties='" + systemProperties + '\'' +
-                ", state='" + state + '\'' +
+                ", state=" + state +
                 ", errorStatus='" + errorStatus + '\'' +
                 '}';
     }
