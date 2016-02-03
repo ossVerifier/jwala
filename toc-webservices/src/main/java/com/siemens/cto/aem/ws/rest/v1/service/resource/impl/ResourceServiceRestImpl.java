@@ -73,6 +73,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             resourceService.deleteResources(groupName, resourceNames);
             return ResponseBuilder.ok();
         } catch (RuntimeException e) {
+            LOGGER.error("Could not remove resources {}", resourceNames);
         	throw new InternalErrorException(AemFaultType.PERSISTENCE_ERROR, String.format("Could not remove resources {}", resourceNames), e);
         }
     }

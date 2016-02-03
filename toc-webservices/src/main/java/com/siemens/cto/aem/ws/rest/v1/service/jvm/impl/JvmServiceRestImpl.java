@@ -164,7 +164,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                         jvm.getJvmName());
             }
         } else {
-            logger.error("The target JVM must be stopped before attempting to delete it");
+            logger.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "The target JVM must be stopped before attempting to delete it");
         }
@@ -179,8 +179,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(commandOutput);
         } else {
             final String standardError = commandOutput.getStandardError();
-            logger.error("Control JVM unsuccessful: " + standardError);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, standardError);
+            final String standardOutput = commandOutput.getStandardOutput();
+            String errMessage = !standardError.isEmpty() ? standardError : standardOutput;
+            logger.error("Control JVM unsuccessful: " + errMessage);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
         }
     }
 
@@ -319,7 +321,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                logger.error("The target JVM must be stopped before attempting to update the resource files");
+                logger.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
@@ -429,7 +431,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         try {
             if (jvmService.isJvmStarted(jvm)) {
-                logger.error("The target JVM must be stopped before attempting to update the resource files");
+                logger.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }

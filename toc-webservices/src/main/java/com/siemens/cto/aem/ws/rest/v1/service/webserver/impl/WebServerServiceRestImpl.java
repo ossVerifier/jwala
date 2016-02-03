@@ -152,8 +152,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
             final String standardError = commandOutput.getStandardError();
-            logger.error("Control Operation Unsuccessful: " + standardError);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, standardError);
+            final String standardOut = commandOutput.getStandardOutput();
+            String errMessage = !standardError.isEmpty() ? standardError : standardOut;
+            logger.error("Control Operation Unsuccessful: " + errMessage);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
         }
     }
 
@@ -183,7 +185,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
 
             if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))){
-                logger.error("The target Web Server must be stopped before attempting to update the resource file");
+                logger.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
@@ -297,7 +299,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         WebServer webServer = webServerService.getWebServer(webServerName);
         if (null == webServer) {
-            logger.error("JVM Not Found: Could not find web server with name " + webServerName);
+            logger.error("Web Server Not Found: Could not find web server with name " + webServerName);
             throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name " + webServerName);
         }
 

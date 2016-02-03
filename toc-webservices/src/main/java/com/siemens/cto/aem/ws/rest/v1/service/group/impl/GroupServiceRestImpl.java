@@ -348,7 +348,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                logger.error("Remote Command Failure: " + reasonPhrase);
+                logger.error("Remote Command Failure for web server " + webserver.getName() + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
             // only update the template in the DB if the deploy succeeded
@@ -570,7 +570,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                logger.error("Remote Command Failure: " + reasonPhrase);
+                logger.error("Remote Command Failure for JVM " + jvmName + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
             // only update the template in the DB if the deploy succeeded
