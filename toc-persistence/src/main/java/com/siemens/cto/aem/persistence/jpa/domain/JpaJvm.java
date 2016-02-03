@@ -195,4 +195,23 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
         return id.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "JpaJvm{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", groups=" + groups +
+                ", httpPort=" + httpPort +
+                ", httpsPort=" + httpsPort +
+                ", redirectPort=" + redirectPort +
+                ", shutdownPort=" + shutdownPort +
+                ", ajpPort=" + ajpPort +
+                ", statusPath='" + statusPath + '\'' +
+                ", systemProperties='" + systemProperties + '\'' +
+                ", stateName='" + stateName + '\'' +
+                ", errorStatus='" + errorStatus + '\'' +
+                '}';
+    }
+
 }
