@@ -156,6 +156,12 @@ public class GroupServiceImplDeployTest {
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
+
+        try {
+            FileUtils.forceDelete(new File("./testJvm"));
+        } catch (IOException e) {
+            assertTrue("This should not fail :: " + e, false);
+        }
     }
 
     @Test
