@@ -50,15 +50,21 @@ public class JvmControlServiceImpl implements JvmControlService {
     public CommandOutput controlJvm(ControlJvmRequest controlJvmRequest, User aUser) {
         final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
         try {
-            final String event = controlJvmRequest.getControlOperation().getOperationState() == null ?
-                    controlJvmRequest.getControlOperation().name() : controlJvmRequest.getControlOperation().getOperationState().toStateLabel();
+            final JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
+            final String event = ctrlOp.getOperationState() == null ?
+                    ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
             historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
-                    controlJvmRequest.getControlOperation(), new WindowsJvmPlatformCommandProvider());
+                    ctrlOp, new WindowsJvmPlatformCommandProvider());
+
+            if (commandOutput != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
+                commandOutput.cleanStandardOutput();
+                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
+            }
 
             // Process other return codes...
-            if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
+            if (commandOutput != null && commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
                 commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                 final JvmSetStateRequest jvmSetStateRequest = new JvmSetStateCommandBuilder().setJvmId(controlJvmRequest.getJvmId())
                                                                                              .setJvmState(JvmState.SVC_STOPPED)
