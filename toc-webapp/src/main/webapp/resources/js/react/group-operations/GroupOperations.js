@@ -273,31 +273,6 @@ var GroupOperations = React.createClass({
 
         this.statePoller.start();
     },
-
-// TODO: Remove!
-//    fetchCurrentGroupStates: function() {
-//        var self = this;
-//        this.props.stateService.getCurrentGroupStates()
-//            .then(function(data) {self.updateGroupsStateData(data.applicationResponseContent);})
-//            .caught(function(e) {console.log(e);});
-//    },
-
-// TODO: Remove!
-//    fetchCurrentWebServerStates: function() {
-//        var self = this;
-//        this.props.stateService.getCurrentWebServerStates()
-//            .then(function(data) {self.updateWebServerStateData(data.applicationResponseContent);})
-//            .caught(function(e) {console.log(e);});
-//    },
-
-// TODO: Remove!
-//    fetchCurrentJvmStates: function() {
-//        var self = this;
-//        this.props.stateService.getCurrentJvmStates()
-//            .then(function(data) {self.updateJvmStateData(data.applicationResponseContent);})
-//            .caught(function(e) {console.log(e);});
-//    },
-
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
                                                               groupId,
