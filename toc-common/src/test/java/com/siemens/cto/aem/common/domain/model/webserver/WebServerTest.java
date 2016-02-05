@@ -28,7 +28,7 @@ public class WebServerTest {
     private static final Path SVR_ROOT = new Path("./");
     private static final Path DOC_ROOT = new Path("htdocs");
     private final WebServer ws = new WebServer(wsId, groups, NAME, HOST, port, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE,
-                                        SVR_ROOT, DOC_ROOT);
+                                        SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
 
     @Test
     public void testGetId() {
@@ -74,7 +74,9 @@ public class WebServerTest {
                                                   STATUS_PATH,
                                                   HTTP_CONFIG_FILE,
                                                   SVR_ROOT,
-                                                  DOC_ROOT);
+                                                  DOC_ROOT,
+                                                  WebServerReachableState.WS_UNREACHABLE,
+                                                  null);
         final URI actualUri = webServer.getStatusUri();
         assertEquals(expectedUri,
                      actualUri);

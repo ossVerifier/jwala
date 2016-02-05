@@ -25,7 +25,6 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -64,7 +63,6 @@ public class JvmServiceImpl implements JvmService {
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
                           final FileManager theFileManager,
-                          final StateService<Jvm, JvmState> theJvmStateService,
                           final StateNotificationService stateNotificationService,
                           final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         jvmPersistenceService = theJvmPersistenceService;
@@ -226,13 +224,13 @@ public class JvmServiceImpl implements JvmService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 setState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
             } else {
-                setState(jvm, JvmState.SVC_STOPPED,
+                setState(jvm, JvmState.JVM_STOPPED,
                         "Request for '" + jvm.getStatusUri() + "' failed with a response code of '" +
                                 response.getStatusCode() + "'");
             }
         } catch (IOException ioe) {
             LOGGER.info(ioe.getMessage(), ioe);
-            setState(jvm, JvmState.SVC_STOPPED, StringUtils.EMPTY);
+            setState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
         } catch (RuntimeException rte) {
             LOGGER.error(rte.getMessage(), rte);
         } finally {

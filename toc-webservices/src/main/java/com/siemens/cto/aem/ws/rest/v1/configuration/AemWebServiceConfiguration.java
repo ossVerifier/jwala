@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.configuration;
 
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -13,7 +9,6 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -88,14 +83,6 @@ public class AemWebServiceConfiguration {
     private ResourceService resourceService;
 
     @Autowired
-    @Qualifier("jvmStateService")
-    private StateService<Jvm, JvmState> jvmStateService;
-
-    @Autowired
-    @Qualifier("webServerStateService")
-    private StateService<WebServer, WebServerReachableState> webServerStateService;
-
-    @Autowired
     @Qualifier("stateNotificationService")
     private StateNotificationService stateNotificationService;
 
@@ -158,13 +145,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService,
-                                      jvmControlService,
-                                      jvmStateService,
-                                      resourceService,
-                                      getExecutorService(),
-                                      jvmWriteLockMap,
-                                      grpStateComputationAndNotificationSvc);
+        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap,
+                grpStateComputationAndNotificationSvc);
     }
 
     @Bean
@@ -177,7 +159,6 @@ public class AemWebServiceConfiguration {
         return new WebServerServiceRestImpl(webServerService,
                 webServerControlService,
                 webServerCommandService,
-                webServerStateService,
                 wsWriteLockMap,
                 resourceService);
     }
@@ -190,8 +171,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public StateServiceRest getV1StateServiceRest() {
-        return new StateServiceRestImpl(stateNotificationService,
-                getStateConsumerManager());
+        return new StateServiceRestImpl(stateNotificationService, getStateConsumerManager());
     }
 
     @Bean

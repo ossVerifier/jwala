@@ -13,13 +13,18 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = JpaGroup.QUERY_GET_GROUP_ID, query = "SELECT g.id FROM JpaGroup g WHERE g.name = :name"),
         @NamedQuery(name = JpaGroup.QUERY_GET_GROUP, query = "SELECT g FROM JpaGroup g WHERE g.id = :groupId"),
-        @NamedQuery(name = JpaGroup.QUERY_GET_GROUPS_WITH_WEBSERVER, query = "SELECT g FROM JpaGroup g WHERE :webServer MEMBER OF g.webServers")
+        @NamedQuery(name = JpaGroup.QUERY_GET_GROUPS_WITH_WEBSERVER, query = "SELECT g FROM JpaGroup g WHERE :webServer MEMBER OF g.webServers"),
+        @NamedQuery(name = JpaGroup.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaGroup g SET g.stateName = :state WHERE g.id = :id")
 })
 public class JpaGroup extends AbstractEntity<JpaGroup> {
 
     public static final String QUERY_GET_GROUP_ID = "getGroupId";
     public static final String QUERY_GET_GROUP = "getGroup";
     public static final String QUERY_GET_GROUPS_WITH_WEBSERVER = "getGroupWithWebServer";
+    public static final String QUERY_UPDATE_STATE_BY_ID = "updateStateById";
+
+    public static final String QUERY_PARAM_ID = "id";
+    public static final String QUERY_PARAM_STATE = "state";
 
     private static final long serialVersionUID = -2125399708516728584L;
 
@@ -38,9 +43,8 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
                uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "JVM_ID"}))
     private List<JpaJvm> jvms = new ArrayList<>();
 
-    @Column(nullable = true)
-    @Enumerated(EnumType.STRING)
-    private GroupState state;
+    @Column(name = "STATE")
+    private String stateName;
     
     @Column(nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
@@ -82,11 +86,11 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     }
     
     public GroupState getState() {
-        return state;
+        return GroupState.convertFrom(stateName);
     }
 
     public void setState(GroupState state) {
-        this.state = state;
+        this.stateName = state.name();
     }
 
     public Calendar getStateUpdated() {

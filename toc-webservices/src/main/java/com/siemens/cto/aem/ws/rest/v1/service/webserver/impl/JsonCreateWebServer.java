@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
@@ -62,15 +63,9 @@ public class JsonCreateWebServer {
                                                         AemFaultType.INVALID_WEBSERVER_HTTPS_PORT,
                                                         null);
 
-        return new CreateWebServerRequest(ids,
-                                          webserverName,
-                                          hostName,
-                                          port,
-                                          securePort,
-                                          new Path(statusPath),
-                                          new FileSystemPath(httpConfigFile),
-                                          new Path(svrRoot),
-                                          new Path(docRoot));
+        return new CreateWebServerRequest(ids, webserverName, hostName, port, securePort, new Path(statusPath),
+                new FileSystemPath(httpConfigFile), new Path(svrRoot), new Path(docRoot),
+                WebServerReachableState.WS_UNREACHABLE, null);
     }
 
     private Integer convertFrom(final String aValue,

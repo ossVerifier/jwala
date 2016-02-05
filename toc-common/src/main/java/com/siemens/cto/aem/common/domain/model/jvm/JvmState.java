@@ -22,17 +22,12 @@ public enum JvmState implements OperationalState {
     JVM_STARTED      (StateLabel.STARTED, Started.YES),
     JVM_STOP         (StateLabel.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
     JVM_STOPPING     (StateLabel.STOPPING, Started.YES),
-    JVM_STOPPED      (StateLabel.STOPPED, Started.YES) /* Reported by ReportingLifeCycleListener.
-                                                         This states that the application server has STOPPED which is
-                                                         different from saying that the application itself has exited or
-                                                         has been terminated. */,
+    JVM_STOPPED      (StateLabel.STOPPED, Started.YES),
     JVM_DESTROYING  (StateLabel.DESTROYING, Started.YES),
     JVM_DESTROYED   (StateLabel.DESTROYED, Started.YES),
     JVM_UNKNOWN     (StateLabel.UNKNOWN, Started.NO),
     JVM_FAILED      (StateLabel.FAILED, Started.NO),
-    SVC_STOPPED     (StateLabel.STOPPED, Started.NO) /* Reported by something other than the ReportingLifeCycleListener
-                                                        e.g. sc query. This means that Window's service states that the
-                                                        application is no longer running. */,
+    FORCED_STOPPED(StateLabel.FORCED_STOPPED, Started.NO),
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
@@ -104,6 +99,7 @@ public enum JvmState implements OperationalState {
         public static final String DESTROYED = "DESTROYED";
         public static final String UNKNOWN = "UNKNOWN";
         public static final String FAILED = "FAILED";
+        public static final String FORCED_STOPPED = "FORCE STOPPED";
     }
 
     private static class Started {

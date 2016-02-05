@@ -72,8 +72,8 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService,
-                mockJvmStateStateService);
+        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService
+        );
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }
@@ -105,13 +105,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         verify(controlCommand, times(1)).validate();
         //TODO change to use @Captor instead, much easier
         verify(jvmService, times(1)).getJvm(eq(jvmId));
-        verify(commandExecutor, times(1)).executeRemoteCommand(
-                eq(jvmName),
-                eq(jvmHost),
-                eq(controlOperation),
+        verify(commandExecutor, times(1)).executeRemoteCommand(eq(jvmName), eq(jvmHost), eq(controlOperation),
                 any(WindowsJvmPlatformCommandProvider.class));
-        verify(jvmStateService, times(1)).setCurrentState(setJvmStateCommand.capture(),
-                eq(user));
+        verify(jvmService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
 
         assertEquals(jvmId,
                 setJvmStateCommand.getValue().getNewState().getId());
@@ -126,7 +122,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertTrue(returnOutput.getReturnCode().getWasSuccessful());
 
-        when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+        when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP), "No op", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertNull(returnOutput);
@@ -197,7 +193,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(eq("testJvmName"), eq("testJvmHost"), eq(JvmControlOperation.START), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(mockExecData);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
-        when(jvmStateService.getCurrentState(any(Identifier.class))).thenReturn(new CurrentState<>(jvmId, JvmState.JVM_STARTED, DateTime.now(), StateType.JVM));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
 
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
@@ -57,18 +58,10 @@ public class JsonUpdateWebServer {
     }
 
     public UpdateWebServerRequest toUpdateWebServerRequest() {
-
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
-        return new UpdateWebServerRequest(convertWebServerId(),
-                                          groups,
-                                          webServerName,
-                                          hostName,
-                                          convertPortNumber(),
-                                          convertHttpsPortNumber(),
-                                          new Path(statusPath),
-                                          new FileSystemPath(httpConfigFile),
-                                          new Path(svrRoot),
-                                          new Path(docRoot));
+        return new UpdateWebServerRequest(convertWebServerId(), groups, webServerName, hostName, convertPortNumber(),
+                convertHttpsPortNumber(), new Path(statusPath), new FileSystemPath(httpConfigFile), new Path(svrRoot),
+                new Path(docRoot), WebServerReachableState.WS_UNREACHABLE, null);
     }
 
     protected Identifier<WebServer> convertWebServerId() {

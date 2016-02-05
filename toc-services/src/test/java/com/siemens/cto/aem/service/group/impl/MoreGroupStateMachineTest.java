@@ -142,15 +142,9 @@ public class MoreGroupStateMachineTest {
         jvm = new Jvm(id(1L, Jvm.class), "", "", lgroups, 0, 0, 0, 0, 0, new Path("/abc"),
                 "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null);
         jvms.add(jvm);
-        ws = new WebServer(id(1L, WebServer.class),
-                           groups, "ws-1",
-                           "localhost",
-                           80,
-                           443,
-                           new Path("/statusPath"),
-                           new FileSystemPath("d:/some-dir/httpd.conf"),
-                           new Path("./"),
-                           new Path("htdocs"));
+        ws = new WebServer(id(1L, WebServer.class), groups, "ws-1", "localhost", 80, 443, new Path("/statusPath"),
+                new FileSystemPath("d:/some-dir/httpd.conf"), new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE,
+                null);
         wsList.add(ws);
         mockGroup = new Group(mockGroup.getId(),  mockGroup.getName(), jvms, GroupState.GRP_INITIALIZED, DateTime.now());
         wsReachableSet.add(new CurrentState(ws.getId(), WebServerReachableState.WS_REACHABLE, DateTime.now(), StateType.WEB_SERVER));
@@ -219,18 +213,18 @@ public class MoreGroupStateMachineTest {
 //    public void testWebServerTriggers() {
 //
 //        setWsState(WebServerReachableState.WS_UNREACHABLE);
-//        setJvmState(JvmState.SVC_STOPPED);
+//        setJvmState(JvmState.FORCED_STOPPED);
 //        classUnderTest.synchronizedInitializeGroup(mockGroup, testUser);
 //        assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 //
 //        setWsState(WebServerReachableState.WS_REACHABLE);
-//        setJvmState(JvmState.SVC_STOPPED);
+//        setJvmState(JvmState.FORCED_STOPPED);
 //        classUnderTest.wsUnreachable(ws.getId());
 //        classUnderTest.refreshState();
 //        assertEquals(GroupState.GRP_PARTIAL, classUnderTest.getCurrentState());
 //
 //        setWsState(WebServerReachableState.WS_UNREACHABLE);
-//        setJvmState(JvmState.SVC_STOPPED);
+//        setJvmState(JvmState.FORCED_STOPPED);
 //        classUnderTest.wsReachable(ws.getId());
 //        classUnderTest.refreshState();
 //        assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());

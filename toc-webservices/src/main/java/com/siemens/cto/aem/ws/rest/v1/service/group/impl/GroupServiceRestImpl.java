@@ -75,8 +75,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private GroupWebServerControlService groupWebServerControlService;
 
     @Autowired
-    @Qualifier("groupStateService")
-    private StateService<Group, GroupState> groupStateService;
 
     public GroupServiceRestImpl(final GroupService theGroupService, ResourceService theResourceService) {
         groupService = theGroupService;
@@ -391,17 +389,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getCurrentJvmStates(final GroupIdsParameterProvider aGroupIdsParameterProvider) {
-        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
-        final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
-        final Set<CurrentState<Group, GroupState>> currentGroupStates;
-
-        if (groupIds.isEmpty()) {
-            currentGroupStates = groupStateService.getCurrentStates();
-        } else {
-            currentGroupStates = groupStateService.getCurrentStates(groupIds);
-        }
-
-        return ResponseBuilder.ok(currentGroupStates);
+//        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
+//        final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
+//        final Set<CurrentState<Group, GroupState>> currentGroupStates;
+//
+//        if (groupIds.isEmpty()) {
+//            currentGroupStates = groupStateService.getCurrentStates();
+//        } else {
+//            currentGroupStates = groupStateService.getCurrentStates(groupIds);
+//        }
+//
+//        return ResponseBuilder.ok(currentGroupStates);
+        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
     }
 
     private List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {

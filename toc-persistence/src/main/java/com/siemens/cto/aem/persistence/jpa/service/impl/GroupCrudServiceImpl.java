@@ -351,5 +351,14 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
                     "Only expecting one template to be returned for GROUP APP Template [" + group.getName() + "] but returned " + templates.size() + " templates");
         }
     }
+
+    @Override
+    public void updateState(final Identifier<Group> id, final GroupState state) {
+        final Query query = entityManager.createNamedQuery(JpaGroup.QUERY_UPDATE_STATE_BY_ID);
+        query.setParameter(JpaGroup.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaGroup.QUERY_PARAM_ID, id.getId());
+        query.executeUpdate();
+    }
+
 }
 

@@ -5,9 +5,6 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -29,6 +26,8 @@ public class WebServer implements Serializable {
     private final FileSystemPath httpConfigFile;
     private final Path svrRoot;
     private final Path docRoot;
+    private final WebServerReachableState state;
+    private final String errorStatus;
 
     /**
      * Constructor for a bare minimum web server with group details.
@@ -51,6 +50,8 @@ public class WebServer implements Serializable {
         }
         svrRoot = null;
         docRoot = null;
+        state = WebServerReachableState.WS_UNKNOWN;
+        errorStatus = null;
     }
 
     public WebServer(final Identifier<WebServer> theId,
@@ -62,7 +63,9 @@ public class WebServer implements Serializable {
                      final Path theStatusPath,
                      final FileSystemPath theHttpConfigFile,
                      final Path theSvrRoot,
-                     final Path theDocRoot) { id = theId;
+                     final Path theDocRoot,
+                     final WebServerReachableState state,
+                     final String errorStatus) { id = theId;
         host = theHost;
         port = thePort;
         name = theName;
@@ -74,6 +77,8 @@ public class WebServer implements Serializable {
         }
         svrRoot = theSvrRoot;
         docRoot = theDocRoot;
+        this.state = state;
+        this.errorStatus = errorStatus;
     }
 
     public Identifier<WebServer> getId() {
@@ -128,61 +133,53 @@ public class WebServer implements Serializable {
         return docRoot;
     }
 
+    public WebServerReachableState getState() {
+        return state;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
+    /**
+     * The user friendly state wording.
+     * @return the state e.g. STOPPED instead of the state name which is JVM_STOPPED.
+     */
+    public String getStateLabel() {
+        return state.toStateLabel();
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        WebServer rhs = (WebServer) obj;
-        return new EqualsBuilder()
-                .append(this.id, rhs.id)
-                .append(this.groups, rhs.groups)
-                .append(this.host, rhs.host)
-                .append(this.name, rhs.name)
-                .append(this.port, rhs.port)
-                .append(this.httpsPort, rhs.httpsPort)
-                .append(this.statusPath, rhs.statusPath)
-                .append(this.httpConfigFile, rhs.httpConfigFile)
-                .append(this.svrRoot, rhs.svrRoot)
-                .append(this.docRoot, rhs.docRoot)
-                .isEquals();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WebServer webServer = (WebServer) o;
+
+        return !(id != null ? !id.equals(webServer.id) : webServer.id != null);
+
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(groups)
-                .append(host)
-                .append(name)
-                .append(port)
-                .append(httpsPort)
-                .append(statusPath)
-                .append(httpConfigFile)
-                .append(svrRoot)
-                .append(docRoot)
-                .toHashCode();
+        return id != null ? id.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("host", host)
-                .append("name", name)
-                .append("port", port)
-                .append("httpsPort", httpsPort)
-                .append("statusPath", statusPath)
-                .append("httpConfigFile", httpConfigFile)
-                .append("groups", groups)
-                .append("svrRoot", svrRoot)
-                .append("docRoot", docRoot)
-                .toString();
+        return "WebServer{" +
+                "id=" + id +
+                ", groups=" + groups +
+                ", host='" + host + '\'' +
+                ", name='" + name + '\'' +
+                ", port=" + port +
+                ", httpsPort=" + httpsPort +
+                ", statusPath=" + statusPath +
+                ", httpConfigFile=" + httpConfigFile +
+                ", svrRoot=" + svrRoot +
+                ", docRoot=" + docRoot +
+                ", state=" + state +
+                ", errorStatus='" + errorStatus + '\'' +
+                '}';
     }
 }

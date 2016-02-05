@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -34,16 +33,13 @@ public class JvmControlServiceImpl implements JvmControlService {
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
-    private final StateService<Jvm, JvmState> jvmStateService;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
-                                 final HistoryService historyService,
-                                 final StateService<Jvm, JvmState> jvmStateService) {
+                                 final HistoryService historyService) {
         jvmService = theJvmService;
         remoteCommandExecutor = theExecutor;
         this.historyService = historyService;
-        this.jvmStateService = jvmStateService;
     }
 
     @Override
@@ -66,15 +62,12 @@ public class JvmControlServiceImpl implements JvmControlService {
             // Process other return codes...
             if (commandOutput != null && commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
                 commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
-                final JvmSetStateRequest jvmSetStateRequest = new JvmSetStateCommandBuilder().setJvmId(controlJvmRequest.getJvmId())
-                                                                                             .setJvmState(JvmState.SVC_STOPPED)
-                                                                                             .setMessage(FORCED_STOPPED)
-                                                                                             .build();
-                jvmStateService.setCurrentState(jvmSetStateRequest, aUser);
+                jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
             }
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
+            // TODO: Write to history and send to UI to be displayed in the control history widget. Look at WebServerControlServiceImpl for reference.
             LOGGER.error(cfe.getMessage(), cfe);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, cfe);

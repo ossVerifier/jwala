@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.webserver.*;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -36,15 +35,12 @@ public class WebServerServiceImpl implements WebServerService {
     private final WebServerPersistenceService webServerPersistenceService;
 
     private final FileManager fileManager;
-    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     private final String HTTPD_CONF = "httpd.conf";
 
-    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
-                                final FileManager theFileManager, StateService<WebServer, WebServerReachableState> webServerStateService) {
+    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService, final FileManager theFileManager) {
         this.webServerPersistenceService = webServerPersistenceService;
         fileManager = theFileManager;
-        this.webServerStateService = webServerStateService;
     }
 
     @Override
@@ -66,7 +62,9 @@ public class WebServerServiceImpl implements WebServerService {
                                                   createWebServerRequest.getStatusPath(),
                                                   createWebServerRequest.getHttpConfigFile(),
                                                   createWebServerRequest.getSvrRoot(),
-                                                  createWebServerRequest.getDocRoot());
+                                                  createWebServerRequest.getDocRoot(),
+                                                  createWebServerRequest.getState(),
+                                                  createWebServerRequest.getErrorStatus());
 
         return webServerPersistenceService.createWebServer(webServer, aCreatingUser.getId());
     }
@@ -120,7 +118,9 @@ public class WebServerServiceImpl implements WebServerService {
                                                   anUpdateWebServerCommand.getNewStatusPath(),
                                                   anUpdateWebServerCommand.getNewHttpConfigFile(),
                                                   anUpdateWebServerCommand.getNewSvrRoot(),
-                                                  anUpdateWebServerCommand.getNewDocRoot());
+                                                  anUpdateWebServerCommand.getNewDocRoot(),
+                                                  anUpdateWebServerCommand.getState(),
+                                                  anUpdateWebServerCommand.getErrorStatus());
 
         return webServerPersistenceService.updateWebServer(webServer, anUpdatingUser.getId());
     }
@@ -128,14 +128,23 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
-
         webServerPersistenceService.removeWebServer(aWebServerId);
     }
 
     @Override
     public boolean isStarted(WebServer webServer) {
-        CurrentState<WebServer, WebServerReachableState> currentWSState = webServerStateService.getCurrentState(webServer.getId());
-        return currentWSState.getState().equals(WebServerReachableState.WS_REACHABLE);
+        return WebServerReachableState.WS_REACHABLE.equals(webServer.getState());
+    }
+
+    @Override
+    public void updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
+        webServerPersistenceService.updateErrorStatus(id, errorStatus);
+    }
+
+    @Override
+    @Transactional
+    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
+        webServerPersistenceService.updateState(id, state, errorStatus);
     }
 
     @Override

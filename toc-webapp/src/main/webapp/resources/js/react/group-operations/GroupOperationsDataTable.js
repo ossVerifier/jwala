@@ -229,21 +229,10 @@ var GroupOperationsDataTable = React.createClass({
            return React.render(<StatusWidget key={key} defaultStatus=""
                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                       GroupOperations.groupStatusWidgetMap[key] = this;
-
-                      // Fetch and set initial state
-                      var statusWidget = this;
-                      self.props.stateService.getCurrentGroupStates(oData.id.id)
-                                             .then(function(data) {
-                                                      if (self.props.parent.pollError) {
-                                                          statusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(),
-                                                                    response.responseJSON.applicationResponseContent);
-                                                      } else {
-                                                          statusWidget.setStatus(data.applicationResponseContent[0].stateString,
-                                                                                 data.applicationResponseContent[0].asOf,
-                                                                                 data.applicationResponseContent[0].message);
-                                                      }
-                                                   });
-
+                      // Note: 1. Date should be from lastUpdatedDate which was not returned by the REST service.
+                      //       2. Msg field is "" since group does not have an error status column.
+                      // TODO: Include lastUpdatedDate from REST and replace "new Date()".
+                      this.setStatus(oData.currentState.stateString, new Date(), "");
                   });
       }.bind(this);
    },
@@ -283,21 +272,8 @@ var GroupOperationsDataTable = React.createClass({
             return React.render(<StatusWidget key={key} defaultStatus=""
                                      errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                        GroupOperations.webServerStatusWidgetMap[key] = this;
-
-                       // Fetch and set initial state
-                       var statusWidget = this;
-                       self.props.stateService.getCurrentWebServerStates(oData.id.id)
-                                              .then(function(data) {
-                                                        if (self.props.parent.pollError) {
-                                                            statusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
-                                                        } else {
-                                                            var stateDetails = groupOperationsHelper.extractStateDetails(data.applicationResponseContent[0]);
-                                                            statusWidget.setStatus(stateDetails.state,
-                                                                                   stateDetails.asOf,
-                                                                                   stateDetails.msg);
-                                                        }
-                                                    });
-
+                       // TODO: Include lastUpdatedDate from REST and replace "new Date()".
+                       this.setStatus(oData.stateLabel,  new Date(), oData.errorStatus);
                    });
        }.bind(this);
    },
@@ -315,6 +291,7 @@ var GroupOperationsDataTable = React.createClass({
                                 // Check if there is new state, if there is use it since the jvm state only
                                 // gets updated when GroupOperations is initialized.
                                 if (self.state.currentJvmState[oData.id.id] === undefined) {
+                                    // TODO: Include lastUpdatedDate from REST and replace "new Date()".
                                     this.setStatus(oData.stateLabel, null, oData.errorStatus);
                                 } else {
                                     this.setStatus(self.state.currentJvmState[oData.id.id].stateLabel, null,
@@ -354,7 +331,8 @@ var GroupOperationsDataTable = React.createClass({
 
             // This will set the state which triggers DOM rendering thus the state will be updated
             // TODO: Find out if the code below is still necessary since removing it seems to have no effect whatsoever.
-            self.props.updateWebServerDataCallback(response.applicationResponseContent);
+            // self.props.updateWebServerDataCallback(response.applicationResponseContent);
+
         }, false);
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {
@@ -795,25 +773,47 @@ var GroupOperationsDataTable = React.createClass({
         return "https://" + data.host + ":" + data.httpsPort + tocVars.loadBalancerStatusMount;
     },
     webServerStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
+        var self = this;
+        var doWebServerStart = function(webServerId) {
+            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+            commandStatusWidget.push({stateString: "START SENT",
+                                                   asOf: new Date().getTime(),
+                                                   message: "",
+                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
+                                                   "action-status-font");
+            webServerControlService.startWebServer(webServerId);
+        }
+
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.name,
                                                           data.groups,
                                                           "start",
-                                                          webServerControlService.startWebServer,
+                                                          doWebServerStart,
                                                           cancelCallback,
                                                           "Web Server");
     },
 
     webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
+        var self = this;
+        var doWebServerStop = function(webServerId) {
+            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+            commandStatusWidget.push({stateString: "STOP SENT",
+                                                   asOf: new Date().getTime(),
+                                                   message: "",
+                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
+                                                   "action-status-font");
+            webServerControlService.stopWebServer(webServerId);
+        }
+
         this.verifyAndConfirmJvmWebServerControlOperation(id,
                                                           parentItemId,
                                                           buttonSelector,
                                                           data.name,
                                                           data.groups,
                                                           "stop",
-                                                          webServerControlService.stopWebServer,
+                                                          doWebServerStop,
                                                           cancelCallback,
                                                           "Web Server");
     }

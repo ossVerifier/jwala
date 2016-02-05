@@ -97,7 +97,7 @@ public class GroupFiniteStateMachine {
         stoppingStates.add(JVM_STOPPED);
         stoppingStates.add(JVM_DESTROYING);
         stoppingStates.add(JVM_DESTROYED);
-        stoppingStates.add(SVC_STOPPED);
+        stoppingStates.add(FORCED_STOPPED);
         stoppingStates.add(WS_UNREACHABLE);
         stoppingStates.add(WS_STOP_SENT);
 
@@ -119,7 +119,7 @@ public class GroupFiniteStateMachine {
                                               .edge(JVM_STARTED, GRP_STARTED)
                                               .edge(WS_REACHABLE, GRP_STARTED)
                                               .edge(JVM_STOPPED, GRP_STOPPED)
-                                              .edge(SVC_STOPPED, GRP_STOPPED)
+                                              .edge(FORCED_STOPPED, GRP_STOPPED)
                                               .edge(WS_UNREACHABLE, GRP_STOPPED)
                                               .build());
 
@@ -150,7 +150,7 @@ public class GroupFiniteStateMachine {
                                               .edges(failingStates, GRP_FAILURE)
                                               .edges(unknownStates, GRP_PARTIAL)
                                               .edge(JVM_STOPPED, GRP_STOPPED)
-                                              .edge(SVC_STOPPED, GRP_STOPPED)
+                                              .edge(FORCED_STOPPED, GRP_STOPPED)
                                               .edge(WS_UNREACHABLE, GRP_STOPPED)
                                               .build());
 

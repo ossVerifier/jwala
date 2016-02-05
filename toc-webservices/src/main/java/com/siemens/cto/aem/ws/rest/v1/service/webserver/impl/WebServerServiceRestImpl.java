@@ -10,9 +10,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -52,7 +50,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
     private static WebServerServiceRestImpl instance;
@@ -60,13 +57,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
-                                    final StateService<WebServer, WebServerReachableState> theWebServerStateService,
                                     final Map<String, ReentrantReadWriteLock> theWriteLocks,
                                     final ResourceService theResourceService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
-        webServerStateService = theWebServerStateService;
         wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
     }
@@ -247,17 +242,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getCurrentWebServerStates(final WebServerIdsParameterProvider webServerIdsParameterProvider) {
-        logger.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
-        final Set<Identifier<WebServer>> webServerIds = webServerIdsParameterProvider.valueOf();
-        final Set<CurrentState<WebServer, WebServerReachableState>> currentWebServerStates;
-
-        if (webServerIds.isEmpty()) {
-            currentWebServerStates = webServerStateService.getCurrentStates();
-        } else {
-            currentWebServerStates = webServerStateService.getCurrentStates(webServerIds);
-        }
-
-        return ResponseBuilder.ok(currentWebServerStates);
+//        logger.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
+//        final Set<Identifier<WebServer>> webServerIds = webServerIdsParameterProvider.valueOf();
+//        final Set<CurrentState<WebServer, WebServerReachableState>> currentWebServerStates;
+//
+//        if (webServerIds.isEmpty()) {
+//            currentWebServerStates = webServerStateService.getCurrentStates();
+//        } else {
+//            currentWebServerStates = webServerStateService.getCurrentStates(webServerIds);
+//        }
+//
+//        return ResponseBuilder.ok(currentWebServerStates);
+        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
     }
 
     @Override

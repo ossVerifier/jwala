@@ -18,20 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupControlServiceImpl implements GroupControlService {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupControlServiceImpl.class);
-
     private final GroupJvmControlService groupJvmControlService;
-
-    private final GroupStateService.API groupStateService; 
-    
     private final GroupWebServerControlService groupWebServerControlService;
     
     public GroupControlServiceImpl(
             final GroupWebServerControlService theGroupWebServerControlService,
-            final GroupJvmControlService theGroupJvmControlService,
-            final GroupStateService.API theGroupStateService) {
+            final GroupJvmControlService theGroupJvmControlService) {
         groupWebServerControlService = theGroupWebServerControlService;
         groupJvmControlService = theGroupJvmControlService;
-        groupStateService = theGroupStateService;
     }
 
     @Transactional
@@ -41,11 +35,11 @@ public class GroupControlServiceImpl implements GroupControlService {
         LOGGER.info("begin controlGroup operation {} for groupId {}", controlGroupRequest.getControlOperation(),
                 controlGroupRequest.getGroupId());
 
-        controlGroupRequest.validateCommand(
-                groupStateService.canStart(controlGroupRequest.getGroupId(), aUser),
-                groupStateService.canStop(controlGroupRequest.getGroupId(), aUser));
-        
-        groupStateService.signal(controlGroupRequest, aUser);
+// TODO: Write code to check if the group can start/stop
+//        controlGroupRequest.validateCommand(groupStateService.canStart(controlGroupRequest.getGroupId(), aUser),
+//                                            groupStateService.canStop(controlGroupRequest.getGroupId(), aUser));
+//
+//        groupStateService.signal(controlGroupRequest, aUser);
 
         controlWebServers(controlGroupRequest, aUser);
         controlJvms(controlGroupRequest, aUser);
@@ -77,6 +71,8 @@ public class GroupControlServiceImpl implements GroupControlService {
     @Transactional
     @Override
     public CurrentGroupState resetState(Identifier<Group> aGroupId, User aUser) {
-        return groupStateService.signalReset(aGroupId, aUser);
+        // TODO: Find out if this is important!
+        // return groupStateService.signalReset(aGroupId, aUser);
+        return null;
     }
 }

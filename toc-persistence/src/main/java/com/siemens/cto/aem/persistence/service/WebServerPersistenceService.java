@@ -4,8 +4,10 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
@@ -51,5 +53,11 @@ public interface WebServerPersistenceService {
     JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest);
 
     void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
+
+    void updateState(Identifier<WebServer> id, WebServerReachableState state);
+
+    void updateErrorStatus(Identifier<WebServer> id, String errorSatus);
+
+    void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
 
 }

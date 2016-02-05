@@ -3,10 +3,7 @@ package com.siemens.cto.aem.service.configuration.service;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -21,7 +18,6 @@ import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
@@ -39,16 +35,12 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
-import com.siemens.cto.aem.service.jvm.impl.JvmStateServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
-import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
-import com.siemens.cto.aem.service.state.impl.GroupStateServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -60,7 +52,6 @@ import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorke
 import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
-import com.siemens.cto.aem.service.webserver.impl.WebServerStateServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,9 +104,6 @@ public class AemServiceConfiguration {
     private FileManager fileManager;
 
     @Autowired
-    private GroupStateService.API groupStateService;
-
-    @Autowired
     private CommandExecutor commandExecutor;
 
     @Autowired
@@ -125,7 +113,7 @@ public class AemServiceConfiguration {
     private HarmonyTemplateEngine harmonyTemplateEngine;
 
     @Autowired
-    private WebServerPersistenceService webServerPersistenceService;
+    private WebServerService webServerPersistenceService;
 
     @Autowired
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
@@ -156,16 +144,6 @@ public class AemServiceConfiguration {
         return new GroupStateManagerTableImpl();
     }
 
-    @Bean(name = "groupStateService")
-    @Autowired
-    public GroupStateService.API getGroupStateService(final GroupPersistenceService groupPersistenceService,
-                                                      final JvmPersistenceService jvmPersistenceService) {
-        return new GroupStateServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
-                getStateNotificationService(), StateType.GROUP,
-                groupPersistenceService, jvmPersistenceService,
-                webServerPersistenceService, grpStateComputationAndNotificationSvc);
-    }
-
     @Bean
     public GroupService getGroupService() {
         return new GroupServiceImpl(
@@ -178,8 +156,7 @@ public class AemServiceConfiguration {
         return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
                                   getGroupService(),
                                   fileManager,
-                                  getJvmStateService(),
-                                  getStateNotificationService(),
+                getStateNotificationService(),
                                   grpStateComputationAndNotificationSvc);
     }
 
@@ -187,8 +164,8 @@ public class AemServiceConfiguration {
     public WebServerService getWebServerService() {
         return new WebServerServiceImpl(
                 persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager,
-                getWebServerStateService());
+                fileManager
+        );
     }
 
     @Bean
@@ -225,7 +202,7 @@ public class AemServiceConfiguration {
     @Autowired
     public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), getJvmStateService()
+                getHistoryService(historyCrudService)
         );
     }
 
@@ -235,8 +212,8 @@ public class AemServiceConfiguration {
                                                       final JvmPersistenceService jvmPersistenceService) {
         return new GroupControlServiceImpl(
                 getGroupWebServerControlService(),
-                getGroupJvmControlService(),
-                getGroupStateService(groupPersistenceService, jvmPersistenceService));
+                getGroupJvmControlService()
+        );
     }
 
     @Bean(name = "groupJvmControlService")
@@ -253,10 +230,10 @@ public class AemServiceConfiguration {
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(),
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getWebServerStateService(),
+                                               aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 webServerReachableStateMap,
-                historyService);
+                                               historyService,
+                                               getStateNotificationService());
     }
 
     @Bean(name = "webServerCommandService")
@@ -283,20 +260,6 @@ public class AemServiceConfiguration {
         return new JmsStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
                 aemJmsConfig.getStateNotificationDestination(),
                 getStateNotificationConsumerBuilder());
-    }
-
-    @Bean(name = "jvmStateService")
-    public StateService<Jvm, JvmState> getJvmStateService() {
-        return new JvmStateServiceImpl(persistenceServiceConfiguration.getJvmStatePersistenceService(),
-                getStateNotificationService(), groupStateService,
-                grpStateComputationAndNotificationSvc);
-    }
-
-    @Bean(name = "webServerStateService")
-    public StateService<WebServer, WebServerReachableState> getWebServerStateService() {
-        return new WebServerStateServiceImpl(persistenceServiceConfiguration.getWebServerStatePersistenceService(),
-                getStateNotificationService(),
-                grpStateComputationAndNotificationSvc);
     }
 
     @Bean
@@ -332,18 +295,16 @@ public class AemServiceConfiguration {
     @Autowired
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
-        return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
-                webServerStateSetterWorker,
-                webServerFutureMap,
-                true);
+        return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker, webServerFutureMap, true);
     }
 
     @Bean
     @Autowired
-    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
-                                                                    @Qualifier("webServerStateService") final StateService<WebServer, WebServerReachableState> webServerStateService) {
+    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker) {
         webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
-        webServerStateSetterWorker.setWebServerStateService(webServerStateService);
+        webServerStateSetterWorker.setWebServerService(getWebServerService());
+        webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
+        webServerStateSetterWorker.setGrpStateComputationAndNotificationSvc(grpStateComputationAndNotificationSvc);
         return webServerStateSetterWorker;
     }
 

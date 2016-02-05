@@ -240,4 +240,10 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName) {
         return groupCrudService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
     }
+
+    @Override
+    public void updateState(final Identifier<Group> id, final GroupState state) {
+        groupCrudService.updateState(id, state);
+    }
+
 }

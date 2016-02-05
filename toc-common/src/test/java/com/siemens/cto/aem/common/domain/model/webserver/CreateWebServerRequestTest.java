@@ -31,10 +31,10 @@ public class CreateWebServerRequestTest {
 
     final CreateWebServerRequest webServer =
             new CreateWebServerRequest(groupIds, NAME, HOST, portNumber, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE,
-                    SVR_ROOT, DOC_ROOT);
+                    SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
     final CreateWebServerRequest webServerTen =
             new CreateWebServerRequest(groupIdsFour, "otherName", HOST, portNumber, httpsPort, STATUS_PATH,
-                    HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT);
+                    HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
 
     @Test
     public void testGetGroups() {
@@ -70,7 +70,7 @@ public class CreateWebServerRequestTest {
     public void testInvalidPath() {
         final CreateWebServerRequest invalidPath =
                 new CreateWebServerRequest(groupIdsFour, "otherName", HOST, 0, 0, new Path("abc"),
-                        new FileSystemPath(""), SVR_ROOT, DOC_ROOT);
+                        new FileSystemPath(""), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
         invalidPath.validate();
     }
 
@@ -78,7 +78,7 @@ public class CreateWebServerRequestTest {
     public void testInvalidFileSystemPath() {
         final CreateWebServerRequest invalidPath =
                 new CreateWebServerRequest(groupIdsFour, "otherName", HOST, 0, 0, new Path("/abc"),
-                        new FileSystemPath("/some-dir/httpd.conf/"), SVR_ROOT, DOC_ROOT);
+                        new FileSystemPath("/some-dir/httpd.conf/"), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
         invalidPath.validate();
     }
 }

@@ -32,9 +32,6 @@ import static org.mockito.Mockito.*;
 public class JvmStateMessageListenerTest {
 
     @Mock
-    private StateService<Jvm, JvmState> jvmStateService;
-
-    @Mock
     private JvmSetStateRequest stateCommand;
     
     @Mock
@@ -71,7 +68,10 @@ public class JvmStateMessageListenerTest {
     // TODO: Fix!
     public void testOnMapMessage() throws Exception {
         when(currentState.getState()).thenReturn(JvmState.JVM_STARTING);
-        when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
+        // TODO: Do we need to get the state ? It is already in the JVM. rewrite this test...
+        // when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
         when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
@@ -79,7 +79,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(jvmStateService, times(1)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
+        verify(mockJvmPersistenceService, times(1)).updateState(any(Identifier.class), eq(JvmState.JVM_STARTED));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, never()).processMessage(Matchers.<MapMessage>anyObject());
-        verify(jvmStateService, never()).setCurrentState(Matchers.<JvmSetStateRequest>anyObject(), Matchers.<User>anyObject());
+        verify(mockJvmPersistenceService, never()).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Test
@@ -102,7 +102,10 @@ public class JvmStateMessageListenerTest {
     @Test
     public void testHeartbeatPreventionStarting() throws Exception {
         when(currentState.getState()).thenReturn(JvmState.JVM_STARTING);
-        when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
+        // TODO: Rewrite this test. The state is already in the JVM...
+        // when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
         when(newCurrentState.getState()).thenReturn(JvmState.JVM_STOPPED);
 
         final MapMessage message = mock(MapMessage.class);
@@ -110,14 +113,17 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(jvmStateService, times(0)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
+        verify(mockJvmPersistenceService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Ignore //functionality removed
     @Test
     public void testHeartbeatPreventionStopping() throws Exception {
         when(currentState.getState()).thenReturn(JvmState.JVM_STOPPING);
-        when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
+        // TODO: Rewrite this test. The state is already in the JVM...
+        // when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(currentState);
+
         when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
@@ -125,14 +131,15 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(jvmStateService, times(0)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
+        verify(mockJvmPersistenceService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Test
     @Ignore
     // TODO: Fix!
     public void testHeartbeatPreventionNullCurrentState() throws Exception {
-        when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(null);
+        // TODO: Rewrite this test. The state is already in the JVM...
+        // when(jvmStateService.getCurrentState(eq(Identifier.<Jvm>id(10L)))).thenReturn(null);
         when(newCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
 
         final MapMessage message = mock(MapMessage.class);
@@ -140,7 +147,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(jvmStateService, times(1)).setCurrentState(eq(stateCommand), Matchers.<User>anyObject());
+        verify(mockJvmPersistenceService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
 }

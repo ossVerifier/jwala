@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperati
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
@@ -19,6 +18,7 @@ import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatfo
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -26,7 +26,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,91 +34,123 @@ import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
-    private static final String FORCED_STOPPED = "FORCED STOPPED";
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
-    private final StateService<WebServer, WebServerReachableState> webServerStateService;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private final HistoryService historyService;
+    private final StateNotificationService stateNotificationService;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
-                                       final StateService<WebServer, WebServerReachableState> theWebServerStateService,
                                        final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
-                                       final HistoryService historyService) {
+                                       final HistoryService historyService,
+                                       final StateNotificationService stateNotificationService) {
         webServerService = theWebServerService;
         commandExecutor = theExecutor;
-        webServerStateService = theWebServerStateService;
         webServerReachableStateMap = theWebServerReachableStateMap;
         this.historyService = historyService;
+        this.stateNotificationService = stateNotificationService;
     }
 
     @Override
-    @Transactional
-    public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
-                                          final User aUser) {
+    public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser) {
 
-//        final JpaWebServer webServer = webServerService.getJpaWebServer(controlWebServerRequest.getWebServerId().getId(), true);
+
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+        CommandOutput commandOutput = null;
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
-                    controlWebServerRequest.getControlOperation().name() :
-                    controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
+                    controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
             historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 
-            controlWebServerRequest.validate();
-
-            final SetStateRequest<WebServer, WebServerReachableState> setStateCommand = createStateCommand(controlWebServerRequest);
-            webServerReachableStateMap.put(controlWebServerRequest.getWebServerId(), setStateCommand.getNewState().getState());
-
-            webServerStateService.setCurrentState(setStateCommand, aUser);
-
-            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                    webServer.getName(),
-                    webServer.getHost(),
-                    controlWebServerRequest.getControlOperation(),
-                    new WindowsWebServerPlatformCommandProvider());
-
-            if (commandOutput != null &&
-                    (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
-                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
-                commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
-
-                // Set the states after sending out the control command.
-                if (commandOutput.getReturnCode().wasSuccessful() || commandOutput.getReturnCode().wasAbnormallySuccessful()) {
-                    final WebServerReachableState finalWebServerState =
-                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ?
-                                    WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
-                    webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
-                            finalWebServerState), aUser);
-                } else if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
-                    webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
-                            WebServerReachableState.WS_UNREACHABLE, FORCED_STOPPED), aUser);
-                    commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, "");
-                } else {
-                    setFailedState(controlWebServerRequest, aUser, commandOutput.extractMessageFromStandardOutput());
-                }
-
-            }
-
-            return commandOutput;
+            commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
+                    controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
         } catch (final CommandFailureException cfe) {
+            LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " +
+                    controlWebServerRequest, cfe);
+
+
             final String stackTrace = ExceptionUtils.getStackTrace(cfe);
             historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), stackTrace,
                     EventType.APPLICATION_ERROR, aUser.getId());
 
-            setFailedState(controlWebServerRequest, aUser, stackTrace);
-            LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest, cfe);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest,
-                    cfe);
-        } finally {
-            webServerReachableStateMap.remove(controlWebServerRequest.getWebServerId());
+            setFailedState(webServer, stackTrace);
+
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "CommandFailureException when attempting to control a Web Server: "
+                    + controlWebServerRequest, cfe);
         }
+
+        return commandOutput;
     }
+
+    //    @Override
+//    @Transactional
+//    public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest,
+//                                          final User aUser) {
+//
+////        final JpaWebServer webServer = webServerService.getJpaWebServer(controlWebServerRequest.getWebServerId().getId(), true);
+//        final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+//        try {
+//            final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
+//                    controlWebServerRequest.getControlOperation().name() :
+//                    controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
+//            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
+//                    aUser.getId());
+//
+//            controlWebServerRequest.validate();
+//
+//            final SetStateRequest<WebServer, WebServerReachableState> setStateCommand = createStateCommand(controlWebServerRequest);
+//            webServerReachableStateMap.put(controlWebServerRequest.getWebServerId(), setStateCommand.getNewState().getState());
+//
+//            webServerStateService.setCurrentState(setStateCommand, aUser);
+//            webServerService.updateState();
+//
+//            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+//                    webServer.getName(),
+//                    webServer.getHost(),
+//                    controlWebServerRequest.getControlOperation(),
+//                    new WindowsWebServerPlatformCommandProvider());
+//
+//            if (commandOutput != null &&
+//                    (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
+//                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
+//                commandOutput.cleanStandardOutput();
+//                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
+//
+//                // Set the states after sending out the control command.
+//                if (commandOutput.getReturnCode().wasSuccessful() || commandOutput.getReturnCode().wasAbnormallySuccessful()) {
+//                    final WebServerReachableState finalWebServerState =
+//                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ?
+//                                    WebServerReachableState.WS_REACHABLE : WebServerReachableState.WS_UNREACHABLE;
+//                    webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
+//                            finalWebServerState), aUser);
+//                } else if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
+//                    webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
+//                            WebServerReachableState.WS_UNREACHABLE, FORCED_STOPPED), aUser);
+//                    commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, "");
+//                } else {
+//                    setFailedState(controlWebServerRequest, aUser, commandOutput.extractMessageFromStandardOutput());
+//                }
+//
+//            }
+//
+//            return commandOutput;
+//        } catch (final CommandFailureException cfe) {
+//            final String stackTrace = ExceptionUtils.getStackTrace(cfe);
+//            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), stackTrace,
+//                    EventType.APPLICATION_ERROR, aUser.getId());
+//
+//            setFailedState(controlWebServerRequest, aUser, stackTrace);
+//            LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest, cfe);
+//            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+//                    "CommandFailureException when attempting to control a Web Server: " + controlWebServerRequest,
+//                    cfe);
+//        } finally {
+//            webServerReachableStateMap.remove(controlWebServerRequest.getWebServerId());
+//        }
+//    }
 
     @Override
     public CommandOutput secureCopyHttpdConf(String aWebServerName, String sourcePath, String destPath) throws CommandFailureException {
@@ -154,17 +185,17 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     /**
      * Set web server state to failed.
      *
-     * @param controlWebServerRequest {@link ControlWebServerRequest} which contains the id of the web server whose status is to be set to failed.
-     * @param aUser                   the user who issued the control command.
-     * @param msg                     the message that details the cause of the failed state.
+     * @param webServer the web server.
+     * @param msg the message that details the cause of the failed state.
      */
-    private void setFailedState(final ControlWebServerRequest controlWebServerRequest, final User aUser, String msg) {
-        final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+    private void setFailedState(final WebServer webServer, String msg) {
         msg = webServer.getName() + " at " + webServer.getHost() + ": " + msg;
-        webServerReachableStateMap.put(controlWebServerRequest.getWebServerId(), WebServerReachableState.WS_FAILED);
-        webServerStateService.setCurrentState(createStateCommand(controlWebServerRequest.getWebServerId(),
-                WebServerReachableState.WS_FAILED,
-                msg), aUser);
+        webServerReachableStateMap.put(webServer.getId(), WebServerReachableState.WS_FAILED);
+        webServerService.updateErrorStatus(webServer.getId(), msg);
+
+        // TODO: We need to find out whether we should still inform the UI of a failed web server control attempt via JMS
+        stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
+                DateTime.now(), StateType.WEB_SERVER));
     }
 
     /**

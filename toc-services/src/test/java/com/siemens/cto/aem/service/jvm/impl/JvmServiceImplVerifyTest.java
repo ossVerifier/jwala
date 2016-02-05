@@ -61,7 +61,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         stateService = (StateService<Jvm, JvmState>) mock(StateService.class);
         stateNotificationService = mock(StateNotificationService.class);
         grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateService, stateNotificationService,
+        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateNotificationService,
                 grpStateComputationAndNotificationSvc);
         rtCommandBuilder = mock(RuntimeCommandBuilder.class);
         command = mock(RuntimeCommand.class);

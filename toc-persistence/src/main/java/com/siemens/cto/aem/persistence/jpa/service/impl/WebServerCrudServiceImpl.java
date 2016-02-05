@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -288,6 +289,33 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         if (numEntities == 0) {
             throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
         }
+    }
+
+    @Override
+    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
+        // Normally we would load the JpaWebServer then set the states but I reckon running an UPDATE query would be faster since
+        // it's only one transaction vs 2 (find and update).
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_BY_ID);
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
+        query.executeUpdate();
+    }
+
+    @Override
+    public void updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_ERROR_STATUS_BY_ID);
+        query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
+        query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
+        query.executeUpdate();
+    }
+
+    @Override
+    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID);
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
+        query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
+        query.executeUpdate();
     }
 
 }

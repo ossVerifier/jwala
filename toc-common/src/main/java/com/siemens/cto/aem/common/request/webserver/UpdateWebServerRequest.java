@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common.request.webserver;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
@@ -35,8 +36,9 @@ public class UpdateWebServerRequest implements Serializable, Request {
     private final Path newStatusPath;
     private final Path newSvrRoot;
     private final Path newDocRoot;
-
     private final FileSystemPath newHttpConfigFile;
+    private final WebServerReachableState state;
+    private final String errorStatus;
 
     public UpdateWebServerRequest(final Identifier<WebServer> theId,
                                   final Collection<Identifier<Group>> theNewGroupIds,
@@ -47,7 +49,9 @@ public class UpdateWebServerRequest implements Serializable, Request {
                                   final Path theNewStatusPath,
                                   final FileSystemPath theNewHttpConfigFile,
                                   final Path theSvrRoot,
-                                  final Path theDocRoot) {
+                                  final Path theDocRoot,
+                                  final WebServerReachableState state,
+                                  final String errorStatus) {
         id = theId;
         newHost = theNewHost;
         newPort = theNewPort;
@@ -58,6 +62,8 @@ public class UpdateWebServerRequest implements Serializable, Request {
         newHttpConfigFile = theNewHttpConfigFile;
         newSvrRoot = theSvrRoot;
         newDocRoot = theDocRoot;
+        this.state = state;
+        this.errorStatus = errorStatus;
     }
 
     public Identifier<WebServer> getId() {
@@ -100,6 +106,14 @@ public class UpdateWebServerRequest implements Serializable, Request {
         return newDocRoot;
     }
 
+    public WebServerReachableState getState() {
+        return state;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
     @Override
     public void validate() {
         final MultipleRules mr =
@@ -118,56 +132,37 @@ public class UpdateWebServerRequest implements Serializable, Request {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        UpdateWebServerRequest rhs = (UpdateWebServerRequest) obj;
-        return new EqualsBuilder()
-                .append(this.id, rhs.id)
-                .append(this.newGroupIds, rhs.newGroupIds)
-                .append(this.newHost, rhs.newHost)
-                .append(this.newName, rhs.newName)
-                .append(this.newPort, rhs.newPort)
-                .append(this.newHttpsPort, rhs.newHttpsPort)
-                .append(this.newStatusPath, rhs.newStatusPath)
-                .append(this.newHttpConfigFile, rhs.newHttpConfigFile)
-                .append(this.newSvrRoot, rhs.newSvrRoot)
-                .append(this.newDocRoot, rhs.newDocRoot)
-                .isEquals();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UpdateWebServerRequest that = (UpdateWebServerRequest) o;
+
+        return id.equals(that.id);
+
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(newGroupIds)
-                .append(newHost)
-                .append(newName)
-                .append(newPort)
-                .append(newHttpsPort)
-                .append(newStatusPath)
-                .append(newHttpConfigFile)
-                .toHashCode();
+        return id.hashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("newGroupIds", newGroupIds)
-                .append("newHost", newHost)
-                .append("newName", newName)
-                .append("newPort", newPort)
-                .append("newHttpsPort", newHttpsPort)
-                .append("newStatusPath", newStatusPath)
-                .append("newHttpConfigFile", newHttpConfigFile)
-                .toString();
+        return "UpdateWebServerRequest{" +
+                "id=" + id +
+                ", newGroupIds=" + newGroupIds +
+                ", newHost='" + newHost + '\'' +
+                ", newName='" + newName + '\'' +
+                ", newPort=" + newPort +
+                ", newHttpsPort=" + newHttpsPort +
+                ", newStatusPath=" + newStatusPath +
+                ", newSvrRoot=" + newSvrRoot +
+                ", newDocRoot=" + newDocRoot +
+                ", newHttpConfigFile=" + newHttpConfigFile +
+                ", state=" + state +
+                ", errorStatus='" + errorStatus + '\'' +
+                '}';
     }
+
 }

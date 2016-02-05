@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
@@ -87,30 +88,34 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testCrud() {
         final WebServer newWebServer = new WebServer(null,
-                new ArrayList<Group>(),
-                "zWebServer",
-                "zHost",
-                8080,
-                443,
-                new Path("any"),
-                new FileSystemPath("any"),
-                new Path("any"),
-                new Path("any"));
+                                                     new ArrayList<Group>(),
+                                                     "zWebServer",
+                                                     "zHost",
+                                                     8080,
+                                                     443,
+                                                     new Path("any"),
+                                                     new FileSystemPath("any"),
+                                                     new Path("any"),
+                                                     new Path("any"),
+                                                     WebServerReachableState.WS_UNREACHABLE,
+                                                     null);
         final WebServer createdWebServer = impl.createWebServer(newWebServer, "me");
         assertTrue(createdWebServer.getId() != null);
         assertTrue(createdWebServer.getId().getId() != null);
         assertEquals(newWebServer.getName(), createdWebServer.getName());
 
         final WebServer editedWebServer = new WebServer(createdWebServer.getId(),
-                new ArrayList<Group>(),
-                "zWebServerx",
-                "zHostx",
-                808,
-                44,
-                new Path("anyx"),
-                new FileSystemPath("anyx"),
-                new Path("anyx"),
-                new Path("anyx"));
+                                                        new ArrayList<Group>(),
+                                                        "zWebServerx",
+                                                        "zHostx",
+                                                        808,
+                                                        44,
+                                                        new Path("anyx"),
+                                                        new FileSystemPath("anyx"),
+                                                        new Path("anyx"),
+                                                        new Path("anyx"),
+                                                        WebServerReachableState.WS_UNREACHABLE,
+                                                        null);
         final WebServer updatedWebServer = impl.updateWebServer(editedWebServer, "me");
         assertEquals(editedWebServer.getId().getId(), updatedWebServer.getId().getId());
 
@@ -162,7 +167,7 @@ public class WebServerCrudServiceImplTest {
         List<WebServer> webServersBelongingTo = impl.findWebServersBelongingTo(new Identifier<Group>(group.getId()));
         assertTrue(webServersBelongingTo.size() == 0);
 
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         webServer = impl.createWebServer(webServer, "testUser");
         List<JpaWebServer> wsList = new ArrayList<>();
         wsList.add(impl.findById(webServer.getId().getId()));
@@ -173,7 +178,7 @@ public class WebServerCrudServiceImplTest {
 
     @Test(expected = BadRequestException.class)
     public void testCreateWebServerThrowsException() {
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         impl.createWebServer(webServer, "testUser");
         // causes problems
         impl.createWebServer(webServer, "testUser");
@@ -181,7 +186,7 @@ public class WebServerCrudServiceImplTest {
 
     @Test
     public void testFindApplications() {
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         webServer = impl.createWebServer(webServer, "testUser");
         List<Application> applications = impl.findApplications("testWebServer");
         assertTrue(applications.size() == 0);
@@ -210,7 +215,7 @@ public class WebServerCrudServiceImplTest {
 
     @Test
     public void testFindJvms() {
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         impl.createWebServer(webServer, "testUser");
         List<Jvm> jvms = impl.findJvms("testWebServer");
         assertTrue(jvms.size() == 0);
@@ -230,7 +235,7 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testUploadWebServerTemplate() throws FileNotFoundException {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         webServer = impl.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", dataInputStream) {
             @Override
@@ -260,7 +265,7 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testPopulateWebServerConfigTemplate() throws FileNotFoundException {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"));
+        WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, null);
         webServer = impl.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", dataInputStream) {
             @Override

@@ -174,21 +174,22 @@ var groupOperationsHelper = function(){
             };
         },
 
-        processWebServerData: function(existingWebServers, newWebServers, existingWebServerStates, newWebServerStates) {
-            var combinedWebServerStatesById = combineWebServerStatesById(existingWebServerStates,
-                                                                         newWebServerStates);
-
-            var processedWebServers = processWebServers(existingWebServers,
-                                                        newWebServers,
-                                                        combinedWebServerStatesById);
-
-            var processedWebServerStates = extractValuesOnly(combinedWebServerStatesById);
-
-            return {
-                webServers: processedWebServers,
-                webServerStates: processedWebServerStates
-            };
-        },
+// TODO: Remove!
+//        processWebServerData: function(existingWebServers, newWebServers, existingWebServerStates, newWebServerStates) {
+//            var combinedWebServerStatesById = combineWebServerStatesById(existingWebServerStates,
+//                                                                         newWebServerStates);
+//
+//            var processedWebServers = processWebServers(existingWebServers,
+//                                                        newWebServers,
+//                                                        combinedWebServerStatesById);
+//
+//            var processedWebServerStates = extractValuesOnly(combinedWebServerStatesById);
+//
+//            return {
+//                webServers: processedWebServers,
+//                webServerStates: processedWebServerStates
+//            };
+//        },
 
         // TODO: Delete this along with its supporting methods since we are getting the states directly from the JVM table.
         processJvmData: function(existingJvms, newJvms, existingJvmStates, newJvmStates) {

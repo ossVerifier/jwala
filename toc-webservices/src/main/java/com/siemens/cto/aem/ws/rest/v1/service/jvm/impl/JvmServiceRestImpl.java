@@ -63,7 +63,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
-    private final StateService<Jvm, JvmState> jvmStateService;
     private final ResourceService resourceService;
     private final ExecutorService executorService;
     private Map<String, ReentrantReadWriteLock> jvmWriteLocks;
@@ -74,12 +73,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private static GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
-                              final StateService<Jvm, JvmState> theJvmStateService, final ResourceService theResourceService,
+                              final ResourceService theResourceService,
                               final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap,
                               final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
-        jvmStateService = theJvmStateService;
         resourceService = theResourceService;
         executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
@@ -246,17 +244,19 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getCurrentJvmStates(final JvmIdsParameterProvider aJvmIdsParameterProvider) {
-        logger.debug("Current JVM states requested : {}", aJvmIdsParameterProvider);
-        final Set<Identifier<Jvm>> jvmIds = aJvmIdsParameterProvider.valueOf();
-        final Set<CurrentState<Jvm, JvmState>> currentJvmStates;
 
-        if (jvmIds.isEmpty()) {
-            currentJvmStates = jvmStateService.getCurrentStates();
-        } else {
-            currentJvmStates = jvmStateService.getCurrentStates(jvmIds);
-        }
-
-        return ResponseBuilder.ok(currentJvmStates);
+//        logger.debug("Current JVM states requested : {}", aJvmIdsParameterProvider);
+//        final Set<Identifier<Jvm>> jvmIds = aJvmIdsParameterProvider.valueOf();
+//        final Set<CurrentState<Jvm, JvmState>> currentJvmStates;
+//
+//        if (jvmIds.isEmpty()) {
+//            currentJvmStates = jvmStateService.getCurrentStates();
+//        } else {
+//            currentJvmStates = jvmStateService.getCurrentStates(jvmIds);
+//        }
+//
+//        return ResponseBuilder.ok(currentJvmStates);
+        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
     }
 
     @Override

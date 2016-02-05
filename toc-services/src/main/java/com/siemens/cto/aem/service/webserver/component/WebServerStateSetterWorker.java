@@ -1,15 +1,17 @@
 package com.siemens.cto.aem.service.webserver.component;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
-import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 /**
@@ -43,9 +46,14 @@ public class WebServerStateSetterWorker {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
     private HttpClientRequestFactory httpClientRequestFactory;
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
-    private StateService<WebServer, WebServerReachableState> webServerStateService;
+    private WebServerService webServerService;
+    private StateNotificationService stateNotificationService;
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
+
+    private static final ConcurrentHashMap<Identifier<WebServer>, WebServerReachableState> webServerLastPersistedStateMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier<WebServer>, String> webServerLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
 
     /**
      * Note: Setting of class variables through the constructor preferred but @Async does not work
@@ -117,13 +125,27 @@ public class WebServerStateSetterWorker {
      * @param webServerReachableState {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
      * @param msg a message
      */
-    private void setState(final WebServer webServer,
-                          final WebServerReachableState webServerReachableState,
-                          final String msg) {
+    private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
         if (!isWebServerBusy(webServer)) {
-            // TODO: Refactor. Please see JVM set state implementation at {@link JvmStateMessageListener}.
-            webServerStateService.setCurrentState(createStateCommand(webServer.getId(), webServerReachableState, msg),
-                                                  User.getSystemUser());
+            boolean stateAndOrMsgChanged = false;
+            if (!webServerLastPersistedStateMap.containsKey(webServer.getId()) ||
+                !webServerLastPersistedStateMap.get(webServer.getId()).equals(webServerReachableState)) {
+                    webServerLastPersistedStateMap.put(webServer.getId(), webServerReachableState);
+                    stateAndOrMsgChanged = true;
+            }
+
+            if (!webServerLastPersistedErrorStatusMap.containsKey(webServer.getId()) ||
+                !webServerLastPersistedErrorStatusMap.get(webServer.getId()).equals(msg)) {
+                    webServerLastPersistedErrorStatusMap.put(webServer.getId(), msg);
+                    stateAndOrMsgChanged = true;
+            }
+
+            if (stateAndOrMsgChanged) {
+                webServerService.updateState(webServer.getId(), webServerReachableState, msg);
+                stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
+                        DateTime.now()));
+                grpStateComputationAndNotificationSvc.computeAndNotify(webServer.getId(), webServerReachableState);
+            }
         }
     }
 
@@ -154,8 +176,16 @@ public class WebServerStateSetterWorker {
         this.webServerReachableStateMap = webServerReachableStateMap;
     }
 
-    public void setWebServerStateService(StateService<WebServer, WebServerReachableState> webServerStateService) {
-        this.webServerStateService = webServerStateService;
+    public void setWebServerService(WebServerService webServerService) {
+        this.webServerService = webServerService;
+    }
+
+    public void setStateNotificationService(StateNotificationService stateNotificationService) {
+        this.stateNotificationService = stateNotificationService;
+    }
+
+    public void setGrpStateComputationAndNotificationSvc(GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
 }

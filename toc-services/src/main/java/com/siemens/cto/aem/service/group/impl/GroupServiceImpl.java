@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -390,6 +391,11 @@ public class GroupServiceImpl implements GroupService {
             }
         }
         return retVal;
+    }
+
+    @Override
+    public void updateState(Identifier<Group> id, GroupState state) {
+        groupPersistenceService.updateState(id, state);
     }
 
     /**

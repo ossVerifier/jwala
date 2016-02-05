@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -48,4 +50,11 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 	JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest);
 
     void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
+
+	void updateState(Identifier<WebServer> id, WebServerReachableState state);
+
+	void updateErrorStatus(Identifier<WebServer> id, String errorStatus);
+
+	void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
+
 }

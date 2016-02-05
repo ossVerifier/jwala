@@ -10,10 +10,10 @@ import java.util.Set;
 
 public interface StateService<S, T extends OperationalState> {
 
-    CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest,
-                                       final User aUser);
-
-    CurrentState<S, T> getCurrentState(final Identifier<S> anId);
+//    CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest,
+//                                       final User aUser);
+//
+//    CurrentState<S, T> getCurrentState(final Identifier<S> anId);
 
     Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds);
 

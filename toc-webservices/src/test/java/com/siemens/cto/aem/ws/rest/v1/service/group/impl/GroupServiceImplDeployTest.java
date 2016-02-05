@@ -253,12 +253,12 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mock(StateService.class), mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>(), mockGrpStateComputationAndNotificationSvc);
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>(), mockGrpStateComputationAndNotificationSvc);
         }
 
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
-            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), mock(StateService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService);
+            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService);
         }
 
         @Bean

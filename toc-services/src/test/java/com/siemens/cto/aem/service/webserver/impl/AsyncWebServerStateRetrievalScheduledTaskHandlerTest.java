@@ -78,27 +78,11 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Before
     public void setup() throws IOException {
-        webServer1 = new WebServer(new Identifier<WebServer>(1L),
-                new ArrayList<Group>(),
-                null,
-                "localhost",
-                80,
-                null,
-                new Path("/stp.png"),
-                null,
-                null,
-                null);
+        webServer1 = new WebServer(new Identifier<WebServer>(1L), new ArrayList<Group>(), null, "localhost", 80, null,
+                new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
-        webServer2 = new WebServer(new Identifier<WebServer>(2L),
-                new ArrayList<Group>(),
-                null,
-                "localhost",
-                90,
-                null,
-                new Path("/stp.png"),
-                null,
-                null,
-                null);
+        webServer2 = new WebServer(new Identifier<WebServer>(2L), new ArrayList<Group>(), null, "localhost", 90, null,
+                new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
         webServers = new ArrayList<>();
         webServers.add(webServer1);
@@ -308,7 +292,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         @DependsOn("propConfig")
         WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler() {
             webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
-            webServerStateSetterWorker.setWebServerStateService(webServerStateService);
             return new WebServerStateRetrievalScheduledTaskHandler(webServerService,
                                                                    webServerStateSetterWorker,
                                                                    webServerFutureMap);

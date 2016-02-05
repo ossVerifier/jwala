@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
@@ -49,4 +50,9 @@ public interface WebServerService {
     String previewResourceTemplate(String webServerName, String groupName, String template);
 
     boolean isStarted(WebServer webServer);
+
+    void updateErrorStatus(Identifier<WebServer> id, String errorStatus);
+
+    void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
+
 }

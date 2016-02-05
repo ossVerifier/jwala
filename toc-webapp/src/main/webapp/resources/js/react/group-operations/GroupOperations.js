@@ -79,10 +79,6 @@ var GroupOperations = React.createClass({
     },
     updateStateData: function(response) {
         if (this.pollError) {
-            // updateStateData is called when there's no longer an error therefore we do error recovery here.
-            this.fetchCurrentGroupStates();
-            this.fetchCurrentWebServerStates();
-            this.fetchCurrentJvmStates();
             this.pollError = false;
             return;
         }
@@ -190,6 +186,7 @@ var GroupOperations = React.createClass({
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         var self = this;
 
+        // TODO: This is where we fix the bug wherein the UI is not updated to the correct web server state.
         if (newWebServerStates && newWebServerStates.length > 0) {
             webServersToUpdate.forEach(
                 function(webServer) {
@@ -276,24 +273,31 @@ var GroupOperations = React.createClass({
 
         this.statePoller.start();
     },
-    fetchCurrentGroupStates: function() {
-        var self = this;
-        this.props.stateService.getCurrentGroupStates()
-            .then(function(data) {self.updateGroupsStateData(data.applicationResponseContent);})
-            .caught(function(e) {console.log(e);});
-    },
-    fetchCurrentWebServerStates: function() {
-        var self = this;
-        this.props.stateService.getCurrentWebServerStates()
-            .then(function(data) {self.updateWebServerStateData(data.applicationResponseContent);})
-            .caught(function(e) {console.log(e);});
-    },
-    fetchCurrentJvmStates: function() {
-        var self = this;
-        this.props.stateService.getCurrentJvmStates()
-            .then(function(data) {self.updateJvmStateData(data.applicationResponseContent);})
-            .caught(function(e) {console.log(e);});
-    },
+
+// TODO: Remove!
+//    fetchCurrentGroupStates: function() {
+//        var self = this;
+//        this.props.stateService.getCurrentGroupStates()
+//            .then(function(data) {self.updateGroupsStateData(data.applicationResponseContent);})
+//            .caught(function(e) {console.log(e);});
+//    },
+
+// TODO: Remove!
+//    fetchCurrentWebServerStates: function() {
+//        var self = this;
+//        this.props.stateService.getCurrentWebServerStates()
+//            .then(function(data) {self.updateWebServerStateData(data.applicationResponseContent);})
+//            .caught(function(e) {console.log(e);});
+//    },
+
+// TODO: Remove!
+//    fetchCurrentJvmStates: function() {
+//        var self = this;
+//        this.props.stateService.getCurrentJvmStates()
+//            .then(function(data) {self.updateJvmStateData(data.applicationResponseContent);})
+//            .caught(function(e) {console.log(e);});
+//    },
+
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
                                                               groupId,
@@ -307,18 +311,20 @@ var GroupOperations = React.createClass({
     componentDidMount: function() {
         this.retrieveData();
         this.pollStates();
-        this.fetchCurrentGroupStates();
     },
     componentWillUnmount: function() {
         this.statePoller.stop();
     },
-    updateWebServerDataCallback: function(webServerData) {
-        this.setState(groupOperationsHelper.processWebServerData([],
-                                                                 webServerData,
-                                                                 this.state.webServerStates,
-                                                                 []));
-        this.updateWebServerStateData([]);
-    },
+
+// TODO: Remove!?
+//    updateWebServerDataCallback: function(webServerData) {
+//        this.setState(groupOperationsHelper.processWebServerData([],
+//                                                                 webServerData,
+//                                                                 this.state.webServerStates,
+//                                                                 []));
+//        this.updateWebServerStateData([]);
+//    },
+
     statePoller: null,
     statics: {
         // Used in place of ref since ref will not work without a React wrapper (in the form a data table)

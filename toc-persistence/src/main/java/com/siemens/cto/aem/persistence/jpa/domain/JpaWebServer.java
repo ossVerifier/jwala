@@ -1,6 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,7 +14,10 @@ import java.util.List;
     @NamedQuery(name = JpaWebServer.FIND_JVMS_QUERY,
                 query = "SELECT DISTINCT jvm FROM JpaJvm jvm JOIN jvm.groups g " +
                         "WHERE g.id IN (SELECT a.group FROM JpaApplication a " +
-                        "WHERE a.group IN (:groups))")
+                        "WHERE a.group IN (:groups))"),
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state WHERE w.id = :id"),
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaWebServer w SET w.errorStatus = :errorStatus WHERE w.id = :id"),
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state, w.errorStatus = :errorStatus WHERE w.id = :id")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
@@ -22,6 +25,14 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
     public static final String FIND_JVMS_QUERY = "findJvmsQuery";
+
+    public static final String QUERY_UPDATE_STATE_BY_ID = "updateWebServerStateById";
+    public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateWebServerErrorStatusById";
+    public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateWebServerStateAndErrStsById";
+
+    public static final String QUERY_PARAM_ID = "id";
+    public static final String QUERY_PARAM_STATE = "state";
+    public static final String QUERY_PARAM_ERROR_STATUS = "errorStatus";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +57,12 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
     @Column(nullable = false)
     private String docRoot;
+
+    @Column(name = "STATE")
+    private String stateName;
+
+    @Column(name = "ERR_STS", length = 2147483647)
+    private String errorStatus = "";
 
     @ManyToMany(mappedBy = "webServers")
     private List<JpaGroup> groups = new ArrayList<>();
@@ -126,6 +143,29 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
         this.docRoot = docRoot;
     }
 
+    public WebServerReachableState getState() {
+        // Using enums directly will cause an error if a value that is not in the enum is introduced coming from the Db.
+        // If we are using JPA 2.1, we can use converters, but as of Feb 2016 we're still using JPA 2.0 therefore this is
+        // one way of avoiding the enum problem mentioned in the beginning of this comment.
+        return WebServerReachableState.convertFrom(stateName);
+    }
+
+    public void setState(WebServerReachableState state) {
+        this.stateName = state.toString();
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
+    @Override
+    protected void prePersist() {
+        super.prePersist();
+        if (stateName == null) {
+            stateName = WebServerReachableState.WS_UNREACHABLE.toString();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -140,4 +180,5 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
     }
+
 }

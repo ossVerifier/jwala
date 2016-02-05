@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.*;
@@ -190,16 +191,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupSet.add(new Group(new Identifier<Group>("3"), "Group3"));
 
         final Set<WebServer> webServerSet = new HashSet<>();
-        webServerSet.add(new WebServer(new Identifier<WebServer>("1"),
-                groupSet,
-                "WebServer1",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null));
+        webServerSet.add(new WebServer(new Identifier<WebServer>("1"), groupSet, "WebServer1", null, null, null, null,
+                null, null, null, WebServerReachableState.WS_UNREACHABLE, null));
 
         groupSet.add(new Group(new Identifier<Group>("1"), "Group1", new HashSet<Jvm>(), webServerSet, null, null));
 

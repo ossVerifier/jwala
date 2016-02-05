@@ -34,46 +34,46 @@ public abstract class StateServiceImpl<S, T extends OperationalState> implements
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
-    @Override
-    @Transactional
-    public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest, final User aUser) {
-        LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
-        setStateRequest.validate();
+//    @Override
+//    @Transactional
+//    public CurrentState<S, T> setCurrentState(final SetStateRequest<S, T> setStateRequest, final User aUser) {
+//        LOGGER.trace("Attempting to set state for {} {} ", stateType, setStateRequest);
+//        setStateRequest.validate();
+//
+//        final CurrentState<S, T> currentState = statePersistenceService.getState(setStateRequest.getNewState().getId(), setStateRequest.getNewState().getType());
+//        if (currentState == null || !currentState.getState().equals(setStateRequest.getNewState().getState()) ||
+//            !currentState.getMessage().equalsIgnoreCase(setStateRequest.getNewState().getMessage())) {
+//            final CurrentState<S, T> updatedState = statePersistenceService.updateState(setStateRequest);
+//            updatedState.setUserId(aUser.getId());
+//            notificationService.notifyStateUpdated(updatedState);
+//            grpStateComputationAndNotificationSvc.computeAndNotify(updatedState.getId(), updatedState.getState());
+//            return updatedState;
+//        }
+//        return currentState;
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public CurrentState<S, T> getCurrentState(final Identifier<S> anId) {
+//        LOGGER.trace("Getting state for {} {}", stateType, anId);
+//        CurrentState<S, T> state = statePersistenceService.getState(anId, stateType);
+//        if (state == null) {
+//            state = createUnknown(anId);
+//        }
+//        return state;
+//    }
 
-        final CurrentState<S, T> currentState = statePersistenceService.getState(setStateRequest.getNewState().getId(), setStateRequest.getNewState().getType());
-        if (currentState == null || !currentState.getState().equals(setStateRequest.getNewState().getState()) ||
-            !currentState.getMessage().equalsIgnoreCase(setStateRequest.getNewState().getMessage())) {
-            final CurrentState<S, T> updatedState = statePersistenceService.updateState(setStateRequest);
-            updatedState.setUserId(aUser.getId());
-            notificationService.notifyStateUpdated(updatedState);
-            grpStateComputationAndNotificationSvc.computeAndNotify(updatedState.getId(), updatedState.getState());
-            return updatedState;
-        }
-        return currentState;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public CurrentState<S, T> getCurrentState(final Identifier<S> anId) {
-        LOGGER.trace("Getting state for {} {}", stateType, anId);
-        CurrentState<S, T> state = statePersistenceService.getState(anId, stateType);
-        if (state == null) {
-            state = createUnknown(anId);
-        }
-        return state;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds) {
-        LOGGER.trace("Getting states for {} {}", stateType, someIds);
-        final Set<CurrentState<S, T>> results = new HashSet<>();
-        for (final Identifier<S> id : someIds) {
-            final CurrentState<S, T> currentState = getCurrentState(id);
-            results.add(currentState);
-        }
-        return results;
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Set<CurrentState<S, T>> getCurrentStates(final Set<Identifier<S>> someIds) {
+//        LOGGER.trace("Getting states for {} {}", stateType, someIds);
+//        final Set<CurrentState<S, T>> results = new HashSet<>();
+//        for (final Identifier<S> id : someIds) {
+//            final CurrentState<S, T> currentState = getCurrentState(id);
+//            results.add(currentState);
+//        }
+//        return results;
+//    }
 
     @Override
     @Transactional(readOnly = true)

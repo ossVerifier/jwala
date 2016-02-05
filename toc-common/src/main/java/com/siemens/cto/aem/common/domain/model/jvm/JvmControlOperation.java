@@ -23,7 +23,7 @@ public enum JvmControlOperation {
             }
     ),
 
-    STOP("stop", JVM_STOP, SVC_STOPPED, JVM_FAILED,
+    STOP("stop", JVM_STOP, FORCED_STOPPED, JVM_FAILED,
             new String[]{/*net*/"The (.*) service is not started.",
                                   /*sc*/"The service has not been started.",
                                   /*script*/"The service has not been started."}),

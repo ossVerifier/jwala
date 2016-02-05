@@ -54,7 +54,7 @@ public class GroupFiniteStateMachineTest {
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_UNKNOWN, JVM_STOPPED);
         assertEquals(GRP_STOPPED, state);
 
-        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_UNKNOWN, SVC_STOPPED);
+        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_UNKNOWN, FORCED_STOPPED);
         assertEquals(GRP_STOPPED, state);
 
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTED, JVM_INITIALIZED);
@@ -66,7 +66,7 @@ public class GroupFiniteStateMachineTest {
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTED, JVM_STOPPED);
         assertEquals(GRP_PARTIAL, state);
 
-        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTED, SVC_STOPPED);
+        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTED, FORCED_STOPPED);
         assertEquals(GRP_PARTIAL, state);
 
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTING, JVM_STARTED);
@@ -75,7 +75,7 @@ public class GroupFiniteStateMachineTest {
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTING, JVM_STOPPED);
         assertEquals(GRP_PARTIAL, state);
 
-        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTING, SVC_STOPPED);
+        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STARTING, FORCED_STOPPED);
         assertEquals(GRP_PARTIAL, state);
 
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_UNKNOWN, JVM_STOP);
@@ -84,7 +84,7 @@ public class GroupFiniteStateMachineTest {
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STOPPED, JVM_STOPPED);
         assertEquals(GRP_STOPPED, state);
 
-        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STOPPED, SVC_STOPPED);
+        state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STOPPED, FORCED_STOPPED);
         assertEquals(GRP_STOPPED, state);
 
         state = GroupFiniteStateMachine.getInstance().computeGroupState(GRP_STOPPED, JVM_STARTED);

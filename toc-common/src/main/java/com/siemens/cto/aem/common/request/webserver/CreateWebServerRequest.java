@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common.request.webserver;
 
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -30,6 +31,8 @@ public class CreateWebServerRequest implements Serializable, Request {
     private final FileSystemPath httpConfigFile;
     private final Path svrRoot;
     private final Path docRoot;
+    private final WebServerReachableState state;
+    private final String errorStatus;
 
     public CreateWebServerRequest(final Collection<Identifier<Group>> theGroupIds,
                                   final String theName,
@@ -39,7 +42,9 @@ public class CreateWebServerRequest implements Serializable, Request {
                                   final Path theStatusPath,
                                   final FileSystemPath theHttpConfigFile,
                                   final Path theSvrRoot,
-                                  final Path theDocRoot) {
+                                  final Path theDocRoot,
+                                  final WebServerReachableState state,
+                                  final String errorStatus) {
         host = theHost;
         port = thePort;
         httpsPort = theHttpsPort;
@@ -49,6 +54,8 @@ public class CreateWebServerRequest implements Serializable, Request {
         httpConfigFile = theHttpConfigFile;
         svrRoot = theSvrRoot;
         docRoot = theDocRoot;
+        this.state = state;
+        this.errorStatus = errorStatus;
     }
 
     public Collection<Identifier<Group>> getGroups() {
@@ -87,6 +94,14 @@ public class CreateWebServerRequest implements Serializable, Request {
         return docRoot;
     }
 
+    public WebServerReachableState getState() {
+        return state;
+    }
+
+    public String getErrorStatus() {
+        return errorStatus;
+    }
+
     @Override
     public void validate() {
         new MultipleRules(new WebServerNameRule(name),
@@ -100,58 +115,38 @@ public class CreateWebServerRequest implements Serializable, Request {
                           new PathRule(docRoot)).validate();
     }
 
+
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        CreateWebServerRequest rhs = (CreateWebServerRequest) obj;
-        return new EqualsBuilder()
-                .append(this.groupIds, rhs.groupIds)
-                .append(this.host, rhs.host)
-                .append(this.name, rhs.name)
-                .append(this.port, rhs.port)
-                .append(this.httpsPort, rhs.httpsPort)
-                .append(this.statusPath, rhs.statusPath)
-                .append(this.httpConfigFile, rhs.httpConfigFile)
-                .append(this.svrRoot, rhs.svrRoot)
-                .append(this.docRoot, rhs.docRoot)
-                .isEquals();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CreateWebServerRequest that = (CreateWebServerRequest) o;
+
+        return name.equals(that.name);
+
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(groupIds)
-                .append(host)
-                .append(name)
-                .append(port)
-                .append(httpsPort)
-                .append(statusPath)
-                .append(httpConfigFile)
-                .append(svrRoot)
-                .append(docRoot)
-                .toHashCode();
+        return name.hashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("groupIds", groupIds)
-                .append("host", host)
-                .append("name", name)
-                .append("port", port)
-                .append("httpsPort", httpsPort)
-                .append("statusPath", statusPath)
-                .append("httpConfigFile", httpConfigFile)
-                .append("svrRoot", svrRoot)
-                .append("docRoot", docRoot)
-                .toString();
+        return "CreateWebServerRequest{" +
+                "groupIds=" + groupIds +
+                ", host='" + host + '\'' +
+                ", name='" + name + '\'' +
+                ", port=" + port +
+                ", httpsPort=" + httpsPort +
+                ", statusPath=" + statusPath +
+                ", httpConfigFile=" + httpConfigFile +
+                ", svrRoot=" + svrRoot +
+                ", docRoot=" + docRoot +
+                ", state=" + state +
+                ", errorStatus='" + errorStatus + '\'' +
+                '}';
     }
+
 }
