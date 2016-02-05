@@ -19,9 +19,9 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     private static final long serialVersionUID = 2491659292018543404L;
 
     public static final String QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME = "findJvmByGroupAndJvmName";
-    public static final String QUERY_UPDATE_STATE_BY_ID = "updateStateById";
-    public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateErrorStatusById";
-    public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateStateAndErrStsById";
+    public static final String QUERY_UPDATE_STATE_BY_ID = "updateJvmStateById";
+    public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateJvmErrorStatusById";
+    public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateJvmStateAndErrStsById";
 
     public static final String QUERY_PARAM_ID = "id";
     public static final String QUERY_PARAM_STATE = "state";
