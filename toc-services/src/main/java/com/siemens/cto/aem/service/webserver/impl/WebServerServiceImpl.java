@@ -20,6 +20,7 @@ import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator
 import com.siemens.cto.toc.files.FileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -142,7 +143,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // We need state db persistence to succeed even if JMS fails.
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         webServerPersistenceService.updateState(id, state, errorStatus);
     }

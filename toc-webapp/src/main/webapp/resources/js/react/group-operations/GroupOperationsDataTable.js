@@ -329,10 +329,7 @@ var GroupOperationsDataTable = React.createClass({
 
             responseCallback(response);
 
-            // This will set the state which triggers DOM rendering thus the state will be updated
-            // TODO: Find out if the code below is still necessary since removing it seems to have no effect whatsoever.
-            // self.props.updateWebServerDataCallback(response.applicationResponseContent);
-
+            self.props.updateWebServerDataCallback(response.applicationResponseContent);
         }, false);
    },
    getApplicationsOfGrp: function(idObj, responseCallback) {

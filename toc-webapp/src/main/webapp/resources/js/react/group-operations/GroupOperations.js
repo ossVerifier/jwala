@@ -290,16 +290,13 @@ var GroupOperations = React.createClass({
     componentWillUnmount: function() {
         this.statePoller.stop();
     },
-
-// TODO: Remove!?
-//    updateWebServerDataCallback: function(webServerData) {
-//        this.setState(groupOperationsHelper.processWebServerData([],
-//                                                                 webServerData,
-//                                                                 this.state.webServerStates,
-//                                                                 []));
-//        this.updateWebServerStateData([]);
-//    },
-
+    updateWebServerDataCallback: function(webServerData) {
+        this.setState(groupOperationsHelper.processWebServerData([],
+                                                                 webServerData,
+                                                                 this.state.webServerStates,
+                                                                 []));
+        this.updateWebServerStateData([]);
+    },
     statePoller: null,
     statics: {
         // Used in place of ref since ref will not work without a React wrapper (in the form a data table)
