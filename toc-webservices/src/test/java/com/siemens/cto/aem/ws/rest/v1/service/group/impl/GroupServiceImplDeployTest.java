@@ -93,7 +93,6 @@ public class GroupServiceImplDeployTest {
     static final WebServerService mockWebServerService = mock(WebServerService.class);
     static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
-    static final GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -253,7 +252,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>(), mockGrpStateComputationAndNotificationSvc);
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
         }
 
         @Bean

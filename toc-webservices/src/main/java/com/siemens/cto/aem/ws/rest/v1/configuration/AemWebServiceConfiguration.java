@@ -145,8 +145,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap,
-                grpStateComputationAndNotificationSvc);
+        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap);
     }
 
     @Bean

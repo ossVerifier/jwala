@@ -90,6 +90,7 @@ public class JvmServiceImpl implements JvmService {
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
 
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
+        grpStateComputationAndNotificationSvc.computeAndNotify(newJvm.getId(), JvmState.JVM_NEW);
 
         final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
         addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
@@ -339,6 +340,8 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmPersistenceService.updateState(id, state);
+        stateNotificationService.notifyStateUpdated(new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+        grpStateComputationAndNotificationSvc.computeAndNotify(id, state);
     }
 
 }

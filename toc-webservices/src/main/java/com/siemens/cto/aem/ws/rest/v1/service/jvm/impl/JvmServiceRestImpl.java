@@ -70,18 +70,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private static JvmServiceRestImpl instance;
-    private static GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final ResourceService theResourceService,
-                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap,
-                              final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         resourceService = theResourceService;
         executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
-        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     @Override
@@ -106,7 +103,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final Jvm jvm;
         if (aJvmToCreate.areGroupsPresent()) {
             jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddRequest(), user);
-            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_NEW);
         } else {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
         }
@@ -345,7 +341,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             // set the state to stopped
             jvmService.updateState(jvm.getId(), JvmState.JVM_STOPPED);
-            grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), JvmState.JVM_STOPPED);
+
         } catch (CommandFailureException e) {
             logger.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config",
