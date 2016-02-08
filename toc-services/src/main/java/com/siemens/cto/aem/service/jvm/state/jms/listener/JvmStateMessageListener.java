@@ -43,7 +43,7 @@ public class JvmStateMessageListener implements MessageListener {
             LOGGER.debug("Received message : {}", message.getJMSMessageID());
             handleMessage(message);
         } catch (final JMSException | RuntimeException e) {
-            LOGGER.warn("Failure while handling a message; ignoring the message", e);
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
