@@ -77,7 +77,7 @@ public class JvmStateMessageListener implements MessageListener {
         }
 
         if (stateAndOrMsgChanged) {
-            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
+            jvmService.updateState(newState.getId(), newState.getState(), msg);
             grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
         }
     }
