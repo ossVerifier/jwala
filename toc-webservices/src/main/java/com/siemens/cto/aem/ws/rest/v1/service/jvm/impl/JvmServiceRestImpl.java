@@ -239,23 +239,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response getCurrentJvmStates(final JvmIdsParameterProvider aJvmIdsParameterProvider) {
-
-//        logger.debug("Current JVM states requested : {}", aJvmIdsParameterProvider);
-//        final Set<Identifier<Jvm>> jvmIds = aJvmIdsParameterProvider.valueOf();
-//        final Set<CurrentState<Jvm, JvmState>> currentJvmStates;
-//
-//        if (jvmIds.isEmpty()) {
-//            currentJvmStates = jvmStateService.getCurrentStates();
-//        } else {
-//            currentJvmStates = jvmStateService.getCurrentStates(jvmIds);
-//        }
-//
-//        return ResponseBuilder.ok(currentJvmStates);
-        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
-    }
-
-    @Override
     public Response generateConfig(String aJvmName) {
         try {
             String serverXmlStr = jvmService.generateConfigFile(aJvmName, "server.xml");

@@ -67,11 +67,6 @@ public interface JvmServiceRest extends InitializingBean{
                                   @BeanParam final AuthenticatedUser aUser,
                                   @QueryParam("templateName") final String templateName);
 
-    @GET
-    @Path("/states/current")
-    // TODO: This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
-    Response getCurrentJvmStates(@BeanParam final JvmIdsParameterProvider jvmIdsParameterProvider);
-
     /**
      * Initiate a heartbeat followed by an SSH check
      * @param aJvmId id of the jvm to diagnose
