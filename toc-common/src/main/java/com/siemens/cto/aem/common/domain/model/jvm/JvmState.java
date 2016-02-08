@@ -32,6 +32,7 @@ public enum JvmState implements OperationalState {
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
     private boolean isStartedState;
+    private final String stateLabel;
     
     static {
         for (final JvmState state : values()) {
@@ -50,22 +51,6 @@ public enum JvmState implements OperationalState {
         }
         return JVM_UNKNOWN;
     }
-
-    /**
-     * Converts a state label from String to {@link JvmState}.
-     * @param stateLabel e.g. STOPPED
-     * @return {@link JvmState}
-     */
-    public static JvmState convertFromStateLabel(final String stateLabel) {
-        for (final JvmState state : values()) {
-            if (state.stateLabel.equalsIgnoreCase(stateLabel)) {
-                return state;
-            }
-        }
-        return JVM_UNKNOWN;
-    }
-
-    private final String stateLabel;
 
     JvmState(final String stateLabel, final boolean startedFlag) {
         this.stateLabel = stateLabel;
