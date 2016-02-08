@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -337,11 +338,15 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
-        jvmPersistenceService.updateState(id, state); // <-- @transaction propagate requires_new
-        stateNotificationService.notifyStateUpdated(new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
-        grpStateComputationAndNotificationSvc.computeAndNotify(id, state);
+        jvmPersistenceService.updateState(id, state);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateState(final Identifier<Jvm> id, final JvmState state, final String erroStatus) {
+        jvmPersistenceService.updateState(id, state, erroStatus);
     }
 
 }

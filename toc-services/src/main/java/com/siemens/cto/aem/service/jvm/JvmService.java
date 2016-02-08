@@ -56,4 +56,6 @@ public interface JvmService {
 
     void updateState(Identifier<Jvm> id, JvmState state);
 
+    void updateState(Identifier<Jvm> id, JvmState state, String msg);
+
 }

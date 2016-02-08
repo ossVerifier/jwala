@@ -6,12 +6,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -44,7 +42,7 @@ public class JvmStateMessageListenerTest {
     private StateNotificationService mockStateNotificationService;
 
     @Mock
-    private JvmPersistenceService mockJvmPersistenceService;
+    private JvmService mockJvmService;
 
     @Mock
     private GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
@@ -60,7 +58,7 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmPersistenceService, mockGrpStateComputationAndNotificationSvc));
+        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc));
     }
 
     @Test
@@ -79,7 +77,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(mockJvmPersistenceService, times(1)).updateState(any(Identifier.class), eq(JvmState.JVM_STARTED));
+        verify(mockJvmService, times(1)).updateState(any(Identifier.class), eq(JvmState.JVM_STARTED));
     }
 
     @Test
@@ -88,7 +86,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, never()).processMessage(Matchers.<MapMessage>anyObject());
-        verify(mockJvmPersistenceService, never()).updateState(any(Identifier.class), any(JvmState.class));
+        verify(mockJvmService, never()).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Test
@@ -113,7 +111,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(mockJvmPersistenceService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
+        verify(mockJvmService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Ignore //functionality removed
@@ -131,7 +129,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(mockJvmPersistenceService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
+        verify(mockJvmService, times(0)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
     @Test
@@ -147,7 +145,7 @@ public class JvmStateMessageListenerTest {
         listener.onMessage(message);
         verify(listener, times(1)).handleMessage(eq(message));
         verify(listener, times(1)).processMessage(eq(message));
-        verify(mockJvmPersistenceService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
+        verify(mockJvmService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
     }
 
 }

@@ -6,7 +6,7 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import org.apache.commons.lang3.StringUtils;
@@ -24,16 +24,16 @@ public class JvmStateMessageListener implements MessageListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
 
     private final JvmStateMapMessageConverter converter;
-    private final JvmPersistenceService jvmPersistenceService;
+    private final JvmService jvmService;
     private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> jvmLastPersistedStateMap = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Identifier<Jvm>, String> jvmLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
-                                   final JvmPersistenceService jvmPersistenceService,
+                                   final JvmService jvmService,
                                    final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         converter = theConverter;
-        this.jvmPersistenceService = jvmPersistenceService;
+        this.jvmService = jvmService;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
@@ -61,39 +61,25 @@ public class JvmStateMessageListener implements MessageListener {
 
         final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
-        boolean computeGroupState = false;
+        boolean stateAndOrMsgChanged = false;
 
-        // This is for the state
-        if (jvmLastPersistedStateMap.containsKey(newState.getId())) {
-            if (!jvmLastPersistedStateMap.get(newState.getId()).equals(newState.getState())) {
+        if (!jvmLastPersistedStateMap.containsKey(newState.getId()) ||
+            !jvmLastPersistedStateMap.get(newState.getId()).equals(newState.getState())) {
                 jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
-                jvmPersistenceService.updateState(newState.getId(), newState.getState());
-                computeGroupState = true;
-            }
-        } else {
-            jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
-            jvmPersistenceService.updateState(newState.getId(), newState.getState());
-            computeGroupState = true;
+                stateAndOrMsgChanged = true;
         }
 
-        // This is for the error status
-        if (StringUtils.isNotEmpty(newState.getMessage())) {
-            if (jvmLastPersistedErrorStatusMap.containsKey(newState.getId())) {
-                if (!jvmLastPersistedErrorStatusMap.get(newState.getId()).equals(newState.getMessage())) {
-                    jvmLastPersistedErrorStatusMap.put(newState.getId(), newState.getMessage());
-                    jvmPersistenceService.updateErrorStatus(newState.getId(), newState.getMessage());
-                    computeGroupState = true;
-                }
-            } else {
-                jvmLastPersistedErrorStatusMap.put(newState.getId(), newState.getMessage());
-                jvmPersistenceService.updateErrorStatus(newState.getId(), newState.getMessage());
-                computeGroupState = true;
-            }
+        final String msg = newState.getMessage();
+        if (StringUtils.isNotEmpty(msg) && (!jvmLastPersistedErrorStatusMap.containsKey(newState.getId()) ||
+            !jvmLastPersistedErrorStatusMap.get(newState.getId()).equals(msg))) {
+                jvmLastPersistedErrorStatusMap.put(newState.getId(), msg);
+                stateAndOrMsgChanged = true;
         }
 
-        if (computeGroupState) {
+        if (stateAndOrMsgChanged) {
+            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
             grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
         }
-
     }
+
 }

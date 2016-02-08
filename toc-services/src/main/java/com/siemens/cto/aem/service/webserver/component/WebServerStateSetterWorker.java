@@ -89,15 +89,11 @@ public class WebServerStateSetterWorker {
                              "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
                              response.getStatusCode() + "'");
                 }
-            } catch (IOException ioe) {
+            } catch (final IOException ioe) {
                 LOGGER.info(ioe.getMessage(), ioe);
                 setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-            } catch (RuntimeException rte) {
+            } catch (final RuntimeException rte) {
                 LOGGER.error(rte.getMessage(), rte);
-                String msg = ExceptionUtils.getStackTrace(rte);
-                if (msg == null) {
-                    msg = rte.getMessage();
-                }
             } finally {
                 if (response != null) {
                     response.close();
@@ -134,8 +130,8 @@ public class WebServerStateSetterWorker {
                     stateAndOrMsgChanged = true;
             }
 
-            if (!webServerLastPersistedErrorStatusMap.containsKey(webServer.getId()) ||
-                !webServerLastPersistedErrorStatusMap.get(webServer.getId()).equals(msg)) {
+            if (StringUtils.isNotEmpty(msg) && (!webServerLastPersistedErrorStatusMap.containsKey(webServer.getId()) ||
+                !webServerLastPersistedErrorStatusMap.get(webServer.getId()).equals(msg))) {
                     webServerLastPersistedErrorStatusMap.put(webServer.getId(), msg);
                     stateAndOrMsgChanged = true;
             }

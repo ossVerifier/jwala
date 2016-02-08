@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.configuration.jms;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
@@ -34,6 +35,9 @@ public class AemMessageListenerConfig {
     @Autowired
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
+    @Autowired
+    private JvmService jvmService;
+
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer() {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
@@ -56,9 +60,7 @@ public class AemMessageListenerConfig {
     @Bean
     @Autowired
     public MessageListener getJvmStateMessageListener() {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(),
-                                           jvmPersistenceService,
-                                           grpStateComputationAndNotificationSvc);
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, grpStateComputationAndNotificationSvc);
     }
 
 }

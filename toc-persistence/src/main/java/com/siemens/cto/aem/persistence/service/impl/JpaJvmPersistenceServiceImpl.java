@@ -118,7 +118,6 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmCrudService.updateState(id, state);
     }
