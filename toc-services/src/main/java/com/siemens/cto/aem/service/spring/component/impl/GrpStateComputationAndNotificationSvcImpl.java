@@ -10,17 +10,13 @@ import com.siemens.cto.aem.common.domain.model.state.OperationalState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.request.group.SetGroupStateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaCurrentState;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.StateCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.GroupFiniteStateMachine;
-import com.siemens.cto.aem.service.state.GroupStateService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +40,6 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 
     @Autowired
     private WebServerCrudService webServerCrudService;
-
-    @Autowired
-    @Qualifier("webServerStateCrudService")
-    private StateCrudService<WebServer, WebServerReachableState> webServerStateCrudService;
 
     @Autowired
     private StateNotificationService stateNotificationService;
@@ -90,9 +82,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
             final List<WebServer> webServerList = webServerCrudService.
                     findWebServersBelongingTo(new Identifier<Group>(group.getId()));
             for (final WebServer webServer: webServerList) {
-                final JpaCurrentState jpaCurrentState = webServerStateCrudService.getState(webServer.getId(), StateType.WEB_SERVER);
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jpaCurrentState == null ?
-                        WebServerReachableState.WS_UNKNOWN : WebServerReachableState.valueOf(jpaCurrentState.getState()));
+                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServer.getState());
             }
 
             final Identifier<Group> groupId = new Identifier<>(group.getId());
@@ -119,9 +109,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
                     webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNKNOWN :
                             currentWebServerState);
                 } else {
-                    final JpaCurrentState jpaCurrentState = webServerStateCrudService.getState(webServer.getId(), StateType.WEB_SERVER);
-                    webServerState = jpaCurrentState == null ? WebServerReachableState.WS_UNKNOWN :
-                            WebServerReachableState.valueOf(jpaCurrentState.getState());
+                    webServerState = webServer.getState();
                 }
                 groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServerState);
             }

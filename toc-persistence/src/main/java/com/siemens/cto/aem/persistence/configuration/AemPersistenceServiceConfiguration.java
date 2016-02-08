@@ -67,21 +67,6 @@ public class AemPersistenceServiceConfiguration {
         return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
     }
 
-    @Bean(name = "webServerStatePersistenceService")
-    public StatePersistenceService<WebServer, WebServerReachableState> getWebServerStatePersistenceService() {
-        return new WebServerJpaStatePersistenceServiceImpl(getWebServerStateCrudService());
-    }
-
-    @Bean(name = "webServerStateCrudService")
-    protected StateCrudService<WebServer, WebServerReachableState> getWebServerStateCrudService() {
-        return new WebServerStateCrudServiceImpl();
-    }
-
-    @Bean(name = "jvmStatePersistenceService")
-    public StatePersistenceService<Jvm, JvmState> getJvmStatePersistenceService() {
-        return new JvmJpaStatePersistenceServiceImpl(getJvmStateCrudService());
-    }
-
     @Bean
     public WebServerPersistenceService getWebServerPersistenceService() {
         return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebserverCrudService());
@@ -92,8 +77,4 @@ public class AemPersistenceServiceConfiguration {
         return new WebServerCrudServiceImpl();
     }
 
-    @Bean(name = "jvmStateCrudService")
-    protected StateCrudService<Jvm, JvmState> getJvmStateCrudService() {
-        return new JvmStateCrudServiceImpl();
-    }
 }
