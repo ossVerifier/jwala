@@ -23,11 +23,11 @@ public enum JvmState implements OperationalState {
     JVM_STOP         (StateLabel.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
     JVM_STOPPING     (StateLabel.STOPPING, Started.YES),
     JVM_STOPPED      (StateLabel.STOPPED, Started.YES),
-    JVM_DESTROYING  (StateLabel.DESTROYING, Started.YES),
-    JVM_DESTROYED   (StateLabel.DESTROYED, Started.YES),
-    JVM_UNKNOWN     (StateLabel.UNKNOWN, Started.NO),
-    JVM_FAILED      (StateLabel.FAILED, Started.NO),
-    FORCED_STOPPED(StateLabel.FORCED_STOPPED, Started.NO),
+    JVM_DESTROYING   (StateLabel.DESTROYING, Started.YES),
+    JVM_DESTROYED    (StateLabel.DESTROYED, Started.YES),
+    JVM_UNKNOWN      (StateLabel.UNKNOWN, Started.NO),
+    JVM_FAILED       (StateLabel.FAILED, Started.NO),
+    FORCED_STOPPED   (StateLabel.FORCED_STOPPED, Started.NO),
     ;
 
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
