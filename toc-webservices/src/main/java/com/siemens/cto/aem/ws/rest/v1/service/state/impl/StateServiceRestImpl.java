@@ -61,7 +61,6 @@ public class StateServiceRestImpl implements StateServiceRest {
 
         try {
             consumerId = stateConsumerManager.getConsumerId(aRequest, aClientId);
-
             update = stateNotificationService.pollUpdatedState(consumerId);
         } catch (Exception e) {
             LOGGER.error("Can't poll for state(s)!", e);
@@ -84,4 +83,5 @@ public class StateServiceRestImpl implements StateServiceRest {
 
         return ResponseBuilder.ok(updates);
     }
+
 }
