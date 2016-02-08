@@ -5,6 +5,8 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -18,7 +20,8 @@ import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.state.StateNotificationService;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +36,16 @@ public class JvmControlServiceImpl implements JvmControlService {
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
+    private final StateNotificationService stateNotificationService;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
-                                 final HistoryService historyService) {
+                                 final HistoryService historyService,
+                                 final StateNotificationService stateNotificationService) {
         jvmService = theJvmService;
         remoteCommandExecutor = theExecutor;
         this.historyService = historyService;
+        this.stateNotificationService = stateNotificationService;
     }
 
     @Override
@@ -54,15 +60,22 @@ public class JvmControlServiceImpl implements JvmControlService {
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
                     ctrlOp, new WindowsJvmPlatformCommandProvider());
 
-            if (commandOutput != null && (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP))) {
+            if (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP)) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
 
             // Process other return codes...
-            if (commandOutput != null && commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
+            if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
                 commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
+                stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.FORCED_STOPPED,
+                        DateTime.now(), StateType.JVM));
                 jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
+            } else if (!commandOutput.getReturnCode().wasSuccessful()) {
+                final String errorMsg = "JVM control command was not successful. Return code is " + commandOutput.getReturnCode().getReturnCode() + "!";
+                LOGGER.error(errorMsg);
+                stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+                        DateTime.now(), StateType.JVM, errorMsg));
             }
 
             return commandOutput;

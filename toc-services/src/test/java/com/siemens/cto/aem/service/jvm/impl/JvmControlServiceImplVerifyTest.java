@@ -5,8 +5,6 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -24,8 +22,8 @@ import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.StateService;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,6 +60,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Mock
     private StateService<Jvm, JvmState> mockJvmStateStateService;
 
+    @Mock
+    private StateNotificationService mockStateNotificationService;
+
     private List<JpaGroup> groups = new ArrayList<>();
 
     public JvmControlServiceImplVerifyTest() {
@@ -72,8 +73,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService
-        );
+        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockStateNotificationService);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }

@@ -202,8 +202,7 @@ public class AemServiceConfiguration {
     @Autowired
     public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(factoryHelper), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService)
-        );
+                getHistoryService(historyCrudService), getStateNotificationService());
     }
 
     @Bean(name = "groupControlService")
