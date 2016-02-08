@@ -286,22 +286,6 @@ public class JvmServiceRestImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testGetCurrentJvmStates() {
-        Set<String> jvmIds = new HashSet<>();
-        jvmIds.add(jvm.getId().getId() + "");
-        JvmIdsParameterProvider jvmIdProvider = new JvmIdsParameterProvider(jvmIds);
-        assertTrue(jvmServiceRest.getCurrentJvmStates(jvmIdProvider).hasEntity());
-
-        when(jvmStateService.getCurrentStates()).thenReturn(new HashSet<CurrentState<Jvm, JvmState>>());
-        JvmIdsParameterProvider mockJvmProvider = mock(JvmIdsParameterProvider.class);
-        when(mockJvmProvider.valueOf()).thenReturn(new HashSet<Identifier<Jvm>>());
-        Response response = jvmServiceRest.getCurrentJvmStates(mockJvmProvider);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
     public void testGenerateConfig() {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         Response responseObj = jvmServiceRest.generateConfig(jvm.getJvmName());
