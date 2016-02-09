@@ -222,19 +222,19 @@ var GroupOperationsDataTable = React.createClass({
        });
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
-      var self= this;
-      aoColumnDefs[itemIndex].bSortable = false;
-      aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
-           var key = "grp" + oData.id.id;
-           return React.render(<StatusWidget key={key} defaultStatus=""
-                                    errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
-                      GroupOperations.groupStatusWidgetMap[key] = this;
-                      // Note: 1. Date should be from lastUpdatedDate which was not returned by the REST service.
-                      //       2. Msg field is "" since group does not have an error status column.
-                      // TODO: Include lastUpdatedDate from REST and replace "new Date()".
-                      this.setStatus(oData.currentState.stateString, new Date(), "");
-                  });
-      }.bind(this);
+//      var self= this;
+//      aoColumnDefs[itemIndex].bSortable = false;
+//      aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+//           var key = "grp" + oData.id.id;
+//           return React.render(<StatusWidget key={key} defaultStatus=""
+//                                    errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
+//                      GroupOperations.groupStatusWidgetMap[key] = this;
+//                      // Note: 1. Date should be from lastUpdatedDate which was not returned by the REST service.
+//                      //       2. Msg field is "" since group does not have an error status column.
+//                      // TODO: Include lastUpdatedDate from REST and replace "new Date()".
+//                      this.setStatus(oData.currentState.stateString, new Date(), "");
+//                  });
+//      }.bind(this);
    },
    renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;

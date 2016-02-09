@@ -9,6 +9,11 @@ import java.io.Serializable;
 /**
  * Wrapper for return codes returned by unix or dos scripts.
  */
+
+// TODO: Refactor. Should this be an enum ? See {@link CommandOutputReturnCode}.
+// Note: Problem is this were an enum, how do we show a return code that is not in the list ? Meaning...
+//       say all return codes not listed would be mapped to UNKNOWN, where do we store the return code ?
+//       Do we just log it ?
 public class ExecReturnCode implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -66,31 +66,31 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
      * @param currentJvmState the current {@link JvmState}
      */
     private void computeGroupStateAndSendNotification(final JpaJvm currentJvm, final JvmState currentJvmState) {
-        for (final JpaGroup group: currentJvm.getGroups()) {
-            final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(new Identifier<Group>(group.getId()));
-            GroupState groupState = GroupState.GRP_UNKNOWN;
-            for (final JpaJvm jvm: jvmList) {
-                JvmState jvmState;
-                if (jvm.getId().equals(currentJvm.getId())) {
-                    jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
-                } else {
-                    jvmState = jvm.getState();
-                }
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvmState);
-            }
-
-            final List<WebServer> webServerList = webServerCrudService.
-                    findWebServersBelongingTo(new Identifier<Group>(group.getId()));
-            for (final WebServer webServer: webServerList) {
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServer.getState());
-            }
-
-            final Identifier<Group> groupId = new Identifier<>(group.getId());
-            stateNotificationService.notifyStateUpdated(new CurrentState<>(groupId, groupState,
-                    DateTime.now(), StateType.GROUP));
-
-            groupService.updateState(new Identifier<Group>(group.getId()), groupState);
-        }
+//        for (final JpaGroup group: currentJvm.getGroups()) {
+//            final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(new Identifier<Group>(group.getId()));
+//            GroupState groupState = GroupState.GRP_UNKNOWN;
+//            for (final JpaJvm jvm: jvmList) {
+//                JvmState jvmState;
+//                if (jvm.getId().equals(currentJvm.getId())) {
+//                    jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
+//                } else {
+//                    jvmState = jvm.getState();
+//                }
+//                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvmState);
+//            }
+//
+//            final List<WebServer> webServerList = webServerCrudService.
+//                    findWebServersBelongingTo(new Identifier<Group>(group.getId()));
+//            for (final WebServer webServer: webServerList) {
+//                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServer.getState());
+//            }
+//
+//            final Identifier<Group> groupId = new Identifier<>(group.getId());
+//            stateNotificationService.notifyStateUpdated(new CurrentState<>(groupId, groupState,
+//                    DateTime.now(), StateType.GROUP));
+//
+//            groupService.updateState(new Identifier<Group>(group.getId()), groupState);
+//        }
     }
 
     /**
@@ -100,30 +100,30 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
      */
     private void computeGroupStateAndSendNotification(final WebServer currentWebServer,
                                                       final WebServerReachableState currentWebServerState) {
-        for (final Group group: currentWebServer.getGroups()) {
-            final List<WebServer> webServerList = webServerCrudService.findWebServersBelongingTo(group.getId()) ;
-            GroupState groupState = GroupState.GRP_UNKNOWN;
-            for (final WebServer webServer : webServerList) {
-                WebServerReachableState webServerState;
-                if (webServer.getId().equals(currentWebServer.getId())) {
-                    webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNKNOWN :
-                            currentWebServerState);
-                } else {
-                    webServerState = webServer.getState();
-                }
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServerState);
-            }
-
-            final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(group.getId());
-            for (final JpaJvm jvm: jvmList) {
-                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvm.getState());
-            }
-
-            stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,
-                    DateTime.now(), StateType.GROUP));
-
-            groupService.updateState(group.getId(), groupState);
-        }
+//        for (final Group group: currentWebServer.getGroups()) {
+//            final List<WebServer> webServerList = webServerCrudService.findWebServersBelongingTo(group.getId()) ;
+//            GroupState groupState = GroupState.GRP_UNKNOWN;
+//            for (final WebServer webServer : webServerList) {
+//                WebServerReachableState webServerState;
+//                if (webServer.getId().equals(currentWebServer.getId())) {
+//                    webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNKNOWN :
+//                            currentWebServerState);
+//                } else {
+//                    webServerState = webServer.getState();
+//                }
+//                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, webServerState);
+//            }
+//
+//            final List<JpaJvm> jvmList = jvmCrudService.findJvmsBelongingTo(group.getId());
+//            for (final JpaJvm jvm: jvmList) {
+//                groupState = GroupFiniteStateMachine.getInstance().computeGroupState(groupState, jvm.getState());
+//            }
+//
+//            stateNotificationService.notifyStateUpdated(new CurrentState<>(group.getId(), groupState,
+//                    DateTime.now(), StateType.GROUP));
+//
+//            groupService.updateState(group.getId(), groupState);
+//        }
     }
 
 }

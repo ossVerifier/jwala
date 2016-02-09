@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.jvm.state.jms.listener;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -9,7 +10,9 @@ import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +31,16 @@ public class JvmStateMessageListener implements MessageListener {
     private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> jvmLastPersistedStateMap = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Identifier<Jvm>, String> jvmLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+    private final StateNotificationService stateNotificationService;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
                                    final JvmService jvmService,
-                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
+                                   final StateNotificationService stateNotificationService) {
         converter = theConverter;
         this.jvmService = jvmService;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
+        this.stateNotificationService = stateNotificationService;
     }
 
     @Override
@@ -77,6 +83,8 @@ public class JvmStateMessageListener implements MessageListener {
         }
 
         if (stateAndOrMsgChanged) {
+            stateNotificationService.notifyStateUpdated(new CurrentState(newState.getId(), newState.getState(),
+                    DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(newState.getId(), newState.getState(), msg);
             grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
         }

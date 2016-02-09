@@ -39,13 +39,13 @@ public class JvmStateMessageListenerTest {
     private CurrentState<Jvm, JvmState> newCurrentState;
 
     @Mock
-    private StateNotificationService mockStateNotificationService;
-
-    @Mock
     private JvmService mockJvmService;
 
     @Mock
     private GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
+
+    @Mock
+    private StateNotificationService mockStateNotificationService;
 
     private JvmStateMessageListener listener;
     private JvmStateMapMessageConverter converter;
@@ -58,7 +58,7 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc));
+        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc, mockStateNotificationService));
     }
 
     @Test

@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
@@ -66,13 +67,15 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
 
             // Process other return codes...
-            if (commandOutput.getReturnCode().getReturnCode() == ExecReturnCode.STP_EXIT_PROCESS_KILLED) {
+            if (commandOutput.getReturnCode().getReturnCode() == CommandOutputReturnCode.KILL.getCodeNumber()) {
                 commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                 stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.FORCED_STOPPED,
                         DateTime.now(), StateType.JVM));
                 jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
-            } else if (!commandOutput.getReturnCode().wasSuccessful()) {
-                final String errorMsg = "JVM control command was not successful. Return code is " + commandOutput.getReturnCode().getReturnCode() + "!";
+            } else if (!commandOutput.getReturnCode().wasSuccessful() &&
+                    commandOutput.getReturnCode().getReturnCode() == CommandOutputReturnCode.ABNORMAL_SUCCESS.getCodeNumber()) {
+                final String errorMsg = "JVM control command was not successful. Return code is " +
+                        CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()) + "!";
                 LOGGER.error(errorMsg);
                 stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                         DateTime.now(), StateType.JVM, errorMsg));

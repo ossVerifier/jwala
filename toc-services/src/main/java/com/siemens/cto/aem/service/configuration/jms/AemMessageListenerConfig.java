@@ -7,6 +7,7 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
+import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,9 @@ public class AemMessageListenerConfig {
     @Autowired
     private JvmService jvmService;
 
+    @Autowired
+    private StateNotificationService stateNotificationService;
+
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer() {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
@@ -60,7 +64,8 @@ public class AemMessageListenerConfig {
     @Bean
     @Autowired
     public MessageListener getJvmStateMessageListener() {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, grpStateComputationAndNotificationSvc);
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
+                grpStateComputationAndNotificationSvc, stateNotificationService);
     }
 
 }
