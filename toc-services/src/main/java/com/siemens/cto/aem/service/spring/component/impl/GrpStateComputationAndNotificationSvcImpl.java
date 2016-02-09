@@ -72,7 +72,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 //            for (final JpaJvm jvm: jvmList) {
 //                JvmState jvmState;
 //                if (jvm.getId().equals(currentJvm.getId())) {
-//                    jvmState = (currentJvmState == null ? JvmState.JVM_UNKNOWN : currentJvmState);
+//                    jvmState = (currentJvmState == null ? JvmState.JVM_UNEXPECTED_STATE : currentJvmState);
 //                } else {
 //                    jvmState = jvm.getState();
 //                }
@@ -106,7 +106,7 @@ public class GrpStateComputationAndNotificationSvcImpl implements GrpStateComput
 //            for (final WebServer webServer : webServerList) {
 //                WebServerReachableState webServerState;
 //                if (webServer.getId().equals(currentWebServer.getId())) {
-//                    webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNKNOWN :
+//                    webServerState = (currentWebServerState == null ? WebServerReachableState.WS_UNEXPECTED_STATE :
 //                            currentWebServerState);
 //                } else {
 //                    webServerState = webServer.getState();

@@ -58,4 +58,10 @@ public interface JvmService {
 
     void updateState(Identifier<Jvm> id, JvmState state, String msg);
 
+    /**
+     * Ping's the JVM and updates its state.
+     * @param jvm the JVM
+     */
+    void pingAndUpdateJvmState(Jvm jvm);
+
 }

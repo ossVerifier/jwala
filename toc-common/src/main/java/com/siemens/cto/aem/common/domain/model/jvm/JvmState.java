@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,26 +16,27 @@ import java.util.Map;
  */
 public enum JvmState implements OperationalState {
 
-    JVM_NEW          (StateLabel.NEW, Started.NO),
-    JVM_INITIALIZING (StateLabel.INITIALIZING, Started.YES),
-    JVM_INITIALIZED  (StateLabel.INITIALIZING, Started.YES),
-    JVM_START        (StateLabel.START_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */ ,
-    JVM_STARTING     (StateLabel.STARTING, Started.YES),
-    JVM_STARTED      (StateLabel.STARTED, Started.YES),
-    JVM_STOP         (StateLabel.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
-    JVM_STOPPING     (StateLabel.STOPPING, Started.YES),
-    JVM_STOPPED      (StateLabel.STOPPED, Started.YES),
-    JVM_DESTROYING   (StateLabel.DESTROYING, Started.YES),
-    JVM_DESTROYED    (StateLabel.DESTROYED, Started.YES),
-    JVM_UNKNOWN      (StateLabel.UNKNOWN, Started.NO),
-    JVM_FAILED       (StateLabel.FAILED, Started.NO),
-    FORCED_STOPPED   (StateLabel.FORCED_STOPPED, Started.NO),
+    JVM_NEW             (StateLabel.NEW, Started.NO),
+    JVM_INITIALIZING    (StateLabel.INITIALIZING, Started.YES),
+    JVM_INITIALIZED     (StateLabel.INITIALIZING, Started.YES),
+    JVM_START           (StateLabel.START_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */ ,
+    JVM_STARTING        (StateLabel.STARTING, Started.YES),
+    JVM_STARTED         (StateLabel.STARTED, Started.YES),
+    JVM_STOP            (StateLabel.STOP_SENT, Started.YES) /* TODO: Remove from enum. This is no longer part of the JVM state. */,
+    JVM_STOPPING        (StateLabel.STOPPING, Started.YES),
+    JVM_STOPPED         (StateLabel.STOPPED, Started.YES),
+    JVM_DESTROYING      (StateLabel.DESTROYING, Started.YES),
+    JVM_DESTROYED       (StateLabel.DESTROYED, Started.YES),
+    JVM_UNEXPECTED_STATE(StateLabel.UNEXPECTED_STATE, Started.NO),
+    JVM_FAILED          (StateLabel.FAILED, Started.NO),
+    FORCED_STOPPED      (StateLabel.FORCED_STOPPED, Started.NO),
     ;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmState.class);
     private static final Map<String, JvmState> LOOKUP_MAP = new HashMap<>();
     private boolean isStartedState;
     private final String stateLabel;
-    
+
     static {
         for (final JvmState state : values()) {
             LOOKUP_MAP.put(state.name(), state);
@@ -49,7 +52,8 @@ public enum JvmState implements OperationalState {
         if (LOOKUP_MAP.containsKey(state)) {
             return LOOKUP_MAP.get(state);
         }
-        return JVM_UNKNOWN;
+        LOGGER.error("Unexpected JVM state:{0} from db! Returning JVM_UNEXPECTED_STATE.", state);
+        return JVM_UNEXPECTED_STATE;
     }
 
     JvmState(final String stateLabel, final boolean startedFlag) {
@@ -82,7 +86,7 @@ public enum JvmState implements OperationalState {
         public static final String STOPPED = "STOPPED";
         public static final String DESTROYING = "DESTROYING";
         public static final String DESTROYED = "DESTROYED";
-        public static final String UNKNOWN = "UNKNOWN";
+        public static final String UNEXPECTED_STATE = "UNEXPECTED_STATE";
         public static final String FAILED = "FAILED";
         public static final String FORCED_STOPPED = "FORCE STOPPED";
     }

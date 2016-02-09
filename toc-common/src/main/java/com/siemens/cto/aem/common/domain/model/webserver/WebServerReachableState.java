@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.common.domain.model.webserver;
 
 import com.siemens.cto.aem.common.domain.model.state.OperationalState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,11 +11,12 @@ public enum WebServerReachableState implements OperationalState {
 
     WS_REACHABLE        ("STARTED"),
     WS_UNREACHABLE      ("STOPPED"),
-    WS_UNKNOWN          ("UNKNOWN"),
+    WS_UNEXPECTED_STATE ("UNEXPECTED STATE"),
     WS_START_SENT       ("START SENT"),
     WS_STOP_SENT        ("STOP SENT"),
     WS_FAILED           ("FAILED");
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerReachableState.class);
     private static final Map<String, WebServerReachableState> LOOKUP_MAP = new HashMap<>(values().length);
 
     static {
@@ -22,16 +25,17 @@ public enum WebServerReachableState implements OperationalState {
         }
     }
 
-    public static WebServerReachableState convertFrom(final String anExternalName) {
-        if (LOOKUP_MAP.containsKey(anExternalName)) {
-            return LOOKUP_MAP.get(anExternalName);
+    public static WebServerReachableState convertFrom(final String state) {
+        if (LOOKUP_MAP.containsKey(state)) {
+            return LOOKUP_MAP.get(state);
         }
-        return WS_UNKNOWN;
+        LOGGER.error("Unexpected webserver state:{0} from db! Returning WS_UNEXPECTED_STATE.", state);
+        return WS_UNEXPECTED_STATE;
     }
 
     private final String externalName;
 
-    private WebServerReachableState(final String theExternalName) {
+    WebServerReachableState(final String theExternalName) {
         externalName = theExternalName;
     }
 

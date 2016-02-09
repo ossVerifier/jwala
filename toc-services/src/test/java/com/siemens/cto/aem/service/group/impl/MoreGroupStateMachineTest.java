@@ -229,7 +229,7 @@ public class MoreGroupStateMachineTest {
 //        classUnderTest.refreshState();
 //        assertEquals(GroupState.GRP_STOPPED, classUnderTest.getCurrentState());
 //
-//        setWsState(WebServerReachableState.WS_UNKNOWN);
+//        setWsState(WebServerReachableState.WS_UNEXPECTED_STATE);
 //        setJvmState(JvmState.JVM_FAILED);
 //        classUnderTest.wsError(ws.getId());
 //        classUnderTest.refreshState();

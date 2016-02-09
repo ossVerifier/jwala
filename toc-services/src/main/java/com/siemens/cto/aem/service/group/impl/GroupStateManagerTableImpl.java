@@ -76,7 +76,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
     /**
      * State transition and counting of jvms and ws active
      * Note that null states coming back from the database
-     * are treated as JVM_UNKNOWN.
+     * are treated as JVM_UNEXPECTED_STATE.
      */
     private synchronized CurrentGroupState refreshState(Group group) {
         currentGroupState = null;
@@ -97,7 +97,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
             Set<CurrentState<WebServer, WebServerReachableState>> results = webServerStateService.getCurrentStates(webServerSet);
 
             for (CurrentState<WebServer, WebServerReachableState> wsState : results) {
-                WebServerReachableState value = wsState != null ? wsState.getState() : WebServerReachableState.WS_UNKNOWN;
+                WebServerReachableState value = wsState != null ? wsState.getState() : WebServerReachableState.WS_UNEXPECTED_STATE;
 
                 counters.get(value).incrementAndGet();
                 state = GroupFiniteStateMachine.getInstance().computeGroupState(state, value);
@@ -106,7 +106,7 @@ public class GroupStateManagerTableImpl implements GroupStateMachine {
 
         for (Jvm jvm : group.getJvms()) {
             CurrentState<Jvm, JvmState> jvmState = jvmStatePersistenceService.getState(jvm.getId(), StateType.JVM);
-            JvmState value = jvmState != null ? jvmState.getState() : JvmState.JVM_UNKNOWN;
+            JvmState value = jvmState != null ? jvmState.getState() : JvmState.JVM_UNEXPECTED_STATE;
 
             counters.get(value).incrementAndGet();
             state = GroupFiniteStateMachine.getInstance().computeGroupState(state, value);

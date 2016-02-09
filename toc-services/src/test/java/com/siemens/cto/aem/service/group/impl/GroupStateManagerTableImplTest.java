@@ -117,8 +117,8 @@ public class GroupStateManagerTableImplTest {
 
         classUnderTest.synchronizedInitializeGroup(group, user);
 
-        // an JVM_UNKNOWN group will quickly enter some other group based on database state.
-        // Since we have no  group content, we will remain in the JVM_UNKNOWN state.
+        // an JVM_UNEXPECTED_STATE group will quickly enter some other group based on database state.
+        // Since we have no  group content, we will remain in the JVM_UNEXPECTED_STATE state.
         assertEquals(GroupState.GRP_UNKNOWN, classUnderTest.getCurrentState());
         assertTrue(classUnderTest.canStart());
         assertTrue(classUnderTest.canStop());

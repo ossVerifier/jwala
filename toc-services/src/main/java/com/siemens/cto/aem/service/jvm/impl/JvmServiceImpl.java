@@ -195,7 +195,7 @@ public class JvmServiceImpl implements JvmService {
         // if the Jvm does not exist, we'll get a 404 NotFoundException
         Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
 
-        pingJvm(jvm);
+        pingAndUpdateJvmState(jvm);
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();
@@ -209,36 +209,6 @@ public class JvmServiceImpl implements JvmService {
             // it past initial testing, then it is probably due to the jvm in the binding
             // so just dump out the diagnosis template and the exception so it can be
             // debugged.
-        }
-    }
-
-    /**
-     * Ping the JVM via http get.
-     * Used by diagnose button.
-     *
-     * @param jvm the JVM to ping.
-     */
-    private void pingJvm(final Jvm jvm) {
-        ClientHttpResponse response = null;
-        try {
-            response = clientFactoryHelper.requestGet(jvm.getStatusUri());
-            LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
-            if (response.getStatusCode() == HttpStatus.OK) {
-                setState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
-            } else {
-                setState(jvm, JvmState.JVM_STOPPED,
-                        "Request for '" + jvm.getStatusUri() + "' failed with a response code of '" +
-                                response.getStatusCode() + "'");
-            }
-        } catch (IOException ioe) {
-            LOGGER.info(ioe.getMessage(), ioe);
-            setState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
-        } catch (RuntimeException rte) {
-            LOGGER.error(rte.getMessage(), rte);
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
@@ -347,6 +317,31 @@ public class JvmServiceImpl implements JvmService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<Jvm> id, final JvmState state, final String erroStatus) {
         jvmPersistenceService.updateState(id, state, erroStatus);
+    }
+
+    @Override
+    public void pingAndUpdateJvmState(final Jvm jvm) {
+        ClientHttpResponse response = null;
+        try {
+            response = clientFactoryHelper.requestGet(jvm.getStatusUri());
+            LOGGER.info(">>> Response = {} from jvm {}", response.getStatusCode(), jvm.getId().getId());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                setState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+            } else {
+                setState(jvm, JvmState.JVM_STOPPED,
+                        "Request for '" + jvm.getStatusUri() + "' failed with a response code of '" +
+                                response.getStatusCode() + "'");
+            }
+        } catch (IOException ioe) {
+            LOGGER.info(ioe.getMessage(), ioe);
+            setState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
+        } catch (RuntimeException rte) {
+            LOGGER.error(rte.getMessage(), rte);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
     }
 
 }

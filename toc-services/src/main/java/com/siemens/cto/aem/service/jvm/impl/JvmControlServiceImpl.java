@@ -66,25 +66,37 @@ public class JvmControlServiceImpl implements JvmControlService {
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
 
-            // Process other return codes...
-            if (commandOutput.getReturnCode().getReturnCode() == CommandOutputReturnCode.KILL.getCodeNumber()) {
-                commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
-                stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.FORCED_STOPPED,
-                        DateTime.now(), StateType.JVM));
-                jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
-            } else if (!commandOutput.getReturnCode().wasSuccessful() &&
-                    commandOutput.getReturnCode().getReturnCode() == CommandOutputReturnCode.ABNORMAL_SUCCESS.getCodeNumber()) {
-                final String errorMsg = "JVM control command was not successful. Return code is " +
-                        CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()) + "!";
-                LOGGER.error(errorMsg);
-                stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
-                        DateTime.now(), StateType.JVM, errorMsg));
+            // Process non successful return codes...
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                switch (commandOutput.getReturnCode().getReturnCode()) {
+                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                        commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
+                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.FORCED_STOPPED,
+                                DateTime.now(), StateType.JVM));
+                        jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
+                        break;
+                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                        jvmService.pingAndUpdateJvmState(jvm);
+                        break;
+                    default:
+                        final String errorMsg = "JVM control command was not successful. Return code message = " +
+                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() + "!";
+                        LOGGER.error(errorMsg);
+                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+                                DateTime.now(), StateType.JVM, errorMsg));
+
+                }
             }
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
             // TODO: Write to history and send to UI to be displayed in the control history widget. Look at WebServerControlServiceImpl for reference.
             LOGGER.error(cfe.getMessage(), cfe);
+
+            // Send the error via JMS so TOC client can display it in the control window.
+            stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+                    DateTime.now(), StateType.JVM, cfe.getMessage()));
+
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, cfe);
         }

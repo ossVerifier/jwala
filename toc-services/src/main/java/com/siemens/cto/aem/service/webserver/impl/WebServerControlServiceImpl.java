@@ -58,7 +58,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
 
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
-        CommandOutput commandOutput = null;
+        CommandOutput commandOutput;
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
@@ -193,7 +193,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         webServerReachableStateMap.put(webServer.getId(), WebServerReachableState.WS_FAILED);
         webServerService.updateErrorStatus(webServer.getId(), msg);
 
-        // TODO: We need to find out whether we should still inform the UI of a failed web server control attempt via JMS
+        // Send the error via JMS so TOC client can display it in the control window.
         stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
                 DateTime.now(), StateType.WEB_SERVER));
     }

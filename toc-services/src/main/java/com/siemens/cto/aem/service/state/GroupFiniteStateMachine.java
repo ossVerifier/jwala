@@ -108,8 +108,8 @@ public class GroupFiniteStateMachine {
 
         // Unknown states
         final Set<OperationalState> unknownStates = new TreeSet<>(new OperationalStateComparator());
-        unknownStates.add(JVM_UNKNOWN);
-        unknownStates.add(WS_UNKNOWN);
+        unknownStates.add(JVM_UNEXPECTED_STATE);
+        unknownStates.add(WS_UNEXPECTED_STATE);
 
         // Begin state machine initialization
         FSM.put(GRP_UNKNOWN, new NodeBuilder().edges(startingStates, GRP_STARTING)

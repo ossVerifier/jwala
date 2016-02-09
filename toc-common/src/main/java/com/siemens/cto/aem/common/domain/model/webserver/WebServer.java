@@ -50,7 +50,7 @@ public class WebServer implements Serializable {
         }
         svrRoot = null;
         docRoot = null;
-        state = WebServerReachableState.WS_UNKNOWN;
+        state = WebServerReachableState.WS_UNEXPECTED_STATE;
         errorStatus = null;
     }
 
