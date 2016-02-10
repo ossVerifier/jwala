@@ -222,7 +222,7 @@ public class JvmServiceImpl implements JvmService {
     private void setState(final Jvm jvm,
                           final JvmState state,
                           final String msg) {
-        jvmPersistenceService.updateState(jvm.getId(), state, msg);
+        updateState(jvm.getId(), state, msg);
         stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
     }
