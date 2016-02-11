@@ -134,10 +134,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     // on
                     // first
                     // attachment
+                } catch (InternalErrorException ie){
+                    logger.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
+                    return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);
                 } finally {
                     data.close();
                 }
             }
+            logger.info("Returning No Data response for application war upload {}", app.getName());
             return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_APPLICATION_WAR, "No data"));
         } catch (IOException | FileUploadException e) {

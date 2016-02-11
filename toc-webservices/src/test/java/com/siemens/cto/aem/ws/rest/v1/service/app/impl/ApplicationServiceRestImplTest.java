@@ -262,9 +262,12 @@ public class ApplicationServiceRestImplTest {
 
         String charsetBin = "ISO-8859-1";
         ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        Application mockApp = mock(Application.class);
         when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+        when(service.getApplication(any(Identifier.class))).thenReturn(mockApp);
+        when(mockApp.getName()).thenReturn("NoContentTestApp");
 
 
         Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
