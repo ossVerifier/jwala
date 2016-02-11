@@ -395,6 +395,19 @@ var GroupOperationsDataTable = React.createClass({
            $(buttonSelector).attr("class", "busy-button");
        };
    },
+   enableJvmGenerateButtonThunk: function(buttonSelector) {
+       return function() {
+            $(buttonSelector).attr("class",
+                                   "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height");
+            $(buttonSelector).find("span").attr("class", "ui-icon ui-icon-gear-custom");
+       };
+   },
+   disableJvmGenerateButtonThunk: function(buttonSelector) {
+       return function() {
+           $(buttonSelector).find("span").attr("class", "busy-button");
+           $(buttonSelector).attr("class", "busy-button");
+       };
+   },
    disableEnable: function(buttonSelector, func, iconClass) {
        var disable = this.disableButtonThunk(buttonSelector);
        var enable = this.enableButtonThunk(buttonSelector, iconClass);
@@ -414,6 +427,11 @@ var GroupOperationsDataTable = React.createClass({
         var disable = this.disableHeapDumpButtonThunk(selector);
         var enable = this.enableHeapDumpButtonThunk(selector);
         Promise.method(disable)().then(requestTask).then(requestCallbackTask).caught(errHandler).lastly(enable);
+    },
+    disableEnableJvmGenerateConfigButton: function(selector, requestTask, requestCallbackTask, errHandler) {
+        var disable = this.disableJvmGenerateButtonThunk(selector);
+        var enable = this.enableJvmGenerateButtonThunk(selector);
+        Promise.method(disable)().then(requestTask).lastly(enable);
     },
    confirmStartStopGroupDialogBox: function(id, buttonSelector, msg, callbackOnConfirm) {
         var dialogId = "group-stop-confirm-dialog-" + id;
@@ -633,10 +651,12 @@ var GroupOperationsDataTable = React.createClass({
 
        this.disableEnableHeapDumpButton(selector, requestHeapDump, heapDumpRequestCallback, heapDumpErrorHandler);
    },
-    jvmGenerateConfig: function(data) {
-        ServiceFactory.getJvmService().deployJvmConfAllFiles(data.jvmName,
-                                                             this.generateJvmConfigSucccessCallback,
-                                                             this.generateJvmConfigErrorCallback);
+    jvmGenerateConfig: function(data, selector) {
+        var self = this;
+        var requestJvmGenerateConfig = function() {
+            return ServiceFactory.getJvmService().deployJvmConfAllFiles(data.jvmName, self.generateJvmConfigSucccessCallback, self.generateJvmConfigErrorCallback);
+        };
+        this.disableEnableJvmGenerateConfigButton(selector, requestJvmGenerateConfig , this.generateJvmConfigSucccessCallback, this.generateJvmConfigErrorCallback);
     },
     generateJvmConfigSucccessCallback: function(response) {
         // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();

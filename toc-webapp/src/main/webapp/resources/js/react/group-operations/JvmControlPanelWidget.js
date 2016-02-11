@@ -58,7 +58,7 @@ var JvmControlPanelWidget = React.createClass({
     },
     generateConfig: function(doneCallback) {
         this.doneCallback[this.props.data.name] = doneCallback;
-        this.props.jvmGenerateConfigCallback(this.props.data);
+        this.props.jvmGenerateConfigCallback(this.props.data, this.refs.generateConfigBtn.getDOMNode());
     },
     doHeapDump: function() {
         this.props.jvmHeapDumpCallback(this.props.data.id, this.refs.heapDumpBtn.getDOMNode(), this.props.data.hostName);
