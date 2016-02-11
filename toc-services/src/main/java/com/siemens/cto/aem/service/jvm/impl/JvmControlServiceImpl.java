@@ -71,8 +71,6 @@ public class JvmControlServiceImpl implements JvmControlService {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
-                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.FORCED_STOPPED,
-                                DateTime.now(), StateType.JVM));
                         jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:

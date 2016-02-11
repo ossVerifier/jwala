@@ -311,6 +311,7 @@ public class JvmServiceImpl implements JvmService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmPersistenceService.updateState(id, state);
+        stateNotificationService.notifyStateUpdated(new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
     }
 
     @Override
