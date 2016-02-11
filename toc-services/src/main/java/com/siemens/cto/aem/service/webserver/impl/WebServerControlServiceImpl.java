@@ -67,6 +67,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
                     controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
+            if (commandOutput != null &&
+                    (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
+                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
+                commandOutput.cleanStandardOutput();
+                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
+            }
         } catch (final CommandFailureException cfe) {
             LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " +
                     controlWebServerRequest, cfe);
