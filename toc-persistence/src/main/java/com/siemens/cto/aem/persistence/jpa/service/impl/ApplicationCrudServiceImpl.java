@@ -22,7 +22,6 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpd
 import javax.persistence.*;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
@@ -143,7 +142,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, JpaJvm jpaJvm) {
         Application application = uploadAppTemplateRequest.getApp();
         Identifier<Application> id = application.getId();
         JpaApplication jpaApp = getExisting(id);
@@ -153,7 +152,11 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
-        Query query = entityManager.createQuery("SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName");
+        Query query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_NO_JVM);
+        if (jpaJvm != null) {
+            query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE);
+            query.setParameter("jvmName", jpaJvm.getName());
+        }
         query.setParameter("appName", application.getName());
         query.setParameter("tempName", uploadAppTemplateRequest.getConfFileName());
         List<JpaApplicationConfigTemplate> templates = query.getResultList();
@@ -169,6 +172,9 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             jpaConfigTemplate.setApplication(jpaApp);
             jpaConfigTemplate.setTemplateName(uploadAppTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            if (jpaJvm != null){
+                jpaConfigTemplate.setJvm(jpaJvm);
+            }
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {

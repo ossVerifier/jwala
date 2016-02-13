@@ -96,7 +96,8 @@ public interface ApplicationServiceRest extends InitializingBean {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadConfigTemplate(@PathParam("appName") final String appName,
                                   @BeanParam final AuthenticatedUser aUser,
-                                  @QueryParam("templateName") final String templateName);
+                                  @MatrixParam("templateName") final String templateName,
+                                  @MatrixParam("jvmName") final String jvmName);
 
     @PUT
     @Path("/{appName}/resources/preview")

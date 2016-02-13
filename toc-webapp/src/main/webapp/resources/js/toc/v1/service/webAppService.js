@@ -89,8 +89,8 @@ var webAppService = {
                                              null,
                                              false);
      },
-     uploadTemplateForm: function(webAppName, templateName, templateFile, successCallback, errorCallback) {
-         return serviceFoundation.post("v1.0/applications/" + encodeURI(webAppName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),
+     uploadTemplateForm: function(webAppName, jvmName, templateName, templateFile, successCallback, errorCallback) {
+         return serviceFoundation.post("v1.0/applications/" + encodeURI(webAppName) + "/resources/uploadTemplate;templateName=" + encodeURI(templateName) + ";jvmName="+encodeURI(jvmName),
                                          "json",
                                          templateFile,
                                          successCallback,

@@ -210,7 +210,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName) {
+    public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName, String jvmName) {
         logger.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
 
         // iframe uploads from IE do not understand application/json
@@ -245,7 +245,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 try {
                     data = file1.openStream();
                     UploadAppTemplateRequest command =
-                            new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, data);
+                            new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, jvmName, data);
 
                     return ResponseBuilder.created(service.uploadAppTemplate(command, aUser.getUser())); // early
                     // out

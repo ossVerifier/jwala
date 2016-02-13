@@ -13,13 +13,19 @@ import javax.persistence.*;
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_CONTENT,
                 query = "SELECT t.templateContent FROM JpaApplicationConfigTemplate t where t.app.name = :appName and t.templateName = :templateName and t.jvm = :templateJvm"),
         @NamedQuery(name = JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT,
-                query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm")
+                query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_NO_JVM,
+                query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE,
+                query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName")
 })
 public class JpaApplicationConfigTemplate {
 
     public static final String GET_APP_RESOURCE_TEMPLATE_NAMES = "getAppResourceTemplateNames";
     public static final String GET_APP_TEMPLATE_CONTENT = "getAppTemplateContent";
     public static final String UPDATE_APP_TEMPLATE_CONTENT = "updateAppTemplateContent";
+    public static final String GET_APP_TEMPLATE_NO_JVM = "getAppTemplateNoJvm";
+    public static final String GET_APP_TEMPLATE = "getAppTemplate";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

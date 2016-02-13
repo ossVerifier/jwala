@@ -18,6 +18,7 @@ import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPl
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -319,7 +320,19 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, User user) {
         uploadAppTemplateRequest.validate();
-        return applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest);
+        Jvm appJvm = null;
+        // if the template is the context xml for the app then associate it with a jvm
+        if (uploadAppTemplateRequest.getConfFileName().endsWith(".xml")) {
+            final String jvmName = uploadAppTemplateRequest.getJvmName();
+            for (Jvm jvm : jvmPersistenceService.findJvms(jvmName)) {
+                if (jvm.getJvmName().equals(jvmName)) {
+                    appJvm = jvm;
+                    break;
+                }
+            }
+        }
+        JpaJvm jpaJvm = appJvm != null ? jvmPersistenceService.getJpaJvm(appJvm.getId(), false) : null;
+        return applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
     }
 
     @Override

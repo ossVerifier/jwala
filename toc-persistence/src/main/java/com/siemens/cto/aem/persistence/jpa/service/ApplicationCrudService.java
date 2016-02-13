@@ -33,7 +33,7 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     void createConfigTemplate(JpaApplication app, String resourceTemplateName, String resourceTemplateContent, JpaJvm jvm);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest);
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, JpaJvm jpaJvm);
 
     Application getApplication(final Identifier<Application> aApplicationId) throws NotFoundException;
 

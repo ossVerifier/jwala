@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface ApplicationPersistenceService {
 
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest);
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, JpaJvm jpaJvm);
 
     List<Application> getApplications();
 

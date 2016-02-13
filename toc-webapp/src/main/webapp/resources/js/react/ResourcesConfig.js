@@ -111,8 +111,10 @@ var ResourcesConfig = React.createClass({
                                                              $.errorAlert(errMsg, "Error");
                                                          });
                      } else if ("webApps" === entityType) {
+                          var parentJvmName = this.refs.xmlTabs.state.entityParent.jvmName;
                           this.props.webAppService.uploadTemplateForm(
                                                        entityName,
+                                                       parentJvmName,
                                                        fileName,
                                                        formData,
                                                        function(){

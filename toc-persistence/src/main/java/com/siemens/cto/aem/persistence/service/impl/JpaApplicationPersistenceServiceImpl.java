@@ -112,8 +112,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
-        return applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest);
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, JpaJvm jpaJvm) {
+        return applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
     }
 
     @Override
