@@ -24,6 +24,7 @@ import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -460,9 +461,21 @@ public class ApplicationServiceImplTest {
     @Test
     public void testUploadTemplate() {
         final UploadAppTemplateRequest cmd = mock(UploadAppTemplateRequest.class);
+        when(cmd.getConfFileName()).thenReturn("roleMapping.properties");
+        when(cmd.getJvmName()).thenReturn("testJvmName");
         applicationService.uploadAppTemplate(cmd, testUser);
         verify(cmd).validate();
-        verify(applicationPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+        verify(applicationPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+
+        List<Jvm> jvmList = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmList.add(mockJvm);
+        when(mockJvm.getJvmName()).thenReturn("testJvmName");
+        when(cmd.getConfFileName()).thenReturn("hct.xml");
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        applicationService.uploadAppTemplate(cmd, testUser);
+        verify(cmd, times(2)).validate();
+        verify(applicationPersistenceService, times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
