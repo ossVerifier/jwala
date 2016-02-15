@@ -2,6 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
@@ -29,10 +30,12 @@ import org.springframework.util.Assert;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -459,4 +462,82 @@ public class ApplicationServiceRestImplTest {
         assertNotNull(response.getEntity());
     }
 
+    @Test
+    public void testUploadConfigAppTemplate() throws IOException {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        cutImpl.setMessageContext(msgContextMock);
+        List<Application> appList = new ArrayList<>();
+        appList.add(application);
+        when(service.getApplications()).thenReturn(appList);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        cutImpl.uploadConfigTemplate(application.getName(), authenticatedUser, "hct.xml", "jvm-1Test");
+        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testUploadConfigAppTemplateThrowsNoAppFoundException() throws IOException {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        cutImpl.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        cutImpl.uploadConfigTemplate("testAppName", authenticatedUser, "hct.xml", "jvm-1Test");
+        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
+    }
+
+    /**
+     * Instead of mocking the ServletInputStream, let's extend it instead.
+     *
+     * @see "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
+     */
+    static class DelegatingServletInputStream extends ServletInputStream {
+
+        private InputStream inputStream;
+
+        public DelegatingServletInputStream() {
+            inputStream = new ByteArrayInputStream("------WebKitFormBoundaryXRxegBGqTe4gApI2\r\nContent-Disposition: form-data; name=\"hct.properties\"; filename=\"hotel-booking.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n------WebKitFormBoundaryXRxegBGqTe4gApI2--".getBytes(Charset.defaultCharset()));
+        }
+
+        /**
+         * Return the underlying source stream (never <code>null</code>).
+         */
+        public final InputStream getSourceStream() {
+            return inputStream;
+        }
+
+
+        public int read() throws IOException {
+            return inputStream.read();
+        }
+
+        public void close() throws IOException {
+            super.close();
+            inputStream.close();
+        }
+
+    }
 }

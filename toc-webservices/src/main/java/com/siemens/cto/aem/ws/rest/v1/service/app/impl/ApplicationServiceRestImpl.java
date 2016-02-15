@@ -252,11 +252,12 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     // on
                     // first
                     // attachment
-                } finally {
+                } finally{
                     assert data != null;
                     data.close();
                 }
             }
+            logger.error("No content in uploaded file {} to JVM: {}", appXmlFileName, jvmName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
@@ -284,5 +285,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     public static ApplicationServiceRest get() {
         return instance;
+    }
+
+    public void setMessageContext(MessageContext messageContext) {
+        context = messageContext;
     }
 }
