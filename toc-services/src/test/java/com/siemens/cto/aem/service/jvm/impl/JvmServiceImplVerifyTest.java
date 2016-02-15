@@ -7,25 +7,31 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,33 +44,30 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
-    private JvmServiceImpl impl;
-    private JvmPersistenceService jvmPersistenceService;
-    private GroupService groupService;
+
+    private JvmPersistenceService jvmPersistenceService = mock(JvmPersistenceService.class);;
+    private GroupService groupService = mock(GroupService.class);
     private User user;
-    private FileManager fileManager;
-    private RuntimeCommandBuilder rtCommandBuilder;
-    private RuntimeCommand command;
-    private StateService<Jvm, JvmState> stateService;
-    private StateNotificationService stateNotificationService;
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+    private FileManager fileManager = mock(FileManager.class);
+    private StateNotificationService stateNotificationService = mock(StateNotificationService.class);
+    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
+
+
+    @Mock
+    private ClientFactoryHelper mockClientFactoryHelper;
+
+    @InjectMocks
+    private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateNotificationService, grpStateComputationAndNotificationSvc);
+    ;
 
     @SuppressWarnings("unchecked")
     @Before
     public void setup() {
-        jvmPersistenceService = mock(JvmPersistenceService.class);
-        groupService = mock(GroupService.class);
         user = new User("unused");
-        fileManager = mock(FileManager.class);
-        stateService = (StateService<Jvm, JvmState>) mock(StateService.class);
-        stateNotificationService = mock(StateNotificationService.class);
-        grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
-        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateNotificationService,
-                grpStateComputationAndNotificationSvc);
-        rtCommandBuilder = mock(RuntimeCommandBuilder.class);
-        command = mock(RuntimeCommand.class);
+//        impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateNotificationService, grpStateComputationAndNotificationSvc);
     }
 
     @SuppressWarnings("unchecked")
@@ -188,6 +191,16 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         String generatedXml = impl.generateConfigFile(jvm.getJvmName(), "server.xml");
 
         assert !generatedXml.isEmpty();
+    }
+
+    @Test(expected = BadRequestException.class)
+    public void testGenerateConfigThrowsBadRequestException() {
+        List<Jvm> jvmList = new ArrayList<>();
+        final Jvm mockJvm = mockJvmWithId(new Identifier<Jvm>(11L));
+        jvmList.add(mockJvm);
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        when(jvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("");
+        impl.generateConfigFile("testJvm", "ServerXMLTemplate.tpl");
     }
 
     @Test
@@ -315,11 +328,17 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testPerformDiagnosis() {
+    public void testPerformDiagnosis() throws IOException, URISyntaxException {
         Identifier<Jvm> aJvmId = new Identifier<>(11L);
-        Jvm jvm = new Jvm(aJvmId, "testJvm", new HashSet<Group>());
+        Jvm jvm = mock(Jvm.class);
+        when(jvm.getId()).thenReturn(aJvmId);
+        when(jvm.getStatusUri()).thenReturn(new URI("http://test.com"));
         when(jvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
-        impl.performDiagnosis(aJvmId);
+
+        ClientHttpResponse mockResponse = mock(ClientHttpResponse.class);
+        when(mockResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponse);
+
         String diagnosis = impl.performDiagnosis(aJvmId);
         assertTrue(!diagnosis.isEmpty());
     }
@@ -368,6 +387,21 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(fileManager.getResourceTypeTemplate(anyString())).thenReturn("template contents");
         final String result = impl.generateInvokeBat(anyString());
         assertEquals("template contents", result);
+    }
+
+    @Test
+    public void testGetJpaJvm() {
+        impl.getJpaJvm(new Identifier<Jvm>(1L), false);
+        verify(jvmPersistenceService).getJpaJvm(new Identifier<Jvm>(1L), false);
+    }
+
+    @Test
+    public void testGetJvmByName() {
+        List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(mockJvmWithId(new Identifier<Jvm>(99L)));
+        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        impl.getJvm("testJvm");
+        verify(jvmPersistenceService).findJvms("testJvm");
     }
 
 }
