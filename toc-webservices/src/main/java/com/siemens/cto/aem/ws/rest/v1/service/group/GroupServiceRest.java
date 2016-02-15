@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonControlGroup;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.JsonJvms;
@@ -225,11 +224,6 @@ public interface GroupServiceRest {
     @Path("/{groupId}/state")
     Response resetState(@PathParam("groupId") final Identifier<Group> aGroupId,
                         @BeanParam final AuthenticatedUser aUser);
-
-    @GET
-    @Path("/states/current")
-//    TODO This should be reconciled with pagination, and with how to retrieve the states for every jvm without having to explicitly specify them
-    Response getCurrentJvmStates(@BeanParam final GroupIdsParameterProvider aGroupIdsParameterProvider);
 
     /**
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)

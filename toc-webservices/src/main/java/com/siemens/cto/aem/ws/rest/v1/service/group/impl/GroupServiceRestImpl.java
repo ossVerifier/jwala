@@ -3,12 +3,10 @@ package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
-import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
@@ -27,9 +25,7 @@ import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
@@ -50,7 +46,6 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -387,22 +382,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 aUser.getUser()));
     }
 
-    @Override
-    public Response getCurrentJvmStates(final GroupIdsParameterProvider aGroupIdsParameterProvider) {
-//        logger.debug("Current Group states requested : {}", aGroupIdsParameterProvider);
-//        final Set<Identifier<Group>> groupIds = aGroupIdsParameterProvider.valueOf();
-//        final Set<CurrentState<Group, GroupState>> currentGroupStates;
-//
-//        if (groupIds.isEmpty()) {
-//            currentGroupStates = groupStateService.getCurrentStates();
-//        } else {
-//            currentGroupStates = groupStateService.getCurrentStates(groupIds);
-//        }
-//
-//        return ResponseBuilder.ok(currentGroupStates);
-        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
-    }
-
     private List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
@@ -505,6 +484,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     data.close();
                 }
             }
+            logger.info("Failed to upload template {} to group {}: No Data", templateName, groupName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {

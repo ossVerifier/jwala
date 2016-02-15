@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -28,18 +27,17 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.GroupIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupChildType;
 import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -58,6 +56,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -68,7 +67,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anySet;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.*;
 
@@ -200,7 +198,7 @@ public class GroupServiceRestImplTest {
     public void testGetGroup() {
         when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
 
-        final Response response = groupServiceRest.getGroup("1", false);
+        Response response = groupServiceRest.getGroup("1", false);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
@@ -209,6 +207,10 @@ public class GroupServiceRestImplTest {
 
         final Group received = (Group) content;
         assertEquals(group, received);
+
+        when(groupService.getGroup(anyString())).thenReturn(group);
+        response = groupServiceRest.getGroup("1", true);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
     @Test
@@ -407,23 +409,6 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testGetCurrentJvmStates() {
-        GroupIdsParameterProvider mockGroupIdsParamProvider = mock(GroupIdsParameterProvider.class);
-        Set<Identifier<Group>> setGroupIds = new HashSet<>();
-        setGroupIds.add(group.getId());
-        when(mockGroupIdsParamProvider.valueOf()).thenReturn(setGroupIds);
-        when(groupStateService.getCurrentStates(anySet())).thenReturn(new HashSet<CurrentState<Group, GroupState>>());
-        Response response = groupServiceRest.getCurrentJvmStates(mockGroupIdsParamProvider);
-        assertNotNull(response.getEntity());
-
-        when(mockGroupIdsParamProvider.valueOf()).thenReturn(new HashSet<Identifier<Group>>());
-        response = groupServiceRest.getCurrentJvmStates(mockGroupIdsParamProvider);
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-    }
-
-    @Test
     public void testControlGroupJvms() {
         Response response = groupServiceRest.controlGroupJvms(group.getId(), new JsonControlJvm(JvmControlOperation.START.getExternalValue()), authenticatedUser);
         assertNotNull(response);
@@ -551,6 +536,18 @@ public class GroupServiceRestImplTest {
         assertNotNull(response);
     }
 
+    @Test(expected = InternalErrorException.class)
+    public void testPopulateGroupJvmTemplateThrowsExceptionForFileNotFound() {
+        Collection<ResourceType> resourceTypesList = new ArrayList<>();
+        ResourceType mockResourceType = mock(ResourceType.class);
+        when(mockResourceType.getEntityType()).thenReturn("jvm");
+        when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
+        when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate_FILE-NOT-FOUND.tpl");
+        resourceTypesList.add(mockResourceType);
+        when(resourceService.getResourceTypes()).thenReturn(resourceTypesList);
+        groupServiceRest.populateGroupJvmTemplates(group.getName(), authenticatedUser);
+    }
+
     @Test
     public void testPopulateGroupWebServerTemplate() {
         Collection<ResourceType> resourceTypesList = new ArrayList<>();
@@ -562,6 +559,18 @@ public class GroupServiceRestImplTest {
         when(resourceService.getResourceTypes()).thenReturn(resourceTypesList);
         Response response = groupServiceRest.populateGroupWebServerTemplates(group.getName(), authenticatedUser);
         assertNotNull(response);
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testPopulateGroupWebServerTemplateThrowsExceptionForFileNotFound() {
+        Collection<ResourceType> resourceTypesList = new ArrayList<>();
+        ResourceType mockResourceType = mock(ResourceType.class);
+        when(mockResourceType.getEntityType()).thenReturn("webServer");
+        when(mockResourceType.getConfigFileName()).thenReturn("httpd.conf");
+        when(mockResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate_FILE-NOT-FOUND.tpl");
+        resourceTypesList.add(mockResourceType);
+        when(resourceService.getResourceTypes()).thenReturn(resourceTypesList);
+        groupServiceRest.populateGroupWebServerTemplates(group.getName(), authenticatedUser);
     }
 
     @Test
@@ -659,6 +668,35 @@ public class GroupServiceRestImplTest {
         verify(groupService).getGroupAppsResourceTemplateNames("testGroup");
     }
 
+    @Test
+    public void testUploadConfigNoContent() throws IOException {
+
+        verify(groupService, never()).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
+
+        // ISO8859-1
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+
+        String content = "";
+
+        String charsetBin = "ISO-8859-1";
+        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        final HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(mockHsr);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+        groupServiceRest.setMessageContext(msgContextMock);
+
+        Response resp = groupServiceRest.uploadGroupJvmConfigTemplate(group.getName(), authenticatedUser, "ServerXMLTemplate.tpl");
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
 
 
     /**
@@ -693,4 +731,18 @@ public class GroupServiceRestImplTest {
 
     }
 
+    private class MyIS extends ServletInputStream {
+
+        private InputStream backingStream;
+
+        public MyIS(InputStream backingStream) {
+            this.backingStream = backingStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return backingStream.read();
+        }
+
+    }
 }
