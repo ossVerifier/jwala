@@ -16,7 +16,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -82,7 +81,7 @@ public class GroupCrudServiceImplTest {
         }
 
         @Bean
-        public WebServerCrudService getWebServerCrudService(){
+        public WebServerCrudService getWebServerCrudService() {
             return new WebServerCrudServiceImpl();
         }
     }
@@ -115,7 +114,7 @@ public class GroupCrudServiceImplTest {
 
         try {
             groupCrudService.getGroup("group does not exist");
-        } catch (NotFoundException e){
+        } catch (NotFoundException e) {
             assertTrue(e.getMessageResponseStatus().equals(AemFaultType.GROUP_NOT_FOUND));
         }
     }
@@ -158,7 +157,7 @@ public class GroupCrudServiceImplTest {
     public void testUploadGroupJvmTemplate() throws FileNotFoundException {
         FileInputStream dataInputStream = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
         Jvm jvm = new Jvm(new Identifier<Jvm>(1212L), "testJvm", new HashSet<Group>());
-        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, "ServerXMLTemplate.tpl",dataInputStream) {
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, "ServerXMLTemplate.tpl", dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -194,7 +193,7 @@ public class GroupCrudServiceImplTest {
         groupCrudService.getGroupWebServersResourceTemplateNames(groupName);
     }
 
-    @Test (expected = ResourceTemplateUpdateException.class)
+    @Test(expected = ResourceTemplateUpdateException.class)
     public void testUpdateJvmResourceTemplateThrowsException() {
         // no template exists yet so throw the exception
         groupCrudService.updateGroupJvmResourceTemplate(groupName, "server.xml", "new content");
@@ -205,15 +204,15 @@ public class GroupCrudServiceImplTest {
         testUploadGroupJvmTemplate();
         groupCrudService.updateGroupJvmResourceTemplate(groupName, "server.xml", "new content");
         final String groupJvmResourceTemplate = groupCrudService.getGroupJvmResourceTemplate(groupName, "server.xml");
-        assertEquals("new content",groupJvmResourceTemplate);
+        assertEquals("new content", groupJvmResourceTemplate);
     }
 
-    @Test (expected = NonRetrievableResourceTemplateContentException.class)
+    @Test(expected = NonRetrievableResourceTemplateContentException.class)
     public void testGetGroupJvmResourceTemplateThrowsException() {
         groupCrudService.getGroupJvmResourceTemplate(groupName, "NOTME");
     }
 
-    @Test (expected = ResourceTemplateUpdateException.class)
+    @Test(expected = ResourceTemplateUpdateException.class)
     public void testUpdateWebServerResourceTemplateThrowsException() {
         // no template exists so throw exception
         groupCrudService.updateGroupWebServerResourceTemplate(groupName, "httpd.conf", "new httpd content");
@@ -237,5 +236,37 @@ public class GroupCrudServiceImplTest {
         final JpaGroup group = groupCrudService.getGroup(groupName);
         groupCrudService.populateGroupAppTemplate(group, "app.xml", "content!");
         groupCrudService.populateGroupAppTemplate(group, "app.xml", "content new!");
+    }
+
+    @Test(expected = ResourceTemplateUpdateException.class)
+    public void testUpdateGroupAppTemplateThrowsException() {
+        groupCrudService.updateGroupAppResourceTemplate(groupName, "hct.xml", "new hct.xml template");
+    }
+
+    @Test
+    public void testUpdateGroupAppTemplate() {
+        groupCrudService.populateGroupAppTemplate(groupCrudService.getGroup(groupName), "hct.xml", "old hct.xml template");
+        String appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "hct.xml");
+        assertEquals("old hct.xml template", appTemplateContent);
+
+        groupCrudService.updateGroupAppResourceTemplate(groupName, "hct.xml", "new hct.xml template");
+        appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "hct.xml");
+        assertEquals("new hct.xml template", appTemplateContent);
+    }
+
+    @Test(expected = NonRetrievableResourceTemplateContentException.class)
+    public void testGetGroupAppResourceTemplateThrowsException() {
+        groupCrudService.getGroupAppResourceTemplate("noSuchGroup", "noSuchTemplate");
+    }
+
+    @Test
+    public void testGetGroupAppResourceTemplateNames() {
+        List<String> templateNames = groupCrudService.getGroupAppsResourceTemplateNames(groupName);
+        assertEquals(0, templateNames.size());
+    }
+
+    @Test
+    public void testUpdateState() {
+        groupCrudService.updateState(groupId, GroupState.GRP_PARTIAL);
     }
 }

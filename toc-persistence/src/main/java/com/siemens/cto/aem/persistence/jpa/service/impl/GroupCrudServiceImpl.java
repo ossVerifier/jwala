@@ -73,8 +73,6 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         List<JpaGroup> jpaGroups = query.getResultList();
         if (jpaGroups == null || jpaGroups.size() < 1) {
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + name);
-        } else if (jpaGroups.size() > 1) {
-            throw new NotFoundException(AemFaultType.DATA_CONTROL_ERROR, "Too many groups found for " + name + " code is set to only use one");
         }
         return jpaGroups.get(0);
     }
@@ -175,9 +173,6 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
-        } else {
-            throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
-                    "Only expecting one template to be returned for GROUP JVM Template [" + group.getName() + "] but returned " + templates.size() + " templates");
         }
     }
 
@@ -204,9 +199,6 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
-        } else {
-            throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
-                    "Only expecting one template to be returned for GROUP Web Server Template [" + group.getName() + "] but returned " + templates.size() + " templates");
         }
     }
 
