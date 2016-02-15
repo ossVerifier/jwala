@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
@@ -64,7 +65,7 @@ public class ApplicationServiceRestImplTest {
     private AuthenticatedUser authenticatedUser;
     @InjectMocks
     @Spy
-    private ApplicationServiceRestImpl cutImpl = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
+    private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
 
 
     private ApplicationServiceRest cut;
@@ -80,7 +81,7 @@ public class ApplicationServiceRestImplTest {
 
     @Before
     public void setUp() {
-        cut = cutImpl;
+        cut = applicationServiceRest;
         applications.add(application);
 
         applications2.add(application);
@@ -215,6 +216,44 @@ public class ApplicationServiceRestImplTest {
         assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
 
         Assert.hasText(result.getWarPath());
+    }
+
+    @Test
+    public void testUploadWebArchiveBinaryThrowsInternalErrorExceptionWhenCopyingToJvm() throws IOException {
+        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "test failure"));
+        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+
+        // ISO8859-1
+        String ls = System.lineSeparator();
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+
+        ByteBuffer file = ByteBuffer.allocate(4);
+        file.asShortBuffer().put((short) 0xc0de);
+        String data = Base64Utility.encode(file.array());
+
+        @SuppressWarnings("unused")
+        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
+                "Cache-Control:no-cache" + ls +
+                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+                "Origin:null" + ls +
+                "Pragma:no-cache" + ls +
+                "Referer:" + ls +
+                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+
+        String content = "--" + boundary + ls +
+                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+                "Content-Type: application/octet-stream" + ls + ls +
+                data + ls +
+                "--" + boundary + "--" + ls;
+
+        String charsetBin = "ISO-8859-1";
+        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+
+        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), resp.getStatus());
     }
 
     @Test(expected = InternalErrorException.class)
@@ -475,7 +514,7 @@ public class ApplicationServiceRestImplTest {
         when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
         when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
         when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        cutImpl.setMessageContext(msgContextMock);
+        applicationServiceRest.setMessageContext(msgContextMock);
         List<Application> appList = new ArrayList<>();
         appList.add(application);
         when(service.getApplications()).thenReturn(appList);
@@ -483,7 +522,7 @@ public class ApplicationServiceRestImplTest {
         final SecurityContext securityContextMock = mock(SecurityContext.class);
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
-        cutImpl.uploadConfigTemplate(application.getName(), authenticatedUser, "hct.xml", "jvm-1Test");
+        applicationServiceRest.uploadConfigTemplate(application.getName(), authenticatedUser, "hct.xml", "jvm-1Test");
         verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
     }
 
@@ -500,15 +539,37 @@ public class ApplicationServiceRestImplTest {
         when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
         when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
         when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        cutImpl.setMessageContext(msgContextMock);
+        applicationServiceRest.setMessageContext(msgContextMock);
 
         final SecurityContext securityContextMock = mock(SecurityContext.class);
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
-        cutImpl.uploadConfigTemplate("testAppName", authenticatedUser, "hct.xml", "jvm-1Test");
+        applicationServiceRest.uploadConfigTemplate("testAppName", authenticatedUser, "hct.xml", "jvm-1Test");
         verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
     }
 
+    @Test
+    public void testUploadConfigAppTemplateThrowsBadStreamException() {
+        MessageContext mockContext = mock(MessageContext.class);
+        HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
+        HttpServletRequest mockHttpServletReq = mock(HttpServletRequest.class);
+        List<MediaType> mediaTypeList = new ArrayList<>();
+        mediaTypeList.add(MediaType.APPLICATION_JSON_TYPE);
+        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(mockContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
+        when(mockContext.getHttpServletRequest()).thenReturn(mockHttpServletReq);
+        applicationServiceRest.setMessageContext(mockContext);
+        List<Application> appList = new ArrayList<>();
+        appList.add(application);
+        when(service.getApplications()).thenReturn(appList);
+        try {
+            Response response = applicationServiceRest.uploadConfigTemplate(application.getName(), authenticatedUser, "hct.xml", "jvm-1Test");
+            assertNotNull(response.getEntity());
+        } catch (Exception e) {
+            assertEquals("Error receiving data", e.getMessage());
+        }
+
+    }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
