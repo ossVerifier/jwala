@@ -318,6 +318,30 @@ public class ApplicationServiceRestImplTest {
     }
 
     @Test
+    public void testUploadConfigNoContent() throws IOException {
+
+        verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
+
+        // ISO8859-1
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+
+        String content = "";
+
+        String charsetBin = "ISO-8859-1";
+        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        Application mockApp = mock(Application.class);
+        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+        when(service.getApplications()).thenReturn(applications);
+        when(mockApp.getName()).thenReturn("NoContentTestApp");
+
+        Response resp = cut.uploadConfigTemplate(application.getName(), authenticatedUser, "ApplicationContextXMLTemplate.tpl", "jvm-1Test");
+
+        assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
+
+    @Test
     public void testDeleteWebArchive() throws IOException {
         when(service.getApplication(Matchers.eq(id(1L, Application.class)))).thenReturn(applicationWithWar);
         when(service.deleteWebArchive(Matchers.eq(id(1L, Application.class)), any(User.class))).thenReturn(application);

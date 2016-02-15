@@ -322,6 +322,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     data.close();
                 }
             }
+            logger.info("Failed to upload config template {} for web server {}: No Data", templateName, webServerName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {

@@ -230,6 +230,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     data.close();
                 }
             }
+            logger.info("Failed to upload config template {} for JVM {}: No Data", templateName, jvmName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {

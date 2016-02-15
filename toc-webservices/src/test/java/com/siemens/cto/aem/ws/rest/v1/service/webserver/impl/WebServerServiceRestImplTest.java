@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
@@ -19,6 +20,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -30,6 +32,7 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.joda.time.DateTime;
@@ -41,12 +44,19 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -399,7 +409,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testUploadConfigTemplate() {
+    public void testUploadConfigTemplateThrowsBadStreamException() {
         MessageContext mockMessageContext = mock(MessageContext.class);
         HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
         HttpServletRequest mockHttpServletReq = mock(HttpServletRequest.class);
@@ -426,4 +436,131 @@ public class WebServerServiceRestImplTest {
         response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
         assertNotNull(response);
     }
+
+    @Test(expected = InternalErrorException.class)
+    public void testUploadConfigTemplateThrowsInternalErrorExceptionForNoWebServer() throws IOException {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        webServerServiceRest.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
+        verify(impl).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
+    }
+
+    @Test
+    public void testUploadConfigTemplate() throws IOException {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
+        webServerServiceRest.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
+        verify(impl).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
+
+    }
+
+    @Test
+    public void testUploadConfigNoContent() throws IOException {
+
+        verify(impl, never()).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
+
+        // ISO8859-1
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+
+        String content = "";
+
+        String charsetBin = "ISO-8859-1";
+        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        Application mockApp = mock(Application.class);
+        final HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(mockHsr);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
+        when(mockApp.getName()).thenReturn("NoContentTestApp");
+        webServerServiceRest.setMessageContext(msgContextMock);
+
+        Response resp = webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
+
+    /**
+     * Instead of mocking the ServletInputStream, let's extend it instead.
+     *
+     * @see "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
+     */
+    static class DelegatingServletInputStream extends ServletInputStream {
+
+        private InputStream inputStream;
+
+        public DelegatingServletInputStream() {
+            inputStream = new ByteArrayInputStream("------WebKitFormBoundaryXRxegBGqTe4gApI2\r\nContent-Disposition: form-data; name=\"hct.properties\"; filename=\"hotel-booking.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n------WebKitFormBoundaryXRxegBGqTe4gApI2--".getBytes(Charset.defaultCharset()));
+        }
+
+        /**
+         * Return the underlying source stream (never <code>null</code>).
+         */
+        public final InputStream getSourceStream() {
+            return inputStream;
+        }
+
+
+        public int read() throws IOException {
+            return inputStream.read();
+        }
+
+        public void close() throws IOException {
+            super.close();
+            inputStream.close();
+        }
+
+    }
+
+    private class MyIS extends ServletInputStream {
+
+        private InputStream backingStream;
+
+        public MyIS(InputStream backingStream) {
+            this.backingStream = backingStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return backingStream.read();
+        }
+
+    }
+
 }

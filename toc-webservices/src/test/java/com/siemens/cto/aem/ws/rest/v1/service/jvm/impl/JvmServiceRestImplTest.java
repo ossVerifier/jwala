@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.jcraft.jsch.JSchException;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -17,6 +18,7 @@ import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -27,6 +29,7 @@ import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.After;
@@ -44,6 +47,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -621,6 +625,39 @@ public class JvmServiceRestImplTest {
         assertNotNull(response.getEntity());
     }
 
+    @Test
+    public void testUploadConfigNoContent() throws IOException {
+
+        verify(jvmService, never()).uploadJvmTemplateXml(any(UploadJvmTemplateRequest.class), any(User.class));
+
+        // ISO8859-1
+        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+
+        String content = "";
+
+        String charsetBin = "ISO-8859-1";
+        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+        Application mockApp = mock(Application.class);
+        final HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(mockHsr);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+        when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
+        when(mockApp.getName()).thenReturn("NoContentTestApp");
+        jvmServiceRest.setContext(msgContextMock);
+
+        Response resp = jvmServiceRest.uploadConfigTemplate(jvm.getJvmName(), authenticatedUser, "ServerXMLTemplate.tpl");
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
+
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
@@ -649,6 +686,21 @@ public class JvmServiceRestImplTest {
         public void close() throws IOException {
             super.close();
             inputStream.close();
+        }
+
+    }
+
+    private class MyIS extends ServletInputStream {
+
+        private InputStream backingStream;
+
+        public MyIS(InputStream backingStream) {
+            this.backingStream = backingStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return backingStream.read();
         }
 
     }
