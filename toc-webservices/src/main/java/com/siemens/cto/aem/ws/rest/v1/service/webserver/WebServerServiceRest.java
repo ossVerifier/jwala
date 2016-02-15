@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonCreateWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonUpdateWebServer;
@@ -16,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/webservers")
 @Produces(MediaType.APPLICATION_JSON)
-public interface WebServerServiceRest extends InitializingBean{
+public interface WebServerServiceRest extends InitializingBean {
 
     @GET
     Response getWebServers(@QueryParam("groupId") final Identifier<Group> aGroupId);
@@ -60,10 +59,6 @@ public interface WebServerServiceRest extends InitializingBean{
     Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
 
     @GET
-    @Path("/states/current")
-    Response getCurrentWebServerStates(@BeanParam final WebServerIdsParameterProvider webServerIdsParameterProvider);
-
-    @GET
     @Path("/{webServerId}/conf/current")
     Response getHttpdConfig(@PathParam("webServerId") final Identifier<WebServer> aWebServerId);
 
@@ -80,9 +75,10 @@ public interface WebServerServiceRest extends InitializingBean{
 
     /**
      * Get resource template content.
-     * @param wsName web server name.
+     *
+     * @param wsName               web server name.
      * @param resourceTemplateName the resource template name.
-     * @param tokensReplaced flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
+     * @param tokensReplaced       flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
      * @return the template contents
      */
     @GET

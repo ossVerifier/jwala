@@ -4,9 +4,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -18,12 +16,10 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.WebServerIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -39,7 +35,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
@@ -179,7 +178,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final CommandOutput execData;
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
 
-            if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))){
+            if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))) {
                 logger.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
@@ -238,22 +237,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateLoadBalancerConfig(final String aWebServerName) {
         return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
-    }
-
-    @Override
-    public Response getCurrentWebServerStates(final WebServerIdsParameterProvider webServerIdsParameterProvider) {
-//        logger.debug("Current WebServer states requested : {}", webServerIdsParameterProvider);
-//        final Set<Identifier<WebServer>> webServerIds = webServerIdsParameterProvider.valueOf();
-//        final Set<CurrentState<WebServer, WebServerReachableState>> currentWebServerStates;
-//
-//        if (webServerIds.isEmpty()) {
-//            currentWebServerStates = webServerStateService.getCurrentStates();
-//        } else {
-//            currentWebServerStates = webServerStateService.getCurrentStates(webServerIds);
-//        }
-//
-//        return ResponseBuilder.ok(currentWebServerStates);
-        throw new UnsupportedOperationException("Getting the current states via StateService is no longer supported!");
     }
 
     @Override
@@ -366,7 +349,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         instance = this;
     }
 
-    public static WebServerServiceRestImpl get(){
+    public static WebServerServiceRestImpl get() {
         return instance;
     }
 }
