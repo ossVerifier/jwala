@@ -138,12 +138,6 @@ public class AemServiceConfiguration {
         return ppc;
     }
 
-    @Bean(name = "groupStateMachine")
-    @Scope((ConfigurableBeanFactory.SCOPE_PROTOTYPE))
-    public GroupStateMachine getGroupStateMachine() {
-        return new GroupStateManagerTableImpl();
-    }
-
     @Bean
     public GroupService getGroupService() {
         return new GroupServiceImpl(
