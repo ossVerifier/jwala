@@ -325,9 +325,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        final List<Jvm> jvmList = new ArrayList();
-        jvmList.add(jvm);
-        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(remoteCommandExecutor.executeRemoteCommand(
@@ -354,17 +352,17 @@ public class ApplicationServiceImplTest {
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        try{
+        try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, testUser);
-        } catch (InternalErrorException ee){
+        } catch (InternalErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
         }
 
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
-        try{
+        try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, testUser);
-        } catch (DeployApplicationConfException ee){
+        } catch (DeployApplicationConfException ee) {
             assertTrue(ee.getCause() instanceof CommandFailureException);
         }
 
@@ -375,9 +373,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        final List<Jvm> jvmList = new ArrayList();
-        jvmList.add(jvm);
-        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(remoteCommandExecutor.executeRemoteCommand(
@@ -396,10 +392,8 @@ public class ApplicationServiceImplTest {
     public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
-        final List<Jvm> jvmList = new ArrayList();
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        jvmList.add(jvm);
-        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
@@ -416,9 +410,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        final List<Jvm> jvmList = new ArrayList();
-        jvmList.add(jvm);
-        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
@@ -435,9 +427,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        final List<Jvm> jvmList = new ArrayList();
-        jvmList.add(jvm);
-        when(jvmPersistenceService.findJvms(eq("jvm-1"))).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
@@ -447,6 +437,17 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, testUser);
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testDeployConfJvmNotStopped() {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(mockJvm);
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApplication);
+        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("IGNORED CONTENT");
+        applicationService.deployConf("testApp", "testGroup", "testJvm", "HttpSslConfTemplate.tpl", false, testUser);
     }
 
     @Test
@@ -476,6 +477,12 @@ public class ApplicationServiceImplTest {
         applicationService.uploadAppTemplate(cmd, testUser);
         verify(cmd, times(2)).validate();
         verify(applicationPersistenceService, times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+
+        when(mockJvm.getJvmName()).thenReturn("notTestJvmName");
+        applicationService.uploadAppTemplate(cmd, testUser);
+        verify(cmd, times(3)).validate();
+        verify(applicationPersistenceService, times(3)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+
     }
 
     @Test
@@ -527,7 +534,7 @@ public class ApplicationServiceImplTest {
             mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
         } catch (CommandFailureException e) {
             assertTrue("should not fail " + e.getMessage(), false);
-        } catch(InternalErrorException ie){
+        } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
         new File("./src/test/resources/webapps/test.war").delete();
@@ -563,15 +570,13 @@ public class ApplicationServiceImplTest {
         groupSet.add(mockGroup);
 
         Set<Jvm> jvms = new HashSet<>();
-        List<Jvm> jvmsList = new ArrayList<>();
         final Jvm testjvm = mock(Jvm.class);
         when(testjvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
         when(testjvm.getJvmName()).thenReturn("testjvm");
         when(testjvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         jvms.add(testjvm);
-        jvmsList.add(testjvm);
 
-        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmsList);
+        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testjvm);
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockGroup.getName()).thenReturn("testGroupName");
         List<String> templateNames = new ArrayList<>();
@@ -596,7 +601,6 @@ public class ApplicationServiceImplTest {
         groupSet.add(mockGroup);
 
         Set<Jvm> jvms = new HashSet<>();
-        List<Jvm> jvmList = new ArrayList<>();
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getHostName()).thenReturn("host1");
         when(mockJvm.getJvmName()).thenReturn("jvm1");
@@ -607,12 +611,11 @@ public class ApplicationServiceImplTest {
         when(mockJvm2.getState()).thenReturn(JvmState.JVM_STOPPED);
         jvms.add(mockJvm);
         jvms.add(mockJvm2);
-        jvmList.add(mockJvm);
-        jvmList.add(mockJvm2);
 
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(mockJvm);
-        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
+        when(jvmPersistenceService.findJvmByExactName("jvm1")).thenReturn(mockJvm);
+        when(jvmPersistenceService.findJvmByExactName("jvm2")).thenReturn(mockJvm2);
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockGroup.getName()).thenReturn("testGroupName");
         List<String> templateNames = new ArrayList<>();

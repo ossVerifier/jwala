@@ -101,7 +101,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response uploadWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
-        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
+        logger.info("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -125,15 +125,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
                     UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
 
+                    logger.info("Upload file {} to application {}", file1.getName(), app.getName());
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
+                    logger.info("Upload succeeded");
                     service.copyApplicationWarToGroupHosts(application);
                     service.copyApplicationConfigToGroupJvms(app.getGroup(), app.getName(), aUser.getUser());
 
-                    return ResponseBuilder.created(application); // early
-                    // out
-                    // on
-                    // first
-                    // attachment
+                    return ResponseBuilder.created(application); // early out on first attachment
                 } catch (InternalErrorException ie){
                     logger.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
                     return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);

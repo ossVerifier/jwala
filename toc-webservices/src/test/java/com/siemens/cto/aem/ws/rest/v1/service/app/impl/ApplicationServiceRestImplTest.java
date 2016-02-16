@@ -507,11 +507,15 @@ public class ApplicationServiceRestImplTest {
         assertNotNull(response.getEntity());
 
         when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
+        boolean exceptionThrown = false;
         try {
             cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         } catch (InternalErrorException ie) {
+            exceptionThrown = true;
             assertEquals("Target JVM must be stopped", ie.getMessage());
         }
+        assertTrue(exceptionThrown);
+
     }
 
     @Test

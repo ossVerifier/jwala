@@ -241,7 +241,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             writeLock.get(key.toString()).writeLock().lock();
 
             final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName);
-            final Jvm jvm = jvmPersistenceService.findJvms(jvmName).get(0);
+            final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             if (!jvm.getState().equals(JvmState.JVM_STOPPED)) {
                 LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -362,6 +362,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     } else {
                         hostNames.add(host);
                     }
+                    LOGGER.info("Copying {} war to host {}", application.getName(), host);
                     CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
                     if (execData.getReturnCode().wasSuccessful()) {
                         LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), host);
@@ -391,6 +392,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
         for (Jvm jvm : group.getJvms()) {
             for (String templateName : resourceTemplateNames) {
+                LOGGER.info("Deploying application config {} to JVM {}", templateName, jvm.getJvmName());
                 final boolean doNotBackUpOriginals = false;
                 deployConf(appName, groupName, jvm.getJvmName(), templateName, doNotBackUpOriginals, user);
             }
