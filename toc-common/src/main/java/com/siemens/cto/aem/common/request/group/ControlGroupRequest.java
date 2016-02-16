@@ -1,11 +1,8 @@
 package com.siemens.cto.aem.common.request.group;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.MultipleRuleRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.rule.group.GroupControlOperationRule;
 import com.siemens.cto.aem.common.rule.group.GroupIdRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -39,15 +36,6 @@ public class ControlGroupRequest implements Serializable, GroupRequest {
     public void validate() {
         // can only partially validate without state
         new GroupIdRule(groupId).validate();
-    }
-
-    public void validateCommand(
-            final boolean canStart,
-            final boolean canStop) {
-        new MultipleRuleRequest(
-                new GroupIdRule(groupId),
-                new GroupControlOperationRule(controlOperation, canStart, canStop)
-        ).validate();
     }
 
     @Override
