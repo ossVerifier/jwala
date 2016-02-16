@@ -7,4 +7,5 @@ public interface Rule {
     boolean isValid();
 
     void validate() throws BadRequestException;
+
 }
