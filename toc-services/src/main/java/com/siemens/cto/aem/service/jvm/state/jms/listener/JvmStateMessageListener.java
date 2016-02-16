@@ -28,8 +28,8 @@ public class JvmStateMessageListener implements MessageListener {
 
     private final JvmStateMapMessageConverter converter;
     private final JvmService jvmService;
-    private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> jvmLastPersistedStateMap = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Identifier<Jvm>, String> jvmLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
     private final StateNotificationService stateNotificationService;
 
@@ -69,16 +69,16 @@ public class JvmStateMessageListener implements MessageListener {
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
         boolean stateAndOrMsgChanged = false;
 
-        if (!jvmLastPersistedStateMap.containsKey(newState.getId()) ||
-            !jvmLastPersistedStateMap.get(newState.getId()).equals(newState.getState())) {
-                jvmLastPersistedStateMap.put(newState.getId(), newState.getState());
+        if (!JVM_LAST_PERSISTED_STATE_MAP.containsKey(newState.getId()) ||
+            !JVM_LAST_PERSISTED_STATE_MAP.get(newState.getId()).equals(newState.getState())) {
+                JVM_LAST_PERSISTED_STATE_MAP.put(newState.getId(), newState.getState());
                 stateAndOrMsgChanged = true;
         }
 
         final String msg = newState.getMessage();
-        if (StringUtils.isNotEmpty(msg) && (!jvmLastPersistedErrorStatusMap.containsKey(newState.getId()) ||
-            !jvmLastPersistedErrorStatusMap.get(newState.getId()).equals(msg))) {
-                jvmLastPersistedErrorStatusMap.put(newState.getId(), msg);
+        if (StringUtils.isNotEmpty(msg) && (!JVM_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(newState.getId()) ||
+            !JVM_LAST_PERSISTED_ERROR_STATUS_MAP.get(newState.getId()).equals(msg))) {
+                JVM_LAST_PERSISTED_ERROR_STATUS_MAP.put(newState.getId(), msg);
                 stateAndOrMsgChanged = true;
         }
 

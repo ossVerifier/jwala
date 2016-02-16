@@ -55,7 +55,7 @@ import java.util.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
-    private static final Logger logger = LoggerFactory.getLogger(GroupServiceRestImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceRestImpl.class);
 
     private final GroupService groupService;
     private final ResourceService resourceService;
@@ -78,7 +78,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getGroups(final NameSearchParameterProvider aGroupNameSearch, final boolean fetchWebServers) {
-        logger.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
+        LOGGER.debug("Get Groups requested with search: {}", aGroupNameSearch.getName());
 
         final List<Group> groups;
         if (aGroupNameSearch.isNamePresent()) {
@@ -96,14 +96,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
         }
         final Identifier<Group> groupId = new Identifier<Group>(groupIdOrName);
-        logger.debug("Get Group requested: {}", groupId);
+        LOGGER.debug("Get Group requested: {}", groupId);
         return ResponseBuilder.ok(groupService.getGroup(groupId));
     }
 
     @Override
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
-        logger.debug("Create Group requested: {}", aNewGroupName);
+        LOGGER.debug("Create Group requested: {}", aNewGroupName);
         final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
         populateGroupJvmTemplates(aNewGroupName, aUser);
         populateGroupWebServerTemplates(aNewGroupName, aUser);
@@ -114,7 +114,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
-        logger.debug("Update Group requested: {}", anUpdatedGroup);
+        LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
 
         // TODO: Refactor adhoc conversion to process group name instead of Id.
         final Group group = groupService.getGroup(anUpdatedGroup.getId());
@@ -127,7 +127,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response removeGroup(final String name, final boolean byName) {
-        logger.debug("Delete Group requested: {} byName={}", name, byName);
+        LOGGER.debug("Delete Group requested: {} byName={}", name, byName);
         if (byName) {
             groupService.removeGroup(name);
         } else {
@@ -140,7 +140,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId,
                                        final AuthenticatedUser aUser) {
-        logger.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
+        LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupRequest(aGroupId,
                         aJvmId),
                 aUser.getUser()));
@@ -150,7 +150,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
                                    final JsonJvms someJvmsToAdd,
                                    final AuthenticatedUser aUser) {
-        logger.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
+        LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupRequest command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
                 aUser.getUser()));
@@ -160,7 +160,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
                                      final JsonControlJvm jsonControlJvm,
                                      final AuthenticatedUser aUser) {
-        logger.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
+        LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmRequest grpCommand = new ControlGroupJvmRequest(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()));
@@ -185,7 +185,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                         };
                         uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
                     } catch (FileNotFoundException e) {
-                        logger.error("Invalid Path: Could not find resource template", e);
+                        LOGGER.error("Invalid Path: Could not find resource template", e);
                         throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                     }
                 }
@@ -215,7 +215,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             return ResponseBuilder.ok(groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            LOGGER.debug("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -251,7 +251,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     };
                     uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
                 } catch (FileNotFoundException e) {
-                    logger.error("Invalid Path: Could not find resource template", e);
+                    LOGGER.error("Invalid Path: Could not find resource template", e);
                     throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                 }
             }
@@ -291,7 +291,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             return ResponseBuilder.ok(groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            logger.debug("Failed to update the template {}", resourceTemplateName, e);
+            LOGGER.debug("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -323,7 +323,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     };
                     uploadWebServerTemplateRequests.add(uploadWSTemplateRequest);
                 } catch (FileNotFoundException e) {
-                    logger.error("Invalid Path: Could not find resource template", e);
+                    LOGGER.error("Invalid Path: Could not find resource template", e);
                     throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
                 }
             }
@@ -341,7 +341,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                logger.error("Remote Command Failure for web server " + webserver.getName() + ": " + reasonPhrase);
+                LOGGER.error("Remote Command Failure for web server " + webserver.getName() + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
             // only update the template in the DB if the deploy succeeded
@@ -354,7 +354,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupWebservers(final Identifier<Group> aGroupId,
                                            final JsonControlWebServer jsonControlWebServer,
                                            final AuthenticatedUser aUser) {
-        logger.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
+        LOGGER.debug("Control all WebServers in Group requested: {}, {}", aGroupId, jsonControlWebServer);
         final WebServerControlOperation command = jsonControlWebServer.toControlOperation();
         final ControlGroupWebServerRequest grpCommand = new ControlGroupWebServerRequest(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()));
@@ -368,7 +368,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                  final AuthenticatedUser aUser) {
 
         GroupControlOperation groupControlOperation = jsonControlGroup.toControlOperation();
-        logger.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
+        LOGGER.debug("starting control group {} with operation {}", aGroupId, groupControlOperation);
 
         ControlGroupRequest grpCommand = new ControlGroupRequest(aGroupId, groupControlOperation);
         groupControlService.controlGroup(grpCommand, aUser.getUser());
@@ -453,7 +453,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final GroupResourceType uploadType) {
-        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -484,11 +484,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     data.close();
                 }
             }
-            logger.info("Failed to upload template {} to group {}: No Data", templateName, groupName);
+            LOGGER.info("Failed to upload template {} to group {}: No Data", templateName, groupName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_JVM_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
-            logger.error("Bad Stream: Error receiving data", e);
+            LOGGER.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
@@ -532,7 +532,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             return ResponseBuilder.ok(groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            logger.error("Failed to update the template {}", resourceTemplateName, e);
+            LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -549,7 +549,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                logger.error("Remote Command Failure for JVM " + jvmName + ": " + reasonPhrase);
+                LOGGER.error("Remote Command Failure for JVM " + jvmName + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
             // only update the template in the DB if the deploy succeeded

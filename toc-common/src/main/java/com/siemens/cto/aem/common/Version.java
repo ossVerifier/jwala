@@ -24,22 +24,22 @@ public class Version {
 
     private static final String AEM_COMMON = "toc-common";
 
-    private static final Map<String, String> manifestAttributes = getManifestAttributes();
+    private static final Map<String, String> MANIFEST_ATTRIBUTES = getManifestAttributes();
 
     private Version() throws InstantiationException {
         throw new InstantiationException("Instances of this class are forbidden.");
     }
 
     public static String getTitle() {
-        return manifestAttributes.get(IMPLEMENTATION_TITLE);
+        return MANIFEST_ATTRIBUTES.get(IMPLEMENTATION_TITLE);
     }
 
     public static String getVersion() {
-        return manifestAttributes.get(IMPLEMENTATION_VERSION);
+        return MANIFEST_ATTRIBUTES.get(IMPLEMENTATION_VERSION);
     }
 
     public static String getBuildTime() {
-        return manifestAttributes.get(BUILD_TIME_ISO_8601);
+        return MANIFEST_ATTRIBUTES.get(BUILD_TIME_ISO_8601);
     }
 
     private static Map<String, String> getManifestAttributes() {

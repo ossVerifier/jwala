@@ -18,13 +18,13 @@ public class PathRule implements Rule {
 
     // Note: The regEx below allows spaces since there can be paths with spaces
     //       e.g. in linux ~/some\ dir\ with\ spaces/someDir
-    private static final Pattern pattern = Pattern.compile("[a-zA-Z0-9_~?+\\s\\\\/:.-]*");
+    private static final Pattern PATTERN = Pattern.compile("[a-zA-Z0-9_~?+\\s\\\\/:.-]*");
 
     private final Matcher matcher;
 
     public PathRule(final Path aPath) {
         path = aPath;
-        matcher = pattern.matcher(path.getPath() == null ? "" : path.getPath());
+        matcher = PATTERN.matcher(path.getPath() == null ? "" : path.getPath());
     }
 
     @Override

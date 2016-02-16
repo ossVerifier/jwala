@@ -13,7 +13,6 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +51,8 @@ public class WebServerStateSetterWorker {
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
 
-    private static final ConcurrentHashMap<Identifier<WebServer>, WebServerReachableState> webServerLastPersistedStateMap = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Identifier<WebServer>, String> webServerLastPersistedErrorStatusMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
     /**
      * Note: Setting of class variables through the constructor preferred but @Async does not work
@@ -124,15 +123,15 @@ public class WebServerStateSetterWorker {
     private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
         if (!isWebServerBusy(webServer)) {
             boolean stateAndOrMsgChanged = false;
-            if (!webServerLastPersistedStateMap.containsKey(webServer.getId()) ||
-                !webServerLastPersistedStateMap.get(webServer.getId()).equals(webServerReachableState)) {
-                    webServerLastPersistedStateMap.put(webServer.getId(), webServerReachableState);
+            if (!WEB_SERVER_LAST_PERSISTED_STATE_MAP.containsKey(webServer.getId()) ||
+                !WEB_SERVER_LAST_PERSISTED_STATE_MAP.get(webServer.getId()).equals(webServerReachableState)) {
+                    WEB_SERVER_LAST_PERSISTED_STATE_MAP.put(webServer.getId(), webServerReachableState);
                     stateAndOrMsgChanged = true;
             }
 
-            if (StringUtils.isNotEmpty(msg) && (!webServerLastPersistedErrorStatusMap.containsKey(webServer.getId()) ||
-                !webServerLastPersistedErrorStatusMap.get(webServer.getId()).equals(msg))) {
-                    webServerLastPersistedErrorStatusMap.put(webServer.getId(), msg);
+            if (StringUtils.isNotEmpty(msg) && (!WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(webServer.getId()) ||
+                !WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.get(webServer.getId()).equals(msg))) {
+                    WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.put(webServer.getId(), msg);
                     stateAndOrMsgChanged = true;
             }
 

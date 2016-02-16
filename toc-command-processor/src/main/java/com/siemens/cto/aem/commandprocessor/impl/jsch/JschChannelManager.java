@@ -23,8 +23,8 @@ public class JschChannelManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(JschChannelManager.class);
     public static final int CHANNEL_POOL_SIZE = 10;
     private static JschChannelManager INSTANCE = new JschChannelManager();
-    private static final Map<String, Session> sessionMap = new HashMap<>();
-    private static final Map<String, JschChannelPool> channelPoolMap = new HashMap<>();
+    private static final Map<String, Session> SESSION_MAP = new HashMap<>();
+    private static final Map<String, JschChannelPool> CHANNEL_POOL_MAP = new HashMap<>();
 
     /**
      * Private constructor for this class to function as a singleton.
@@ -62,16 +62,16 @@ public class JschChannelManager {
         synchronized (remoteSystemConnection.getHost()) {
             LOGGER.info("++++++Entering getChannel host = {}", remoteSystemConnection.getHost());
             final String key =  channelType + remoteSystemConnection.getHost();
-            Session session = sessionMap.get(key);
+            Session session = SESSION_MAP.get(key);
             if (session == null || !session.isConnected()) {
                 session = createAndStoreSession(jsch, remoteSystemConnection, channelType);
                 LOGGER.info("Session with key = {} created!", key);
-                sessionMap.put(key, session);
-                channelPoolMap.put(key, new JschChannelPoolImpl(CHANNEL_POOL_SIZE, session, channelType));
+                SESSION_MAP.put(key, session);
+                CHANNEL_POOL_MAP.put(key, new JschChannelPoolImpl(CHANNEL_POOL_SIZE, session, channelType));
                 LOGGER.info("Channel pool for host = {} and channel type = {} created!", remoteSystemConnection.getHost(), channelType);
             }
             LOGGER.info("------Exiting getChannel host = {}", remoteSystemConnection.getHost());
-            return channelPoolMap.get(key).borrowChannel();
+            return CHANNEL_POOL_MAP.get(key).borrowChannel();
         }
     }
 
@@ -83,7 +83,7 @@ public class JschChannelManager {
      * @param channelType Channel type e.g. shell, exec
      */
     public synchronized void returnChannel(final String host, final Channel channel, final String channelType) {
-        channelPoolMap.get(channelType + host).returnChannel(channel);
+        CHANNEL_POOL_MAP.get(channelType + host).returnChannel(channel);
     }
 
     /**
@@ -99,7 +99,7 @@ public class JschChannelManager {
                                           final String channelType) throws JSchException {
         final Session newSession = prepareSession(jsch, remoteSystemConnection);
         LOGGER.info("New session created!");
-        sessionMap.put(channelType + remoteSystemConnection.getHost(), newSession);
+        SESSION_MAP.put(channelType + remoteSystemConnection.getHost(), newSession);
         newSession.connect();
         LOGGER.info("Session connected!");
         return newSession;

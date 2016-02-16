@@ -29,8 +29,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     private final CommandExecutor executor;
     private final JschBuilder jsch;
     private final SshConfiguration sshConfig;
-    private static final Logger logger = LoggerFactory.getLogger(WebServerCommandServiceImpl.class);
-
+    
     public WebServerCommandServiceImpl(final WebServerService theWebServerService,
                                        final CommandExecutor theExecutor,
                                        final JschBuilder theJschBuilder,

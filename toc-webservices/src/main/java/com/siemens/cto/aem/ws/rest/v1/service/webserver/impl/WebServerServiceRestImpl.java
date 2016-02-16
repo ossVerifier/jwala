@@ -43,7 +43,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String STP_HTTPD_DATA_DIR = "paths.httpd.conf";
 
     private final WebServerService webServerService;
@@ -78,13 +78,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getWebServer(final Identifier<WebServer> aWsId) {
-        logger.debug("Get WS requested: {}", aWsId);
+        LOGGER.debug("Get WS requested: {}", aWsId);
         return ResponseBuilder.ok(webServerService.getWebServer(aWsId));
     }
 
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        logger.debug("Create WS requested: {}", aWebServerToCreate);
+        LOGGER.debug("Create WS requested: {}", aWebServerToCreate);
 
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(),
                 aUser.getUser());
@@ -112,7 +112,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                             };
                     webServerService.uploadWebServerConfig(uploadWebServerTemplateRequest, aUser.getUser());
                 } catch (FileNotFoundException e) {
-                    logger.error("Could not find template {} for new webserver {}", resourceType.getConfigFileName(),
+                    LOGGER.error("Could not find template {} for new webserver {}", resourceType.getConfigFileName(),
                             webServer.getName(), e);
                     throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "Could not find template "
                             + resourceType.getTemplateName());
@@ -123,14 +123,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        logger.debug("Update WS requested: {}", aWebServerToCreate);
+        LOGGER.debug("Update WS requested: {}", aWebServerToCreate);
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                 aUser.getUser()));
     }
 
     @Override
     public Response removeWebServer(final Identifier<WebServer> aWsId) {
-        logger.debug("Delete WS requested: {}", aWsId);
+        LOGGER.debug("Delete WS requested: {}", aWsId);
         webServerService.removeWebServer(aWsId);
         return ResponseBuilder.ok();
     }
@@ -138,7 +138,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
                                      final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
-        logger.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
+        LOGGER.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
                 new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
                 aUser.getUser());
@@ -148,7 +148,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String standardError = commandOutput.getStandardError();
             final String standardOut = commandOutput.getStandardOutput();
             String errMessage = !standardError.isEmpty() ? standardError : standardOut;
-            logger.error("Control Operation Unsuccessful: " + errMessage);
+            LOGGER.error("Control Operation Unsuccessful: " + errMessage);
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
         }
     }
@@ -179,18 +179,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
 
             if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))) {
-                logger.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
+                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
             execData = webServerControlService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
             if (execData.getReturnCode().wasSuccessful()) {
-                logger.info("Copy of httpd.conf successful: {}", httpdUnixPath);
+                LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
                                 .getStandardError();
-                logger.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}",
+                LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}",
                         aWebServerName, standardError);
                 Map<String, String> errorDetails = new HashMap<>();
                 errorDetails.put("webServerName", aWebServerName);
@@ -198,7 +198,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                         AemFaultType.REMOTE_COMMAND_FAILURE, standardError), errorDetails);
             }
         } catch (CommandFailureException e) {
-            logger.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
+            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
             Map<String, String> errorDetails = new HashMap<>();
             errorDetails.put("webServerName", aWebServerName);
             return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -220,7 +220,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final boolean useSSL = true;
             out.println(generateHttpdConfText(aWebServerName, useSSL));
         } catch (FileNotFoundException e) {
-            logger.error("Unable to create temporary file {}", httpdConfAbsolutePath);
+            LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
         } finally {
             if (out != null) {
@@ -244,7 +244,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
         } catch (CommandFailureException cmdFailEx) {
-            logger.warn("Request Failure Occurred", cmdFailEx);
+            LOGGER.warn("Request Failure Occurred", cmdFailEx);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, cmdFailEx.getMessage()));
         }
@@ -267,7 +267,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
-        logger.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
+        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -278,7 +278,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         WebServer webServer = webServerService.getWebServer(webServerName);
         if (null == webServer) {
-            logger.error("Web Server Not Found: Could not find web server with name " + webServerName);
+            LOGGER.error("Web Server Not Found: Could not find web server with name " + webServerName);
             throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name " + webServerName);
         }
 
@@ -305,11 +305,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     data.close();
                 }
             }
-            logger.info("Failed to upload config template {} for web server {}: No Data", templateName, webServerName);
+            LOGGER.info("Failed to upload config template {} for web server {}: No Data", templateName, webServerName);
             return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, "No data"));
         } catch (IOException | FileUploadException e) {
-            logger.error("Bad Stream: Error receiving data", e);
+            LOGGER.error("Bad Stream: Error receiving data", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
@@ -326,7 +326,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return ResponseBuilder.ok(webServerService.updateResourceTemplate(wsName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            logger.debug("Failed to update resource template {}", resourceTemplateName, e);
+            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -338,7 +338,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
         } catch (RuntimeException rte) {
-            logger.debug("Error previewing template.", rte);
+            LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
         }

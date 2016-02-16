@@ -37,7 +37,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     final JSch theJsch;
     final RemoteExecCommand theCommand;
 
-    private static final Map<String, Object> commandMap = new HashMap<>();
+    private static final Map<String, Object> COMMAND_MAP = new HashMap<>();
 
     public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand) {
         this.theJsch = theJsch;
@@ -46,9 +46,9 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     public void processCommand() throws RemoteCommandFailureException {
         // Check if the command is already being processed, if it is don't do anything.
-        synchronized (commandMap) {
-            if (!commandMap.containsKey(theCommand.getCommand().toCommandString())) {
-                commandMap.put(theCommand.getCommand().toCommandString(), null);
+        synchronized (COMMAND_MAP) {
+            if (!COMMAND_MAP.containsKey(theCommand.getCommand().toCommandString())) {
+                COMMAND_MAP.put(theCommand.getCommand().toCommandString(), null);
             } else {
                 LOGGER.warn("The command '{}' is already being processed!", theCommand.getCommand().toCommandString());
                 return;
@@ -136,8 +136,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 JschChannelManager.getInstance().returnChannel(remoteSystemConnection.getHost(), channel, channelType);
             }
 
-            synchronized (commandMap) {
-                commandMap.remove(theCommand.getCommand().toCommandString());
+            synchronized (COMMAND_MAP) {
+                COMMAND_MAP.remove(theCommand.getCommand().toCommandString());
             }
         }
     }

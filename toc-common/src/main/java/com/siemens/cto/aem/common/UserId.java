@@ -9,18 +9,18 @@ import com.siemens.cto.aem.common.domain.model.user.User;
  */
 public class UserId {
 
-    public static final ThreadLocal<String> threadLocal = new ThreadLocal<>();
+    public static final ThreadLocal<String> THREAD_LOCAL = new ThreadLocal<>();
 
     public static void set(final String id) {
-        threadLocal.set(id);
+        THREAD_LOCAL.set(id);
     }
 
     public static void unset() {
-        threadLocal.remove();
+        THREAD_LOCAL.remove();
     }
 
     public static String get() {
-        return threadLocal.get();
+        return THREAD_LOCAL.get();
     }
 
 }

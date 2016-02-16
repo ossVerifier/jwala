@@ -19,7 +19,7 @@ import java.util.Map;
 @JsonDeserialize(using = JsonResourceInstance.CreateResourceInstanceJSONDeserializer.class)
 public class JsonResourceInstance {
 
-    private static final Logger logger = Logger.getLogger(JsonResourceInstance.class);
+    private static final Logger LOGGER = Logger.getLogger(JsonResourceInstance.class);
 
     private final String resourceTypeName;
     private final String groupName;
@@ -29,7 +29,7 @@ public class JsonResourceInstance {
     static final class CreateResourceInstanceJSONDeserializer extends AbstractJsonDeserializer<JsonResourceInstance> {
         @Override
         public JsonResourceInstance deserialize(final JsonParser jp, final DeserializationContext ctxt) throws IOException {
-            logger.debug("deserialize");
+            LOGGER.debug("deserialize");
             final ObjectCodec obj = jp.getCodec();
             final JsonNode rootNode = obj.readTree(jp);
             final JsonNode resourceTypeNameNode = rootNode.get("resourceTypeName");

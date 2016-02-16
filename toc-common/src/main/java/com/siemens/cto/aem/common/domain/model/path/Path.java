@@ -18,8 +18,8 @@ public class Path implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Pattern absoluteRegEx = Pattern.compile("^(([a-zA-Z]:)|([\\/])).*");
-    private static final Pattern featureRegEx = Pattern.compile(";([^=;]*)?=?([0-9A-Za-z]*)?");
+    private static final Pattern ABSOLUTE_REG_EX = Pattern.compile("^(([a-zA-Z]:)|([\\/])).*");
+    private static final Pattern FEATURE_REG_EX = Pattern.compile(";([^=;]*)?=?([0-9A-Za-z]*)?");
     
     private final String path;
 
@@ -28,7 +28,7 @@ public class Path implements Serializable {
     }
 
     public boolean isAbsolute() {
-        return absoluteRegEx.matcher(path).matches();
+        return ABSOLUTE_REG_EX.matcher(path).matches();
     }
 
     /**
@@ -79,12 +79,12 @@ public class Path implements Serializable {
     }
     
     private static String removeFeatures(String path) { 
-        Matcher featureMatcher = featureRegEx.matcher(path);
+        Matcher featureMatcher = FEATURE_REG_EX.matcher(path);
         return featureMatcher.replaceAll("");
     }
     
     public String getFeature(String featureName, String defaultValue) {
-        Matcher featureMatcher = featureRegEx.matcher(path);
+        Matcher featureMatcher = FEATURE_REG_EX.matcher(path);
         while(featureMatcher.find()) {
             if(featureMatcher.group(1).equalsIgnoreCase(featureName)) {
                 return featureMatcher.group(2);
