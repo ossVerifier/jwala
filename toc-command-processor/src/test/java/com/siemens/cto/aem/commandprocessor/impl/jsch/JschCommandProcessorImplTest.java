@@ -20,7 +20,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore
 @Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class JschCommandProcessorImplTest {
@@ -40,6 +39,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannel.getInputStream()).thenReturn(mockRemoteOutput);
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
+        when(mockChannel.isClosed()).thenReturn(true);
         when(mockRemoteOutput.read()).thenReturn(0); // return success for checkAck
         RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111);
         ExecCommand execCommand = new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "));
@@ -59,6 +59,8 @@ public class JschCommandProcessorImplTest {
         when(mockChannelShell.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannelShell.getExtInputStream()).thenReturn(mockRemoteErr);
         when(mockSession.openChannel("shell")).thenReturn(mockChannelShell);
+        when(mockChannelShell.getSession()).thenReturn(mockSession);
+        when(mockRemoteOutput.read()).thenReturn(0xff);
         ShellCommand shellCommand = new ShellCommand("start", "jvm", "testShellCommand");
         remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, shellCommand);
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, remoteExecCommand);
