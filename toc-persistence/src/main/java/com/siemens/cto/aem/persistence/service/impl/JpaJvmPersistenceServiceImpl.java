@@ -1,10 +1,10 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -14,8 +14,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +113,11 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public Jvm findJvm(final String jvmName, final String groupName) {
         return jvmCrudService.findJvm(jvmName, groupName);
+    }
+
+    @Override
+    public Jvm findJvmByExactName(String jvmName) {
+        return jvmCrudService.findJvmByExactName(jvmName);
     }
 
     @Override

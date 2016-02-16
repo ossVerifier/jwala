@@ -1,21 +1,21 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
@@ -100,12 +100,8 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     @Override
     @SuppressWarnings("unchecked")
     public List<JpaJvm> findJvms(final String aName) {
-
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
-
-        query.setParameter("jvmName",
-                "%" + aName + "%");
-
+        query.setParameter("jvmName", "%" + aName + "%");
         return query.getResultList();
     }
 
@@ -226,6 +222,13 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         q.setParameter("groupName", groupName);
         JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
         return (new JvmBuilder(jpaJvm)).build();
+    }
+
+    @Override
+    public Jvm findJvmByExactName(String jvmName) {
+        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name=:jvmName ORDER BY j.name");
+        query.setParameter("jvmName", jvmName);
+        return (new JvmBuilder((JpaJvm) query.getSingleResult())).build();
     }
 
     @Override

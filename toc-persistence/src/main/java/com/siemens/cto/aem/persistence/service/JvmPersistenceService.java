@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
@@ -47,6 +47,8 @@ public interface JvmPersistenceService {
     String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
 
     Jvm findJvm(String jvmName, String groupName);
+
+    Jvm findJvmByExactName(String jvmName);
 
     void updateState(Identifier<Jvm> id, JvmState state);
 

@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -100,6 +100,20 @@ public class JvmCrudServiceImplTest {
     public void testGetJvmTemplate() {
         String result = jvmCrudService.getJvmTemplate(SERVER_XML, jvm.getId());
         assertNotNull(result);
+    }
+
+    @Test
+    public void testGetJvmByExactName() {
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
+        CreateJvmRequest createJvmWithSimilarNameRequest = new CreateJvmRequest("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, new Path("./"), "");
+        JpaJvm jvmOne = jvmCrudService.createJvm(createJvmRequest);
+        JpaJvm jvmOneOne = jvmCrudService.createJvm(createJvmWithSimilarNameRequest);
+
+        Jvm foundJvm = jvmCrudService.findJvmByExactName("jvm-1");
+        assertEquals(jvmOne.getName(), foundJvm.getJvmName());
+
+        foundJvm = jvmCrudService.findJvmByExactName("jvm-11");
+        assertEquals(jvmOneOne.getName(), foundJvm.getJvmName());
     }
 
     @Configuration

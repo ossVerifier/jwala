@@ -15,8 +15,6 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
@@ -113,7 +111,7 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Jvm getJvm(final String jvmName) {
-        return jvmPersistenceService.findJvms(jvmName).get(0);
+        return jvmPersistenceService.findJvmByExactName(jvmName);
     }
 
     @Override
@@ -169,23 +167,14 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional(readOnly = true)
     public String generateConfigFile(String aJvmName, String templateName) {
-        final List<Jvm> jvmList = jvmPersistenceService.findJvms(aJvmName);
+        Jvm jvm = jvmPersistenceService.findJvmByExactName(aJvmName);
 
-        if (jvmList.size() == 1) {
-            Jvm jvm = jvmList.get(0);
-            final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
-            if (!serverXmlTemplateText.isEmpty()) {
-                return TomcatJvmConfigFileGenerator
-                        .getJvmConfigFromText(serverXmlTemplateText, jvm, jvmPersistenceService.getJvms());
-            } else {
-                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
-            }
-
-        }
-        if (jvmList.size() > 1) {
-            throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
+        final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
+        if (!serverXmlTemplateText.isEmpty()) {
+            return TomcatJvmConfigFileGenerator
+                    .getJvmConfigFromText(serverXmlTemplateText, jvm, jvmPersistenceService.getJvms());
         } else {
-            throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
+            throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
     }
 
@@ -227,30 +216,6 @@ public class JvmServiceImpl implements JvmService {
         grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
     }
 
-    /**
-     * Sets the jvm state.
-     *
-     * @param id    the jvm id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
-     * @param state the state {@link JvmState}
-     * @param msg   a message
-     * @return {@link SetStateRequest}
-     */
-    private SetStateRequest<Jvm, JvmState> createStateCommand(final Identifier<Jvm> id,
-                                                              final JvmState state,
-                                                              final String msg) {
-        if (StringUtils.isEmpty(msg)) {
-            return new JvmSetStateRequest(new CurrentState<>(id,
-                    state,
-                    DateTime.now(),
-                    StateType.JVM));
-        }
-        return new JvmSetStateRequest(new CurrentState<>(id,
-                state,
-                DateTime.now(),
-                StateType.JVM,
-                msg));
-    }
-
     public boolean isJvmStarted(Jvm jvm) {
         return JvmState.JVM_STARTED.equals(jvm.getState());
     }
@@ -259,7 +224,7 @@ public class JvmServiceImpl implements JvmService {
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
         // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
         return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template,
-                jvmPersistenceService.findJvms(jvmName).get(0),
+                jvmPersistenceService.findJvmByExactName(jvmName),
                 jvmPersistenceService.getJvms());
     }
 
@@ -281,7 +246,7 @@ public class JvmServiceImpl implements JvmService {
                                       final boolean tokensReplaced) {
         final String template = jvmPersistenceService.getResourceTemplate(jvmName, resourceTemplateName);
         if (tokensReplaced) {
-            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvmPersistenceService.findJvms(jvmName).get(0), jvmPersistenceService.getJvms());
+            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvmPersistenceService.findJvmByExactName(jvmName), jvmPersistenceService.getJvms());
         }
         return template;
     }
@@ -294,17 +259,8 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public String generateInvokeBat(String jvmName) {
-        final List<Jvm> jvmList = jvmPersistenceService.findJvms(jvmName);
-
-        if (jvmList.size() == 1) {
-            Jvm jvm = jvmList.get(0);
-            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(fileManager.getResourceTypeTemplate("InvokeBat"), jvm, jvmPersistenceService.getJvms());
-        }
-        if (jvmList.size() > 1) {
-            throw new BadRequestException(AemFaultType.JVM_NOT_SPECIFIED, "Too many JVMs of the same name");
-        } else {
-            throw new BadRequestException(AemFaultType.JVM_NOT_FOUND, "JVM not found");
-        }
+        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
+        return TomcatJvmConfigFileGenerator.getJvmConfigFromText(fileManager.getResourceTypeTemplate("InvokeBat"), jvm, jvmPersistenceService.getJvms());
     }
 
     @Override
