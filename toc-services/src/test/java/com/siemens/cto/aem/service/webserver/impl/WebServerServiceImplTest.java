@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -513,6 +514,24 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(appList);
         String template = wsService.previewResourceTemplate("wsName", "groupName", "my template");
         assertEquals("my template", template);
+    }
+
+    @Test
+    public void testIsStarted() {
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        assertTrue(wsService.isStarted(mockWebServer));
+    }
+
+    @Test
+    public void testUpdateErrorStatus() {
+        wsService.updateErrorStatus(mockWebServer.getId(), "test update error status");
+        verify(webServerPersistenceService).updateErrorStatus(new Identifier<WebServer>(1L), "test update error status");
+    }
+
+    @Test
+    public void testUpdateState() {
+        wsService.updateState(mockWebServer.getId(), WebServerReachableState.WS_REACHABLE, "");
+        verify(webServerPersistenceService).updateState(new Identifier<WebServer>(1L), WebServerReachableState.WS_REACHABLE, "");
     }
 
     private String removeCarriageReturnsAndNewLines(String s) {
