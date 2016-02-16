@@ -245,11 +245,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     UploadAppTemplateRequest command =
                             new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, jvmName, data);
 
-                    return ResponseBuilder.created(service.uploadAppTemplate(command, aUser.getUser())); // early
-                    // out
-                    // on
-                    // first
-                    // attachment
+                    service.uploadAppTemplate(command, aUser.getUser());
+                    // return the template after uploading because returning the JpaAppConfigTemplate was returning an unreadable json object - so unreadable that it would actually crash editors when copied from the chrome debugger and pasted
+                    return ResponseBuilder.created(service.getResourceTemplate(appName, app.getGroup().getName(), jvmName, appXmlFileName, false)); // early out on first attachment
                 } finally{
                     assert data != null;
                     data.close();
