@@ -208,12 +208,13 @@ public class JvmServiceImpl implements JvmService {
      * @param state {@link JvmState}
      * @param msg   a message
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void setState(final Jvm jvm,
                           final JvmState state,
                           final String msg) {
-        updateState(jvm.getId(), state, msg);
+        jvmPersistenceService.updateState(jvm.getId(), state, msg);
         stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-        grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
+        // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
     }
 
     public boolean isJvmStarted(Jvm jvm) {

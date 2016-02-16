@@ -59,16 +59,6 @@ public class JschRequestProcessorImplTest {
         assertTrue(remoteErrorOutput.contains("No such file or directory"));
     }
 
-    @Test
-    public void testGetCommandInput() throws Exception {
-        final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
-        final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand);
-        sshProcessor.processCommand();
-        final OutputStream outputStream = sshProcessor.getCommandInput();
-        outputStream.write(":q\n".getBytes(StandardCharsets.UTF_8));
-        outputStream.flush();
-    }
-
     @Test(expected = RemoteNotYetReturnedException.class)
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));

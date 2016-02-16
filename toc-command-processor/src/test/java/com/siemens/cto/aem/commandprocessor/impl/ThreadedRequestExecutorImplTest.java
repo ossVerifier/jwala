@@ -29,7 +29,7 @@ public class ThreadedRequestExecutorImplTest {
     @Before
     public void setup() {
         executorService = Executors.newFixedThreadPool(3);
-        impl = new ThreadedCommandExecutorImpl(executorService);
+        impl = new ThreadedCommandExecutorImpl();
     }
 
     @After
@@ -67,15 +67,6 @@ public class ThreadedRequestExecutorImplTest {
         assertTrue(results.getStandardError().contains("No such file or directory"));
         assertEquals("",
                      results.getStandardOutput());
-    }
-
-    @Test(expected = RuntimeException.class)
-    @SuppressWarnings("unchecked")
-    public void testGetOnFutureWithMockedException() throws Exception {
-        final Future future = mock(Future.class);
-        when(future.get()).thenThrow(InterruptedException.class);
-        final ThreadedCommandExecutorImpl impl = new ThreadedCommandExecutorImpl(null);
-        impl.get(future);
     }
 
 }

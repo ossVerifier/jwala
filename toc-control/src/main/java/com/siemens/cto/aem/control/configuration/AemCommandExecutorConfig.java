@@ -19,8 +19,7 @@ public class AemCommandExecutorConfig {
 
     @Bean
     protected CommandExecutor getCommandExecutor() {
-        final CommandExecutor executor = new ThreadedCommandExecutorImpl(getExecutorService());
-        return executor;
+        return new ThreadedCommandExecutorImpl();
     }
 
     @Bean(destroyMethod = "shutdownNow")

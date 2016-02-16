@@ -5,5 +5,6 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 
 public interface CommandExecutor {
 
-    CommandOutput execute(final CommandProcessorBuilder aBuilder) throws CommandFailureException;
+    CommandOutput execute(final CommandProcessorBuilder builder) throws CommandFailureException;
+
 }

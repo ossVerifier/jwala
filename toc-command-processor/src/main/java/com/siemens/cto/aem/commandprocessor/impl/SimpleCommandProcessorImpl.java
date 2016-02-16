@@ -7,14 +7,15 @@ import com.siemens.cto.aem.io.FullInputStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Deprecated
 public class SimpleCommandProcessorImpl implements SimpleCommandProcessor {
 
     private final String commandOutput;
     private final String errorOutput;
 
     public SimpleCommandProcessorImpl(final CommandProcessor theCommandProcessor) throws IOException {
-        commandOutput = readAllOutput(theCommandProcessor.getCommandOutput());
-        errorOutput = readAllOutput(theCommandProcessor.getErrorOutput());
+        commandOutput = theCommandProcessor.getCommandOutputStr();
+        errorOutput = theCommandProcessor.getErrorOutputStr();
     }
 
     @Override

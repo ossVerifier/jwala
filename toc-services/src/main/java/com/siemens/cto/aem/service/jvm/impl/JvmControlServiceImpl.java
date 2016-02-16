@@ -74,7 +74,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                         jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
-                        jvmService.pingAndUpdateJvmState(jvm);
+                        LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                        // jvmService.pingAndUpdateJvmState(jvm);
                         break;
                     default:
                         final String errorMsg = "JVM control command was not successful. Return code message = " +
