@@ -83,7 +83,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         LOGGER.error(errorMsg);
                         stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                                 DateTime.now(), StateType.JVM, errorMsg));
-
+                        break;
                 }
             }
 
