@@ -28,8 +28,14 @@ import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
-import com.siemens.cto.aem.service.group.*;
-import com.siemens.cto.aem.service.group.impl.*;
+import com.siemens.cto.aem.service.group.GroupControlService;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
+import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -57,8 +63,10 @@ import com.siemens.cto.toc.files.FileManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -147,11 +155,13 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmService")
     public JvmService getJvmService(ClientFactoryHelper factoryHelper) {
-        return new JvmServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(),
-                                  getGroupService(),
-                                  fileManager,
+        final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
+        return new JvmServiceImpl(jvmPersistenceService,
+                getGroupService(),
+                getApplicationService(jvmPersistenceService),
+                fileManager,
                 getStateNotificationService(),
-                                  grpStateComputationAndNotificationSvc);
+                grpStateComputationAndNotificationSvc);
     }
 
     @Bean(name = "webServerService")
@@ -223,10 +233,10 @@ public class AemServiceConfiguration {
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(),
-                                               aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 webServerReachableStateMap,
-                                               historyService,
-                                               getStateNotificationService());
+                historyService,
+                getStateNotificationService());
     }
 
     @Bean(name = "webServerCommandService")

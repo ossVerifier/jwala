@@ -13,6 +13,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 
 import java.util.List;
+import java.util.Set;
 
 public interface JvmService {
 
@@ -64,4 +65,5 @@ public interface JvmService {
      */
     void pingAndUpdateJvmState(Jvm jvm);
 
+    void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups);
 }

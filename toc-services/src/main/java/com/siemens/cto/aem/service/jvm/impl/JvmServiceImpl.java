@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -19,6 +20,7 @@ import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
@@ -52,6 +54,7 @@ public class JvmServiceImpl implements JvmService {
 
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
+    private ApplicationService applicationService;
     private final FileManager fileManager;
     private final StateNotificationService stateNotificationService;
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
@@ -61,11 +64,12 @@ public class JvmServiceImpl implements JvmService {
 
     public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
                           final GroupService theGroupService,
-                          final FileManager theFileManager,
+                          ApplicationService applicationService, final FileManager theFileManager,
                           final StateNotificationService stateNotificationService,
                           final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
+        this.applicationService = applicationService;
         fileManager = theFileManager;
         this.stateNotificationService = stateNotificationService;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
@@ -158,8 +162,8 @@ public class JvmServiceImpl implements JvmService {
     protected void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands,
                                   final User anAddingUser) {
         for (final AddJvmToGroupRequest command : someAddCommands) {
-            groupService.addJvmToGroup(command,
-                    anAddingUser);
+            LOGGER.info("Adding jvm {} to group {}", command.getJvmId(), command.getGroupId());
+            groupService.addJvmToGroup(command, anAddingUser);
         }
     }
 
@@ -302,4 +306,13 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
+    @Override
+    public void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups) {
+        for (Identifier<Group> groupId : groups) {
+            for (Application app: applicationService.findApplications(groupId)){
+                LOGGER.info("Creating config template for app {} associated with JVM {} and group {}", app.getName(), jvm.getJvmName(), groupId);
+                applicationService.createAppConfigTemplateForJvm(jvm, app, groupId);
+            }
+        }
+    }
 }

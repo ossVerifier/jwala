@@ -70,4 +70,6 @@ public interface ApplicationService {
     void copyApplicationConfigToGroupJvms(Group group, String appName, User user);
 
     void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
+
+    void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId);
 }

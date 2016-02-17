@@ -91,7 +91,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Create JVM requested: {}", aJvmToCreate);
+        LOGGER.info("Create JVM requested: {}", aJvmToCreate);
         final User user = aUser.getUser();
 
         // create the JVM in the database
@@ -105,6 +105,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // upload the default resource templates for the newly created
         // JVM
         uploadAllJvmResourceTemplates(aUser, jvm);
+
+        if (aJvmToCreate.areGroupsPresent()) {
+            LOGGER.info("Creating app template for new JVM");
+            jvmService.addAppTemplatesForJvm(jvm, aJvmToCreate.toCreateAndAddRequest().getGroups());
+        }
 
         return ResponseBuilder.created(jvm);
     }
@@ -581,7 +586,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    public static JvmServiceRest get(){
+    public static JvmServiceRest get() {
         return instance;
     }
 }

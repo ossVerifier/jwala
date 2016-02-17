@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -15,6 +16,7 @@ import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -52,20 +54,19 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
 
     private JvmPersistenceService jvmPersistenceService = mock(JvmPersistenceService.class);
-    ;
     private GroupService groupService = mock(GroupService.class);
     private User user;
     private FileManager fileManager = mock(FileManager.class);
     private StateNotificationService stateNotificationService = mock(StateNotificationService.class);
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
+    private ApplicationService applicationService = mock(ApplicationService.class);
 
 
     @Mock
     private ClientFactoryHelper mockClientFactoryHelper;
 
     @InjectMocks
-    private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, fileManager, stateNotificationService, grpStateComputationAndNotificationSvc);
-    ;
+    private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, applicationService, fileManager, stateNotificationService, grpStateComputationAndNotificationSvc);
 
     @SuppressWarnings("unchecked")
     @Before
@@ -409,5 +410,27 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         Identifier<Jvm> jvmId = new Identifier<Jvm>(999L);
         impl.updateState(jvmId, JvmState.JVM_STOPPED);
         verify(jvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED);
+
+        impl.updateState(jvmId, JvmState.JVM_STOPPED, "test error status");
+        verify(jvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED, "test error status");
     }
+
+    @Test
+    public void testAddTemplatesForJvm() {
+        final Jvm jvm = mockJvmWithId(new Identifier<Jvm>(111L));
+        Application mockApp = mock(Application.class);
+
+        Set<Identifier<Group>> groups = new HashSet<>();
+        final Identifier<Group> groupId = new Identifier<>(101L);
+        groups.add(groupId);
+        List<Application> mockAppList = new ArrayList<>();
+        mockAppList.add(mockApp);
+
+        when(applicationService.findApplications(any(Identifier.class))).thenReturn(mockAppList);
+
+        impl.addAppTemplatesForJvm(jvm, groups);
+
+        verify(applicationService).createAppConfigTemplateForJvm(jvm, mockApp, groupId);
+    }
+
 }

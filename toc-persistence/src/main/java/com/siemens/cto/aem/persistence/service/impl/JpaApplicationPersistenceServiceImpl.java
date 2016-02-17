@@ -141,6 +141,25 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         return applicationCrudService.getApplications();
     }
 
+    @Override
+    public void createApplicationConfigTemplateForJvm(String jvmName, Application app, Identifier<Group> groupId, String appContextTemplate) {
+        final String webAppContext = app.getWebAppContext();
+        final int idx = webAppContext.lastIndexOf('/');
+        final String resourceName = idx == -1 ? webAppContext : webAppContext.substring(idx + 1);
+        LOGGER.info("Using resource name {} and file manager app content {}", resourceName, appContextTemplate != null);
+        if (appContextTemplate != null) {
+            JpaGroup jpaGroup = groupCrudService.getGroup(groupId);
+            if (jpaGroup.getJvms() != null) {
+                for (JpaJvm jvm : jpaGroup.getJvms()) {
+                    if (jvm.getName().equals(jvmName)) {
+                        applicationCrudService.createConfigTemplate(applicationCrudService.getExisting(app.getId()), resourceName + ".xml", appContextTemplate, jvm);
+                        LOGGER.info("Creation of config template {} SUCCEEDED for {}", resourceName, jvm.getName());
+                    }
+                }
+            }
+        }
+    }
+
     private JpaJvm getJpaJvmForAppXml(String resourceTemplateName, String jvmName, String groupName) {
         // the application context xml is created for each JVM, unlike the the properties and RoleMapping.properties files
         // so when we retrieve or update the template for the context xml make sure we send in a specific JVM

@@ -468,6 +468,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         return appConfFile;
     }
 
+    @Override
+    @Transactional
+    public void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId) {
+        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId, fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE)));
+    }
+
     /**
      * Inner class application wrapper to include a web application's parent JVM.
      */

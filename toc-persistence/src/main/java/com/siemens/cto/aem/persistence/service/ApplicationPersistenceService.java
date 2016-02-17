@@ -40,4 +40,6 @@ public interface ApplicationPersistenceService {
     List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> jvmId);
 
     Application findApplication(String appName, String groupName, String jvmName);
+
+    void createApplicationConfigTemplateForJvm(String jvmName, Application app, Identifier<Group> groupId, String resourceTypeTemplate);
 }
