@@ -51,14 +51,13 @@ public class WebServerStateSetterWorker {
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
 
-    private static final ConcurrentHashMap<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
+    private static final Map<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
+    private static final Map<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
     /**
      * Note: Setting of class variables through the constructor preferred but @Async does not work
      * if WebServerStateSetterWorker is instantiated like this in the config file:
      *
-     * @Bean
      * WebServerStateSetterWorker webServerStateSetterWorker() {
      *     return new WebServerStateSetterWorker(...);
      * }
