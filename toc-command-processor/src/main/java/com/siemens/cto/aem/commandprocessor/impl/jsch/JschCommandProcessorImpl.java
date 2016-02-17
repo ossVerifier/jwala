@@ -25,6 +25,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     public static final int CHANNEL_EXIT_WAIT_TIMEOUT = 600000;
     public static final int CHANNEL_CONNECT_TIMEOUT = 60000;
     public static final int THREAD_SLEEP_TIME = 500;
+    public static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
+    public static final String EXIT_CODE_END_MARKER = "***";
 
     protected Session session;
     protected Channel channel;
@@ -80,6 +82,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
                 PrintStream commandStream = new PrintStream(localInput, true);
                 commandStream.println(commandString);
+                commandStream.println("echo 'EXIT_CODE='$?***");
                 commandStream.println("echo -n -e '\\xff'");
 
                 readRemoteOutput();
@@ -128,7 +131,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             }
 
 
-        } catch (final JSchException | IOException e) {
+        } catch (final JSchException | IOException | NotYetReturnedException e) {
             LOGGER.error("Command '{}' had an error: {} !", theCommand.getCommand().toCommandString(), e.getMessage());
             throw new RemoteCommandFailureException(theCommand, e);
         } finally {
@@ -173,7 +176,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
      * Read remote output stream.
      * @throws IOException
      */
-    private void readRemoteOutput() throws IOException {
+    private void readRemoteOutput() throws IOException, NotYetReturnedException {
         final long startTime = System.currentTimeMillis();
         boolean timeout = false;
         int readByte = remoteOutput.read();
@@ -191,7 +194,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         if (timeout) {
             LOGGER.error("remote output reading timeout!");
         } else {
-            LOGGER.info("done streaming remote output...");
+            LOGGER.info("done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
             LOGGER.info("****** output: start ******");
             LOGGER.info(remoteOutputStringBuilder.toString());
             LOGGER.info("****** output: end ******");
@@ -214,8 +217,13 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     @Override
     public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
         if (theCommand.getCommand().getRunInShell()) {
-            // The channel is always open for shell commands thus we will not get an exit code from the channel so we just return 0 for now.
-            return new ExecReturnCode(0);
+            if (remoteOutputStringBuilder != null) {
+                final String remoteOutputStr = remoteOutputStringBuilder.toString();
+                 final String exitCodeStr = remoteOutputStr.substring(remoteOutputStr.lastIndexOf(EXIT_CODE_START_MARKER)
+                         + EXIT_CODE_START_MARKER.length() + 1, remoteOutputStr.lastIndexOf(EXIT_CODE_END_MARKER));
+                return new ExecReturnCode(Integer.parseInt(exitCodeStr));
+            }
+            throw new RemoteNotYetReturnedException(theCommand);
         }
 
         final int returnCode = channel.getExitStatus();
