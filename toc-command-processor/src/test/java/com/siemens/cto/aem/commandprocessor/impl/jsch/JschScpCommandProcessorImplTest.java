@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -29,7 +27,7 @@ import static org.mockito.Mockito.when;
 public class JschScpCommandProcessorImplTest {
 
     @Test
-    public void testProcessCommand() throws JSchException, IOException, NotYetReturnedException {
+    public void testProcessCommand() throws JSchException, IOException {
         JSch mockJsch = mock(JSch.class);
         Session mockSession = mock(Session.class);
         ChannelExec mockChannel = mock(ChannelExec.class);

@@ -6,8 +6,8 @@ import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.exception.ExitCodeNotAvailableException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -30,7 +30,7 @@ public class JschRequestProcessorImplTest {
         remoteSystemConnection = config.getRemoteSystemConnection();
     }
 
-    @Test(expected = RemoteNotYetReturnedException.class)
+    @Test(expected = ExitCodeNotAvailableException.class)
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
         final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand);

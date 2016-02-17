@@ -2,12 +2,12 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.*;
 import com.siemens.cto.aem.common.exec.*;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -20,31 +20,58 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Deprecated
 @RunWith(MockitoJUnitRunner.class)
 public class JschCommandProcessorImplTest {
+    private InputStream remoteOutputStream;
+
+    @Mock
+    private JSch mockJsch;
+
+    @Mock
+    private Session mockSession;
+
+    @Mock
+    private ChannelExec mockChannel;
+
+    @Mock
+    private ChannelShell mockChannelShell;
+
+    @Mock
+    InputStream mockRemoteErr;
+
+    @Mock
+    OutputStream mockLocalInput;
+
+    JschCommandProcessorImpl jschCommandProcessor;
+
+    @Before
+    public void setup() throws JSchException {
+        remoteOutputStream = new InputStream() {
+            private int i = 0;
+            byte [] bytes = "Blah blah...EXIT_CODE=0***".getBytes();
+
+            @Override
+            public int read() throws IOException {
+                if (i < bytes.length) {
+                    return bytes[i++];
+                }
+                return 0xff;
+            }
+        };
+        MockitoAnnotations.initMocks(this);
+
+        when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+    }
 
     @Test
-    public void testProcessCommand() throws JSchException, IOException, NotYetReturnedException {
-
-        // test exec
-        JSch mockJsch = mock(JSch.class);
-        Session mockSession = mock(Session.class);
-        ChannelExec mockChannel = mock(ChannelExec.class);
-        InputStream mockRemoteOutput = mock(InputStream.class);
-        InputStream mockRemoteErr = mock(InputStream.class);
-        OutputStream mockLocalInput = mock(OutputStream.class);
-        when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+    public void testProcessCommandExec() throws JSchException, IOException {
         when(mockSession.openChannel("exec")).thenReturn(mockChannel);
-        when(mockChannel.getInputStream()).thenReturn(mockRemoteOutput);
+        when(mockChannel.getInputStream()).thenReturn(remoteOutputStream);
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockChannel.isClosed()).thenReturn(true);
-        when(mockRemoteOutput.read()).thenReturn(0); // return success for checkAck
-        RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111);
-        ExecCommand execCommand = new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "));
-        RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, execCommand);
-        JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, remoteExecCommand);
+        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
+                new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "))));
         try {
             jschCommandProcessor.processCommand();
             ExecReturnCode returnCode = jschCommandProcessor.getExecutionReturnCode();
@@ -52,18 +79,20 @@ public class JschCommandProcessorImplTest {
         } catch (RemoteCommandFailureException e) {
             assertTrue("This should not fail ... " + e.getMessage(), false);
         }
+    }
 
-        // test shell
+    @Test
+    public void testProcessCommandShell() throws JSchException, IOException {
         ChannelShell mockChannelShell = mock(ChannelShell.class);
-        when(mockChannelShell.getInputStream()).thenReturn(mockRemoteOutput);
+        when(mockChannelShell.getInputStream()).thenReturn(remoteOutputStream);
         when(mockChannelShell.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannelShell.getExtInputStream()).thenReturn(mockRemoteErr);
         when(mockSession.openChannel("shell")).thenReturn(mockChannelShell);
         when(mockChannelShell.getSession()).thenReturn(mockSession);
-        when(mockRemoteOutput.read()).thenReturn(0xff);
-        ShellCommand shellCommand = new ShellCommand("start", "jvm", "testShellCommand");
-        remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, shellCommand);
-        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, remoteExecCommand);
+
+        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch,
+                new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
+                new ShellCommand("start", "jvm", "testShellCommand")));
         try {
             jschCommandProcessor.processCommand();
             jschCommandProcessor.getCommandOutputStr();
@@ -74,25 +103,6 @@ public class JschCommandProcessorImplTest {
         } catch (RemoteCommandFailureException e) {
             assertTrue("This should not fail ... " + e.getMessage(), false);
         }
-
-        // too soon
-        when(mockChannelShell.getExitStatus()).thenReturn(-1);
-        try {
-            jschCommandProcessor.processCommand();
-            jschCommandProcessor.getExecutionReturnCode();
-        } catch(RemoteNotYetReturnedException e) {
-            assertTrue("This should fail ... " + e.getMessage(), true);
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("Should not reach this exception", false);
-        }
-
-        // test error
-        when(mockSession.openChannel(anyString())).thenThrow(new JSchException("test failure branch"));
-        try {
-            jschCommandProcessor.processCommand();
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("This should fail ... " + e.getMessage(), true);
-        }
-
     }
+
 }

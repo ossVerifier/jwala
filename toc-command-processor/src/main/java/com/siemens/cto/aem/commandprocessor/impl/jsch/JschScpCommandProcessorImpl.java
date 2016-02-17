@@ -2,11 +2,9 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +148,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
     }
 
     @Override
-    public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
+    public ExecReturnCode getExecutionReturnCode() {
         // if checkAck returned 0 then return success (see comment where checkAckOk set to true)
         int returnCode = checkAckOk ? 0 : 1;
         return new ExecReturnCode(returnCode);

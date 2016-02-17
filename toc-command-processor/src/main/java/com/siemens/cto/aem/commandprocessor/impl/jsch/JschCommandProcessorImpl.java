@@ -5,9 +5,8 @@ import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.exception.NotYetReturnedException;
+import com.siemens.cto.aem.exception.ExitCodeNotAvailableException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import com.siemens.cto.aem.exception.RemoteNotYetReturnedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +130,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             }
 
 
-        } catch (final JSchException | IOException | NotYetReturnedException e) {
+        } catch (final JSchException | IOException e) {
             LOGGER.error("Command '{}' had an error: {} !", theCommand.getCommand().toCommandString(), e.getMessage());
             throw new RemoteCommandFailureException(theCommand, e);
         } finally {
@@ -176,7 +175,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
      * Read remote output stream.
      * @throws IOException
      */
-    private void readRemoteOutput() throws IOException, NotYetReturnedException {
+    private void readRemoteOutput() throws IOException {
         final long startTime = System.currentTimeMillis();
         boolean timeout = false;
         int readByte = remoteOutput.read();
@@ -215,7 +214,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     public void close() {}
 
     @Override
-    public ExecReturnCode getExecutionReturnCode() throws NotYetReturnedException {
+    public ExecReturnCode getExecutionReturnCode() {
         if (theCommand.getCommand().getRunInShell()) {
             if (remoteOutputStringBuilder != null) {
                 final String remoteOutputStr = remoteOutputStringBuilder.toString();
@@ -223,12 +222,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                          + EXIT_CODE_START_MARKER.length() + 1, remoteOutputStr.lastIndexOf(EXIT_CODE_END_MARKER));
                 return new ExecReturnCode(Integer.parseInt(exitCodeStr));
             }
-            throw new RemoteNotYetReturnedException(theCommand);
+            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
         }
 
         final int returnCode = channel.getExitStatus();
         if (returnCode == -1) {
-            throw new RemoteNotYetReturnedException(theCommand);
+            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
         }
 
         return new ExecReturnCode(returnCode);
