@@ -135,7 +135,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             throw new RemoteCommandFailureException(theCommand, e);
         } finally {
             if (theCommand.getCommand().getRunInShell()) {
-                JschChannelManager.getInstance().returnChannel(remoteSystemConnection.getHost(), channel, channelType);
+                JschChannelService.getInstance().returnChannel(remoteSystemConnection.getHost(), channel, channelType);
             }
 
             synchronized (COMMAND_MAP) {
@@ -155,7 +155,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             RemoteCommandFailureException {
         final long startTime = System.currentTimeMillis();
         while (channel == null) {
-            channel = JschChannelManager.getInstance().getChannel(theJsch, remoteSystemConnection, channelType);
+            channel = JschChannelService.getInstance().getChannel(theJsch, remoteSystemConnection, channelType);
             try {
                 LOGGER.info("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
                 if ((System.currentTimeMillis() - startTime) > 600000) {

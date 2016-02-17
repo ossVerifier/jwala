@@ -12,24 +12,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JSCH Channel Manager.
+ * JSCH Channel Service.
  *
  * Note: Instead of a singleton it might be better to define this as a Spring service e.g. @service.
  *
  * Created by JC043760 on 2/9/2016.
  */
-public class JschChannelManager {
+public class JschChannelService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JschChannelManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JschChannelService.class);
     public static final int CHANNEL_POOL_SIZE = 10;
-    private static JschChannelManager INSTANCE = new JschChannelManager();
+    private static JschChannelService INSTANCE = new JschChannelService();
     private static final Map<String, Session> SESSION_MAP = new HashMap<>();
     private static final Map<String, JschChannelPool> CHANNEL_POOL_MAP = new HashMap<>();
 
     /**
      * Private constructor for this class to function as a singleton.
      */
-    private JschChannelManager() {
+    private JschChannelService() {
         JSch.setLogger(new com.jcraft.jsch.Logger() {
             @Override
             public boolean isEnabled(int level) {
@@ -44,7 +44,7 @@ public class JschChannelManager {
         LOGGER.info("Instance created!");
     }
 
-    public static JschChannelManager getInstance() {
+    public static JschChannelService getInstance() {
         return INSTANCE;
     }
 
