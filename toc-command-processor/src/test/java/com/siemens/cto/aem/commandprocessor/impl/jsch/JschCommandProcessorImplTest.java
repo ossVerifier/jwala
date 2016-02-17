@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.*;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.junit.Before;
@@ -42,6 +43,8 @@ public class JschCommandProcessorImplTest {
     @Mock
     OutputStream mockLocalInput;
 
+    JschChannelService jschChannelService = new JschChannelServiceImpl();
+
     JschCommandProcessorImpl jschCommandProcessor;
 
     @Before
@@ -71,7 +74,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockChannel.isClosed()).thenReturn(true);
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
-                new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "))));
+                new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), jschChannelService);
         try {
             jschCommandProcessor.processCommand();
             ExecReturnCode returnCode = jschCommandProcessor.getExecutionReturnCode();
@@ -92,7 +95,7 @@ public class JschCommandProcessorImplTest {
 
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch,
                 new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
-                new ShellCommand("start", "jvm", "testShellCommand")));
+                new ShellCommand("start", "jvm", "testShellCommand")), jschChannelService);
         try {
             jschCommandProcessor.processCommand();
             jschCommandProcessor.getCommandOutputStr();

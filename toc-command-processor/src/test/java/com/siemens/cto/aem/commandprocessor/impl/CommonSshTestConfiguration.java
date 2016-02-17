@@ -1,6 +1,8 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 
 import java.io.File;
@@ -12,6 +14,7 @@ public class CommonSshTestConfiguration {
 
     private final JschBuilder builder;
     private final RemoteSystemConnection remoteSystemConnection;
+    private final JschChannelService jschChannelService = new JschChannelServiceImpl();
     private String password;
 
     public CommonSshTestConfiguration() {
@@ -46,4 +49,9 @@ public class CommonSshTestConfiguration {
     public String getPassword() {
         return remoteSystemConnection.getPassword();
     }
+
+    public JschChannelService getJschChannelService() {
+        return jschChannelService;
+    }
+
 }

@@ -22,18 +22,21 @@ public class JschRequestProcessorImplTest {
 
     private JschBuilder builder;
     private RemoteSystemConnection remoteSystemConnection;
+    private JschChannelService jschChannelService;
 
     @Before
     public void setup() {
         final CommonSshTestConfiguration config = new CommonSshTestConfiguration();
         builder = config.getBuilder();
         remoteSystemConnection = config.getRemoteSystemConnection();
+        jschChannelService = config.getJschChannelService();
     }
 
     @Test(expected = ExitCodeNotAvailableException.class)
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
-        final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand);
+        final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
+                jschChannelService);
         sshProcessor.processCommand();
         final ExecReturnCode returnCode = sshProcessor.getExecutionReturnCode();
     }
@@ -42,7 +45,8 @@ public class JschRequestProcessorImplTest {
     public void testBadRemoteCommand() throws Exception {
         final RemoteExecCommand remoteExecCommand =
                 new RemoteExecCommand(new RemoteSystemConnection("abc", "123546", "example.com", 123456), new ExecCommand("vi"));
-        final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand);
+        final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
+                jschChannelService);
         jschCommandProcessor.processCommand();
     }
 

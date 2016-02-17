@@ -5,6 +5,7 @@ import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
@@ -87,7 +88,10 @@ public class WebServerRequestServiceImplTest {
     @Mock
     private RuntimeCommand rtCommand;
 
-    final private Identifier<WebServer> id = new Identifier("1");
+    @Mock
+    private JschChannelService jschChannelService;
+
+    final private Identifier<WebServer> id = new Identifier<>(1L);
 
     private WebServerCommandServiceImpl impl;
 
@@ -106,7 +110,7 @@ public class WebServerRequestServiceImplTest {
         when(executor.execute(any(CommandProcessorBuilder.class)))
                 .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
         assertNotNull(factoryHelper);
-        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig);
+        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, jschChannelService);
     }
 
     @Test

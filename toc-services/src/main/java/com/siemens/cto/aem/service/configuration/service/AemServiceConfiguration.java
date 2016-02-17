@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.configuration.service;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -90,7 +91,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
-        "com.siemens.cto.aem.service.spring.component"})
+        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -125,6 +126,9 @@ public class AemServiceConfiguration {
 
     @Autowired
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+
+    @Autowired
+    private JschChannelService jschChannelService;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -189,12 +193,9 @@ public class AemServiceConfiguration {
     @Bean
     @Autowired
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService) {
-        return new ApplicationServiceImpl(
-                persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService,
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getGroupService(),
-                fileManager, null, null);
+        return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
+                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), getGroupService(), fileManager,
+                null, null);
     }
 
     @Bean
@@ -232,11 +233,8 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerControlService")
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
-        return new WebServerControlServiceImpl(getWebServerService(),
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                webServerReachableStateMap,
-                historyService,
-                getStateNotificationService());
+        return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                webServerReachableStateMap, historyService, getStateNotificationService());
     }
 
     @Bean(name = "webServerCommandService")
@@ -247,10 +245,7 @@ public class AemServiceConfiguration {
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-        return new WebServerCommandServiceImpl(getWebServerService(),
-                commandExecutor,
-                jschBuilder,
-                sshConfig);
+        return new WebServerCommandServiceImpl(getWebServerService(), commandExecutor, jschBuilder, sshConfig, jschChannelService);
     }
 
     @Bean

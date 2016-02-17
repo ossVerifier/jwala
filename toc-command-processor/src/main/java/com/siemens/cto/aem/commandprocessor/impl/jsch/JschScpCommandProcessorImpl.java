@@ -20,7 +20,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(JschScpCommandProcessorImpl.class);
 
     public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand) {
-        super(jsch, remoteCommand);
+        super(jsch, remoteCommand, null);
     }
 
     /**

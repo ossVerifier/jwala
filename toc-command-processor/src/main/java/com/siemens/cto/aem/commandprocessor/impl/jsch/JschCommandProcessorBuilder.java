@@ -10,6 +10,7 @@ public class JschCommandProcessorBuilder implements CommandProcessorBuilder {
 
     private JSch jsch;
     private RemoteExecCommand remoteCommand;
+    private JschChannelService jschChannelService;
 
     public JschCommandProcessorBuilder() {
     }
@@ -24,9 +25,14 @@ public class JschCommandProcessorBuilder implements CommandProcessorBuilder {
         return this;
     }
 
+    public JschCommandProcessorBuilder setJschChannelService(final JschChannelService jschChannelService) {
+        this.jschChannelService = jschChannelService;
+        return this;
+    }
+
     @Override
     public CommandProcessor build() throws RemoteCommandFailureException {
-        return new JschCommandProcessorImpl(jsch,
-                                            remoteCommand);
+        return new JschCommandProcessorImpl(jsch, remoteCommand, jschChannelService);
     }
+
 }

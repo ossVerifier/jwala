@@ -37,12 +37,14 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     final JSch theJsch;
     final RemoteExecCommand theCommand;
+    final JschChannelService jschChannelService;
 
     private static final Map<String, Object> COMMAND_MAP = new HashMap<>();
 
-    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand) {
+    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand, final JschChannelService jschChannelService) {
         this.theJsch = theJsch;
         this.theCommand = theCommand;
+        this.jschChannelService = jschChannelService;
     }
 
     public void processCommand() throws RemoteCommandFailureException {
@@ -135,7 +137,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             throw new RemoteCommandFailureException(theCommand, e);
         } finally {
             if (theCommand.getCommand().getRunInShell()) {
-                JschChannelService.getInstance().returnChannel(remoteSystemConnection.getHost(), channel, channelType);
+                jschChannelService.returnChannel(remoteSystemConnection.getHost(), channel, channelType);
             }
 
             synchronized (COMMAND_MAP) {
@@ -155,7 +157,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             RemoteCommandFailureException {
         final long startTime = System.currentTimeMillis();
         while (channel == null) {
-            channel = JschChannelService.getInstance().getChannel(theJsch, remoteSystemConnection, channelType);
+            channel = jschChannelService.getChannel(theJsch, remoteSystemConnection, channelType);
             try {
                 LOGGER.info("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
                 if ((System.currentTimeMillis() - startTime) > 600000) {

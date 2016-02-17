@@ -3,6 +3,7 @@ package com.siemens.cto.aem.control.command;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
@@ -12,13 +13,16 @@ public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
     private final com.siemens.cto.aem.commandprocessor.CommandExecutor executor;
     private final JschBuilder jsch;
     private final SshConfiguration sshConfig;
+    private final JschChannelService jschChannelService;
 
     public RemoteCommandExecutorImpl(final CommandExecutor theExecutor,
                                      final JschBuilder theJschBuilder,
-                                     final SshConfiguration theSshConfig) {
+                                     final SshConfiguration theSshConfig,
+                                     final JschChannelService jschChannelService) {
         executor = theExecutor;
         jsch = theJschBuilder;
         sshConfig = theSshConfig;
+        this.jschChannelService = jschChannelService;
     }
 
     @Override
@@ -38,10 +42,8 @@ public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
 
         try {
             final RemoteCommandProcessorBuilder processorBuilder = new RemoteCommandProcessorBuilder();
-            processorBuilder.setCommand(execCommand);
-            processorBuilder.setHost(entityHost);
-            processorBuilder.setJsch(jsch.build());
-            processorBuilder.setSshConfig(sshConfig);
+            processorBuilder.setCommand(execCommand).setHost(entityHost).setJsch(jsch.build()).setSshConfig(sshConfig)
+                    .setJschChannelService(jschChannelService);
 
             return executor.execute(processorBuilder);
         } catch (final JSchException jsche) {

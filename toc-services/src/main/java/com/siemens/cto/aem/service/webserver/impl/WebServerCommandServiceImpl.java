@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
+import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -15,12 +16,10 @@ import com.siemens.cto.aem.control.command.RemoteCommandProcessorBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates non-state altering commands to a web server.
- * <p/>
+ *
  * Created by z003bpej on 8/25/14.
  */
 public class WebServerCommandServiceImpl implements WebServerCommandService {
@@ -29,21 +28,25 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     private final CommandExecutor executor;
     private final JschBuilder jsch;
     private final SshConfiguration sshConfig;
+    private final JschChannelService jschChannelService;
     
     public WebServerCommandServiceImpl(final WebServerService theWebServerService,
                                        final CommandExecutor theExecutor,
                                        final JschBuilder theJschBuilder,
-                                       final SshConfiguration theSshConfig) {
+                                       final SshConfiguration theSshConfig,
+                                       final JschChannelService jschChannelService) {
         webServerService = theWebServerService;
         executor = theExecutor;
         jsch = theJschBuilder;
         sshConfig = theSshConfig;
+        this.jschChannelService = jschChannelService;
     }
 
     @Override
     public CommandOutput getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerId);
-        final ExecCommand execCommand = createExecCommand(aWebServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE, aWebServer.getHttpConfigFile().getUriPath());
+        final ExecCommand execCommand = createExecCommand(aWebServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE,
+                aWebServer.getHttpConfigFile().getUriPath());
 
         return executeCommand(aWebServer, execCommand);
     }
@@ -51,10 +54,8 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     private CommandOutput executeCommand(WebServer aWebServer, ExecCommand execCommand) throws CommandFailureException {
         try {
             final RemoteCommandProcessorBuilder processorBuilder = new RemoteCommandProcessorBuilder();
-            processorBuilder.setCommand(execCommand);
-            processorBuilder.setHost(aWebServer.getHost());
-            processorBuilder.setJsch(jsch.build());
-            processorBuilder.setSshConfig(sshConfig);
+            processorBuilder.setCommand(execCommand).setHost(aWebServer.getHost()).setJsch(jsch.build()).setSshConfig(sshConfig)
+                    .setJschChannelService(jschChannelService);
 
             return executor.execute(processorBuilder);
         } catch (final JSchException jsche) {
@@ -64,7 +65,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
 
     private ExecCommand createExecCommand(WebServer aWebServer, WebServerControlOperation wsControlOp, String... params) {
 
-        final DefaultExecCommandBuilderImpl<WebServerControlOperation> builder = new DefaultExecCommandBuilderImpl();
+        final DefaultExecCommandBuilderImpl<WebServerControlOperation> builder = new DefaultExecCommandBuilderImpl<>();
         builder.setOperation(wsControlOp);
         builder.setEntityName(aWebServer.getName());
         for (String param : params) {
