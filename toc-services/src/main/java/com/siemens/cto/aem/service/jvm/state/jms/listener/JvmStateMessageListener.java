@@ -20,6 +20,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JvmStateMessageListener implements MessageListener {
@@ -28,8 +29,8 @@ public class JvmStateMessageListener implements MessageListener {
 
     private final JvmStateMapMessageConverter converter;
     private final JvmService jvmService;
-    private static final ConcurrentHashMap<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
+    private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
+    private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
     private final StateNotificationService stateNotificationService;
 
