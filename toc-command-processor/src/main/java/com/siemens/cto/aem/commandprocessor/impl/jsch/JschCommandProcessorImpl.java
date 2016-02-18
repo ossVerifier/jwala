@@ -26,6 +26,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     public static final int THREAD_SLEEP_TIME = 500;
     public static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     public static final String EXIT_CODE_END_MARKER = "***";
+    public static final int CHANNEL_WAIT_TIME = 600000;
 
     protected Session session;
     protected Channel channel;
@@ -160,7 +161,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             channel = jschChannelService.getChannel(theJsch, remoteSystemConnection, channelType);
             try {
                 LOGGER.info("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
-                if ((System.currentTimeMillis() - startTime) > 600000) {
+                if ((System.currentTimeMillis() - startTime) > CHANNEL_WAIT_TIME) {
                     throw new RemoteCommandFailureException(theCommand, new RuntimeException("Timeout reached waiting for a channel!"));
                 }
                 Thread.sleep(THREAD_SLEEP_TIME);
