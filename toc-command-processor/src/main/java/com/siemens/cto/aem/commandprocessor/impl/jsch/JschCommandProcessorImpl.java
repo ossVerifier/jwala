@@ -21,12 +21,15 @@ import java.util.Map;
 public class JschCommandProcessorImpl implements CommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
-    public static final int CHANNEL_EXIT_WAIT_TIMEOUT = 600000;
+
+    // TODO: Put the properties below in a dedicated JSCH properties file.
+    public static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 60000;
     public static final int CHANNEL_CONNECT_TIMEOUT = 60000;
-    public static final int THREAD_SLEEP_TIME = 500;
+    public static final int THREAD_SLEEP_TIME = 100;
+    public static final int CHANNEL_MAX_WAIT_TIME = 600000;
+
     public static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     public static final String EXIT_CODE_END_MARKER = "***";
-    public static final int CHANNEL_WAIT_TIME = 600000;
 
     protected Session session;
     protected Channel channel;
@@ -74,9 +77,9 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 remoteError = channelShell.getExtInputStream();
                 localInput = channelShell.getOutputStream();
 
-                LOGGER.info("Channel {} isConnected = {}", channel.getId(), channel.isConnected());
+                LOGGER.debug("Channel {} isConnected = {}", channel.getId(), channel.isConnected());
                 if (!channel.isConnected()) {
-                    LOGGER.info("Session isConnected = {}; Channel with id = {} connecting...", channel.getSession().isConnected(), channel.getId());
+                    LOGGER.debug("Session isConnected = {}; Channel with id = {} connecting...", channel.getSession().isConnected(), channel.getId());
                     channel.connect(CHANNEL_CONNECT_TIMEOUT); // This should always come after getting the streams.
                 }
 
@@ -154,24 +157,24 @@ public class JschCommandProcessorImpl implements CommandProcessor {
      * @throws JSchException
      * @throws RemoteCommandFailureException
      */
-    private void borrowChannel(RemoteSystemConnection remoteSystemConnection, String channelType) throws JSchException,
+    // TODO: Return the channel
+    protected void borrowChannel(RemoteSystemConnection remoteSystemConnection, String channelType) throws JSchException,
             RemoteCommandFailureException {
         final long startTime = System.currentTimeMillis();
         while (channel == null) {
             channel = jschChannelService.getChannel(theJsch, remoteSystemConnection, channelType);
             try {
-                LOGGER.info("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
-                if ((System.currentTimeMillis() - startTime) > CHANNEL_WAIT_TIME) {
+                LOGGER.debug("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
+                if ((System.currentTimeMillis() - startTime) > CHANNEL_MAX_WAIT_TIME) {
                     throw new RemoteCommandFailureException(theCommand, new RuntimeException("Timeout reached waiting for a channel!"));
                 }
                 Thread.sleep(THREAD_SLEEP_TIME);
             } catch (final InterruptedException e) {
-                LOGGER.error(e.getMessage(), e);
-                LOGGER.error("Cannot acquire channel!");
+                LOGGER.error("Cannot acquire channel!", e);
                 throw new RemoteCommandFailureException(theCommand, e);
             }
         }
-        LOGGER.info("Command '{}' now has a channel!", theCommand.getCommand().toCommandString());
+        LOGGER.debug("Command '{}' now has a channel!", theCommand.getCommand().toCommandString());
     }
 
     /**
@@ -185,7 +188,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         LOGGER.info("reading remote output...");
         remoteOutputStringBuilder = new StringBuilder();
         while(readByte != 0xff) {
-            if ((System.currentTimeMillis() - startTime) >= CHANNEL_EXIT_WAIT_TIMEOUT) {
+            if ((System.currentTimeMillis() - startTime) >= REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
@@ -195,11 +198,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
         if (timeout) {
             LOGGER.error("remote output reading timeout!");
+            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
         } else {
-            LOGGER.info("done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
-            LOGGER.info("****** output: start ******");
-            LOGGER.info(remoteOutputStringBuilder.toString());
-            LOGGER.info("****** output: end ******");
+            LOGGER.debug("done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
+            LOGGER.debug("****** output: start ******");
+            LOGGER.debug(remoteOutputStringBuilder.toString());
+            LOGGER.debug("****** output: end ******");
         }
     }
 

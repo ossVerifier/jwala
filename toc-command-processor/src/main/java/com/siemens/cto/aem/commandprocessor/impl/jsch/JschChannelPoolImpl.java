@@ -34,10 +34,11 @@ public class JschChannelPoolImpl implements JschChannelPool {
 
 
     @Override
+    // TODO: Optimize, find a way to eliminate the loop, or do something clever.
     public synchronized Channel borrowChannel() {
         for (final Integer id : channelAvailabilityMap.keySet()) {
             if (channelAvailabilityMap.get(id)) {
-                LOGGER.info("Channel {} was borrowed", id);
+                LOGGER.debug("Channel {} was borrowed", id);
                 channelAvailabilityMap.put(id, false);
                 return channelMap.get(id);
             }
@@ -47,11 +48,12 @@ public class JschChannelPoolImpl implements JschChannelPool {
     }
 
     @Override
+    // TODO: Optimize, find a way to eliminate the loop, or do something clever.
     public synchronized void returnChannel(final Channel channel) {
-        LOGGER.info("Returning channel {}", channel.getId());
+        LOGGER.debug("Returning channel {}", channel.getId());
         if (channelAvailabilityMap.containsKey(channel.getId())) {
             channelAvailabilityMap.put(channel.getId(), true);
-            LOGGER.info("Channel {} returned.", channel.getId());
+            LOGGER.debug("Channel {} returned.", channel.getId());
         } else {
             LOGGER.warn("Channel {} is not in the pool!", channel.getId());
         }

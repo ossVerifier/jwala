@@ -18,8 +18,6 @@ import java.util.Map;
 /**
  * JSCH Channel Service.
  *
- * Note: Instead of a singleton it might be better to define this as a Spring service e.g. @service.
- *
  * Created by JC043760 on 2/9/2016.
  */
 @Service("jschChannelService")
@@ -47,17 +45,16 @@ public class JschChannelServiceImpl implements JschChannelService {
     @Override
     public Channel getChannel(final JSch jsch, final RemoteSystemConnection remoteSystemConnection, final String channelType) throws JSchException {
         synchronized (remoteSystemConnection.getHost()) {
-            LOGGER.info("++++++Entering getChannel host = {}", remoteSystemConnection.getHost());
+            LOGGER.debug("Entering getChannel host = {}", remoteSystemConnection.getHost());
             final String key =  channelType + remoteSystemConnection.getHost();
             Session session = SESSION_MAP.get(key);
             if (session == null || !session.isConnected()) {
                 session = createAndStoreSession(jsch, remoteSystemConnection, channelType);
-                LOGGER.info("Session with key = {} created!", key);
-                SESSION_MAP.put(key, session);
+                LOGGER.debug("Session with key = {} created!", key);
                 CHANNEL_POOL_MAP.put(key, new JschChannelPoolImpl(CHANNEL_POOL_SIZE, session, channelType));
                 LOGGER.info("Channel pool for host = {} and channel type = {} created!", remoteSystemConnection.getHost(), channelType);
             }
-            LOGGER.info("------Exiting getChannel host = {}", remoteSystemConnection.getHost());
+            LOGGER.debug("Exiting getChannel host = {}", remoteSystemConnection.getHost());
             return CHANNEL_POOL_MAP.get(key).borrowChannel();
         }
     }
