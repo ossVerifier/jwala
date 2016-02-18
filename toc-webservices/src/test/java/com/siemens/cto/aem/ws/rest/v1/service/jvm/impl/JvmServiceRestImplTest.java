@@ -233,7 +233,6 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testRemoveJvm() {
-        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(jvmService.getJvm(jvm.getId())).thenReturn(jvm);
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
@@ -245,7 +244,9 @@ public class JvmServiceRestImplTest {
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         assertNull(applicationResponse);
 
-        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(true);
+        Jvm mockJvmStarted = mock(Jvm.class);
+        when(mockJvmStarted.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvmStarted);
         boolean exceptionThrown = false;
         try {
             response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
@@ -337,7 +338,6 @@ public class JvmServiceRestImplTest {
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
-        when(jvmService.isJvmStarted(jvm)).thenReturn(false);
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(commandOutput);
 
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
@@ -393,7 +393,6 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(jvmService.isJvmStarted(jvm)).thenReturn(true);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
@@ -553,7 +552,6 @@ public class JvmServiceRestImplTest {
         when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
         when(mockResourceType.getRelativeDir()).thenReturn("/");
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
-        when(jvmService.isJvmStarted(jvm)).thenReturn(false);
         when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
@@ -571,7 +569,6 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(true);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
@@ -580,7 +577,6 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(jvmService.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
         exceptionThrown = false;
         try {

@@ -242,7 +242,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName);
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            if (!jvm.getState().equals(JvmState.JVM_STOPPED)) {
+            if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");

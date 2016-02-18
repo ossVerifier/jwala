@@ -23,4 +23,5 @@ public interface GroupJvmRelationshipService extends CrudService<JpaGroup> {
 
     void populateJvmConfig(List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 
+    List<Group> findGroupsByJvm(Identifier<Jvm> id);
 }

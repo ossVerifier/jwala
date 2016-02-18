@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -140,6 +141,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockResponse.getStatus()).thenReturn(200);
         when(mockResourceType.getRelativeDir()).thenReturn("./");
         when(mockResourceType.getEntityType()).thenReturn("jvm");
@@ -148,7 +150,6 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupJvmResourceTemplate(anyString(),anyString(),anyBoolean())).thenReturn("new server.xml content");
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
-        when(mockJvmService.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockJvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
@@ -227,7 +228,6 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new hct.xml content");
         when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
-        when(mockJvmService.isJvmStarted(any(Jvm.class))).thenReturn(false);
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));

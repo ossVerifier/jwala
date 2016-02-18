@@ -51,8 +51,6 @@ public interface JvmService {
 
     String generateInvokeBat(String jvmName);
 
-    boolean isJvmStarted(Jvm jvm);
-
     String previewResourceTemplate(String jvmName, String groupName, String template);
 
     void updateState(Identifier<Jvm> id, JvmState state);
@@ -66,4 +64,6 @@ public interface JvmService {
     void pingAndUpdateJvmState(Jvm jvm);
 
     void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups);
+
+    void deployApplicationContextXMLs(Jvm jvm);
 }

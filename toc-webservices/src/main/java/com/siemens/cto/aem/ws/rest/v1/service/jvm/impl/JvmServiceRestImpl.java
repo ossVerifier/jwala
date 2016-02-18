@@ -150,7 +150,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response removeJvm(final Identifier<Jvm> aJvmId, final AuthenticatedUser user) {
         LOGGER.info("Delete JVM requested: {}", aJvmId);
         final Jvm jvm = jvmService.getJvm(aJvmId);
-        if (!jvmService.isJvmStarted(jvm)) {
+        if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service");
             jvmService.removeJvm(aJvmId);
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
@@ -300,7 +300,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         jvmWriteLocks.get(jvm.getId().toString()).writeLock().lock();
 
         try {
-            if (jvmService.isJvmStarted(jvm)) {
+            if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
@@ -320,6 +320,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // then untar the new tar
             deployJvmConfigTar(jvm, user, jvmConfigTar);
 
+            // deploy any application context xml's in the group
+            deployApplicationContextXMLs(jvm);
+
             // re-install the service
             installJvmWindowsService(jvm, user);
 
@@ -334,6 +337,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
         return jvm;
+    }
+
+    private void deployApplicationContextXMLs(Jvm jvm) {
+        LOGGER.info("Deploying any application XMLs for applications configured to the group");
+        jvmService.deployApplicationContextXMLs(jvm);
     }
 
     private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
@@ -410,7 +418,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().lock();
 
         try {
-            if (jvmService.isJvmStarted(jvm)) {
+            if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
@@ -469,7 +477,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
-
+        LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
 
         try {
@@ -525,7 +533,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     jvmName, standardError);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, standardError);
         }
-
+        LOGGER.info("Generation of configuration tar SUCCEEDED");
         return jvmResourcesNameDir;
     }
 

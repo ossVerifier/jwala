@@ -221,10 +221,6 @@ public class JvmServiceImpl implements JvmService {
         // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
     }
 
-    public boolean isJvmStarted(Jvm jvm) {
-        return JvmState.JVM_STARTED.equals(jvm.getState());
-    }
-
     @Override
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
         // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
@@ -309,9 +305,25 @@ public class JvmServiceImpl implements JvmService {
     @Override
     public void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups) {
         for (Identifier<Group> groupId : groups) {
-            for (Application app: applicationService.findApplications(groupId)){
+            for (Application app : applicationService.findApplications(groupId)) {
                 LOGGER.info("Creating config template for app {} associated with JVM {} and group {}", app.getName(), jvm.getJvmName(), groupId);
                 applicationService.createAppConfigTemplateForJvm(jvm, app, groupId);
+            }
+        }
+    }
+
+    @Override
+    public void deployApplicationContextXMLs(Jvm jvm) {
+        List<Group> groupList = jvmPersistenceService.findGroupsByJvm(jvm.getId());
+        for (Group group : groupList) {
+            for (Application app : applicationService.findApplications(group.getId())) {
+                for (String templateName : applicationService.getResourceTemplateNames(app.getName())) {
+                    // only deploy the context xml
+                    if (templateName.endsWith(".xml")) {
+                        LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
+                        applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, false, User.getThreadLocalUser());
+                    }
+                }
             }
         }
     }

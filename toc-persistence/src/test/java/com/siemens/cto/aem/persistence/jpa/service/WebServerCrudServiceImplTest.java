@@ -210,7 +210,7 @@ public class WebServerCrudServiceImplTest {
         assertTrue(applications.size() == 1);
 
         final List<Jvm> jvms = impl.findJvms(webServer.getName());
-        assertTrue(jvms.size() == 1);
+        assertEquals(1, jvms.size());
     }
 
     @Test

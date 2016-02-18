@@ -56,4 +56,5 @@ public interface JvmPersistenceService {
 
     void updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
 
+    List<Group> findGroupsByJvm(Identifier<Jvm> id);
 }

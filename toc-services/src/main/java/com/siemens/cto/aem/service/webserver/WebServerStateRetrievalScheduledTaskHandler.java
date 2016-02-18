@@ -15,7 +15,7 @@ import java.util.concurrent.Future;
 /**
  * Handles periodic retrieval of all web server states. This handler is defined as a Spring bean in conjunction
  * with Spring's @Scheduled annotation defined for its execution method.
- *
+ * <p/>
  * Created by Z003BPEJ on 6/16/2015.
  */
 public class WebServerStateRetrievalScheduledTaskHandler {
@@ -47,21 +47,21 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     public void execute() {
         if (isEnabled()) {
             final List<WebServer> webServers = webServerService.getWebServers();
-            LOGGER.info("# of web servers to ping = {}", webServers.size());
+            LOGGER.debug("# of web servers to ping = {}", webServers.size());
             try {
                 for (WebServer webServer : webServers) {
-                    LOGGER.info(">>> Web server {} future {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()));
+                    LOGGER.debug(">>> Web server {} future {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()));
 
                     if (webServerFutureMap.get(webServer.getId()) != null) {
-                        LOGGER.info(">>> Web server {} is done {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isDone());
-                        LOGGER.info(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isCancelled());
+                        LOGGER.debug(">>> Web server {} is done {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isDone());
+                        LOGGER.debug(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isCancelled());
                     }
 
                     if (webServerFutureMap.get(webServer.getId()) == null ||
-                        webServerFutureMap.get(webServer.getId()).isDone()) {
-                            LOGGER.info(">>> Ping web server {}", webServer.getId().getId());
-                            webServerFutureMap.put(webServer.getId(),
-                                                   webServerStateSetterWorker.pingWebServer(webServer));
+                            webServerFutureMap.get(webServer.getId()).isDone()) {
+                        LOGGER.debug(">>> Ping web server {}", webServer.getId().getId());
+                        webServerFutureMap.put(webServer.getId(),
+                                webServerStateSetterWorker.pingWebServer(webServer));
                     }
                 }
             } finally {

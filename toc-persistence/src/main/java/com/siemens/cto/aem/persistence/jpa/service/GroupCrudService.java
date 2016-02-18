@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import java.util.List;
 
@@ -72,5 +73,4 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     void updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 
     void updateState(Identifier<Group> id, GroupState state);
-
 }

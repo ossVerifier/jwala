@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.CrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
@@ -109,6 +110,17 @@ public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<Jpa
         }
 
         entityManager.flush();
+    }
+
+    @Override
+    public List<Group> findGroupsByJvm(Identifier<Jvm> id) {
+        JpaJvm jpaJvm = jvmCrudService.getJvm(id);
+        final List<JpaGroup> jpaGroups = jpaJvm.getGroups();
+        List<Group> groupList = new ArrayList<>();
+        for (JpaGroup jpaGroup : jpaGroups){
+            groupList.add(new JpaGroupBuilder(jpaGroup).build());
+        }
+        return groupList;
     }
 
     @Override

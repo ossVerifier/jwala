@@ -351,6 +351,5 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         query.setParameter(JpaGroup.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
     }
-
 }
 

@@ -135,6 +135,11 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         jvmCrudService.updateState(id, state, errorStatus);
     }
 
+    @Override
+    public List<Group> findGroupsByJvm(Identifier<Jvm> id) {
+        return groupJvmRelationshipService.findGroupsByJvm(id);
+    };
+
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
         return new JvmBuilder(aJpaJvm).build();
     }

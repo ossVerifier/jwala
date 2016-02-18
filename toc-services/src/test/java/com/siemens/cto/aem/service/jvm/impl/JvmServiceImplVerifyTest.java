@@ -372,13 +372,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testIsJvmStarted() {
-        final Jvm mockJvm = mockJvmWithId(new Identifier<Jvm>(99L));
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        assertFalse(impl.isJvmStarted(mockJvm));
-    }
-
-    @Test
     public void testPreviewTemplate() {
         final String jvmName = "jvm-1Test";
         Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "");
@@ -433,4 +426,32 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(applicationService).createAppConfigTemplateForJvm(jvm, mockApp, groupId);
     }
 
+    @Test
+    public void testDeployApplicationContextXMLs() {
+        final Identifier<Jvm> jvmId = new Identifier<>(2323L);
+        final Identifier<Group> groupId = new Identifier<>(222L);
+        final Jvm jvm = mockJvmWithId(jvmId);
+        when(jvm.getJvmName()).thenReturn("testJvmName");
+
+        List<Group> groupsList = new ArrayList<Group>();
+        Group mockGroup = mock(Group.class);
+        groupsList.add(mockGroup);
+        when(mockGroup.getId()).thenReturn(groupId);
+        when(mockGroup.getName()).thenReturn("testGroupName");
+
+        List<Application> appList = new ArrayList<>();
+        Application mockApp = mock(Application.class);
+        appList.add(mockApp);
+        when(mockApp.getName()).thenReturn("testAppName");
+
+        List<String> templateNamesList = new ArrayList<>();
+        templateNamesList.add("testAppResource.xml");
+
+        when(applicationService.getResourceTemplateNames(anyString())).thenReturn(templateNamesList);
+        when(applicationService.findApplications(any(Identifier.class))).thenReturn(appList);
+        when(jvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
+        impl.deployApplicationContextXMLs(jvm);
+        verify(applicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class));
+    }
 }
+;
