@@ -49,8 +49,9 @@ public class WebServerStateSetterWorker {
     private WebServerService webServerService;
     private StateNotificationService stateNotificationService;
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
+
     @Autowired
-    private ClientFactoryHelper clientFactoryHelper;
+    ClientFactoryHelper clientFactoryHelper;
 
     private static final Map<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
@@ -129,27 +130,35 @@ public class WebServerStateSetterWorker {
      * @param msg                     a message
      */
     private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
-        if (!isWebServerBusy(webServer)) {
-            boolean stateAndOrMsgChanged = false;
-            if (!WEB_SERVER_LAST_PERSISTED_STATE_MAP.containsKey(webServer.getId()) ||
-                    !WEB_SERVER_LAST_PERSISTED_STATE_MAP.get(webServer.getId()).equals(webServerReachableState)) {
-                WEB_SERVER_LAST_PERSISTED_STATE_MAP.put(webServer.getId(), webServerReachableState);
-                stateAndOrMsgChanged = true;
-            }
-
-            if (StringUtils.isNotEmpty(msg) && (!WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(webServer.getId()) ||
-                    !WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.get(webServer.getId()).equals(msg))) {
-                WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.put(webServer.getId(), msg);
-                stateAndOrMsgChanged = true;
-            }
-
-            if (stateAndOrMsgChanged) {
-                webServerService.updateState(webServer.getId(), webServerReachableState, msg);
-                stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
-                        DateTime.now()));
-                grpStateComputationAndNotificationSvc.computeAndNotify(webServer.getId(), webServerReachableState);
-            }
+        if (!isWebServerBusy(webServer) && isStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
+            webServerService.updateState(webServer.getId(), webServerReachableState, msg);
+            stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
+                    DateTime.now()));
+            grpStateComputationAndNotificationSvc.computeAndNotify(webServer.getId(), webServerReachableState);
         }
+    }
+
+    /**
+     * Check if state has changed or if message is not empty.
+     * @param webServer {@link WebServer}
+     * @param webServerReachableState {@link WebServerReachableState}
+     * @param msg a message (usually an error message)
+     * @return true of the state is not the same compared to the previous state or if there's a message (error message)
+     */
+    private boolean isStateChangedAndOrMsgNotEmpty(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
+        boolean stateChangedAndOrMsgNotEmpty = false;
+        if (!WEB_SERVER_LAST_PERSISTED_STATE_MAP.containsKey(webServer.getId()) ||
+                !WEB_SERVER_LAST_PERSISTED_STATE_MAP.get(webServer.getId()).equals(webServerReachableState)) {
+            WEB_SERVER_LAST_PERSISTED_STATE_MAP.put(webServer.getId(), webServerReachableState);
+            stateChangedAndOrMsgNotEmpty = true;
+        }
+
+        if (StringUtils.isNotEmpty(msg) && (!WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(webServer.getId()) ||
+                !WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.get(webServer.getId()).equals(msg))) {
+            WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.put(webServer.getId(), msg);
+            stateChangedAndOrMsgNotEmpty = true;
+        }
+        return stateChangedAndOrMsgNotEmpty;
     }
 
     /**

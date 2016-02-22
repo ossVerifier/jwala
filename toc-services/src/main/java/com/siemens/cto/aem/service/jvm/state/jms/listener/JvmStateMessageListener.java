@@ -62,12 +62,30 @@ public class JvmStateMessageListener implements MessageListener {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected void processMessage(final MapMessage aMapMessage) throws JMSException {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.debug("Processing message: {}", message);
 
         final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
+
+        if (isStateChangedAndOrMsgNotEmpty(newState)) {
+            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
+            stateNotificationService.notifyStateUpdated(new CurrentState(newState.getId(), newState.getState(),
+                    DateTime.now(), StateType.JVM, newState.getMessage()));
+            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
+            grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
+        }
+    }
+
+    /**
+     * Check if the state has changed and-or message is not empty.
+     *
+     * @param newState the latest state
+     * @return returns true if the state is not the same compared to the previous state or if there's a message (error message)
+     */
+    private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
         if (!JVM_LAST_PERSISTED_STATE_MAP.containsKey(newState.getId()) ||
@@ -76,19 +94,12 @@ public class JvmStateMessageListener implements MessageListener {
                 stateAndOrMsgChanged = true;
         }
 
-        final String msg = newState.getMessage();
-        if (StringUtils.isNotEmpty(msg) && (!JVM_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(newState.getId()) ||
-            !JVM_LAST_PERSISTED_ERROR_STATUS_MAP.get(newState.getId()).equals(msg))) {
-                JVM_LAST_PERSISTED_ERROR_STATUS_MAP.put(newState.getId(), msg);
+        if (StringUtils.isNotEmpty(newState.getMessage()) && (!JVM_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(newState.getId()) ||
+            !JVM_LAST_PERSISTED_ERROR_STATUS_MAP.get(newState.getId()).equals(newState.getMessage()))) {
+                JVM_LAST_PERSISTED_ERROR_STATUS_MAP.put(newState.getId(), newState.getMessage());
                 stateAndOrMsgChanged = true;
         }
-
-        if (stateAndOrMsgChanged) {
-            stateNotificationService.notifyStateUpdated(new CurrentState(newState.getId(), newState.getState(),
-                    DateTime.now(), StateType.JVM, msg));
-            jvmService.updateState(newState.getId(), newState.getState(), msg);
-            grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
-        }
+        return stateAndOrMsgChanged;
     }
 
 }
