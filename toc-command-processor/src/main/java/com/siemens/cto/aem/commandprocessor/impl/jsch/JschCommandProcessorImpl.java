@@ -188,7 +188,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         LOGGER.info("reading remote output...");
         remoteOutputStringBuilder = new StringBuilder();
         while(readByte != 0xff) {
-            if ((System.currentTimeMillis() - startTime) >= REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
+            if ((System.currentTimeMillis() - startTime) > REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
@@ -197,8 +197,12 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         }
 
         if (timeout) {
-            LOGGER.error("remote output reading timeout!");
-            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
+            LOGGER.warn("remote output reading timeout!");
+            // Don't throw an exception here like it was suggested before since this simply means that there's no 'EOL'
+            // char coming in from the stream so as such just don't do anything with the status. If the status is
+            // in the "ING" state e.g. stopping, then let it hang there. If ever we really want to throw an error
+            // It has to be a timeout error and it shouldn't interfere on how the UI functions (like the states should
+            // still be displayed not missing in the case of just throwing and error from here)
         } else {
             LOGGER.debug("done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
             LOGGER.debug("****** output: start ******");
