@@ -234,7 +234,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     @Override
     public Long getJvmStartedCount(final String groupName) {
         final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME);
-        query.setParameter(JpaJvm.QUERY_PARAM_STATE, JvmState.JVM_STARTED.toString());
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, JvmState.JVM_STARTED);
         query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
         return (Long) query.getSingleResult();
     }
@@ -244,7 +244,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         // Normally we would load the JpaJvm then set the states but I reckon running an UPDATE query would be faster since
         // it's only one transaction vs 2 (find and update).
         final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_UPDATE_STATE_BY_ID);
-        query.setParameter(JpaJvm.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, state);
         query.setParameter(JpaJvm.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
     }
@@ -260,7 +260,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     @Override
     public void updateState(final Identifier<Jvm> id, final JvmState state, final String errorStatus) {
         final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID);
-        query.setParameter(JpaJvm.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, state);
         query.setParameter(JpaJvm.QUERY_PARAM_ERROR_STATUS, errorStatus);
         query.setParameter(JpaJvm.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();

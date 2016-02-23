@@ -10,10 +10,10 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME,
                 query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName"),
-        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaJvm j SET j.stateName = :state WHERE j.id = :id"),
+        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaJvm j SET j.state = :state WHERE j.id = :id"),
         @NamedQuery(name = JpaJvm.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaJvm j SET j.errorStatus = :errorStatus WHERE j.id = :id"),
-        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaJvm j SET j.stateName = :state, j.errorStatus = :errorStatus WHERE j.id = :id"),
-        @NamedQuery(name = JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaJvm j WHERE j.stateName = :state AND j.groups.name = :groupName")
+        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaJvm j SET j.state = :state, j.errorStatus = :errorStatus WHERE j.id = :id"),
+        @NamedQuery(name = JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaJvm j WHERE j.state = :state AND j.groups.name = :groupName")
 })
 public class JpaJvm extends AbstractEntity<JpaJvm> {
 
@@ -61,8 +61,8 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     private String systemProperties;
 
-    @Column(name = "STATE")
-    private String stateName;
+    @Enumerated(EnumType.STRING)
+    private JvmState state;
 
     @Column(name = "ERR_STS", length = 2147483647)
     private String errorStatus = "";
@@ -156,14 +156,11 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     }
 
     public JvmState getState() {
-        // Using enums directly will cause an error if a value that is not in the enum is introduced coming from the Db.
-        // If we are using JPA 2.1, we can use converters, but as of Feb 2016 we're still using JPA 2.0 therefore this is
-        // one way of avoiding the enum problem mentioned in the beginning of this comment.
-        return JvmState.convertFrom(stateName);
+        return state;
     }
 
     public void setState(JvmState state) {
-        this.stateName = state.toString();
+        this.state = state;
     }
 
     public String getErrorStatus() {
@@ -177,8 +174,8 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     @Override
     protected void prePersist() {
         super.prePersist();
-        if (stateName == null) {
-            stateName = JvmState.JVM_NEW.toString();
+        if (state == null) {
+            state = JvmState.JVM_NEW;
         }
     }
 
@@ -212,8 +209,6 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
                 ", ajpPort=" + ajpPort +
                 ", statusPath='" + statusPath + '\'' +
                 ", systemProperties='" + systemProperties + '\'' +
-                ", stateName='" + stateName + '\'' +
-                ", errorStatus='" + errorStatus + '\'' +
                 '}';
     }
 

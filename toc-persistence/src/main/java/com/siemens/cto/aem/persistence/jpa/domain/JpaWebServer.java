@@ -15,10 +15,10 @@ import java.util.List;
                 query = "SELECT DISTINCT jvm FROM JpaJvm jvm JOIN jvm.groups g " +
                         "WHERE g.id IN (SELECT a.group FROM JpaApplication a " +
                         "WHERE a.group IN (:groups))"),
-    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state WHERE w.id = :id"),
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaWebServer w SET w.state = :state WHERE w.id = :id"),
     @NamedQuery(name = JpaWebServer.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaWebServer w SET w.errorStatus = :errorStatus WHERE w.id = :id"),
-    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state, w.errorStatus = :errorStatus WHERE w.id = :id"),
-    @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.stateName = :state AND w.groups.name = :groupName")
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.state = :state, w.errorStatus = :errorStatus WHERE w.id = :id"),
+    @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.state = :state AND w.groups.name = :groupName")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
@@ -61,8 +61,8 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     @Column(nullable = false)
     private String docRoot;
 
-    @Column(name = "STATE")
-    private String stateName;
+    @Enumerated(EnumType.STRING)
+    private WebServerReachableState state;
 
     @Column(name = "ERR_STS", length = 2147483647)
     private String errorStatus = "";
@@ -147,14 +147,11 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     }
 
     public WebServerReachableState getState() {
-        // Using enums directly will cause an error if a value that is not in the enum is introduced coming from the Db.
-        // If we are using JPA 2.1, we can use converters, but as of Feb 2016 we're still using JPA 2.0 therefore this is
-        // one way of avoiding the enum problem mentioned in the beginning of this comment.
-        return WebServerReachableState.convertFrom(stateName);
+        return state;
     }
 
     public void setState(WebServerReachableState state) {
-        this.stateName = state.toString();
+        this.state = state;
     }
 
     public String getErrorStatus() {
@@ -164,8 +161,8 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     @Override
     protected void prePersist() {
         super.prePersist();
-        if (stateName == null) {
-            stateName = WebServerReachableState.WS_UNREACHABLE.toString();
+        if (state == null) {
+            state = WebServerReachableState.WS_UNREACHABLE;
         }
     }
 
@@ -182,6 +179,21 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "JpaWebServer{" +
+                "id=" + id +
+                ", host='" + host + '\'' +
+                ", name='" + name + '\'' +
+                ", port=" + port +
+                ", httpsPort=" + httpsPort +
+                ", statusPath='" + statusPath + '\'' +
+                ", httpConfigFile='" + httpConfigFile + '\'' +
+                ", svrRoot='" + svrRoot + '\'' +
+                ", docRoot='" + docRoot + '\'' +
+                '}';
     }
 
 }

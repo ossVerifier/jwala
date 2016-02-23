@@ -296,7 +296,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         // Normally we would load the JpaWebServer then set the states but I reckon running an UPDATE query would be faster since
         // it's only one transaction vs 2 (find and update).
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_BY_ID);
-        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
     }
@@ -312,7 +312,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @Override
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID);
-        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state);
         query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
@@ -321,7 +321,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @Override
     public Long getStartedWebServerCount(final String groupName) {
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME);
-        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, WebServerReachableState.WS_REACHABLE.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, WebServerReachableState.WS_REACHABLE);
         query.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
         return (Long) query.getSingleResult();
     }
