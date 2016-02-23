@@ -219,12 +219,6 @@ public interface GroupServiceRest {
     Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
                                     final JsonControlWebServer jsonControlWebServer,
                                     @BeanParam final AuthenticatedUser aUser);
-
-    @DELETE
-    @Path("/{groupId}/state")
-    Response resetState(@PathParam("groupId") final Identifier<Group> aGroupId,
-                        @BeanParam final AuthenticatedUser aUser);
-
     /**
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)
      * Note: The group specified by id will not be included hence the word "Other" in the method name.
@@ -237,5 +231,9 @@ public interface GroupServiceRest {
     @Path("/{groupId}/children/otherGroup/connectionDetails")
     Response getOtherGroupMembershipDetailsOfTheChildren(@PathParam("groupId") final Identifier<Group> id,
                                                          @QueryParam("groupChildType") final GroupChildType groupChildType);
+
+    @GET
+    @Path("/children/info")
+    Response getChilrenInfo();
 
 }

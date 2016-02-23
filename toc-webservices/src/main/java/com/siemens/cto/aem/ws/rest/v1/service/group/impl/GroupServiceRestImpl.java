@@ -24,7 +24,9 @@ import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -59,21 +61,24 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     private final GroupService groupService;
     private final ResourceService resourceService;
-
-    @Autowired
     private GroupControlService groupControlService;
-
-    @Autowired
     private GroupJvmControlService groupJvmControlService;
-
-    @Autowired
     private GroupWebServerControlService groupWebServerControlService;
+    private final JvmService jvmService;
+    private final WebServerService webServerService;
 
     @Autowired
-
-    public GroupServiceRestImpl(final GroupService theGroupService, ResourceService theResourceService) {
-        groupService = theGroupService;
-        resourceService = theResourceService;
+    public GroupServiceRestImpl(final GroupService groupService, final ResourceService resourceService,
+                                final GroupControlService groupControlService, final GroupJvmControlService groupJvmControlService,
+                                final GroupWebServerControlService groupWebServerControlService, final JvmService jvmService,
+                                final WebServerService webServerService) {
+        this.groupService = groupService;
+        this.resourceService = resourceService;
+        this.groupControlService = groupControlService;
+        this.groupJvmControlService = groupJvmControlService;
+        this.groupWebServerControlService = groupWebServerControlService;
+        this.jvmService = jvmService;
+        this.webServerService = webServerService;
     }
 
     @Override
@@ -375,13 +380,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok();
     }
 
-    @Override
-    public Response resetState(final Identifier<Group> aGroupId,
-                               final AuthenticatedUser aUser) {
-        return ResponseBuilder.ok(groupControlService.resetState(aGroupId,
-                aUser.getUser()));
-    }
-
     private List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
@@ -578,9 +576,62 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupService.getGroupAppsResourceTemplateNames(groupName));
     }
 
-    public static enum GroupResourceType {
+    @Override
+    public Response getChilrenInfo() {
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
+        for (final Group group: groupService.getGroups()) {
+            final GroupServerInfo groupServerInfo = new GroupServerInfo(group.getName(), jvmService.getJvmCount(group.getName()),
+                    jvmService.getJvmStartedCount(group.getName()), webServerService.getWebServerCount(group.getName()),
+                    webServerService.getStartedWebServerCount(group.getName()));
+            groupServerInfos.add(groupServerInfo);
+        }
+        return Response.ok(groupServerInfos).build();
+    }
+
+    public enum GroupResourceType {
         WEBSERVER,
         JVM,
         WEBAPP
     }
+
+    /**
+     * Wrapper to pass jvm and web server count information to the UI.
+     */
+    private static class GroupServerInfo {
+        private final String groupName;
+        private final Long jvmCount;
+        private final Long jvmStartedCount;
+        private final Long webServerCount;
+        private final Long webServerStartedCount;
+
+        public GroupServerInfo(final String groupName, final Long jvmCount, final Long jvmStartedCount,
+                               final Long webServerCount, final Long webServerStartedCount) {
+            this.groupName = groupName;
+            this.jvmCount = jvmCount;
+            this.jvmStartedCount = jvmStartedCount;
+            this.webServerCount = webServerCount;
+            this.webServerStartedCount = webServerStartedCount;
+        }
+
+        public String getGroupName() {
+            return groupName;
+        }
+
+        public Long getJvmCount() {
+            return jvmCount;
+        }
+
+        public Long getJvmStartedCount() {
+            return jvmStartedCount;
+        }
+
+        public Long getWebServerCount() {
+            return webServerCount;
+        }
+
+        public Long getWebServerStartedCount() {
+            return webServerStartedCount;
+        }
+    }
+
 }

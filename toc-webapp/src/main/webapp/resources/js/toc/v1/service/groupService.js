@@ -143,5 +143,8 @@ var groupService = {
                                         false,
                                         "multipart/form-data",
                                         true);
+    },
+    getChildrenInfo: function() {
+        return serviceFoundation.promisedGet("v1.0/groups/children/info");
     }
 }

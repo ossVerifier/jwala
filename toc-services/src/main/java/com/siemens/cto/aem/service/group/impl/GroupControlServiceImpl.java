@@ -1,18 +1,14 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.common.request.group.ControlGroupJvmRequest;
-import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
-import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
-import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.request.group.ControlGroupJvmRequest;
+import com.siemens.cto.aem.common.request.group.ControlGroupRequest;
+import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
-import com.siemens.cto.aem.service.state.GroupStateService;
 import org.springframework.transaction.annotation.Transactional;
 
 public class GroupControlServiceImpl implements GroupControlService {
@@ -31,16 +27,8 @@ public class GroupControlServiceImpl implements GroupControlService {
     @Transactional
     @Override
     public void controlGroup(ControlGroupRequest controlGroupRequest, User aUser) {
-
         LOGGER.info("begin controlGroup operation {} for groupId {}", controlGroupRequest.getControlOperation(),
                 controlGroupRequest.getGroupId());
-
-// TODO: Write code to check if the group can start/stop
-//        controlGroupRequest.validateCommand(groupStateService.canStart(controlGroupRequest.getGroupId(), aUser),
-//                                            groupStateService.canStop(controlGroupRequest.getGroupId(), aUser));
-//
-//        groupStateService.signal(controlGroupRequest, aUser);
-
         controlWebServers(controlGroupRequest, aUser);
         controlJvms(controlGroupRequest, aUser);
     }
@@ -68,11 +56,4 @@ public class GroupControlServiceImpl implements GroupControlService {
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);
     }
 
-    @Transactional
-    @Override
-    public CurrentGroupState resetState(Identifier<Group> aGroupId, User aUser) {
-        // TODO: Find out if this is important!
-        // return groupStateService.signalReset(aGroupId, aUser);
-        return null;
-    }
 }

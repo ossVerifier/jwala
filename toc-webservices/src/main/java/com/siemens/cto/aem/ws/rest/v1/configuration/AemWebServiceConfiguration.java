@@ -3,7 +3,10 @@ package com.siemens.cto.aem.ws.rest.v1.configuration;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.group.GroupControlService;
+import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -95,6 +98,15 @@ public class AemWebServiceConfiguration {
     @Autowired
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
+    @Autowired
+    private GroupControlService groupControlService;
+
+    @Autowired
+    private GroupJvmControlService groupJvmControlService;
+
+    @Autowired
+    private GroupWebServerControlService groupWebServerControlService;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -136,7 +148,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public GroupServiceRest getV1GroupServiceRest() {
-        return new GroupServiceRestImpl(groupService, resourceService);
+        return new GroupServiceRestImpl(groupService, resourceService, groupControlService, groupJvmControlService,
+                groupWebServerControlService, jvmService, webServerService);
     }
 
     @Bean

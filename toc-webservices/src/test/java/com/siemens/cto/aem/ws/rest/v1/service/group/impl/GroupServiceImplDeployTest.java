@@ -26,7 +26,6 @@ import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -247,7 +246,8 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public GroupServiceRest getGroupServiceRest() {
-            return new GroupServiceRestImpl(mockGroupService, mockResourceService);
+            return new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService, mockGroupJvmControlService,
+                    mockGroupWebServerControlService, mockJvmService, mockWebServerService);
         }
 
         @Bean
@@ -284,7 +284,6 @@ public class GroupServiceImplDeployTest {
         public StateService<Group, GroupState> getStateService() {
             return mockStateService;
         }
-
 
     }
 }
