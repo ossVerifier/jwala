@@ -13,8 +13,8 @@ import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
-import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -279,7 +279,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", template);
 
-        int numEntities = 0;
+        int numEntities;
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
@@ -316,6 +316,14 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
+    }
+
+    @Override
+    public Long getStartedWebServerCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME);
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, WebServerReachableState.WS_REACHABLE.toString());
+        query.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
     }
 
 }

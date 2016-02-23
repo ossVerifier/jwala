@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -59,5 +58,7 @@ public interface WebServerPersistenceService {
     void updateErrorStatus(Identifier<WebServer> id, String errorSatus);
 
     void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
+
+    Long getStartedWebServerCount(String groupName);
 
 }

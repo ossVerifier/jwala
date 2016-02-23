@@ -138,7 +138,12 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public List<Group> findGroupsByJvm(Identifier<Jvm> id) {
         return groupJvmRelationshipService.findGroupsByJvm(id);
-    };
+    }
+
+    @Override
+    public Long getJvmStartedCount(final String groupName) {
+        return jvmCrudService.getJvmStartedCount(groupName);
+    }
 
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
         return new JvmBuilder(aJpaJvm).build();

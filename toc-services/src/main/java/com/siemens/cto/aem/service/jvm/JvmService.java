@@ -66,4 +66,7 @@ public interface JvmService {
     void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups);
 
     void deployApplicationContextXMLs(Jvm jvm);
+
+    Long getJvmStartedCount(String groupName);
+
 }

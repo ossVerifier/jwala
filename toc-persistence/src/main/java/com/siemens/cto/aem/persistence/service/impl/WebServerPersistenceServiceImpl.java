@@ -4,13 +4,11 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
@@ -132,6 +130,11 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     @Override
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         webServerCrudService.updateState(id, state, errorStatus);
+    }
+
+    @Override
+    public Long getStartedWebServerCount(final String groupName) {
+        return webServerCrudService.getStartedWebServerCount(groupName);
     }
 
 }

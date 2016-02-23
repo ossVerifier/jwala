@@ -202,7 +202,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", template);
 
-        int numEntities = 0;
+        int numEntities;
 
         try {
             numEntities = q.executeUpdate();
@@ -229,6 +229,14 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name=:jvmName ORDER BY j.name");
         query.setParameter("jvmName", jvmName);
         return (new JvmBuilder((JpaJvm) query.getSingleResult())).build();
+    }
+
+    @Override
+    public Long getJvmStartedCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME);
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, JvmState.JVM_STARTED.toString());
+        query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
     }
 
     @Override

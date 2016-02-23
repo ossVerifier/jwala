@@ -17,7 +17,8 @@ import java.util.List;
                         "WHERE a.group IN (:groups))"),
     @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state WHERE w.id = :id"),
     @NamedQuery(name = JpaWebServer.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaWebServer w SET w.errorStatus = :errorStatus WHERE w.id = :id"),
-    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state, w.errorStatus = :errorStatus WHERE w.id = :id")
+    @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.stateName = :state, w.errorStatus = :errorStatus WHERE w.id = :id"),
+    @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.stateName = :state AND w.groups.name = :groupName")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
@@ -29,10 +30,12 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     public static final String QUERY_UPDATE_STATE_BY_ID = "updateWebServerStateById";
     public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateWebServerErrorStatusById";
     public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateWebServerStateAndErrStsById";
+    public static final String QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME = "getWebServerCountByStateAndGroupName";
 
     public static final String QUERY_PARAM_ID = "id";
     public static final String QUERY_PARAM_STATE = "state";
     public static final String QUERY_PARAM_ERROR_STATUS = "errorStatus";
+    public static final String QUERY_PARAM_GROUP_NAME = "groupName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

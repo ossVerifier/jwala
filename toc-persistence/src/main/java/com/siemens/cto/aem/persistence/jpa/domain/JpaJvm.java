@@ -12,7 +12,8 @@ import java.util.List;
                 query = "SELECT j FROM JpaJvm j WHERE j.name = :jvmName AND j.groups.name = :groupName"),
         @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_BY_ID, query = "UPDATE JpaJvm j SET j.stateName = :state WHERE j.id = :id"),
         @NamedQuery(name = JpaJvm.QUERY_UPDATE_ERROR_STATUS_BY_ID, query = "UPDATE JpaJvm j SET j.errorStatus = :errorStatus WHERE j.id = :id"),
-        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaJvm j SET j.stateName = :state, j.errorStatus = :errorStatus WHERE j.id = :id")
+        @NamedQuery(name = JpaJvm.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaJvm j SET j.stateName = :state, j.errorStatus = :errorStatus WHERE j.id = :id"),
+        @NamedQuery(name = JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaJvm j WHERE j.stateName = :state AND j.groups.name = :groupName")
 })
 public class JpaJvm extends AbstractEntity<JpaJvm> {
 
@@ -22,10 +23,12 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     public static final String QUERY_UPDATE_STATE_BY_ID = "updateJvmStateById";
     public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateJvmErrorStatusById";
     public static final String QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID = "updateJvmStateAndErrStsById";
+    public static final String QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME = "getJvmCountByStateAndGroupName";
 
     public static final String QUERY_PARAM_ID = "id";
     public static final String QUERY_PARAM_STATE = "state";
     public static final String QUERY_PARAM_ERROR_STATUS = "errorStatus";
+    public static final String QUERY_PARAM_GROUP_NAME = "groupName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

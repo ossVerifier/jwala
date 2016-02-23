@@ -327,4 +327,10 @@ public class JvmServiceImpl implements JvmService {
             }
         }
     }
+
+    @Override
+    public Long getJvmStartedCount(final String groupName) {
+        return jvmPersistenceService.getJvmStartedCount(groupName);
+    }
+
 }

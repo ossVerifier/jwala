@@ -14,7 +14,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -251,6 +250,11 @@ public class WebServerServiceImpl implements WebServerService {
                 webServerPersistenceService.findWebServerByName(webServerName),
                 webServerPersistenceService.findJvms(webServerName),
                 webServerPersistenceService.findApplications(webServerName));
+    }
+
+    @Override
+    public Long getStartedWebServerCount(String groupName) {
+        return webServerPersistenceService.getStartedWebServerCount(groupName);
     }
 
 }

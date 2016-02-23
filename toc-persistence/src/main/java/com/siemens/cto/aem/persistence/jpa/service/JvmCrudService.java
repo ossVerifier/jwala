@@ -48,4 +48,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     void updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
 
     Jvm findJvmByExactName(String jvmName);
+
+    Long getJvmStartedCount(String groupName);
+
 }
