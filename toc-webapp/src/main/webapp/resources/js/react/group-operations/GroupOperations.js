@@ -102,65 +102,67 @@ var GroupOperations = React.createClass({
         this.updateWebServerStateData(webServers);
         this.updateJvmStateData(jvms);
     },
-    statePollingErrorHandler: function(response) {
-        if (!this.statePoller.isActive()) {
-            return;
-        }
 
+    /**
+     * Check if the session is expired.
+     */
+    isSessionExpired: function(response) {
         if (typeof response.responseText === "string" && response.responseText.indexOf("Login") > -1) {
-            this.statePoller.stop();
-            this.statePoller = null;
-            alert("The session has expired! You will be redirected to the login page.");
-            window.location.href = "login";
-            return;
+            return true;
         }
-
-        this.pollError = true;
-        for (var key in GroupOperations.groupStatusWidgetMap) {
-            var groupStatusWidget = GroupOperations.groupStatusWidgetMap[key];
-            if (groupStatusWidget !== undefined) {
-                // Can't afford to slip or else the polling stops
-                try {
-                    groupStatusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(), response.responseJSON.applicationResponseContent);
-                } catch (e) {
-                    console.log(e);
+        return false;
+    },
+    /**
+     * State polling error handler.
+     */
+    statePollingErrorHandler: function(response) {
+        if (this.statePoller.isActive) {
+            try {
+                if (!this.isSessionExpired(response)) {
+                    this.setGroupStatesToPollingError();
+                    this.setJvmStatesToPollingError();
+                    this.setWebServerStatesToPollingError();
+                } else {
+                    this.statePoller.stop();
+                    this.statePoller = null;
+                    alert("The session has expired! You will be redirected to the login page.");
+                    window.location.href = "login";
                 }
-            }
-            // update the Action and Events log
-            // TODO this should get pulled from the history table
-            var commandStatusWidget = this.commandStatusWidgetMap[GroupOperations.getExtDivCompId(key.replace("grp",""))];
-            if (commandStatusWidget !== undefined) {
-                var responseMessage = response.responseJSON.applicationResponseContent;
-                commandStatusWidget.push({stateString: GroupOperations.FAILED,
-                                          asOf: new Date(),
-                                          message: responseMessage,
-                                          from: "Web Server and JVM State Notification Service",
-                                          userId: ""},
-                                          "error-status-font");
+            } finally {
+                this.pollError = true;
             }
         }
-
+    },
+    /**
+     * Set group states to polling error.
+     */
+    setGroupStatesToPollingError: function() {
+        for (var key in GroupOperations.groupStatusWidgetMap) {
+        var groupStatusWidget = GroupOperations.groupStatusWidgetMap[key];
+            if (groupStatusWidget !== undefined) {
+                groupStatusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(), response.responseJSON.applicationResponseContent);
+            }
+        }
+    },
+    /**
+     * Set JVM states to polling error.
+     */
+    setJvmStatesToPollingError: function() {
         for (var key in GroupOperations.jvmStatusWidgetMap) {
             var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap[key];
             if (jvmStatusWidget !== undefined) {
-                // Can't afford to slip or else the polling stops
-                try {
-                    jvmStatusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
-                } catch (e) {
-                    console.log(e);
-                }
+                jvmStatusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(), "");
             }
         }
-
+    },
+    /**
+     * Set web server states to polling error.
+     */
+    setWebServerStatesToPollingError: function() {
         for (var key in GroupOperations.webServerStatusWidgetMap) {
             var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap[key];
             if (webServerStatusWidget !== undefined) {
-                // Can't afford to slip or else the polling stops
-                try {
-                    webServerStatusWidget.setStatus(GroupOperations.UNKNOWN_STATE,  new Date(), "");
-                } catch (e) {
-                    console.log(e);
-                }
+                webServerStatusWidget.setStatus(GroupOperations.POLL_ERR_STATE,  new Date(), "");
             }
         }
     },
