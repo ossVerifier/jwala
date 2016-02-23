@@ -6,8 +6,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -43,11 +45,17 @@ public class StateServiceRestImplTest {
     @Mock
     private StateConsumerManager stateConsumerManager;
 
+    @Mock
+    private JvmService mockJvmService;
+
+    @Mock
+    private WebServerService mockWebServerService;
+
     @Before
     public void setup() {
         stateNotificationService = mock(StateNotificationService.class);
         stateConsumerManager = mock(StateConsumerManager.class);
-        cut = new StateServiceRestImpl(stateNotificationService, stateConsumerManager);
+        cut = new StateServiceRestImpl(stateNotificationService, stateConsumerManager, mockJvmService, mockWebServerService);
     }
 
     @Test
@@ -82,4 +90,5 @@ public class StateServiceRestImplTest {
         response = cut.pollState(mockHttpRequest, "clientId");
         assertNotNull(response.getEntity());
     }
+    
 }

@@ -137,4 +137,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
         return webServerCrudService.getStartedWebServerCount(groupName);
     }
 
+    @Override
+    public Long getWebServerCount(final String groupName) {
+        return webServerCrudService.getWebServerCount(groupName);
+    }
+
 }

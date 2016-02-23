@@ -69,4 +69,6 @@ public interface JvmService {
 
     Long getJvmStartedCount(String groupName);
 
+    Long getJvmCount(String groupName);
+
 }

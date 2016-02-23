@@ -60,4 +60,6 @@ public interface JvmPersistenceService {
 
     Long getJvmStartedCount(String groupName);
 
+    Long getJvmCount(String groupName);
+
 }

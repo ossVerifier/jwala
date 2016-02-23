@@ -240,6 +240,13 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
+    public Long getJvmCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_GROUP_NAME);
+        query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
+    }
+
+    @Override
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         // Normally we would load the JpaJvm then set the states but I reckon running an UPDATE query would be faster since
         // it's only one transaction vs 2 (find and update).

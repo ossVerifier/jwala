@@ -56,4 +56,6 @@ public interface WebServerService {
 
     Long getStartedWebServerCount(String groupName);
 
+    Long getWebServerCount(String groupName);
+
 }

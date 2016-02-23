@@ -253,8 +253,13 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public Long getStartedWebServerCount(String groupName) {
+    public Long getStartedWebServerCount(final String groupName) {
         return webServerPersistenceService.getStartedWebServerCount(groupName);
+    }
+
+    @Override
+    public Long getWebServerCount(final String groupName) {
+        return webServerPersistenceService.getWebServerCount(groupName);
     }
 
 }

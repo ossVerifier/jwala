@@ -22,6 +22,11 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
     private final String message;
     private String userId; // TODO: Have this set in the constructor.
 
+    private Long webServerCount;
+    private Long webServerStartedCount;
+    private Long jvmCount;
+    private Long jvmStartedCount;
+
     public CurrentState(final Identifier<S> theId,
                         final T theState,
                         final DateTime theAsOf,
@@ -31,6 +36,20 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
              theAsOf,
              theStateType,
              DEFAULT_EMPTY_MESSAGE);
+    }
+
+    public CurrentState(final Identifier<S> theId, final T theState, final DateTime theAsOf, final StateType theStateType,
+                        final Long webServerCount, final Long webServerStartedCount, final Long jvmCount, final Long jvmStartedCount) {
+        id = theId;
+        state = theState;
+        asOf = theAsOf;
+        type = theStateType;
+        message = DEFAULT_EMPTY_MESSAGE;
+
+        this.webServerCount = webServerCount;
+        this.webServerStartedCount = webServerStartedCount;
+        this.jvmCount = jvmCount;
+        this.jvmStartedCount = jvmStartedCount;
     }
 
     public CurrentState(final Identifier<S> theId,
@@ -136,6 +155,22 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
                 .append("message", message)
                 .append("userId", userId) // Log the entire, because nobody else will report this message.
                 .toString();
+    }
+
+    public Long getWebServerCount() {
+        return webServerCount;
+    }
+
+    public Long getWebServerStartedCount() {
+        return webServerStartedCount;
+    }
+
+    public Long getJvmCount() {
+        return jvmCount;
+    }
+
+    public Long getJvmStartedCount() {
+        return jvmStartedCount;
     }
 
 }

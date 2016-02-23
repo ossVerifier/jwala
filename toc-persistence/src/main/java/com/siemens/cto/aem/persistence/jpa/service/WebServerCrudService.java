@@ -56,4 +56,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	Long getStartedWebServerCount(String groupName);
 
+	Long getWebServerCount(String groupName);
+
 }

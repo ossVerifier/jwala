@@ -100,15 +100,11 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public Server getV1JaxResServer() {
-
         final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
         factory.setAddress("/");
         factory.setServiceBeans(getV1ServiceBeans());
         factory.setProviders(getV1Providers());
-
-        final Server server = factory.create();
-
-        return server;
+        return factory.create();
     }
 
     @Bean
@@ -170,7 +166,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public StateServiceRest getV1StateServiceRest() {
-        return new StateServiceRestImpl(stateNotificationService, getStateConsumerManager());
+        return new StateServiceRestImpl(stateNotificationService, getStateConsumerManager(), jvmService, webServerService);
     }
 
     @Bean

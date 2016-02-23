@@ -1,15 +1,24 @@
 package com.siemens.cto.aem.ws.rest.v1.service.state.impl;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.time.TimeRemainingCalculator;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentStateChronologicalComparator;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.TimeoutParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +35,17 @@ public class StateServiceRestImpl implements StateServiceRest {
 
     private final StateNotificationService stateNotificationService;
     private final StateConsumerManager stateConsumerManager;
+    private final JvmService jvmService;
+    private final WebServerService webServerService;
     private final Collection<CurrentState<?, ?>> noStates = Collections.emptyList();
 
     public StateServiceRestImpl(final StateNotificationService theStateNotificationService,
-            final StateConsumerManager theStateConsumerManager) {
+                                final StateConsumerManager theStateConsumerManager, final JvmService jvmService,
+                                final WebServerService webServerService) {
         stateNotificationService = theStateNotificationService;
         stateConsumerManager = theStateConsumerManager;
+        this.jvmService = jvmService;
+        this.webServerService = webServerService;
     }
 
     @Override
@@ -56,12 +70,36 @@ public class StateServiceRestImpl implements StateServiceRest {
     @Override
     public Response pollState(final HttpServletRequest aRequest, final String aClientId) {
         LOGGER.debug("Poll single state requested.");
-        CurrentState<?, ?> update = null;
-        StateNotificationConsumerId consumerId = null;
+        CurrentState<?, ?> update;
+        StateNotificationConsumerId consumerId;
+
+        Collection<Group> groupSet = Collections.EMPTY_SET;
+        CurrentState<Group, GroupState> groupCurrentState = null;
 
         try {
             consumerId = stateConsumerManager.getConsumerId(aRequest, aClientId);
             update = stateNotificationService.pollUpdatedState(consumerId);
+
+            if (update != null) {
+                if (StateType.JVM.equals(update.getType())) {
+                    final Jvm jvm = jvmService.getJvm((Identifier<Jvm>) update.getId());
+                    groupSet = jvm.getGroups();
+
+                } else if (StateType.WEB_SERVER.equals(update.getType())) {
+                    final WebServer webServer = webServerService.getWebServer((Identifier<WebServer>) update.getId());
+                    groupSet = webServer.getGroups();
+                }
+            }
+
+            for (final Group group : groupSet) {
+                final Long webServerCount = webServerService.getWebServerCount(group.getName());
+                final Long webServerStartedCount = webServerService.getStartedWebServerCount(group.getName());
+                final Long jvmCount = jvmService.getJvmCount(group.getName());
+                final Long jvmStartedCount = jvmService.getJvmStartedCount(group.getName());
+                groupCurrentState = new CurrentState<>(group.getId(), GroupState.GRP_UNKNOWN, DateTime.now(), StateType.GROUP, webServerCount,
+                        webServerStartedCount, jvmCount, jvmStartedCount);
+            }
+
         } catch (Exception e) {
             LOGGER.error("Can't poll for state(s)!", e);
             final Throwable cause = e.getCause();
@@ -75,7 +113,8 @@ public class StateServiceRestImpl implements StateServiceRest {
         Collection<CurrentState<?, ?>> updates;
 
         if (update != null) {
-            updates = new ArrayList<>(1);
+            updates = new ArrayList<>(2);
+            updates.add(groupCurrentState);
             updates.add(update);
         } else {
             updates = noStates;

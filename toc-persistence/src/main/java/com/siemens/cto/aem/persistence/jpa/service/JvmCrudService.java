@@ -51,4 +51,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     Long getJvmStartedCount(String groupName);
 
+    Long getJvmCount(String groupName);
+
 }

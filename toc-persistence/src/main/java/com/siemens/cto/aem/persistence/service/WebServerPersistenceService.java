@@ -61,4 +61,6 @@ public interface WebServerPersistenceService {
 
     Long getStartedWebServerCount(String groupName);
 
+    Long getWebServerCount(String groupName);
+
 }

@@ -174,9 +174,14 @@ var GroupOperations = React.createClass({
                 function(group) {
                     for (var i = 0; i < newGroupStates.length; i++) {
                         if (newGroupStates[i].id.id === group.groupId.id) {
+                            // For the group it's a bit different, we need to show the number of started servers
+                            // over the total number of servers. Since we reused the existing current state
+                            // infrastructure, we have to put the said info in the stateString property.
+                            var serverCount = newGroupStates[i].webServerCount + newGroupStates[i].jvmCount;
+                            var serverStartedCount = newGroupStates[i].webServerStartedCount + newGroupStates[i].jvmStartedCount;
+                            newGroupStates[i].stateString = "Running: " + serverStartedCount + "/" + serverCount;
                             GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupStates[i].stateString,
-                                                                                           newGroupStates[i].asOf,
-                                                                                           newGroupStates[i].message);
+                                newGroupStates[i].asOf, newGroupStates[i].message);
                         }
                     }
                 }

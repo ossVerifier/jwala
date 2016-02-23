@@ -229,8 +229,8 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         if (theCommand.getCommand().getRunInShell()) {
             if (remoteOutputStringBuilder != null) {
                 final String remoteOutputStr = remoteOutputStringBuilder.toString();
-                 final String exitCodeStr = remoteOutputStr.substring(remoteOutputStr.lastIndexOf(EXIT_CODE_START_MARKER)
-                         + EXIT_CODE_START_MARKER.length() + 1, remoteOutputStr.lastIndexOf(EXIT_CODE_END_MARKER));
+                final String exitCodeStr = remoteOutputStr.substring(remoteOutputStr.lastIndexOf(EXIT_CODE_START_MARKER)
+                        + EXIT_CODE_START_MARKER.length() + 1, remoteOutputStr.lastIndexOf(EXIT_CODE_END_MARKER));
                 return new ExecReturnCode(Integer.parseInt(exitCodeStr));
             }
             throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
