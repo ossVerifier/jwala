@@ -229,8 +229,9 @@ var GroupOperationsDataTable = React.createClass({
            return React.render(<StatusWidget key={key} defaultStatus=""
                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                       GroupOperations.groupStatusWidgetMap[key] = this;
-                      // TODO: Get running server count.
-                      // this.setStatus(oData.currentState.stateString, new Date(), "");
+                      var serverCount = oData.currentState.jvmCount + oData.currentState.webServerCount;
+                      var serverStartedCount = oData.currentState.jvmStartedCount + oData.currentState.webServerStartedCount;
+                      this.setStatus("Running: " + serverStartedCount + "/" + serverCount, new Date(), "");
                   });
       }.bind(this);
    },

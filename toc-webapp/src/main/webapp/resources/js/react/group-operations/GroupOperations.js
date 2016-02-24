@@ -47,29 +47,48 @@ var GroupOperations = React.createClass({
     },
     retrieveData: function() {
         var self = this;
-        this.props.service.getGroups(function(response){
-                                        var theGroups = response.applicationResponseContent;
-                                        var state = {};
-                                        var jvms = [];
-                                        var jvmArrayIdxMap = {}; // We need a map to see if the jvm is already in jvms then use it later to update jvm states.
+        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getChildrenInfo)
+            .then(this.retrieveChildrenInfoHandler).then(function(){self.forceUpdate()});
+    },
+    /**
+     * Group data retrieval handler.
+     */
+    retrieveGroupDataHandler: function(response) {
+        var theGroups = response.applicationResponseContent;
+        var jvms = [];
+        var jvmArrayIdxMap = {}; // We need a map to see if the jvm is already in jvms then use it later to update jvm states.
 
-                                        // Put all the jvms of all the groups in an array.
-                                        // If the jvm is already in the said array, do not put it in anymore.
-                                        theGroups.forEach(function(group){
-                                            for (var i = 0; i < group.jvms.length; i++) {
-                                                if (jvmArrayIdxMap[group.jvms[i].id.id] == undefined) {
-                                                    jvms.push(group.jvms[i]);
-                                                    jvmArrayIdxMap[group.jvms[i].id.id] = i;
-                                                }
-                                            }
-                                        });
+        // Put all the jvms of all the groups in an array.
+        // If the jvm is already in the said array, do not put it in anymore.
+        theGroups.forEach(function(group){
+            for (var i = 0; i < group.jvms.length; i++) {
+                if (jvmArrayIdxMap[group.jvms[i].id.id] == undefined) {
+                    jvms.push(group.jvms[i]);
+                    jvmArrayIdxMap[group.jvms[i].id.id] = i;
+                }
+            }
+        });
 
-                                        state["jvms"] = jvms;
-                                        state["jvmArrayIdxMap"] = jvmArrayIdxMap;
-                                        state["groupTableData"] = theGroups;
-                                        state["groups"] = theGroups;
-                                        self.setState(state);
-                                     });
+        this.state["jvms"] = jvms;
+        this.state["jvmArrayIdxMap"] = jvmArrayIdxMap;
+        this.state["groupTableData"] = theGroups;
+        this.state["groups"] = theGroups;
+    },
+    /**
+     * Children info retrieval handler.
+     */
+    retrieveChildrenInfoHandler: function(childrenInfo) {
+        // Put the count data in the group's current state count properties.
+        this.state.groups.forEach(function(group){
+            childrenInfo.forEach(function(info){
+                if (group.name === info.groupName) {
+                    group.currentState.jvmCount = info.jvmCount;
+                    group.currentState.jvmStartedCount = info.jvmStartedCount;
+                    group.currentState.webServerCount = info.webServerCount;
+                    group.currentState.webServerStartedCount = info.webServerStartedCount;
+                }
+            });
+        });
     },
     getUpdatedJvmData: function(groups) {
         return groupOperationsHelper.processJvmData(this.state.jvms,

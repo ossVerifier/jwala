@@ -1,8 +1,7 @@
 var groupService = {
-
-    getGroups: function(responseCallback, queryString) {
+    getGroups: function(queryString) {
         queryString = queryString === undefined ? "" : queryString;
-        return serviceFoundation.get("v1.0/groups?" + queryString, "json", responseCallback);
+        return serviceFoundation.promisedGet("v1.0/groups?" + queryString, "json");
     },
 	insertNewGroup: function(name, successCallback, errorCallback) {
 	    return serviceFoundation.post("v1.0/groups",

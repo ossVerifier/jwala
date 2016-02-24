@@ -447,9 +447,9 @@ var JvmConfigForm = React.createClass({
     },
     retrieveGroups: function() {
         var self = this;
-        groupService.getGroups(function(response){
-                                   self.setState({groupMultiSelectData:response.applicationResponseContent});
-                               });
+        groupService.getGroups().then(function(response){
+                                        self.setState({groupMultiSelectData:response.applicationResponseContent});
+                                      });
     }
 });
 
