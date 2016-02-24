@@ -91,7 +91,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
-        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component"})
+        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component"})
 public class AemServiceConfiguration {
 
     @Autowired

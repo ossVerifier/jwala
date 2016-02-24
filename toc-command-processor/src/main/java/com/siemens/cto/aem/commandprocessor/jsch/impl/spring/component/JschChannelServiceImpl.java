@@ -1,11 +1,11 @@
-package com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component;
+package com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.siemens.cto.aem.commandprocessor.jsch.JschChannelPool;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelPoolImpl;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.JschChannelPoolImpl;
 import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import org.slf4j.Logger;

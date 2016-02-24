@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.*;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component.JschChannelServiceImpl;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
