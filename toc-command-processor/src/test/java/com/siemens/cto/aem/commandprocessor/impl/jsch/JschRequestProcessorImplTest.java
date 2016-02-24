@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
+import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;

@@ -3,7 +3,7 @@ package com.siemens.cto.aem.control.command;
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;

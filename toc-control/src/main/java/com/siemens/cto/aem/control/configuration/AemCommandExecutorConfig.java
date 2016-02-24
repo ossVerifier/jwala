@@ -2,7 +2,7 @@ package com.siemens.cto.aem.control.configuration;
 
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.ThreadedCommandExecutorImpl;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
 import org.springframework.beans.factory.annotation.Autowired;

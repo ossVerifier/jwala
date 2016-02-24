@@ -3,6 +3,7 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.siemens.cto.aem.commandprocessor.jsch.JschChannelPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

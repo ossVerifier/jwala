@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.commandprocessor.impl.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 

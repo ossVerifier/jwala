@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.commandprocessor.impl.jsch;
+package com.siemens.cto.aem.commandprocessor.jsch;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
