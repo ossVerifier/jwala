@@ -272,9 +272,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
-            jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
-            // only update the template in the DB if the deploy succeeded
             jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
+            jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
         }
         return ResponseBuilder.ok(group);
     }
@@ -343,14 +342,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
         WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         for (WebServer webserver : group.getWebServers()) {
+            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
             Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                 LOGGER.error("Remote Command Failure for web server " + webserver.getName() + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
-            // only update the template in the DB if the deploy succeeded
-            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
         }
         return ResponseBuilder.ok(group);
     }
@@ -544,14 +542,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         String appName = groupService.getAppNameFromResourceTemplate(fileName);
         for (Jvm jvm : group.getJvms()) {
             String jvmName = jvm.getJvmName();
+            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
             Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             if (response.getStatus() > 399) {
                 final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                 LOGGER.error("Remote Command Failure for JVM " + jvmName + ": " + reasonPhrase);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
             }
-            // only update the template in the DB if the deploy succeeded
-            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
         }
         return ResponseBuilder.ok(group);
     }
