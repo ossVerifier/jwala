@@ -66,7 +66,7 @@ var ResourceEditor = React.createClass({
                                             {width:"44%", height:"100%"}]} />
     },
     componentDidMount: function() {
-        this.props.groupService.getGroups(this.getGroupDataCallback, "webServers=true");
+        this.props.groupService.getGroups("webServers=true").then(this.getGroupDataCallback);
         this.props.resourceService.getResourceTypes(this.getResourceTypesCallback);
     },
 
