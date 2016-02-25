@@ -12,6 +12,7 @@ dependencies {
     compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
     compile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     compile group: "commons-fileupload", name: "commons-fileupload", version: "$project.versions.commons_fileupload"
+    compile group: "org.jgroups", name: "jgroups", version: "3.6.6.Final"
 
 }
 /*

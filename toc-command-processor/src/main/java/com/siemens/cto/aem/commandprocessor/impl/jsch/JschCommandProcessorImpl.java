@@ -6,6 +6,7 @@ import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.ExitCodeNotAvailableException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
 
     // TODO: Put the properties below in a dedicated JSCH properties file.
-    public static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 60000;
+    public static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("net.stop.sleep.time.seconds", "60")) * 1500; // wait 1.5 times longer than the FORCE STOPPED timeout
     public static final int CHANNEL_CONNECT_TIMEOUT = 60000;
     public static final int THREAD_SLEEP_TIME = 100;
     public static final int CHANNEL_MAX_WAIT_TIME = 600000;
@@ -182,7 +183,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
      * Read remote output stream.
      * @throws IOException
      */
-    private void readRemoteOutput() throws IOException {
+    protected void readRemoteOutput() throws IOException {
         final long startTime = System.currentTimeMillis();
         boolean timeout = false;
         int readByte = remoteOutput.read();
@@ -198,14 +199,14 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         }
 
         if (timeout) {
-            LOGGER.warn("remote output reading timeout!");
+            LOGGER.error("TIMEOUT reading remote output :: {}", theCommand.getCommand());
             // Don't throw an exception here like it was suggested before since this simply means that there's no 'EOL'
             // char coming in from the stream so as such just don't do anything with the status. If the status is
             // in the "ING" state e.g. stopping, then let it hang there. If ever we really want to throw an error
             // It has to be a timeout error and it shouldn't interfere on how the UI functions (like the states should
             // still be displayed not missing in the case of just throwing and error from here)
         } else {
-            LOGGER.debug("done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
+            LOGGER.info("Done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
             LOGGER.debug("****** output: start ******");
             LOGGER.debug(remoteOutputStringBuilder.toString());
             LOGGER.debug("****** output: end ******");

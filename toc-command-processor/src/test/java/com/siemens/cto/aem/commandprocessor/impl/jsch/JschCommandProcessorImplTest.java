@@ -1,10 +1,12 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.*;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component.JschChannelServiceImpl;
 import com.siemens.cto.aem.common.exec.*;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,9 +53,11 @@ public class JschCommandProcessorImplTest {
 
     @Before
     public void setup() throws JSchException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/toc-command-processor/src/test/resources");
+
         remoteOutputStream = new InputStream() {
             private int i = 0;
-            byte [] bytes = "Blah blah...EXIT_CODE=0***".getBytes();
+            byte[] bytes = "Blah blah...EXIT_CODE=0***".getBytes();
 
             @Override
             public int read() throws IOException {
@@ -65,6 +70,11 @@ public class JschCommandProcessorImplTest {
         MockitoAnnotations.initMocks(this);
 
         when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+    }
+
+    @After
+    public void tearDown() {
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -96,7 +106,7 @@ public class JschCommandProcessorImplTest {
 
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch,
                 new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
-                new ShellCommand("start", "jvm", "testShellCommand")), jschChannelService);
+                        new ShellCommand("start", "jvm", "testShellCommand")), jschChannelService);
         try {
             jschCommandProcessor.processCommand();
             jschCommandProcessor.getCommandOutputStr();

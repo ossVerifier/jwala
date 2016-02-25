@@ -8,11 +8,13 @@ import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +30,8 @@ public class JschScpCommandProcessorImplTest {
 
     @Test
     public void testProcessCommand() throws JSchException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/toc-command-processor/src/test/resources");
+
         JSch mockJsch = mock(JSch.class);
         Session mockSession = mock(Session.class);
         ChannelExec mockChannel = mock(ChannelExec.class);
@@ -76,5 +80,6 @@ public class JschScpCommandProcessorImplTest {
             assertTrue("This will fail because of return code 3" + e.getMessage(), true);
         }
 
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 }

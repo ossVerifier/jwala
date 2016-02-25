@@ -36,6 +36,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImp
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.io.FileUtils;
@@ -93,6 +94,7 @@ public class GroupServiceImplDeployTest {
     static final WebServerService mockWebServerService = mock(WebServerService.class);
     static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
+    static final JvmStateReceiverAdapter mockJvmStateReceiverAdapter = mock(JvmStateReceiverAdapter.class);
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -252,7 +254,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>(), mockJvmStateReceiverAdapter);
         }
 
         @Bean

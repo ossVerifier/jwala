@@ -99,8 +99,13 @@ subprojects {
     }
 
     repositories {
+        // TODO should we be pulling from the 464 artifactory?
         maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
-//      maven { url "https://repo1.maven.org/maven2" }
+
+        // jgroups
+        // TODO is there a way to reference the virtual repo without naming it explicitly?
+        // it works using https://artifactory/artifactory/repo/ and then org/jgroups/jgroups/3.6.6.Final/ in a browser but requires authentication from the build.gradle - which fails
+        maven { url "http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/jcenter-cache/"}
     }
 
     dependencies {

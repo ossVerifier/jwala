@@ -32,6 +32,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.jgroups.Event;
+import org.jgroups.JChannel;
+import org.jgroups.PhysicalAddress;
+import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,18 +68,49 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+    private final String jgroupsJavaNetPreferIPv4Stack = ApplicationProperties.get("jgroups.java.net.preferIPv4Stack", "true");
+    private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get("jgroups.coordinator.ip.address");
+    private final String jgroupsClusterConnectTimeout = ApplicationProperties.get("jgroups.cluster.connect.timeout", "10000");
+    private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultTOCCluster");
+    private final String jgroupsConfXml = ApplicationProperties.get("jgroups.conf.xml", "tcp.xml");
     private static JvmServiceRestImpl instance;
+    private JChannel channel;
+    private JvmStateReceiverAdapter channelReceiver;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final ResourceService theResourceService,
-                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap, JvmStateReceiverAdapter jvmStateReceiverAdapter) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         resourceService = theResourceService;
         executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
+        channelReceiver = jvmStateReceiverAdapter;
+        startCluster();
     }
 
+    protected void startCluster() {
+        // TODO does this break anything?
+        System.setProperty("java.net.preferIPv4Stack", jgroupsJavaNetPreferIPv4Stack);
+
+        try {
+            LOGGER.info("Starting JGroups cluster {}", jgroupsClusterName);
+            channel = new JChannel(jgroupsConfXml);
+            channel.setReceiver(channelReceiver);
+            IpAddress coordinatorIP = new IpAddress(jgroupsCoordinatorIPAddress);
+
+            channel.connect(jgroupsClusterName, coordinatorIP, Long.parseLong(jgroupsClusterConnectTimeout));
+            LOGGER.info("Connection to cluster SUCCESSFUL");
+
+            PhysicalAddress physicalAddr = (PhysicalAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, channel.getAddress()));
+            LOGGER.info("Cluster physical address {}", physicalAddr);
+
+            // TODO figure our when/where to close the channel
+//            channel.close();
+        } catch (Exception e) {
+            LOGGER.error("FAILURE Could not connect to cluster {}", jgroupsClusterName, e);
+        }
+    }
     @Override
     public Response getJvms() {
         LOGGER.debug("Get JVMs requested");
@@ -107,7 +142,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         uploadAllJvmResourceTemplates(aUser, jvm);
 
         if (aJvmToCreate.areGroupsPresent()) {
-            LOGGER.info("Creating app template for new JVM");
+            LOGGER.info("Creating app template for new JVM {}", jvm.getJvmName());
             jvmService.addAppTemplatesForJvm(jvm, aJvmToCreate.toCreateAndAddRequest().getGroups());
         }
 
@@ -151,7 +186,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.info("Delete JVM requested: {}", aJvmId);
         final Jvm jvm = jvmService.getJvm(aJvmId);
         if (!jvm.getState().isStartedState()) {
-            LOGGER.info("Removing JVM from the database and deleting the service");
+            LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
             jvmService.removeJvm(aJvmId);
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
                 deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),
@@ -340,7 +375,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     private void deployApplicationContextXMLs(Jvm jvm) {
-        LOGGER.info("Deploying any application XMLs for applications configured to the group");
+        LOGGER.info("Deploying any application XMLs for applications configured to the group for ", jvm.getJvmName());
         jvmService.deployApplicationContextXMLs(jvm);
     }
 
@@ -451,7 +486,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         CommandOutput result =
                 jvmControlService.secureCopyFileWithBackup(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
         if (result.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successful generation and deploy of {}", fileName);
+            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvmName);
         } else {
             String standardError =
                     result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
@@ -533,7 +568,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     jvmName, standardError);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, standardError);
         }
-        LOGGER.info("Generation of configuration tar SUCCEEDED");
+        LOGGER.info("Generation of configuration tar SUCCEEDED for {}", jvmName);
         return jvmResourcesNameDir;
     }
 

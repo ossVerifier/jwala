@@ -18,7 +18,6 @@ import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.*;
-import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -87,6 +86,8 @@ public class JvmServiceRestImplTest {
     private AuthenticatedUser authenticatedUser;
     @Mock
     private ResourceService resourceService;
+    @Mock
+    private JvmStateReceiverAdapter jvmStateReceiverAdapter;
 
     private Map<String, ReentrantReadWriteLock> writeLockMap;
 
@@ -116,7 +117,7 @@ public class JvmServiceRestImplTest {
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
-        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
+        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, Executors.newFixedThreadPool(12), writeLockMap, jvmStateReceiverAdapter);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         try {
             jvmServiceRest.afterPropertiesSet();

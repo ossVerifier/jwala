@@ -28,6 +28,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
@@ -154,7 +155,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap);
+        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap, getSimpleJvmReceiverAdapter());
     }
 
     @Bean
@@ -246,4 +247,8 @@ public class AemWebServiceConfiguration {
     protected ExecutorService getExecutorService() {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
+
+    public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
+        return new JvmStateReceiverAdapter(jvmService, stateNotificationService, grpStateComputationAndNotificationSvc);
+    }
 }
