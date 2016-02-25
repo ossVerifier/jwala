@@ -64,7 +64,7 @@ public class ResourceServiceImpl implements ResourceService {
                     try {
                         template.check();
                     } catch(Exception exception) { 
-                        LOGGER.debug("During getResourceTypes, discovered a bad template", exception);
+                        LOGGER.error("Discovered a bad template", exception);
                         rtype.setValid(false);
                         rtype.addException(exception);
                     }
