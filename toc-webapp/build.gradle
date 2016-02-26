@@ -21,7 +21,7 @@ dependencies {
     runtime group: "commons-logging", name: "commons-logging", version: "$project.versions.commons_logging"
 
     providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
-    providedCompile group: "javax", name: "jms", version: "$project.versions.jms"
+    providedCompile group: "javax.jms", name: "jms", version: "$project.versions.jms"
     providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided"
     providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-security", version: "$project.versions.infrastructureSecurity"
 

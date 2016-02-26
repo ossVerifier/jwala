@@ -24,7 +24,7 @@ dependencies {
     compile(group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client")
 
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
-    compile group: 'javax', name: 'jms', version: "$project.versions.jms"
+    compile group: 'javax.jms', name: 'jms', version: "$project.versions.jms"
     compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
 
     javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
