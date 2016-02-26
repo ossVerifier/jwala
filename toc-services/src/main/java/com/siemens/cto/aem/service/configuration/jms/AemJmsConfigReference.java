@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({AemJmsConfig.class})
+@Import({AemJmsConfig.class,
+        AemMessageListenerConfig.class})
 public class AemJmsConfigReference {
 }
