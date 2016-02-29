@@ -10,10 +10,12 @@ dependencies {
     compile project(":toc-common")
     compile project(":toc-command-processor")
 
-    compile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
+    compile group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-jms", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-aop", version: "$project.versions.spring"
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
@@ -41,10 +43,11 @@ dependencies {
     testCompile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
 
-    testRuntime group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
+    testRuntime group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-util', version: "$project.versions.tomcat"
 }

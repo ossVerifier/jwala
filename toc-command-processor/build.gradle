@@ -25,6 +25,7 @@ dependencies {
 
     testCompile project(path: ":toc-common", configuration: "commonTest")
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+	testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
 }
 

@@ -16,10 +16,16 @@ artifacts {
 
 dependencies {
 
+
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-expression", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-beans", version: "$project.versions.spring"
+
     compile group: "joda-time", name: "joda-time", version: "$project.versions.jodaTime"
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
 }

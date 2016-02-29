@@ -22,8 +22,8 @@ dependencies {
 
     providedCompile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: "javax.jms", name: "jms", version: "$project.versions.jms"
-    providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided"
-    providedCompile group: "com.siemens.cto.infrastructure", name: "infrastructure-security", version: "$project.versions.infrastructureSecurity"
+    providedCompile group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided"
+    providedCompile group: "com.cerner.cto.infrastructure", name: "infrastructure-security", version: "$project.versions.infrastructureSecurity"
 
     compile project(":toc-common")
     compile project(":toc-persistence")
@@ -31,6 +31,8 @@ dependencies {
     compile project(":toc-webservices")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
+
 
 }
 
