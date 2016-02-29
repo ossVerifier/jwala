@@ -1,5 +1,5 @@
 ext {
-    localVersions = [jsch : "0.1.51"]
+    localVersions = [jsch : "0.1.51", commonsPool : "2.4.2"]
 }
 
 configurations {
@@ -21,6 +21,7 @@ dependencies {
 
     compile project(":toc-common")
 
+    compile group: "org.apache.commons", name: "commons-pool2", version: "$localVersions.commonsPool"
     compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
 
     testCompile project(path: ":toc-common", configuration: "commonTest")

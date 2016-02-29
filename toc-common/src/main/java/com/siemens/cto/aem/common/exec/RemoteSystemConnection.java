@@ -1,9 +1,5 @@
 package com.siemens.cto.aem.common.exec;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.io.Serializable;
 
 public class RemoteSystemConnection implements Serializable {
@@ -37,44 +33,38 @@ public class RemoteSystemConnection implements Serializable {
         return port;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        RemoteSystemConnection rhs = (RemoteSystemConnection) obj;
-        return new EqualsBuilder()
-                .append(this.user, rhs.user)
-                .append(this.host, rhs.host)
-                .append(this.port, rhs.port)
-                .isEquals();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RemoteSystemConnection that = (RemoteSystemConnection) o;
+
+        if (!user.equals(that.user)) return false;
+        if (!host.equals(that.host)) return false;
+        return port.equals(that.port);
+
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(user)
-                .append(host)
-                .append(port)
-                .toHashCode();
+        int result = user.hashCode();
+        result = 31 * result + host.hashCode();
+        result = 31 * result + port.hashCode();
+        return result;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("user", user)
-                .append("host", host)
-                .append("port", port)
-                .toString();
+        return "RemoteSystemConnection{" +
+                "user='" + user + '\'' +
+                ", host='" + host + '\'' +
+                ", port=" + port +
+                '}';
     }
 
-    public String getPassword() {
-        return password;
-    }
 }

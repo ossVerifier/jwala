@@ -2,13 +2,14 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.*;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelType;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.ExitCodeNotAvailableException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,239 +18,245 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
+    public static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
 
-    // TODO: Put the properties below in a dedicated JSCH properties file.
-    public static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = Integer.parseInt(ApplicationProperties.get("net.stop.sleep.time.seconds", "60")) * 1500; // wait 1.5 times longer than the FORCE STOPPED timeout
-    public static final int CHANNEL_CONNECT_TIMEOUT = 60000;
-    public static final int THREAD_SLEEP_TIME = 100;
-    public static final int CHANNEL_MAX_WAIT_TIME = 600000;
+    private final JSch jsch;
+    private final RemoteExecCommand remoteExecCommand;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
-    public static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
-    public static final String EXIT_CODE_END_MARKER = "***";
+    private ExecReturnCode returnCode;
 
-    protected Session session;
-    protected Channel channel;
-    protected InputStream remoteOutput;
-    private StringBuilder remoteOutputStringBuilder;
-    protected InputStream remoteError;
-    private StringBuilder remoteErrorStringBuilder;
-    protected OutputStream localInput;
+    private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
+    private static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 180000;
+    private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
+    private static final String EXIT_CODE_END_MARKER = "***";
+    private String commandOutputStr;
+    private String errorOutputStr;
 
-    final JSch theJsch;
-    final RemoteExecCommand theCommand;
-    final JschChannelService jschChannelService;
-
-    private static final Map<String, Object> COMMAND_MAP = new HashMap<>();
-
-    public JschCommandProcessorImpl(final JSch theJsch, final RemoteExecCommand theCommand, final JschChannelService jschChannelService) {
-        this.theJsch = theJsch;
-        this.theCommand = theCommand;
-        this.jschChannelService = jschChannelService;
+    public JschCommandProcessorImpl(final JSch jsch, final RemoteExecCommand remoteExecCommand,
+                                    final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
+        this.jsch = jsch;
+        this.remoteExecCommand = remoteExecCommand;
+        this.channelPool = channelPool;
     }
 
+    @Override
+    public ExecReturnCode getExecutionReturnCode() {
+        return returnCode;
+    }
+
+    @Override
     public void processCommand() throws RemoteCommandFailureException {
-        // Check if the command is already being processed, if it is don't do anything.
-        synchronized (COMMAND_MAP) {
-            if (!COMMAND_MAP.containsKey(theCommand.getCommand().toCommandString())) {
-                COMMAND_MAP.put(theCommand.getCommand().toCommandString(), null);
-            } else {
-                LOGGER.warn("The command '{}' is already being processed!", theCommand.getCommand().toCommandString());
-                return;
-            }
+        if (remoteExecCommand.getCommand().getRunInShell()) {
+            processShellCommand();
+        } else {
+            processExecCommand();
         }
+    }
 
-        final RemoteSystemConnection remoteSystemConnection = theCommand.getRemoteSystemConnection();
-        final String channelType = theCommand.getCommand().getRunInShell() ? "shell" : "exec";
+    /**
+     * Process a shell command.
+     */
+    public void processShellCommand() {
+        ChannelShell channel = null;
+        ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
+        LOGGER.debug("channel session key = {}", channelSessionKey);
         try {
-            LOGGER.debug("before executing command {}", theCommand);
+            InputStream in = null;
+            InputStream inErr = null;
+            OutputStream out = null;
 
-            String commandString = theCommand.getCommand().toCommandString();
-            LOGGER.debug("remote Jsch command string is {}", commandString);
-            if (theCommand.getCommand().getRunInShell()) {
-                borrowChannel(remoteSystemConnection, channelType);
-                final ChannelShell channelShell = (ChannelShell) channel;
+            final long startTime = System.currentTimeMillis();
+            while ((channel == null || !channel.isConnected()) && (System.currentTimeMillis() - startTime) < CHANNEL_BORROW_LOOP_WAIT_TIME) {
+                LOGGER.debug("borrowing a channel...");
+                channel = (ChannelShell) channelPool.borrowObject(channelSessionKey);
+                LOGGER.debug("channel {} borrowed", channel.getId());
 
-                remoteOutput = channelShell.getInputStream();
-                remoteError = channelShell.getExtInputStream();
-                localInput = channelShell.getOutputStream();
+                in = channel.getInputStream();
+                inErr = channel.getExtInputStream();
+                out = channel.getOutputStream();
 
-                LOGGER.debug("Channel {} isConnected = {}", channel.getId(), channel.isConnected());
                 if (!channel.isConnected()) {
-                    LOGGER.debug("Session isConnected = {}; Channel with id = {} connecting...", channel.getSession().isConnected(), channel.getId());
-                    channel.connect(CHANNEL_CONNECT_TIMEOUT); // This should always come after getting the streams.
-                }
-
-                LOGGER.info("Channel with id = {} connected!", channel.getId() );
-
-                PrintStream commandStream = new PrintStream(localInput, true);
-                commandStream.println(commandString);
-                commandStream.println("echo 'EXIT_CODE='$?***");
-                commandStream.println("echo -n -e '\\xff'");
-
-                readRemoteOutput();
-
-                LOGGER.info("Channel with id = {} exit status = {}; isConnected = {}; isClosed = {}.", channel.getId(),
-                        channel.getExitStatus(), channel.isConnected(), channel.isClosed());
-            } else {
-                // We can't keep the session and the channels open for type exec since we need the exit code and the
-                // standard error e.g. thread dump uses this and requires the exit code and the standard error.
-                LOGGER.info("preparing session...");
-                session = prepareSession(theJsch, remoteSystemConnection);
-                session.connect();
-                LOGGER.info("session connected");
-                channel = session.openChannel("exec");
-                final ChannelExec channelExec = (ChannelExec) channel;
-
-                channelExec.setCommand(commandString.getBytes(StandardCharsets.UTF_8));
-
-                remoteOutput = channelExec.getInputStream();
-                remoteError = channelExec.getErrStream();
-                localInput = channelExec.getOutputStream();
-
-                LOGGER.info("channel connecting...");
-                channelExec.connect(CHANNEL_CONNECT_TIMEOUT);
-                LOGGER.info("reading remote output...");
-
-                remoteOutputStringBuilder = new StringBuilder();
-                remoteErrorStringBuilder = new StringBuilder();
-                while (!channelExec.isClosed()) {
-                    remoteOutputStringBuilder.append((char) remoteOutput.read());
-                }
-
-                if (channel.getExitStatus() != 0) {
-                    int readByte = remoteError.read();
-                    while (readByte != -1) {
-                        remoteErrorStringBuilder.append((char) readByte);
-                        readByte = remoteError.read();
+                    try {
+                        LOGGER.debug("channel {} connecting...");
+                        channel.connect(CHANNEL_CONNECT_TIMEOUT);
+                        LOGGER.debug("channel {} connected!", channel.getId());
+                    } catch (final JSchException jsche) {
+                        LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel!", channel.getId(), jsche);
+                        channelPool.invalidateObject(channelSessionKey, channel);
                     }
+                } else {
+                    LOGGER.debug("Channel {} already connected!", channel.getId());
                 }
-
-                LOGGER.info("exit status = {}", channel.getExitStatus());
-                LOGGER.info("remote output = {}", remoteOutputStringBuilder.toString());
-                LOGGER.info("remote error = {}", remoteErrorStringBuilder.toString());
-                session.disconnect();
-                LOGGER.info("session disconnected");
             }
 
+            // Still no channel to borrow ? Let's just give up and throw in the towel!
+            if (channel == null) {
+                LOGGER.error("Was not able to borrow a channel!");
+                throw new RemoteCommandFailureException(remoteExecCommand, new Throwable("Was not able to borrow a channel!"));
+            }
 
-        } catch (final JSchException | IOException e) {
-            LOGGER.error("Command '{}' had an error: {} !", theCommand.getCommand().toCommandString(), e.getMessage());
-            throw new RemoteCommandFailureException(theCommand, e);
+            final PrintStream commandStream = new PrintStream(out, true);
+            commandStream.println(remoteExecCommand.getCommand().toCommandString());
+            commandStream.println("echo 'EXIT_CODE='$?***");
+            commandStream.println("echo -n -e '\\xff'");
+
+            commandOutputStr = readRemoteOutput(in);
+            returnCode = parseReturnCode(commandOutputStr);
+            LOGGER.debug("return code = {}", returnCode);
+        } catch (final Exception e) {
+            LOGGER.error("Error processing shell command!", e);
+            returnCode = new ExecReturnCode(-1);
+            errorOutputStr = e.getMessage();
         } finally {
-            if (theCommand.getCommand().getRunInShell()) {
-                jschChannelService.returnChannel(remoteSystemConnection.getHost(), channel, channelType);
-            }
-
-            synchronized (COMMAND_MAP) {
-                COMMAND_MAP.remove(theCommand.getCommand().toCommandString());
+            if (channel != null) {
+                channelPool.returnObject(channelSessionKey, channel);
+                LOGGER.debug("channel {} returned", channel.getId());
             }
         }
     }
 
     /**
-     * Borrow a channel, wait if nothing's available.
-     * @param remoteSystemConnection contains connection information
-     * @param channelType e.g. shell or exec
-     * @throws JSchException
-     * @throws RemoteCommandFailureException
+     * Process and exec command.
      */
-    // TODO: Return the channel
-    protected void borrowChannel(RemoteSystemConnection remoteSystemConnection, String channelType) throws JSchException,
-            RemoteCommandFailureException {
-        final long startTime = System.currentTimeMillis();
-        while (channel == null) {
-            channel = jschChannelService.getChannel(theJsch, remoteSystemConnection, channelType);
-            try {
-                LOGGER.debug("Command '{}' is waiting for a channel...", theCommand.getCommand().toCommandString());
-                if ((System.currentTimeMillis() - startTime) > CHANNEL_MAX_WAIT_TIME) {
-                    throw new RemoteCommandFailureException(theCommand, new RuntimeException("Timeout reached waiting for a channel!"));
+    public void processExecCommand() {
+        Session session = null;
+        ChannelExec channel = null;
+        try {
+            // We can't keep the session and the channels open for type exec since we need the exit code and the
+            // standard error e.g. thread dump uses this and requires the exit code and the standard error.
+            LOGGER.debug("preparing session...");
+            session = prepareSession(remoteExecCommand.getRemoteSystemConnection());
+            session.connect();
+            LOGGER.debug("session connected");
+            channel = (ChannelExec) session.openChannel(ChannelType.EXEC.getChannelType());
+            channel.setCommand(remoteExecCommand.getCommand().toCommandString().getBytes(StandardCharsets.UTF_8));
+
+            final InputStream remoteOutput = channel.getInputStream();
+            final InputStream remoteError = channel.getErrStream();
+
+            LOGGER.debug("channel {} connecting...", channel.getId());
+            channel.connect(CHANNEL_CONNECT_TIMEOUT);
+            LOGGER.debug("channel {} connected!", channel.getId());
+
+            LOGGER.debug("reading remote output...");
+            final StringBuilder remoteOutputStringBuilder = new StringBuilder();
+            final StringBuilder remoteErrorStringBuilder = new StringBuilder();
+            while (!channel.isClosed()) {
+                remoteOutputStringBuilder.append((char) remoteOutput.read());
+            }
+
+            if (channel.getExitStatus() != 0) {
+                int readByte = remoteError.read();
+                while (readByte != -1) {
+                    remoteErrorStringBuilder.append((char) readByte);
+                    readByte = remoteError.read();
                 }
-                Thread.sleep(THREAD_SLEEP_TIME);
-            } catch (final InterruptedException e) {
-                LOGGER.error("Cannot acquire channel!", e);
-                throw new RemoteCommandFailureException(theCommand, e);
+            }
+
+            returnCode = new ExecReturnCode(channel.getExitStatus());
+            LOGGER.debug("exit code = {}", returnCode.getReturnCode());
+
+            commandOutputStr = remoteOutputStringBuilder.toString();
+            LOGGER.debug("remote output = {}", commandOutputStr);
+
+            errorOutputStr = remoteErrorStringBuilder.toString();
+            LOGGER.debug("remote error = {}", errorOutputStr);
+
+        } catch (final JSchException | IOException e) {
+            LOGGER.error("Error processing exec command!", e);
+            returnCode = new ExecReturnCode(-1);
+            errorOutputStr = e.getMessage();
+        } finally {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+                LOGGER.debug("Channel {} disconnected!", channel.getId());
+            }
+
+            if (session != null && session.isConnected()) {
+                session.disconnect();
+                LOGGER.debug("session disconnected");
             }
         }
-        LOGGER.debug("Command '{}' now has a channel!", theCommand.getCommand().toCommandString());
     }
+
+    @Override
+    public String getCommandOutputStr() {
+        return commandOutputStr;
+    }
+
+    @Override
+    public String getErrorOutputStr() {
+        return errorOutputStr;
+    }
+
+    @Override
+    public void close() throws IOException {}
 
     /**
      * Read remote output stream.
+     * @param in the input stream
      * @throws IOException
      */
-    protected void readRemoteOutput() throws IOException {
-        final long startTime = System.currentTimeMillis();
+    protected String readRemoteOutput(final InputStream in) throws IOException {
         boolean timeout = false;
-        int readByte = remoteOutput.read();
-        LOGGER.info("reading remote output...");
-        remoteOutputStringBuilder = new StringBuilder();
+        int readByte = in.read();
+        LOGGER.debug("reading remote output...");
+        final StringBuilder inStringBuilder = new StringBuilder();
+
+        final long startTime = System.currentTimeMillis();
         while(readByte != 0xff) {
             if ((System.currentTimeMillis() - startTime) > REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
-            remoteOutputStringBuilder.append((char)readByte);
-            readByte = remoteOutput.read();
+            inStringBuilder.append((char)readByte);
+            readByte = in.read();
         }
 
         if (timeout) {
-            LOGGER.error("TIMEOUT reading remote output :: {}", theCommand.getCommand());
+            LOGGER.warn("remote output reading timeout!");
             // Don't throw an exception here like it was suggested before since this simply means that there's no 'EOL'
             // char coming in from the stream so as such just don't do anything with the status. If the status is
             // in the "ING" state e.g. stopping, then let it hang there. If ever we really want to throw an error
             // It has to be a timeout error and it shouldn't interfere on how the UI functions (like the states should
             // still be displayed not missing in the case of just throwing and error from here)
         } else {
-            LOGGER.info("Done streaming remote output, exit code = {}", getExecutionReturnCode().getReturnCode());
             LOGGER.debug("****** output: start ******");
-            LOGGER.debug(remoteOutputStringBuilder.toString());
+            LOGGER.debug(inStringBuilder.toString());
             LOGGER.debug("****** output: end ******");
         }
+        return inStringBuilder.toString();
     }
 
-    @Override
-    public String getCommandOutputStr() {
-        return remoteOutputStringBuilder == null ? "" : remoteOutputStringBuilder.toString();
-    }
-
-    @Override
-    public String getErrorOutputStr() {
-        return remoteErrorStringBuilder == null ? "" : remoteErrorStringBuilder.toString();
-    }
-
-    @Override
-    public void close() {}
-
-    @Override
-    public ExecReturnCode getExecutionReturnCode() {
-        if (theCommand.getCommand().getRunInShell()) {
-            if (remoteOutputStringBuilder != null) {
-                final String remoteOutputStr = remoteOutputStringBuilder.toString();
-                final String exitCodeStr = remoteOutputStr.substring(remoteOutputStr.lastIndexOf(EXIT_CODE_START_MARKER)
-                        + EXIT_CODE_START_MARKER.length() + 1, remoteOutputStr.lastIndexOf(EXIT_CODE_END_MARKER));
-                return new ExecReturnCode(Integer.parseInt(exitCodeStr));
-            }
-            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
+    /**
+     * Parse the return code from the output string.
+     * @param outputStr the output string
+     * @return {@link ExecReturnCode}
+     */
+    protected ExecReturnCode parseReturnCode(final String outputStr) {
+        if (outputStr != null) {
+            final String exitCodeStr = outputStr.substring(outputStr.lastIndexOf(EXIT_CODE_START_MARKER)
+                    + EXIT_CODE_START_MARKER.length() + 1, outputStr.lastIndexOf(EXIT_CODE_END_MARKER));
+            return new ExecReturnCode(Integer.parseInt(exitCodeStr));
         }
-
-        final int returnCode = channel.getExitStatus();
-        if (returnCode == -1) {
-            throw new ExitCodeNotAvailableException(theCommand.getCommand().toCommandString());
-        }
-
-        return new ExecReturnCode(returnCode);
+        throw new ExitCodeNotAvailableException(remoteExecCommand.getCommand().toCommandString());
     }
 
-    Session prepareSession(final JSch aJsch, final RemoteSystemConnection someConnectionInfo) throws JSchException {
-        final Session session = aJsch.getSession(someConnectionInfo.getUser(), someConnectionInfo.getHost(),
-                someConnectionInfo.getPort());
-        final String password = someConnectionInfo.getPassword();
+    /**
+     * Prepare the session by setting session properties.
+     * @param remoteSystemConnection
+     * @return {@link Session}
+     * @throws JSchException
+     */
+    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
+        final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
+                remoteSystemConnection.getPort());
+        final String password = remoteSystemConnection.getPassword();
         if (password != null) {
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no");

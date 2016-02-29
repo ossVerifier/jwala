@@ -1,8 +1,11 @@
 package com.siemens.cto.aem.service.configuration.service;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedJschChannelFactory;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -61,6 +64,8 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -128,7 +133,7 @@ public class AemServiceConfiguration {
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
-    private JschChannelService jschChannelService;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -245,7 +250,7 @@ public class AemServiceConfiguration {
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-        return new WebServerCommandServiceImpl(getWebServerService(), commandExecutor, jschBuilder, sshConfig, jschChannelService);
+        return new WebServerCommandServiceImpl(getWebServerService(), commandExecutor, jschBuilder, sshConfig, channelPool);
     }
 
     @Bean
@@ -326,6 +331,15 @@ public class AemServiceConfiguration {
     @Bean
     public HistoryService getHistoryService(final HistoryCrudService historyCrudService) {
         return new HistoryServiceImpl(historyCrudService);
+    }
+
+    @Bean
+    @Autowired
+    public GenericKeyedObjectPool<ChannelSessionKey, Channel> getChannelPool(final AemSshConfig sshConfig) throws JSchException {
+        final GenericKeyedObjectPoolConfig genericKeyedObjectPoolConfig = new GenericKeyedObjectPoolConfig();
+        genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
+        genericKeyedObjectPoolConfig.setBlockWhenExhausted(true);
+        return new GenericKeyedObjectPool(new KeyedJschChannelFactory(sshConfig.getJschBuilder().build()));
     }
 
 }

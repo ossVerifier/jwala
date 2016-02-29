@@ -1,9 +1,12 @@
 package com.siemens.cto.aem.commandprocessor.impl;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component.JschChannelServiceImpl;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedJschChannelFactory;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
 import java.io.File;
 
@@ -14,14 +17,15 @@ public class CommonSshTestConfiguration {
 
     private final JschBuilder builder;
     private final RemoteSystemConnection remoteSystemConnection;
-    private final JschChannelService jschChannelService = new JschChannelServiceImpl();
+    private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
     private String password;
 
-    public CommonSshTestConfiguration() {
+    public CommonSshTestConfiguration() throws JSchException {
         //TODO (Corey) generalize this so that %HOME% works
         //TODO create duplicate set of keys without a passphrase for testing
         builder = new JschBuilder(getKnownHostsFile(),
                                   getPrivateKey());
+        channelPool = new GenericKeyedObjectPool(new KeyedJschChannelFactory(builder.build()));
         remoteSystemConnection = new RemoteSystemConnection("N9SFGLabTomcatAdmin",
                                                             "Passw0rd1",
                                                             "usmlvv1cds0005",
@@ -50,8 +54,8 @@ public class CommonSshTestConfiguration {
         return remoteSystemConnection.getPassword();
     }
 
-    public JschChannelService getJschChannelService() {
-        return jschChannelService;
+    public GenericKeyedObjectPool<ChannelSessionKey, Channel> getChannelPool() {
+        return channelPool;
     }
 
 }

@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.*;
+import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
@@ -9,18 +9,23 @@ import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
-public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
+public class JschScpCommandProcessorImpl implements CommandProcessor {
     private boolean checkAckOk;
     private static final Logger LOGGER = LoggerFactory.getLogger(JschScpCommandProcessorImpl.class);
 
+    private final JSch jsch;
+    private final RemoteExecCommand remoteCommand;
+
+    private OutputStream localInput;
+    private InputStream remoteOutput;
+    private InputStream remoteError;
+
     public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand) {
-        super(jsch, remoteCommand, null);
+        this.jsch = jsch;
+        this.remoteCommand = remoteCommand;
     }
 
     /**
@@ -31,10 +36,12 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
     public void processCommand() throws RemoteCommandFailureException {
         checkAckOk = false;
         FileInputStream fis = null;
-        List<String> commandFragments = theCommand.getCommand().getCommandFragments();
+        List<String> commandFragments = remoteCommand.getCommand().getCommandFragments();
+        Session session = null;
+        Channel channel = null;
         try {
-            final RemoteSystemConnection remoteSystemConnection = theCommand.getRemoteSystemConnection();
-            session = prepareSession(theJsch, remoteSystemConnection);
+            final RemoteSystemConnection remoteSystemConnection = remoteCommand.getRemoteSystemConnection();
+            session = prepareSession(remoteSystemConnection);
             session.connect();
 
             String target = commandFragments.get(2);
@@ -53,7 +60,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             channelExec.connect();
 
             if (checkAck(remoteOutput) != 0) {
-                throw new RemoteCommandFailureException(theCommand, new Throwable("Failed to connect to the remote host during secure copy"));
+                throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to connect to the remote host during secure copy"));
             }
 
             final String lfilePath = commandFragments.get(1);
@@ -71,7 +78,7 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             localInput.write(command.getBytes());
             localInput.flush();
             if (checkAck(remoteOutput) != 0) {
-                throw new RemoteCommandFailureException(theCommand, new Throwable("Failed to initialize secure copy"));
+                throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to initialize secure copy"));
             }
 
             // send content of lfile
@@ -91,14 +98,14 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
             localInput.write(buf, 0, 1);
             localInput.flush();
             if (checkAck(remoteOutput) != 0) {
-                throw new RemoteCommandFailureException(theCommand, new Throwable("Failed to finalize secure copy"));
+                throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to finalize secure copy"));
             } else {
                 // Jsch only sets the channel exit status for certain types of channels - scp is NOT one of them
                 // checkAck performs a check of the exit status manually so if the remoteOutput is 0 then scp succeeded even though channel.getExitStatus() still returns -1
                 checkAckOk = true;
             }
         } catch (Exception e) {
-            throw new RemoteCommandFailureException(theCommand, e);
+            throw new RemoteCommandFailureException(remoteCommand, e);
         } finally {
             if (fis != null) {
                 try {
@@ -121,6 +128,16 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
                 session.disconnect();
             }
         }
+    }
+
+    @Override
+    public String getCommandOutputStr() {
+        return null;
+    }
+
+    @Override
+    public String getErrorOutputStr() {
+        return null;
     }
 
     private static int checkAck(InputStream in) throws IOException {
@@ -152,6 +169,29 @@ public class JschScpCommandProcessorImpl extends JschCommandProcessorImpl {
         // if checkAck returned 0 then return success (see comment where checkAckOk set to true)
         int returnCode = checkAckOk ? 0 : 1;
         return new ExecReturnCode(returnCode);
+    }
+
+    @Override
+    public void close() throws IOException {
+
+    }
+
+    /**
+     * Prepare the session by setting session properties.
+     * @param remoteSystemConnection
+     * @return {@link Session}
+     * @throws JSchException
+     */
+    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
+        final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
+                remoteSystemConnection.getPort());
+        final String password = remoteSystemConnection.getPassword();
+        if (password != null) {
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
+        }
+        return session;
     }
 
 }

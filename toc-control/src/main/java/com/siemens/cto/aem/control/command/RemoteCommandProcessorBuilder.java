@@ -1,16 +1,18 @@
 package com.siemens.cto.aem.control.command;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschCommandProcessorImpl;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
 public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
 
@@ -18,7 +20,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
     private String hostName;
     private JSch jsch;
     private SshConfiguration sshConfig;
-    private JschChannelService jschChannelService;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     public RemoteCommandProcessorBuilder() {
     }
@@ -43,8 +45,8 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
         return this;
     }
 
-    public RemoteCommandProcessorBuilder setJschChannelService(final JschChannelService jschChannelService) {
-        this.jschChannelService = jschChannelService;
+    public RemoteCommandProcessorBuilder setChannelPool(final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
+        this.channelPool = channelPool;
         return this;
     }
 
@@ -54,7 +56,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
         if (command.getCommandFragments().get(0).contains("secure-copy")) {
             return new JschScpCommandProcessorImpl(jsch, remoteCommand);
         } else {
-            return new JschCommandProcessorImpl(jsch, remoteCommand, jschChannelService);
+            return new JschCommandProcessorImpl(jsch, remoteCommand, channelPool);
         }
     }
 

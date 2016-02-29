@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
+import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
 import com.siemens.cto.aem.common.IntegrationTestRule;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
@@ -23,21 +23,19 @@ public class JschRequestProcessorImplTest {
 
     private JschBuilder builder;
     private RemoteSystemConnection remoteSystemConnection;
-    private JschChannelService jschChannelService;
 
     @Before
-    public void setup() {
+    public void setup() throws JSchException {
         final CommonSshTestConfiguration config = new CommonSshTestConfiguration();
         builder = config.getBuilder();
         remoteSystemConnection = config.getRemoteSystemConnection();
-        jschChannelService = config.getJschChannelService();
     }
 
     @Test(expected = ExitCodeNotAvailableException.class)
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
         final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
-                jschChannelService);
+                null);
         sshProcessor.processCommand();
         final ExecReturnCode returnCode = sshProcessor.getExecutionReturnCode();
     }
@@ -47,7 +45,7 @@ public class JschRequestProcessorImplTest {
         final RemoteExecCommand remoteExecCommand =
                 new RemoteExecCommand(new RemoteSystemConnection("abc", "123546", "example.com", 123456), new ExecCommand("vi"));
         final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
-                jschChannelService);
+                null);
         jschCommandProcessor.processCommand();
     }
 

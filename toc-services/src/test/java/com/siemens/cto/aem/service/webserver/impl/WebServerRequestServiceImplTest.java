@@ -1,23 +1,25 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RuntimeCommand;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
-import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,11 +44,7 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -89,7 +87,7 @@ public class WebServerRequestServiceImplTest {
     private RuntimeCommand rtCommand;
 
     @Mock
-    private JschChannelService jschChannelService;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     final private Identifier<WebServer> id = new Identifier<>(1L);
 
@@ -110,7 +108,7 @@ public class WebServerRequestServiceImplTest {
         when(executor.execute(any(CommandProcessorBuilder.class)))
                 .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
         assertNotNull(factoryHelper);
-        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, jschChannelService);
+        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, channelPool);
     }
 
     @Test

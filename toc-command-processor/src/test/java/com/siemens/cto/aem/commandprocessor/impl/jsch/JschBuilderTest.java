@@ -2,6 +2,7 @@ package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.CommonSshTestConfiguration;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,7 @@ public class JschBuilderTest {
     private String privateKeyFile;
 
     @Before
-    public void setup() {
+    public void setup() throws JSchException {
         final CommonSshTestConfiguration config = new CommonSshTestConfiguration();
         knownHostsFile = config.getKnownHostsFile();
         privateKeyFile = config.getPrivateKey();

@@ -1,17 +1,19 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.CommandProcessorBuilder;
-import com.siemens.cto.aem.commandprocessor.jsch.JschChannelService;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
 public class JschCommandProcessorBuilder implements CommandProcessorBuilder {
 
     private JSch jsch;
     private RemoteExecCommand remoteCommand;
-    private JschChannelService jschChannelService;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     public JschCommandProcessorBuilder() {
     }
@@ -26,14 +28,14 @@ public class JschCommandProcessorBuilder implements CommandProcessorBuilder {
         return this;
     }
 
-    public JschCommandProcessorBuilder setJschChannelService(final JschChannelService jschChannelService) {
-        this.jschChannelService = jschChannelService;
+    public JschCommandProcessorBuilder setChannelPool(final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
+        this.channelPool = channelPool;
         return this;
     }
 
     @Override
     public CommandProcessor build() throws RemoteCommandFailureException {
-        return new JschCommandProcessorImpl(jsch, remoteCommand, jschChannelService);
+        return new JschCommandProcessorImpl(jsch, remoteCommand, channelPool);
     }
 
 }
