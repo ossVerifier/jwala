@@ -209,7 +209,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         } else {
             final String standardError = commandOutput.getStandardError();
             final String standardOutput = commandOutput.getStandardOutput();
-            String errMessage = !standardError.isEmpty() ? standardError : standardOutput;
+            String errMessage = standardError != null && !standardError.isEmpty() ? standardError : standardOutput;
             LOGGER.error("Control JVM unsuccessful: " + errMessage);
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
         }
