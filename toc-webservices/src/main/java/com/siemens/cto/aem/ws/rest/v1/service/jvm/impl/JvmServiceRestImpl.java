@@ -54,7 +54,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
 
-// REVERT ME
 public class JvmServiceRestImpl implements JvmServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceRestImpl.class);
