@@ -3,8 +3,6 @@ package com.siemens.cto.aem.persistence.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver;
-import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
@@ -31,7 +29,6 @@ public class AemJpaConfiguration {
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
         factory.setJtaDataSource(dataSourceConfiguration.getSpringManagedAemDataSource());
-        factory.setLoadTimeWeaver(getLoadTimeWeaver());
 
         return factory;
     }
@@ -39,11 +36,6 @@ public class AemJpaConfiguration {
     @Bean
     public EntityManagerFactory getEntityManagerFactory() {
         return getEntityManagerFactoryBean().getObject();
-    }
-
-    @Bean
-    public LoadTimeWeaver getLoadTimeWeaver() {
-        return new InstrumentationLoadTimeWeaver();
     }
 
     @Bean

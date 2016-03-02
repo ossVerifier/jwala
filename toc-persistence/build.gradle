@@ -1,15 +1,10 @@
 apply plugin: 'maven-publish'
-
-configurations {
-    javaAgentOpenJpa
-}
+apply plugin: 'java'
 
 dependencies {
     compile project(":toc-common")
 
-    compile("org.apache.openjpa:openjpa:$project.versions.jpa"){
-        exclude group: "junit"
-    }
+    compile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
 
     testCompile group: 'org.springframework', name: 'spring-context', version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-core', version: "$project.versions.spring"
@@ -20,19 +15,12 @@ dependencies {
     testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
     testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"
 
-    javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
-        exclude group: "junit"
-    }
-
     testCompile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-test', version: "$project.versions.spring"
 }
 
 test {
-    // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
-    jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
-
     jacoco {
       excludes = ["com.siemens.cto.aem.persistence.configuration.*",
                   "com.siemens.cto.aem.persistence.domain.*",
@@ -92,3 +80,13 @@ task mappingToolHelp (type:JavaExec) {
 }
 
 publish.dependsOn << createDdl << dropDdl
+
+task enhanceJpaEntities(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'org.apache.openjpa.enhance.PCEnhancer'
+}
+
+test.dependsOn enhanceJpaEntities
+jar.dependsOn enhanceJpaEntities
+
+
