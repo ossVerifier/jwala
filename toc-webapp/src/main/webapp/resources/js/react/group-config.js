@@ -48,7 +48,7 @@ var GroupConfig = React.createClass({
     componentDidMount: function() {
         this.props.service.getGroups().then(this.getGroupsCallback);
     },
-    getGroupsCallback: function(selectedGroup, response) {
+    getGroupsCallback: function(response, selectedGroup) {
         this.refs.groupConfigTable.refresh(response.applicationResponseContent);
         if (selectedGroup !== null) {
             this.refs.groupConfigTable.selectRow(selectedGroup);
