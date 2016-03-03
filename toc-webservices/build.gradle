@@ -3,8 +3,10 @@ dependencies {
     compile project(":toc-services")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
+    testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
-    compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "$project.versions.cxf"
+
+    compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "3.0.0-milestone1"
     compile group: "org.apache.cxf", name: "cxf-rt-transports-http", version: "$project.versions.cxf"
     compile group: "org.apache.cxf", name: "cxf-rt-frontend-jaxrs", version: "$project.versions.cxf"
     compile group: "javax.ws.rs", name: "javax.ws.rs-api", version: "$project.versions.javax_ws_rs_api"
@@ -12,7 +14,19 @@ dependencies {
     compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
     compile group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
     compile group: "commons-fileupload", name: "commons-fileupload", version: "$project.versions.commons_fileupload"
-    compile group: "org.jgroups", name: "jgroups", version: "3.6.6.Final"
+    compile group: "commons-io", name: "commons-io", version: "$project.versions.jodaTime"
+    compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
+
+//    runtime group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "$project.versions.cxf"
+//    runtime group: "org.apache.cxf", name: "cxf-rt-transports-http", version: "$project.versions.cxf"
+//    runtime group: "org.apache.cxf", name: "cxf-rt-frontend-jaxrs", version: "$project.versions.cxf"
+//    runtime group: "javax.ws.rs", name: "javax.ws.rs-api", version: "$project.versions.javax_ws_rs_api"
+//    runtime group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
+//    runtime group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
+//    runtime group: "javax.servlet", name: "servlet-api", version: "$project.versions.javax_servlet_api"
+//    runtime group: "commons-fileupload", name: "commons-fileupload", version: "$project.versions.commons_fileupload"
+//    runtime group: "commons-io", name: "commons-io", version: "$project.versions.commons_fileupload"
+//    runtime group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
 }
 /*
@@ -51,12 +65,12 @@ buildscript {
 
 test {
     jacoco {
-      excludes = ["com.siemens.cto.aem.persistence.configuration.*",
-                  "com.siemens.cto.aem.persistence.domain.*",
-                  "com.siemens.cto.aem.common.domain.model.*",
-                  "com.siemens.cto.aem.common.*",
-                  "*.configuration.*",
-                  "**.configuration.**",
-                  "com.siemens.cto.aem.service.configuration.service.*"]
+        excludes = ["com.siemens.cto.aem.persistence.configuration.*",
+                    "com.siemens.cto.aem.persistence.domain.*",
+                    "com.siemens.cto.aem.common.domain.model.*",
+                    "com.siemens.cto.aem.common.*",
+                    "*.configuration.*",
+                    "**.configuration.**",
+                    "com.siemens.cto.aem.service.configuration.service.*"]
     }
 }
