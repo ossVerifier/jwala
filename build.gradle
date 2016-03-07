@@ -1,6 +1,5 @@
 apply plugin: "sonar-runner"
 
-//test
 ext {
     versions = [
             junit : "4.+",
@@ -101,26 +100,21 @@ subprojects {
     }
 
     repositories {
-//        maven { url "http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/repo/" }
-
-
         maven {
             url 'http://usmlvv1qmp645:8081/artifactory/repo/'
         }
         maven {
             url 'http://usmlvv1qmp645:8081/artifactory/jcenter-cache/'
         }
-//        maven {
-//            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/t-and-m-facade/'
-//        }
 
-//      maven { url "https://repo1.maven.org/maven2" }
+        // Required by Babel until babel node modules are transferred in usmlvv1qmp645
+        maven {
+            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/npm-local/'
+        }
     }
 
     dependencies {
-
         compile group: 'org.slf4j', name: 'slf4j-api', version: "$versions.slf4j"
-//        compile group: 'org.slf4j', name: 'slf4j-log4j12', version: "$versions.slf4j_log4j12"
         compile group: 'org.apache.commons', name: 'commons-lang3', version: "$versions.commons_lang"
 
         testCompile "junit:junit:4.11"
