@@ -16,7 +16,7 @@ ext {
             log4j : '1.2.17',
             slf4j : '1.7.5',
             slf4j_log4j12 : '1.7.5',
-            javax_servlet_api: '3.0',
+            javax_servlet_api: '3.0.1',
             csa : "4.0.0700.00",
             commons_fileupload: '1.3.1',
             jodaTime : "2.2",
@@ -107,10 +107,13 @@ subprojects {
         maven {
             url 'http://usmlvv1qmp645:8081/artifactory/repo/'
         }
-
         maven {
-            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/t-and-m-facade/'
+            url 'http://usmlvv1qmp645:8081/artifactory/jcenter-cache/'
         }
+//        maven {
+//            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/t-and-m-facade/'
+//        }
+
 //      maven { url "https://repo1.maven.org/maven2" }
     }
 
