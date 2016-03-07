@@ -21,8 +21,8 @@
 
     <!-- Default set of monitored resources -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
-    <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory" />
-
+    <Transaction factory="org.springframework.transaction.jta.JtaTransactionManager"/>
+	
     <!-- Uncomment this to disable session persistence across Tomcat restarts -->
     <!--
     <Manager pathname="" />

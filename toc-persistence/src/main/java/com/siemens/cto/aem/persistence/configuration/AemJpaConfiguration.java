@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import javax.persistence.EntityManagerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,8 +9,6 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
-
-import javax.persistence.EntityManagerFactory;
 
 @Configuration
 public class AemJpaConfiguration {
@@ -25,10 +25,10 @@ public class AemJpaConfiguration {
     public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean() {
 
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-
+        factory.setDataSource(dataSourceConfiguration.getAemDataSource());
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
+        factory.setPersistenceUnitName("aem-unit");
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
-        factory.setJtaDataSource(dataSourceConfiguration.getSpringManagedAemDataSource());
 
         return factory;
     }

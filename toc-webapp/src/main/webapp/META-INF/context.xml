@@ -3,14 +3,15 @@
 
     <Resource name="jdbc/toc-xa"
               auth="Container"
-              type="com.atomikos.jdbc.AtomikosDataSourceBean"
-              factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
-              uniqueResourceName="AtomikosJndiXaDataSource"
-              poolSize="20"
-              xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
-              xaProperties.user="sa"
-              xaProperties.password=""
-              xaProperties.URL="jdbc:h2:tcp://localhost/~/aem;LOCK_MODE=0"/>
+	          type="javax.sql.DataSource"
+	          factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+			  driverClassName="org.h2.Driver" 
+              uniqueResourceName="toc_datasource"
+              minIdle="20"
+              maxActive="150"
+              username="sa"
+              password=""
+              url="jdbc:h2:tcp://localhost/~/aem;LOCK_MODE=0"/>
 
     <!--<Resource name="jdbc/toc-xa"-->
               <!--auth="Container"-->
@@ -52,8 +53,8 @@
               userName="admin"
               userPassword="Passw0rd"/>
 
-    <Transaction factory="com.siemens.cto.infrastructure.atomikos.UserTransactionManagerFactory"/>
-
+	<Transaction factory="org.springframework.transaction.jta.JtaTransactionManager"/>
+	
     <Realm className="org.apache.catalina.realm.JNDIRealm"
            connectionURL="ldap://custldapsrv1.usmlvv1d0a.smshsc.net:389"
            authentication="simple"

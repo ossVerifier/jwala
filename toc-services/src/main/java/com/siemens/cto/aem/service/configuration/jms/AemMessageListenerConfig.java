@@ -1,5 +1,17 @@
 package com.siemens.cto.aem.service.configuration.jms;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.MessageListener;
+import javax.jms.Session;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
@@ -8,21 +20,13 @@ import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListene
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.transaction.jta.JtaTransactionManager;
-
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class AemMessageListenerConfig {
 
     @Autowired
-    private JtaTransactionManager transactionManager;
+    @Qualifier("txManager")
+    private PlatformTransactionManager transactionManager;
 
     @Autowired
     private AemJmsConfig jmsConfig;

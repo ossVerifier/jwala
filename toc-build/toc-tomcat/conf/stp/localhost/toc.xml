@@ -30,14 +30,15 @@
 
     <Resource name="jdbc/toc-xa"
           auth="Container"
-          type="com.atomikos.jdbc.AtomikosDataSourceBean"
-          factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
-          uniqueResourceName="AtomikosJndiXaDataSource"
-	  poolSize="150"
-          xaDataSourceClassName="org.h2.jdbcx.JdbcDataSource"
-          xaProperties.user="sa"
-          xaProperties.password=""
-          xaProperties.URL="jdbc:h2:file:/stp/app/data/h2/toc"/>
+          type="javax.sql.DataSource"
+          factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+		  driverClassName="org.h2.Driver" 
+		  uniqueResourceName="toc_datasource" 
+          minIdle="10"
+		  maxActive="150"
+          username="sa"
+          password=""
+          url="jdbc:h2:file:/stp/app/data/h2/toc"/>
 
     <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
 
