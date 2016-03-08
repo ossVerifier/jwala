@@ -1,9 +1,5 @@
 apply plugin: 'groovy'
 
-configurations {
-    javaAgentOpenJpa
-}
-
 dependencies {
     compile project(":toc-common")
     compile project(":toc-filemanager")
@@ -13,8 +9,7 @@ dependencies {
     testCompile project(":toc-common")
     testCompile project(":toc-persistence")
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
-    testCompile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
-    testCompile "junit:junit:4.11"
+    testCompile group: "junit", name: "junit", version: "$project.versions.junit"
     testCompile group: 'org.springframework', name: 'spring-context', version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-core', version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
@@ -23,12 +18,4 @@ dependencies {
     testCompile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-test', version: "$project.versions.spring"
-    javaAgentOpenJpa("org.apache.openjpa:openjpa:$project.versions.jpa") {
-        exclude group: "junit"
-    }
 }
-test {
-    // TODO: Find a cleaner solution for "...next()" since this assumes that open jpa is always the first file.
-    jvmArgs "-javaagent:${configurations.javaAgentOpenJpa.files.iterator().next()}"
-}
-

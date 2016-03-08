@@ -1,6 +1,5 @@
 configurations {
     commonTest
-    javaAgentOpenJpa
 }
 
 task commonTestJar(type: Jar) {
@@ -15,8 +14,6 @@ artifacts {
 }
 
 dependencies {
-
-
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
