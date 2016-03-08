@@ -85,7 +85,7 @@ var GroupConfig = React.createClass({
         this.props.service.deleteGroup(this.state.selectedGroup["str-name"],
                                        function() {
                                            self.refs.modalDeleteDlg.close();
-                                           self.props.service.getGroups(self.getGroupsCallback.bind(self, null));
+                                           self.props.service.getGroups().then(self.getGroupsCallback);
                                        });
         
     },
@@ -96,7 +96,7 @@ var GroupConfig = React.createClass({
             this.props.service.insertNewGroup(groupName,
                                               function(){
                                                   self.refs.modalAddGroupDlg.close();
-                                                  self.props.service.getGroups(self.getGroupsCallback.bind(self, groupName));
+                                                  self.props.service.getGroups().then(self.getGroupsCallback);
                                               },
                                               function(errMsg) {
                                                   $.errorAlert(errMsg, "Error");
@@ -108,8 +108,10 @@ var GroupConfig = React.createClass({
             var self = this;
             this.props.service.updateGroup($(this.refs.groupEditForm.getDOMNode().children[0]).serializeArray(),
                                                  function(){
-                                                     self.props.service.getGroups(self.getGroupsCallback.bind(self,
-                                                         self.refs.groupEditForm.state.groupName));
+                                                     var currentGroupName = self.refs.groupEditForm.state.groupName;
+                                                     self.props.service.getGroups().then(function(response){
+                                                        self.getGroupsCallback(response, currentGroupName);
+                                                     });
                                                      self.refs.modalEditGroupDlg.close();
                                                  },
                                                  function(errMsg) {
