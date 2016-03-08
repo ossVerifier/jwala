@@ -88,6 +88,12 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<WebServer> getWebServersPropagationNew() {
+        return webServerPersistenceService.getWebServers();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final String aWebServerNameFragment) {
         return webServerPersistenceService.findWebServers(aWebServerNameFragment);
@@ -137,6 +143,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    @Transactional
     public void updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
         webServerPersistenceService.updateErrorStatus(id, errorStatus);
     }
@@ -198,6 +205,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    @Transactional (readOnly = true)
     public List<String> getResourceTemplateNames(String webServerName) {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }
@@ -223,6 +231,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    @Transactional
     public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user,
                                         boolean overwriteExisting) {
         webServerPersistenceService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
@@ -253,11 +262,13 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getStartedWebServerCount(final String groupName) {
         return webServerPersistenceService.getStartedWebServerCount(groupName);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getWebServerCount(final String groupName) {
         return webServerPersistenceService.getWebServerCount(groupName);
     }

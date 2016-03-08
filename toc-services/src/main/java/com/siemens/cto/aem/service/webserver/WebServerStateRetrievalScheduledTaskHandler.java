@@ -46,7 +46,7 @@ public class WebServerStateRetrievalScheduledTaskHandler {
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() {
         if (isEnabled()) {
-            final List<WebServer> webServers = webServerService.getWebServers();
+            final List<WebServer> webServers = webServerService.getWebServersPropagationNew();
             LOGGER.debug("# of web servers to ping = {}", webServers.size());
             try {
                 for (WebServer webServer : webServers) {

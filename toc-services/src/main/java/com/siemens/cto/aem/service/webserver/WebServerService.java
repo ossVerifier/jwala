@@ -58,4 +58,5 @@ public interface WebServerService {
 
     Long getWebServerCount(String groupName);
 
+    List<WebServer> getWebServersPropagationNew();
 }
