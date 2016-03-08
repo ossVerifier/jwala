@@ -215,6 +215,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Map<String, String>> getGroupJvmsResourceTemplateNames(String groupName, boolean includeGroupAppResources) {
         List<Map<String, String>> retVal = new ArrayList<>();
         final List<String> groupJvmsResourceTemplateNames = groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
@@ -240,11 +241,13 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getGroupWebServersResourceTemplateNames(String groupName) {
         return groupPersistenceService.getGroupWebServersResourceTemplateNames(groupName);
     }
 
     @Override
+    @Transactional
     public String getGroupJvmResourceTemplate(final String groupName,
                                               final String resourceTemplateName,
                                               final boolean tokensReplaced) {
@@ -273,6 +276,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public String previewGroupWebServerResourceTemplate(String groupName, String template) {
         final Group group = groupPersistenceService.getGroup(groupName);
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
@@ -284,6 +288,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public String previewGroupJvmResourceTemplate(String groupName, String template) {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
         if (jvms != null && jvms.size() > 0) {
@@ -293,6 +298,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public String getGroupWebServerResourceTemplate(final String groupName,
                                                     final String resourceTemplateName,
                                                     final boolean tokensReplaced) {
@@ -333,6 +339,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getGroupAppsResourceTemplateNames(String groupName) {
         return groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
     }
@@ -344,6 +351,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
         final Map<String, Application> bindings = new HashMap<>();
         Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
@@ -357,6 +365,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
@@ -374,6 +383,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String getAppNameFromResourceTemplate(String resourceTemplateName) {
         String retVal = "";
         String context;
@@ -394,6 +404,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void updateState(Identifier<Group> id, GroupState state) {
         groupPersistenceService.updateState(id, state);
     }

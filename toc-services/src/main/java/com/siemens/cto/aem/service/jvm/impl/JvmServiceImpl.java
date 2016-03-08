@@ -114,6 +114,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Jvm getJvm(final String jvmName) {
         return jvmPersistenceService.findJvmByExactName(jvmName);
     }
@@ -222,6 +223,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
         // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
         return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template,
@@ -237,11 +239,13 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getResourceTemplateNames(final String jvmName) {
         return jvmPersistenceService.getResourceTemplateNames(jvmName);
     }
 
     @Override
+    @Transactional
     public String getResourceTemplate(final String jvmName,
                                       final String resourceTemplateName,
                                       final boolean tokensReplaced) {
@@ -259,6 +263,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public String generateInvokeBat(String jvmName) {
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         return TomcatJvmConfigFileGenerator.getJvmConfigFromText(fileManager.getResourceTypeTemplate("InvokeBat"), jvm, jvmPersistenceService.getJvms());
@@ -278,6 +283,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public void pingAndUpdateJvmState(final Jvm jvm) {
         ClientHttpResponse response = null;
         try {
@@ -303,6 +309,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups) {
         for (Identifier<Group> groupId : groups) {
             for (Application app : applicationService.findApplications(groupId)) {
@@ -313,6 +320,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional
     public void deployApplicationContextXMLs(Jvm jvm) {
         List<Group> groupList = jvmPersistenceService.findGroupsByJvm(jvm.getId());
         for (Group group : groupList) {
@@ -329,11 +337,13 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getJvmStartedCount(final String groupName) {
         return jvmPersistenceService.getJvmStartedCount(groupName);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long getJvmCount(final String groupName) {
         return jvmPersistenceService.getJvmCount(groupName);
     }

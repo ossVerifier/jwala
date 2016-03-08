@@ -80,17 +80,20 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional (readOnly = true)
     public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
         return this.resourcePersistenceService.getResourceInstance(aResourceInstanceId);
     }
 
     @Override
+    @Transactional (readOnly = true)
     public List<ResourceInstance> getResourceInstancesByGroupName(final String groupName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupId(group.getId().getId());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstanceByGroupIdAndName(group.getId().getId(), name);
@@ -112,6 +115,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(group.getId().getId(), resourceTypeName);
@@ -132,6 +136,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public void deleteResourceInstance(final String groupName, final String name) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
         this.resourcePersistenceService.deleteResourceInstance(resourceInstance.getResourceInstanceId());

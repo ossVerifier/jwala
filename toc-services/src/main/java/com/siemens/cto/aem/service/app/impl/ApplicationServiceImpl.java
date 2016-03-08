@@ -183,11 +183,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getResourceTemplateNames(final String appName) {
         return applicationPersistenceService.getResourceTemplateNames(appName);
     }
 
     @Override
+    @Transactional
     public String getResourceTemplate(final String appName,
                                       final String groupName,
                                       final String jvmName,
@@ -220,7 +222,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param fileName
      * @return extension of the filename.
      */
-    private static String getFileExtension(final String fileName) {
+    protected static String getFileExtension(final String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 
@@ -336,6 +338,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional
     public String previewResourceTemplate(String appName, String groupName, String jvmName, String template) {
         final Map<String, Application> bindings = new HashMap<>();
         bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvmName),
@@ -344,6 +347,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional
     public void copyApplicationWarToGroupHosts(Application application) {
         File applicationWar = new File(application.getWarPath());
         final String sourcePath = applicationWar.getParent();
@@ -387,6 +391,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional
     public void copyApplicationConfigToGroupJvms(Group group, String appName, User user) {
         final String groupName = group.getName();
         final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
@@ -400,6 +405,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Transactional
     public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user) {
         List<String> deployedHosts = new ArrayList<>();
         deployedHosts.add(jvmPersistenceService.findJvm(jvmName, groupName).getHostName());
@@ -419,7 +425,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     /**
      * As the name describes, this method creates the path if it does not exists.
      */
-    private static void createPathIfItDoesNotExists(String path) {
+    protected static void createPathIfItDoesNotExists(String path) {
         if (!Files.exists(Paths.get(path))) {
             new File(path).mkdir();
         }
@@ -434,7 +440,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param resourceTemplateName - the name of the resource to generate.
      * @return the configuration file.
      */
-    private File createConfFile(final String appName, final String groupName, final String jvmName,
+    protected File createConfFile(final String appName, final String groupName, final String jvmName,
                                 final String resourceTemplateName)
             throws FileNotFoundException {
         PrintWriter out = null;
