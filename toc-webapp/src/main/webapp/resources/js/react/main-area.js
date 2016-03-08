@@ -102,17 +102,17 @@ $(document).ready(function(){
     $.validator.addMethod("hostNameCheck", function(value, element) {
         var exp = /^[a-zA-Z0-9-.]+$/i;
         return this.optional(element) || exp.test(value);
-    }, "The field must only contain letters, numbers, dashes or periods.");
+    }, "The field must only contain letters, numbers, dashes and-or periods.");
 
     $.validator.addMethod("nameCheck", function(value, element) {
-        var exp = /^[a-zA-Z0-9-_.]+$/i;
+        var exp = /^[a-zA-Z0-9-_.\s]+$/i;
         return this.optional(element) || exp.test(value);
-    }, "The field must only contain letters, numbers, underscores, dashes or periods.");
+    }, "The field must only contain letters, numbers, dashes, underscores, periods and-or spaces.");
 
     $.validator.addMethod("xmlFileNameCheck", function(value, element) {
         var exp = /^.*\.xml$/i;
         return this.optional(element) || exp.test(value);
-    }, "The field must only contain letters, numbers, underscores, dashes or periods.");
+    }, "The field must only contain letters, numbers, underscores, dashes and-or periods.");
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
