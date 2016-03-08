@@ -39,6 +39,7 @@ public class JpaApplicationConfigTemplate {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)
+    @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction = org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaJvm jvm;
 
     @Column(name = "TEMPLATE_NAME", nullable = false)
