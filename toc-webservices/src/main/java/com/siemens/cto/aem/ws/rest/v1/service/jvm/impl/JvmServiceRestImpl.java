@@ -100,15 +100,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             IpAddress coordinatorIP = new IpAddress(jgroupsCoordinatorIPAddress);
 
             channel.connect(jgroupsClusterName, coordinatorIP, Long.parseLong(jgroupsClusterConnectTimeout));
-            LOGGER.info("Connection to cluster SUCCESSFUL");
+            LOGGER.info("JGroups connection to cluster SUCCESSFUL");
 
             PhysicalAddress physicalAddr = (PhysicalAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, channel.getAddress()));
-            LOGGER.info("Cluster physical address {}", physicalAddr);
+            LOGGER.info("JGroups cluster physical address {}", physicalAddr);
 
             // TODO figure our when/where to close the channel
 //            channel.close();
         } catch (Exception e) {
-            LOGGER.error("FAILURE Could not connect to cluster {}", jgroupsClusterName, e);
+            LOGGER.error("FAILURE using JGroups: could not connect to cluster {}", jgroupsClusterName, e);
         }
     }
     @Override

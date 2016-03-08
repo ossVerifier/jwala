@@ -46,10 +46,10 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     public void receive(Message jgroupMessage) {
         final Address src = jgroupMessage.getSrc();
         final Map<ReportingJmsMessageKey, String> messageMap = (Map<ReportingJmsMessageKey, String>) jgroupMessage.getObject();
-        logger.debug("Received JVM state message {} {}", src, messageMap);
+        logger.debug("Received JGroups JVM state message {} {}", src, messageMap);
 
         final JvmStateMessage message = converter.convert(messageMap);
-        logger.info("Processing JVM state message: {}", message);
+        logger.info("Processing JGroups JVM state message: {}", message);
 
         final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
