@@ -96,31 +96,40 @@ var GroupOperations = React.createClass({
                                                     this.state.jvmStates,
                                                     []);
     },
-    updateStateData: function(response) {
-        if (this.pollError) {
-            this.pollError = false;
-            return;
+    msgHandler: function(msg) {
+        if (msg.type === "JVM") {
+            this.updateJvmStateData(msg);
+        } else if (msg.type === "WEB_SERVER") {
+            this.updateWebServerStateData(msg);
         }
-
-        var newStates = response.applicationResponseContent;
-        var groups = [];
-        var webServers = [];
-        var jvms = [];
-
-        for (var i = 0; i < newStates.length; i++) {
-            if (newStates[i].type === "JVM") {
-                jvms.push(newStates[i]);
-            } else if (newStates[i].type === "WEB_SERVER") {
-                webServers.push(newStates[i]);
-            } else if (newStates[i].type === "GROUP") {
-                groups.push(newStates[i]);
-            }
-        }
-
-        this.updateGroupsStateData(groups);
-        this.updateWebServerStateData(webServers);
-        this.updateJvmStateData(jvms);
     },
+
+// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
+//    updateStateData: function(response) {
+//        if (this.pollError) {
+//            this.pollError = false;
+//            return;
+//        }
+//
+//        var newStates = response.applicationResponseContent;
+//        var groups = [];
+//        var webServers = [];
+//        var jvms = [];
+//
+//        for (var i = 0; i < newStates.length; i++) {
+//            if (newStates[i].type === "JVM") {
+//                jvms.push(newStates[i]);
+//            } else if (newStates[i].type === "WEB_SERVER") {
+//                webServers.push(newStates[i]);
+//            } else if (newStates[i].type === "GROUP") {
+//                groups.push(newStates[i]);
+//            }
+//        }
+//
+//        this.updateGroupsStateData(groups);
+//        this.updateWebServerStateData(webServers);
+//        this.updateJvmStateData(jvms);
+//    },
 
     /**
      * Check if the session is expired.
@@ -208,96 +217,98 @@ var GroupOperations = React.createClass({
         };
     },
     commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
-    updateWebServerStateData: function(newWebServerStates) {
+    updateWebServerStateData: function(newWebServerState) {
         var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
         var self = this;
 
-        // TODO: This is where we fix the bug wherein the UI is not updated to the correct web server state.
-        if (newWebServerStates && newWebServerStates.length > 0) {
+        if (newWebServerState !== null) {
             webServersToUpdate.forEach(
                 function(webServer) {
                     var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
                     if (webServerStatusWidget !== undefined) {
-                        for (var i = 0; i < newWebServerStates.length; i++) {
-                            if (newWebServerStates[i].id.id === webServer.webServerId.id) {
-                                if (newWebServerStates[i].stateString === GroupOperations.FAILED || newWebServerStates[i].stateString === GroupOperations.START_SENT || newWebServerStates[i].stateString === GroupOperations.STOP_SENT) {
-                                    if (newWebServerStates[i].stateString === GroupOperations.STARTING) {
-                                        newWebServerStates[i].stateString = GroupOperations.START_SENT;
+                        // for (var i = 0; i < newWebServerStates.length; i++) {
+                            if (newWebServerState.id.id === webServer.webServerId.id) {
+                                if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
+                                    if (newWebServerState.stateString === GroupOperations.STARTING) {
+                                        newWebServerState.stateString = GroupOperations.START_SENT;
                                     }
-                                    if (newWebServerStates[i].stateString === GroupOperations.STOPPING) {
-                                        newWebServerStates[i].stateString = GroupOperations.STOP_SENT;
+                                    if (newWebServerState.stateString === GroupOperations.STOPPING) {
+                                        newWebServerState.stateString = GroupOperations.STOP_SENT;
                                     }
                                     var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                                     if (commandStatusWidget !== undefined) {
-                                        commandStatusWidget.push({stateString: newWebServerStates[i].stateString,
-                                                                  asOf: newWebServerStates[i].asOf,
-                                                                  message: newWebServerStates[i].message,
-                                                                  from: "Web Server " + webServer.name, userId: newWebServerStates[i].userId},
-                                                                  newWebServerStates[i].stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
+                                        commandStatusWidget.push({stateString: newWebServerState.stateString,
+                                                                  asOf: newWebServerState.asOf,
+                                                                  message: newWebServerState.message,
+                                                                  from: "Web Server " + webServer.name, userId: newWebServerStateuserId},
+                                                                  newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
                                     }
 
 
                                 } else {
-                                    var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerStates[i]);
+                                    var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
                                     webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                                 }
                             }
-                        }
+                        // }
                     }
                 }
             );
         }
     },
-    updateJvmStateData: function(newJvmStates) {
+    updateJvmStateData: function(newJvmState) {
         var self = this;
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
 
-        if (newJvmStates && newJvmStates.length > 0) {
+        if (newJvmState) {
             jvmsToUpdate.forEach(
                 function(jvm) {
                     var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
                     if (jvmStatusWidget !== undefined) {
-                        for (var i = 0; i < newJvmStates.length; i++) {
-                            if (newJvmStates[i].id.id === jvm.jvmId.id) {
-                                if (newJvmStates[i].stateString === GroupOperations.FAILED ||
-                                    newJvmStates[i].stateString === GroupOperations.START_SENT ||
-                                    newJvmStates[i].stateString === GroupOperations.STOP_SENT) {
+                        // for (var i = 0; i < newJvmStates.length; i++) {
+                            if (newJvmState.id.id === jvm.jvmId.id) {
+                                if (newJvmState.stateString === GroupOperations.FAILED ||
+                                    newJvmState.stateString === GroupOperations.START_SENT ||
+                                    newJvmState.stateString === GroupOperations.STOP_SENT) {
 
                                     var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                                     if (commandStatusWidget !== undefined) {
-                                        commandStatusWidget.push({stateString: newJvmStates[i].stateString,
-                                                                  asOf: newJvmStates[i].asOf,
-                                                                  message: newJvmStates[i].message,
+                                        commandStatusWidget.push({stateString: newJvmState.stateString,
+                                                                  asOf: newJvmState.asOf,
+                                                                  message: newJvmState.message,
                                                                   from: "JVM " + jvm.name,
-                                                                  userId: newJvmStates[i].userId},
-                                                                  newJvmStates[i].stateString === GroupOperations.FAILED ?
+                                                                  userId: newJvmState.userId},
+                                                                  newJvmState.stateString === GroupOperations.FAILED ?
                                                                   "error-status-font" : "action-status-font");
                                     }
 
                                 } else {
-                                    var stateDetails = groupOperationsHelper.extractStateDetails(newJvmStates[i]);
+                                    var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
                                     jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
 
                                     // Update the state of the jvm that is in a "react state" so that when the
                                     // state component is re rendered it is updated. JVMs are loaded together with the
                                     // group and not when the group is opened that is why we need this.
-                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmStates[i].stateString,
+                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
                                                                                               errorStatus: ""};
                                 }
                             }
-                        }
+                        // }
                     }
                 }
             );
         }
     },
     pollStates: function() {
-        if (this.statePoller === null) {
-            this.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
-                                                                this.updateStateData, this.statePollingErrorHandler);
-        }
+// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
+//        if (this.statePoller === null) {
+//            this.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
+//                                                                this.updateStateData, this.statePollingErrorHandler);
+//        }
+//
+//        this.statePoller.start();
 
-        this.statePoller.start();
+        ServiceFactory.getServerStateWebSocketService().connect(this.msgHandler);
     },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
@@ -314,14 +325,16 @@ var GroupOperations = React.createClass({
         this.pollStates();
     },
     componentWillUnmount: function() {
-        this.statePoller.stop();
+// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
+//        this.statePoller.stop();
+        ServiceFactory.getServerStateWebSocketService().disconnect();
     },
     updateWebServerDataCallback: function(webServerData) {
         this.setState(groupOperationsHelper.processWebServerData([],
                                                                  webServerData,
                                                                  this.state.webServerStates,
                                                                  []));
-        this.updateWebServerStateData([]);
+        this.updateWebServerStateData(null);
     },
     statePoller: null,
     statics: {

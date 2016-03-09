@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -44,10 +45,15 @@ import java.util.concurrent.Future;
 public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
+    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
     private HttpClientRequestFactory httpClientRequestFactory;
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private WebServerService webServerService;
+
     private StateNotificationService stateNotificationService;
+
+    private SimpMessagingTemplate messagingTemplate;
+
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
@@ -130,22 +136,24 @@ public class WebServerStateSetterWorker {
      * @param msg                     a message
      */
     private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
-        if (!isWebServerBusy(webServer) && isStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
+        if (!isWebServerBusy(webServer) && checkStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
             webServerService.updateState(webServer.getId(), webServerReachableState, msg);
-            stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
-                    DateTime.now()));
+
+            // stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
+            //         DateTime.now()));
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
             grpStateComputationAndNotificationSvc.computeAndNotify(webServer.getId(), webServerReachableState);
         }
     }
 
     /**
-     * Check if state has changed or if message is not empty.
+     * Check if state has changed or if message is not empty. Sets WEB_SERVER_LAST_PERSISTED_STATE_MAP and WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.
      * @param webServer {@link WebServer}
      * @param webServerReachableState {@link WebServerReachableState}
      * @param msg a message (usually an error message)
      * @return true of the state is not the same compared to the previous state or if there's a message (error message)
      */
-    private boolean isStateChangedAndOrMsgNotEmpty(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
+    private boolean checkStateChangedAndOrMsgNotEmpty(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
         boolean stateChangedAndOrMsgNotEmpty = false;
         if (!WEB_SERVER_LAST_PERSISTED_STATE_MAP.containsKey(webServer.getId()) ||
                 !WEB_SERVER_LAST_PERSISTED_STATE_MAP.get(webServer.getId()).equals(webServerReachableState)) {
@@ -199,6 +207,10 @@ public class WebServerStateSetterWorker {
 
     public void setGrpStateComputationAndNotificationSvc(GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
+    }
+
+    public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
     }
 
 }

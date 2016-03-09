@@ -4,7 +4,7 @@ ext {
     versions = [
             junit : "4.11",
             pmd : "4.3",
-            spring : "3.2.6.RELEASE",
+            spring : "4.2.5.RELEASE",
             spring_integration : "3.0.1.RELEASE",
             jackson : "1.4.2",
             jpa : "2.2.2",

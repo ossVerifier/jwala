@@ -12,6 +12,8 @@ dependencies {
     compile group: "org.springframework", name: "spring-jms", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-aop", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-websocket", version: "$project.versions.spring"
+
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
     compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"

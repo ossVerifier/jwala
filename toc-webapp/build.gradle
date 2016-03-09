@@ -14,9 +14,14 @@ configurations {
 dependencies {
 
     compile group: "org.springframework", name: "spring-webmvc", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-messaging", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-websocket", version: "$project.versions.spring"
     compile group: "javax.servlet", name: "jstl", version: "$localVersions.jstl"
     compile group: "org.codehaus.jackson", name: "jackson-mapper-asl", version: "$project.versions.jackson"
     compile(group: 'org.apache.commons', name: 'commons-pool2', version: '2.4.2')
+
+    runtime group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.5'
+    runtime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.5'
 
     runtime group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
     runtime group: "log4j", name:"log4j", version:"$project.versions.log4j"
@@ -78,9 +83,9 @@ task compileJsx(type:Exec) {
     commandLine "cmd",
             "/c",
             "jsx" +
-                    " ./" + reactSrcPath +
-                    " ./" + reactBuildPath +
-                    " --cache-dir ./" + reactCachePath
+            " ./" + reactSrcPath +
+            " ./" + reactBuildPath +
+            " --cache-dir ./" + reactCachePath
 
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
@@ -102,10 +107,10 @@ task watchJsx(type:Exec) {
     commandLine "cmd",
             "/c",
             "jsx" +
-                    " -w" +
-                    " ./" + reactSrcPath +
-                    " ./" + reactBuildPath +
-                    " --cache-dir ./" + reactCachePath
+            " -w" +
+            " ./" + reactSrcPath +
+            " ./" + reactBuildPath +
+            " --cache-dir ./" + reactCachePath
 
     standardOutput = new ByteArrayOutputStream()
     ext.output = {

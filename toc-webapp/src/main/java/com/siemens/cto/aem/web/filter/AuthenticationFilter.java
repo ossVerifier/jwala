@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * Modified by: z003bpej
  * Comments: Modified to fit TOC, this filter was originally used in EPM.
  */
-@WebFilter(urlPatterns = "/*")
+@WebFilter(urlPatterns = "/*", asyncSupported = true)
 public class AuthenticationFilter implements Filter {
 
     private static final Pattern LOGIN_PAGE = Pattern.compile("/login");

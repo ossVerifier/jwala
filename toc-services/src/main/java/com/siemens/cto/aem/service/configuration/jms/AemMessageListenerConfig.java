@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -46,6 +47,9 @@ public class AemMessageListenerConfig {
     @Autowired
     private StateNotificationService stateNotificationService;
 
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
+
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer() {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
@@ -68,8 +72,8 @@ public class AemMessageListenerConfig {
     @Bean
     @Autowired
     public MessageListener getJvmStateMessageListener() {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
-                grpStateComputationAndNotificationSvc, stateNotificationService);
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, grpStateComputationAndNotificationSvc,
+                stateNotificationService, simpMessagingTemplate);
     }
 
 }

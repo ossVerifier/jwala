@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -47,6 +48,10 @@ public class JvmStateMessageListenerTest {
     @Mock
     private StateNotificationService mockStateNotificationService;
 
+    @Mock
+    private SimpMessagingTemplate mockMessagingTemplate;
+
+
     private JvmStateMessageListener listener;
     private JvmStateMapMessageConverter converter;
     private JvmStateMessage convertedMessage;
@@ -58,7 +63,8 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc, mockStateNotificationService));
+        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc,
+                mockStateNotificationService, mockMessagingTemplate));
     }
 
     @Test

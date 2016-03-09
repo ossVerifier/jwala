@@ -77,6 +77,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -303,11 +304,13 @@ public class AemServiceConfiguration {
 
     @Bean
     @Autowired
-    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker) {
+    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
+                                                                    final SimpMessagingTemplate messagingTemplate) {
         webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(getWebServerService());
         webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
         webServerStateSetterWorker.setGrpStateComputationAndNotificationSvc(grpStateComputationAndNotificationSvc);
+        webServerStateSetterWorker.setMessagingTemplate(messagingTemplate);
         return webServerStateSetterWorker;
     }
 

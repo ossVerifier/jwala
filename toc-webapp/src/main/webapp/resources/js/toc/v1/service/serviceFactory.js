@@ -22,5 +22,8 @@ var ServiceFactory = {
     },
     getResourceService: function() {
         return resourceService;
+    },
+    getServerStateWebSocketService: function() {
+        return serverStateWebSocketService;
     }
 };
