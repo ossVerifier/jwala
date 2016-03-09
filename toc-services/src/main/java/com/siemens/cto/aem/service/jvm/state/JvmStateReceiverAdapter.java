@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
+package com.siemens.cto.aem.service.jvm.state;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -20,6 +20,7 @@ import org.jgroups.View;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,18 +29,24 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmStateReceiverAdapter.class);
 
+    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+
     private final JvmService jvmService;
     private final StateNotificationService stateNotificationService;
+    private final SimpMessagingTemplate messagingTemplate;
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
     private JvmStateMapMessageConverterImpl converter = new JvmStateMapMessageConverterImpl();
 
     private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
-    public JvmStateReceiverAdapter(JvmService jvmService, StateNotificationService stateNotificationService, GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+    public JvmStateReceiverAdapter(final JvmService jvmService, final StateNotificationService stateNotificationService,
+                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
+                                   final SimpMessagingTemplate messagingTemplate) {
         this.jvmService = jvmService;
         this.stateNotificationService = stateNotificationService;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -57,7 +64,8 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final String msg = newState.getMessage();
             final JvmState state = newState.getState();
             final Identifier<Jvm> id = newState.getId();
-            stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
+            // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
             grpStateComputationAndNotificationSvc.computeAndNotify(id, state);
         }

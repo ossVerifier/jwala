@@ -45,6 +45,7 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
@@ -57,7 +58,6 @@ import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
-import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
@@ -134,6 +134,9 @@ public class AemServiceConfiguration {
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
@@ -164,14 +167,10 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "jvmService")
-    public JvmService getJvmService(ClientFactoryHelper factoryHelper) {
+    public JvmService getJvmService() {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
-        return new JvmServiceImpl(jvmPersistenceService,
-                getGroupService(),
-                getApplicationService(jvmPersistenceService),
-                fileManager,
-                getStateNotificationService(),
-                grpStateComputationAndNotificationSvc);
+        return new JvmServiceImpl(jvmPersistenceService, getGroupService(), getApplicationService(jvmPersistenceService),
+                fileManager, getStateNotificationService(), grpStateComputationAndNotificationSvc, messagingTemplate);
     }
 
     @Bean(name = "webServerService")
@@ -211,8 +210,8 @@ public class AemServiceConfiguration {
 
     @Bean(name = "jvmControlService")
     @Autowired
-    public JvmControlService getJvmControlService(final ClientFactoryHelper factoryHelper, final HistoryCrudService historyCrudService) {
-        return new JvmControlServiceImpl(getJvmService(factoryHelper), aemCommandExecutorConfig.getRemoteCommandExecutor(),
+    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService) {
+        return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getHistoryService(historyCrudService), getStateNotificationService());
     }
 
@@ -304,8 +303,7 @@ public class AemServiceConfiguration {
 
     @Bean
     @Autowired
-    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker,
-                                                                    final SimpMessagingTemplate messagingTemplate) {
+    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker) {
         webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(getWebServerService());
         webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
@@ -343,6 +341,13 @@ public class AemServiceConfiguration {
         genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
         genericKeyedObjectPoolConfig.setBlockWhenExhausted(true);
         return new GenericKeyedObjectPool(new KeyedJschChannelFactory(sshConfig.getJschBuilder().build()));
+    }
+
+    @Bean
+    @Autowired
+    public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
+        return new JvmStateReceiverAdapter(getJvmService(), getStateNotificationService(), grpStateComputationAndNotificationSvc,
+                messagingTemplate);
     }
 
 }

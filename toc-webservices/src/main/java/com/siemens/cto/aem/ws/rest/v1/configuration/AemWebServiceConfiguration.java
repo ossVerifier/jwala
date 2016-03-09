@@ -9,6 +9,7 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -28,7 +29,6 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.state.StateServiceRest;
@@ -108,6 +108,9 @@ public class AemWebServiceConfiguration {
     @Autowired
     private GroupWebServerControlService groupWebServerControlService;
 
+    @Autowired
+    private JvmStateReceiverAdapter jvmStateReceiverAdapter;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -155,7 +158,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap, getSimpleJvmReceiverAdapter());
+        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap,
+                jvmStateReceiverAdapter);
     }
 
     @Bean
@@ -248,7 +252,4 @@ public class AemWebServiceConfiguration {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
 
-    public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(jvmService, stateNotificationService, grpStateComputationAndNotificationSvc);
-    }
 }

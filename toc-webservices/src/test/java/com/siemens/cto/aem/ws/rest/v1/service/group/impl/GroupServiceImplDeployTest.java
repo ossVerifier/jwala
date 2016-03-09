@@ -25,6 +25,7 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -36,7 +37,6 @@ import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImp
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.io.FileUtils;

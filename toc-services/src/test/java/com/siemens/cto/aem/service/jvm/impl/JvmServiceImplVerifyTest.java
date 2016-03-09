@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,13 +61,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private StateNotificationService stateNotificationService = mock(StateNotificationService.class);
     private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
     private ApplicationService applicationService = mock(ApplicationService.class);
-
+    private SimpMessagingTemplate mockMessagingTemplate = mock(SimpMessagingTemplate.class);
 
     @Mock
     private ClientFactoryHelper mockClientFactoryHelper;
 
     @InjectMocks
-    private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, applicationService, fileManager, stateNotificationService, grpStateComputationAndNotificationSvc);
+    private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, applicationService, fileManager,
+            stateNotificationService, grpStateComputationAndNotificationSvc, mockMessagingTemplate);
 
     @SuppressWarnings("unchecked")
     @Before

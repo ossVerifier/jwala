@@ -23,6 +23,7 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;

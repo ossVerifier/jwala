@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,8 @@ public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
 
+    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     private final JvmPersistenceService jvmPersistenceService;
@@ -57,6 +60,7 @@ public class JvmServiceImpl implements JvmService {
     private ApplicationService applicationService;
     private final FileManager fileManager;
     private final StateNotificationService stateNotificationService;
+    private final SimpMessagingTemplate messagingTemplate;
     private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
@@ -66,13 +70,15 @@ public class JvmServiceImpl implements JvmService {
                           final GroupService theGroupService,
                           ApplicationService applicationService, final FileManager theFileManager,
                           final StateNotificationService stateNotificationService,
-                          final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
+                          final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
+                          final SimpMessagingTemplate messagingTemplate) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         this.applicationService = applicationService;
         fileManager = theFileManager;
         this.stateNotificationService = stateNotificationService;
         this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -218,8 +224,9 @@ public class JvmServiceImpl implements JvmService {
                           final JvmState state,
                           final String msg) {
         jvmPersistenceService.updateState(jvm.getId(), state, msg);
-        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
+        // stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
+        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
     }
 
     @Override
@@ -273,7 +280,8 @@ public class JvmServiceImpl implements JvmService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmPersistenceService.updateState(id, state);
-        stateNotificationService.notifyStateUpdated(new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+        // stateNotificationService.notifyStateUpdated(new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
     }
 
     @Override

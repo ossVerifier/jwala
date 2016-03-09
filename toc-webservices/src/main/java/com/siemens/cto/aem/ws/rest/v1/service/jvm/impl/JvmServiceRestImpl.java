@@ -21,6 +21,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResou
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
