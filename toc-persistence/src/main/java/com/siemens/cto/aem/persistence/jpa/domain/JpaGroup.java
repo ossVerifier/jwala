@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 
 import javax.persistence.*;
@@ -36,7 +35,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     @Column(nullable = false, unique = true)
     public String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "GRP_JVM",
                joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
                inverseJoinColumns = {@JoinColumn(name = "JVM_ID", referencedColumnName = "ID")},
@@ -50,7 +49,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar stateUpdated;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",
             joinColumns = {@JoinColumn(name = "GROUP_ID")},
             inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID")})
