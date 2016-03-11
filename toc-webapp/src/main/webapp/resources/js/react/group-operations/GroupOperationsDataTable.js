@@ -496,6 +496,8 @@ var GroupOperationsDataTable = React.createClass({
                                                                 "action-status-font");
                                   });
 
+                                  self.writeWebServerActionToCommandStatusWidget(id, "START SENT");
+
                                   self.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)}, "ui-icon-play");
                               },
                               false);
@@ -516,6 +518,8 @@ var GroupOperationsDataTable = React.createClass({
                                                                 from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
                                                                 "action-status-font");
                                   });
+
+                                  self.writeWebServerActionToCommandStatusWidget(id, "STOP SENT");
 
                                   self.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)}, "ui-icon-stop");
                               },
