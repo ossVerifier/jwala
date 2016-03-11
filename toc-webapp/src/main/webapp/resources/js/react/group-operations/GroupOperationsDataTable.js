@@ -486,18 +486,18 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         groupService.getGroup(id,
                               function(response){
-                                  var jvms = response.applicationResponseContent.jvms;
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
-                                  jvms.forEach(function(jvm){
-                                      commandStatusWidget.push({stateString: "START SENT",
-                                                                asOf: new Date().getTime(),
-                                                                message: "",
-                                                                from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                "action-status-font");
-                                  });
-
-                                  self.writeWebServerActionToCommandStatusWidget(id, "START SENT");
-
+                                  if (commandStatusWidget) {
+                                      var jvms = response.applicationResponseContent.jvms;
+                                      jvms.forEach(function(jvm){
+                                          commandStatusWidget.push({stateString: "START SENT",
+                                                                    asOf: new Date().getTime(),
+                                                                    message: "",
+                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+                                                                    "action-status-font");
+                                      });
+                                      self.writeWebServerActionToCommandStatusWidget(id, "START SENT");
+                                  }
                                   self.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)}, "ui-icon-play");
                               },
                               false);
@@ -509,18 +509,19 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         groupService.getGroup(id,
                               function(response){
-                                  var jvms = response.applicationResponseContent.jvms;
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
-                                  jvms.forEach(function(jvm){
-                                      commandStatusWidget.push({stateString: "STOP SENT",
-                                                                asOf: new Date().getTime(),
-                                                                message: "",
-                                                                from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                "action-status-font");
-                                  });
+                                  if (commandStatusWidget) {
+                                      var jvms = response.applicationResponseContent.jvms;
+                                      jvms.forEach(function(jvm){
+                                          commandStatusWidget.push({stateString: "STOP SENT",
+                                                                    asOf: new Date().getTime(),
+                                                                    message: "",
+                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+                                                                    "action-status-font");
+                                      });
 
-                                  self.writeWebServerActionToCommandStatusWidget(id, "STOP SENT");
-
+                                      self.writeWebServerActionToCommandStatusWidget(id, "STOP SENT");
+                                  }
                                   self.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)}, "ui-icon-stop");
                               },
                               false);
