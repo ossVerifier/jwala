@@ -593,32 +593,40 @@ var GroupOperationsDataTable = React.createClass({
     startGroupWebServers: function(event) {
         var self = this;
         var callback = function(id, buttonSelector) {
-                            self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.startWebServers(event.data.id)},
+                            self.disableEnable(event.data.buttonSelector, function() {return groupControlService.startWebServers(event.data.id)},
                                                "ui-icon-play");
-                       }
 
-        this.verifyAndConfirmControlOperation(event.data.id,
-                                              event.data.buttonSelector,
-                                              event.data.name,
-                                              "start all Web Servers under",
-                                              callback,
-                                              "webServer");
+                            self.writeWebServerActionToCommandStatusWidget(event.data.id, "START SENT");
+                        }
+
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "start all Web Servers under",
+                                              callback, "webServer");
     },
     stopGroupWebServers: function(event) {
         var self = this;
         var callback = function(id, buttonSelector) {
-                            self.disableEnable(event.data.buttonSelector,
-                                               function() { return groupControlService.stopWebServers(event.data.id)},
+                            self.disableEnable(event.data.buttonSelector, function() {return groupControlService.stopWebServers(event.data.id)},
                                                "ui-icon-stop");
+
+                                self.writeWebServerActionToCommandStatusWidget(event.data.id, "STOP SENT");
                        }
 
-        this.verifyAndConfirmControlOperation(event.data.id,
-                                              event.data.buttonSelector,
-                                              event.data.name,
-                                              "stop all Web Servers under",
-                                              callback,
-                                              "webServer");
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "stop all Web Servers under",
+                                              callback, "webServer");
+    },
+    writeWebServerActionToCommandStatusWidget: function(groupId, action) {
+        var self = this;
+        webServerService.getWebServerByGroupId(groupId).then(
+            function(response) {
+                var webServers = response.applicationResponseContent;
+                var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(groupId)];
+                webServers.forEach(function(webServer) {
+                                       commandStatusWidget.push({stateString: action, asOf: new Date().getTime(), message: "",
+                                                                 from: "Web Server " + webServer.name, userId: AdminTab.getCookie("userName")},
+                                                                 "action-status-font");
+                                   });
+            }
+        );
     },
 
    jvmHeapDump: function(id, selector, host) {
