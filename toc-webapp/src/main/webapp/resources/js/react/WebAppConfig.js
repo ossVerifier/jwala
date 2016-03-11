@@ -89,7 +89,7 @@ var WebAppConfig = React.createClass({
         this.props.service.getWebApps(function(response){
                                         self.setState({WebAppTableData:response.applicationResponseContent});
                                      });
-        this.props.groupService.getGroups(
+        this.props.groupService.getGroups().then(
             function(response){
                 self.setState({groupSelectData:response.applicationResponseContent});
             }
