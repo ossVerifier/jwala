@@ -26,10 +26,6 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 public class AemMessageListenerConfig {
 
     @Autowired
-    @Qualifier("txManager")
-    private PlatformTransactionManager transactionManager;
-
-    @Autowired
     private AemJmsConfig jmsConfig;
 
     @Autowired
@@ -51,7 +47,7 @@ public class AemMessageListenerConfig {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Bean
-    public DefaultMessageListenerContainer getJvmStateListenerContainer() {
+    public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager) {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
 
         container.setTransactionManager(transactionManager);

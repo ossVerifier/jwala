@@ -1,23 +1,14 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.persistence.jpa.service.*;
 import com.siemens.cto.aem.persistence.jpa.service.impl.*;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.persistence.service.impl.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 
 @Configuration
 public class AemPersistenceServiceConfiguration {
-
-    @Autowired
-    private SharedEntityManagerBean sharedEntityManager;
 
     @Bean
     public ResourcePersistenceService getResourcePersistenceService() {

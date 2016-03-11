@@ -13,6 +13,7 @@ dependencies {
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-aop", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-websocket", version: "$project.versions.spring"
+    compile group: "org.springframework", name: "spring-messaging", version: "$project.versions.spring"
     compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
     compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"

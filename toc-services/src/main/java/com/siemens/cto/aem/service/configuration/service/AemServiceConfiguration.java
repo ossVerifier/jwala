@@ -80,7 +80,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.Resource;
 import java.security.KeyManagementException;
@@ -89,6 +91,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -98,13 +101,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
         "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component"})
-public class AemServiceConfiguration {
+public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
     private AemPersistenceServiceConfiguration persistenceServiceConfiguration;
-
-    @Autowired
-    private AemDaoConfiguration aemDaoConfiguration;
 
     @Autowired
     private AemCommandExecutorConfig aemCommandExecutorConfig;
@@ -144,6 +144,9 @@ public class AemServiceConfiguration {
 
     @Resource
     private Environment env;
+
+    @Autowired
+    private Executor taskScheduler;
 
 
     /**
@@ -350,4 +353,8 @@ public class AemServiceConfiguration {
                 messagingTemplate);
     }
 
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        taskRegistrar.setScheduler(taskScheduler);
+    }
 }

@@ -8,12 +8,11 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({AemJpaConfiguration.class,
          AemDaoConfiguration.class,
-         AemDataSourceConfiguration.class,
          AemPersistenceServiceConfiguration.class})
 public class AemPersistenceConfigurationReference {
     
     public AemPersistenceConfigurationReference() {}
-    
+
     @Bean
     public PersistenceApplicationListener getPersistenceApplicationListener() {
         return new PersistenceApplicationListener();

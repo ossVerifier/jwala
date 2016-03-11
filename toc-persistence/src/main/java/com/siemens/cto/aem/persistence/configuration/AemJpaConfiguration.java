@@ -1,32 +1,39 @@
 package com.siemens.cto.aem.persistence.configuration;
 
-import javax.persistence.EntityManagerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.siemens.cto.aem.common.exception.ApplicationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.jndi.JndiLocatorDelegate;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.naming.NamingException;
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 
 @Configuration
+@EnableTransactionManagement
 public class AemJpaConfiguration {
 
-    @Autowired
-    private AemDataSourceConfiguration dataSourceConfiguration;
-
     @Bean
-    public JpaVendorAdapter getJpaVendorAdapter() {
-        return new OpenJpaVendorAdapter();
+    public DataSource getAemDataSource() {
+        try {
+            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/toc-xa",
+                    DataSource.class);
+        } catch (final NamingException ne) {
+            throw new ApplicationException(ne);
+        }
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean() {
+    public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean(final DataSource dataSource) {
 
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setDataSource(dataSourceConfiguration.getAemDataSource());
-        factory.setJpaVendorAdapter(getJpaVendorAdapter());
+        factory.setDataSource(dataSource);
+        factory.setJpaVendorAdapter(new OpenJpaVendorAdapter());
         factory.setPersistenceUnitName("aem-unit");
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
 
@@ -34,17 +41,11 @@ public class AemJpaConfiguration {
     }
 
     @Bean
-    public EntityManagerFactory getEntityManagerFactory() {
-        return getEntityManagerFactoryBean().getObject();
+    public PlatformTransactionManager getPlatformTransactionManager(final EntityManagerFactory emf) {
+        final JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setDefaultTimeout(30);
+        transactionManager.setEntityManagerFactory(emf);
+        return transactionManager;
     }
 
-    @Bean
-    public SharedEntityManagerBean getSharedEntityManagerBean() {
-
-        final SharedEntityManagerBean shared = new SharedEntityManagerBean();
-
-        shared.setEntityManagerFactory(getEntityManagerFactory());
-
-        return shared;
-    }
 }
