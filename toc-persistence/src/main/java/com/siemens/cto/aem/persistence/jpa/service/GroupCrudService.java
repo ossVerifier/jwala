@@ -11,7 +11,6 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 
 import java.util.List;
 
