@@ -64,9 +64,11 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final String msg = newState.getMessage();
             final JvmState state = newState.getState();
             final Identifier<Jvm> id = newState.getId();
+            final CurrentState currentState = new CurrentState(id, state, DateTime.now(), StateType.JVM, msg);
+            logger.info("Processed JGroups, running update ...");
             // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, currentState);
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
         }
 

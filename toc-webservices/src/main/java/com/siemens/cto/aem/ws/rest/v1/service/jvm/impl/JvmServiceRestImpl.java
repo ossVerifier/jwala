@@ -70,13 +70,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private final String jgroupsJavaNetPreferIPv4Stack = ApplicationProperties.get("jgroups.java.net.preferIPv4Stack", "true");
-    private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get("jgroups.coordinator.ip.address");
+    private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get("jgroups.coordinator.ip.address", "127.0.0.1:7800");
     private final String jgroupsClusterConnectTimeout = ApplicationProperties.get("jgroups.cluster.connect.timeout", "10000");
     private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultTOCCluster");
     private final String jgroupsConfXml = ApplicationProperties.get("jgroups.conf.xml", "tcp.xml");
     private static JvmServiceRestImpl instance;
-    private JChannel channel;
     private JvmStateReceiverAdapter channelReceiver;
+    private JChannel channel;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final ResourceService theResourceService,
@@ -91,27 +91,26 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     protected void startCluster() {
-        // TODO does this break anything?
         System.setProperty("java.net.preferIPv4Stack", jgroupsJavaNetPreferIPv4Stack);
 
         try {
             LOGGER.info("Starting JGroups cluster {}", jgroupsClusterName);
             channel = new JChannel(jgroupsConfXml);
             channel.setReceiver(channelReceiver);
+
             IpAddress coordinatorIP = new IpAddress(jgroupsCoordinatorIPAddress);
 
             channel.connect(jgroupsClusterName, coordinatorIP, Long.parseLong(jgroupsClusterConnectTimeout));
-            LOGGER.info("JGroups connection to cluster SUCCESSFUL");
+            LOGGER.info("JGroups connection to cluster {} SUCCESSFUL", jgroupsClusterName);
 
             PhysicalAddress physicalAddr = (PhysicalAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, channel.getAddress()));
-            LOGGER.info("JGroups cluster physical address {}", physicalAddr);
+            LOGGER.info("JGroups cluster physical address {} {}", channel, physicalAddr);
 
-            // TODO figure our when/where to close the channel
-//            channel.close();
         } catch (Exception e) {
             LOGGER.error("FAILURE using JGroups: could not connect to cluster {}", jgroupsClusterName, e);
         }
     }
+    
     @Override
     public Response getJvms() {
         LOGGER.debug("Get JVMs requested");

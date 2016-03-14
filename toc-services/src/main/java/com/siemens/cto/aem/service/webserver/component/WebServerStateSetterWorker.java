@@ -99,9 +99,9 @@ public class WebServerStateSetterWorker {
                 }
             } catch (final IOException ioe) {
                 if (ioe instanceof ConnectTimeoutException) {
-                    LOGGER.debug(ioe.getMessage(), ioe);
+                    LOGGER.debug("{} {}", webServer.getName(), ioe.getMessage(), ioe);
                 } else {
-                    LOGGER.info(ioe.getMessage(), ioe);
+                    LOGGER.info("{} {}",webServer.getName(), ioe.getMessage(), ioe);
                 }
                 setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
             } catch (final RuntimeException rte) {
