@@ -82,8 +82,6 @@ public class JvmStateMessageListener implements MessageListener {
 
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(newState.getId(), newState.getState(),
                     DateTime.now(), StateType.JVM, newState.getMessage()));
-
-            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
         }
     }
 
