@@ -333,4 +333,11 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         return (Long) query.getSingleResult();
     }
 
+    @Override
+    public JpaWebServer getWebServerAndItsGroups(final Long id) {
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_AND_ITS_GROUPS);
+        query.setParameter("id", id);
+        return (JpaWebServer) query.getSingleResult();
+    }
+
 }

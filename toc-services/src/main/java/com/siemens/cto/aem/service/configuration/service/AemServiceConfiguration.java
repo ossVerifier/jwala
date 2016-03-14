@@ -31,14 +31,8 @@ import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
-import com.siemens.cto.aem.service.group.GroupControlService;
-import com.siemens.cto.aem.service.group.GroupJvmControlService;
-import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.group.GroupWebServerControlService;
-import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
-import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
+import com.siemens.cto.aem.service.group.*;
+import com.siemens.cto.aem.service.group.impl.*;
 import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -98,7 +92,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
-        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component"})
+        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component",
+        "com.siemens.cto.aem.service.group.impl.spring.component"})
 public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
@@ -133,6 +128,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
+
+    @Autowired
+    private GroupStateNotificationService groupStateNotificationService;
 
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
     private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
@@ -306,6 +304,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         webServerStateSetterWorker.setWebServerService(getWebServerService());
         webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
         webServerStateSetterWorker.setMessagingTemplate(messagingTemplate);
+        webServerStateSetterWorker.setGroupStateNotificationService(groupStateNotificationService);
         return webServerStateSetterWorker;
     }
 
@@ -344,7 +343,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
         return new JvmStateReceiverAdapter(getJvmService(), getStateNotificationService(),
-                messagingTemplate);
+                messagingTemplate, groupStateNotificationService);
     }
 
     @Override

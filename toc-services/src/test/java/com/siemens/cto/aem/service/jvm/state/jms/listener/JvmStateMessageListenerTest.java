@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -47,6 +48,9 @@ public class JvmStateMessageListenerTest {
     @Mock
     private SimpMessagingTemplate mockMessagingTemplate;
 
+    @Mock
+    private GroupStateNotificationService mockGroupStateNotificationService;
+
 
     private JvmStateMessageListener listener;
     private JvmStateMapMessageConverter converter;
@@ -59,8 +63,8 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmService,
-                mockStateNotificationService, mockMessagingTemplate));
+        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockStateNotificationService,
+                mockMessagingTemplate, mockGroupStateNotificationService));
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -38,11 +39,14 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
+    private final GroupStateNotificationService groupStateNotificationService;
+
     public JvmStateReceiverAdapter(final JvmService jvmService, final StateNotificationService stateNotificationService,
-                                   final SimpMessagingTemplate messagingTemplate) {
+                                   final SimpMessagingTemplate messagingTemplate, final GroupStateNotificationService groupStateNotificationService) {
         this.jvmService = jvmService;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
+        this.groupStateNotificationService = groupStateNotificationService;
     }
 
     @Override
@@ -61,8 +65,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final JvmState state = newState.getState();
             final Identifier<Jvm> id = newState.getId();
             // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
+            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
         }
 
     }

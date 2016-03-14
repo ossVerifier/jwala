@@ -101,6 +101,8 @@ var GroupOperations = React.createClass({
             this.updateJvmStateData(msg);
         } else if (msg.type === "WEB_SERVER") {
             this.updateWebServerStateData(msg);
+        } else if (msg.type === "GROUP") {
+            this.updateGroupsStateData(msg);
         }
     },
 
@@ -194,24 +196,24 @@ var GroupOperations = React.createClass({
             }
         }
     },
-    updateGroupsStateData: function(newGroupStates) {
+    updateGroupsStateData: function(newGroupState) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
-        if (newGroupStates && newGroupStates.length > 0) {
+        if (newGroupState) {
             groupsToUpdate.forEach(
                 function(group) {
-                    for (var i = 0; i < newGroupStates.length; i++) {
-                        if (newGroupStates[i].id.id === group.groupId.id) {
+                    // for (var i = 0; i < newGroupStates.length; i++) {
+                        if (newGroupState.id.id === group.groupId.id) {
                             // For the group it's a bit different, we need to show the number of started servers
                             // over the total number of servers. Since we reused the existing current state
                             // infrastructure, we have to put the said info in the stateString property.
-                            var serverCount = newGroupStates[i].webServerCount + newGroupStates[i].jvmCount;
-                            var serverStartedCount = newGroupStates[i].webServerStartedCount + newGroupStates[i].jvmStartedCount;
-                            newGroupStates[i].stateString = "Running: " + serverStartedCount + "/" + serverCount;
-                            GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupStates[i].stateString,
-                                newGroupStates[i].asOf, newGroupStates[i].message);
+                            var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
+                            var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
+                            newGroupState.stateString = "Running: " + serverStartedCount + "/" + serverCount;
+                            GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
+                                newGroupState.asOf, newGroupState.message);
                         }
-                    }
+                    // }
                 }
             )
         };

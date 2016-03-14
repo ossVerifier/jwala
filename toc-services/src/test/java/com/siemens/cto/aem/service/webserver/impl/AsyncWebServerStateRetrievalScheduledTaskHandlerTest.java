@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
@@ -269,6 +270,9 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         @Mock
         private static SimpMessagingTemplate mockMessagingTemplate;
 
+        @Mock
+        private static GroupStateNotificationService mockGroupNotificationService;
+
         @Autowired
         private WebServerStateSetterWorker webServerStateSetterWorker;
 
@@ -294,6 +298,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
             webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
             webServerStateSetterWorker.setWebServerService(mockWebServerService);
             webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
+            webServerStateSetterWorker.setGroupStateNotificationService(mockGroupNotificationService);
             return new WebServerStateRetrievalScheduledTaskHandler(mockWebServerService, webServerStateSetterWorker,
                                                                    webServerFutureMap);
         }

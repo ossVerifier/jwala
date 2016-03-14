@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -52,6 +53,8 @@ public class WebServerStateSetterWorker {
     private StateNotificationService stateNotificationService;
 
     private SimpMessagingTemplate messagingTemplate;
+
+    private GroupStateNotificationService groupStateNotificationService;
 
     @Autowired
     ClientFactoryHelper clientFactoryHelper;
@@ -139,6 +142,7 @@ public class WebServerStateSetterWorker {
             // stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
             //         DateTime.now()));
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
+            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class, TOPIC_SERVER_STATES);
         }
     }
 
@@ -203,6 +207,10 @@ public class WebServerStateSetterWorker {
 
     public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
+    }
+
+    public void setGroupStateNotificationService(final GroupStateNotificationService groupStateNotificationService) {
+        this.groupStateNotificationService = groupStateNotificationService;
     }
 
 }

@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
@@ -59,6 +60,9 @@ public class WebServerStateSetterWorkerTest {
     @Mock
     private SimpMessagingTemplate mockMessagingTemplate;
 
+    @Mock
+    private GroupStateNotificationService mockGroupNotificationService;
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
@@ -69,6 +73,7 @@ public class WebServerStateSetterWorkerTest {
         webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(mockWebServerService);
         webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
+        webServerStateSetterWorker.setGroupStateNotificationService(mockGroupNotificationService);
     }
 
     @Test

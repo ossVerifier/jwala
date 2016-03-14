@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -38,14 +39,18 @@ public class JvmStateMessageListener implements MessageListener {
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    private final GroupStateNotificationService groupStateNotificationService;
+
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
                                    final JvmService jvmService,
                                    final StateNotificationService stateNotificationService,
-                                   final SimpMessagingTemplate messagingTemplate) {
+                                   final SimpMessagingTemplate messagingTemplate,
+                                   final GroupStateNotificationService groupStateNotificationService) {
         converter = theConverter;
         this.jvmService = jvmService;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
+        this.groupStateNotificationService = groupStateNotificationService;
     }
 
     @Override
@@ -82,6 +87,8 @@ public class JvmStateMessageListener implements MessageListener {
 
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(newState.getId(), newState.getState(),
                     DateTime.now(), StateType.JVM, newState.getMessage()));
+
+            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
         }
     }
 

@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.configuration.jms;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
@@ -39,6 +40,9 @@ public class AemMessageListenerConfig {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Autowired
+    private GroupStateNotificationService groupStateNotificationService;
+
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager) {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
@@ -62,7 +66,7 @@ public class AemMessageListenerConfig {
     @Autowired
     public MessageListener getJvmStateMessageListener() {
         return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
-                stateNotificationService, simpMessagingTemplate);
+                stateNotificationService, simpMessagingTemplate, groupStateNotificationService);
     }
 
 }
