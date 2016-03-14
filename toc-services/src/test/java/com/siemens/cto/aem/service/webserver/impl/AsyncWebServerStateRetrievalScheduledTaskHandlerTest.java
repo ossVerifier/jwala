@@ -5,12 +5,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
-import com.siemens.cto.aem.service.state.StateService;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
-import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -269,13 +267,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         private static Map<Identifier<WebServer>, WebServerReachableState> mockWebServerReachableStateMap;
 
         @Mock
-        private static StateService<WebServer, WebServerReachableState> mockWebServerStateService;
-
-        @Mock
         private static SimpMessagingTemplate mockMessagingTemplate;
-
-        @Mock
-        private static GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
 
         @Autowired
         private WebServerStateSetterWorker webServerStateSetterWorker;
@@ -302,7 +294,6 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
             webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
             webServerStateSetterWorker.setWebServerService(mockWebServerService);
             webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
-            webServerStateSetterWorker.setGrpStateComputationAndNotificationSvc(mockGrpStateComputationAndNotificationSvc);
             return new WebServerStateRetrievalScheduledTaskHandler(mockWebServerService, webServerStateSetterWorker,
                                                                    webServerFutureMap);
         }

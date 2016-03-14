@@ -11,7 +11,6 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -95,9 +94,6 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private HistoryService historyService;
-
-    @Autowired
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
     private GroupControlService groupControlService;

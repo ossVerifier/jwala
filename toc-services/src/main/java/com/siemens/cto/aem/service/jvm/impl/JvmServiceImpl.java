@@ -23,7 +23,6 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
@@ -61,7 +60,6 @@ public class JvmServiceImpl implements JvmService {
     private final FileManager fileManager;
     private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
@@ -70,14 +68,12 @@ public class JvmServiceImpl implements JvmService {
                           final GroupService theGroupService,
                           ApplicationService applicationService, final FileManager theFileManager,
                           final StateNotificationService stateNotificationService,
-                          final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
                           final SimpMessagingTemplate messagingTemplate) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         this.applicationService = applicationService;
         fileManager = theFileManager;
         this.stateNotificationService = stateNotificationService;
-        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -99,7 +95,6 @@ public class JvmServiceImpl implements JvmService {
         //The commands are validated in createJvm() and groupService.addJvmToGroup()
 
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
-        grpStateComputationAndNotificationSvc.computeAndNotify(newJvm.getId(), JvmState.JVM_NEW);
 
         final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
         addJvmToGroups(addJvmToGroupRequests, aCreatingUser);

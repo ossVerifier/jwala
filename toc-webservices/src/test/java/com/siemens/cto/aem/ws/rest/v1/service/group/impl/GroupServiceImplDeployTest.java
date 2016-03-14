@@ -27,7 +27,6 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -88,7 +87,6 @@ public class GroupServiceImplDeployTest {
     static final GroupControlService mockGroupControlService = mock(GroupControlService.class);
     static final GroupJvmControlService mockGroupJvmControlService = mock(GroupJvmControlService.class);
     static final GroupWebServerControlService mockGroupWebServerControlService = mock(GroupWebServerControlService.class);
-    static final StateService<Group, GroupState> mockStateService = mock(StateService.class);
     static final JvmService mockJvmService = mock(JvmService.class);
     static final JvmControlService mockJvmControlService = mock(JvmControlService.class);
     static final WebServerService mockWebServerService = mock(WebServerService.class);
@@ -280,11 +278,6 @@ public class GroupServiceImplDeployTest {
         @Bean
         public GroupWebServerControlService getGroupWebServerControlService() {
             return mockGroupWebServerControlService;
-        }
-
-        @Bean(name = "groupStateService")
-        public StateService<Group, GroupState> getStateService() {
-            return mockStateService;
         }
 
     }

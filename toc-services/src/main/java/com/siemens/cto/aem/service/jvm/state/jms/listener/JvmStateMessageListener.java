@@ -9,7 +9,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -34,7 +33,6 @@ public class JvmStateMessageListener implements MessageListener {
     private final JvmService jvmService;
     private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
-    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     private final StateNotificationService stateNotificationService;
 
@@ -42,12 +40,10 @@ public class JvmStateMessageListener implements MessageListener {
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
                                    final JvmService jvmService,
-                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
                                    final StateNotificationService stateNotificationService,
                                    final SimpMessagingTemplate messagingTemplate) {
         converter = theConverter;
         this.jvmService = jvmService;
-        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
     }
@@ -88,7 +84,6 @@ public class JvmStateMessageListener implements MessageListener {
                     DateTime.now(), StateType.JVM, newState.getMessage()));
 
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
-            grpStateComputationAndNotificationSvc.computeAndNotify(newState.getId(), newState.getState());
         }
     }
 

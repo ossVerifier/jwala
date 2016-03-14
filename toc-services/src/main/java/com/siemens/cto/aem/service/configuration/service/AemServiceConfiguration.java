@@ -13,7 +13,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
-import com.siemens.cto.aem.persistence.configuration.AemDaoConfiguration;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
@@ -48,7 +47,6 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -131,9 +129,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     private WebServerService webServerPersistenceService;
 
     @Autowired
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
-
-    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
@@ -173,7 +168,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public JvmService getJvmService() {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, getGroupService(), getApplicationService(jvmPersistenceService),
-                fileManager, getStateNotificationService(), grpStateComputationAndNotificationSvc, messagingTemplate);
+                fileManager, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerService")
@@ -310,7 +305,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(getWebServerService());
         webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
-        webServerStateSetterWorker.setGrpStateComputationAndNotificationSvc(grpStateComputationAndNotificationSvc);
         webServerStateSetterWorker.setMessagingTemplate(messagingTemplate);
         return webServerStateSetterWorker;
     }
@@ -349,7 +343,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean
     @Autowired
     public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(getJvmService(), getStateNotificationService(), grpStateComputationAndNotificationSvc,
+        return new JvmStateReceiverAdapter(getJvmService(), getStateNotificationService(),
                 messagingTemplate);
     }
 

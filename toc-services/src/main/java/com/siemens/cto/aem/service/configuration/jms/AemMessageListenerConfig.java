@@ -1,26 +1,22 @@
 package com.siemens.cto.aem.service.configuration.jms;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.MessageListener;
-import javax.jms.Session;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
-
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class AemMessageListenerConfig {
@@ -33,9 +29,6 @@ public class AemMessageListenerConfig {
 
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
-
-    @Autowired
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
     private JvmService jvmService;
@@ -68,7 +61,7 @@ public class AemMessageListenerConfig {
     @Bean
     @Autowired
     public MessageListener getJvmStateMessageListener() {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, grpStateComputationAndNotificationSvc,
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
                 stateNotificationService, simpMessagingTemplate);
     }
 

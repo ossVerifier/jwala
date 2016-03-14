@@ -25,7 +25,6 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
@@ -81,8 +80,6 @@ public class JvmServiceRestImplTest {
     private JvmServiceImpl jvmService;
     @Mock
     private JvmControlService jvmControlService;
-    @Mock
-    private StateService<Jvm, JvmState> jvmStateService;
     @Mock
     private AuthenticatedUser authenticatedUser;
     @Mock

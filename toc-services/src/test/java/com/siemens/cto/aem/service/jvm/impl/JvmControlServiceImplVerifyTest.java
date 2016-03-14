@@ -23,7 +23,6 @@ import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,13 +51,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private ArgumentCaptor<JvmSetStateRequest> setJvmStateCommand;
 
     @Mock
-    private StateService<Jvm, JvmState> jvmStateService;
-
-    @Mock
     private HistoryService mockHistoryService;
-
-    @Mock
-    private StateService<Jvm, JvmState> mockJvmStateStateService;
 
     @Mock
     private StateNotificationService mockStateNotificationService;

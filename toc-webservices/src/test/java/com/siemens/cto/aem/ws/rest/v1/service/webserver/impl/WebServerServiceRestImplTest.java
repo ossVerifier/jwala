@@ -23,7 +23,6 @@ import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
@@ -87,9 +86,6 @@ public class WebServerServiceRestImplTest {
 
     @Mock
     private WebServerCommandService commandImpl;
-
-    @Mock
-    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     @Mock
     private ResourceService resourceService;

@@ -18,7 +18,6 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
@@ -44,10 +43,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -59,7 +60,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private User user;
     private FileManager fileManager = mock(FileManager.class);
     private StateNotificationService stateNotificationService = mock(StateNotificationService.class);
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc = mock(GrpStateComputationAndNotificationSvc.class);
     private ApplicationService applicationService = mock(ApplicationService.class);
     private SimpMessagingTemplate mockMessagingTemplate = mock(SimpMessagingTemplate.class);
 
@@ -68,7 +68,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @InjectMocks
     private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, applicationService, fileManager,
-            stateNotificationService, grpStateComputationAndNotificationSvc, mockMessagingTemplate);
+            stateNotificationService, mockMessagingTemplate);
 
     @SuppressWarnings("unchecked")
     @Before

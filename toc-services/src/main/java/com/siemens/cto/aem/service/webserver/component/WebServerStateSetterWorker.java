@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -53,8 +52,6 @@ public class WebServerStateSetterWorker {
     private StateNotificationService stateNotificationService;
 
     private SimpMessagingTemplate messagingTemplate;
-
-    private GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
 
     @Autowired
     ClientFactoryHelper clientFactoryHelper;
@@ -142,7 +139,6 @@ public class WebServerStateSetterWorker {
             // stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
             //         DateTime.now()));
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
-            grpStateComputationAndNotificationSvc.computeAndNotify(webServer.getId(), webServerReachableState);
         }
     }
 
@@ -203,10 +199,6 @@ public class WebServerStateSetterWorker {
 
     public void setStateNotificationService(StateNotificationService stateNotificationService) {
         this.stateNotificationService = stateNotificationService;
-    }
-
-    public void setGrpStateComputationAndNotificationSvc(GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc) {
-        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
     }
 
     public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {

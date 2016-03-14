@@ -9,7 +9,6 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 import org.apache.commons.lang3.StringUtils;
@@ -34,18 +33,15 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private final JvmService jvmService;
     private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc;
     private JvmStateMapMessageConverterImpl converter = new JvmStateMapMessageConverterImpl();
 
     private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
     public JvmStateReceiverAdapter(final JvmService jvmService, final StateNotificationService stateNotificationService,
-                                   final GrpStateComputationAndNotificationSvc grpStateComputationAndNotificationSvc,
                                    final SimpMessagingTemplate messagingTemplate) {
         this.jvmService = jvmService;
         this.stateNotificationService = stateNotificationService;
-        this.grpStateComputationAndNotificationSvc = grpStateComputationAndNotificationSvc;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -67,7 +63,6 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
-            grpStateComputationAndNotificationSvc.computeAndNotify(id, state);
         }
 
     }

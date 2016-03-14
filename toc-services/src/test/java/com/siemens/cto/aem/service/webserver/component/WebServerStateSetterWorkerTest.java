@@ -4,9 +4,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,9 +57,6 @@ public class WebServerStateSetterWorkerTest {
     private WebServerService mockWebServerService;
 
     @Mock
-    private GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
-
-    @Mock
     private SimpMessagingTemplate mockMessagingTemplate;
 
     @Before
@@ -73,7 +68,6 @@ public class WebServerStateSetterWorkerTest {
         webServerStateSetterWorker.clientFactoryHelper = mockClientFactoryHelper;
         webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(mockWebServerService);
-        webServerStateSetterWorker.setGrpStateComputationAndNotificationSvc(mockGrpStateComputationAndNotificationSvc);
         webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
     }
 

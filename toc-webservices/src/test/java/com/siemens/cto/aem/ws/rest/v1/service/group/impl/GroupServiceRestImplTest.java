@@ -26,7 +26,6 @@ import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.provider.NameSearchParameterProvider;
@@ -91,9 +90,6 @@ public class GroupServiceRestImplTest {
 
     @Mock
     private GroupJvmControlServiceImpl mockControlJvmImpl;
-
-    @Mock
-    private StateService<Group, GroupState> mockGroupStateService;
 
     @Mock
     private GroupWebServerControlService mockGroupWSControlService;

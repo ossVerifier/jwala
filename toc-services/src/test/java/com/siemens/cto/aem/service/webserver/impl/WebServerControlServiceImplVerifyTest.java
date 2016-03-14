@@ -3,8 +3,6 @@ package com.siemens.cto.aem.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -23,9 +21,7 @@ import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.StateNotificationService;
-import com.siemens.cto.aem.service.state.StateService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -55,9 +51,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Mock
     private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
-
-    @Mock
-    private StateService<WebServer, WebServerReachableState> webServerStateService;
 
     @Mock
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;

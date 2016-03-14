@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.service.spring.component.GrpStateComputationAndNotificationSvc;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -43,9 +42,6 @@ public class JvmStateMessageListenerTest {
     private JvmService mockJvmService;
 
     @Mock
-    private GrpStateComputationAndNotificationSvc mockGrpStateComputationAndNotificationSvc;
-
-    @Mock
     private StateNotificationService mockStateNotificationService;
 
     @Mock
@@ -63,7 +59,7 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockGrpStateComputationAndNotificationSvc,
+        listener = spy(new JvmStateMessageListener(converter, mockJvmService,
                 mockStateNotificationService, mockMessagingTemplate));
     }
 
