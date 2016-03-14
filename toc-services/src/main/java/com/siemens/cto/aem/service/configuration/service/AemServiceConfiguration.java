@@ -166,7 +166,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public JvmService getJvmService() {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, getGroupService(), getApplicationService(jvmPersistenceService),
-                fileManager, getStateNotificationService(), messagingTemplate);
+                fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService);
     }
 
     @Bean(name = "webServerService")

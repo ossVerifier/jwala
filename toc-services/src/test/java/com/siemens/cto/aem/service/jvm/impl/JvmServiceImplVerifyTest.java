@@ -18,6 +18,7 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
@@ -54,7 +55,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
-
     private JvmPersistenceService jvmPersistenceService = mock(JvmPersistenceService.class);
     private GroupService groupService = mock(GroupService.class);
     private User user;
@@ -62,13 +62,14 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private StateNotificationService stateNotificationService = mock(StateNotificationService.class);
     private ApplicationService applicationService = mock(ApplicationService.class);
     private SimpMessagingTemplate mockMessagingTemplate = mock(SimpMessagingTemplate.class);
+    private GroupStateNotificationService mockGroupStateNotificationService = mock(GroupStateNotificationService.class);
 
     @Mock
     private ClientFactoryHelper mockClientFactoryHelper;
 
     @InjectMocks
     private JvmServiceImpl impl = new JvmServiceImpl(jvmPersistenceService, groupService, applicationService, fileManager,
-            stateNotificationService, mockMessagingTemplate);
+            stateNotificationService, mockMessagingTemplate, mockGroupStateNotificationService);
 
     @SuppressWarnings("unchecked")
     @Before
@@ -455,5 +456,5 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         impl.deployApplicationContextXMLs(jvm);
         verify(applicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class));
     }
+
 }
-;

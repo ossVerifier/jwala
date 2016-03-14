@@ -22,6 +22,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
@@ -50,7 +51,7 @@ public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
 
-    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
@@ -60,6 +61,7 @@ public class JvmServiceImpl implements JvmService {
     private final FileManager fileManager;
     private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final GroupStateNotificationService groupStateNotificationService;
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
@@ -68,13 +70,14 @@ public class JvmServiceImpl implements JvmService {
                           final GroupService theGroupService,
                           ApplicationService applicationService, final FileManager theFileManager,
                           final StateNotificationService stateNotificationService,
-                          final SimpMessagingTemplate messagingTemplate) {
+                          final SimpMessagingTemplate messagingTemplate, GroupStateNotificationService groupStateNotificationService) {
         jvmPersistenceService = theJvmPersistenceService;
         groupService = theGroupService;
         this.applicationService = applicationService;
         fileManager = theFileManager;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
+        this.groupStateNotificationService = groupStateNotificationService;
     }
 
     @Override
@@ -222,7 +225,8 @@ public class JvmServiceImpl implements JvmService {
         // stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
         messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-    }
+        groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class, TOPIC_SERVER_STATES);
+        }
 
     @Override
     @Transactional
