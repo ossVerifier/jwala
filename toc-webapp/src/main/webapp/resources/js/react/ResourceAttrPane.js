@@ -27,14 +27,26 @@ var ResourceAttrPane = React.createClass({
             if (attr === "rtreeListMetaData") {
                 var entityType = this.state.attributes[attr].entity;
                 if ( entityType === "webServers" || entityType === "jvms" || entityType === "webServerSection" || entityType === "jvmSection") {
+                    var wsArray = [];
                     var jvmArray = [];
                     var webApps = {};
 
+                    // Web Servers
+                    if (this.state.attributes[attr].parent.webServers !== undefined) {
+                        for (var wsIdx = 0; wsIdx < this.state.attributes[attr].parent.webServers.length; wsIdx++) {
+                            var webServer = this.state.attributes[attr].parent.webServers[wsIdx];
+                            wsArray.push(webServer);
+                        }
+                    }
+
+                    // JVMs
                     if (this.state.attributes[attr].parent.jvms !== undefined) {
                         for (var jvmIdx = 0; jvmIdx < this.state.attributes[attr].parent.jvms.length; jvmIdx++) {
                             var jvm = this.state.attributes[attr].parent.jvms[jvmIdx];
 
                             jvmArray.push(jvm);
+
+                            // Web Applications
                             if (jvm.webApps !== undefined && jvm.webApps.length > 0) {
                                 jvm.webApps.forEach(function(webApp) {
                                     webApps[webApp.name] = webApp;
@@ -43,9 +55,14 @@ var ResourceAttrPane = React.createClass({
                         }
                     }
 
+                    if (wsArray.length > 0) {
+                        reactAttributeElements.push(<tr><td colSpan="2"><WebServerTable attributes={wsArray}/></td></tr>);
+                    }
+
                     if (jvmArray.length > 0) {
                         reactAttributeElements.push(<tr><td colSpan="2"><JvmTable attributes={jvmArray}/></td></tr>);
                     }
+
                     if ((entityType === "webServers" || entityType === "webServerSection" || entityType === "jvmSection") && Object.keys(webApps).length > 0) {
                         reactAttributeElements.push(<tr><td colSpan="2"><WebAppTable attributes={webApps} /></td></tr>);
                     }
@@ -89,6 +106,41 @@ var ResourceAttrPane = React.createClass({
 var Attribute = React.createClass({
     render: function() {
         return <tr><td>{"${" + this.props.entity + "." + this.props.property + "}"}</td><td>{this.props.value.toString()}</td></tr>;
+    }
+});
+
+var WebServerTable = React.createClass({
+    getInitialState: function() {
+        return {isCollapsed: true};
+    },
+    render: function() {
+        if (this.state.isCollapsed) {
+            return <div style={{cursor: "pointer"}} onClick={this.onClick}>{"+ ${webServers}"}</div>
+        }
+
+        var reactAttributeElements = [];
+        for (var i = 0; i < this.props.attributes.length; i++) {
+            for (attr in this.props.attributes[i]) {
+                if (typeof(this.props.attributes[i][attr]) !== "object") {
+                    reactAttributeElements.push(React.createElement(Attribute,
+                                                        {entity: "webServers[" + i + "]", key: attr + i, property: attr,
+                                                         value: this.props.attributes[i][attr]}));
+                }
+            }
+        }
+
+        return <div className="ws-table-container">
+                   <div style={{cursor: "pointer"}} onClick={this.onClick}>{"- ${webServers}"}</div>
+                   <table className="ws-table">
+                      <tbody>
+                          {reactAttributeElements}
+                      </tbody>
+                  </table>
+               </div>
+
+    },
+    onClick: function() {
+        this.setState({isCollapsed: !this.state.isCollapsed});
     }
 });
 
