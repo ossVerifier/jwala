@@ -2,7 +2,7 @@
  * The server state web socket service.
  */
 var serverStateWebSocketService = {
-    connect: function(msgHandler) {
+    connect: function(msgHandler, connectedCallback, errorHandler) {
         var self = this;
         var socket = new SockJS("/toc/endpoint");
         stompClient = Stomp.over(socket);
@@ -11,7 +11,8 @@ var serverStateWebSocketService = {
             stompClient.subscribe("/topic/server-states", function(rawMsg){
                 msgHandler(JSON.parse(rawMsg.body));
             });
-        });
+            connectedCallback(frame);
+        }, errorHandler);
     },
     disconnect: function() {
         if (stompClient != null) {

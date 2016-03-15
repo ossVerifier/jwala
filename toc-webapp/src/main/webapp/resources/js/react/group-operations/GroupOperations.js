@@ -24,6 +24,7 @@ var GroupOperations = React.createClass({
         var btnDivClassName = this.props.className + "-btn-div";
 
         return  <div className={this.props.className}>
+                    <div ref="stompMsgDiv"/>
                     <table style={{width:"1084px"}}>
                         <tr>
                             <td>
@@ -307,8 +308,17 @@ var GroupOperations = React.createClass({
 //        }
 //
 //        this.statePoller.start();
+        React.renderComponent(<span>Connecting to a web socket...</span>, this.refs.stompMsgDiv.getDOMNode());
+        ServiceFactory.getServerStateWebSocketService().connect(this.msgHandler, this.stompConnectedCallback, this.stompConnectErrorHandler);
+    },
+    stompConnectedCallback: function(frame) {
+        React.unmountComponentAtNode(this.refs.stompMsgDiv.getDOMNode());
+    },
+    stompConnectErrorHandler: function(e) {
+        React.renderComponent(<span>Connecting to a web socket...</span>, this.refs.stompMsgDiv.getDOMNode());
 
-        ServiceFactory.getServerStateWebSocketService().connect(this.msgHandler);
+        // try to connect again...
+        ServiceFactory.getServerStateWebSocketService().connect(this.msgHandler, this.stompConnectedCallback, this.stompConnectErrorHandler);
     },
     markGroupExpanded: function(groupId, isExpanded) {
         this.setState(groupOperationsHelper.markGroupExpanded(this.state.groups,
