@@ -270,8 +270,8 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateHttpdConfig() {
-        when(impl.generateHttpdConfig(anyString(), anyBoolean())).thenReturn("httpd configuration");
-        Response response = webServerServiceRest.generateConfig("any-server-name", null);
+        when(impl.generateHttpdConfig(anyString())).thenReturn("httpd configuration");
+        Response response = webServerServiceRest.generateConfig("any-server-name");
         assertEquals("httpd configuration", response.getEntity());
     }
 

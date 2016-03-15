@@ -154,8 +154,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateConfig(final String aWebServerName, final Boolean withSsl) {
-        String httpdConfStr = generateHttpdConfText(aWebServerName, withSsl);
+    public Response generateConfig(final String aWebServerName) {
+        String httpdConfStr = generateHttpdConfText(aWebServerName);
         return Response.ok(httpdConfStr).build();
     }
 
@@ -217,8 +217,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);
-            final boolean useSSL = true;
-            out.println(generateHttpdConfText(aWebServerName, useSSL));
+            out.println(generateHttpdConfText(aWebServerName));
         } catch (FileNotFoundException e) {
             LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
@@ -230,8 +229,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return httpdConfFile;
     }
 
-    private String generateHttpdConfText(String aWebServerName, Boolean withSsl) {
-        return webServerService.generateHttpdConfig(aWebServerName, withSsl);
+    private String generateHttpdConfText(String aWebServerName) {
+        return webServerService.generateHttpdConfig(aWebServerName);
     }
 
     @Override

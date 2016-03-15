@@ -46,8 +46,7 @@ public interface WebServerServiceRest extends InitializingBean {
 
     @GET
     @Path("/{webServerName}/conf")
-    Response generateConfig(@PathParam("webServerName") final String aWebServerName,
-                            @QueryParam("ssl") final Boolean withSsl);
+    Response generateConfig(@PathParam("webServerName") final String aWebServerName);
 
     @PUT
     @Path("/{webServerName}/conf")

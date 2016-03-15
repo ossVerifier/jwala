@@ -50,21 +50,21 @@ public class WebServerServiceImpl implements WebServerService {
         createWebServerRequest.validate();
 
         final List<Group> groups = new LinkedList<>();
-        for (Identifier<Group> id: createWebServerRequest.getGroups()) {
+        for (Identifier<Group> id : createWebServerRequest.getGroups()) {
             groups.add(new Group(id, null));
         }
         final WebServer webServer = new WebServer(null,
-                                                  groups,
-                                                  createWebServerRequest.getName(),
-                                                  createWebServerRequest.getHost(),
-                                                  createWebServerRequest.getPort(),
-                                                  createWebServerRequest.getHttpsPort(),
-                                                  createWebServerRequest.getStatusPath(),
-                                                  createWebServerRequest.getHttpConfigFile(),
-                                                  createWebServerRequest.getSvrRoot(),
-                                                  createWebServerRequest.getDocRoot(),
-                                                  createWebServerRequest.getState(),
-                                                  createWebServerRequest.getErrorStatus());
+                groups,
+                createWebServerRequest.getName(),
+                createWebServerRequest.getHost(),
+                createWebServerRequest.getPort(),
+                createWebServerRequest.getHttpsPort(),
+                createWebServerRequest.getStatusPath(),
+                createWebServerRequest.getHttpConfigFile(),
+                createWebServerRequest.getSvrRoot(),
+                createWebServerRequest.getDocRoot(),
+                createWebServerRequest.getState(),
+                createWebServerRequest.getErrorStatus());
 
         return webServerPersistenceService.createWebServer(webServer, aCreatingUser.getId());
     }
@@ -112,21 +112,21 @@ public class WebServerServiceImpl implements WebServerService {
         anUpdateWebServerCommand.validate();
 
         final List<Group> groups = new LinkedList<>();
-        for (Identifier<Group> id: anUpdateWebServerCommand.getNewGroupIds()) {
+        for (Identifier<Group> id : anUpdateWebServerCommand.getNewGroupIds()) {
             groups.add(new Group(id, null));
         }
         final WebServer webServer = new WebServer(anUpdateWebServerCommand.getId(),
-                                                  groups,
-                                                  anUpdateWebServerCommand.getNewName(),
-                                                  anUpdateWebServerCommand.getNewHost(),
-                                                  anUpdateWebServerCommand.getNewPort(),
-                                                  anUpdateWebServerCommand.getNewHttpsPort(),
-                                                  anUpdateWebServerCommand.getNewStatusPath(),
-                                                  anUpdateWebServerCommand.getNewHttpConfigFile(),
-                                                  anUpdateWebServerCommand.getNewSvrRoot(),
-                                                  anUpdateWebServerCommand.getNewDocRoot(),
-                                                  anUpdateWebServerCommand.getState(),
-                                                  anUpdateWebServerCommand.getErrorStatus());
+                groups,
+                anUpdateWebServerCommand.getNewName(),
+                anUpdateWebServerCommand.getNewHost(),
+                anUpdateWebServerCommand.getNewPort(),
+                anUpdateWebServerCommand.getNewHttpsPort(),
+                anUpdateWebServerCommand.getNewStatusPath(),
+                anUpdateWebServerCommand.getNewHttpConfigFile(),
+                anUpdateWebServerCommand.getNewSvrRoot(),
+                anUpdateWebServerCommand.getNewDocRoot(),
+                anUpdateWebServerCommand.getState(),
+                anUpdateWebServerCommand.getErrorStatus());
 
         return webServerPersistenceService.updateWebServer(webServer, anUpdatingUser.getId());
     }
@@ -162,31 +162,17 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateHttpdConfig(final String aWebServerName, final Boolean withSsl) {
+    public String generateHttpdConfig(final String aWebServerName) {
         final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
         final List<Application> apps = webServerPersistenceService.findApplications(aWebServerName);
         final List<Jvm> jvms = webServerPersistenceService.findJvms(aWebServerName);
 
         try {
-            if (withSsl != null && withSsl) {
-                String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", false);
-                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(aWebServerName, httpdConfText, server, jvms, apps);
-            }
-            return ApacheWebServerConfigFileGenerator
-                    .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_CONF_TEMPLATE), server, jvms, apps);
-        } catch (IOException e) {
-            LOGGER.error("Template not found", e);
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
+            String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", false);
+            return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(aWebServerName, httpdConfText, server, jvms, apps);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
-            // TODO WHAAAAA ???? catchtrycatch - try .... ?
-            LOGGER.info("Failed to retrieve resource template from the database", nrtce);
-            try {
-                return ApacheWebServerConfigFileGenerator
-                        .getHttpdConf(aWebServerName, fileManager.getAbsoluteLocation(HTTPD_SSL_CONF_TEMPLATE), server, jvms, apps);
-            } catch (IOException e) {
-                LOGGER.error("Template not found", e);
-                throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
-            }
+            LOGGER.error("Failed to retrieve resource template from the database", nrtce);
+            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
         }
     }
 
@@ -205,7 +191,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     public List<String> getResourceTemplateNames(String webServerName) {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }

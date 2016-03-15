@@ -187,7 +187,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new httpd.conf context");
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
-        when(mockWebServerService.generateHttpdConfig(anyString(),anyBoolean())).thenReturn("new httpd.conf context");
+        when(mockWebServerService.generateHttpdConfig(anyString())).thenReturn("new httpd.conf context");
         when(mockWebServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);

@@ -281,14 +281,16 @@ public class WebServerServiceImplTest {
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
 
         Application[] appArray = {app1, app2};
+        Jvm[] jvmArray = {};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+        when(webServerPersistenceService.findJvms(anyString())).thenReturn(Arrays.asList(jvmArray));
+        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("httpd.conf template content");
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", null);
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
 
-        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd.conf")),
-                removeCarriageReturnsAndNewLines(generatedHttpdConf));
+        assertEquals("httpd.conf template content", generatedHttpdConf);
     }
 
     @Test
@@ -302,28 +304,13 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn(readReferenceFile("/httpd-ssl-conf.tpl"));
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
                 removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test(expected = InternalErrorException.class)
-    public void testGenerateHttpdConfigWithIoException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-
-        when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenThrow(IOException.class);
-
-        wsService.generateHttpdConfig("Apache2.4", null);
-    }
-
-    @Test
     public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentException() throws IOException {
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
@@ -335,28 +322,9 @@ public class WebServerServiceImplTest {
 
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
-                removeCarriageReturnsAndNewLines(generatedHttpdConf));
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentExceptionThenIoException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
-        when(fileManager.getAbsoluteLocation(eq(ConfigurationTemplate.HTTPD_SSL_CONF_TEMPLATE))).thenThrow(IOException.class);
-
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", true);
-
-        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd.conf")),
                 removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
