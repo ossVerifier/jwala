@@ -200,22 +200,20 @@ var GroupOperations = React.createClass({
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
         if (newGroupState) {
-            groupsToUpdate.forEach(
-                function(group) {
-                    // for (var i = 0; i < newGroupStates.length; i++) {
-                        if (newGroupState.id.id === group.groupId.id) {
-                            // For the group it's a bit different, we need to show the number of started servers
-                            // over the total number of servers. Since we reused the existing current state
-                            // infrastructure, we have to put the said info in the stateString property.
-                            var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
-                            var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
-                            newGroupState.stateString = "Running: " + serverStartedCount + "/" + serverCount;
-                            GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
-                                newGroupState.asOf, newGroupState.message);
-                        }
-                    // }
+            for (var i = 0; i < groupsToUpdate.length; i++) {
+                var group = groupsToUpdate[i];
+                if (newGroupState.id.id === group.groupId.id) {
+                    // For the group it's a bit different, we need to show the number of started servers
+                    // over the total number of servers. Since we reused the existing current state
+                    // infrastructure, we have to put the said info in the stateString property.
+                    var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
+                    var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
+                    newGroupState.stateString = "Running: " + serverStartedCount + "/" + serverCount;
+                    GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
+                        newGroupState.asOf, newGroupState.message);
+                    break;
                 }
-            )
+            }
         };
     },
     commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
@@ -224,38 +222,38 @@ var GroupOperations = React.createClass({
         var self = this;
 
         if (newWebServerState !== null) {
-            webServersToUpdate.forEach(
-                function(webServer) {
-                    var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
-                    if (webServerStatusWidget !== undefined) {
-                        // for (var i = 0; i < newWebServerStates.length; i++) {
-                            if (newWebServerState.id.id === webServer.webServerId.id) {
-                                if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
-                                    if (newWebServerState.stateString === GroupOperations.STARTING) {
-                                        newWebServerState.stateString = GroupOperations.START_SENT;
-                                    }
-                                    if (newWebServerState.stateString === GroupOperations.STOPPING) {
-                                        newWebServerState.stateString = GroupOperations.STOP_SENT;
-                                    }
-                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
-                                    if (commandStatusWidget !== undefined) {
-                                        commandStatusWidget.push({stateString: newWebServerState.stateString,
-                                                                  asOf: newWebServerState.asOf,
-                                                                  message: newWebServerState.message,
-                                                                  from: "Web Server " + webServer.name, userId: newWebServerStateuserId},
-                                                                  newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
-                                    }
-
-
-                                } else {
-                                    var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
-                                    webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+            for (var i = 0; i < webServersToUpdate.length; i++) {
+                var webServer = webServersToUpdate[i];
+                var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
+                if (webServerStatusWidget !== undefined) {
+                    // for (var i = 0; i < newWebServerStates.length; i++) {
+                        if (newWebServerState.id.id === webServer.webServerId.id) {
+                            if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
+                                if (newWebServerState.stateString === GroupOperations.STARTING) {
+                                    newWebServerState.stateString = GroupOperations.START_SENT;
                                 }
+                                if (newWebServerState.stateString === GroupOperations.STOPPING) {
+                                    newWebServerState.stateString = GroupOperations.STOP_SENT;
+                                }
+                                var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                                if (commandStatusWidget !== undefined) {
+                                    commandStatusWidget.push({stateString: newWebServerState.stateString,
+                                                              asOf: newWebServerState.asOf,
+                                                              message: newWebServerState.message,
+                                                              from: "Web Server " + webServer.name, userId: newWebServerStateuserId},
+                                                              newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
+                                }
+
+
+                            } else {
+                                var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
+                                webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                             }
-                        // }
-                    }
+                            break;
+                        }
+                    // }
                 }
-            );
+            }
         }
     },
     updateJvmStateData: function(newJvmState) {
@@ -263,42 +261,42 @@ var GroupOperations = React.createClass({
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
 
         if (newJvmState) {
-            jvmsToUpdate.forEach(
-                function(jvm) {
-                    var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
-                    if (jvmStatusWidget !== undefined) {
-                        // for (var i = 0; i < newJvmStates.length; i++) {
-                            if (newJvmState.id.id === jvm.jvmId.id) {
-                                if (newJvmState.stateString === GroupOperations.FAILED ||
-                                    newJvmState.stateString === GroupOperations.START_SENT ||
-                                    newJvmState.stateString === GroupOperations.STOP_SENT) {
+            for (var i = 0; i < jvmsToUpdate.length; i++) {
+                var jvm = jvmsToUpdate[i];
+                var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
+                if (jvmStatusWidget !== undefined) {
+                    // for (var i = 0; i < newJvmStates.length; i++) {
+                        if (newJvmState.id.id === jvm.jvmId.id) {
+                            if (newJvmState.stateString === GroupOperations.FAILED ||
+                                newJvmState.stateString === GroupOperations.START_SENT ||
+                                newJvmState.stateString === GroupOperations.STOP_SENT) {
 
-                                    var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
-                                    if (commandStatusWidget !== undefined) {
-                                        commandStatusWidget.push({stateString: newJvmState.stateString,
-                                                                  asOf: newJvmState.asOf,
-                                                                  message: newJvmState.message,
-                                                                  from: "JVM " + jvm.name,
-                                                                  userId: newJvmState.userId},
-                                                                  newJvmState.stateString === GroupOperations.FAILED ?
-                                                                  "error-status-font" : "action-status-font");
-                                    }
-
-                                } else {
-                                    var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
-                                    jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
-
-                                    // Update the state of the jvm that is in a "react state" so that when the
-                                    // state component is re rendered it is updated. JVMs are loaded together with the
-                                    // group and not when the group is opened that is why we need this.
-                                    self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
-                                                                                              errorStatus: ""};
+                                var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                                if (commandStatusWidget !== undefined) {
+                                    commandStatusWidget.push({stateString: newJvmState.stateString,
+                                                              asOf: newJvmState.asOf,
+                                                              message: newJvmState.message,
+                                                              from: "JVM " + jvm.name,
+                                                              userId: newJvmState.userId},
+                                                              newJvmState.stateString === GroupOperations.FAILED ?
+                                                              "error-status-font" : "action-status-font");
                                 }
+
+                            } else {
+                                var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
+                                jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+
+                                // Update the state of the jvm that is in a "react state" so that when the
+                                // state component is re rendered it is updated. JVMs are loaded together with the
+                                // group and not when the group is opened that is why we need this.
+                                self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
+                                                                                          errorStatus: ""};
                             }
-                        // }
-                    }
+                            break;
+                        }
+                    // }
                 }
-            );
+            }
         }
     },
     pollStates: function() {
