@@ -104,9 +104,6 @@ public class AemWebServiceConfiguration {
     @Autowired
     private GroupWebServerControlService groupWebServerControlService;
 
-    @Autowired
-    private JvmStateReceiverAdapter jvmStateReceiverAdapter;
-
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -154,8 +151,8 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap,
-                jvmStateReceiverAdapter);
+        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap
+        );
     }
 
     @Bean

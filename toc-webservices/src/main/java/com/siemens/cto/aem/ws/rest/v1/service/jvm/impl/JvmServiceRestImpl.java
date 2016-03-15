@@ -21,7 +21,6 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResou
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -33,10 +32,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.jgroups.Event;
-import org.jgroups.JChannel;
-import org.jgroups.PhysicalAddress;
-import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,48 +64,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
     private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
-    private final String jgroupsJavaNetPreferIPv4Stack = ApplicationProperties.get("jgroups.java.net.preferIPv4Stack", "true");
-    private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get("jgroups.coordinator.ip.address", "127.0.0.1:7800");
-    private final String jgroupsClusterConnectTimeout = ApplicationProperties.get("jgroups.cluster.connect.timeout", "10000");
-    private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultTOCCluster");
-    private final String jgroupsConfXml = ApplicationProperties.get("jgroups.conf.xml", "tcp.xml");
     private static JvmServiceRestImpl instance;
-    private JvmStateReceiverAdapter channelReceiver;
-    private JChannel channel;
 
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final ResourceService theResourceService,
-                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap, JvmStateReceiverAdapter jvmStateReceiverAdapter) {
+                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         resourceService = theResourceService;
         executorService = theExecutorService;
         jvmWriteLocks = writeLockMap;
-        channelReceiver = jvmStateReceiverAdapter;
-        startCluster();
     }
 
-    protected void startCluster() {
-        System.setProperty("java.net.preferIPv4Stack", jgroupsJavaNetPreferIPv4Stack);
-
-        try {
-            LOGGER.info("Starting JGroups cluster {}", jgroupsClusterName);
-            channel = new JChannel(jgroupsConfXml);
-            channel.setReceiver(channelReceiver);
-
-            IpAddress coordinatorIP = new IpAddress(jgroupsCoordinatorIPAddress);
-
-            channel.connect(jgroupsClusterName, coordinatorIP, Long.parseLong(jgroupsClusterConnectTimeout));
-            LOGGER.info("JGroups connection to cluster {} SUCCESSFUL", jgroupsClusterName);
-
-            PhysicalAddress physicalAddr = (PhysicalAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, channel.getAddress()));
-            LOGGER.info("JGroups cluster physical address {} {}", channel, physicalAddr);
-
-        } catch (Exception e) {
-            LOGGER.error("FAILURE using JGroups: could not connect to cluster {}", jgroupsClusterName, e);
-        }
-    }
-    
     @Override
     public Response getJvms() {
         LOGGER.debug("Get JVMs requested");

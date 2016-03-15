@@ -38,6 +38,7 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
+import com.siemens.cto.aem.service.initializer.JGroupsClusterInitializer;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
@@ -346,8 +347,14 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
                 messagingTemplate, groupStateNotificationService);
     }
 
+    @Bean
+    public JGroupsClusterInitializer jGroupsClusterInitializer() {
+        return new JGroupsClusterInitializer(getSimpleJvmReceiverAdapter());
+    }
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskScheduler);
     }
+
 }

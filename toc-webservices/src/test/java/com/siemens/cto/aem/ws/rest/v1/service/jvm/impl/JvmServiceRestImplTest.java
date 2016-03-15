@@ -115,7 +115,7 @@ public class JvmServiceRestImplTest {
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         writeLockMap = new HashMap<>();
-        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, Executors.newFixedThreadPool(12), writeLockMap, jvmStateReceiverAdapter);
+        jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, Executors.newFixedThreadPool(12), writeLockMap);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         try {
             jvmServiceRest.afterPropertiesSet();
