@@ -6,7 +6,6 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -44,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
@@ -58,6 +58,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ROLE_MAPPING_PROPERTIES_TEMPLATE = "stp.app.role.mapping.properties.template";
     private static final String APP_PROPERTIES_TEMPLATE = "stp.app.properties.template";
     private static final String STR_PROPERTIES = "properties";
+    private final ExecutorService executorService;
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -94,6 +95,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.fileManager = fileManager;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
+        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
 
@@ -227,7 +229,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
                                     final String resourceTemplateName, boolean backUp, User user) {
@@ -352,6 +354,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         File applicationWar = new File(application.getWarPath());
         final String sourcePath = applicationWar.getParent();
         File tempWarFile = new File(sourcePath + "/" + application.getWarName());
+        Map<String, Future<CommandOutput>> futures = new HashMap<>();
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
             final String destPath = ApplicationProperties.get("stp.webapps.dir");
@@ -366,42 +369,84 @@ public class ApplicationServiceImpl implements ApplicationService {
                     } else {
                         hostNames.add(host);
                     }
-                    LOGGER.info("Copying {} war to host {}", application.getName(), host);
-                    CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                    Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, jvm, host);
+                    futures.put(host, commandOutputFuture);
+                }
+                for (String keyHostName : futures.keySet()) {
+                    CommandOutput execData = futures.get(keyHostName).get();
                     if (execData.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), host);
+                        LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), keyHostName);
                     } else {
                         String errorOutput = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-                        LOGGER.error("Copy of application war {} to {} FAILED::{}", applicationWar.getName(), host, errorOutput);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + host);
+                        LOGGER.error("Copy of application war {} to {} FAILED::{}", applicationWar.getName(), keyHostName, errorOutput);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + keyHostName);
                     }
                 }
             }
         } catch (IOException e) {
             LOGGER.error("Creation of temporary war file for {} FAILED :: {}", application.getWarPath(), e);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to create temporary war file for copying to remote hosts");
-        } catch (CommandFailureException e) {
-            LOGGER.error("Secure copy FAILED :: {}", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy war file to remote hosts");
+        } catch (ExecutionException | InterruptedException e) {
+            LOGGER.error("FAILURE getting return status from copying web app war", e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Exception thrown while copying war", e);
         } finally {
             if (tempWarFile.exists()) {
                 tempWarFile.delete();
             }
         }
+
+    }
+
+    protected Future<CommandOutput> executeCopyCommand(final Application application, final File tempWarFile, final String destPath, final Jvm jvm, final String host){
+        final String name = application.getName();
+        Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
+            @Override
+            public CommandOutput call() throws Exception {
+                LOGGER.info("Copying {} war to host {}", name, host);
+                return applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+            }
+        });
+        return commandOutputFuture;
     }
 
     @Override
     @Transactional
-    public void copyApplicationConfigToGroupJvms(Group group, String appName, User user) {
+    public void copyApplicationConfigToGroupJvms(Group group, final String appName, final User user) {
         final String groupName = group.getName();
         final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
-        for (Jvm jvm : group.getJvms()) {
-            for (String templateName : resourceTemplateNames) {
-                LOGGER.info("Deploying application config {} to JVM {}", templateName, jvm.getJvmName());
+        Set<Future> futures = new HashSet<>();
+
+        for (final Jvm jvm : group.getJvms()) {
+            for (final String templateName : resourceTemplateNames) {
+
+                final String jvmName = jvm.getJvmName();
+                LOGGER.info("Deploying application config {} to JVM {}", templateName, jvmName);
                 final boolean doNotBackUpOriginals = false;
-                deployConf(appName, groupName, jvm.getJvmName(), templateName, doNotBackUpOriginals, user);
+
+                Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
+                    @Override
+                    public CommandOutput call() throws Exception {
+                        return deployConf(appName, groupName, jvmName, templateName, doNotBackUpOriginals, user);
+                    }
+                });
+                futures.add(commandOutputFuture);
             }
         }
+        waitForDeployToComplete(futures);
+    }
+
+    protected void waitForDeployToComplete(Set<Future> futures) {
+        LOGGER.info("Check to see if all tasks completed");
+        boolean allDone = false;
+        // think about adding a manual timeout - for now, since the transaction was timing out before this was added fall back to the transaction timeout
+        while (!allDone) {
+            boolean isDone = true;
+            for (Future isDoneFuture : futures) {
+                isDone = isDone && isDoneFuture.isDone();
+            }
+            allDone = isDone;
+        }
+        LOGGER.info("Tasks complete");
     }
 
     @Override
@@ -440,8 +485,9 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param resourceTemplateName - the name of the resource to generate.
      * @return the configuration file.
      */
+    @Transactional
     protected File createConfFile(final String appName, final String groupName, final String jvmName,
-                                final String resourceTemplateName)
+                                  final String resourceTemplateName)
             throws FileNotFoundException {
         PrintWriter out = null;
         final StringBuilder fileNameBuilder = new StringBuilder();
