@@ -436,17 +436,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     protected void waitForDeployToComplete(Set<Future> futures) {
-        LOGGER.info("Check to see if all tasks completed");
-        boolean allDone = false;
-        // think about adding a manual timeout - for now, since the transaction was timing out before this was added fall back to the transaction timeout
-        while (!allDone) {
-            boolean isDone = true;
-            for (Future isDoneFuture : futures) {
-                isDone = isDone && isDoneFuture.isDone();
+        final int size = futures.size();
+        if (size > 0) {
+            LOGGER.info("Check to see if all {} tasks completed", size);
+            boolean allDone = false;
+            // think about adding a manual timeout - for now, since the transaction was timing out before this was added fall back to the transaction timeout
+            while (!allDone) {
+                boolean isDone = true;
+                for (Future isDoneFuture : futures) {
+                    isDone = isDone && isDoneFuture.isDone();
+                }
+                allDone = isDone;
             }
-            allDone = isDone;
+            LOGGER.info("Tasks complete: {}", size);
         }
-        LOGGER.info("Tasks complete");
     }
 
     @Override

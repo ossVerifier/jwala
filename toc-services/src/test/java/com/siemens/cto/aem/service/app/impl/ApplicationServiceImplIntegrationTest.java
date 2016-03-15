@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
@@ -32,6 +33,7 @@ import com.siemens.cto.toc.files.TocPath;
 import com.siemens.cto.toc.files.impl.FileManagerImpl;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +48,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -171,6 +174,7 @@ public class ApplicationServiceImplIntegrationTest {
 
     @Before
     public void setup() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         SshConfiguration mockSshConfig = mock(SshConfiguration.class);
         aemSshConfig = mock(AemSshConfig.class);
         groupService = mock(GroupService.class);
@@ -180,6 +184,12 @@ public class ApplicationServiceImplIntegrationTest {
                 remoteCommandExecutor,
                 groupService, fileManager, null, null);
     }
+
+    @After
+    public void tearDown(){
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
 
     /**
      * With this revision there is no capacity to create. Therefore integration
