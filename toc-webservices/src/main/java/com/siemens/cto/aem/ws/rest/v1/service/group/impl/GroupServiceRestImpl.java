@@ -54,6 +54,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class GroupServiceRestImpl implements GroupServiceRest {
 
@@ -61,6 +62,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     private final GroupService groupService;
     private final ResourceService resourceService;
+    private final ExecutorService executorService;
     private GroupControlService groupControlService;
     private GroupJvmControlService groupJvmControlService;
     private GroupWebServerControlService groupWebServerControlService;
@@ -79,6 +81,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.groupWebServerControlService = groupWebServerControlService;
         this.jvmService = jvmService;
         this.webServerService = webServerService;
+        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
     @Override
@@ -265,17 +268,43 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupJvmFile(String groupName, String fileName, AuthenticatedUser aUser) {
+    public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
-        String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
-        JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-        for (Jvm jvm : group.getJvms()) {
-            String jvmName = jvm.getJvmName();
-            jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
-            jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+        final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
+        Set<Future<Response>> futures = new HashSet<>();
+        final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
+        for (final Jvm jvm : group.getJvms()) {
+            final String jvmName = jvm.getJvmName();
+            Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                @Override
+                public Response call() throws Exception {
+                    jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
+                    return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+
+                }
+            });
+            futures.add(responseFuture);
         }
+        waitForDeployToComplete(futures);
         return ResponseBuilder.ok(group);
+    }
+
+    protected void waitForDeployToComplete(Set<Future<Response>> futures) {
+        final int size = futures.size();
+        if (size > 0) {
+            LOGGER.info("Check to see if all {} tasks completed", size);
+            boolean allDone = false;
+            // TODO think about adding a manual timeout
+            while (!allDone) {
+                boolean isDone = true;
+                for (Future isDoneFuture : futures) {
+                    isDone = isDone && isDoneFuture.isDone();
+                }
+                allDone = isDone;
+            }
+            LOGGER.info("Tasks complete: {}", size);
+        }
     }
 
     @Override
@@ -339,18 +368,42 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response generateAndDeployGroupWebServersFile(String groupName, AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
-        String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
-        WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
-        for (WebServer webserver : group.getWebServers()) {
-            webServerServiceRest.updateResourceTemplate(webserver.getName(), "httpd.conf", httpdTemplateContent);
-            Response response = webServerServiceRest.generateAndDeployConfig(webserver.getName());
-            if (response.getStatus() > 399) {
-                final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                LOGGER.error("Remote Command Failure for web server " + webserver.getName() + ": " + reasonPhrase);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
+        final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
+        final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
+        Map<String, Future<Response>> futureMap = new HashMap<>();
+        for (final WebServer webserver : group.getWebServers()) {
+            final String name = webserver.getName();
+            Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                @Override
+                public Response call() throws Exception {
+                    webServerServiceRest.updateResourceTemplate(name, "httpd.conf", httpdTemplateContent);
+                    return webServerServiceRest.generateAndDeployConfig(name);
+
+                }
+            });
+            futureMap.put(name, responseFuture);
+        }
+        waitForDeployToComplete(new HashSet<>(futureMap.values()));
+        checkResponsesForErrorStatus(futureMap);
+        return ResponseBuilder.ok(group);
+    }
+
+    protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
+        for (String keyEntityName : futureMap.keySet()) {
+            Response response = null;
+            try {
+                response = futureMap.get(keyEntityName).get();
+                if (response.getStatus() > 399) {
+                    final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
+                }
+
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage());
             }
         }
-        return ResponseBuilder.ok(group);
     }
 
     @Override
@@ -378,7 +431,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok();
     }
 
-    private List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
+    protected List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
             final List<String> groupNames = new LinkedList<>();
@@ -392,7 +445,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return membershipDetailsList;
     }
 
-    private List<MembershipDetails> createMembershipDetailsFromWebServers(final List<WebServer> webServers) {
+    protected List<MembershipDetails> createMembershipDetailsFromWebServers(final List<WebServer> webServers) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (WebServer webServer : webServers) {
             final List<String> groupNames = new LinkedList<>();
@@ -448,7 +501,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         context = testContext;
     }
 
-    private Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final GroupResourceType uploadType) {
+    protected Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final GroupResourceType uploadType) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
 
         // iframe uploads from IE do not understand application/json
@@ -489,7 +542,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         }
     }
 
-    private Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
+    protected Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
         final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
         UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, file1.getName(), data) {
             @Override
@@ -502,7 +555,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.created(groupService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, aUser.getUser()));
     }
 
-    private Response doGroupJvmTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, final FileItemStream file1) {
+    protected Response doGroupJvmTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, final FileItemStream file1) {
         Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
         UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), data) {
             @Override
@@ -516,7 +569,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
-    private Response doGroupAppTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
+    protected Response doGroupAppTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
         Scanner scanner = new Scanner(data).useDelimiter("\\A");
         String content = scanner.hasNext() ? scanner.next() : "";
 
@@ -535,19 +588,32 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupAppFile(String groupName, String fileName, AuthenticatedUser aUser) {
+    public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
-        String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false);
-        ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
-        String appName = groupService.getAppNameFromResourceTemplate(fileName);
-        for (Jvm jvm : group.getJvms()) {
-            String jvmName = jvm.getJvmName();
-            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-            Response response = appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
-            if (response.getStatus() > 399) {
-                final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                LOGGER.error("Remote Command Failure for JVM " + jvmName + ": " + reasonPhrase);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
+        final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false);
+        final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+        final String appName = groupService.getAppNameFromResourceTemplate(fileName);
+        Map<String, Future<Response>> futureMap = new HashMap<>();
+        final Set<Jvm> jvms = group.getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            if (fileName.endsWith(".xml")) {
+                for (Jvm jvm : jvms) {
+                    final String jvmName = jvm.getJvmName();
+                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                        @Override
+                        public Response call() throws Exception {
+                            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
+                            return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+                        }
+                    });
+                    futureMap.put(jvmName, responseFuture);
+                }
+                waitForDeployToComplete(new HashSet<>(futureMap.values()));
+                checkResponsesForErrorStatus(futureMap);
+            } else {
+                final String jvmName = jvms.iterator().next().getJvmName();
+                appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
+                appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             }
         }
         return ResponseBuilder.ok(group);
@@ -576,7 +642,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getChilrenInfo() {
         final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
-        for (final Group group: groupService.getGroups()) {
+        for (final Group group : groupService.getGroups()) {
             final GroupServerInfo groupServerInfo = new GroupServerInfo(group.getName(), jvmService.getJvmCount(group.getName()),
                     jvmService.getJvmStartedCount(group.getName()), webServerService.getWebServerCount(group.getName()),
                     webServerService.getStartedWebServerCount(group.getName()));
