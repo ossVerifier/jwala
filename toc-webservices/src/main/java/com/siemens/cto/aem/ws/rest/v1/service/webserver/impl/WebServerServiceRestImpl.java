@@ -5,6 +5,8 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -86,8 +88,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.debug("Create WS requested: {}", aWebServerToCreate);
 
-        final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(),
-                aUser.getUser());
+        final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
 
         // upload the default resource template for the newly created web server
         uploadWebServerResourceTemplates(aUser, webServer);
@@ -95,7 +96,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.created(webServer);
     }
 
-    private void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
+    protected void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
             if ("webServer".equals(resourceType.getEntityType())) {
                 FileInputStream dataInputStream = null;
@@ -129,9 +130,21 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response removeWebServer(final Identifier<WebServer> aWsId) {
+    public Response removeWebServer(final Identifier<WebServer> aWsId, final AuthenticatedUser user) {
         LOGGER.debug("Delete WS requested: {}", aWsId);
-        webServerService.removeWebServer(aWsId);
+        final WebServer webServer = webServerService.getWebServer(aWsId);
+        if (!webServerService.isStarted(webServer)) {
+            LOGGER.info("Removing web server from the database and deleting the service for id {}", aWsId);
+            if (!webServer.getState().equals(WebServerReachableState.WS_NEW)) {
+                deleteWebServerWindowsService(user, new ControlWebServerRequest(aWsId, WebServerControlOperation.DELETE_SERVICE), webServer.getName());
+            }
+            webServerService.removeWebServer(aWsId);
+        } else {
+            LOGGER.error("The target web server {} must be stopped before attempting to delete it", webServer.getName());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    "The target web server must be stopped before attempting to delete it");
+        }
+
         return ResponseBuilder.ok();
     }
 
@@ -172,7 +185,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             // create the file
             final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
-            final File httpdConfFile = createTempHttpdConf(aWebServerName, httpdDataDir);
+            final String generatedHttpdConf = generateHttpdConfText(aWebServerName);
+            final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, "httpd", "conf", generatedHttpdConf);
 
             // copy the file
             final CommandOutput execData;
@@ -183,7 +197,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
-            execData = webServerControlService.secureCopyHttpdConf(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
+            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
@@ -209,15 +223,89 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
-    private File createTempHttpdConf(String aWebServerName, String httpdDataDir) {
+    @Override
+    public Response generateAndDeployWebServer(String aWebServerName, final AuthenticatedUser aUser) {
+        // only one at a time per web server
+        if (!wsWriteLocks.containsKey(aWebServerName)) {
+            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
+        }
+        try {
+            wsWriteLocks.get(aWebServerName).writeLock().lock();
+            WebServer webServer = webServerService.getWebServer(aWebServerName);
+            if (webServerService.isStarted(webServer)) {
+                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+            }
+
+            // delete the service
+            deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
+
+            // create the httpd.conf
+            generateAndDeployConfig(aWebServerName);
+
+            // re-install the service
+            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer);
+
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy the invokeWS.bat file for " + aWebServerName, e);
+        } finally {
+            wsWriteLocks.get(aWebServerName).writeLock().unlock();
+        }
+        return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
+    }
+
+    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer) throws CommandFailureException {
+
+        // create the file
+        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
+        final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+        final String name = webServer.getName();
+        final File invokeWsBatFile = createTempWebServerResourceFile(name, httpdDataDir, "invokeWS", "bat", invokeWSBatText);
+
+        // copy the invokeWs.bat file
+        final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();
+        CommandOutput copyResult = webServerControlService.secureCopyFileWithBackup(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat");
+        if (copyResult.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
+        } else {
+            LOGGER.error("Failed to copy {} to {} ", invokeWsBatFileAbsolutePath, webServer.getHost());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + invokeWsBatFileAbsolutePath + " to " + webServer.getHost());
+        }
+
+        // call the invokeWs.bat file
+        CommandOutput invokeResult = webServerControlService.controlWebServer(invokeWSBatRequest, user.getUser());
+        if (invokeResult.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully invoked service {}", name);
+        } else {
+            final String standardError = invokeResult.getStandardError();
+            LOGGER.error("Failed to create windo0ws service for {} :: {}", name, !standardError.isEmpty() ? standardError : invokeResult.getStandardOutput());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to created windows service for " + name);
+        }
+    }
+
+    protected void deleteWebServerWindowsService(AuthenticatedUser user, ControlWebServerRequest controlWebServerRequest, String webServerName) {
+        CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Delete of windows service {} was successful", webServerName);
+        } else {
+            String standardError =
+                    commandOutput.getStandardError().isEmpty() ?
+                            commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+        }
+    }
+
+    protected File createTempWebServerResourceFile(String aWebServerName, String httpdDataDir, String fileNamePrefix, String fileNameSuffix, String generatedTemplate) {
         PrintWriter out = null;
         final File httpdConfFile =
-                new File((httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_httpd."
-                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".conf").replace("\\", "/"));
+                new File((httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
+                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "." + fileNameSuffix).replace("\\", "/"));
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);
-            out.println(generateHttpdConfText(aWebServerName));
+            out.println(generatedTemplate);
         } catch (FileNotFoundException e) {
             LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
             throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
@@ -229,7 +317,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return httpdConfFile;
     }
 
-    private String generateHttpdConfText(String aWebServerName) {
+    protected String generateHttpdConfText(String aWebServerName) {
         return webServerService.generateHttpdConfig(aWebServerName);
     }
 
@@ -278,7 +366,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         WebServer webServer = webServerService.getWebServer(webServerName);
         if (null == webServer) {
             LOGGER.error("Web Server Not Found: Could not find web server with name " + webServerName);
-            throw new InternalErrorException(AemFaultType.JVM_NOT_FOUND, "Could not find web server with name " + webServerName);
+            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, "Could not find web server with name " + webServerName);
         }
 
         ServletFileUpload sfu = new ServletFileUpload();

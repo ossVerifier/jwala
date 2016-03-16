@@ -20,7 +20,7 @@ var WebServerControlPanelWidget = React.createClass({
 
                     <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-gear-custom"
-                             onClick={this.generateHttpdConf}
+                             onClick={this.generateServiceAndHttpdConf}
                              title="Generate httpd.conf"
                              busyClassName="busy-button"/>
 
@@ -61,20 +61,20 @@ var WebServerControlPanelWidget = React.createClass({
         return false;
     },
 
-    generateHttpdConf: function(doneCallback) {
+    generateServiceAndHttpdConf: function(doneCallback) {
         this.doneCallback[this.props.data.name] = doneCallback;
-        this.props.webServerService.deployHttpdConf(this.props.data.name,
-                                                    this.generateHttpdConfSucccessCallback,
-                                                    this.generateHttpdConfErrorCallback);
+        this.props.webServerService.deployServiceAndHttpdConf(this.props.data.name,
+                                                    this.generateServiceAndHttpdConfSucccessCallback,
+                                                    this.generateServiceAndHttpdConfErrorCallback);
     },
 
-    generateHttpdConfSucccessCallback: function(response) {
+    generateServiceAndHttpdConfSucccessCallback: function(response) {
         this.doneCallback[response.applicationResponseContent.name]();
-         $.alert("Successfully generated and deployed httpd.conf",
+         $.alert("Successfully installed the service, and generated and deployed the httpd.conf",
                  "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },
 
-    generateHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
+    generateServiceAndHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
         this.doneCallback[this.props.data.name]();
         $.errorAlert(applicationResponseContent, "Deploy " + this.props.data.name +  "'s httpd.conf", false);
     },

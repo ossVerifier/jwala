@@ -59,7 +59,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -233,7 +232,9 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testRemoveWebServer() {
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class));
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -308,7 +309,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
@@ -349,7 +350,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
         try {
@@ -373,7 +374,7 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyHttpdConf(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try {
             response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
@@ -382,6 +383,44 @@ public class WebServerServiceRestImplTest {
         }
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testGenerateAndDeployWebServer() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(rtCommand.execute()).thenReturn(retSuccessExecData);
+        when(rtCommandBuilder.build()).thenReturn(rtCommand);
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.generateHttpdConfig(anyString())).thenReturn("innocuous content");
+        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+
+        Response response = null;
+        try {
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
+        response = null;
+        boolean exceptionThrown = false;
+        try{
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } catch (Exception e)
+        {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        assertNull(response);
+
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 

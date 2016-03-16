@@ -28,12 +28,12 @@ public class ApacheWebServerConfigFileGenerator {
                                       final WebServer webServer,
                                       final List<Jvm> jvms,
                                       final List<Application> apps
-                                      ) {
-        final binding = [webServerName:webServerName,
-                         webServer:webServer,
-                         apps:apps,
-                         jvms:jvms,
-                         comments:""]
+    ) {
+        final binding = [webServerName: webServerName,
+                         webServer    : webServer,
+                         apps         : apps,
+                         jvms         : jvms,
+                         comments     : ""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 
@@ -48,18 +48,29 @@ public class ApacheWebServerConfigFileGenerator {
                                               final List<Jvm> jvms,
                                               final List<Application> apps) {
         final binding = [webServerName: webServerName,
-                         jvms:jvms.collect {jvm:[jvmName: it.jvmName, hostName: it.hostName, ajpPort: it.ajpPort]},
-                         apps:apps.collect {app:[name: it.name]},
-                         comments:""]
+                         jvms         : jvms.collect {
+                             jvm:
+                             [jvmName: it.jvmName, hostName: it.hostName, ajpPort: it.ajpPort]
+                         },
+                         apps         : apps.collect {
+                             app:
+                             [name: it.name]
+                         },
+                         comments     : ""]
         return bindDataToTemplate(binding, templateFileName).toString()
     }
 
     static String getHttpdConfFromText(String aWebServerName, String httpdConfText, WebServer server, List<Jvm> jvms, List<Application> apps) {
-        final binding = [webServerName:aWebServerName,
-                         webServer:server,
-                         apps:apps,
-                         jvms:jvms,
-                         comments:""]
+        final binding = [webServerName: aWebServerName,
+                         webServer    : server,
+                         apps         : apps,
+                         jvms         : jvms,
+                         comments     : ""]
         return bindDataToTemplateText(binding, httpdConfText).toString()
+    }
+
+    static String getInvokeWSBatFromText(WebServer webServer, String invokeWSBatText) {
+        final binding = [webServer: webServer]
+        return bindDataToTemplateText(binding, invokeWSBatText).toString()
     }
 }

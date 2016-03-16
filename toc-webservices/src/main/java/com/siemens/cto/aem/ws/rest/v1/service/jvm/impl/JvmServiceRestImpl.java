@@ -42,10 +42,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
@@ -256,20 +253,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         errorDetails.put("jvmName", jvmName);
         errorDetails.put("jvmId", jvmService.getJvm(jvmName).getId().getId().toString());
 
-        // TODO - re-evaluate async choice - since we call .get()
-        // there is no benefit.
+        final Jvm jvm = jvmService.getJvm(jvmName);
         try {
-            Future<Jvm> futureJvm = executorService.submit(new Callable<Jvm>() {
-                @Override
-                public Jvm call() throws Exception {
-                    final Jvm jvm = jvmService.getJvm(jvmName);
-                    return generateAndDeployConf(jvm, user, new RuntimeCommandBuilder());
-                }
-            });
-            return ResponseBuilder.ok(futureJvm.get());
-        } catch (RuntimeException | InterruptedException | ExecutionException re) {
-            // TODO - just bubble getCause() for ExecutionException
-            // and let our Exception Providers handle it.
+            return ResponseBuilder.ok(generateAndDeployConf(jvm, user, new RuntimeCommandBuilder()));
+        } catch (RuntimeException re) {
             LOGGER.error("Failed to generate and deploy configuration files for JVM: {}", jvmName, re);
             if (re.getCause() != null && re.getCause() instanceof InternalErrorException
                     && re.getCause().getCause() != null
@@ -279,7 +266,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                         AemFaultType.REMOTE_COMMAND_FAILURE, rcfx.getMessage(), rcfx), errorDetails);
             } else {
                 return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage(), re), errorDetails);
+                        AemFaultType.REMOTE_COMMAND_FAILURE, re.getMessage() != null ? re.getMessage() : "", re), errorDetails);
             }
         }
     }
@@ -307,8 +294,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             // delete the service
-            deleteJvmWindowsService(user, new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE),
-                    jvm.getJvmName());
+            deleteJvmWindowsService(user, new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
 
             // create the tar file
             final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName(), runtimeCommandBuilder);
@@ -389,7 +375,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest controlJvmRequest, String jvmName) {
+    protected void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest controlJvmRequest, String jvmName) {
         CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Delete of windows service {} was successful", jvmName);

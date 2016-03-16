@@ -102,6 +102,23 @@ var webServerService = {
                                      errorCallback,
                                      false);
     },
+    /**
+     * delete the web server service, generate the httpd.conf, and then reinstall the service
+     */
+    deployServiceAndHttpdConf: function(webserverName, successCallback, errorCallback) {
+        if (successCallback === undefined) {
+            return serviceFoundation.promisedPut("v1.0/webservers/" + webserverName + "/conf/deploy",
+                                                 "json",
+                                                 null,
+                                                 false);
+        }
+        return serviceFoundation.put("v1.0/webservers/" + webserverName + "/conf/deploy",
+                                     "json",
+                                     null,
+                                     successCallback,
+                                     errorCallback,
+                                     false);
+    },
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURI(webServerName) + "/resources/name", "json", responseCallback);
     },

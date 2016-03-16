@@ -1,16 +1,17 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.request.webserver.*;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
@@ -26,7 +27,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.*;
+import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.WORKERS_PROPS_TEMPLATE;
 
 public class WebServerServiceImpl implements WebServerService {
 
@@ -158,6 +159,12 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
         webServerPersistenceService.removeWebServersBelongingTo(aGroupId);
+    }
+
+    @Override
+    public String generateInvokeWSBat(WebServer webServer) {
+        String invokeWSBatTemplateText = fileManager.getResourceTypeTemplate("InvokeWSBat");
+        return ApacheWebServerConfigFileGenerator.getInvokeWSBatFromText(webServer, invokeWSBatTemplateText);
     }
 
     @Override

@@ -154,13 +154,13 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESSS", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
-        CommandOutput returnOutput = webServerControlService.secureCopyHttpdConf("testWebServer", "./source", "./dest");
+        CommandOutput returnOutput = webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest");
         assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
 
         CommandOutput failedReturnOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedReturnOutput);
         try {
-            webServerControlService.secureCopyHttpdConf("testWebServer", "./source", "./dest");
+            webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest");
         } catch(InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }

@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -58,14 +58,14 @@ public class JsonCreateWebServer {
         final Set<Identifier<Group>> ids = new IdentifierSetBuilder(groupIds).build();
 
         final Integer port = convertFrom(portNumber,
-                                         AemFaultType.INVALID_WEBSERVER_PORT);
+                AemFaultType.INVALID_WEBSERVER_PORT);
         final Integer securePort = convertIfPresentFrom(httpsPort,
-                                                        AemFaultType.INVALID_WEBSERVER_HTTPS_PORT,
-                                                        null);
+                AemFaultType.INVALID_WEBSERVER_HTTPS_PORT,
+                null);
 
         return new CreateWebServerRequest(ids, webserverName, hostName, port, securePort, new Path(statusPath),
                 new FileSystemPath(httpConfigFile), new Path(svrRoot), new Path(docRoot),
-                WebServerReachableState.WS_UNREACHABLE, null);
+                WebServerReachableState.WS_NEW, null);
     }
 
     private Integer convertFrom(final String aValue,
@@ -74,8 +74,8 @@ public class JsonCreateWebServer {
             return Integer.valueOf(aValue);
         } catch (final NumberFormatException nfe) {
             throw new BadRequestException(aFaultType,
-                                          nfe.getMessage(),
-                                          nfe);
+                    nfe.getMessage(),
+                    nfe);
         }
     }
 
@@ -84,7 +84,7 @@ public class JsonCreateWebServer {
                                          final Integer aDefault) {
         if (aValue != null && !"".equals(aValue.trim())) {
             return convertFrom(aValue,
-                               aFaultType);
+                    aFaultType);
         }
 
         return aDefault;
@@ -102,14 +102,14 @@ public class JsonCreateWebServer {
             final JsonNode node = obj.readTree(jp).get(0);
 
             final JsonCreateWebServer jcws = new JsonCreateWebServer(node.get("webserverName").getTextValue(),
-                                                                     node.get("hostName").getTextValue(),
-                                                                     node.get("portNumber").getValueAsText(),
-                                                                     node.get("httpsPort").getValueAsText(),
-                                                                     deserializeGroupIdentifiers(node),
-                                                                     node.get("statusPath").getTextValue(),
-                                                                     node.get("httpConfigFile").getTextValue(),
-                                                                     node.get("svrRoot").getTextValue(),
-                                                                     node.get("docRoot").getTextValue());
+                    node.get("hostName").getTextValue(),
+                    node.get("portNumber").getValueAsText(),
+                    node.get("httpsPort").getValueAsText(),
+                    deserializeGroupIdentifiers(node),
+                    node.get("statusPath").getTextValue(),
+                    node.get("httpConfigFile").getTextValue(),
+                    node.get("svrRoot").getTextValue(),
+                    node.get("docRoot").getTextValue());
             return jcws;
         }
     }

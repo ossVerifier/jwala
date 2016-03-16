@@ -36,7 +36,7 @@ public interface WebServerServiceRest extends InitializingBean {
 
     @DELETE
     @Path("/{webserverId}")
-    Response removeWebServer(@PathParam("webserverId") final Identifier<WebServer> aWebServerId);
+    Response removeWebServer(@PathParam("webserverId") final Identifier<WebServer> aWebServerId, @BeanParam final AuthenticatedUser user);
 
     @POST
     @Path("/{webServerId}/commands")
@@ -52,6 +52,10 @@ public interface WebServerServiceRest extends InitializingBean {
     @Path("/{webServerName}/conf")
     @Consumes(MediaType.APPLICATION_JSON)
     Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName);
+
+    @PUT
+    @Path("/{webServerName}/conf/deploy")
+    Response generateAndDeployWebServer(@PathParam("webServerName") final String aWebServerName, @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{webServerName}/loadbalancer/conf")

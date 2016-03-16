@@ -9,5 +9,5 @@ public interface WebServerControlService {
 
     CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser);
 
-    CommandOutput secureCopyHttpdConf(String aWebServerName, String sourcePath, String destPath) throws CommandFailureException;
+    CommandOutput secureCopyFileWithBackup(String aWebServerName, String sourcePath, String destPath) throws CommandFailureException;
 }

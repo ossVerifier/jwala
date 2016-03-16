@@ -56,8 +56,6 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         logger.debug("Received JGroups JVM state message {} {}", src, messageMap);
 
         final JvmStateMessage message = converter.convert(messageMap);
-        logger.info("Processing JGroups JVM state message: {}", message);
-
         final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
@@ -65,7 +63,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final JvmState state = newState.getState();
             final Identifier<Jvm> id = newState.getId();
             final CurrentState currentState = new CurrentState(id, state, DateTime.now(), StateType.JVM, msg);
-            logger.info("Processed JGroups, running update ...");
+            logger.info("Processed JGroups, running update {}", message);
             // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, currentState);

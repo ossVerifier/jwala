@@ -3,6 +3,7 @@ package com.siemens.cto.aem.control.webserver.command.windows;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ShellCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
@@ -49,7 +50,27 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
         }
+    },
+    DELETE_SERVICE(WebServerControlOperation.DELETE_SERVICE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(
+                    cygpathWrapper(DELETE_SERVICE_SCRIPT_NAME),
+                    aServiceName
+            );
+        }
+    },
+    INVOKE_SERVICE(WebServerControlOperation.INVOKE_SERVICE) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand(
+                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME),
+                    aServiceName,
+                    ApplicationProperties.get("paths.httpd.conf")
+            );
+        }
     };
+
 
     private static String cygpathWrapper(AemControl.Properties scriptPath) {
         return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";

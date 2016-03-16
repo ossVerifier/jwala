@@ -3,10 +3,10 @@ package com.siemens.cto.aem.service.webserver;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServerConfigTemplate;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface WebServerService {
 
-    WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand,  final User aCreatingUser);
+    WebServer createWebServer(final CreateWebServerRequest aCreateWebServerCommand, final User aCreatingUser);
 
     WebServer getWebServer(final Identifier<WebServer> aWebServerId);
 
@@ -31,6 +31,8 @@ public interface WebServerService {
     void removeWebServer(final Identifier<WebServer> aWebServerId);
 
     void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
+
+    String generateInvokeWSBat(WebServer webServer);
 
     String generateHttpdConfig(final String aWebServerName);
 
@@ -59,4 +61,5 @@ public interface WebServerService {
     Long getWebServerCount(String groupName);
 
     List<WebServer> getWebServersPropagationNew();
+
 }
