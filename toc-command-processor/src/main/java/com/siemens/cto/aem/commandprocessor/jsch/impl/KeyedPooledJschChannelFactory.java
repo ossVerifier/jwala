@@ -19,14 +19,14 @@ import java.util.Map;
  *
  * Created by JC043760 on 2/26/2016.
  */
-public class KeyedJschChannelFactory extends BaseKeyedPooledObjectFactory<ChannelSessionKey, Channel> {
+public class KeyedPooledJschChannelFactory extends BaseKeyedPooledObjectFactory<ChannelSessionKey, Channel> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KeyedJschChannelFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KeyedPooledJschChannelFactory.class);
 
     private final JSch jsch;
     private static final Map<ChannelSessionKey, Session> SESSION_MAP = new HashMap<>();
 
-    public KeyedJschChannelFactory(final JSch jsch) {
+    public KeyedPooledJschChannelFactory(final JSch jsch) {
         this.jsch = jsch;
     }
 
@@ -56,7 +56,7 @@ public class KeyedJschChannelFactory extends BaseKeyedPooledObjectFactory<Channe
 
     /**
      * Prepare the session by setting session properties.
-     * @param remoteSystemConnection
+     * @param remoteSystemConnection {@link RemoteSystemConnection}
      * @return {@link Session}
      * @throws JSchException
      */

@@ -4,7 +4,7 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedJschChannelFactory;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
@@ -25,7 +25,7 @@ public class CommonSshTestConfiguration {
         //TODO create duplicate set of keys without a passphrase for testing
         builder = new JschBuilder(getKnownHostsFile(),
                                   getPrivateKey());
-        channelPool = new GenericKeyedObjectPool(new KeyedJschChannelFactory(builder.build()));
+        channelPool = new GenericKeyedObjectPool(new KeyedPooledJschChannelFactory(builder.build()));
         remoteSystemConnection = new RemoteSystemConnection("N9SFGLabTomcatAdmin",
                                                             "Passw0rd1",
                                                             "usmlvv1cds0005",

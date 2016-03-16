@@ -5,7 +5,7 @@ import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedJschChannelFactory;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -337,7 +337,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         final GenericKeyedObjectPoolConfig genericKeyedObjectPoolConfig = new GenericKeyedObjectPoolConfig();
         genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
         genericKeyedObjectPoolConfig.setBlockWhenExhausted(true);
-        return new GenericKeyedObjectPool(new KeyedJschChannelFactory(sshConfig.getJschBuilder().build()));
+        return new GenericKeyedObjectPool(new KeyedPooledJschChannelFactory(sshConfig.getJschBuilder().build()));
     }
 
     @Bean
