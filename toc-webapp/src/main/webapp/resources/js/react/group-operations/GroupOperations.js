@@ -209,7 +209,7 @@ var GroupOperations = React.createClass({
                     // infrastructure, we have to put the said info in the stateString property.
                     var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
                     var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
-                    newGroupState.stateString = "Running: " + serverStartedCount + "/" + serverCount;
+                    newGroupState.stateString = "Started: " + serverStartedCount + "/" + serverCount;
                     GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
                         newGroupState.asOf, newGroupState.message);
                     break;

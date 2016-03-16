@@ -231,7 +231,7 @@ var GroupOperationsDataTable = React.createClass({
                       GroupOperations.groupStatusWidgetMap[key] = this;
                       var serverCount = oData.currentState.jvmCount + oData.currentState.webServerCount;
                       var serverStartedCount = oData.currentState.jvmStartedCount + oData.currentState.webServerStartedCount;
-                      this.setStatus("Running: " + serverStartedCount + "/" + serverCount, new Date(), "");
+                      this.setStatus("Started: " + serverStartedCount + "/" + serverCount, new Date(), "");
                   });
       }.bind(this);
    },
