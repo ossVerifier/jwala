@@ -309,8 +309,8 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
+        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
@@ -318,7 +318,7 @@ public class WebServerServiceRestImplTest {
 
     @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployConfigThrowsExceptionForFileNotFound() throws CommandFailureException, IOException {
-        webServerServiceRest.generateAndDeployConfig(webServer.getName());
+        webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
     }
 
     @Test
@@ -331,7 +331,7 @@ public class WebServerServiceRestImplTest {
 
         boolean exceptionThrown = false;
         try {
-            webServerServiceRest.generateAndDeployConfig(webServer.getName());
+            webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
         } catch (InternalErrorException ie) {
             exceptionThrown = true;
             assertEquals(ie.getMessage(), "The target Web Server must be stopped before attempting to update the resource file");
@@ -350,11 +350,11 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
         try {
-            response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
         } catch (InternalErrorException e) {
             failedSecureCopy = true;
         } finally {
@@ -374,10 +374,10 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try {
-            response = webServerServiceRest.generateAndDeployConfig(webServer.getName());
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
         } finally {
             FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
@@ -396,24 +396,24 @@ public class WebServerServiceRestImplTest {
         when(rtCommand.execute()).thenReturn(retSuccessExecData);
         when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString())).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
 
         Response response = null;
         try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), true, authenticatedUser);
         } finally {
             FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
         assertNotNull(response);
 
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
         response = null;
         boolean exceptionThrown = false;
         try{
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), true, authenticatedUser);
         } catch (Exception e)
         {
             exceptionThrown = true;

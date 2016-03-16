@@ -51,11 +51,11 @@ public interface WebServerServiceRest extends InitializingBean {
     @PUT
     @Path("/{webServerName}/conf")
     @Consumes(MediaType.APPLICATION_JSON)
-    Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName);
+    Response generateAndDeployConfig(@PathParam("webServerName") final String aWebServerName, @QueryParam("backup") @DefaultValue("true") final boolean doBackup);
 
     @PUT
     @Path("/{webServerName}/conf/deploy")
-    Response generateAndDeployWebServer(@PathParam("webServerName") final String aWebServerName, @BeanParam final AuthenticatedUser aUser);
+    Response generateAndDeployWebServer(@PathParam("webServerName") final String aWebServerName, @QueryParam("backup") @DefaultValue("true") final boolean doBackup, @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{webServerName}/loadbalancer/conf")

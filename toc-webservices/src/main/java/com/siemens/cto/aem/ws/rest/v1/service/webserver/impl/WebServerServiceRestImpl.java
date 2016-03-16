@@ -173,7 +173,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateAndDeployConfig(final String aWebServerName) {
+    public Response generateAndDeployConfig(final String aWebServerName, final boolean doBackup) {
 
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
@@ -197,7 +197,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
-            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf");
+            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf", doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
@@ -224,7 +224,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateAndDeployWebServer(String aWebServerName, final AuthenticatedUser aUser) {
+    public Response generateAndDeployWebServer(final String aWebServerName, boolean doBackup, final AuthenticatedUser aUser) {
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
             wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
@@ -241,10 +241,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
 
             // create the httpd.conf
-            generateAndDeployConfig(aWebServerName);
+            generateAndDeployConfig(aWebServerName, doBackup);
 
             // re-install the service
-            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer);
+            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doBackup);
 
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
@@ -255,7 +255,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
-    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer) throws CommandFailureException {
+    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer, final boolean doBackup) throws CommandFailureException {
 
         // create the file
         String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
@@ -265,7 +265,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();
-        CommandOutput copyResult = webServerControlService.secureCopyFileWithBackup(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat");
+        CommandOutput copyResult = webServerControlService.secureCopyFileWithBackup(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", doBackup);
         if (copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
         } else {

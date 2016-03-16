@@ -377,7 +377,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 @Override
                 public Response call() throws Exception {
                     webServerServiceRest.updateResourceTemplate(name, "httpd.conf", httpdTemplateContent);
-                    return webServerServiceRest.generateAndDeployConfig(name);
+                    final boolean doBackup = true;
+                    return webServerServiceRest.generateAndDeployConfig(name, doBackup);
 
                 }
             });

@@ -91,26 +91,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFileWithBackup(String aWebServerName, String sourcePath, String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
 
         // back up the original file first
-        String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-        final String destPathBackup = destPath + currentDateSuffix;
         final String host = aWebServer.getHost();
-        final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                aWebServer.getName(),
-                host,
-                WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
-                new WindowsWebServerPlatformCommandProvider(),
-                destPath,
-                destPathBackup);
-        if (!commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to back up the " + destPath + " for " + aWebServer.getName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServer.getName());
-        } else {
-            LOGGER.info("Successfully backed up " + destPath + " at " + host);
+        if (doBackup) {
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+                    aWebServer.getName(),
+                    host,
+                    WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                    new WindowsWebServerPlatformCommandProvider(),
+                    destPath,
+                    destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.error("Failed to back up the " + destPath + " for " + aWebServer.getName());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServer.getName());
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + host);
+            }
         }
 
         // run the scp command

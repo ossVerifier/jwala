@@ -187,12 +187,12 @@ public class GroupServiceImplDeployTest {
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
         when(mockWebServerService.generateHttpdConfig(anyString())).thenReturn("new httpd.conf context");
-        when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
-        when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
+        when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
         try{
             groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);
         } catch (InternalErrorException ie){

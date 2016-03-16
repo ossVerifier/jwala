@@ -21,7 +21,7 @@ var WebServerControlPanelWidget = React.createClass({
                     <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateServiceAndHttpdConf}
-                             title="Generate httpd.conf"
+                             title="Generate the httpd.conf and deploy as a service"
                              busyClassName="busy-button"/>
 
                     <button ref="httpdConfBtn" className="button-link anchor-font-style">httpd.conf</button>
