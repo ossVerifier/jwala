@@ -237,8 +237,7 @@ var GroupOperations = React.createClass({
         var self = this;
 
         if (newWebServerState !== null) {
-            for (var i = 0; i < webServersToUpdate.length; i++) {
-                var webServer = webServersToUpdate[i];
+            webServersToUpdate.forEach(function(webServer){
                 var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
                 if (webServerStatusWidget !== undefined) {
                     // for (var i = 0; i < newWebServerStates.length; i++) {
@@ -264,11 +263,10 @@ var GroupOperations = React.createClass({
                                 var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
                                 webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                             }
-                            break;
                         }
                     // }
                 }
-            }
+            });
         }
     },
     updateJvmStateData: function(newJvmState) {
@@ -276,8 +274,7 @@ var GroupOperations = React.createClass({
         var jvmsToUpdate = groupOperationsHelper.getJvmStatesByGroupIdAndJvmId(this.state.jvms);
 
         if (newJvmState) {
-            for (var i = 0; i < jvmsToUpdate.length; i++) {
-                var jvm = jvmsToUpdate[i];
+            jvmsToUpdate.forEach(function(jvm){
                 var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
                 if (jvmStatusWidget !== undefined) {
                     // for (var i = 0; i < newJvmStates.length; i++) {
@@ -307,11 +304,10 @@ var GroupOperations = React.createClass({
                                 self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
                                                                                           errorStatus: ""};
                             }
-                            break;
                         }
                     // }
                 }
-            }
+            });
         }
     },
     pollStates: function() {
