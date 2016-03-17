@@ -78,10 +78,10 @@ var GroupOperations = React.createClass({
     /**
      * Children info retrieval handler.
      */
-    retrieveChildrenInfoHandler: function(childrenInfo) {
+    retrieveChildrenInfoHandler: function(response) {
         // Put the count data in the group's current state count properties.
         this.state.groups.forEach(function(group){
-            childrenInfo.forEach(function(info){
+            response.applicationResponseContent.forEach(function(info){
                 if (group.name === info.groupName) {
                     group.currentState.jvmCount = info.jvmCount;
                     group.currentState.jvmStartedCount = info.jvmStartedCount;
@@ -212,6 +212,20 @@ var GroupOperations = React.createClass({
                     newGroupState.stateString = "Started: " + serverStartedCount + "/" + serverCount;
                     GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
                         newGroupState.asOf, newGroupState.message);
+
+                    // Update web server and JVM header states
+                    // Note: Since the group operations page is a mix of React and spaghetti code, we do the update using jquery.
+                    //       This will have to go (replaced by better code) when group operations is refactored.
+                    var  wsStartedCount = $("#ws-child-table_group-operations-table_" + group.groupId.id + "_wsStartedCount");
+                    if (wsStartedCount.length) {
+                        wsStartedCount.text("Started: " + newGroupState.webServerStartedCount + "/" + newGroupState.webServerCount);
+                    }
+
+                    var  jvmStartedCount = $("#jvm-child-table_group-operations-table_" + group.groupId.id + "_jvmStartedCount");
+                    if (jvmStartedCount.length) {
+                        jvmStartedCount.text("Started: " + newGroupState.jvmStartedCount + "/" + newGroupState.jvmCount);
+                    }
+
                     break;
                 }
             }

@@ -20,8 +20,12 @@ var TocDataTable = React.createClass({
                                                                className:"inline-block",
                                                                callback:obj.btnCallback}));
                 } else if (obj.tocType === "label") {
-                    // TODO: Modify so it can display changing status. For now it would act as a shim to align the buttons
-                    headerComponents.push(React.DOM.div({className:obj.className}, obj.text));
+                    var labelId = null;
+                    if (obj.id !== undefined) {
+                        // Generate an id if obj has an id
+                        labelId = this.props.tableId + "_" + obj.id;
+                    }
+                    headerComponents.push(React.DOM.div({id:labelId, className:obj.className}, obj.text));
                 } else if (obj.tocType === "space") {
                     headerComponents.push(" ");
                 }

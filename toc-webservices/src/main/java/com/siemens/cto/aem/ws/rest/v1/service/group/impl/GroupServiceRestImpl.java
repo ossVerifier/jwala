@@ -649,7 +649,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     webServerService.getStartedWebServerCount(group.getName()));
             groupServerInfos.add(groupServerInfo);
         }
-        return Response.ok(groupServerInfos).build();
+        return ResponseBuilder.ok(groupServerInfos);
+    }
+
+    @Override
+    public Response getChildrenInfoByGroupName(final String groupName) {
+        final GroupServerInfo groupServerInfo = new GroupServerInfo(groupName, jvmService.getJvmCount(groupName),
+                jvmService.getJvmStartedCount(groupName), webServerService.getWebServerCount(groupName),
+                webServerService.getStartedWebServerCount(groupName));
+        return ResponseBuilder.ok(groupServerInfo);
     }
 
     public enum GroupResourceType {

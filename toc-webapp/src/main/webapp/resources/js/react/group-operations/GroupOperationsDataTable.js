@@ -89,9 +89,12 @@ var GroupOperationsDataTable = React.createClass({
                                                      btnLabel:"Stop Web Servers",
                                                      btnCallback:this.stopGroupWebServers,
                                                      className:"inline-block",
-                                                     buttonClassName:"ui-button-height",
+                                                     buttonClassName:"ui-button-height margin-right-5px",
                                                      onClickMessage:"Stopping..."},
-                                                    {tocType:"label", className:"inline-block header-component-label", text:""}
+                                                    {id: "wsStartedCount",
+                                                     tocType:"label",
+                                                     className:"inline-block header-component-label started-count-text",
+                                                     text:""}
                                                ],
                                                initialSortColumn: [[2, "asc"]],
                                                isColResizable: true,
@@ -154,10 +157,13 @@ var GroupOperationsDataTable = React.createClass({
                                            btnLabel:"Stop JVMs",
                                            btnCallback:this.stopGroupJvms,
                                            className:"inline-block",
-                                           buttonClassName:"ui-button-height",
+                                           buttonClassName:"ui-button-height margin-right-5px",
                                            onClickMessage:"Stopping..."
                                           },
-                                         {tocType:"label", className:"inline-block header-component-label", text:""}
+                                         {id: "jvmStartedCount",
+                                          tocType:"label",
+                                          className:"inline-block header-component-label started-count-text",
+                                          text:""}
                                     ],
                                     initialSortColumn: [[2, "asc"]],
                                     isColResizable: true,
@@ -220,6 +226,26 @@ var GroupOperationsDataTable = React.createClass({
        React.render(<CommandStatusWidget key={key} groupName={groupName} serverName={serverName}/>, mountingNode.get(0), function(){
            self.props.commandStatusWidgetMap[key] = this;
        });
+
+       // Update web servers and JVMs header states.
+       // Note: Since the group operations page is a mix of React and spaghetti code, we do the update using jquery.
+       //       This will have to go (replace with better code) when group operations is refactored.
+       var  wsStartedCount = $("#ws-child-table_group-operations-table_" + groupId + "_wsStartedCount");
+       if (wsStartedCount.length) {
+            ServiceFactory.getGroupService().getChildrenInfo(groupName).then(function(response){
+                wsStartedCount.text("Started: " + response.applicationResponseContent.webServerStartedCount + "/" +
+                    response.applicationResponseContent.webServerCount);
+            });
+       }
+
+       var  jvmStartedCount = $("#jvm-child-table_group-operations-table_" + groupId + "_jvmStartedCount");
+       if (jvmStartedCount.length) {
+           ServiceFactory.getGroupService().getChildrenInfo(groupName).then(function(response){
+               jvmStartedCount.text("Started: " + response.applicationResponseContent.jvmStartedCount + "/" +
+                   response.applicationResponseContent.jvmCount);
+           });
+       }
+
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;

@@ -236,4 +236,8 @@ public interface GroupServiceRest {
     @Path("/children/info")
     Response getChilrenInfo();
 
+    @GET
+    @Path("/{groupName}/children/info")
+    Response getChildrenInfoByGroupName(@PathParam("groupName") String groupName);
+
 }

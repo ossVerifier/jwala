@@ -125,7 +125,13 @@ body {
 
 /* Acts as a shim to push the JVM and web server accordion start/stop buttons to right align with the buttons below the accordion. */
 .header-component-label  {
-    width:130px; /* Works fine for Chrome and Fire Fox */
+    width:125px; /* Works fine for Chrome and Fire Fox */
+}
+
+.started-count-text {
+    color: black !important;
+    font-weight: normal !important;
+    text-align: left;
 }
 
 .disabled {
@@ -173,4 +179,8 @@ div.preload {
 
 .zero-padding {
     padding: 0;
+}
+
+.margin-right-5px {
+    margin-right: 5px !important;
 }

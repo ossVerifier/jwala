@@ -121,7 +121,7 @@ var ExpandCollapseControl = React.createClass({
                             $(buttonSelector).click({id:self.props.parentItemId, name:self.props.parentItemName, buttonSelector: buttonSelector}, onClickCallback);
 
                             $(buttonSelector).find("span").attr("class", component.customSpanClassName);
-                            $(buttonSelector).addClass("ui-button-height");
+                            $(buttonSelector).addClass(headerComponents[i].buttonClassName);
                         }
 
                     }
