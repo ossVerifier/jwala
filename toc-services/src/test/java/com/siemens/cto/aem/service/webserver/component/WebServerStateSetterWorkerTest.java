@@ -99,6 +99,7 @@ public class WebServerStateSetterWorkerTest {
 
         // State changes so there should be updates
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(IOException.class);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
         reset(mockWebServerService);
         reset(mockMessagingTemplate);
         webServerStateSetterWorker.pingWebServer(mockWebServer);

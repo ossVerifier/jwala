@@ -28,6 +28,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Create WS requested: {}", aWebServerToCreate);
+        LOGGER.info("Create WS requested: {}", aWebServerToCreate);
 
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
 
@@ -245,6 +246,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doBackup);
+
+            webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);

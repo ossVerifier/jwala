@@ -47,6 +47,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
             jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
             jpaWebServer.setCreateBy(createdBy);
+            jpaWebServer.setState(webServer.getState());
 
             return webServerFrom(create(jpaWebServer));
         } catch (final EntityExistsException eee) {

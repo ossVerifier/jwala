@@ -140,7 +140,8 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     public boolean isStarted(WebServer webServer) {
-        return !WebServerReachableState.WS_UNREACHABLE.equals(webServer.getState());
+        final WebServerReachableState state = webServer.getState();
+        return !WebServerReachableState.WS_UNREACHABLE.equals(state) && !WebServerReachableState.WS_NEW.equals(state);
     }
 
     @Override
