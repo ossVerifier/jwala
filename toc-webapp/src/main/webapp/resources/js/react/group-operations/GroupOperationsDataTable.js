@@ -72,6 +72,16 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
+                                                    {id:"generateWebServers",
+                                                     sTitle:"Generate the httpd.conf and deploy all web servers",
+                                                     mData:null,
+                                                     tocType:"button",
+                                                     btnLabel:"Generate Web Servers",
+                                                     btnCallback:this.generateGroupWebServers,
+                                                     className:"inline-block",
+                                                     buttonClassName:"ui-button-height",
+                                                     onClickMessage:"Deploying web server configurations ..."},
+                                                    {id:"space1", tocType:"space"},
                                                     {id:"startWebServers",
                                                      sTitle:"Start Web Servers",
                                                      mData:null,
@@ -644,6 +654,14 @@ var GroupOperationsDataTable = React.createClass({
 
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "stop all Web Servers under",
                                               callback, "webServer");
+    },
+    generateGroupWebServers: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) {
+                            self.disableEnable(event.data.buttonSelector, function() {return groupControlService.generateWebServers(event.data.id)},"ui-icon-stop");
+                            self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
+                       };
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
     },
     writeWebServerActionToCommandStatusWidget: function(groupId, action) {
         var self = this;

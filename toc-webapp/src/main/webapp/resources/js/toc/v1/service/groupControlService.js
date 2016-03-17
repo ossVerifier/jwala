@@ -24,6 +24,15 @@ var groupControlService = function() {
                                       false);
     };
 
+    var generate = function(groupId, entity) {
+        return serviceFoundation.post("v1.0/groups/" + groupId + "/" + entity + "/conf/deploy",
+                                      "json",
+                                      JSON.stringify({ controlOperation : "generate"}),
+                                      undefined,
+                                      undefined,
+                                      false);
+    }
+
     return {
         startGroup : function(groupId) {
             return control(groupId, "start");
@@ -42,6 +51,9 @@ var groupControlService = function() {
         },
         stopWebServers : function(groupId) {
             return controlWebServers(groupId, "stop");
+        },
+        generateWebServers : function(groupId) {
+            return generate(groupId, "webservers");
         }
     };
 

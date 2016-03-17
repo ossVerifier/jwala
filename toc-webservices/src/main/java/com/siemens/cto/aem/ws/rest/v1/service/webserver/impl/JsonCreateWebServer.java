@@ -90,6 +90,21 @@ public class JsonCreateWebServer {
         return aDefault;
     }
 
+    @Override
+    public String toString() {
+        return "JsonCreateWebServer{" +
+                "groupIds=" + groupIds +
+                ", webserverName='" + webserverName + '\'' +
+                ", portNumber='" + portNumber + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", httpsPort='" + httpsPort + '\'' +
+                ", statusPath='" + statusPath + '\'' +
+                ", httpConfigFile='" + httpConfigFile + '\'' +
+                ", svrRoot='" + svrRoot + '\'' +
+                ", docRoot='" + docRoot + '\'' +
+                '}';
+    }
+
     static class JsonCreateWebServerDeserializer extends AbstractJsonDeserializer<JsonCreateWebServer> {
         public JsonCreateWebServerDeserializer() {
         }

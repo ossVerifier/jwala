@@ -38,6 +38,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -49,6 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -416,6 +419,41 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final ControlGroupWebServerRequest grpCommand = new ControlGroupWebServerRequest(aGroupId,
                 WebServerControlOperation.convertFrom(command.getExternalValue()));
         groupWebServerControlService.controlGroup(grpCommand, aUser.getUser());
+        return ResponseBuilder.ok();
+    }
+
+    @Override
+    public Response generateGroupWebservers(Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
+        LOGGER.info("Starting group generation of web servers for group ID {}", aGroupId);
+        Group group = groupService.getGroupWithWebServers(aGroupId);
+        Set<WebServer> webServers = group.getWebServers();
+        if (null != webServers && webServers.size() > 0) {
+            for (WebServer webServer : webServers) {
+                if (webServerService.isStarted(webServer)) {
+                    LOGGER.info("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All web servers in the group must be stopped before continuing. Operation stopped for web server " + webServer.getName());
+                }
+            }
+
+            final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
+            Map<String, Future<Response>> futuresMap = new HashMap<>();
+            for (final WebServer webServer : webServers) {
+                final String webServerName = webServer.getName();
+                final boolean doBackup = true;
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        return webServerServiceRest.generateAndDeployWebServer(webServerName, doBackup, aUser);
+                    }
+                });
+                futuresMap.put(webServerName, responseFuture);
+            }
+
+            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+            checkResponsesForErrorStatus(futuresMap);
+        } else {
+            LOGGER.info("No web servers in group {}", aGroupId);
+        }
         return ResponseBuilder.ok();
     }
 
