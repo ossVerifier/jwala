@@ -145,10 +145,19 @@ var GroupOperationsDataTable = React.createClass({
 
         var jvmChildTableDetails = {tableIdPrefix:"jvm-child-table_",
                                     className:"simple-data-table",
-                                    /* childTableDetails:webAppOfJvmChildTaapbleDetails, !!! Disable for the Aug 11, 2014 Demo */
                                     title:"JVMs",
                                     isCollapsible:true,
                                     headerComponents:[
+                                        {id:"generateJvms",
+                                         sTitle:"Generate the JVM resources and deploy all the JVMs",
+                                         mData:null,
+                                         tocType:"button",
+                                         btnLabel:"Generate JVMs",
+                                         btnCallback:this.generateGroupJvms,
+                                         className:"inline-block",
+                                         buttonClassName:"ui-button-height",
+                                         onClickMessage:"Deploying JVM configurations ..."},
+                                        {id:"space1", tocType:"space"},
                                          {id:"startJvms",
                                           sTitle:"Start JVMs",
                                           mData:null,
@@ -179,7 +188,7 @@ var GroupOperationsDataTable = React.createClass({
                                     isColResizable: true,
                                     selectItemCallback: this.onSelectJvmTableRow};
 
-        var jvmChildTableDef = [/* {sTitle:"", mData:null, tocType:"control"}, !!! Disable for the Aug 11, 2014 Demo */
+        var jvmChildTableDef = [
                                 {mData:null, colWidth:"10px"},
                                 {sTitle:"JVM ID", mData:"id.id", bVisible:false},
                                 {sTitle:"Name", mData:"jvmName", colWidth:"340px", maxDisplayTextLen:48},
@@ -662,6 +671,26 @@ var GroupOperationsDataTable = React.createClass({
                             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
                        };
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
+    },
+    generateGroupJvms: function(event) {
+        var self = this;
+        var callback = function(id, buttonSelector) { groupService.getGroup(event.data.name,
+                                                       function(response){
+                                                            var jvms = response.applicationResponseContent.jvms;
+                                                            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(event.data.id)];
+                                                                jvms.forEach(function(jvm){
+                                                                commandStatusWidget.push({
+                                                                                    stateString: "INVOKE",
+                                                                                    asOf: new Date().getTime(),
+                                                                                    message: "",
+                                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+                                                                                    "action-status-font");
+                                                        });
+                                                          self.disableEnable(event.data.buttonSelector, function() { return groupControlService.generateJvms(event.data.id)},"ui-icon-stop");
+                                                  }, true);
+                       }
+
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all JVMs under", callback, "jvm");
     },
     writeWebServerActionToCommandStatusWidget: function(groupId, action) {
         var self = this;

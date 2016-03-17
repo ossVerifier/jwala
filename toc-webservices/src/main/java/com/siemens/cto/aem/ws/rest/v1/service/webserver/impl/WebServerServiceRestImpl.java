@@ -230,8 +230,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         if (!wsWriteLocks.containsKey(aWebServerName)) {
             wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
         }
+        wsWriteLocks.get(aWebServerName).writeLock().lock();
+
         try {
-            wsWriteLocks.get(aWebServerName).writeLock().lock();
             WebServer webServer = webServerService.getWebServer(aWebServerName);
             if (webServerService.isStarted(webServer)) {
                 LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);

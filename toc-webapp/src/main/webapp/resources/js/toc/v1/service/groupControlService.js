@@ -54,6 +54,9 @@ var groupControlService = function() {
         },
         generateWebServers : function(groupId) {
             return generate(groupId, "webservers");
+        },
+        generateJvms : function(groupId) {
+            return generate(groupId, "jvms")
         }
     };
 

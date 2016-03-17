@@ -225,6 +225,12 @@ public interface GroupServiceRest {
     @Path("/{groupId}/webservers/conf/deploy")
     Response generateGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
                                     @BeanParam final AuthenticatedUser aUser);
+
+    @POST
+    @Path("/{groupId}/jvms/conf/deploy")
+    Response generateGroupJvms(@PathParam("groupId") final Identifier<Group> aGroupId,
+                                     @BeanParam final AuthenticatedUser aUser);
+
     /**
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)
      * Note: The group specified by id will not be included hence the word "Other" in the method name.
