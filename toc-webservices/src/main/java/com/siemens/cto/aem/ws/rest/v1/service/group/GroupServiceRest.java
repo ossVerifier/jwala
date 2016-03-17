@@ -233,11 +233,11 @@ public interface GroupServiceRest {
                                                          @QueryParam("groupChildType") final GroupChildType groupChildType);
 
     @GET
-    @Path("/children/info")
-    Response getChilrenInfo();
+    @Path("/children/startedCount")
+    Response getStartedWebServersAndJvmsCount();
 
     @GET
-    @Path("/{groupName}/children/info")
-    Response getChildrenInfoByGroupName(@PathParam("groupName") String groupName);
+    @Path("/{groupName}/children/startedCount")
+    Response getStartedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
 
 }

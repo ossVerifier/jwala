@@ -48,7 +48,7 @@ var GroupOperations = React.createClass({
     },
     retrieveData: function() {
         var self = this;
-        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getChildrenInfo)
+        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getStartedWebServersAndJvmsCount)
             .then(this.retrieveChildrenInfoHandler).then(function(){self.forceUpdate()});
     },
     /**

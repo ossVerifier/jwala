@@ -232,7 +232,7 @@ var GroupOperationsDataTable = React.createClass({
        //       This will have to go (replace with better code) when group operations is refactored.
        var  wsStartedCount = $("#ws-child-table_group-operations-table_" + groupId + "_wsStartedCount");
        if (wsStartedCount.length) {
-            ServiceFactory.getGroupService().getChildrenInfo(groupName).then(function(response){
+            ServiceFactory.getGroupService().getStartedWebServersAndJvmsCount(groupName).then(function(response){
                 wsStartedCount.text("Started: " + response.applicationResponseContent.webServerStartedCount + "/" +
                     response.applicationResponseContent.webServerCount);
             });
@@ -240,7 +240,7 @@ var GroupOperationsDataTable = React.createClass({
 
        var  jvmStartedCount = $("#jvm-child-table_group-operations-table_" + groupId + "_jvmStartedCount");
        if (jvmStartedCount.length) {
-           ServiceFactory.getGroupService().getChildrenInfo(groupName).then(function(response){
+           ServiceFactory.getGroupService().getStartedWebServersAndJvmsCount(groupName).then(function(response){
                jvmStartedCount.text("Started: " + response.applicationResponseContent.jvmStartedCount + "/" +
                    response.applicationResponseContent.jvmCount);
            });

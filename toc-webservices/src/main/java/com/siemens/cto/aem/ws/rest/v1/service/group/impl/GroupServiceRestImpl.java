@@ -641,7 +641,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getChilrenInfo() {
+    public Response getStartedWebServersAndJvmsCount() {
         final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
         for (final Group group : groupService.getGroups()) {
             final GroupServerInfo groupServerInfo = new GroupServerInfo(group.getName(), jvmService.getJvmCount(group.getName()),
@@ -653,7 +653,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getChildrenInfoByGroupName(final String groupName) {
+    public Response getStartedWebServersAndJvmsCount(final String groupName) {
         final GroupServerInfo groupServerInfo = new GroupServerInfo(groupName, jvmService.getJvmCount(groupName),
                 jvmService.getJvmStartedCount(groupName), webServerService.getWebServerCount(groupName),
                 webServerService.getStartedWebServerCount(groupName));

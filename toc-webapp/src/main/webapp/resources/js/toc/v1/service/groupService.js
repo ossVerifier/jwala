@@ -143,10 +143,10 @@ var groupService = {
                                         "multipart/form-data",
                                         true);
     },
-    getChildrenInfo: function(groupName) {
+    getStartedWebServersAndJvmsCount: function(groupName) {
         if (groupName) {
-            return serviceFoundation.promisedGet("v1.0/groups/" + groupName + "/children/info");
+            return serviceFoundation.promisedGet("v1.0/groups/" + groupName + "/children/startedCount");
         }
-        return serviceFoundation.promisedGet("v1.0/groups/children/info");
+        return serviceFoundation.promisedGet("v1.0/groups/children/startedCount");
     }
 }
