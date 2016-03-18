@@ -524,6 +524,12 @@ var WARUpload = React.createClass({
                          src="public-resources/img/icons/eject.png"
                          title="Upload war file" />
                     {this.state.hasWar?
+                      <img onClick={this.deployWarFile}
+                           className="btnAppsCfgClose"
+                           src="public-resources/img/icons/start.png"
+                           title="Deploy war file" />
+                      :""}
+                    {this.state.hasWar?
                       <img onClick={this.handleDelete}
                            className="btnAppsCfgClose"
                            src="public-resources/img/icons/delete.png"
@@ -699,6 +705,11 @@ var WARUpload = React.createClass({
     },
     handleDelete: function() {
         this.setState({showDeleteConfirmDialog: true});
+    },
+    deployWarFile: function() {
+        this.props.service.deployWarFile(this.props.full.id.id);
+        event.preventDefault();
+        return false;
     },
     confirmDeleteCallback: function() {
         var self = this;

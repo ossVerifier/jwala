@@ -54,6 +54,11 @@ public interface ApplicationServiceRest extends InitializingBean {
     Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
                               @BeanParam final AuthenticatedUser aUser);
 
+    @PUT
+    @Path("/{applicationId}/war/deploy")
+    Response deployWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
+                              @BeanParam final AuthenticatedUser aUser);
+
     @GET
     @Path("/{appName}/resources/name")
     Response getResourceNames(@PathParam("appName") final String appName);

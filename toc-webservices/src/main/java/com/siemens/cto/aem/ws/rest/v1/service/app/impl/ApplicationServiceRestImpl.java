@@ -25,6 +25,8 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -128,8 +130,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     LOGGER.info("Upload file {} to application {}", file1.getName(), app.getName());
                     final Application application = service.uploadWebArchive(command, aUser.getUser());
                     LOGGER.info("Upload succeeded");
-                    service.copyApplicationWarToGroupHosts(application);
-                    service.copyApplicationConfigToGroupJvms(app.getGroup(), app.getName(), aUser.getUser());
 
                     return ResponseBuilder.created(application); // early out on first attachment
                 } catch (InternalErrorException ie){
@@ -155,6 +155,15 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
 
         return ResponseBuilder.ok(updated);
+    }
+
+    @Override
+    public Response deployWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
+        LOGGER.info("Deploying web archive for app ID {}", anAppToGet);
+        Application app = service.getApplication(anAppToGet);
+        service.copyApplicationWarToGroupHosts(app);
+        service.copyApplicationConfigToGroupJvms(app.getGroup(), app.getName(), aUser.getUser());
+        return ResponseBuilder.ok(app);
     }
 
     @Override
