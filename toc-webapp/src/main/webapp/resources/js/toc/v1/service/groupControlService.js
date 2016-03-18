@@ -24,12 +24,12 @@ var groupControlService = function() {
                                       false);
     };
 
-    var generate = function(groupId, entity) {
+    var generate = function(groupId, entity, successCallback, errorCallback) {
         return serviceFoundation.post("v1.0/groups/" + groupId + "/" + entity + "/conf/deploy",
                                       "json",
                                       JSON.stringify({ controlOperation : "generate"}),
-                                      undefined,
-                                      undefined,
+                                      successCallback,
+                                      errorCallback,
                                       false);
     }
 
@@ -52,11 +52,11 @@ var groupControlService = function() {
         stopWebServers : function(groupId) {
             return controlWebServers(groupId, "stop");
         },
-        generateWebServers : function(groupId) {
-            return generate(groupId, "webservers");
+        generateWebServers : function(groupId, successCallback, errorCallback) {
+            return generate(groupId, "webservers", successCallback, errorCallback);
         },
-        generateJvms : function(groupId) {
-            return generate(groupId, "jvms")
+        generateJvms : function(groupId, successCallback, errorCallback) {
+            return generate(groupId, "jvms", successCallback, errorCallback)
         }
     };
 

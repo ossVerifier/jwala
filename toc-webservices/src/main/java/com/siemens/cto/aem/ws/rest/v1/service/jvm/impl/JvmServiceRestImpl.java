@@ -326,7 +326,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     protected void deployApplicationContextXMLs(Jvm jvm) {
-        LOGGER.info("Deploying any application XMLs for applications configured to the group for ", jvm.getJvmName());
+        LOGGER.info("Deploying any application XMLs for applications configured to the group for {}", jvm.getJvmName());
         jvmService.deployApplicationContextXMLs(jvm);
     }
 

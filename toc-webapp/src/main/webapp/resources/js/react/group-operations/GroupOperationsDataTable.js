@@ -667,7 +667,14 @@ var GroupOperationsDataTable = React.createClass({
     generateGroupWebServers: function(event) {
         var self = this;
         var callback = function(id, buttonSelector) {
-                            self.disableEnable(event.data.buttonSelector, function() {return groupControlService.generateWebServers(event.data.id)},"ui-icon-stop");
+                            self.disableEnable(event.data.buttonSelector, function() {return groupControlService.generateWebServers(event.data.id,
+                                function(resp) {
+                                    $.alert("Successfully generated the web servers for " + resp.applicationResponseContent.name, false)
+                                },
+                                function(errMsg) {
+                                    $.alert(errMsg, "Generate Web Servers Failed", false);
+                                }
+                            )},"ui-icon-stop");
                             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
                        };
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
@@ -686,7 +693,13 @@ var GroupOperationsDataTable = React.createClass({
                                                                                     from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
                                                                                     "action-status-font");
                                                         });
-                                                          self.disableEnable(event.data.buttonSelector, function() { return groupControlService.generateJvms(event.data.id)},"ui-icon-stop");
+                                                          self.disableEnable(event.data.buttonSelector, function() { return groupControlService.generateJvms(event.data.id,
+                                                                                                                                                                function(resp) {
+                                                                                                                                                                    $.alert("Successfully generated the JVMs for " + resp.applicationResponseContent.name, false)
+                                                                                                                                                                },
+                                                                                                                                                                function(errMsg){
+                                                                                                                                                                    $.alert(errMsg, "Generate JVMs Failed", false);
+                                                                                                                                                                })},"ui-icon-stop");
                                                   }, true);
                        }
 

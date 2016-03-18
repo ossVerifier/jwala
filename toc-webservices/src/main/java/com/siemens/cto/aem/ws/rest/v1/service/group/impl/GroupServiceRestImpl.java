@@ -454,8 +454,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } else {
             LOGGER.info("No web servers in group {}", aGroupId);
         }
-        // TODO return some useful data: which ones succeeded? which ones failed? which ones were skipped?
-        return ResponseBuilder.ok();
+        return ResponseBuilder.ok(group);
     }
 
     @Override
@@ -489,8 +488,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } else {
             LOGGER.info("No web servers in group {}", aGroupId);
         }
-        // TODO return some useful data: which ones succeeded? which ones failed? which ones were skipped?
-        return ResponseBuilder.ok();
+
+        return ResponseBuilder.ok(group);
     }
 
     @Override
