@@ -525,7 +525,7 @@ var WARUpload = React.createClass({
                          title="Upload war file" />
                     {this.state.hasWar?
                       <img onClick={this.deployWarFile}
-                           className="btnAppsCfgClose"
+                           className="btnAppsCfgClose btnAppsDeploy"
                            src="public-resources/img/icons/start.png"
                            title="Deploy war file" />
                       :""}
@@ -707,7 +707,13 @@ var WARUpload = React.createClass({
         this.setState({showDeleteConfirmDialog: true});
     },
     deployWarFile: function() {
-        this.props.service.deployWarFile(this.props.full.id.id);
+        this.props.service.deployWarFile(this.props.full.id.id,
+                                           function(respObj){
+                                                $.alert("Successfully deployed " + respObj.applicationResponseContent.warName, false);
+                                           },
+                                           function(errMsg) {
+                                                $.alert(errMsg, "Error", false);
+                                           });
         event.preventDefault();
         return false;
     },

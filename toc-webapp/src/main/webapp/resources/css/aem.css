@@ -184,3 +184,7 @@ div.preload {
 .margin-right-5px {
     margin-right: 5px !important;
 }
+
+.btnAppsDeploy {
+    padding: 4px;
+}

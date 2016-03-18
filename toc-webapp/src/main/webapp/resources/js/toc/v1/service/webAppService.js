@@ -37,8 +37,8 @@ var webAppService = {
 	  deleteWar : function(id, caughtCallback) {
         return serviceFoundation.del("v1.0/applications/" + id + "/war", "json", caughtCallback);
     },
-    deployWarFile : function(id) {
-        return serviceFoundation.put("v1.0/applications/" + id + "/war/deploy", "json");
+    deployWarFile : function(id, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/applications/" + id + "/war/deploy", "json", null, successCallback, errorCallback);
     },
 	 insertNewWebApp : function(webAppFromArray, successCallback, errorCallback) {
 		return serviceFoundation.post("v1.0/applications",

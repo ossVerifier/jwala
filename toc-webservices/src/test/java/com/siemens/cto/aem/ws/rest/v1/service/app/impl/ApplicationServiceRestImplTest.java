@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -43,7 +44,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
@@ -597,6 +600,26 @@ public class ApplicationServiceRestImplTest {
             assertEquals("Error receiving data", e.getMessage());
         }
 
+    }
+
+    @Test
+    public void testDeployWar() {
+        Application mockApplication = mock(Application.class);
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmSet = new HashSet<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmSet.add(mockJvm);
+        when(mockApplication.getName()).thenReturn("appName");
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockJvm.getJvmName()).thenReturn("jvmName");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+
+        applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
+
+        verify(service).copyApplicationWarToGroupHosts(any(Application.class));
+        verify(service).copyApplicationConfigToGroupJvms(any(Group.class), anyString(), any(User.class));
     }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.

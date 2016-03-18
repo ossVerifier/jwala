@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
@@ -161,8 +162,22 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
         LOGGER.info("Deploying web archive for app ID {}", anAppToGet);
         Application app = service.getApplication(anAppToGet);
-        service.copyApplicationWarToGroupHosts(app);
-        service.copyApplicationConfigToGroupJvms(app.getGroup(), app.getName(), aUser.getUser());
+        final Group group = app.getGroup();
+        Set<Jvm> jvms = group.getJvms();
+        final String appName = app.getName();
+        if (null != jvms && jvms.size() > 0) {
+            for (Jvm jvm : jvms){
+                if (jvm.getState().isStartedState()){
+                    final String jvmName = jvm.getJvmName();
+                    LOGGER.error("The JVM {} must be stopped before deploying the application", jvmName);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The JVM " + jvmName + " must be stopped before attempting to deploy application " + appName);
+                }
+            }
+            service.copyApplicationWarToGroupHosts(app);
+            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
+        } else {
+            LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName() );
+        }
         return ResponseBuilder.ok(app);
     }
 
