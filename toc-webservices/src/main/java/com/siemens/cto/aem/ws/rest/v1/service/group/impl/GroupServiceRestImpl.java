@@ -430,9 +430,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         if (null != webServers && webServers.size() > 0) {
             for (WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
-
-                    // TODO should we just skip the ones that aren't stopped and report it back to the UI?
-
                     LOGGER.info("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All web servers in the group must be stopped before continuing. Operation stopped for web server " + webServer.getName());
                 }
@@ -442,10 +439,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Map<String, Future<Response>> futuresMap = new HashMap<>();
             for (final WebServer webServer : webServers) {
                 final String webServerName = webServer.getName();
-                final boolean doBackup = true;
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        final boolean doBackup = true;
                         return webServerServiceRest.generateAndDeployWebServer(webServerName, doBackup, aUser);
                     }
                 });
@@ -469,9 +466,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         if (null != jvms && jvms.size() > 0) {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
-
-                    // TODO should we just skip the ones that aren't stopped and report it back to the UI?
-
                     LOGGER.info("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }

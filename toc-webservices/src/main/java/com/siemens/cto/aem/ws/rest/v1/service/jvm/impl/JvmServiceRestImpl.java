@@ -251,9 +251,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response generateAndDeployConf(final String jvmName, final AuthenticatedUser user) {
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("jvmName", jvmName);
-        errorDetails.put("jvmId", jvmService.getJvm(jvmName).getId().getId().toString());
-
         final Jvm jvm = jvmService.getJvm(jvmName);
+        errorDetails.put("jvmId", jvm.getId().getId().toString());
+
         try {
             return ResponseBuilder.ok(generateAndDeployConf(jvm, user, new RuntimeCommandBuilder()));
         } catch (RuntimeException re) {
@@ -325,12 +325,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return jvm;
     }
 
-    private void deployApplicationContextXMLs(Jvm jvm) {
+    protected void deployApplicationContextXMLs(Jvm jvm) {
         LOGGER.info("Deploying any application XMLs for applications configured to the group for ", jvm.getJvmName());
         jvmService.deployApplicationContextXMLs(jvm);
     }
 
-    private void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
+    protected void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
         CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
                 user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
@@ -343,7 +343,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
+    protected void deployJvmConfigTar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
         CommandOutput execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
@@ -358,7 +358,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
+    protected void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
         ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         CommandOutput execData;
         String configTarName = jvm.getJvmName() + "_config.tar";
@@ -430,7 +430,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    private void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource,
+    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource,
                                      String jvmResourcesDirDest) throws CommandFailureException {
         final String destPath =
                 stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
@@ -446,7 +446,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    private ResourceType getResourceTypeTemplate(String jvmName, String fileName) {
+    protected ResourceType getResourceTypeTemplate(String jvmName, String fileName) {
         ResourceType deployResource = null;
         for (ResourceType resourceType : resourceService.getResourceTypes()) {
             if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType())
@@ -462,7 +462,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return deployResource;
     }
 
-    private String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
+    protected String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
 
@@ -523,12 +523,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return jvmResourcesNameDir;
     }
 
-    private void createConfigFile(String path, String configFileName, String serverXmlStr) throws IOException {
+    protected void createConfigFile(String path, String configFileName, String serverXmlStr) throws IOException {
         File serverXml = new File(path + configFileName);
         FileUtils.writeStringToFile(serverXml, serverXmlStr);
     }
 
-    private void createDirectory(String absoluteDirPath) {
+    protected void createDirectory(String absoluteDirPath) {
         File targetDir = new File(absoluteDirPath);
         if (!targetDir.exists() && !targetDir.mkdirs()) {
             LOGGER.error("Bad Stream: Failed to create directory " + absoluteDirPath);

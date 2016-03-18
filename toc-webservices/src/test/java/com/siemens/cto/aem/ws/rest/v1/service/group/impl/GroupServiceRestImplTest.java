@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
-import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -688,7 +687,6 @@ public class GroupServiceRestImplTest {
         Response resp = groupServiceRest.uploadGroupJvmConfigTemplate(group.getName(), mockAuthenticatedUser, "ServerXMLTemplate.tpl");
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
     }
-
 
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.

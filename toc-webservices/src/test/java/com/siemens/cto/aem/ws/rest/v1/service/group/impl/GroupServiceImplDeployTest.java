@@ -16,6 +16,8 @@ import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
@@ -58,6 +60,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -114,6 +117,8 @@ public class GroupServiceImplDeployTest {
 
     @Test
     public void testCreateGroup() {
+        reset(mockResourceService);
+
         Group mockGroup = mock(Group.class);
         when(mockGroupService.createGroup(any(CreateGroupRequest.class), any(User.class))).thenReturn(mockGroup);
         when(mockResourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
@@ -240,6 +245,56 @@ public class GroupServiceImplDeployTest {
         }
     }
 
+    @Test
+    public void testGenerateAndDeployWebServers() throws CommandFailureException {
+        Set<WebServer> mockWSList = new HashSet<>();
+        Group mockGroup = mock(Group.class);
+        WebServer mockWebServer = mock(WebServer.class);
+        mockWSList.add(mockWebServer);
+        CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+
+        when(mockWebServer.getName()).thenReturn("webServerName");
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
+        when(mockGroup.getWebServers()).thenReturn(mockWSList);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
+        when(mockWebServerService.getWebServer(anyString())).thenReturn(mockWebServer);
+        when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
+        when(mockWebServerService.generateHttpdConfig(anyString())).thenReturn("httpd.conf content");
+        when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(successCommandOutput);
+        when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
+
+        Response response = groupServiceRest.generateGroupWebservers(mockGroup.getId(), mockAuthUser);
+        assertNotNull(response);
+    }
+
+    @Test
+    public void testGenerateAndDeployJvms() throws CommandFailureException {
+        reset(mockGroupService);
+        reset(mockJvmService);
+        reset(mockJvmControlService);
+        reset(mockResourceService);
+
+        Group mockGroup = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+        Set<Jvm> jvmsSet = new HashSet<>();
+        jvmsSet.add(mockJvm);
+
+        when(mockGroup.getJvms()).thenReturn(jvmsSet);
+        when(mockJvm.getJvmName()).thenReturn("jvmName");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(1111L));
+        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
+        when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
+        when(mockResourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(successCommandOutput);
+
+        Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
+        assertNotNull(response);
+    }
+
     @Configuration
     static class Config {
 
@@ -251,7 +306,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
+            return new JvmServiceRestImplForTesting(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
         }
 
         @Bean
@@ -279,5 +334,15 @@ public class GroupServiceImplDeployTest {
             return mockGroupWebServerControlService;
         }
 
+        private class JvmServiceRestImplForTesting extends JvmServiceRestImpl {
+            public JvmServiceRestImplForTesting(JvmService mockJvmService, JvmControlService mockJvmControlService, ResourceService mockResourceService, ExecutorService mock, HashMap<String, ReentrantReadWriteLock> stringReentrantReadWriteLockHashMap) {
+                super(mockJvmService, mockJvmControlService, mockResourceService, mock, stringReentrantReadWriteLockHashMap);
+            }
+
+            @Override
+            protected String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
+                return "./testJvmConfigTar.tar";
+            }
+        }
     }
 }
