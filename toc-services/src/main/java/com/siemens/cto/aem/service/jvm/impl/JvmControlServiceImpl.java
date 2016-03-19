@@ -21,10 +21,11 @@ import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,19 +35,20 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
+    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
-    private final StateNotificationService stateNotificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
                                  final HistoryService historyService,
-                                 final StateNotificationService stateNotificationService) {
+                                 final SimpMessagingTemplate messagingTemplate) {
         jvmService = theJvmService;
         remoteCommandExecutor = theExecutor;
         this.historyService = historyService;
-        this.stateNotificationService = stateNotificationService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -61,7 +63,8 @@ public class JvmControlServiceImpl implements JvmControlService {
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
                     ctrlOp, new WindowsJvmPlatformCommandProvider());
 
-            if (ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP)) {
+            if ((ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP)) &&
+                    StringUtils.isNotEmpty(commandOutput.getStandardOutput())) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
@@ -81,7 +84,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                         final String errorMsg = "JVM control command was not successful. Return code message = " +
                                 CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() + "!";
                         LOGGER.error(errorMsg);
-                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+//                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+//                                DateTime.now(), StateType.JVM, errorMsg));
+                        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                                 DateTime.now(), StateType.JVM, errorMsg));
                         break;
                 }
@@ -93,7 +98,9 @@ public class JvmControlServiceImpl implements JvmControlService {
             LOGGER.error(cfe.getMessage(), cfe);
 
             // Send the error via JMS so TOC client can display it in the control window.
-            stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+//            stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+//                    DateTime.now(), StateType.JVM, cfe.getMessage()));
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                     DateTime.now(), StateType.JVM, cfe.getMessage()));
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

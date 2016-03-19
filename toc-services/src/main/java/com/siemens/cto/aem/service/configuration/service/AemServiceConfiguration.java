@@ -209,7 +209,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), getStateNotificationService());
+                getHistoryService(historyCrudService), messagingTemplate);
     }
 
     @Bean(name = "groupControlService")

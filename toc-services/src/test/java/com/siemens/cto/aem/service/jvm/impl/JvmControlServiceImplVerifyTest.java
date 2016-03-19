@@ -31,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private HistoryService mockHistoryService;
 
     @Mock
-    private StateNotificationService mockStateNotificationService;
+    private SimpMessagingTemplate mockMessagingTemplate;
 
     private List<JpaGroup> groups = new ArrayList<>();
 
@@ -66,7 +67,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockStateNotificationService);
+        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingTemplate);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }
