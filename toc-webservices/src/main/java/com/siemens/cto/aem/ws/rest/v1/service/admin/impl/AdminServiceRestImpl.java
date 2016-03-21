@@ -1,8 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -75,7 +76,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
 
     @Override
     public Response view() {
-        return ResponseBuilder.ok(ApplicationProperties.getProperties());
+        return ResponseBuilder.ok(new TreeMap<>(ApplicationProperties.getProperties()));
     }
 
 
