@@ -11,7 +11,6 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.HistoryCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
-import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
