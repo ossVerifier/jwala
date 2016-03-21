@@ -509,7 +509,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .append('/')
                 .append(appName.replace(" ", "-"))
                 .append('.')
-                .append(new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()));
+                .append(new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()))
+                .append('_')
+                .append(resourceTemplateName);
 
         final File appConfFile = new File(fileNameBuilder.toString());
         try {
