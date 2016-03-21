@@ -29,6 +29,8 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     String getResourceTemplate(final String appName, final String resourceTemplateName, JpaJvm jvm);
 
+    String getResourceTemplate(String appName, String resourceTemplateName, String jvmName, String groupName);
+
     void updateResourceTemplate(final String appName, final String resourceTemplateName, String template, JpaJvm jvm);
 
     void createConfigTemplate(JpaApplication app, String resourceTemplateName, String resourceTemplateContent, JpaJvm jvm);

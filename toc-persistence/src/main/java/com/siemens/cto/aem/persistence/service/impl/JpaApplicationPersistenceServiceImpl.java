@@ -86,7 +86,11 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     @Override
     public String getResourceTemplate(final String appName, final String resourceTemplateName, final String jvmName, final String groupName) {
         JpaJvm jvm = getJpaJvmForAppXml(resourceTemplateName, jvmName, groupName);
-        return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, jvm);
+        if (resourceTemplateName.endsWith(".xml")) {
+            return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
+        } else {
+            return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, null);
+        }
     }
 
     @Override

@@ -38,7 +38,6 @@ import com.siemens.cto.aem.ws.rest.v1.service.group.MembershipDetails;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -50,8 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -345,7 +342,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests = new ArrayList<>();
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
             final String configFileName = resourceType.getConfigFileName();
-            if ("webServer".equals(resourceType.getEntityType())) {
+            if ("webServer".equals(resourceType.getEntityType()) && !"invokeWS.bat".equals(configFileName)) {
                 FileInputStream dataInputStream;
                 try {
                     final String templateName = resourceType.getTemplateName();

@@ -62,6 +62,20 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
+    public String getResourceTemplate(String appName, String resourceTemplateName, String jvmName, String groupName) {
+        JpaJvm jpaJvm = null;
+        Query jvmQuery = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
+        jvmQuery.setParameter("jvmName", jvmName);
+        jvmQuery.setParameter("groupName", groupName);
+        try{
+            jpaJvm = (JpaJvm) jvmQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e){
+            throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
+        }
+        return getResourceTemplate(appName, resourceTemplateName, jpaJvm);
+    }
+
+    @Override
     public String getResourceTemplate(final String appName, final String resourceTemplateName, JpaJvm appJvm) {
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_CONTENT);
         q.setParameter("appName", appName);
@@ -172,7 +186,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             jpaConfigTemplate.setApplication(jpaApp);
             jpaConfigTemplate.setTemplateName(uploadAppTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
-            if (jpaJvm != null){
+            if (jpaJvm != null) {
                 jpaConfigTemplate.setJvm(jpaJvm);
             }
             entityManager.persist(jpaConfigTemplate);
@@ -188,7 +202,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     @Override
     public Application getApplication(Identifier<Application> aApplicationId) throws NotFoundException {
         JpaApplication jpaApp = entityManager.find(JpaApplication.class, aApplicationId.getId());
-        if(jpaApp == null) {
+        if (jpaApp == null) {
             throw new NotFoundException(AemFaultType.APPLICATION_NOT_FOUND,
                     "Application not found: " + aApplicationId);
         }
@@ -204,7 +218,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     @SuppressWarnings("unchecked")
     private List<Application> buildApplications(List<?> resultList) {
         ArrayList<Application> apps = new ArrayList<>(resultList.size());
-        for(JpaApplication jpa : (List<JpaApplication>)resultList) {
+        for (JpaApplication jpa : (List<JpaApplication>) resultList) {
             apps.add(JpaAppBuilder.appFrom(jpa));
         }
         return apps;
