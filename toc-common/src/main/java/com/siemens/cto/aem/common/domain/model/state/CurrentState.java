@@ -10,7 +10,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-public class CurrentState<S extends Object, T extends OperationalState> implements KeyValueStateProvider {
+public class CurrentState<S, T extends OperationalState> implements KeyValueStateProvider {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
     public static final String DEFAULT_EMPTY_MESSAGE = "";
@@ -27,41 +27,30 @@ public class CurrentState<S extends Object, T extends OperationalState> implemen
     private Long jvmCount;
     private Long jvmStartedCount;
 
-    public CurrentState(final Identifier<S> theId,
-                        final T theState,
-                        final DateTime theAsOf,
-                        final StateType theStateType) {
-        this(theId,
-             theState,
-             theAsOf,
-             theStateType,
-             DEFAULT_EMPTY_MESSAGE);
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType stateType) {
+        this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
     }
 
-    public CurrentState(final Identifier<S> theId, final T theState, final DateTime theAsOf, final StateType theStateType,
-                        final Long webServerCount, final Long webServerStartedCount, final Long jvmCount, final Long jvmStartedCount) {
-        id = theId;
-        state = theState;
-        asOf = theAsOf;
-        type = theStateType;
-        message = DEFAULT_EMPTY_MESSAGE;
-
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
+                        final Long webServerCount, final Long webServerStartedCount, final Long jvmCount,
+                        final Long jvmStartedCount) {
+        this.id = id;
+        this.state = state;
+        this.asOf = asOf;
+        this.type = type;
+        this.message = DEFAULT_EMPTY_MESSAGE;
         this.webServerCount = webServerCount;
         this.webServerStartedCount = webServerStartedCount;
         this.jvmCount = jvmCount;
         this.jvmStartedCount = jvmStartedCount;
     }
 
-    public CurrentState(final Identifier<S> theId,
-                        final T theState,
-                        final DateTime theAsOf,
-                        final StateType theStateType,
-                        final String theMessage) {
-        id = theId;
-        state = theState;
-        asOf = theAsOf;
-        type = theStateType;
-        message = theMessage;
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type, final String message) {
+        this.id = id;
+        this.state = state;
+        this.asOf = asOf;
+        this.type = type;
+        this.message = message;
     }
 
     public Identifier<S> getId() {
