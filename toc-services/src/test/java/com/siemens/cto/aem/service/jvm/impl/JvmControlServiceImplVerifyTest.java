@@ -22,7 +22,6 @@ import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
