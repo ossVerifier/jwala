@@ -93,9 +93,6 @@ public class JvmControlServiceImpl implements JvmControlService {
                                 CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
 
                         LOGGER.error(errorMsg);
-//                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
-//                                DateTime.now(), StateType.JVM, errorMsg));
-
                         historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
                                 aUser.getId());
                         messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
@@ -107,16 +104,9 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             return commandOutput;
         } catch (final CommandFailureException cfe) {
-            // TODO: Write to history and send to UI to be displayed in the control history widget. Look at WebServerControlServiceImpl for reference.
             LOGGER.error(cfe.getMessage(), cfe);
-
-            // Send the error via JMS so TOC client can display it in the control window.
-//            stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
-//                    DateTime.now(), StateType.JVM, cfe.getMessage()));
-
             historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
                     aUser.getId());
-
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                     DateTime.now(), StateType.JVM, cfe.getMessage()));
 
@@ -126,21 +116,17 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final ControlJvmRequest secureCopyRequest, final String sourcePath,
+                                        final String destPath) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
         final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
-
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvm.getName(),
-                jvm.getHostName(),
-                secureCopyRequest.getControlOperation(),
-                new WindowsJvmPlatformCommandProvider(),
-                sourcePath,
-                destPath);
+        return remoteCommandExecutor.executeRemoteCommand(jvm.getName(), jvm.getHostName(), secureCopyRequest.getControlOperation(),
+                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
     }
 
     @Override
-    public CommandOutput secureCopyFileWithBackup(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFileWithBackup(final ControlJvmRequest secureCopyRequest, final String sourcePath,
+                                                  final String destPath) throws CommandFailureException {
         // back up the original file first
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
         final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);

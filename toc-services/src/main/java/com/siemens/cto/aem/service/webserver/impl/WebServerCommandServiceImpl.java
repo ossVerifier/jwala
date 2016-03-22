@@ -28,35 +28,33 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
 
     private final WebServerService webServerService;
     private final CommandExecutor executor;
-    private final JschBuilder jsch;
+    private final JschBuilder jschBuilder;
     private final SshConfiguration sshConfig;
     private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
     
-    public WebServerCommandServiceImpl(final WebServerService theWebServerService,
-                                       final CommandExecutor theExecutor,
-                                       final JschBuilder theJschBuilder,
-                                       final SshConfiguration theSshConfig,
+    public WebServerCommandServiceImpl(final WebServerService webServerService, final CommandExecutor executor,
+                                       final JschBuilder jschBuilder, final SshConfiguration sshConfig,
                                        final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
-        webServerService = theWebServerService;
-        executor = theExecutor;
-        jsch = theJschBuilder;
-        sshConfig = theSshConfig;
+        this.webServerService = webServerService;
+        this.executor = executor;
+        this.jschBuilder = jschBuilder;
+        this.sshConfig = sshConfig;
         this.channelPool = channelPool;
     }
 
     @Override
-    public CommandOutput getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException {
-        final WebServer aWebServer = webServerService.getWebServer(aWebServerId);
+    public CommandOutput getHttpdConf(final Identifier<WebServer> webServerId) throws CommandFailureException {
+        final WebServer aWebServer = webServerService.getWebServer(webServerId);
         final ExecCommand execCommand = createExecCommand(aWebServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE,
                 aWebServer.getHttpConfigFile().getUriPath());
 
         return executeCommand(aWebServer, execCommand);
     }
 
-    private CommandOutput executeCommand(WebServer aWebServer, ExecCommand execCommand) throws CommandFailureException {
+    private CommandOutput executeCommand(final WebServer webServer, final ExecCommand execCommand) throws CommandFailureException {
         try {
             final RemoteCommandProcessorBuilder processorBuilder = new RemoteCommandProcessorBuilder();
-            processorBuilder.setCommand(execCommand).setHost(aWebServer.getHost()).setJsch(jsch.build()).setSshConfig(sshConfig)
+            processorBuilder.setCommand(execCommand).setHost(webServer.getHost()).setJsch(jschBuilder.build()).setSshConfig(sshConfig)
                     .setChannelPool(channelPool);
 
             return executor.execute(processorBuilder);
@@ -65,11 +63,11 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         }
     }
 
-    private ExecCommand createExecCommand(WebServer aWebServer, WebServerControlOperation wsControlOp, String... params) {
+    private ExecCommand createExecCommand(final WebServer webServer, final WebServerControlOperation wsControlOp, final String... params) {
 
         final DefaultExecCommandBuilderImpl<WebServerControlOperation> builder = new DefaultExecCommandBuilderImpl<>();
         builder.setOperation(wsControlOp);
-        builder.setEntityName(aWebServer.getName());
+        builder.setEntityName(webServer.getName());
         for (String param : params) {
             builder.setParameter(param);
         }

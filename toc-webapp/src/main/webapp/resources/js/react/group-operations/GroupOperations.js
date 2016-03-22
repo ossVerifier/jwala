@@ -107,33 +107,6 @@ var GroupOperations = React.createClass({
         }
     },
 
-// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
-//    updateStateData: function(response) {
-//        if (this.pollError) {
-//            this.pollError = false;
-//            return;
-//        }
-//
-//        var newStates = response.applicationResponseContent;
-//        var groups = [];
-//        var webServers = [];
-//        var jvms = [];
-//
-//        for (var i = 0; i < newStates.length; i++) {
-//            if (newStates[i].type === "JVM") {
-//                jvms.push(newStates[i]);
-//            } else if (newStates[i].type === "WEB_SERVER") {
-//                webServers.push(newStates[i]);
-//            } else if (newStates[i].type === "GROUP") {
-//                groups.push(newStates[i]);
-//            }
-//        }
-//
-//        this.updateGroupsStateData(groups);
-//        this.updateWebServerStateData(webServers);
-//        this.updateJvmStateData(jvms);
-//    },
-
     /**
      * Check if the session is expired.
      */
@@ -143,9 +116,8 @@ var GroupOperations = React.createClass({
         }
         return false;
     },
-    /**
-     * State polling error handler.
-     */
+
+    /*** TODO: Remove when methods below are confirmed to be deprecated **/
     statePollingErrorHandler: function(response) {
         if (this.statePoller.isActive) {
             try {
@@ -164,9 +136,6 @@ var GroupOperations = React.createClass({
             }
         }
     },
-    /**
-     * Set group states to polling error.
-     */
     setGroupStatesToPollingError: function() {
         for (var key in GroupOperations.groupStatusWidgetMap) {
         var groupStatusWidget = GroupOperations.groupStatusWidgetMap[key];
@@ -175,9 +144,6 @@ var GroupOperations = React.createClass({
             }
         }
     },
-    /**
-     * Set JVM states to polling error.
-     */
     setJvmStatesToPollingError: function() {
         for (var key in GroupOperations.jvmStatusWidgetMap) {
             var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap[key];
@@ -186,9 +152,6 @@ var GroupOperations = React.createClass({
             }
         }
     },
-    /**
-     * Set web server states to polling error.
-     */
     setWebServerStatesToPollingError: function() {
         for (var key in GroupOperations.webServerStatusWidgetMap) {
             var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap[key];
@@ -197,6 +160,10 @@ var GroupOperations = React.createClass({
             }
         }
     },
+    /*** TODO: Remove when methods above are confirmed to be deprecated **/
+
+
+
     updateGroupsStateData: function(newGroupState) {
         var groupsToUpdate = groupOperationsHelper.getGroupStatesById(this.state.groups);
 
@@ -240,31 +207,29 @@ var GroupOperations = React.createClass({
             webServersToUpdate.forEach(function(webServer){
                 var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
                 if (webServerStatusWidget !== undefined) {
-                    // for (var i = 0; i < newWebServerStates.length; i++) {
-                        if (newWebServerState.id.id === webServer.webServerId.id) {
-                            if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
-                                if (newWebServerState.stateString === GroupOperations.STARTING) {
-                                    newWebServerState.stateString = GroupOperations.START_SENT;
-                                }
-                                if (newWebServerState.stateString === GroupOperations.STOPPING) {
-                                    newWebServerState.stateString = GroupOperations.STOP_SENT;
-                                }
-                                var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
-                                if (commandStatusWidget !== undefined) {
-                                    commandStatusWidget.push({stateString: newWebServerState.stateString,
-                                                              asOf: newWebServerState.asOf,
-                                                              message: newWebServerState.message,
-                                                              from: "Web Server " + webServer.name, userId: newWebServerState.userId},
-                                                              newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
-                                }
-
-
-                            } else {
-                                var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
-                                webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+                    if (newWebServerState.id.id === webServer.webServerId.id) {
+                        if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
+                            if (newWebServerState.stateString === GroupOperations.STARTING) {
+                                newWebServerState.stateString = GroupOperations.START_SENT;
                             }
+                            if (newWebServerState.stateString === GroupOperations.STOPPING) {
+                                newWebServerState.stateString = GroupOperations.STOP_SENT;
+                            }
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                            if (commandStatusWidget !== undefined) {
+                                commandStatusWidget.push({stateString: newWebServerState.stateString,
+                                                          asOf: newWebServerState.asOf,
+                                                          message: newWebServerState.message,
+                                                          from: "Web Server " + webServer.name, userId: newWebServerState.userId},
+                                                          newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
+                            }
+
+
+                        } else {
+                            var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
+                            webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
                         }
-                    // }
+                    }
                 }
             });
         }
@@ -277,47 +242,38 @@ var GroupOperations = React.createClass({
             jvmsToUpdate.forEach(function(jvm){
                 var jvmStatusWidget = GroupOperations.jvmStatusWidgetMap["grp" + jvm.groupId.id + "jvm" + jvm.jvmId.id];
                 if (jvmStatusWidget !== undefined) {
-                    // for (var i = 0; i < newJvmStates.length; i++) {
-                        if (newJvmState.id.id === jvm.jvmId.id) {
-                            if (newJvmState.stateString === GroupOperations.FAILED ||
-                                newJvmState.stateString === GroupOperations.START_SENT ||
-                                newJvmState.stateString === GroupOperations.STOP_SENT) {
+                    if (newJvmState.id.id === jvm.jvmId.id) {
+                        if (newJvmState.stateString === GroupOperations.FAILED ||
+                            newJvmState.stateString === GroupOperations.START_SENT ||
+                            newJvmState.stateString === GroupOperations.STOP_SENT) {
 
-                                var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
-                                if (commandStatusWidget !== undefined) {
-                                    commandStatusWidget.push({stateString: newJvmState.stateString,
-                                                              asOf: newJvmState.asOf,
-                                                              message: newJvmState.message,
-                                                              from: "JVM " + jvm.name,
-                                                              userId: newJvmState.userId},
-                                                              newJvmState.stateString === GroupOperations.FAILED ?
-                                                              "error-status-font" : "action-status-font");
-                                }
-
-                            } else {
-                                var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
-                                jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
-
-                                // Update the state of the jvm that is in a "react state" so that when the
-                                // state component is re rendered it is updated. JVMs are loaded together with the
-                                // group and not when the group is opened that is why we need this.
-                                self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
-                                                                                          errorStatus: ""};
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                            if (commandStatusWidget !== undefined) {
+                                commandStatusWidget.push({stateString: newJvmState.stateString,
+                                                          asOf: newJvmState.asOf,
+                                                          message: newJvmState.message,
+                                                          from: "JVM " + jvm.name,
+                                                          userId: newJvmState.userId},
+                                                          newJvmState.stateString === GroupOperations.FAILED ?
+                                                          "error-status-font" : "action-status-font");
                             }
+
+                        } else {
+                            var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
+                            jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+
+                            // Update the state of the jvm that is in a "react state" so that when the
+                            // state component is re rendered it is updated. JVMs are loaded together with the
+                            // group and not when the group is opened that is why we need this.
+                            self.refs.groupOperationsDataTable.state.currentJvmState[jvm.jvmId.id] = {stateLabel: newJvmState.stateString,
+                                                                                      errorStatus: ""};
                         }
-                    // }
+                    }
                 }
             });
         }
     },
     pollStates: function() {
-// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
-//        if (this.statePoller === null) {
-//            this.statePoller = new PollerForAPromise(GroupOperations.STATE_POLLER_INTERVAL, stateService.getNextStates,
-//                                                                this.updateStateData, this.statePollingErrorHandler);
-//        }
-//
-//        this.statePoller.start();
         React.renderComponent(<span>Connecting to a web socket...</span>, this.refs.stompMsgDiv.getDOMNode());
         ServiceFactory.getServerStateWebSocketService().connect(this.msgHandler, this.stompConnectedCallback, this.stompConnectErrorHandler);
     },
@@ -345,8 +301,6 @@ var GroupOperations = React.createClass({
         this.pollStates();
     },
     componentWillUnmount: function() {
-// TODO: Remove when STOMP has been verified to work in a browser that does not support web sockets.
-//        this.statePoller.stop();
         ServiceFactory.getServerStateWebSocketService().disconnect();
     },
     updateWebServerDataCallback: function(webServerData) {

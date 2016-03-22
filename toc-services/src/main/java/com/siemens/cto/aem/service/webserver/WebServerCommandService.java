@@ -12,5 +12,6 @@ import com.siemens.cto.aem.exception.CommandFailureException;
  */
 public interface WebServerCommandService {
 
-    CommandOutput getHttpdConf(Identifier<WebServer> aWebServerId) throws CommandFailureException;
+    CommandOutput getHttpdConf(Identifier<WebServer> webServerId) throws CommandFailureException;
+
 }
