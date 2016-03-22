@@ -9,8 +9,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
-import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -46,14 +44,9 @@ public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
     public static final String TOPIC_SERVER_STATES = "/topic/server-states";
-    private HttpClientRequestFactory httpClientRequestFactory;
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private WebServerService webServerService;
-
-    private StateNotificationService stateNotificationService;
-
     private SimpMessagingTemplate messagingTemplate;
-
     private GroupStateNotificationService groupStateNotificationService;
 
     @Autowired
@@ -209,10 +202,6 @@ public class WebServerStateSetterWorker {
 
     public void setWebServerService(WebServerService webServerService) {
         this.webServerService = webServerService;
-    }
-
-    public void setStateNotificationService(StateNotificationService stateNotificationService) {
-        this.stateNotificationService = stateNotificationService;
     }
 
     public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {

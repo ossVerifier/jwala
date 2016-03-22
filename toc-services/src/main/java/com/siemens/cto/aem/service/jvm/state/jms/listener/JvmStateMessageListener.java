@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -27,28 +26,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JvmStateMessageListener implements MessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
-
-    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
 
     private final JvmStateMapMessageConverter converter;
     private final JvmService jvmService;
     private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
-
-    private final StateNotificationService stateNotificationService;
-
     private final SimpMessagingTemplate messagingTemplate;
-
     private final GroupStateNotificationService groupStateNotificationService;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
                                    final JvmService jvmService,
-                                   final StateNotificationService stateNotificationService,
                                    final SimpMessagingTemplate messagingTemplate,
                                    final GroupStateNotificationService groupStateNotificationService) {
         converter = theConverter;
         this.jvmService = jvmService;
-        this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
     }
@@ -81,13 +73,8 @@ public class JvmStateMessageListener implements MessageListener {
 
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
-
-            // stateNotificationService.notifyStateUpdated(new CurrentState(newState.getId(), newState.getState(),
-            //         DateTime.now(), StateType.JVM, newState.getMessage()));
-
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(newState.getId(), newState.getState(),
                     DateTime.now(), StateType.JVM, newState.getMessage()));
-
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
         }
     }

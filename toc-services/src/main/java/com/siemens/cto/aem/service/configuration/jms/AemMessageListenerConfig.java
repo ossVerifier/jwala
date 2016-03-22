@@ -38,7 +38,7 @@ public class AemMessageListenerConfig {
     private StateNotificationService stateNotificationService;
 
     @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
@@ -66,7 +66,7 @@ public class AemMessageListenerConfig {
     @Autowired
     public MessageListener getJvmStateMessageListener() {
         return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
-                stateNotificationService, simpMessagingTemplate, groupStateNotificationService);
+                messagingTemplate, groupStateNotificationService);
     }
 
 }

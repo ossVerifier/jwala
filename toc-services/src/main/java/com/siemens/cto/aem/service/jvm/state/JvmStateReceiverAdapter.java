@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 import org.apache.commons.lang3.StringUtils;
 import org.jgroups.Address;
@@ -28,11 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JvmStateReceiverAdapter extends ReceiverAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmStateReceiverAdapter.class);
-
-    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
 
     private final JvmService jvmService;
-    private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private JvmStateMapMessageConverterImpl converter = new JvmStateMapMessageConverterImpl();
 
@@ -41,10 +38,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
 
     private final GroupStateNotificationService groupStateNotificationService;
 
-    public JvmStateReceiverAdapter(final JvmService jvmService, final StateNotificationService stateNotificationService,
-                                   final SimpMessagingTemplate messagingTemplate, final GroupStateNotificationService groupStateNotificationService) {
+    public JvmStateReceiverAdapter(final JvmService jvmService, final SimpMessagingTemplate messagingTemplate,
+                                   final GroupStateNotificationService groupStateNotificationService) {
         this.jvmService = jvmService;
-        this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
     }
@@ -64,7 +60,6 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final Identifier<Jvm> id = newState.getId();
             final CurrentState currentState = new CurrentState(id, state, DateTime.now(), StateType.JVM, msg);
             logger.info("Processed JGroups, running update {}", message);
-            // stateNotificationService.notifyStateUpdated(new CurrentState(id, state, DateTime.now(), StateType.JVM, msg));
             jvmService.updateState(id, state, msg);
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, currentState);
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);

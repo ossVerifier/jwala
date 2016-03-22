@@ -303,7 +303,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker) {
         webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
         webServerStateSetterWorker.setWebServerService(getWebServerService());
-        webServerStateSetterWorker.setStateNotificationService(getStateNotificationService());
         webServerStateSetterWorker.setMessagingTemplate(messagingTemplate);
         webServerStateSetterWorker.setGroupStateNotificationService(groupStateNotificationService);
         return webServerStateSetterWorker;
@@ -343,7 +342,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean
     @Autowired
     public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(getJvmService(), getStateNotificationService(),
+        return new JvmStateReceiverAdapter(getJvmService(),
                 messagingTemplate, groupStateNotificationService);
     }
 
