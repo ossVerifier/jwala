@@ -39,6 +39,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     private static final String TOPIC_SERVER_STATES = "/topic/server-states";
     private static final String FORCED_STOPPED = "FORCED STOPPED";
+    private static final String WEB_SERVER = "Web Server";
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
@@ -63,15 +64,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Override
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser) {
-
-
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
         CommandOutput commandOutput;
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
 
-            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
+            historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
@@ -106,7 +105,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                                 CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
 
                         LOGGER.error(errorMsg);
-                        historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
+                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
                                 aUser.getId());
                         messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                                 DateTime.now(), StateType.WEB_SERVER, errorMsg));
@@ -121,7 +120,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
 
             final String stackTrace = ExceptionUtils.getStackTrace(cfe);
-            historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), stackTrace,
+            historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), stackTrace,
                     EventType.APPLICATION_ERROR, aUser.getId());
 
             setFailedState(webServer, stackTrace);
@@ -131,6 +130,15 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         }
 
         return commandOutput;
+    }
+
+    /**
+     * Get the server name prefixed by the server type - "Web Server".
+     * @param webServer the {@link WebServer} object.
+     * @return server name prefixed by "Web Server".
+     */
+    private String getServerName(WebServer webServer) {
+        return WEB_SERVER + " " + webServer.getName();
     }
 
     @Override

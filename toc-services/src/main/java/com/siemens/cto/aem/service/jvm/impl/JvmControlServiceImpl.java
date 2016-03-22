@@ -36,6 +36,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    private static final String JVM = "JVM";
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
@@ -59,7 +60,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = ctrlOp.getOperationState() == null ?
                     ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
-            historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
 
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
@@ -93,7 +94,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                                 CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
 
                         LOGGER.error(errorMsg);
-                        historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
+                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
                                 aUser.getId());
                         messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                                 DateTime.now(), StateType.JVM, errorMsg));
@@ -105,7 +106,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final CommandFailureException cfe) {
             LOGGER.error(cfe.getMessage(), cfe);
-            historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
                     aUser.getId());
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                     DateTime.now(), StateType.JVM, cfe.getMessage()));
@@ -113,6 +114,15 @@ public class JvmControlServiceImpl implements JvmControlService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, cfe);
         }
+    }
+
+    /**
+     * Get the server name prefixed by the server type - "JVM".
+     * @param jvm the {@link Jvm} object.
+     * @return server name prefixed by "JVM".
+     */
+    private String getServerName(final Jvm jvm) {
+        return JVM + " " + jvm.getJvmName();
     }
 
     @Override
