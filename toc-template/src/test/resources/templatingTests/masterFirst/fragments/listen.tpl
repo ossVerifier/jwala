@@ -1,1 +1,0 @@
-<% attributes.each{k, v -> %>listen ${v}\n<% }%>

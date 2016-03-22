@@ -1,2 +1,0 @@
-SSLCertificateFile ${attributes.SSLCertificateFile}
-SSLCertificateKeyFile ${attributes.SSLCertificateKeyFile}
