@@ -14,7 +14,7 @@ public enum CommandOutputReturnCode {
     ABNORMAL_SUCCESS(126, "Service already started/stopped"),
     NO_OP(127, "Command operation does not exist"),
     KILL(255, "Kill command executed"),
-    UNKNOWN(99999, "Return code not in enum")
+    UNKNOWN(99999, "Return code not defined")
     ;
 
     private final int retCode;
