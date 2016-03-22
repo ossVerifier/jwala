@@ -1,9 +1,0 @@
-{
-	"name":"Setenv BAT",
-	"templateName":"SetenvBatTemplate.tpl",
-	"contentType":"application/xml",
-	"entityType":"jvm",
-	"configFileName":"setenv.bat",
-	"relativeDir":"/bin",
-	"properties":[]
-}

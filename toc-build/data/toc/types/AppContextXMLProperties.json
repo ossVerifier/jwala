@@ -1,8 +1,0 @@
-{
-	"name":"Context XML",
-	"templateName":"AppContextXMLTemplate.tpl",
-	"contentType":"application/xml",
-	"entityType":"webApp",
-	"relativeDir":"/conf/stp/localhost",
-	"properties":[]
-}
