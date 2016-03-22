@@ -99,7 +99,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            if ("webServer".equals(resourceType.getEntityType())) {
+            if ("webServer".equals(resourceType.getEntityType()) && !"invokeWS.bat".equals(resourceType.getConfigFileName())) {
                 FileInputStream dataInputStream = null;
                 try {
                     dataInputStream =
