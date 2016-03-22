@@ -19,6 +19,7 @@ import org.jgroups.View;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Map;
@@ -27,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JvmStateReceiverAdapter extends ReceiverAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(JvmStateReceiverAdapter.class);
-    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
 
     private final JvmService jvmService;
     private final SimpMessagingTemplate messagingTemplate;
@@ -61,8 +64,8 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final CurrentState currentState = new CurrentState(id, state, DateTime.now(), StateType.JVM, msg);
             logger.info("Processed JGroups, running update {}", message);
             jvmService.updateState(id, state, msg);
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, currentState);
-            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
+            messagingTemplate.convertAndSend(topicServerStates, currentState);
+            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, topicServerStates);
         }
 
     }

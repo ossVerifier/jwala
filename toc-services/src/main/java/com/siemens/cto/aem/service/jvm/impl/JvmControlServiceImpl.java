@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.text.SimpleDateFormat;
@@ -33,9 +34,11 @@ import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
-    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
     private static final String JVM = "JVM";
     private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
@@ -65,7 +68,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(),
+            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(),
                     aUser.getId(), DateTime.now(), StateType.JVM));
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
@@ -96,7 +99,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
                                 aUser.getId());
-                        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+                        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                                 DateTime.now(), StateType.JVM, errorMsg));
 
                         break;
@@ -108,7 +111,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             LOGGER.error(cfe.getMessage(), cfe);
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
                     aUser.getId());
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
+            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                     DateTime.now(), StateType.JVM, cfe.getMessage()));
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

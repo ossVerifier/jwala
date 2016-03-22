@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.jms.JMSException;
@@ -26,7 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JvmStateMessageListener implements MessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
-    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
 
     private final JvmStateMapMessageConverter converter;
     private final JvmService jvmService;
@@ -73,9 +76,9 @@ public class JvmStateMessageListener implements MessageListener {
 
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState(newState.getId(), newState.getState(),
+            messagingTemplate.convertAndSend(topicServerStates, new CurrentState(newState.getId(), newState.getState(),
                     DateTime.now(), StateType.JVM, newState.getMessage()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, TOPIC_SERVER_STATES);
+            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, topicServerStates);
         }
     }
 

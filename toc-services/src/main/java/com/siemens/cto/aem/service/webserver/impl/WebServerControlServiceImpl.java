@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.text.SimpleDateFormat;
@@ -37,7 +38,9 @@ import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
-    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
+
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String WEB_SERVER = "Web Server";
     private final WebServerService webServerService;
@@ -76,7 +79,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(),
+            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(),
                     controlWebServerRequest.getControlOperation().getOperationState(), aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
@@ -107,7 +110,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
                                 aUser.getId());
-                        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
+                        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                                 DateTime.now(), StateType.WEB_SERVER, errorMsg));
 
                         break;
@@ -191,7 +194,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 //        stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
 //                DateTime.now(), StateType.WEB_SERVER));
 
-        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
+        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                 DateTime.now(), StateType.WEB_SERVER, msg));
     }
 

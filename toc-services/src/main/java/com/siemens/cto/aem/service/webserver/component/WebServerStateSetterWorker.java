@@ -16,6 +16,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -43,7 +44,10 @@ import java.util.concurrent.Future;
 public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
-    public static final String TOPIC_SERVER_STATES = "/topic/server-states";
+
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
+
     private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private WebServerService webServerService;
     private SimpMessagingTemplate messagingTemplate;
@@ -144,8 +148,8 @@ public class WebServerStateSetterWorker {
 
             // stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
             //         DateTime.now()));
-            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class, TOPIC_SERVER_STATES);
+            messagingTemplate.convertAndSend(topicServerStates, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
+            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class, topicServerStates);
         }
     }
 

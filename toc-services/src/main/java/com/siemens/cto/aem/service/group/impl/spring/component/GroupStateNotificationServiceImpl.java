@@ -18,6 +18,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,8 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
 
     private static final String NULL_STR = "NULL_STR";
 
-    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    protected String topicServerStates;
 
     @Autowired
     private JvmCrudService jvmCrudService;
@@ -75,7 +77,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
                 final CurrentState<Group, GroupState> groupState = new CurrentState<>(new Identifier<Group>(group.getId()),
                         GroupState.GRP_UNKNOWN, DateTime.now(), StateType.GROUP, webServerCount, webServerStartedCount,
                         jvmCount, jvmStartedCount);
-                simpMessagingTemplate.convertAndSend(TOPIC_SERVER_STATES, groupState);
+                simpMessagingTemplate.convertAndSend(topicServerStates, groupState);
                 LOGGER.debug("Group '{}' state = {}", group.getName(), groupState);
             }
         }
