@@ -25,6 +25,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,23 +34,27 @@ import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
+    private static final String TOPIC_SERVER_STATES = "/topic/server-states";
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
     private final HistoryService historyService;
     private final StateNotificationService stateNotificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
                                        final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
                                        final HistoryService historyService,
-                                       final StateNotificationService stateNotificationService) {
+                                       final StateNotificationService stateNotificationService,
+                                       final SimpMessagingTemplate messagingTemplate) {
         webServerService = theWebServerService;
         commandExecutor = theExecutor;
         webServerReachableStateMap = theWebServerReachableStateMap;
         this.historyService = historyService;
         this.stateNotificationService = stateNotificationService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -61,8 +66,15 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
+
             historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
+
+            // Send a message to the UI about the control operation.
+            // Note: Sending the details of the control operation to a topic will enable the application to display
+            //       the control event to all the UI's opened in different browsers.
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(),
+                    controlWebServerRequest.getControlOperation().getOperationState(), aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
                     controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());

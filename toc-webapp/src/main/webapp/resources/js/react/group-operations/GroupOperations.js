@@ -254,7 +254,7 @@ var GroupOperations = React.createClass({
                                     commandStatusWidget.push({stateString: newWebServerState.stateString,
                                                               asOf: newWebServerState.asOf,
                                                               message: newWebServerState.message,
-                                                              from: "Web Server " + webServer.name, userId: newWebServerStateuserId},
+                                                              from: "Web Server " + webServer.name, userId: newWebServerState.userId},
                                                               newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
                                 }
 

@@ -58,7 +58,14 @@ public class JvmControlServiceImpl implements JvmControlService {
             final JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
             final String event = ctrlOp.getOperationState() == null ?
                     ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
+
             historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
+
+            // Send a message to the UI about the control operation.
+            // Note: Sending the details of the control operation to a topic will enable the application to display
+            //       the control event to all the UI's opened in different browsers.
+            messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(),
+                    aUser.getId(), DateTime.now(), StateType.JVM));
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
                     ctrlOp, new WindowsJvmPlatformCommandProvider());

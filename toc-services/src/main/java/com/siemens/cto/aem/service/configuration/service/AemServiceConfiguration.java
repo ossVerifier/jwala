@@ -236,7 +236,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                webServerReachableStateMap, historyService, getStateNotificationService());
+                webServerReachableStateMap, historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")

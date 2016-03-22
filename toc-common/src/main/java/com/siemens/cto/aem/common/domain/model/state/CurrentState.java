@@ -31,6 +31,11 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
     }
 
+    public CurrentState(final Identifier<S> id, final T state, final String userId, final DateTime asOf, final StateType stateType) {
+        this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
+        setUserId(userId);
+    }
+
     public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
                         final Long webServerCount, final Long webServerStartedCount, final Long jvmCount,
                         final Long jvmStartedCount) {

@@ -534,13 +534,15 @@ var GroupOperationsDataTable = React.createClass({
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
                                   if (commandStatusWidget) {
                                       var jvms = response.applicationResponseContent.jvms;
-                                      jvms.forEach(function(jvm){
-                                          commandStatusWidget.push({stateString: "START SENT",
-                                                                    asOf: new Date().getTime(),
-                                                                    message: "",
-                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                    "action-status-font");
-                                      });
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//                                      jvms.forEach(function(jvm){
+//                                          commandStatusWidget.push({stateString: "START SENT",
+//                                                                    asOf: new Date().getTime(),
+//                                                                    message: "",
+//                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                                    "action-status-font");
+//                                      });
                                       self.writeWebServerActionToCommandStatusWidget(id, "START SENT");
                                   }
                                   self.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)}, "ui-icon-play");
@@ -557,13 +559,15 @@ var GroupOperationsDataTable = React.createClass({
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
                                   if (commandStatusWidget) {
                                       var jvms = response.applicationResponseContent.jvms;
-                                      jvms.forEach(function(jvm){
-                                          commandStatusWidget.push({stateString: "STOP SENT",
-                                                                    asOf: new Date().getTime(),
-                                                                    message: "",
-                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                    "action-status-font");
-                                      });
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//                                      jvms.forEach(function(jvm){
+//                                          commandStatusWidget.push({stateString: "STOP SENT",
+//                                                                    asOf: new Date().getTime(),
+//                                                                    message: "",
+//                                                                    from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                                    "action-status-font");
+//                                      });
 
                                       self.writeWebServerActionToCommandStatusWidget(id, "STOP SENT");
                                   }
@@ -583,13 +587,15 @@ var GroupOperationsDataTable = React.createClass({
                                                  function(response){
                                                      var jvms = response.applicationResponseContent.jvms;
                                                      var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(event.data.id)];
-                                                     jvms.forEach(function(jvm){
-                                                         commandStatusWidget.push({stateString: "START SENT",
-                                                                                   asOf: new Date().getTime(),
-                                                                                   message: "",
-                                                                                   from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                                   "action-status-font");
-                                                     });
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//                                                     jvms.forEach(function(jvm){
+//                                                         commandStatusWidget.push({stateString: "START SENT",
+//                                                                                   asOf: new Date().getTime(),
+//                                                                                   message: "",
+//                                                                                   from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                                                   "action-status-font");
+//                                                     });
 
                                                      self.disableEnable(event.data.buttonSelector,
                                                                         function() {
@@ -616,14 +622,16 @@ var GroupOperationsDataTable = React.createClass({
                             groupService.getGroup(event.data.name,
                                                   function(response){
                                                       var jvms = response.applicationResponseContent.jvms;
-                                                      var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(event.data.id)];
-                                                      jvms.forEach(function(jvm){
-                                                          commandStatusWidget.push({stateString: "STOP SENT",
-                                                                                  asOf: new Date().getTime(),
-                                                                                  message: "",
-                                                                                  from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
-                                                                                  "action-status-font");
-                                                      });
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//                                                      var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(event.data.id)];
+//                                                      jvms.forEach(function(jvm){
+//                                                          commandStatusWidget.push({stateString: "STOP SENT",
+//                                                                                  asOf: new Date().getTime(),
+//                                                                                  message: "",
+//                                                                                  from: "JVM " + jvm.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                                                  "action-status-font");
+//                                                      });
 
                                                       self.disableEnable(event.data.buttonSelector,
                                                                          function() { return groupControlService.stopJvms(event.data.id)},
@@ -816,12 +824,14 @@ var GroupOperationsDataTable = React.createClass({
     jvmStart: function(data, buttonSelector, cancelCallback) {
         var self = this;
         var doJvmStart = function(jvmId) {
-            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
-            commandStatusWidget.push({stateString: "START SENT",
-                                                   asOf: new Date().getTime(),
-                                                   message: "",
-                                                   from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
-                                                   "action-status-font");
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+//            commandStatusWidget.push({stateString: "START SENT",
+//                                                   asOf: new Date().getTime(),
+//                                                   message: "",
+//                                                   from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                   "action-status-font");
             jvmControlService.startJvm(jvmId);
         }
 
@@ -839,12 +849,14 @@ var GroupOperationsDataTable = React.createClass({
     jvmStop: function(data, buttonSelector, cancelCallback) {
         var self = this;
         var doJvmStop = function(jvmId) {
-            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
-            commandStatusWidget.push({stateString: "STOP SENT",
-                                                   asOf: new Date().getTime(),
-                                                   message: "",
-                                                   from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
-                                                   "action-status-font");
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+//            commandStatusWidget.push({stateString: "STOP SENT",
+//                                                   asOf: new Date().getTime(),
+//                                                   message: "",
+//                                                   from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName")},
+//                                                   "action-status-font");
             jvmControlService.stopJvm(jvmId);
         }
 
@@ -890,12 +902,14 @@ var GroupOperationsDataTable = React.createClass({
     webServerStart: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         var self = this;
         var doWebServerStart = function(webServerId) {
-            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
-            commandStatusWidget.push({stateString: "START SENT",
-                                                   asOf: new Date().getTime(),
-                                                   message: "",
-                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
-                                                   "action-status-font");
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+//            commandStatusWidget.push({stateString: "START SENT",
+//                                                   asOf: new Date().getTime(),
+//                                                   message: "",
+//                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
+//                                                   "action-status-font");
             webServerControlService.startWebServer(webServerId);
         }
 
@@ -913,12 +927,14 @@ var GroupOperationsDataTable = React.createClass({
     webServerStop: function(id, buttonSelector, data, parentItemId, cancelCallback) {
         var self = this;
         var doWebServerStop = function(webServerId) {
-            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
-            commandStatusWidget.push({stateString: "STOP SENT",
-                                                   asOf: new Date().getTime(),
-                                                   message: "",
-                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
-                                                   "action-status-font");
+// TODO: Remove this!
+// NOTE: We need to send start/stop sent via web socket so the other browsers will get the control history without reloading from db!
+//            var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
+//            commandStatusWidget.push({stateString: "STOP SENT",
+//                                                   asOf: new Date().getTime(),
+//                                                   message: "",
+//                                                   from: "Web Server " + data.name, userId: AdminTab.getCookie("userName")},
+//                                                   "action-status-font");
             webServerControlService.stopWebServer(webServerId);
         }
 

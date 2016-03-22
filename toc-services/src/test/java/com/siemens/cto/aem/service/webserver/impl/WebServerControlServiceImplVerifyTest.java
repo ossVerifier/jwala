@@ -32,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -64,12 +65,14 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Mock
     private StateNotificationService stateNotificationService;
 
+    private SimpMessagingTemplate mockMessagingTemplate;
+
     private User user;
 
     @Before
     public void setup() {
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, webServerReachableStateMap,
-                mockHistoryService, stateNotificationService);
+                mockHistoryService, stateNotificationService, mockMessagingTemplate);
 
         user = new User("unused");
     }
