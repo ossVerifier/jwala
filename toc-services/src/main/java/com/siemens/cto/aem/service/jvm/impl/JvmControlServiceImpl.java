@@ -52,7 +52,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput controlJvm(ControlJvmRequest controlJvmRequest, User aUser) {
+    public CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser) {
         final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
         try {
             final JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
@@ -70,14 +70,15 @@ public class JvmControlServiceImpl implements JvmControlService {
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
                     ctrlOp, new WindowsJvmPlatformCommandProvider());
 
-            if ((ctrlOp.equals(JvmControlOperation.START) || ctrlOp.equals(JvmControlOperation.STOP)) &&
-                    StringUtils.isNotEmpty(commandOutput.getStandardOutput())) {
+            if (commandOutput != null && StringUtils.isNotEmpty(commandOutput.getStandardOutput()) &&
+                    (controlJvmRequest.getControlOperation().equals(JvmControlOperation.START) ||
+                     controlJvmRequest.getControlOperation().equals(JvmControlOperation.STOP))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
 
             // Process non successful return codes...
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
+            if (commandOutput != null && !commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
@@ -85,16 +86,21 @@ public class JvmControlServiceImpl implements JvmControlService {
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
-                        // jvmService.pingAndUpdateJvmState(jvm);
                         break;
                     default:
-                        final String errorMsg = "JVM control command was not successful. Return code message = " +
-                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() + "!";
+                        final String errorMsg = "JVM control command was not successful! Return code = "
+                                + commandOutput.getReturnCode().getReturnCode() + ", description = " +
+                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
+
                         LOGGER.error(errorMsg);
 //                        stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
 //                                DateTime.now(), StateType.JVM, errorMsg));
+
+                        historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
+                                aUser.getId());
                         messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                                 DateTime.now(), StateType.JVM, errorMsg));
+
                         break;
                 }
             }
@@ -107,6 +113,10 @@ public class JvmControlServiceImpl implements JvmControlService {
             // Send the error via JMS so TOC client can display it in the control window.
 //            stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
 //                    DateTime.now(), StateType.JVM, cfe.getMessage()));
+
+            historyService.createHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
+                    aUser.getId());
+
             messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
                     DateTime.now(), StateType.JVM, cfe.getMessage()));
 

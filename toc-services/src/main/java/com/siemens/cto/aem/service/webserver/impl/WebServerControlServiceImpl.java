@@ -10,6 +10,8 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperati
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
@@ -22,6 +24,7 @@ import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,7 @@ import java.util.Map;
 public class WebServerControlServiceImpl implements WebServerControlService {
 
     private static final String TOPIC_SERVER_STATES = "/topic/server-states";
+    private static final String FORCED_STOPPED = "FORCED STOPPED";
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
@@ -78,12 +82,39 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
                     controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
-            if (commandOutput != null &&
+
+            if (commandOutput != null && StringUtils.isNotEmpty(commandOutput.getStandardOutput()) &&
                     (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
-                            controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
+                     controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
+
+            // Process non successful return codes...
+            if (commandOutput != null && !commandOutput.getReturnCode().wasSuccessful()) {
+                switch (commandOutput.getReturnCode().getReturnCode()) {
+                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                        commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
+                        webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
+                        break;
+                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                        LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                        break;
+                    default:
+                        final String errorMsg = "Web Server control command was not successful! Return code = "
+                                + commandOutput.getReturnCode().getReturnCode() + ", description = " +
+                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
+
+                        LOGGER.error(errorMsg);
+                        historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
+                                aUser.getId());
+                        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
+                                DateTime.now(), StateType.WEB_SERVER, errorMsg));
+
+                        break;
+                }
+            }
+
         } catch (final CommandFailureException cfe) {
             LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " +
                     controlWebServerRequest, cfe);
@@ -149,8 +180,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         webServerService.updateErrorStatus(webServer.getId(), msg);
 
         // Send the error via JMS so TOC client can display it in the control window.
-        stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
-                DateTime.now(), StateType.WEB_SERVER));
+//        stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
+//                DateTime.now(), StateType.WEB_SERVER));
+
+        messagingTemplate.convertAndSend(TOPIC_SERVER_STATES, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
+                DateTime.now(), StateType.WEB_SERVER, msg));
     }
 
     /**

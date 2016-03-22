@@ -15,7 +15,8 @@ public enum WebServerReachableState implements OperationalState {
     WS_UNEXPECTED_STATE("UNEXPECTED STATE"),
     WS_START_SENT("START SENT"),
     WS_STOP_SENT("STOP SENT"),
-    WS_FAILED("FAILED");
+    WS_FAILED("FAILED"),
+    FORCED_STOPPED("FORCED STOP");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerReachableState.class);
     private static final Map<String, WebServerReachableState> LOOKUP_MAP = new HashMap<>(values().length);
