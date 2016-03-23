@@ -80,7 +80,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
             messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(),
-                    controlWebServerRequest.getControlOperation().getOperationState(), aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+                    webServer.getState(), aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
                     controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
