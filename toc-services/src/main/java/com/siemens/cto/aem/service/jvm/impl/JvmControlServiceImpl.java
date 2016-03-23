@@ -60,16 +60,18 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
         try {
             final JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
-            final String event = ctrlOp.getOperationState() == null ?
-                    ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
+            final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
 
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
-            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), jvm.getState(),
-                    aUser.getId(), DateTime.now(), StateType.JVM));
+            // TODO: We should also be able to send info to the UI about the other control operations e.g. thread dump, heap dump etc...
+            if (ctrlOp.getOperationState() != null) {
+                messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(),
+                        aUser.getId(), DateTime.now(), StateType.JVM));
+            }
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
                     ctrlOp, new WindowsJvmPlatformCommandProvider());

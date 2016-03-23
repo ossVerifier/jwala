@@ -79,8 +79,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
-            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(),
-                    webServer.getState(), aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+            // TODO: We should also be able to send info to the UI about the other control operations e.g. thread dump, heap dump etc...
+            if (controlWebServerRequest.getControlOperation().getOperationState() != null) {
+                    messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(),
+                        controlWebServerRequest.getControlOperation().getOperationState(), aUser.getId(),
+                        DateTime.now(), StateType.WEB_SERVER));
+            }
 
             commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
                     controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
