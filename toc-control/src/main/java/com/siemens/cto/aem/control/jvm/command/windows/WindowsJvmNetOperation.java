@@ -73,9 +73,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             String instancesDir = ApplicationProperties.get("paths.instances");
             return new ExecCommand(
                     cygpathWrapper(DEPLOY_CONFIG_TAR_SCRIPT_NAME),
-                    dataJvmResourcesDir + "/" + aServiceName + "_config.tar",
+                    dataJvmResourcesDir + "/" + aServiceName + "_config.jar",
                     instancesDir + "/" + aServiceName,
-                    dataJvmResourcesDir
+                    dataJvmResourcesDir,
+                    ApplicationProperties.get("stp.java.home") + "/bin/jar"
             );
         }
     },

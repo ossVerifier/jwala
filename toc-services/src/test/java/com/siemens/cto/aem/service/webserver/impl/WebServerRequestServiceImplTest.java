@@ -13,8 +13,6 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -49,7 +47,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link WebServerCommandServiceImpl}.
- * <p>
+ * <p/>
  * Created by z003bpej on 8/27/14.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -79,12 +77,6 @@ public class WebServerRequestServiceImplTest {
 
     @Mock
     private ClientHttpResponse clientHttpResponse;
-
-    @Mock
-    private RuntimeCommandBuilder rtCommandBuilder;
-
-    @Mock
-    private RuntimeCommand rtCommand;
 
     @Mock
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
@@ -125,8 +117,6 @@ public class WebServerRequestServiceImplTest {
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
         when(webServerService.getWebServer(anyString())).thenReturn(aWebServer);
         when(aWebServer.getStatusUri()).thenReturn(new URI("http://context/status.png"));
-        when(rtCommandBuilder.build()).thenReturn(rtCommand);
-        when(rtCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         // TODO move to web server control service impl test
         /*final CommandOutput execData = impl.secureCopyFileWithBackup("ANY-SERVER-NAME", "d:/path/with/forward/slashes/new-httpd.conf", rtCommandBuilder);
@@ -145,7 +135,7 @@ public class WebServerRequestServiceImplTest {
             MockitoAnnotations.initMocks(this);
         }
 
-        @Bean(name="webServerHttpRequestFactory")
+        @Bean(name = "webServerHttpRequestFactory")
         public HttpClientRequestFactory getHttpClientRequestFactory() {
             return httpClientRequestFactory;
         }

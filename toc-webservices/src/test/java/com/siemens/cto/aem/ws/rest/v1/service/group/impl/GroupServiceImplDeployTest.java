@@ -59,9 +59,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -130,7 +128,7 @@ public class GroupServiceImplDeployTest {
     }
 
     @Test
-    public void testGroupJvmDeploy() throws CommandFailureException {
+    public void testGroupJvmDeploy() throws CommandFailureException, IOException {
         Group mockGroup = mock(Group.class);
         Jvm mockJvm = mock(Jvm.class);
         Response mockResponse = mock(Response.class);
@@ -150,7 +148,7 @@ public class GroupServiceImplDeployTest {
         when(mockResourceType.getEntityType()).thenReturn("jvm");
         when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupJvmResourceTemplate(anyString(),anyString(),anyBoolean())).thenReturn("new server.xml content");
+        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new server.xml content");
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");
@@ -160,11 +158,7 @@ public class GroupServiceImplDeployTest {
         Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
-        try {
-            FileUtils.forceDelete(new File("./testJvm"));
-        } catch (IOException e) {
-            assertTrue("This should not fail :: " + e, false);
-        }
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + mockJvm.getJvmName()));
     }
 
     @Test
@@ -198,9 +192,9 @@ public class GroupServiceImplDeployTest {
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
         when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
-        try{
+        try {
             groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);
-        } catch (InternalErrorException ie){
+        } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
     }
@@ -238,9 +232,9 @@ public class GroupServiceImplDeployTest {
         assertEquals(200, returnResponse.getStatus());
 
         when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
-        try{
+        try {
             groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
-        } catch (InternalErrorException ie){
+        } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
     }
@@ -315,7 +309,7 @@ public class GroupServiceImplDeployTest {
         }
 
         @Bean
-        ApplicationServiceRest getApplicationServiceRest(){
+        ApplicationServiceRest getApplicationServiceRest() {
             return new ApplicationServiceRestImpl(mockApplicationService);
         }
 

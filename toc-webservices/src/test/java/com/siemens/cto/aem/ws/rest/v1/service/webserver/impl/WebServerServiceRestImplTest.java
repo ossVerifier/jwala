@@ -13,13 +13,11 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -91,12 +89,6 @@ public class WebServerServiceRestImplTest {
 
     @Mock
     private AuthenticatedUser authenticatedUser;
-
-    @Mock
-    private RuntimeCommandBuilder rtCommandBuilder;
-
-    @Mock
-    private RuntimeCommand rtCommand;
 
     private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
@@ -307,8 +299,6 @@ public class WebServerServiceRestImplTest {
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(rtCommand.execute()).thenReturn(retSuccessExecData);
-        when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), true);
         assertTrue(response.hasEntity());
@@ -348,8 +338,6 @@ public class WebServerServiceRestImplTest {
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(rtCommand.execute()).thenReturn(retSuccessExecData);
-        when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
@@ -372,8 +360,6 @@ public class WebServerServiceRestImplTest {
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(rtCommand.execute()).thenReturn(retSuccessExecData);
-        when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try {
@@ -393,8 +379,6 @@ public class WebServerServiceRestImplTest {
         assertTrue(new File(httpdConfDirPath).mkdirs());
 
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(rtCommand.execute()).thenReturn(retSuccessExecData);
-        when(rtCommandBuilder.build()).thenReturn(rtCommand);
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
@@ -412,10 +396,9 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
         response = null;
         boolean exceptionThrown = false;
-        try{
+        try {
             response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), true, authenticatedUser);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);

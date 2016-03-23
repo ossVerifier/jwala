@@ -37,12 +37,12 @@ public class DefaultJvmExecRequestBuilderImplTest {
     @Before
     public void setup() {
         originalPRP = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "aem-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./toc-control/src/test/resources");
         try {
             ApplicationProperties.getInstance();
         } catch (ApplicationException e) {
             LOGGER.trace("Attempting to load properties without project in path", e);
-            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "src/test/resources");
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
             ApplicationProperties.getInstance();
         }
 

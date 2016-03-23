@@ -1,17 +1,7 @@
 package com.siemens.cto.aem.control.command;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.AemControl;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.siemens.cto.aem.control.AemControl.Properties.CYGPATH;
-import static com.siemens.cto.aem.control.AemControl.Properties.SCRIPTS_PATH;
-
 public class RuntimeCommandBuilder {
-    private AemControl.Properties operation;
+    /*private AemControl.Properties operation;
     private List<String> parameters;
     private static final String PATHS_CYGWIN_BASE = "paths.cygwin.base";
 
@@ -60,4 +50,5 @@ public class RuntimeCommandBuilder {
 
         operation = null;
     }
+    */
 }

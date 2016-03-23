@@ -1,16 +1,8 @@
 package com.siemens.cto.aem.control.command;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.AemControl;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
-import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class RuntimeRequestBuilderTest {
 
-    @Test
+/*    @Test
     public void testBuild() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./toc-control/src/test/resources");
         RuntimeCommandBuilder rtCommandBuilder = new RuntimeCommandBuilder();
@@ -31,5 +23,5 @@ public class RuntimeRequestBuilderTest {
         assertFalse(cmdStr.contains("/wrapped/param"));
         assertFalse(cmdStr.contains("secure-copy.sh"));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-    }
+    }*/
 }

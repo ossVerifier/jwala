@@ -37,10 +37,10 @@ public class RuntimeCommand {
                     errorBuffer.toString());
         } catch (IOException e) {
             LOGGER.error("Failed running command IOException :: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running command IOException", e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed running command IOException", e);
         } catch (InterruptedException e) {
             LOGGER.error("Failed running command InterruptedException:: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Failed running command InterruptedException", e);
+            throw new InternalErrorException(AemFaultType.RUNTIME_COMMAND_FAILURE, "Failed running command InterruptedException", e);
         }
     }
 

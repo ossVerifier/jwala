@@ -22,7 +22,6 @@ public class AemControl {
         STOP_SCRIPT_NAME("commands.cygwin.stop-service", "stop-service.sh"),
         SCP_SCRIPT_NAME("commands.cygwin.scp", "secure-copy.sh"),
         SCP_WITH_TARGET_BK("commands.cygwin.scp", "secure-copy-with-target-bk.sh"),
-        TAR_CREATE_COMMAND("commands.cygwin.tar-create", "create-config-tar.sh"),
         DEPLOY_CONFIG_TAR_SCRIPT_NAME("commands.cygwin.deploy-config-tar", "deploy-config-tar.sh"),
         DELETE_SERVICE_SCRIPT_NAME("commands.cygwin.delete-service", "delete-service.sh"),
         INVOKE_SERVICE_SCRIPT_NAME("commands.cygwin.invoke-service", "invoke-service.sh"),

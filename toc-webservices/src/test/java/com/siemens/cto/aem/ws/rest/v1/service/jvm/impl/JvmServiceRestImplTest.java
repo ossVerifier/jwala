@@ -15,7 +15,6 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
@@ -332,7 +331,6 @@ public class JvmServiceRestImplTest {
         mockResourceTypes.add(mockResource);
         CommandOutput commandOutput = mock(CommandOutput.class);
         RuntimeCommandBuilder runtimeCommandBuilder = mock(RuntimeCommandBuilder.class);
-        RuntimeCommand mockRuntimeCommand = mock(RuntimeCommand.class);
         when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
@@ -344,10 +342,9 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
 
         when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
-        when(mockRuntimeCommand.execute()).thenReturn(commandOutput);
-        when(runtimeCommandBuilder.build()).thenReturn(mockRuntimeCommand);
         Jvm response = jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
         assertEquals(response, jvm);
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         CommandOutput mockExecDataFail = mock(CommandOutput.class);
         when(mockExecDataFail.getReturnCode()).thenReturn(new ExecReturnCode(1));
@@ -362,6 +359,7 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         exceptionThrown = false;
         try {
@@ -370,6 +368,7 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
@@ -379,6 +378,7 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         ExecCommand execCommand = new ExecCommand("fail command");
         Throwable throwable = new JSchException("Failed scp");
@@ -391,6 +391,7 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         exceptionThrown = false;
         try {
@@ -401,6 +402,8 @@ public class JvmServiceRestImplTest {
         assertTrue(exceptionThrown);
         FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
         FileUtils.deleteDirectory(new File("./" + jvm.getJvmName() + "null"));
+        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
+        assertTrue(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName() + "_config.jar").delete());
     }
 
     @Test
@@ -430,24 +433,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
-    }
-
-    @Test
-    public void testGenerateAndDeployConfigFailsRuntimeCommand() throws CommandFailureException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE RUNTIME COMMAND TEST"));
-
-
-        when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
-
-        when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
-        final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("Failed running command IOException", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals("FAIL THE SERVICE SECURE COPY TEST", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test

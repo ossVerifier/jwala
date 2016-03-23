@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -44,14 +43,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import static com.siemens.cto.aem.control.AemControl.Properties.TAR_CREATE_COMMAND;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceRestImpl.class);
     public static final String ENTITY_TYPE_JVM = "jvm";
     public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
+    public static final String CONFIG_JAR = "_config.jar";
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
@@ -361,7 +361,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     protected void secureCopyJvmConfigTar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
         ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         CommandOutput execData;
-        String configTarName = jvm.getJvmName() + "_config.tar";
+        String configTarName = jvm.getJvmName() + CONFIG_JAR;
         execData =
                 jvmControlService.secureCopyFile(secureCopyRequest, stpJvmResourcesDir + "/" + configTarName, ApplicationProperties.get("paths.instances") + "/" + configTarName);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -431,7 +431,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, ResourceType deployResource,
-                                     String jvmResourcesDirDest) throws CommandFailureException {
+                                       String jvmResourcesDirDest) throws CommandFailureException {
         final String destPath =
                 stpTomcatInstancesPath + "/" + jvmName + deployResource.getRelativeDir() + "/" + fileName;
         CommandOutput result =
@@ -466,10 +466,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
 
+        final File generatedDir = new File("./" + jvmName);
         try {
             // copy the tomcat instance-template directory
             final File srcDir = new File(pathsTomcatInstanceTemplatedir);
-            final File destDir = new File(jvmResourcesNameDir);
+            final File destDir = generatedDir;
+            final String destDirPath = destDir.getAbsolutePath();
+            LOGGER.debug("location of template copy: {}", destDirPath);
             for (String dirPath : srcDir.list()) {
                 final File srcChild = new File(srcDir + "/" + dirPath);
                 if (srcChild.isDirectory()) {
@@ -491,11 +494,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     } else {
                         generatedText = jvmService.generateConfigFile(jvmName, resourceType.getConfigFileName());
                     }
-                    String jvmResourcesRelativeDir = jvmResourcesNameDir + resourceType.getRelativeDir();
+                    String jvmResourcesRelativeDir = destDirPath + resourceType.getRelativeDir();
+                    LOGGER.debug("gnerating template in location: {}", jvmResourcesRelativeDir + "/", resourceType.getConfigFileName());
                     createConfigFile(jvmResourcesRelativeDir + "/", resourceType.getConfigFileName(), generatedText);
                 }
             }
-            createDirectory(jvmResourcesNameDir + "/logs");
+            createDirectory(destDirPath + "/logs");
         } catch (FileNotFoundException e) {
             LOGGER.error("Bad Stream: Failed to create file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create file", e);
@@ -504,23 +508,62 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
         }
 
-        // tar up the test file
-        rtCommandBuilder.setOperation(TAR_CREATE_COMMAND);
-        String jvmConfigTar = jvmName + "_config.tar";
-        rtCommandBuilder.addParameter(jvmConfigTar);
-        rtCommandBuilder.addCygwinPathParameter(jvmResourcesNameDir);
-        RuntimeCommand tarCommand = rtCommandBuilder.build();
-        CommandOutput tarResult = tarCommand.execute();
-        if (!tarResult.getReturnCode().wasSuccessful()) {
-            String standardError =
-                    tarResult.getStandardError().isEmpty() ? tarResult.getStandardOutput() : tarResult
-                            .getStandardError();
-            LOGGER.error("Tar create command completed with error trying to create config tar for {} :: ERROR: {}",
-                    jvmName, standardError);
-            throw new InternalErrorException(AemFaultType.INVALID_PATH, standardError);
+        // tar up the faile
+        String jvmConfigTar = jvmName + CONFIG_JAR;
+        JarOutputStream target = null;
+        final String configJarPath = stpJvmResourcesDir + "/" + jvmConfigTar;
+        try {
+            target = new JarOutputStream(new FileOutputStream(configJarPath));
+            add(new File("./" + jvmName + "/"), target);
+            target.close();
+            LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), stpJvmResourcesDir);
+            FileUtils.copyDirectoryToDirectory(generatedDir, new File(stpJvmResourcesDir));
+            FileUtils.deleteDirectory(generatedDir);
+        } catch (IOException e) {
+            LOGGER.error("Failed to generate the config jar for {}", jvmName);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
         }
-        LOGGER.info("Generation of configuration tar SUCCEEDED for {}", jvmName);
+
+        LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
+
         return jvmResourcesNameDir;
+    }
+
+    private void add(File source, JarOutputStream target) throws IOException {
+        BufferedInputStream in = null;
+        try {
+            if (source.isDirectory()) {
+                String name = source.getPath().replace("\\", "/");
+                if (!name.isEmpty()) {
+                    if (!name.endsWith("/"))
+                        name += "/";
+                    JarEntry entry = new JarEntry(name);
+                    entry.setTime(source.lastModified());
+                    target.putNextEntry(entry);
+                    target.closeEntry();
+                }
+                for (File nestedFile : source.listFiles())
+                    add(nestedFile, target);
+                return;
+            }
+
+            JarEntry entry = new JarEntry(source.getPath().replace("\\", "/"));
+            entry.setTime(source.lastModified());
+            target.putNextEntry(entry);
+            in = new BufferedInputStream(new FileInputStream(source));
+
+            byte[] buffer = new byte[1024];
+            while (true) {
+                int count = in.read(buffer);
+                if (count == -1)
+                    break;
+                target.write(buffer, 0, count);
+            }
+            target.closeEntry();
+        } finally {
+            if (in != null)
+                in.close();
+        }
     }
 
     protected void createConfigFile(String path, String configFileName, String serverXmlStr) throws IOException {

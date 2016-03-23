@@ -15,13 +15,11 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
-import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.PlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -495,8 +493,6 @@ public class ApplicationServiceImplTest {
 
     @Test
     public void testCopyApplicationToGroupHosts() throws IOException {
-        RuntimeCommandBuilder mockRuntimeCommandBuilder = mock(RuntimeCommandBuilder.class);
-        RuntimeCommand mockCommand = mock(RuntimeCommand.class);
         final HashSet<Jvm> jvmSet = new HashSet<>();
         Jvm mockJvm = mock(Jvm.class);
         Jvm mockJvm2 = mock(Jvm.class);
@@ -514,8 +510,6 @@ public class ApplicationServiceImplTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockJvm.getHostName()).thenReturn("localhost");
         when(mockJvm2.getHostName()).thenReturn("localhost");
-        when(mockRuntimeCommandBuilder.build()).thenReturn(mockCommand);
-        when(mockCommand.execute()).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
 
