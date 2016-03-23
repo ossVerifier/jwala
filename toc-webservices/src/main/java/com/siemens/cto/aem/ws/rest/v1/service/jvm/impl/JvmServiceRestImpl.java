@@ -13,7 +13,6 @@ import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -255,7 +254,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         errorDetails.put("jvmId", jvm.getId().getId().toString());
 
         try {
-            return ResponseBuilder.ok(generateAndDeployConf(jvm, user, new RuntimeCommandBuilder()));
+            return ResponseBuilder.ok(generateAndDeployConf(jvm, user));
         } catch (RuntimeException re) {
             LOGGER.error("Failed to generate and deploy configuration files for JVM: {}", jvmName, re);
             if (re.getCause() != null && re.getCause() instanceof InternalErrorException
@@ -276,9 +275,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
      *
      * @param jvm                   - the JVM
      * @param user                  - the user
-     * @param runtimeCommandBuilder
      */
-    Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user, RuntimeCommandBuilder runtimeCommandBuilder) {
+    Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user) {
 
         // only one at a time per JVM
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
@@ -297,7 +295,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deleteJvmWindowsService(user, new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
 
             // create the tar file
-            final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName(), runtimeCommandBuilder);
+            final String jvmConfigTar = generateJvmConfigTar(jvm.getJvmName());
 
             // copy the tar file
             secureCopyJvmConfigTar(jvm, jvmConfigTar);
@@ -462,7 +460,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return deployResource;
     }
 
-    protected String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
+    protected String generateJvmConfigTar(String jvmName) {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
 

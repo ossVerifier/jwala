@@ -17,7 +17,6 @@ import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.*;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -330,7 +329,6 @@ public class JvmServiceRestImplTest {
         ResourceType mockResource = mock(ResourceType.class);
         mockResourceTypes.add(mockResource);
         CommandOutput commandOutput = mock(CommandOutput.class);
-        RuntimeCommandBuilder runtimeCommandBuilder = mock(RuntimeCommandBuilder.class);
         when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
@@ -342,7 +340,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
 
         when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
-        Jvm response = jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+        Jvm response = jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         assertEquals(response, jvm);
         FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
@@ -354,7 +352,7 @@ public class JvmServiceRestImplTest {
 
         boolean exceptionThrown = false;
         try {
-            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -363,7 +361,7 @@ public class JvmServiceRestImplTest {
 
         exceptionThrown = false;
         try {
-            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -373,7 +371,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
         try {
-            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -386,7 +384,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(commandFailureException);
         exceptionThrown = false;
         try {
-            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }
@@ -395,7 +393,7 @@ public class JvmServiceRestImplTest {
 
         exceptionThrown = false;
         try {
-            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser, runtimeCommandBuilder);
+            jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
         }

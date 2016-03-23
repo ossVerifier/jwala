@@ -17,7 +17,6 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
-import com.siemens.cto.aem.control.command.RuntimeCommandBuilder;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
@@ -334,7 +333,7 @@ public class GroupServiceImplDeployTest {
             }
 
             @Override
-            protected String generateJvmConfigTar(String jvmName, RuntimeCommandBuilder rtCommandBuilder) {
+            protected String generateJvmConfigTar(String jvmName) {
                 return "./testJvmConfigTar.tar";
             }
         }
