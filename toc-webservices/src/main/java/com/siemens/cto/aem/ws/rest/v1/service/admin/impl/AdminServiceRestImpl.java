@@ -71,7 +71,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
             PropertyConfigurator.configure(ApplicationProperties.getProperties());
             copyToReturn.put("logging-reload-state", "reloaded from properties");
         }
-        return ResponseBuilder.ok(copyToReturn);
+        return ResponseBuilder.ok(new TreeMap<>(copyToReturn));
     }
 
     @Override

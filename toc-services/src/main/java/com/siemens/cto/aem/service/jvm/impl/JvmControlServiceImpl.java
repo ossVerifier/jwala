@@ -68,7 +68,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
             //       the control event to all the UI's opened in different browsers.
-            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(),
+            messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), jvm.getState(),
                     aUser.getId(), DateTime.now(), StateType.JVM));
 
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
