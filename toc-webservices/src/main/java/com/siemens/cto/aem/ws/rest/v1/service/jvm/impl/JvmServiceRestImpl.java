@@ -273,8 +273,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     /**
      * Generate and deploy a JVM's configuration files.
      *
-     * @param jvm                   - the JVM
-     * @param user                  - the user
+     * @param jvm  - the JVM
+     * @param user - the user
      */
     Jvm generateAndDeployConf(final Jvm jvm, final AuthenticatedUser user) {
 
@@ -506,19 +506,24 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
         }
 
-        // tar up the faile
+        // tar up the file
         String jvmConfigTar = jvmName + CONFIG_JAR;
         JarOutputStream target = null;
         final String configJarPath = stpJvmResourcesDir + "/" + jvmConfigTar;
         try {
+            final File jvmResourcesDirFile = new File(stpJvmResourcesDir);
+            if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
+                LOGGER.error("Could not create {} for JVM resources generation {}", stpJvmResourcesDir, jvmName);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + stpJvmResourcesDir + " for JVM resources generation " + jvmName);
+            }
             target = new JarOutputStream(new FileOutputStream(configJarPath));
             add(new File("./" + jvmName + "/"), target);
             target.close();
             LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), stpJvmResourcesDir);
-            FileUtils.copyDirectoryToDirectory(generatedDir, new File(stpJvmResourcesDir));
+            FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
             FileUtils.deleteDirectory(generatedDir);
         } catch (IOException e) {
-            LOGGER.error("Failed to generate the config jar for {}", jvmName);
+            LOGGER.error("Failed to generate the config jar for {}", jvmName, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
         }
 
