@@ -16,11 +16,11 @@ import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MapWrapper;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -141,6 +141,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     private Executor taskScheduler;
 
+    @Autowired
+    private MessagingService messagingService;
 
     /**
      * Make toc.properties available to spring integration configuration
@@ -178,21 +180,18 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    @Autowired
     public GroupJvmRelationshipService groupJvmRelationshipService(final GroupCrudService groupCrudService,
                                                                    final JvmCrudService jvmCrudService) {
         return new GroupJvmRelationshipServiceImpl(groupCrudService, jvmCrudService);
     }
 
     @Bean
-    @Autowired
     public JvmPersistenceService getJvmPersistenceService(final JvmCrudService jvmCrudService,
                                                           final GroupJvmRelationshipService groupJvmRelationshipService) {
         return new JpaJvmPersistenceServiceImpl(jvmCrudService, groupJvmRelationshipService);
     }
 
     @Bean
-    @Autowired
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), getGroupService(), fileManager,
@@ -205,20 +204,14 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "jvmControlService")
-    @Autowired
     public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService) {
         return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getHistoryService(historyCrudService), messagingTemplate);
     }
 
     @Bean(name = "groupControlService")
-    @Autowired
-    public GroupControlService getGroupControlService(final GroupPersistenceService groupPersistenceService,
-                                                      final JvmPersistenceService jvmPersistenceService) {
-        return new GroupControlServiceImpl(
-                getGroupWebServerControlService(),
-                getGroupJvmControlService()
-        );
+    public GroupControlService getGroupControlService() {
+        return new GroupControlServiceImpl(getGroupWebServerControlService(), getGroupJvmControlService());
     }
 
     @Bean(name = "groupJvmControlService")
@@ -232,14 +225,12 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerControlService")
-    @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getWebServerStateMapWrapper().getMap(), historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")
-    @Autowired
     public WebServerCommandService getWebServerCommandService() {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
@@ -319,7 +310,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    @Autowired
     public GenericKeyedObjectPool<ChannelSessionKey, Channel> getChannelPool(final AemSshConfig sshConfig) throws JSchException {
         final GenericKeyedObjectPoolConfig genericKeyedObjectPoolConfig = new GenericKeyedObjectPoolConfig();
         genericKeyedObjectPoolConfig.setMaxTotalPerKey(10);
@@ -328,10 +318,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    @Autowired
     public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(getJvmService(),
-                messagingTemplate, groupStateNotificationService);
+        return new JvmStateReceiverAdapter(getJvmService(), messagingService, groupStateNotificationService);
     }
 
     @Bean
