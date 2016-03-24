@@ -185,7 +185,7 @@ var WebAppTable = React.createClass({
     },
     render: function() {
         if (this.state.isCollapsed) {
-            return <div style={{cursor: "pointer"}} onClick={this.onClick}>{"+ ${apps}"}</div>
+            return <div style={{cursor: "pointer"}} onClick={this.onClick}>{"+ ${webApps}"}</div>
         }
 
         var reactAttributeElements = [];
@@ -195,7 +195,7 @@ var WebAppTable = React.createClass({
             for (attr in this.props.attributes[key]) {
                 if (typeof(this.props.attributes[key][attr]) !== "object") {
                     reactAttributeElements.push(React.createElement(Attribute,
-                                                        {entity: "apps[" + webAppIdx + "]", key: attr + webAppIdx, property: attr, value: this.props.attributes[key][attr]}));
+                                                        {entity: "webApps[" + webAppIdx + "]", key: attr + webAppIdx, property: attr, value: this.props.attributes[key][attr]}));
                 }
             }
             webAppIdx++;
