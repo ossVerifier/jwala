@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
@@ -14,38 +15,33 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class JvmStateMessageListener implements MessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
 
-    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
-    protected String topicServerStates;
-
     private final JvmStateMapMessageConverter converter;
     private final JvmService jvmService;
-    private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
-    private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
-    private final SimpMessagingTemplate messagingTemplate;
+    private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
+    private final Map<Identifier<Jvm>, CurrentState<Jvm, JvmState>> stateMap;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
                                    final JvmService jvmService,
-                                   final SimpMessagingTemplate messagingTemplate,
-                                   final GroupStateNotificationService groupStateNotificationService) {
+                                   final MessagingService messagingTemplate,
+                                   final GroupStateNotificationService groupStateNotificationService,
+                                   final Map stateMap) {
         converter = theConverter;
         this.jvmService = jvmService;
-        this.messagingTemplate = messagingTemplate;
+        this.messagingService = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
+        this.stateMap = stateMap;
     }
 
     @Override
@@ -76,9 +72,9 @@ public class JvmStateMessageListener implements MessageListener {
 
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
-            messagingTemplate.convertAndSend(topicServerStates, new CurrentState(newState.getId(), newState.getState(),
-                    DateTime.now(), StateType.JVM, newState.getMessage()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class, topicServerStates);
+            messagingService.send(new CurrentState(newState.getId(), newState.getState(), DateTime.now(), StateType.JVM,
+                    newState.getMessage()));
+            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
     }
 
@@ -91,15 +87,15 @@ public class JvmStateMessageListener implements MessageListener {
     private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
-        if (!JVM_LAST_PERSISTED_STATE_MAP.containsKey(newState.getId()) ||
-            !JVM_LAST_PERSISTED_STATE_MAP.get(newState.getId()).equals(newState.getState())) {
-                JVM_LAST_PERSISTED_STATE_MAP.put(newState.getId(), newState.getState());
+        if (!stateMap.containsKey(newState.getId()) ||
+            !stateMap.get(newState.getId()).getState().equals(newState.getState())) {
+                stateMap.put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
 
-        if (StringUtils.isNotEmpty(newState.getMessage()) && (!JVM_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(newState.getId()) ||
-            !JVM_LAST_PERSISTED_ERROR_STATUS_MAP.get(newState.getId()).equals(newState.getMessage()))) {
-                JVM_LAST_PERSISTED_ERROR_STATUS_MAP.put(newState.getId(), newState.getMessage());
+        if (StringUtils.isNotEmpty(newState.getMessage()) && (!stateMap.containsKey(newState.getId()) ||
+            !stateMap.get(newState.getId()).getMessage().equals(newState.getMessage()))) {
+                stateMap.put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
         return stateAndOrMsgChanged;

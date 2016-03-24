@@ -12,10 +12,9 @@ public interface GroupStateNotificationService {
 
     /**
      * Retrieve the group state and send it to a topic.
-     * @param id
-     * @param aClass
-     * @param topic
+     * @param id the id
+     * @param aClass the class where the state belongs to.
      */
-    void retrieveStateAndSendToATopic(Identifier id, Class aClass, String topic);
+    void retrieveStateAndSendToATopic(Identifier id, Class aClass);
 
 }

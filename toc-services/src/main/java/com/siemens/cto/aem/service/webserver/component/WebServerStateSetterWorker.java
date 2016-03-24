@@ -8,6 +8,8 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
+import com.siemens.cto.aem.service.MapWrapper;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
@@ -16,10 +18,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -32,12 +33,12 @@ import java.util.concurrent.Future;
 /**
  * Sets a web server's state. This class is meant to be a spring bean wherein its "work" method pingWebServer
  * is ran asynchronously as a spun up thread.
- * <p/>
- * Note!!! This class has be given it's own package named "component" to denote it as a Spring component
+ *
+ * Note!!! This class has be given its own package named "component" to denote it as a Spring component
  * that is subject to component scanning. In addition, this was also done to avoid the problem of it's unit test
  * which uses Spring config and component scanning from picking up other Spring components that it does not need
  * which also results to spring bean definition problems.
- * <p/>
+ *
  * Created by Z003BPEJ on 6/25/2015.
  */
 @Service
@@ -45,34 +46,25 @@ public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
 
-    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
-    protected String topicServerStates;
-
-    private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
-    private WebServerService webServerService;
-    private SimpMessagingTemplate messagingTemplate;
-    private GroupStateNotificationService groupStateNotificationService;
-
-    @Autowired
-    ClientFactoryHelper clientFactoryHelper;
+    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
+    private final WebServerService webServerService;
+    private final MessagingService messagingService;
+    private final GroupStateNotificationService groupStateNotificationService;
+    private final ClientFactoryHelper clientFactoryHelper;
 
     private static final Map<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
-    /**
-     * Note: Setting of class variables through the constructor preferred but @Async does not work
-     * if WebServerStateSetterWorker is instantiated like this in the config file:
-     * <p/>
-     * WebServerStateSetterWorker webServerStateSetterWorker() {
-     * return new WebServerStateSetterWorker(...);
-     * }
-     * <p/>
-     * It should totally be instantiated by Spring (e.g. using @Autowired or if using XML using <Bean>...<Bean/>)
-     * <p/>
-     * Bean definition using context xml and constructor injection would have worked but for consistency
-     * (as the application is mostly Spring annotation driven), it was avoided.
-     */
-    public WebServerStateSetterWorker() {
+    @Autowired
+    public WebServerStateSetterWorker(@Qualifier("webServerStateMapWrapper") final MapWrapper stateMapWrapper,
+                                      final WebServerService webServerService, final MessagingService messagingService,
+                                      final GroupStateNotificationService groupStateNotificationService,
+                                      final ClientFactoryHelper clientFactoryHelper) {
+        this.webServerReachableStateMap = stateMapWrapper.getMap();
+        this.webServerService = webServerService;
+        this.messagingService = messagingService;
+        this.groupStateNotificationService = groupStateNotificationService;
+        this.clientFactoryHelper = clientFactoryHelper;
     }
 
     /**
@@ -145,11 +137,8 @@ public class WebServerStateSetterWorker {
     private void setState(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
         if (!isWebServerBusy(webServer) && checkStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
             webServerService.updateState(webServer.getId(), webServerReachableState, msg);
-
-            // stateNotificationService.notifyStateUpdated(new WebServerState(webServer.getId(), webServerReachableState,
-            //         DateTime.now()));
-            messagingTemplate.convertAndSend(topicServerStates, new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class, topicServerStates);
+            messagingService.send(new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
+            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class);
         }
     }
 
@@ -198,22 +187,6 @@ public class WebServerStateSetterWorker {
                 DateTime.now(),
                 StateType.WEB_SERVER,
                 msg));
-    }
-
-    public void setWebServerReachableStateMap(Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap) {
-        this.webServerReachableStateMap = webServerReachableStateMap;
-    }
-
-    public void setWebServerService(WebServerService webServerService) {
-        this.webServerService = webServerService;
-    }
-
-    public void setMessagingTemplate(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
-
-    public void setGroupStateNotificationService(final GroupStateNotificationService groupStateNotificationService) {
-        this.groupStateNotificationService = groupStateNotificationService;
     }
 
 }

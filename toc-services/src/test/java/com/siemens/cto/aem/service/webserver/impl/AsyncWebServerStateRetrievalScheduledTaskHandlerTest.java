@@ -1,10 +1,11 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.service.MapWrapper;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -28,7 +29,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
@@ -79,10 +79,10 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
     @Before
     public void setup() throws IOException {
-        webServer1 = new WebServer(new Identifier<WebServer>(1L), new ArrayList<Group>(), null, "localhost", 80, null,
+        webServer1 = new WebServer(new Identifier(1L), new ArrayList(), null, "localhost", 80, null,
                 new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
-        webServer2 = new WebServer(new Identifier<WebServer>(2L), new ArrayList<Group>(), null, "localhost", 90, null,
+        webServer2 = new WebServer(new Identifier(2L), new ArrayList(), null, "localhost", 90, null,
                 new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
         webServers = new ArrayList<>();
@@ -104,7 +104,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Ignore
     public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServers()).thenReturn(webServers);
-        when(Config.mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -127,7 +127,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusNotFound() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
@@ -150,7 +150,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Test
     public void testWebServerStatePollerTaskExecuteIoException() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
 
         try {
@@ -173,7 +173,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     // TODO: Fix the problem wherein this test Intermittently fails.
     public void testWebServerStatePollerTaskExecuteHttpStatusOkWithCleanup() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServers()).thenReturn(webServers);
-        when(Config.mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -205,15 +205,15 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
 
         assertEquals(2, Config.webServerFutureMap.size());
 
-        for (Identifier<WebServer> key : Config.webServerFutureMap.keySet()) {
-            assertNotEquals(999L, key.getId().longValue());
+        for (Object key : Config.webServerFutureMap.keySet()) {
+            assertNotEquals(999L, ((Identifier<WebServer>) key).getId().longValue());
         }
     }
 
     @Test
     public void testWebServerStatePollerTaskExecuteThrowRuntimeException() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenThrow(UnsupportedOperationException.class);
 
@@ -238,7 +238,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         while (!done) {
             for (Identifier<WebServer> key : keys) {
                 if (Config.webServerFutureMap.containsKey(key)) {
-                    done = Config.webServerFutureMap.get(key).isDone();
+                    done = ((Future) Config.webServerFutureMap.get(key)).isDone();
                     if (!done) {
                         break;
                     }
@@ -265,21 +265,43 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         private static HttpClientRequestFactory mockHttpClientRequestFactory;
 
         @Mock
-        private static Map<Identifier<WebServer>, WebServerReachableState> mockWebServerReachableStateMap;
+        private static Map mockWebServerStateMap;
 
         @Mock
-        private static SimpMessagingTemplate mockMessagingTemplate;
+        private static MessagingService mockMessagingService;
 
         @Mock
         private static GroupStateNotificationService mockGroupNotificationService;
 
-        @Autowired
-        private WebServerStateSetterWorker webServerStateSetterWorker;
-
-        private static volatile Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
+        private static volatile Map webServerFutureMap = new HashMap();
 
         public Config() {
             MockitoAnnotations.initMocks(this);
+        }
+
+        @Bean(name = "webServerStateMapWrapper")
+        public MapWrapper getMockWebServerStateMap() {
+            return new MapWrapper(mockWebServerStateMap);
+        }
+
+        @Bean
+        public WebServerService getMockWebServerService() {
+            return mockWebServerService;
+        }
+
+        @Bean
+        public HttpClientRequestFactory getMockHttpClientRequestFactory() {
+            return mockHttpClientRequestFactory;
+        }
+
+        @Bean
+        public MessagingService getMockMessagingService() {
+            return mockMessagingService;
+        }
+
+        @Bean
+        public GroupStateNotificationService getMockGroupNotificationService() {
+            return mockGroupNotificationService;
         }
 
         @Bean(name = "propConfig")
@@ -292,13 +314,9 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         }
 
         @Bean(name = "webServerStateRetrievalScheduledTaskHandlerBean")
-        @Autowired
         @DependsOn("propConfig")
-        WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler() {
-            webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
-            webServerStateSetterWorker.setWebServerService(mockWebServerService);
-            webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
-            webServerStateSetterWorker.setGroupStateNotificationService(mockGroupNotificationService);
+        WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
+                final WebServerStateSetterWorker webServerStateSetterWorker) {
             return new WebServerStateRetrievalScheduledTaskHandler(mockWebServerService, webServerStateSetterWorker,
                                                                    webServerFutureMap);
         }

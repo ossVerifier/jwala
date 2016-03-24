@@ -57,11 +57,10 @@ public class WebServerStateRetrievalScheduledTaskHandler {
                         LOGGER.debug(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isCancelled());
                     }
 
-                    if (webServerFutureMap.get(webServer.getId()) == null ||
-                            webServerFutureMap.get(webServer.getId()).isDone()) {
-                        LOGGER.debug(">>> Ping web server {}", webServer.getId().getId());
-                        webServerFutureMap.put(webServer.getId(),
-                                webServerStateSetterWorker.pingWebServer(webServer));
+                    if (webServerFutureMap.get(webServer.getId()) == null || webServerFutureMap.get(webServer.getId()).isDone()) {
+                        LOGGER.debug(">>> Pinging web server {}...", webServer.getId().getId());
+                        webServerFutureMap.put(webServer.getId(), webServerStateSetterWorker.pingWebServer(webServer));
+                        LOGGER.debug(">>> Web server {} pinged", webServer.getId().getId());
                     }
                 }
             } finally {

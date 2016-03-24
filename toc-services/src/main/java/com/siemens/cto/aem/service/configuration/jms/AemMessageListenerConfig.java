@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.configuration.jms;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -12,11 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.jms.MessageListener;
 import javax.jms.Session;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -38,10 +40,10 @@ public class AemMessageListenerConfig {
     private StateNotificationService stateNotificationService;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private GroupStateNotificationService groupStateNotificationService;
 
     @Autowired
-    private GroupStateNotificationService groupStateNotificationService;
+    private MessagingService messagingService;
 
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager) {
@@ -63,10 +65,14 @@ public class AemMessageListenerConfig {
     }
 
     @Bean
-    @Autowired
+    public Map getJvmCurrentStateMap() {
+        return new HashMap();
+    }
+
+    @Bean
     public MessageListener getJvmStateMessageListener() {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService,
-                messagingTemplate, groupStateNotificationService);
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, messagingService,
+                groupStateNotificationService, getJvmCurrentStateMap());
     }
 
 }

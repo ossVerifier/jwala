@@ -6,10 +6,7 @@ import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
@@ -23,6 +20,7 @@ import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -57,6 +55,7 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,17 +83,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 @Configuration
 @EnableAsync
 @EnableScheduling
-@ComponentScan({"com.siemens.cto.aem.service.webserver.component", "com.siemens.cto.aem.service.state",
-        "com.siemens.cto.aem.service.spring.component", "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component",
-        "com.siemens.cto.aem.service.group.impl.spring.component"})
+@ComponentScan({"com.siemens.cto.aem.service.webserver.component",
+                "com.siemens.cto.aem.service.state",
+                "com.siemens.cto.aem.service.spring.component",
+                "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component",
+                "com.siemens.cto.aem.service.group.impl.spring.component",
+                "com.siemens.cto.aem.service.jvm.impl.spring.component",
+                "com.siemens.cto.aem.service.impl.spring.component"})
 public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
@@ -133,8 +133,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
 
-    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap = new HashMap<>();
-    private final Map<Identifier<WebServer>, Future<?>> webServerFutureMap = new HashMap<>();
+    private final Map webServerFutureMap = new HashMap();
 
     @Resource
     private Environment env;
@@ -236,7 +235,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                webServerReachableStateMap, historyService, getStateNotificationService(), messagingTemplate);
+                getWebServerStateMapWrapper().getMap(), historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")
@@ -269,7 +268,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean(name = "resourceService")
     public ResourceService getResourceService() {
-        return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(), persistenceServiceConfiguration.getGroupPersistenceService());
+        return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(),
+                persistenceServiceConfiguration.getGroupPersistenceService());
     }
 
     @Bean(name = "webServerHttpRequestFactory")
@@ -292,24 +292,12 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerStateRetrievalScheduledTaskHandler")
-    @Autowired
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
         return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker, webServerFutureMap, true);
     }
 
-    @Bean
-    @Autowired
-    public WebServerStateSetterWorker getWebServerStateSetterWorker(final WebServerStateSetterWorker webServerStateSetterWorker) {
-        webServerStateSetterWorker.setWebServerReachableStateMap(webServerReachableStateMap);
-        webServerStateSetterWorker.setWebServerService(getWebServerService());
-        webServerStateSetterWorker.setMessagingTemplate(messagingTemplate);
-        webServerStateSetterWorker.setGroupStateNotificationService(groupStateNotificationService);
-        return webServerStateSetterWorker;
-    }
-
     @Bean(name = "webServerTaskExecutor")
-    @Autowired
     public TaskExecutor getWebServerTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
                                                  @Value("${webserver.thread-task-executor.pool.size}") final int corePoolSize,
                                                  @Value("${webserver.thread-task-executor.pool.max-size}") final int maxPoolSize,
@@ -349,6 +337,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean
     public JGroupsClusterInitializer jGroupsClusterInitializer() {
         return new JGroupsClusterInitializer(getSimpleJvmReceiverAdapter());
+    }
+
+    @Bean(name = "webServerStateMapWrapper")
+    MapWrapper getWebServerStateMapWrapper() {
+        return new MapWrapper(new HashedMap());
     }
 
     @Override

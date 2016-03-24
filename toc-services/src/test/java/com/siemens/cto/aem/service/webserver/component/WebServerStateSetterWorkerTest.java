@@ -4,6 +4,8 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
+import com.siemens.cto.aem.service.MapWrapper;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -58,7 +60,7 @@ public class WebServerStateSetterWorkerTest {
     private WebServerService mockWebServerService;
 
     @Mock
-    private SimpMessagingTemplate mockMessagingTemplate;
+    private MessagingService mockMessagingService;
 
     @Mock
     private GroupStateNotificationService mockGroupNotificationService;
@@ -67,13 +69,8 @@ public class WebServerStateSetterWorkerTest {
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        webServerStateSetterWorker = new WebServerStateSetterWorker();
-        webServerStateSetterWorker.clientFactoryHelper = mockClientFactoryHelper;
-        webServerStateSetterWorker.setWebServerReachableStateMap(mockWebServerReachableStateMap);
-        webServerStateSetterWorker.setWebServerService(mockWebServerService);
-        webServerStateSetterWorker.setMessagingTemplate(mockMessagingTemplate);
-        webServerStateSetterWorker.setGroupStateNotificationService(mockGroupNotificationService);
+        webServerStateSetterWorker = new WebServerStateSetterWorker(new MapWrapper(mockWebServerReachableStateMap), mockWebServerService,
+                mockMessagingService, mockGroupNotificationService, mockClientFactoryHelper);
     }
 
     @Test
@@ -88,49 +85,49 @@ public class WebServerStateSetterWorkerTest {
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService).send(any(WebServerState.class));
 
         // State did not change so there shouldn't be any updates
         reset(mockWebServerService);
-        reset(mockMessagingTemplate);
+        reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate, new Times(0)).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
 
         // State changes so there should be updates
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(IOException.class);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
         reset(mockWebServerService);
-        reset(mockMessagingTemplate);
+        reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService).send(any(WebServerState.class));
 
         // State did not change but there's an error, db should be updated and notification sent
         reset(mockClientFactoryHelper);
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockClientHttpResponse);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
         reset(mockWebServerService);
-        reset(mockMessagingTemplate);
+        reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService).send(any(WebServerState.class));
 
         // State did not change but there's an error (but same error), db should'nt be updated and notification is not sent
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
         reset(mockWebServerService);
-        reset(mockMessagingTemplate);
+        reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate, new Times(0)).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
 
         // Web server is busy so there shouldn't be any db and notification updates
         when(mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_STOP_SENT);
         reset(mockWebServerService);
-        reset(mockMessagingTemplate);
+        reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
         verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingTemplate, new Times(0)).convertAndSend (anyString(), any(WebServerState.class));
+        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
     }
 
 }

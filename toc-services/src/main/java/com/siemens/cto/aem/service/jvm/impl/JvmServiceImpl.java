@@ -227,7 +227,7 @@ public class JvmServiceImpl implements JvmService {
         // stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-        groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class, topicServerStates);
+        groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
         }
 
     @Override

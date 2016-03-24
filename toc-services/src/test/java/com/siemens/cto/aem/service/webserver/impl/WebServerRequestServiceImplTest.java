@@ -27,7 +27,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -126,7 +125,6 @@ public class WebServerRequestServiceImplTest {
 
     // TODO do we need this anymore??
     @Configuration
-    @ComponentScan("com.siemens.cto.aem.service.webserver.component")
     static class Config {
         @Mock
         private static HttpClientRequestFactory httpClientRequestFactory;
@@ -140,9 +138,13 @@ public class WebServerRequestServiceImplTest {
             return httpClientRequestFactory;
         }
 
+        @Bean
+        public ClientFactoryHelper getClientFactoryHelper() {
+            return new ClientFactoryHelper();
+        }
+
         @Bean(name = "factoryHelper")
-        @Autowired
-        public ClientFactoryHelper getClientFactoryHelper(ClientFactoryHelper factoryHelper) {
+        public ClientFactoryHelper getClientFactoryHelper(final ClientFactoryHelper factoryHelper) {
             return factoryHelper;
         }
 
