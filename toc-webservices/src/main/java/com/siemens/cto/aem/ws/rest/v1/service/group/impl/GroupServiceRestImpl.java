@@ -232,7 +232,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response previewGroupWebServerResourceTemplate(String groupName, String template) {
-        return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template));
+        try {
+            return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template));
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to preview the web server template for {}", groupName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+        }
     }
 
     @Override
@@ -333,7 +339,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response previewGroupJvmResourceTemplate(String groupName, String template) {
-        return ResponseBuilder.ok(groupService.previewGroupJvmResourceTemplate(groupName, template));
+        try {
+            return ResponseBuilder.ok(groupService.previewGroupJvmResourceTemplate(groupName, template));
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+        }
     }
 
 
@@ -697,7 +709,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
-        return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, resourceTemplateName, template));
+        try {
+            return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, resourceTemplateName, template));
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to preview the application template {} for {}", resourceTemplateName, groupName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+        }
     }
 
     @Override

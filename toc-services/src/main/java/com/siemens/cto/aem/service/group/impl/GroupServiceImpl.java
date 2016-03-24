@@ -357,11 +357,7 @@ public class GroupServiceImpl implements GroupService {
         Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
         String appName = getAppNameFromResourceTemplate(resourceTemplateName);
         bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
-        try {
-            return GeneratorUtils.bindDataToTemplateText(bindings, template);
-        } catch (Exception x) {
-            throw new ApplicationException("Template token replacement failed.", x);
-        }
+        return GeneratorUtils.bindDataToTemplateText(bindings, template);
     }
 
     @Override

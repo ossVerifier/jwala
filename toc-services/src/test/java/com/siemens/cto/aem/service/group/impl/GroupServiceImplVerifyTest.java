@@ -16,6 +16,7 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import groovy.lang.MissingPropertyException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +27,6 @@ import java.io.InputStream;
 import java.util.*;
 
 import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -442,7 +442,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(groupPersistenceService).updateGroupAppResourceTemplate("testGroup", "hct.xml", "template content");
     }
 
-    @Test
+    @Test(expected = MissingPropertyException.class)
     public void testPreviewGroupAppTemplate() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmsList = new HashSet<>();
@@ -468,13 +468,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         String content = groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content");
         assertEquals("hct content", content);
 
-        try {
-            groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content ${webApp.fail.token}");
-        } catch (ApplicationException ae){
-            assertEquals("Template token replacement failed.", ae.getMessage());
-        } catch (Exception e) {
-            assertFalse("Expecting ApplicationException but got " + e, true);
-        }
+        groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content ${webApp.fail.token}");
 
     }
 
@@ -511,7 +505,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("hct content ${webApp.fail.name}");
         try {
             content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true);
-        } catch (ApplicationException ae){
+        } catch (ApplicationException ae) {
             assertEquals("Template token replacement failed.", ae.getMessage());
         } catch (Exception e) {
             assertFalse("Expecting ApplicationException but got " + e, true);
