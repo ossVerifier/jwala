@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.jvm;
 
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 
 /**
  * The contract for a JVM state related services.
@@ -11,16 +12,23 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 public interface JvmStateService {
 
     /**
-     * Check all JVM states individually then update the state persistence/in-memory context when there's a state change.
+     * Check all JVM states individually then update the state persistence and in-memory context when there's a state change.
      */
-    void checkAndUpdateStates();
+    void verifyAndUpdateNotInMemOrStartedAndStaleStates();
 
     /**
-     * Set persistence context and in-memory state.
+     * Set persistence context and in-memory state of a JVM whose state is not yet in the application context JVM state
+     * map (in-memory) or whose state is in started but is stale.
      * @param jvm the {@link Jvm} object.
      * @param state {@link JvmState}
      * @param errMsg the error message.
      */
-    void setState(final Jvm jvm, final JvmState state, final String errMsg);
+    void updateNotInMemOrStartedButStaleState(final Jvm jvm, final JvmState state, final String errMsg);
+
+    /**
+     * Retrieve the status of a JVM which is running as a window's service.
+     * @param jvm {@link Jvm}
+     */
+    RemoteCommandReturnInfo getServiceStatus(final Jvm jvm);
 
 }

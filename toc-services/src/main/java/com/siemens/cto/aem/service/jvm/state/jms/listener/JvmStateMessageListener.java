@@ -71,11 +71,15 @@ public class JvmStateMessageListener implements MessageListener {
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
 
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
+            LOGGER.debug("The state has changed from {} to {}", stateMapWrapper.getMap().get(newState.getId()) != null ?
+                    stateMapWrapper.getMap().get(newState.getId()).getState() : "NO STATE", newState.getState());
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
             messagingService.send(new CurrentState(newState.getId(), newState.getState(), DateTime.now(), StateType.JVM,
                     newState.getMessage()));
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
+        // Always update the JVM state map even if the state did not change since there's another thread that checks if the state is stale of not!
+        stateMapWrapper.getMap().put(newState.getId(), newState);
     }
 
     /**
@@ -89,13 +93,11 @@ public class JvmStateMessageListener implements MessageListener {
 
         if (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
             !stateMapWrapper.getMap().get(newState.getId()).getState().equals(newState.getState())) {
-                stateMapWrapper.getMap().put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
 
         if (StringUtils.isNotEmpty(newState.getMessage()) && (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
             !stateMapWrapper.getMap().get(newState.getId()).getMessage().equals(newState.getMessage()))) {
-                stateMapWrapper.getMap().put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
         return stateAndOrMsgChanged;
