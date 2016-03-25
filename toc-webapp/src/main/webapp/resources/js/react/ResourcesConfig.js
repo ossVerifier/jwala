@@ -17,7 +17,9 @@ var ResourcesConfig = React.createClass({
                                          webAppService={this.props.webAppService}
                                          groupService={this.props.groupService}
                                          ref="xmlTabs"
-                                         uploadDialogCallback={this.launchUpload} />);
+                                         uploadDialogCallback={this.launchUpload}
+                                         updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
+                                         />);
 
         var splitter = <RSplitter disabled={true} components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION} updateCallback={this.verticalSplitterDidUpdateCallback}/>
 
@@ -31,6 +33,15 @@ var ResourcesConfig = React.createClass({
                         content={<TemplateUploadForm ref="templateUploadForm" componentDidMountCallback={this.templateComponentDidMount}/>}
                         ref="templateUploadModal"
                      />
+                    <ModalDialogBox
+                     title="Confirm update"
+                     show={false}
+                     okCallback={this.okUpdateGroupTemplateCallback}
+                     cancelCallback={this.cancelUpdateGroupTemplateCallback}
+                     content={<ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}/>}
+                     ref="templateUpdateGroupModal"
+                    />
+
                 </div>
     },
     componentDidMount: function() {
@@ -88,6 +99,14 @@ var ResourcesConfig = React.createClass({
             entityType: entityType,
             entityGroupName: this.refs.xmlTabs.state.entityParent.name
         })
+    },
+    confirmUpdateGroupDidMount: function (confirmDialog){
+        var entityType = this.refs.xmlTabs.state.entityType;
+        var entityGroupName = this.refs.xmlTabs.state.entityParent.name;
+        confirmDialog.setState({
+            entityType: entityType,
+            entityGroupName: entityGroupName
+        });
     },
      okCallback: function() {
         if (this.refs.templateUploadForm.isValid()) {
@@ -187,12 +206,22 @@ var ResourcesConfig = React.createClass({
      cancelCallback: function() {
          this.refs.templateUploadModal.close();
      },
+     okUpdateGroupTemplateCallback: function() {
+        this.refs.xmlTabs.saveGroupTemplate();
+        this.refs.templateUpdateGroupModal.close();
+     },
+     cancelUpdateGroupTemplateCallback: function() {
+        this.refs.templateUpdateGroupModal.close();
+     },
      launchUpload: function() {
          this.refs.templateUploadModal.setState({
             title: "Upload template for " + this.refs.xmlTabs.state.resourceTemplateName,
             entityGroupName: this.refs.xmlTabs.state.entityParent.name
          })
          this.refs.templateUploadModal.show();
+     },
+     launchUpdateGroupTemplate: function(){
+        this.refs.templateUpdateGroupModal.show();
      },
      verticalSplitterDidUpdateCallback: function() {
 
@@ -259,7 +288,12 @@ var XmlTabs = React.createClass({
 
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
-        this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+            this.setState({template:template});
+            this.props.updateGroupTemplateCallback();
+        } else {
+            this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        }
     },
     saveResourcePromise: function(template) {
         var thePromise;
@@ -274,20 +308,19 @@ var XmlTabs = React.createClass({
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
                     this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
-            } else if (this.state.entityType === "webServerSection") {
-                thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName,
-                    this.state.resourceTemplateName, template);
-            } else if (this.state.entityType === "jvmSection") {
-                if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-                    thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName,
-                        this.state.resourceTemplateName, template);
-                } else {
-                    thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName,
-                        this.state.resourceTemplateName, template);
-                }
             }
         }
         return thePromise;
+    },
+    saveGroupTemplate: function(){
+        if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+        }  else if (this.state.entityType === "webServerSection") {
+            thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+        } else {
+            thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+        }
+        thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
     },
     savedResourceCallback: function(response) {
         if (response.message === "SUCCESS") {
@@ -563,4 +596,28 @@ var TemplateUploadForm = React.createClass({
     validator: null
 });
 
+var ConfirmUpdateGroupDialog = React.createClass({
+    getInitialState: function(){
+        return {
+            entityType: "",
+            entityGroupName: ""
+        };
+    },
+    render: function() {
+        var entityType = "JVM";
+        if (this.state.entityType === "webServerSection"){
+            entityType = "Web Server"
+        }
+        return <div className={this.props.className}>
+                 Saving will overwrite all the {entityType} templates in the group
+                 <br/>
+                 {this.state.entityGroupName}.
+                 <br/><br/>
+                 Do you wish to continue?
+               </div>
+    },
+    componentDidMount: function(){
+        this.props.componentDidMountCallback(this);
+    }
+});
 

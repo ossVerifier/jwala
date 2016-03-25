@@ -18,6 +18,7 @@ import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
@@ -287,6 +288,29 @@ public class GroupServiceImplDeployTest {
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
         assertNotNull(response);
     }
+
+    @Test
+    public void testUpdateGroupAppTemplate() {
+        Group mockGroupWithJvms = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        Set<Jvm> mockJvms = new HashSet<>();
+        mockJvms.add(mockJvm);
+        when(mockJvm.getJvmName()).thenReturn("mockJvmName");
+        when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
+        when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
+        when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(),anyString())).thenReturn("new hct.xml content");
+
+        Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "new hct.xml context");
+        verify(mockGroupService).updateGroupAppResourceTemplate(anyString(), anyString(), anyString());
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
+        response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+    }
+
 
     @Configuration
     static class Config {

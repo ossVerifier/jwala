@@ -422,6 +422,14 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testUpdateWebServerTemplate() {
+
+        Group mockGroupWithWebServers = mock(Group.class);
+        when(mockGroupService.updateGroupWebServerResourceTemplate(anyString(), anyString(), anyString())).thenReturn("httpd.conf content for testing");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroupWithWebServers);
+        when(mockGroupWithWebServers.getWebServers()).thenReturn(new HashSet<>(webServers));
+        when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("httpd.conf content for testing");
+
         Response response = groupServiceRest.updateGroupWebServerResourceTemplate(group.getName(), "httpd.conf", "httpd.conf content for testing");
         assertNotNull(response);
 
@@ -472,12 +480,20 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testUpdateJvmTemplate() {
+        Group mockGroupWithJvms = mock(Group.class);
+        Set<Jvm> mockJvms = new HashSet<>();
+        mockJvms.add(mockJvm);
+
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
+        when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
+
         Response response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "test server.xml content");
-        assertNotNull(response);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test jvm", "server.xml"));
+
         response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "server.xml content for testing");
-        assertNotNull(response);
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
     }
 
@@ -605,17 +621,6 @@ public class GroupServiceRestImplTest {
 
         groupServiceRest.uploadGroupAppConfigTemplate("any", authenticatedUser, "any");
         verify(mockGroupService).populateGroupAppTemplate(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    public void testUpdateGroupAppTemplate() {
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
-        groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "new hct.xml context");
-        verify(mockGroupService).updateGroupAppResourceTemplate(anyString(), anyString(), anyString());
-
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
-        Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
-        assertEquals(500, response.getStatus());
     }
 
     @Test

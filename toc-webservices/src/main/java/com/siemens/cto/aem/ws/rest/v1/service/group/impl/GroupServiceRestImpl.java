@@ -219,15 +219,41 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content) {
+    public Response updateGroupWebServerResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
         try {
-            return ResponseBuilder.ok(groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content));
+
+            final String updatedContent = groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content);
+            Group group = groupService.getGroup(groupName);
+            group = groupService.getGroupWithWebServers(group.getId());
+
+            Set<WebServer> groupWebServers = group.getWebServers();
+            Set<Future<Response>> futureContents = new HashSet<>();
+            if (null != groupWebServers) {
+                LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
+                for (final WebServer webServer : groupWebServers) {
+                    final String webServerName = webServer.getName();
+                    LOGGER.info("Updating Web Server {} template {}", webServerName, resourceTemplateName);
+                    Future<Response> futureContent = executorService.submit(new Callable<Response>() {
+                        @Override
+                        public Response call() throws Exception {
+                            return ResponseBuilder.ok(webServerService.updateResourceTemplate(webServerName, resourceTemplateName, updatedContent));
+                        }
+                    });
+                    futureContents.add(futureContent);
+                }
+            } else {
+                LOGGER.info("No Web Servers to update in group {}", groupName);
+            }
+            waitForDeployToComplete(futureContents);
+
+            LOGGER.info("Update SUCCESSFUL");
+            return ResponseBuilder.ok(updatedContent);
+
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update the template {}", resourceTemplateName, e);
+            LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
-
     }
 
     @Override
@@ -304,7 +330,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             // TODO think about adding a manual timeout
             while (!allDone) {
                 boolean isDone = true;
-                for (Future isDoneFuture : futures) {
+                for (Future<Response> isDoneFuture : futures) {
                     isDone = isDone && isDoneFuture.isDone();
                 }
                 allDone = isDone;
@@ -326,15 +352,42 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content) {
+    public Response updateGroupJvmResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
+        LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
+
         try {
-            return ResponseBuilder.ok(groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content));
+
+            final String updatedContent = groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content);
+            final Group group = groupService.getGroup(groupName);
+
+            Set<Jvm> groupJvms = group.getJvms();
+            Set<Future<Response>> futureContents = new HashSet<>();
+            if (null != groupJvms) {
+                LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
+                for (final Jvm jvm : groupJvms) {
+                    final String jvmName = jvm.getJvmName();
+                    LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
+                    Future<Response> futureContent = executorService.submit(new Callable<Response>() {
+                        @Override
+                        public Response call() throws Exception {
+                            return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, updatedContent));
+                        }
+                    });
+                    futureContents.add(futureContent);
+                }
+            } else {
+                LOGGER.info("No JVMs to update in group {}", groupName);
+            }
+            waitForDeployToComplete(futureContents);
+
+            LOGGER.info("Update SUCCESSFUL");
+            return ResponseBuilder.ok(updatedContent);
+
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update the template {}", resourceTemplateName, e);
+            LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
-
     }
 
     @Override
@@ -660,9 +713,40 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
+    public Response updateGroupAppResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
+
+        LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
+
         try {
-            return ResponseBuilder.ok(groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content));
+
+            final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
+            final Group group = groupService.getGroup(groupName);
+            final String appName = groupService.getAppNameFromResourceTemplate(resourceTemplateName);
+
+            Set<Jvm> groupJvms = group.getJvms();
+            Set<Future<Response>> futureContents = new HashSet<>();
+            if (null != groupJvms) {
+                LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
+                final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+                for (final Jvm jvm : groupJvms) {
+                    final String jvmName = jvm.getJvmName();
+                    LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
+                    Future<Response> futureContent = executorService.submit(new Callable<Response>() {
+                        @Override
+                        public Response call() throws Exception {
+                            return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
+                        }
+                    });
+                    futureContents.add(futureContent);
+                }
+            } else {
+                LOGGER.info("No JVMs to update in group {}", groupName);
+            }
+            waitForDeployToComplete(futureContents);
+
+            LOGGER.info("Update SUCCESSFUL");
+            return ResponseBuilder.ok(updatedContent);
+
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
